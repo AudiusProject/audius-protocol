@@ -12,7 +12,7 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
-const { FileHasher } = require('@audius/libs')
+const { fileHasher } = require('@audius/libs')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -706,7 +706,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
         {
           '@audius/libs': {
             generateNonImageCid: sinon
-              .stub(FileHasher, 'generateNonImageCid')
+              .stub(fileHasher, 'generateNonImageCid')
               .returns(
                 new Promise((resolve, reject) => {
                   const multihash = mockMultihash

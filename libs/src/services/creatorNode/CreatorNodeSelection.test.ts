@@ -1,24 +1,28 @@
-const nock = require('nock')
-const assert = require('assert')
-const semver = require('semver')
+import nock from 'nock'
+import assert from 'assert'
+import semver from 'semver'
 
-const { CREATOR_NODE_SERVICE_NAME } = require('./constants')
-const { CreatorNodeSelection } = require('./CreatorNodeSelection')
+import { CREATOR_NODE_SERVICE_NAME } from './constants'
+import { CreatorNodeSelection } from './CreatorNodeSelection'
 
-const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
+const mockEthContracts = (
+  urls: string[],
+  currrentVersion: string,
+  previousVersions: string[] | null = null
+) => ({
   getCurrentVersion: async () => currrentVersion,
-  getNumberOfVersions: async (spType) => 2,
-  getVersion: async (spType, queryIndex) => {
+  getNumberOfVersions: async () => 2,
+  getVersion: async (_: string, queryIndex: number) => {
     if (previousVersions) {
-      return previousVersions[queryIndex]
+      return previousVersions[queryIndex] as string
     }
-    return ['1.2.2', '1.2.3'][queryIndex]
+    return ['1.2.2', '1.2.3'][queryIndex] as string
   },
-  getServiceProviderList: async () => urls.map(u => ({ endpoint: u })),
-  hasSameMajorAndMinorVersion: (version1, version2) => {
+  getServiceProviderList: async () => urls.map((u) => ({ endpoint: u })),
+  hasSameMajorAndMinorVersion: (version1: string, version2: string) => {
     return (
       semver.major(version1) === semver.major(version2) &&
-        semver.minor(version1) === semver.minor(version2)
+      semver.minor(version1) === semver.minor(version2)
     )
   },
   isInRegressedMode: () => {
@@ -56,6 +60,8 @@ const defaultHealthCheckData = {
   maxStorageUsedPercent: 95
 }
 
+type HealthCheckData = { [K in keyof typeof defaultHealthCheckData]?: unknown }
+
 describe('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
@@ -78,12 +84,15 @@ describe('test CreatorNodeSelection', () => {
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([healthy, healthyButSlow, healthyButSlowest], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [healthy, healthyButSlow, healthyButSlowest],
+        '1.2.3'
+      ),
       whitelist: null,
       blacklist: null
     })
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(primary === healthy)
     assert(secondaries.length === 2)
@@ -93,7 +102,9 @@ describe('test CreatorNodeSelection', () => {
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 3)
     const healthyServices = [healthy, healthyButSlow, healthyButSlowest]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
@@ -120,12 +131,15 @@ describe('test CreatorNodeSelection', () => {
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([upToDate, behindMajor, behindMinor, behindPatch], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [upToDate, behindMajor, behindMinor, behindPatch],
+        '1.2.3'
+      ),
       whitelist: null,
       blacklist: null
     })
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(primary === upToDate)
     assert(secondaries.length === 1)
@@ -134,48 +148,39 @@ describe('test CreatorNodeSelection', () => {
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 2)
     const healthyServices = [upToDate, behindPatch]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('return nothing if no services are healthy', async () => {
     const unhealthy1 = 'https://unhealthy1.audius.co'
-    nock(unhealthy1)
-      .get('/health_check/verbose')
-      .reply(500, { })
+    nock(unhealthy1).get('/health_check/verbose').reply(500, {})
 
     const unhealthy2 = 'https://unhealthy2.audius.co'
-    nock(unhealthy2)
-      .get('/health_check/verbose')
-      .delay(100)
-      .reply(500, { })
+    nock(unhealthy2).get('/health_check/verbose').delay(100).reply(500, {})
 
     const unhealthy3 = 'https://unhealthy3.audius.co'
-    nock(unhealthy3)
-      .get('/health_check/verbose')
-      .delay(200)
-      .reply(500, { })
+    nock(unhealthy3).get('/health_check/verbose').delay(200).reply(500, {})
 
     const unhealthy4 = 'https://unhealthy4.audius.co'
-    nock(unhealthy4)
-      .get('/health_check/verbose')
-      .delay(300)
-      .reply(500, { })
+    nock(unhealthy4).get('/health_check/verbose').delay(300).reply(500, {})
 
     const unhealthy5 = 'https://unhealthy5.audius.co'
-    nock(unhealthy5)
-      .get('/health_check/verbose')
-      .delay(400)
-      .reply(500, { })
+    nock(unhealthy5).get('/health_check/verbose').delay(400).reply(500, {})
 
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([unhealthy1, unhealthy2, unhealthy3, unhealthy4, unhealthy5], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [unhealthy1, unhealthy2, unhealthy3, unhealthy4, unhealthy5],
+        '1.2.3'
+      ),
       whitelist: null,
       blacklist: null
     })
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     // All unhealthy are bad candidates so don't select anything
     assert(!primary)
@@ -208,9 +213,7 @@ describe('test CreatorNodeSelection', () => {
 
     // moldy canned beans -- not available/up at all. for sure nope
     const unhealthy1 = 'https://unhealthy1.audius.co'
-    nock(unhealthy1)
-      .get('/health_check/verbose')
-      .reply(500, { })
+    nock(unhealthy1).get('/health_check/verbose').reply(500, {})
 
     // your house mate's leftovers from her team outing -- behind by patch, kinda slow. solid
     const shouldBeSecondary = 'https://secondary.audius.co'
@@ -222,12 +225,21 @@ describe('test CreatorNodeSelection', () => {
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([unhealthy1, shouldBePrimary, unhealthy2, unhealthy3, shouldBeSecondary], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [
+          unhealthy1,
+          shouldBePrimary,
+          unhealthy2,
+          unhealthy3,
+          shouldBeSecondary
+        ],
+        '1.2.3'
+      ),
       whitelist: null,
       blacklist: null
     })
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(primary === shouldBePrimary)
     assert(secondaries.length === 1)
@@ -236,7 +248,9 @@ describe('test CreatorNodeSelection', () => {
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 2)
     const healthyServices = [shouldBePrimary, shouldBeSecondary]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   /**
@@ -268,7 +282,7 @@ describe('test CreatorNodeSelection', () => {
         blacklist: null
       })
 
-      const { primary, secondaries, services } = await cns.select()
+      const { primary, secondaries, services } = await cns.select(true, false)
       assert(primary)
       assert(secondaries.length === numNodes - i - 1)
       const returnedHealthyServices = Object.keys(services)
@@ -290,19 +304,20 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const unhealthy = 'https://unhealthy.audius.co'
-    nock(unhealthy)
-      .get('/health_check/verbose')
-      .reply(500, { })
+    nock(unhealthy).get('/health_check/verbose').reply(500, {})
 
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([unhealthy, shouldBePrimary, shouldBeSecondary], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [unhealthy, shouldBePrimary, shouldBeSecondary],
+        '1.2.3'
+      ),
       whitelist: null,
       blacklist: null
     })
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(primary === shouldBePrimary)
     assert(secondaries.length === 1)
@@ -311,45 +326,88 @@ describe('test CreatorNodeSelection', () => {
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 2)
     const healthyServices = [shouldBePrimary, shouldBeSecondary]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('filters out nodes if over 95% of storage is used', async () => {
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary1 = 'https://secondary1.audius.co'
     nock(shouldBeSecondary1)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          version: '1.2.1',
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary2 = 'https://secondary2.audius.co'
     nock(shouldBeSecondary2)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          version: '1.2.0',
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const used95PercentStorage = 'https://used95PercentStorage.audius.co'
     nock(used95PercentStorage)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 95.354, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          storagePathUsed: 95.354,
+          storagePathSize: 100
+        }
+      })
 
     const used99PercentStorage = 'https://used99PercentStorage.audius.co'
     nock(used99PercentStorage)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 99, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          storagePathUsed: 99,
+          storagePathSize: 100
+        }
+      })
 
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used95PercentStorage, used99PercentStorage], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [
+          shouldBePrimary,
+          shouldBeSecondary1,
+          shouldBeSecondary2,
+          used95PercentStorage,
+          used99PercentStorage
+        ],
+        '1.2.3'
+      ),
       whitelist: null,
       blacklist: null
     })
     assert(cns.maxStorageUsedPercent === 95)
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(cns.maxStorageUsedPercent === 95)
     assert(primary === shouldBePrimary)
@@ -359,41 +417,87 @@ describe('test CreatorNodeSelection', () => {
 
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 3)
-    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    const healthyServices = [
+      shouldBePrimary,
+      shouldBeSecondary1,
+      shouldBeSecondary2
+    ]
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('overrides with health check resp `maxStorageUsedPercent` even if it is passed into constructor', async () => {
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary1 = 'https://secondary1.audius.co'
     nock(shouldBeSecondary1)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.2', storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          version: '1.2.2',
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary2 = 'https://secondary2.audius.co'
     nock(shouldBeSecondary2)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          version: '1.2.1',
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const used50PercentStorage = 'https://used95PercentStorage.audius.co'
     nock(used50PercentStorage)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 50, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          version: '1.2.0',
+          storagePathUsed: 50,
+          storagePathSize: 100
+        }
+      })
 
     const used70PercentStorage = 'https://used70PercentStorage.audius.co'
     nock(used70PercentStorage)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 70.546, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...defaultHealthCheckData,
+          version: '1.2.0',
+          storagePathUsed: 70.546,
+          storagePathSize: 100
+        }
+      })
 
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts(
-        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used50PercentStorage, used70PercentStorage],
+        [
+          shouldBePrimary,
+          shouldBeSecondary1,
+          shouldBeSecondary2,
+          used50PercentStorage,
+          used70PercentStorage
+        ],
         '1.2.3'
       ),
       whitelist: null,
@@ -403,8 +507,9 @@ describe('test CreatorNodeSelection', () => {
 
     assert(cns.maxStorageUsedPercent === 50)
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
+    // @ts-expect-error maxStorageUsedPercent actually does change after another select call
     assert(cns.maxStorageUsedPercent === 95)
 
     assert(primary === shouldBePrimary)
@@ -414,44 +519,90 @@ describe('test CreatorNodeSelection', () => {
 
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 5)
-    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    const healthyServices = [
+      shouldBePrimary,
+      shouldBeSecondary1,
+      shouldBeSecondary2
+    ]
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('allows custom maxStorageUsedPercent as constructor param if `maxStorageUsedPercent` is not found in health check resp', async () => {
-    const healthCheckResponseWithNoMaxStorageUsedPercent = { ...defaultHealthCheckData }
+    const healthCheckResponseWithNoMaxStorageUsedPercent: HealthCheckData = {
+      ...defaultHealthCheckData
+    }
     delete healthCheckResponseWithNoMaxStorageUsedPercent.maxStorageUsedPercent
 
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...healthCheckResponseWithNoMaxStorageUsedPercent,
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary1 = 'https://secondary1.audius.co'
     nock(shouldBeSecondary1)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...healthCheckResponseWithNoMaxStorageUsedPercent,
+          version: '1.2.1',
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary2 = 'https://secondary2.audius.co'
     nock(shouldBeSecondary2)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...healthCheckResponseWithNoMaxStorageUsedPercent,
+          version: '1.2.0',
+          storagePathUsed: 30,
+          storagePathSize: 100
+        }
+      })
 
     const used50PercentStorage = 'https://used95PercentStorage.audius.co'
     nock(used50PercentStorage)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, storagePathUsed: 50, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...healthCheckResponseWithNoMaxStorageUsedPercent,
+          storagePathUsed: 50,
+          storagePathSize: 100
+        }
+      })
 
     const used70PercentStorage = 'https://used70PercentStorage.audius.co'
     nock(used70PercentStorage)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, storagePathUsed: 70.546, storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...healthCheckResponseWithNoMaxStorageUsedPercent,
+          storagePathUsed: 70.546,
+          storagePathSize: 100
+        }
+      })
 
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts(
-        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used50PercentStorage, used70PercentStorage],
+        [
+          shouldBePrimary,
+          shouldBeSecondary1,
+          shouldBeSecondary2,
+          used50PercentStorage,
+          used70PercentStorage
+        ],
         '1.2.3'
       ),
       whitelist: null,
@@ -461,7 +612,7 @@ describe('test CreatorNodeSelection', () => {
 
     assert(cns.maxStorageUsedPercent === 50)
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(cns.maxStorageUsedPercent === 50)
     assert(primary === shouldBePrimary)
@@ -471,18 +622,25 @@ describe('test CreatorNodeSelection', () => {
 
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 3)
-    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    const healthyServices = [
+      shouldBePrimary,
+      shouldBeSecondary1,
+      shouldBeSecondary2
+    ]
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('allows Content Node to be selected if storage information is unavailable (undefined or null)', async () => {
-    const healthCheckDataWithNoStorageInfo = {
+    const healthCheckDataWithNoStorageInfo: HealthCheckData = {
       ...defaultHealthCheckData
     }
     delete healthCheckDataWithNoStorageInfo.storagePathSize
     healthCheckDataWithNoStorageInfo.storagePathUsed = null
 
-    const shouldBePrimary = 'https://missingStoragePathUsedAndStoragePathSize.audius.co'
+    const shouldBePrimary =
+      'https://missingStoragePathUsedAndStoragePathSize.audius.co'
     nock(shouldBePrimary)
       .get('/health_check/verbose')
       .reply(200, { data: healthCheckDataWithNoStorageInfo })
@@ -490,12 +648,24 @@ describe('test CreatorNodeSelection', () => {
     const shouldBeSecondary1 = 'https://missingStoragePathUsed.audius.co'
     nock(shouldBeSecondary1)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.1', storagePathSize: 100 } })
+      .reply(200, {
+        data: {
+          ...healthCheckDataWithNoStorageInfo,
+          version: '1.2.1',
+          storagePathSize: 100
+        }
+      })
 
     const shouldBeSecondary2 = 'https://missingStoragePathSize.audius.co'
     nock(shouldBeSecondary2)
       .get('/health_check/verbose')
-      .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.0', storagePathUsed: 30 } })
+      .reply(200, {
+        data: {
+          ...healthCheckDataWithNoStorageInfo,
+          version: '1.2.0',
+          storagePathUsed: 30
+        }
+      })
 
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
@@ -509,7 +679,7 @@ describe('test CreatorNodeSelection', () => {
       maxStorageUsedPercent: 50
     })
 
-    const { primary, secondaries, services } = await cns.select()
+    const { primary, secondaries, services } = await cns.select(true, false)
 
     assert(primary === shouldBePrimary)
     assert(secondaries.length === 2)
@@ -518,14 +688,20 @@ describe('test CreatorNodeSelection', () => {
 
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 3)
-    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    const healthyServices = [
+      shouldBePrimary,
+      shouldBeSecondary1,
+      shouldBeSecondary2
+    ]
+    healthyServices.map((service) =>
+      assert(returnedHealthyServices.has(service))
+    )
   })
 
   it('does not always pick the same one with equivalency delta', async () => {
     // Run this test a few times and make sure we eventually get something
     // different
-    const primaries = []
+    const primaries: string[] = []
     for (let i = 0; i < 20; ++i) {
       const one = 'https://one.audius.co'
       nock(one)
@@ -550,11 +726,11 @@ describe('test CreatorNodeSelection', () => {
         equivalencyDelta: 200
       })
 
-      const { primary } = await cns.select()
+      const { primary } = await cns.select(true, false)
       primaries.push(primary)
     }
     // Make sure there is some variance
-    assert(!primaries.every(val => val === primaries[0]))
+    assert(!primaries.every((val) => val === primaries[0]))
   }).timeout(10000)
 
   describe('Test preferHigherPatchForPrimary and preferHigherPatchForSecondaries', () => {
@@ -578,13 +754,16 @@ describe('test CreatorNodeSelection', () => {
       const cns = new CreatorNodeSelection({
         creatorNode: mockCreatorNode,
         numberOfNodes: 3,
-        ethContracts: mockEthContracts([healthy, aheadPatchButSlow, aheadPatch], '1.2.3'),
+        ethContracts: mockEthContracts(
+          [healthy, aheadPatchButSlow, aheadPatch],
+          '1.2.3'
+        ),
         whitelist: null,
         blacklist: null
         // preferHigherPatchForPrimary and preferHigherPatchForSecondaries true by default
       })
 
-      const { primary, secondaries, services } = await cns.select()
+      const { primary, secondaries, services } = await cns.select(true, false)
 
       assert(primary === aheadPatch)
       assert(secondaries.length === 2)
@@ -594,7 +773,9 @@ describe('test CreatorNodeSelection', () => {
       const returnedHealthyServices = new Set(Object.keys(services))
       assert(returnedHealthyServices.size === 3)
       const healthyServices = [aheadPatch, aheadPatchButSlow, healthy]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      healthyServices.map((service) =>
+        assert(returnedHealthyServices.has(service))
+      )
     })
 
     it('Selects highest version node for primary with preferHigherPatchForPrimary enabled and fastest node for secondaries with preferHigherPatchForSecondaries disabled', async () => {
@@ -622,14 +803,17 @@ describe('test CreatorNodeSelection', () => {
       const cns = new CreatorNodeSelection({
         creatorNode: mockCreatorNode,
         numberOfNodes: 3,
-        ethContracts: mockEthContracts([healthy, healthyButBehindPatch, aheadPatchButSlow, aheadPatch], '1.2.3'),
+        ethContracts: mockEthContracts(
+          [healthy, healthyButBehindPatch, aheadPatchButSlow, aheadPatch],
+          '1.2.3'
+        ),
         whitelist: null,
         blacklist: null,
         // preferHigherPatchForPrimary defaults to true
         preferHigherPatchForSecondaries: false
       })
 
-      const { primary, secondaries, services } = await cns.select()
+      const { primary, secondaries, services } = await cns.select(true, false)
 
       assert(primary === aheadPatch)
       assert(secondaries.length === 2)
@@ -638,8 +822,15 @@ describe('test CreatorNodeSelection', () => {
 
       const returnedHealthyServices = new Set(Object.keys(services))
       assert(returnedHealthyServices.size === 4)
-      const healthyServices = [aheadPatch, aheadPatchButSlow, healthy, healthyButBehindPatch]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      const healthyServices = [
+        aheadPatch,
+        aheadPatchButSlow,
+        healthy,
+        healthyButBehindPatch
+      ]
+      healthyServices.map((service) =>
+        assert(returnedHealthyServices.has(service))
+      )
     })
 
     it('Selects fastest node for primary with preferHigherPatchForPrimary disabled and highest version nodes for secondaries with preferHigherPatchForSecondaries enabled', async () => {
@@ -668,14 +859,22 @@ describe('test CreatorNodeSelection', () => {
       const cns = new CreatorNodeSelection({
         creatorNode: mockCreatorNode,
         numberOfNodes: 3,
-        ethContracts: mockEthContracts([healthy, healthyAndBehindPatch, higherPatchAndSlow, highestPatchAndSlowest], '1.2.3'),
+        ethContracts: mockEthContracts(
+          [
+            healthy,
+            healthyAndBehindPatch,
+            higherPatchAndSlow,
+            highestPatchAndSlowest
+          ],
+          '1.2.3'
+        ),
         whitelist: null,
         blacklist: null,
         preferHigherPatchForPrimary: false
         // preferHigherPatchForSecondaries defaults to true
       })
 
-      const { primary, secondaries, services } = await cns.select()
+      const { primary, secondaries, services } = await cns.select(true, false)
 
       assert(primary === healthy)
       assert(secondaries.length === 2)
@@ -684,8 +883,15 @@ describe('test CreatorNodeSelection', () => {
 
       const returnedHealthyServices = new Set(Object.keys(services))
       assert(returnedHealthyServices.size === 4)
-      const healthyServices = [highestPatchAndSlowest, higherPatchAndSlow, healthy, healthyAndBehindPatch]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      const healthyServices = [
+        highestPatchAndSlowest,
+        higherPatchAndSlow,
+        healthy,
+        healthyAndBehindPatch
+      ]
+      healthyServices.map((service) =>
+        assert(returnedHealthyServices.has(service))
+      )
     })
 
     it('Selects fastest nodes when preferHigherPatchForPrimary and preferHigherPatchForSecondaries are disabled', async () => {
@@ -714,14 +920,22 @@ describe('test CreatorNodeSelection', () => {
       const cns = new CreatorNodeSelection({
         creatorNode: mockCreatorNode,
         numberOfNodes: 3,
-        ethContracts: mockEthContracts([healthy, healthyAndBehindPatch, higherPatchAndSlow, highestPatchAndSlowest], '1.2.3'),
+        ethContracts: mockEthContracts(
+          [
+            healthy,
+            healthyAndBehindPatch,
+            higherPatchAndSlow,
+            highestPatchAndSlowest
+          ],
+          '1.2.3'
+        ),
         whitelist: null,
         blacklist: null,
         preferHigherPatchForPrimary: false,
         preferHigherPatchForSecondaries: false
       })
 
-      const { primary, secondaries, services } = await cns.select()
+      const { primary, secondaries, services } = await cns.select(true, false)
 
       assert(primary === healthy)
       assert(secondaries.length === 2)
@@ -730,8 +944,15 @@ describe('test CreatorNodeSelection', () => {
 
       const returnedHealthyServices = new Set(Object.keys(services))
       assert(returnedHealthyServices.size === 4)
-      const healthyServices = [highestPatchAndSlowest, higherPatchAndSlow, healthy, healthyAndBehindPatch]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      const healthyServices = [
+        highestPatchAndSlowest,
+        higherPatchAndSlow,
+        healthy,
+        healthyAndBehindPatch
+      ]
+      healthyServices.map((service) =>
+        assert(returnedHealthyServices.has(service))
+      )
     })
   })
 })

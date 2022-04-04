@@ -10,7 +10,7 @@ const crypto = require('crypto')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const { FileHasher } = require('@audius/libs')
+const { fileHasher } = require('@audius/libs')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -98,7 +98,7 @@ describe('test Polling Tracks with mocks', function () {
       {
         '@audius/libs': {
           generateNonImageCid: sinon
-            .stub(FileHasher, 'generateNonImageCid')
+            .stub(fileHasher, 'generateNonImageCid')
             .returns(
               new Promise((resolve) => {
                 return resolve(DUMMY_MULTIHASH)
@@ -1082,38 +1082,38 @@ describe('test Polling Tracks with real files', function () {
 
     // Upload track 1 metadata
     const trackMetadata = {
-     metadata: {
-       owner_id: userId,
-       track_segments: trackSegments
-     },
-     source_file: sourceFile
-   }
-   const trackMetadataResp = await request(app2)
-     .post('/tracks/metadata')
-     .set('X-Session-ID', session.sessionToken)
-     .set('User-Id', userId)
-     .send(trackMetadata)
-     .expect(200)
-   const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+      metadata: {
+        owner_id: userId,
+        track_segments: trackSegments
+      },
+      source_file: sourceFile
+    }
+    const trackMetadataResp = await request(app2)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send(trackMetadata)
+      .expect(200)
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
-   // Upload track 2 metadata
-   const track2Metadata = {
-    metadata: {
-      owner_id: userId,
-      track_segments: track2Segments
-    },
-    source_file: sourceFile
-  }
-  const track2MetadataResp = await request(app2)
-    .post('/tracks/metadata')
-    .set('X-Session-ID', session.sessionToken)
-    .set('User-Id', userId)
-    .send(track2Metadata)
-    .expect(200)
-  const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
-   
-   // Complete track1 creation
-   await request(app2)
+    // Upload track 2 metadata
+    const track2Metadata = {
+      metadata: {
+        owner_id: userId,
+        track_segments: track2Segments
+      },
+      source_file: sourceFile
+    }
+    const track2MetadataResp = await request(app2)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', userId)
+      .send(track2Metadata)
+      .expect(200)
+    const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
+
+    // Complete track1 creation
+    await request(app2)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', userId)

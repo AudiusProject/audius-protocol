@@ -5,7 +5,7 @@ import {
   ServiceName,
   ServiceWithEndpoint,
   Service
-} from '../utils/network'
+} from '../utils'
 import { DECISION_TREE_STATE } from './constants'
 import type { AxiosResponse } from 'axios'
 
@@ -26,15 +26,15 @@ interface GetServices {
 }
 
 interface Decision {
-  stage: DECISION_TREE_STATE
+  stage: string
   val?: unknown
 }
 
-interface ServiceSelectionConfig {
+export interface ServiceSelectionConfig {
   // services from this list should not be picked
-  blacklist?: Set<string>
+  blacklist?: Set<string> | undefined | null
   // only services from this list are allowed to be picked
-  whitelist?: Set<string>
+  whitelist?: Set<string> | undefined | null
   /*
    * an (async) method to get a
    * list of services to choose from. Optionally may return a verbose object with service metadata
@@ -87,8 +87,8 @@ interface ServiceSelectionConfig {
  * of them and is generally how this class is intended to be used.
  */
 export class ServiceSelection {
-  blacklist: Set<string> | undefined
-  whitelist: Set<string> | undefined
+  blacklist: Set<string> | undefined | null
+  whitelist: Set<string> | undefined | null
   getServices: GetServices
   maxConcurrentRequests: number
   requestTimeout: number
@@ -136,7 +136,8 @@ export class ServiceSelection {
    * Selects a service
    * @param reset if reset is true, clear the decision tree
    */
-  async select(reset = true): Promise<string | undefined | null> {
+  // we need any type here to allow sub-classes to more strictly type return type
+  async select(reset = true): Promise<any> {
     if (reset) {
       this.decisionTree = []
     }
@@ -399,7 +400,7 @@ export class ServiceSelection {
   }
 
   /** Adds a service to the unhealthy set */
-  addUnhealthy(service: string) {
+  addUnhealthy(service: ServiceName) {
     this.unhealthy.add(service)
   }
 
