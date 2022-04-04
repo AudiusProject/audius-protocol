@@ -1,7 +1,10 @@
 import asyncio
+import json
 import logging
+from pathlib import Path
 from typing import Any
 
+from anchorpy import Idl, InstructionCoder
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
 from src.solana.solana_program_indexer import SolanaProgramIndexer
@@ -11,12 +14,25 @@ logger = logging.getLogger(__name__)
 
 BASE_ERROR = "Must be implemented in subclass"
 TX_SIGNATURES_PROCESSING_SIZE = 100
+AUDIUS_DATA_IDL_PATH = f"./idl/audius_data.json"
 
 
 class AnchorDataIndexer(SolanaProgramIndexer):
     """
     Indexer for the audius user data layer
     """
+
+    _instruction_coder_: InstructionCoder
+
+    def __init__(
+        self,
+        program_id: str,
+        label: str,
+        redis: Any,
+        db: Any,
+        solana_client_manager: Any,
+    ):
+        super().__init__(program_id, label, redis, db, solana_client_manager)
 
     def get_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -83,3 +99,14 @@ class AnchorDataIndexer(SolanaProgramIndexer):
     # TODO - Override with actual remote fetch operation
     async def fetch_ipfs_metadata(self, parsed_transactions):
         return super().fetch_ifps_metadata(parsed_transactions)
+
+    def _get_instruction_coder(self):
+        idl = self._get_idl()
+        self._instruction_coder_ = InstructionCoder(idl)
+
+    def _get_idl(self):
+        path = Path(AUDIUS_DATA_IDL_PATH)
+        with path.open() as f:
+            data = json.load(f)
+        idl = Idl.from_json(data)
+        return idl

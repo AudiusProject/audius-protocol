@@ -32,7 +32,12 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
 
 COPY requirements.txt requirements.txt
 
+# Install Rust for anchor.py dependency
+RUN curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    source $HOME/.cargo/env
+
 RUN apk add libseccomp-dev && \
+    python3 -m pip install --upgrade pip && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 
@@ -103,3 +108,4 @@ ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
 RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 
 CMD ["bash", "scripts/start.sh"]
+# CMD ["/bin/bash"]
