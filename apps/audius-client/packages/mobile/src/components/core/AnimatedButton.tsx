@@ -34,6 +34,7 @@ export type AnimatedButtonProps = {
   style?: PressableProps['style']
   wrapperStyle?: StyleProp<ViewStyle>
   haptics?: boolean
+  waitForAnimationFinish?: boolean
 } & PressableProps
 
 export const AnimatedButton = ({
@@ -47,6 +48,7 @@ export const AnimatedButton = ({
   style,
   wrapperStyle,
   haptics,
+  waitForAnimationFinish,
   ...pressableProps
 }: AnimatedButtonProps) => {
   const [iconIndex, setIconIndex] = useState<number>(externalIconIndex ?? 0)
@@ -76,6 +78,9 @@ export const AnimatedButton = ({
   }
 
   const handleAnimationFinish = useCallback(() => {
+    if (waitForAnimationFinish) {
+      onPress?.()
+    }
     if (hasMultipleStates) {
       setIconIndex(iconIndex => {
         // If externalIconIndex is provided,
@@ -89,6 +94,8 @@ export const AnimatedButton = ({
     }
     setIsPlaying(false)
   }, [
+    waitForAnimationFinish,
+    onPress,
     hasMultipleStates,
     setIconIndex,
     setIsPlaying,
@@ -105,15 +112,17 @@ export const AnimatedButton = ({
       setIsPlaying(true)
       animationRef.current?.play()
     }
-
-    onPress?.()
+    if (!waitForAnimationFinish) {
+      onPress?.()
+    }
   }, [
     haptics,
-    onPress,
     isActive,
     setIsPlaying,
     hasMultipleStates,
-    animationRef
+    animationRef,
+    waitForAnimationFinish,
+    onPress
   ])
 
   const handleLongPress = useCallback(() => {

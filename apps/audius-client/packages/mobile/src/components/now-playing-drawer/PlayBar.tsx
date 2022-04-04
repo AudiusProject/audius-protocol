@@ -8,24 +8,14 @@ import {
   saveTrack,
   unsaveTrack
 } from 'audius-client/src/common/store/social/tracks/actions'
-import {
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  View,
-  Dimensions
-} from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
 
 import { DynamicImage } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import { pause, play } from 'app/store/audio/actions'
-import { getPlaying } from 'app/store/audio/selectors'
-import { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
@@ -33,68 +23,66 @@ import { NOW_PLAYING_HEIGHT } from './constants'
 
 const SEEK_INTERVAL = 200
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    root: {
-      width: '100%',
-      height: 46,
-      alignItems: 'center'
-    },
-    container: {
-      height: '100%',
-      width: '100%',
-      paddingLeft: 12,
-      paddingRight: 12,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'flex-start'
-    },
-    button: {},
-    playIcon: {
-      width: 32,
-      height: 32
-    },
-    icon: {
-      width: 28,
-      height: 28
-    },
-    trackInfo: {
-      height: '100%',
-      flexShrink: 1,
-      flexGrow: 1,
-      alignItems: 'center',
-      flexDirection: 'row'
-    },
-    artwork: {
-      marginLeft: 12,
-      height: 26,
-      width: 26,
-      overflow: 'hidden',
-      backgroundColor: themeColors.neutralLight7,
-      borderRadius: 2
-    },
-    trackText: {
-      alignItems: 'center',
-      marginLeft: 12,
-      flexDirection: 'row'
-    },
-    title: {
-      color: themeColors.neutral,
-      maxWidth: Dimensions.get('window').width / 3,
-      fontSize: 12
-    },
-    separator: {
-      color: themeColors.neutral,
-      marginLeft: 4,
-      marginRight: 4,
-      fontSize: 16
-    },
-    artist: {
-      color: themeColors.neutral,
-      maxWidth: Dimensions.get('window').width / 4,
-      fontSize: 12
-    }
-  })
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  root: {
+    width: '100%',
+    height: 46,
+    alignItems: 'center'
+  },
+  container: {
+    height: '100%',
+    width: '100%',
+    paddingLeft: spacing(3),
+    paddingRight: spacing(3),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start'
+  },
+  playIcon: {
+    width: spacing(8),
+    height: spacing(8)
+  },
+  icon: {
+    width: 28,
+    height: 28
+  },
+  trackInfo: {
+    height: '100%',
+    flexShrink: 1,
+    flexGrow: 1,
+    alignItems: 'center',
+    flexDirection: 'row'
+  },
+  artwork: {
+    marginLeft: spacing(3),
+    height: 26,
+    width: 26,
+    overflow: 'hidden',
+    backgroundColor: palette.neutralLight7,
+    borderRadius: 2
+  },
+  trackText: {
+    alignItems: 'center',
+    marginLeft: spacing(3),
+    flexDirection: 'row'
+  },
+  title: {
+    color: palette.neutral,
+    maxWidth: Dimensions.get('window').width / 3,
+    fontSize: spacing(3)
+  },
+  separator: {
+    color: palette.neutral,
+    marginLeft: spacing(1),
+    marginRight: spacing(1),
+    fontSize: spacing(4)
+  },
+  artist: {
+    color: palette.neutral,
+    maxWidth: Dimensions.get('window').width / 4,
+    fontSize: spacing(3)
+  }
+}))
 
 type PlayBarProps = {
   track: Track
@@ -118,13 +106,11 @@ export const PlayBar = ({
   onPress,
   translationAnim
 }: PlayBarProps) => {
-  const styles = useThemedStyles(createStyles)
-  const dispatch = useDispatch()
+  const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
-
   const [percentComplete, setPercentComplete] = useState(0)
-
   const intervalRef = useRef<NodeJS.Timeout>()
+
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       const { currentTime, seekableDuration } = global.progress
@@ -141,27 +127,6 @@ export const PlayBar = ({
     }
   }, [setPercentComplete, intervalRef])
 
-  const isPlaying = useSelector(getPlaying)
-
-  const onPressPlayButton = useCallback(() => {
-    if (isPlaying) {
-      dispatch(pause())
-    } else {
-      dispatch(play())
-    }
-  }, [isPlaying, dispatch])
-
-  const renderPlayButton = () => {
-    return (
-      <PlayButton
-        onPress={onPressPlayButton}
-        iconIndex={isPlaying ? 1 : 0}
-        style={styles.button}
-        wrapperStyle={styles.playIcon}
-      />
-    )
-  }
-
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
       if (track.has_current_user_saved) {
@@ -177,7 +142,6 @@ export const PlayBar = ({
       <FavoriteButton
         onPress={onPressFavoriteButton}
         isActive={track?.has_current_user_saved ?? false}
-        style={styles.button}
         wrapperStyle={styles.icon}
       />
     )
@@ -228,7 +192,7 @@ export const PlayBar = ({
             </Text>
           </View>
         </TouchableOpacity>
-        {renderPlayButton()}
+        <PlayButton wrapperStyle={styles.playIcon} />
       </View>
     </Animated.View>
   )
