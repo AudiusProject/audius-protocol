@@ -29,9 +29,9 @@ pub fn get_secp_instructions(
     let mut secp_instructions: Vec<(Instruction, u16)> = Vec::new();
 
     for ind in 0..index_current_instruction {
-        let instruction = sysvar::instructions::load_instruction_at(
+        let instruction = sysvar::instructions::load_instruction_at_checked(
             ind as usize,
-            &instruction_info.data.borrow(),
+            &instruction_info,
         )
         .map_err(to_audius_program_error)?;
 
@@ -239,12 +239,7 @@ pub fn validate_secp_add_delete_sender(
     new_sender: EthereumAddress,
     message_prefix: &str,
 ) -> ProgramResult {
-    // Ensure that `instructions_info` is indeed the instructions sysvar
-    if !sysvar::instructions::check_id(&instruction_info.key) {
-        return Err(AudiusProgramError::InstructionLoadError.into());
-    }
-
-    let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+    let index = sysvar::instructions::load_current_index_checked(&instruction_info).map_err(to_audius_program_error)?;
     // Instruction can't be first in transaction
     // because must follow after `new_secp256k1_instruction`
     if index == 0 {
@@ -291,12 +286,7 @@ pub fn validate_secp_submit_attestation(
     instruction_info: &AccountInfo,
     expected_signer: &EthereumAddress,
 ) -> Result<VoteMessage, ProgramError> {
-    // Ensure that `instructions_info` is indeed the instructions sysvar
-    if !sysvar::instructions::check_id(&instruction_info.key) {
-        return Err(AudiusProgramError::InstructionLoadError.into());
-    }
-
-    let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+    let index = sysvar::instructions::load_current_index_checked(&instruction_info).map_err(to_audius_program_error)?;
 
     // Instruction can't be first in transaction
     // because must follow after `new_secp256k1_instruction`
@@ -306,9 +296,9 @@ pub fn validate_secp_submit_attestation(
 
     let secp_index = index - 1;
     // Load previous instruction
-    let secp_instruction = sysvar::instructions::load_instruction_at(
+    let secp_instruction = sysvar::instructions::load_instruction_at_checked(
         secp_index as usize,
-        &instruction_info.data.borrow(),
+        &instruction_info,
     )
     .map_err(to_audius_program_error)?;
 
