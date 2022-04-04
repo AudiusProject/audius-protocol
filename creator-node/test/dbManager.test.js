@@ -656,7 +656,6 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     server = appInfo.server
     app = appInfo.app
-    mockServiceRegistry = appInfo.mockServiceRegistry
   })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */

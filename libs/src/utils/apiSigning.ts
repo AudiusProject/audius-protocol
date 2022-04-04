@@ -10,7 +10,7 @@ interface WalletResponse {
  * Recover the public wallet address given the response contains the signature and timestamp
  * @param {object} response entire service provider response (not axios)
  */
-export function recoverWallet (web3: Web3, response: WalletResponse) {
+export function recoverWallet(web3: Web3, response: WalletResponse) {
   let recoveredDelegateWallet = null
 
   const dataForRecovery = JSON.parse(JSON.stringify(response))
@@ -19,7 +19,10 @@ export function recoverWallet (web3: Web3, response: WalletResponse) {
 
   try {
     const hashedData = web3.utils.keccak256(dataForRecoveryStr)
-    recoveredDelegateWallet = web3.eth.accounts.recover(hashedData, response.signature)
+    recoveredDelegateWallet = web3.eth.accounts.recover(
+      hashedData,
+      response.signature
+    )
 
     assert.strictEqual(response.signer, recoveredDelegateWallet)
   } catch (e) {
@@ -35,8 +38,14 @@ type SortObject = ValueOrArray<Record<string, string>>
 /**
  * Recursively sorts object keys alphabetically
  */
-export function sortObjectKeys (x: SortObject): SortObject {
-  if (typeof x !== 'object' || !x) { return x }
-  if (Array.isArray(x)) { return x.map(sortObjectKeys) }
-  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortObjectKeys(x[k]) }), {})
+export function sortObjectKeys(x: SortObject): SortObject {
+  if (typeof x !== 'object' || !x) {
+    return x
+  }
+  if (Array.isArray(x)) {
+    return x.map(sortObjectKeys)
+  }
+  return Object.keys(x)
+    .sort()
+    .reduce((o, k) => ({ ...o, [k]: sortObjectKeys(x[k]) }), {})
 }

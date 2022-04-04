@@ -89,7 +89,6 @@ describe('test Polling Tracks with mocks', function () {
 
     app = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId, userWallet)
 
     // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
@@ -831,7 +830,6 @@ describe('test Polling Tracks with real files', function () {
 
     app2 = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId)
 
     handleTrackContentRoute =
@@ -1043,9 +1041,8 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(trackMetadata)
       .expect(200)
-    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
-
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    
     // Complete track creation
     await request(app2)
       .post('/tracks')
@@ -1097,8 +1094,7 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(trackMetadata)
       .expect(200)
-    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
     // Upload track 2 metadata
     const track2Metadata = {
@@ -1114,7 +1110,6 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(track2Metadata)
       .expect(200)
-    track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
     track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
 
     // Complete track1 creation

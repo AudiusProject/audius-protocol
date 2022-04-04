@@ -24,5 +24,16 @@
 
     "mocha/no-mocha-arrows": "off",
     "mocha/max-top-level-suites": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": "**/*.ts",
+      "extends": [
+        "plugin:prettier/recommended"
+      ],
+      "plugins": [
+        "prettier"
+      ]
+    }
+  ]
 }
