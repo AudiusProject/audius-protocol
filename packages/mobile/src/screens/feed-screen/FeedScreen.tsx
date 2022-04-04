@@ -9,12 +9,14 @@ import {
 } from 'audius-client/src/common/store/pages/feed/selectors'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { isEqual, omit } from 'lodash'
+import { useSelector } from 'react-redux'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 import { make, track } from 'app/utils/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
@@ -31,6 +33,7 @@ export const FeedScreen = () => {
     const omitUneeded = o => omit(o, ['inView'])
     return isEqual(omitUneeded(a), omitUneeded(b))
   })
+  const signedIn = useSelector(getIsSignedIn)
   const feedFilter = useSelectorWeb(getFeedFilter)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -72,7 +75,7 @@ export const FeedScreen = () => {
         loadMore={loadMore}
         refresh={handleRefresh}
         refreshing={isRefreshing}
-        selfLoad
+        selfLoad={!!signedIn}
         showsVerticalScrollIndicator={false}
       />
     </Screen>
