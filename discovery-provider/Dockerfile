@@ -105,4 +105,3 @@ ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
 RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 
 CMD ["bash", "scripts/start.sh"]
-# CMD ["/bin/bash"]
