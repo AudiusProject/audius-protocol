@@ -3,7 +3,7 @@
     "baseUrl": "./src",
     "pretty": true,
     "target": "es2020",
-    "module": "es2020",
+    "module": "commonjs",
     "lib": [
       "es2020"
     ],

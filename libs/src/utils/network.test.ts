@@ -3,16 +3,18 @@ import nock from 'nock'
 
 import { timeRequests } from './network'
 
-const setupRequest = (url: string, delay: number, version: string, status = 200) => {
+const setupRequest = (
+  url: string,
+  delay: number,
+  version: string,
+  status = 200
+) => {
   const req = { url }
-  nock(req.url)
-    .get('/')
-    .delay(delay)
-    .reply(status, {
-      data: {
-        version
-      }
-    })
+  nock(req.url).get('/').delay(delay).reply(status, {
+    data: {
+      version
+    }
+  })
   return req
 }
 
@@ -82,7 +84,7 @@ describe('timeRequests()', () => {
         sortByVersion: true,
         equivalencyDelta: 50
       })
-      allResults.push(res.map(r => r.request.url).join(''))
+      allResults.push(res.map((r) => r.request.url).join(''))
 
       // Ensure that each round of testing separates by cohors
       assert(res[0]?.request.url.startsWith('https://cohort1'))
@@ -99,7 +101,7 @@ describe('timeRequests()', () => {
     }
 
     // Make sure there is some variance
-    assert(!allResults.every(val => val === allResults[0]))
+    assert(!allResults.every((val) => val === allResults[0]))
   }).timeout(10000)
 
   it('filterNonResponsive = true', async () => {

@@ -3,7 +3,10 @@
 const GAS_LIMIT_MULTIPLIER = 1.05
 
 interface ContractMethod {
-  estimateGas: (config: {from: string | undefined, gas: number | undefined}) => number
+  estimateGas: (config: {
+    from: string | undefined
+    gas: number | undefined
+  }) => number
   _method: {
     name: string
   }
@@ -14,7 +17,6 @@ interface EstimateGasConfig {
   from?: string
   gasLimitMaximum?: number
   multiplier?: number
-
 }
 
 /**
@@ -33,13 +35,20 @@ export const estimateGas = async ({
   multiplier = GAS_LIMIT_MULTIPLIER
 }: EstimateGasConfig) => {
   try {
-    const estimatedGas = await method.estimateGas({ from, gas: gasLimitMaximum })
+    const estimatedGas = await method.estimateGas({
+      from,
+      gas: gasLimitMaximum
+    })
     // Rounding is necessary here as fractional gas limits will break
     const safeEstimatedGas = Math.ceil(estimatedGas * multiplier)
-    console.info(`Estimated gas limit ${safeEstimatedGas} for method ${method._method.name}`)
+    console.info(
+      `Estimated gas limit ${safeEstimatedGas} for method ${method._method.name}`
+    )
     return safeEstimatedGas
   } catch (e) {
-    console.error(`Unable to estimate gas for transaction ${method._method.name}, using ${gasLimitMaximum}`)
+    console.error(
+      `Unable to estimate gas for transaction ${method._method.name}, using ${gasLimitMaximum}`
+    )
     return gasLimitMaximum
   }
 }
