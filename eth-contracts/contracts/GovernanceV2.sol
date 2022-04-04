@@ -7,6 +7,7 @@ import "./DelegateManagerV2.sol";
 import "./registry/Registry.sol";
 import "./InitializableV2.sol";
 
+
 /**
  * This contract is identical to Governance.sol with the following differences:
  * - Uses DelegateManagerV2.sol instead of DelegateManager.sol
