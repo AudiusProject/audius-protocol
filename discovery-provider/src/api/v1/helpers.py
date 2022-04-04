@@ -404,7 +404,7 @@ class DescriptiveArgument(reqparse.Argument):
 
 current_user_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 current_user_parser.add_argument(
-    "user_id", required=False, help="The user ID of the user making the request"
+    "user_id", required=False, description="The user ID of the user making the request"
 )
 
 

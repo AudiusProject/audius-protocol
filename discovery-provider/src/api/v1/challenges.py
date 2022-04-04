@@ -2,10 +2,12 @@ import logging
 
 from flask_restx import Namespace, Resource, abort, fields, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     decode_with_abort,
     extend_undisbursed_challenge,
     get_current_user_id,
     make_response,
+    pagination_parser,
     success_response,
 )
 from src.api.v1.models.challenges import (
@@ -32,18 +34,40 @@ attestation_response = make_response(
 
 attest_route = "/<string:challenge_id>/attest"
 
-attest_parser = reqparse.RequestParser()
-attest_parser.add_argument("user_id", required=True)
-attest_parser.add_argument("oracle", required=True)
-attest_parser.add_argument("specifier", required=True)
+attest_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+attest_parser.add_argument(
+    "oracle",
+    required=True,
+    description="The address of a valid, registered Anti-Abuse Oracle",
+)
+attest_parser.add_argument(
+    "specifier",
+    required=True,
+    description="The specifier of the user challenge requiring the attestation",
+)
+attest_parser.add_argument(
+    "user_id",
+    required=True,
+    description="The user ID of the user challenge requiring the attestation",
+)
 
 
 @ns.route(attest_route)
 class Attest(Resource):
-    """Produces an attestation that a given user has completed a challenge, or errors."""
-
-    @ns.marshal_with(attestation_response)
+    @ns.doc(
+        id="Get Challenge Attestation",
+        description="Produces an attestation that a given user has completed a challenge, or errors.",
+        params={
+            "challenge_id": "The challenge ID of the user challenge requiring the attestation"
+        },
+        responses={
+            200: "Success",
+            400: "The attestation request was invalid (eg. The user didn't complete that challenge yet)",
+            500: "Server error",
+        },
+    )
     @ns.expect(attest_parser)
+    @ns.marshal_with(attestation_response)
     @cache(ttl_sec=5)
     def get(self, challenge_id: str):
         args = attest_parser.parse_args(strict=True)
@@ -72,14 +96,17 @@ class Attest(Resource):
 
 undisbursed_route = "/undisbursed"
 
-get_undisbursed_challenges_route_parser = reqparse.RequestParser()
-get_undisbursed_challenges_route_parser.add_argument("limit", required=False, type=int)
-get_undisbursed_challenges_route_parser.add_argument("offset", required=False, type=int)
+get_undisbursed_challenges_route_parser = pagination_parser.copy()
 get_undisbursed_challenges_route_parser.add_argument(
-    "completed_blocknumber", required=False, type=int
+    "user_id",
+    required=False,
+    description="A User ID to filter the undisbursed challenges to a particular user",
 )
 get_undisbursed_challenges_route_parser.add_argument(
-    "user_id", required=False, type=str
+    "completed_blocknumber",
+    required=False,
+    type=int,
+    description="Starting blocknumber to retrieve completed undisbursed challenges",
 )
 
 get_challenges_response = make_response(
@@ -90,13 +117,11 @@ get_challenges_response = make_response(
 @ns.route(undisbursed_route)
 class GetUndisbursedChallenges(Resource):
     @ns.doc(
-        params={
-            "limit": "The maximum number of response challenges",
-            "offset": "The number of challenges to intially skip in the query",
-            "completed_blocknumber": "Starting blocknumber to retrieve completed undisbursed challenges",
-        },
+        id="""Get Undisbursed Challenges""",
+        description="""Get all undisbursed challenges""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.expect(get_undisbursed_challenges_route_parser)
     @ns.marshal_with(get_challenges_response)
     @cache(ttl_sec=5)
     def get(self):
@@ -122,8 +147,12 @@ class GetUndisbursedChallenges(Resource):
 
 create_sender_attest_route = "/attest_sender"
 
-create_sender_attest_parser = reqparse.RequestParser()
-create_sender_attest_parser.add_argument("sender_eth_address", required=True)
+create_sender_attest_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+create_sender_attest_parser.add_argument(
+    "sender_eth_address",
+    required=True,
+    description="The address of the discovery node to attest for",
+)
 
 create_sender_attestation_response = make_response(
     "attestation_response", ns, fields.Nested(create_sender_attestation)
@@ -132,21 +161,19 @@ create_sender_attestation_response = make_response(
 
 @ns.route(create_sender_attest_route)
 class CreateSenderAttestation(Resource):
-    """
-    Produces an attestation that a specified discovery node is a
-    validated on-chain discovery node that can be used to sign challenges.
-    """
-
     @ns.doc(
-        params={
-            "sender_eth_address": "The address of the discovery node to attest to",
-        },
+        id="""Get Create Sender Attestation""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(create_sender_attestation_response)
     @ns.expect(create_sender_attest_parser)
+    @ns.marshal_with(create_sender_attestation_response)
     @cache(ttl_sec=5)
     def get(self):
+        """
+        Creates an attestation for a discovery node that it can attest for challenges.
+
+        Produces an attestation that a specified discovery node is a validated, on-chain discovery node that can be used to sign challenges.
+        """
         args = create_sender_attest_parser.parse_args(strict=True)
         sender_eth_address = args["sender_eth_address"]
         try:
