@@ -30,11 +30,11 @@ interface Decision {
   val?: unknown
 }
 
-interface ServiceSelectionConfig {
+export interface ServiceSelectionConfig {
   // services from this list should not be picked
-  blacklist?: Set<string> | undefined
+  blacklist?: Set<string> | undefined | null
   // only services from this list are allowed to be picked
-  whitelist?: Set<string> | undefined
+  whitelist?: Set<string> | undefined | null
   /*
    * an (async) method to get a
    * list of services to choose from. Optionally may return a verbose object with service metadata
@@ -87,8 +87,8 @@ interface ServiceSelectionConfig {
  * of them and is generally how this class is intended to be used.
  */
 export class ServiceSelection {
-  blacklist: Set<string> | undefined
-  whitelist: Set<string> | undefined
+  blacklist: Set<string> | undefined | null
+  whitelist: Set<string> | undefined | null
   getServices: GetServices
   maxConcurrentRequests: number
   requestTimeout: number

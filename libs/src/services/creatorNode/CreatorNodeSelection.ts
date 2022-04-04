@@ -1,7 +1,10 @@
 import type { AxiosResponse } from 'axios'
 import _ from 'lodash'
 
-import { ServiceSelection } from '../../service-selection'
+import {
+  ServiceSelection,
+  ServiceSelectionConfig
+} from '../../service-selection'
 import {
   timeRequests,
   sortServiceTimings,
@@ -51,12 +54,13 @@ type EthContracts = {
   isInRegressedMode: () => boolean
 }
 
-type CreatorNodeSelectionConfig = {
+type CreatorNodeSelectionConfig = Omit<
+  ServiceSelectionConfig,
+  'getServices'
+> & {
   creatorNode: CreatorNode
   numberOfNodes: number
   ethContracts: EthContracts
-  whitelist?: Set<string> | null
-  blacklist?: Set<string> | null
   maxStorageUsedPercent?: number
   timeout?: Timeout
   equivalencyDelta?: number | null
@@ -275,6 +279,7 @@ export class CreatorNodeSelection extends ServiceSelection {
    */
   getPrimary(services: string[]) {
     // Index 0 of services will be the most optimal Content Node candidate
+    // TODO: fix `as` cast
     return services[0] as string
   }
 
@@ -435,8 +440,7 @@ export class CreatorNodeSelection extends ServiceSelection {
             this.creatorNode.monitoringCallbacks.healthCheck({
               endpoint: url.origin,
               pathname: url.pathname,
-              // @ts-expect-error TODO: this is probably a bug since URL doesn't contain queryrString
-              queryString: url.queryrString,
+              searchParams: url.searchParams,
               version: data.version,
               git: data.git,
               selectedDiscoveryNode: data.selectedDiscoveryProvider,
