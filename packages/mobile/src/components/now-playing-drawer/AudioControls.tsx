@@ -4,19 +4,17 @@ import { getRepeat, getShuffle } from 'common/store/queue/selectors'
 import { shuffle, repeat } from 'common/store/queue/slice'
 import { RepeatMode } from 'common/store/queue/types'
 import { Animated, View, StyleSheet } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import IconNext from 'app/assets/images/iconNext.svg'
 import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
 import IconPodcastForward from 'app/assets/images/iconPodcastForward.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
 import { IconButton } from 'app/components/core'
-import * as haptics from 'app/haptics'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { pause, play } from 'app/store/audio/actions'
 import { getPlaying } from 'app/store/audio/selectors'
 import { ThemeColors } from 'app/utils/theme'
 
@@ -63,7 +61,6 @@ export const AudioControls = ({
   onPrevious,
   isPodcast = false
 }: AudioControlsProps) => {
-  const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
 
   const styles = useThemedStyles(createStyles)
@@ -77,15 +74,6 @@ export const AudioControls = ({
     handlePressIn: handlePressInScale,
     handlePressOut: handlePressOutScale
   } = usePressScaleAnimation()
-
-  const onPressPlayButton = useCallback(() => {
-    haptics.light()
-    if (isPlaying) {
-      dispatch(pause())
-    } else {
-      dispatch(play())
-    }
-  }, [isPlaying, dispatch])
 
   const onPressShuffle = useCallback(() => {
     let enable: boolean
@@ -136,7 +124,6 @@ export const AudioControls = ({
       <Animated.View style={{ transform: [{ scale }] }}>
         <PlayButton
           iconIndex={isPlaying ? 1 : 0}
-          onPress={onPressPlayButton}
           onPressIn={handlePressInScale}
           onPressOut={handlePressOutScale}
           style={styles.button}
