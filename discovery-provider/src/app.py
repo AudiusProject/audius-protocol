@@ -36,8 +36,8 @@ from src.queries import (
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
+from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
-from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
@@ -529,8 +529,8 @@ def configure_celery(celery, test_config=None):
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
 
-    # Initialize IPFS client for celery task context
-    ipfs_client = IPFSClient(
+    # Initialize CIDMetadataClient for celery task context
+    cid_metadata_client = CIDMetadataClient(
         eth_web3,
         shared_config,
         redis_inst,
@@ -573,7 +573,7 @@ def configure_celery(celery, test_config=None):
                 abi_values=abi_values,
                 eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
-                ipfs_client=ipfs_client,
+                cid_metadata_client=cid_metadata_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
                 solana_client_manager=solana_client_manager,
