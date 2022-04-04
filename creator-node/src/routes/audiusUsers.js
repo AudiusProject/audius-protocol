@@ -2,7 +2,6 @@ const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
 const { promisify } = require('util')
 
-const config = require('../config.js')
 const models = require('../models')
 const { saveFileFromBufferToDisk } = require('../fileManager')
 const {
@@ -47,7 +46,7 @@ module.exports = function (app) {
       let multihash, dstPath
       try {
         const resp = await saveFileFromBufferToDisk(req, metadataBuffer)
-        multihash = resp.multihash
+        multihash = resp.cid
         dstPath = resp.dstPath
       } catch (e) {
         return errorResponseServerError(

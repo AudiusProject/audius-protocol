@@ -8,7 +8,7 @@ const {
 const { getSegmentsDuration } = require('../../segmentDuration')
 
 const models = require('../../models')
-const ipfsAdd = require('./../../ipfsAdd')
+const fileHasher = require('../../fileHasher')
 const DBManager = require('../../dbManager')
 const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')
@@ -66,7 +66,7 @@ class TrackContentUploadManager {
   // Helper methods for TrackContentUploadManager
 
   /**
-   * 1. Batch saves the transcode and segments to IPFS and to local dir
+   * 1. Batch saves the transcode and segments to local dir
    * 2. Fetches segment duration to build a map of <segment CID: duration>
    * 3. Adds transcode and segments to DB in Files table
    * 4. Removes the upload artifacts after successful processing
@@ -102,7 +102,7 @@ class TrackContentUploadManager {
 
     let codeBlockTimeStart = getStartTime()
     const { segmentFileIPFSResps, transcodeFileIPFSResp } =
-      await batchSaveFileToIPFSAndCopyFromFS({
+      await batchSaveFilesToDisk({
         fileDir,
         logContext,
         transcodeFilePath,
@@ -110,7 +110,7 @@ class TrackContentUploadManager {
       })
     logInfoWithDuration(
       { logger, startTime: codeBlockTimeStart },
-      `Successfully saved transcode and segment files to IPFS for file=${fileName}`
+      `Successfully saved transcode and segment files to local file storage for file=${fileName}`
     )
 
     // Retrieve all segment durations as map(segment srcFilePath => segment duration)
@@ -269,15 +269,16 @@ function createSegmentToDurationMap({
  * @param {string} batchParams.segmentFilePaths the segments path
  * @returns an object of array of segment multihashes, src paths, and dest paths and transcode multihash and path
  */
-async function batchSaveFileToIPFSAndCopyFromFS({
+async function batchSaveFilesToDisk({
   fileDir,
   logContext,
   transcodeFilePath,
   segmentFileNames
 }) {
-  const multihash = await ipfsAdd.generateNonImageMultihash(transcodeFilePath, {
-    logContext
-  })
+  const multihash = await fileHasher.generateNonImageMultihash(
+    transcodeFilePath,
+    { logContext }
+  )
   const dstPath = await FileManager.copyMultihashToFs(
     multihash,
     transcodeFilePath,
@@ -303,7 +304,7 @@ async function batchSaveFileToIPFSAndCopyFromFS({
           'segments',
           segmentFileName
         )
-        const multihash = await ipfsAdd.generateNonImageMultihash(
+        const multihash = await fileHasher.generateNonImageMultihash(
           segmentAbsolutePath,
           { logContext }
         )

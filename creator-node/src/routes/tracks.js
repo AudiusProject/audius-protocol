@@ -27,7 +27,7 @@ const {
 } = require('../middlewares')
 
 const { getCID } = require('./files')
-const { decode } = require('../hashids.js')
+const { decode } = require('../hashids')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
@@ -142,7 +142,7 @@ module.exports = function (app) {
       let multihash, dstPath
       try {
         const resp = await saveFileFromBufferToDisk(req, metadataBuffer)
-        multihash = resp.multihash
+        multihash = resp.cid
         dstPath = resp.dstPath
       } catch (e) {
         return errorResponseServerError(

@@ -2,6 +2,7 @@ import logging
 
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_path_param,
     abort_bad_request_param,
     format_limit,
@@ -336,18 +337,30 @@ class AppNameListMetrics(Resource):
 
 
 valid_trailing_time_periods = ["week", "month", "all_time"]
-trailing_app_name_parser = reqparse.RequestParser()
-trailing_app_name_parser.add_argument("limit", required=False, type=int)
+trailing_app_name_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+trailing_app_name_parser.add_argument(
+    "limit", required=False, type=int, description="The number of apps to get"
+)
+trailing_app_name_parser.add_argument(
+    "time_range",
+    required=False,
+    type=str,
+    choices=valid_trailing_time_periods,
+    location="path",
+    description="The trailing time period",
+)
 
 
 @ns.route("/app_name/trailing/<string:time_range>")
+@ns.expect(trailing_app_name_parser)
 class TrailingAppNameMetrics(Resource):
+    @ns.doc(
+        id="""Get Trailing App Name Metrics""",
+        description="""Gets the trailing app name metrics""",
+    )
     @ns.marshal_with(app_name_trailing_response)
     @cache(ttl_sec=3 * 60 * 60)
     def get(self, time_range):
-        """Gets trailing app name metrics from matview"""
-        if time_range not in valid_trailing_time_periods:
-            abort_bad_request_param("time_range", ns)
         parsed = trailing_app_name_parser.parse_args()
         args = {"limit": parsed.get("limit", 10), "time_range": time_range}
         metrics = get_trailing_app_metrics(args)
