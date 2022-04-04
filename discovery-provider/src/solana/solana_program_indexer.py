@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
@@ -8,9 +8,7 @@ from src.solana.constants import (
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
-from src.solana.solana_transaction_types import (
-    TransactionInfoResult
-)
+from src.solana.solana_transaction_types import TransactionInfoResult
 
 logger = logging.getLogger(__name__)
 

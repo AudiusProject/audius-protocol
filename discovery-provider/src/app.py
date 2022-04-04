@@ -33,8 +33,8 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
-from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.anchor_program_indexer import AnchorDataIndexer
+from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
 from src.utils.config import ConfigIni, config_files, shared_config

@@ -1,17 +1,15 @@
-import logging
 import asyncio
+import logging
 from typing import Any
 
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
-
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.utils.helpers import split_list
 
 logger = logging.getLogger(__name__)
 
 BASE_ERROR = "Must be implemented in subclass"
-
 TX_SIGNATURES_PROCESSING_SIZE = 100
 
 
