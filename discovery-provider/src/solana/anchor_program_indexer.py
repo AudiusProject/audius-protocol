@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 BASE_ERROR = "Must be implemented in subclass"
 TX_SIGNATURES_PROCESSING_SIZE = 100
-AUDIUS_DATA_IDL_PATH = f"./idl/audius_data.json"
+AUDIUS_DATA_IDL_PATH = "./idl/audius_data.json"
 
 
 class AnchorDataIndexer(SolanaProgramIndexer):
