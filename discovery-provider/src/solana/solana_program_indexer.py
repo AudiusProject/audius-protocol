@@ -56,8 +56,7 @@ class IndexerBase(ABC):
         self.msg("UNIMPLEMENTED IN BASE CLASS")
 
     def msg(self, msg: str):
-        # DO NOT MERGE AS ERROR
-        logger.error(f"{self._label} | {msg}")
+        logger.info(f"{self._label} | {msg}")
 
 
 class SolanaProgramIndexer(IndexerBase):
