@@ -78,6 +78,9 @@ export const RootScreen = () => {
   const onSignUp = useSelector(getOnSignUp)
   const isAccountAvailable = useSelector(getAccountAvailable)
 
+  // This check is overly complicated and should probably just check `signedIn`.
+  // However, this allows the feed screen to load initially so that when the
+  // splash screen disappears there is already content (skeletons) on the screen
   const isAuthed =
     !dappLoaded ||
     signedIn === null ||

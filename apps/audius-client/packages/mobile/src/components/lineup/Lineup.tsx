@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
@@ -12,7 +12,6 @@ import {
   View
 } from 'react-native'
 import { useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 import { SectionList } from 'app/components/core'
 import {
@@ -195,11 +194,11 @@ export const Lineup = ({
     limit
   ])
 
-  useEffectOnce(() => {
+  useEffect(() => {
     if (selfLoad) {
       handleLoadMore()
     }
-  })
+  }, [handleLoadMore, selfLoad])
 
   const togglePlay = useCallback(
     (uid: UID, id: ID, source: PlaybackSource) => {
