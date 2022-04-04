@@ -31,6 +31,7 @@ class Account extends Base {
     this.searchTags = this.searchTags.bind(this)
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
+    this.checkAccountExistsOnSol = this.checkAccountExistsOnSol.bind(this)
   }
 
   /**
@@ -593,6 +594,23 @@ class Account extends Base {
       [AuthHeaders.MESSAGE]: message,
       [AuthHeaders.SIGNATURE]: signature
     })
+  }
+
+  async checkAccountExistsOnSol () {
+    this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
+
+    const handleUtf8 = this.solanaWeb3Manager.encodeUtf8(this.getCurrentUser().handle)
+    const handleBuffer = Buffer.from(handleUtf8)
+
+    const {
+      baseAuthorityAccount,
+      bumpSeed,
+      derivedAddress: newUserAcctPDA
+    } = await this.solanaWeb3Manager.findDerivedPair(
+      this.solanaWeb3Manager.programId,
+      this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
+      handleBuffer
+    )
   }
 }
 

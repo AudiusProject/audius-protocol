@@ -1,5 +1,7 @@
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
+const anchor = require('@project-serum/anchor')
+
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
 const {
@@ -15,6 +17,7 @@ const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSend
 const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
+const { SystemProgram } = anchor.web3
 
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
@@ -93,7 +96,9 @@ class SolanaWeb3Manager {
       rewardsManagerTokenPDA,
       useRelay,
       feePayerKeypairs,
-      confirmationTimeout
+      confirmationTimeout,
+      anchorProgramId,
+      anchorAdminStorageKeypairPublicKey
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
@@ -130,6 +135,18 @@ class SolanaWeb3Manager {
     this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
+    this.anchorProgramId = anchorProgramId
+    this.anchorAdminStorageKeypairPublicKey = anchorAdminStorageKeypairPublicKey
+
+    const provider = anchor.Provider.local(this.solanaClusterEndpoint, {
+      preflightCommitment: 'confirmed',
+      commitment: 'confirmed'
+    })
+    anchor.setProvider(provider)
+
+    // TODO: ?? not sure
+    this.program = anchor.workspace.AudiusData
+    this.programId = anchor.workspace.AudiusData.programId
   }
 
   /**
@@ -487,6 +504,65 @@ class SolanaWeb3Manager {
 
     const res = await this.connection.getAccountInfo(derivedSenderSolanaAddress)
     return !!res
+  }
+
+  async findProgramAddress (programId, pubkey) {
+    return PublicKey.findProgramAddress(
+      [pubkey.toBytes().slice(0, 32)],
+      programId
+    )
+  }
+
+  /**
+   * Finds a 'derived' address by finding a programAddress with
+   * seeds array  as first 32 bytes of base + seeds
+   * Returns [derivedAddress, bumpSeed]
+   * @param {string} programId
+   * @param {string} base
+   * @param {string} seed
+   * @returns the program address
+   */
+  async findDerivedAddress (programId, base, seed) {
+    return PublicKey.findProgramAddress(
+      [base.toBytes().slice(0, 32), seed],
+      programId
+    )
+  }
+
+  // Finds the target PDA with the base audius admin as the initial seed
+  // In conjunction with the secondary seed as the users handle in bytes
+
+  /**
+   * Finds the target PDA with the base audius admin as the initial seed
+   * In conjunction with the secondary seed as the users handle in bytes
+   * @param {string} programId
+   * @param {string} adminAccount
+   * @param {string} seed
+   */
+  async findDerivedPair (programId, adminAccount, seed) {
+    const [baseAuthorityAccount] = await this.findProgramAddress(
+      programId,
+      adminAccount
+    )
+    const derivedAddresInfo = await this.findDerivedAddress(
+      programId,
+      baseAuthorityAccount,
+      seed
+    )
+
+    const derivedAddress = derivedAddresInfo.result[0]
+    const bumpSeed = derivedAddresInfo.result[1]
+
+    return { baseAuthorityAccount, derivedAddress, bumpSeed }
+  }
+
+  /**
+   * Encodes and returns the utf8 encoding for the inpiut
+   * @param {string} input
+   * @returns the utf8 encoded input
+   */
+  encodeUtf8 (input) {
+    return anchor.utils.bytes.utf8.encode(input)
   }
 }
 
