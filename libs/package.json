@@ -45,6 +45,8 @@
     "ethers": "5.4.7",
     "form-data": "3.0.0",
     "hashids": "2.2.10",
+    "interface-blockstore": "^2.0.3",
+    "interface-store": "^2.0.2",
     "ipfs-unixfs-importer": "^9.0.6",
     "jsonschema": "1.2.6",
     "keccak256": "1.0.2",
