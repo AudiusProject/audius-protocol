@@ -58,7 +58,6 @@ urllib3==1.26.3
 websockets==10.1
 # Anchor support
 anchorpy==0.8.0
-pyheck==0.1.5
 
 # Test
 pytest-mock==3.6.1
