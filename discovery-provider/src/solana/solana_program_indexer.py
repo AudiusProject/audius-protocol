@@ -119,10 +119,10 @@ class SolanaProgramIndexer(IndexerBase):
 
     @abstractmethod
     async def fetch_ipfs_metadata(self, parsed_transactions):
-        '''
+        """
         Fetch all metadata objects in parallel (if required). Certain indexing tasks will not require this step and can skip appropriately
         @param parsed_transactions: Array of transactions containing deserialized information, ideally pointing to a metadata object
-        '''
+        """
         return {}
 
     async def process_txs_batch(self, tx_sig_batch_records):
@@ -130,13 +130,9 @@ class SolanaProgramIndexer(IndexerBase):
         futures = []
         tx_sig_futures_map: Dict[str, Dict] = {}
         for tx_sig in tx_sig_batch_records:
-            future = asyncio.ensure_future(
-                self.parse_tx(tx_sig)
-            )
+            future = asyncio.ensure_future(self.parse_tx(tx_sig))
             futures.append(future)
-        for future in asyncio.as_completed(
-            futures, timeout=100000
-        ):
+        for future in asyncio.as_completed(futures, timeout=100000):
             try:
                 future_result = await future
                 self.msg(f"{future_result}")
@@ -153,10 +149,14 @@ class SolanaProgramIndexer(IndexerBase):
         # Fetch metadata in parallel
         metadata_dictionary = self.fetch_ipfs_metadata(parsed_transactions)
 
-        self.validate_and_save_parsed_tx_records(parsed_transactions, metadata_dictionary)
+        self.validate_and_save_parsed_tx_records(
+            parsed_transactions, metadata_dictionary
+        )
 
     @abstractmethod
-    def validate_and_save_parsed_tx_records(self, parsed_transactions, metadata_dictionary):
+    def validate_and_save_parsed_tx_records(
+        self, parsed_transactions, metadata_dictionary
+    ):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
         @param parsed_transactions: Array of transaction signatures in order
@@ -201,9 +201,7 @@ class SolanaProgramIndexer(IndexerBase):
                 # This is considered an 'intersection' since there are no further transactions to process but
                 # really represents the end of known history for this ProgramId
                 intersection_found = True
-                self.msg(
-                    f"No transactions found before {last_tx_signature}"
-                )
+                self.msg(f"No transactions found before {last_tx_signature}")
             else:
                 with self._db.scoped_session() as read_session:
                     for tx in transactions_array:

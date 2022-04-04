@@ -47,14 +47,20 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         self.msg(f"returning {latest_slot} for highest slot")
         return latest_slot
 
-    def validate_and_save_parsed_tx_records(self, processed_transactions, metadata_dictionary):
-        self.msg(f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}")
+    def validate_and_save_parsed_tx_records(
+        self, processed_transactions, metadata_dictionary
+    ):
+        self.msg(
+            f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
+        )
         with self._db.scoped_session() as session:
             for transaction in processed_transactions:
-                session.add(AudiusDataTx(
-                    signature=transaction["tx_sig"],
-                    slot=transaction["result"]["slot"]
-                ))
+                session.add(
+                    AudiusDataTx(
+                        signature=transaction["tx_sig"],
+                        slot=transaction["result"]["slot"],
+                    )
+                )
 
     # TODO - This is where we will deserialize instruction data and accounts
     # tx_metadata should contain TxType, Deserialized Instruction Data, etc
