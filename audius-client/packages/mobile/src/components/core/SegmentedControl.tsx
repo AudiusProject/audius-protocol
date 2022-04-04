@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useRef } from 'react'
+import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 
 import {
   Animated,
@@ -118,7 +118,8 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
     styles: stylesProp
   } = props
   const styles = useStyles()
-  const optionWidths = useRef<Array<number>>(options.map(() => 0))
+  const [optionWidths, setOptionWidths] = useState(options.map(() => 0))
+  const [initLeft, setInitLeft] = useState(false)
   const leftAnim = useRef(new Animated.Value(0)).current
   const widthAnim = useRef(new Animated.Value(0)).current
   const [selected, setSelected] = useState(defaultSelected)
@@ -130,18 +131,33 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
     setSelected(option)
   }
 
+  const getLeftValue = useCallback(() => {
+    const selectedOptionIdx = options.findIndex(
+      option => option.key === selectedOption
+    )
+    return optionWidths
+      .slice(0, selectedOptionIdx)
+      .reduce((totalWidth, width) => totalWidth + width, offset)
+  }, [optionWidths, options, selectedOption])
+
   useEffect(() => {
     const selectedOptionIdx = options.findIndex(
       option => option.key === selectedOption
     )
-    const width = optionWidths.current[selectedOptionIdx]
-    const left = optionWidths.current
-      .slice(0, selectedOptionIdx)
-      .reduce((totalWidth, width) => totalWidth + width, offset)
+    const width = optionWidths[selectedOptionIdx]
+    const left = getLeftValue()
 
     springToValue(leftAnim, left)
     springToValue(widthAnim, width)
-  }, [options, selectedOption, leftAnim, widthAnim])
+  }, [options, selectedOption, leftAnim, widthAnim, optionWidths, getLeftValue])
+
+  // Watch for the options widths to be populated and then set the initial left value of the selector thumb
+  useEffect(() => {
+    if (!initLeft && optionWidths.every(val => val !== 0)) {
+      leftAnim.setValue(getLeftValue())
+      setInitLeft(true)
+    }
+  }, [optionWidths, initLeft, options, leftAnim, selectedOption, getLeftValue])
 
   const setOptionWidth = (i: number) => (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout
@@ -150,7 +166,16 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
       springToValue(leftAnim, offset)
       springToValue(widthAnim, width)
     }
-    optionWidths.current[i] = width
+    setOptionWidths([
+      ...optionWidths.slice(0, i),
+      width,
+      ...optionWidths.slice(i + 1)
+    ])
+
+    // Set the width of the selector thumb to the width of the selected option
+    if (options[i].key === selectedOption) {
+      widthAnim.setValue(width)
+    }
   }
 
   const sliderElement = (
