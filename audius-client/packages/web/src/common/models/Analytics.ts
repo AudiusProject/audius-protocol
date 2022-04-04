@@ -229,7 +229,8 @@ export enum Name {
   REWARDS_CLAIM_FAILURE = 'Rewards Claim: Failure',
   REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
   REWARDS_CLAIM_COGNITO = 'Rewards Claim: Cognito',
-  REWARDS_CLAIM_BLOCKED = 'Rewards Claim: Blocked',
+  REWARDS_CLAIM_REJECTION = 'Rewards Claim: Rejection',
+  REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
   REWARDS_CLAIM_START_COGNITO_FLOW = 'Rewards Claim: Start Cognito Flow',
   REWARDS_CLAIM_FINISH_COGNITO_FLOW = 'Rewards Claim: Finish Cognito Flow',
 
@@ -1083,8 +1084,18 @@ type RewardsClaimFailure = {
   phase: string
 }
 
-type RewardsClaimBlocked = {
-  eventName: Name.REWARDS_CLAIM_BLOCKED
+type RewardsClaimRejection = {
+  eventName: Name.REWARDS_CLAIM_REJECTION
+  userId: string
+  challengeId: string
+  specifier: string
+  amount: number
+  source: string
+  error: string
+}
+
+type RewardsClaimUnknown = {
+  eventName: Name.REWARDS_CLAIM_UNKNOWN
   userId: string
   challengeId: string
   specifier: string
@@ -1254,7 +1265,8 @@ export type AllTrackingEvents =
   | RewardsClaimSuccess
   | RewardsClaimRetry
   | RewardsClaimFailure
-  | RewardsClaimBlocked
+  | RewardsClaimRejection
+  | RewardsClaimUnknown
   | SocialProofOpen
   | SocialProofSuccess
   | SocialProofError
