@@ -1,10 +1,13 @@
 import asyncio
+import base64
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
+import base58
 from anchorpy import Idl, InstructionCoder
+from solana.transaction import Transaction, TransactionInstruction
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
 from src.solana.solana_program_indexer import SolanaProgramIndexer
@@ -22,7 +25,7 @@ class AnchorDataIndexer(SolanaProgramIndexer):
     Indexer for the audius user data layer
     """
 
-    _instruction_coder_: InstructionCoder
+    _instruction_coder: InstructionCoder
 
     def __init__(
         self,
@@ -33,6 +36,7 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         solana_client_manager: Any,
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
+        self._init_instruction_coder()
 
     def get_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -81,7 +85,16 @@ class AnchorDataIndexer(SolanaProgramIndexer):
     # TODO - This is where we will deserialize instruction data and accounts
     # tx_metadata should contain TxType, Deserialized Instruction Data, etc
     def parse_tx(self, tx_sig):
-        return super().parse_tx(tx_sig)
+        t = super().parse_tx(tx_sig)
+        tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
+        encoded_data = tx_receipt["result"].get("transaction")[0]
+        encoded_data_hex = base64.b64decode(encoded_data).hex()
+        res = Transaction.deserialize(bytes.fromhex(encoded_data_hex))
+        # self.msg(f"{tx_sig} - {t} - {tx_receipt} - {res}")
+        for instruction in res.instructions:
+            parsed_instr = self._parse_instruction(instruction)
+            self.msg(f"{tx_sig} | {parsed_instr}")
+        return t
 
     def process_index_task(self):
         self.msg("Processing indexing task")
@@ -100,9 +113,14 @@ class AnchorDataIndexer(SolanaProgramIndexer):
     async def fetch_ipfs_metadata(self, parsed_transactions):
         return super().fetch_ifps_metadata(parsed_transactions)
 
-    def _get_instruction_coder(self):
+    def _parse_instruction(self, instruction: TransactionInstruction) -> Dict:
+        encoded_ix_data = base58.b58encode(instruction.data)
+        idl_instruction_name = self._get_instruction_name(encoded_ix_data)
+        return {"instruction_name": idl_instruction_name}
+
+    def _init_instruction_coder(self):
         idl = self._get_idl()
-        self._instruction_coder_ = InstructionCoder(idl)
+        self._instruction_coder = InstructionCoder(idl)
 
     def _get_idl(self):
         path = Path(AUDIUS_DATA_IDL_PATH)
@@ -110,3 +128,13 @@ class AnchorDataIndexer(SolanaProgramIndexer):
             data = json.load(f)
         idl = Idl.from_json(data)
         return idl
+
+    def _get_instruction_name(self, encoded_ix_data: bytes) -> str:
+        idl_instruction_name = self._instruction_coder.sighash_to_name.get(
+            base58.b58decode(encoded_ix_data)[0:8]
+        )
+        self.msg(f"Instruction name: {idl_instruction_name}")
+        if idl_instruction_name == None:
+            self.msg(f"No instruction found in idl matching {idl_instruction_name}")
+            return ""
+        return idl_instruction_name
