@@ -473,12 +473,16 @@ pub mod audius_data {
         Ok(())
     }
 
-    /// Follow a user, transaction sent from 1 known valid user to another
-    /// Both User accounts are re-derived from the handle seed and validated
-    /// Only the follower must have already claimed their solana public key -
-    /// in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
-    /// Note that both follow and unfollow are handled in this single function through an enum, with identical
-    /// validation for both paths.
+    /*
+        User social action functions
+
+        Follow/subscribe a user, transaction sent from 1 known valid source user to another target user
+        Both User accounts are re-derived from the handle seed and validated
+        Only the follower must have already claimed their solana public key -
+        in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
+        Note that both follow/subscribe and unfollow/unsubscribe are handled in this single function through an enum, with identical
+        validation for both paths.
+    */
     pub fn write_user_social_action(
         ctx: Context<WriteUserSocialAction>,
         base: Pubkey,
