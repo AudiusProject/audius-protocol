@@ -3,8 +3,6 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 
-from sqlalchemy import desc
-from src.models.models import AudiusDataTx
 from src.solana.constants import (
     TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
@@ -63,6 +61,7 @@ class IndexerBase(ABC):
         # DO NOT MERGE AS ERROR
         logger.error(f"{self._label} | {msg}")
 
+
 class SolanaProgramIndexer(IndexerBase):
     """
     Generic indexer class for Solana programs
@@ -118,7 +117,7 @@ class SolanaProgramIndexer(IndexerBase):
         """
         tx_info = self._solana_client_manager.get_sol_tx_info(tx_sig)
         result: TransactionInfoResult = tx_info["result"]
-        return { "tx_sig": tx_sig, "tx_metadata": {}, "result": result }
+        return {"tx_sig": tx_sig, "tx_metadata": {}, "result": result}
 
     @abstractmethod
     async def fetch_ipfs_metadata(self, parsed_transactions):
@@ -145,7 +144,8 @@ class SolanaProgramIndexer(IndexerBase):
                 self.msg(f"{future_result}")
                 tx_sig_futures_map[future_result["tx_sig"]] = future_result
             except asyncio.CancelledError:
-                pass # Swallow cancelled requests
+                # Swallow cancelled requests
+                pass
 
         # Committing to DB
         parsed_transactions = []
@@ -165,7 +165,6 @@ class SolanaProgramIndexer(IndexerBase):
         @param metadata_dictionary: Dictionary of remote metadata
         """
         raise Exception(BASE_ERROR)
-
 
     def get_transactions_to_process(self):
         """

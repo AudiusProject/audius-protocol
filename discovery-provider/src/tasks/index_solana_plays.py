@@ -460,7 +460,6 @@ def parse_sol_tx_batch(
     return None
 
 
-
 # Push to head of array containing seen transactions
 # Used to avoid re-traversal from chain tail when slot diff > certain number
 def cache_traversed_tx(redis: Redis, tx: ConfirmedSignatureForAddressResult):

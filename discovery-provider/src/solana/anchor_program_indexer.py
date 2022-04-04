@@ -1,18 +1,9 @@
 import logging
 import asyncio
-from abc import ABC
-from typing import Any, Dict
+from typing import Any
 
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
-from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
-    TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
-)
-from src.solana.solana_transaction_types import (
-    TransactionInfoResult
-)
 
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.utils.helpers import split_list
@@ -59,7 +50,7 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         return latest_slot
 
     def validate_and_save_parsed_tx_records(self, processed_transactions, metadata_dictionary):
-        self.msg(f"validate_and_save anchor {processed_transactions}")
+        self.msg(f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}")
         with self._db.scoped_session() as session:
             for transaction in processed_transactions:
                 session.add(AudiusDataTx(
@@ -85,5 +76,6 @@ class AnchorDataIndexer(SolanaProgramIndexer):
                 asyncio.run(self.process_txs_batch(tx_sig_batch_records))
         self.msg("Finished processing indexing task")
 
+    # TODO - Override with actual remote fetch operation
     async def fetch_ipfs_metadata(self, parsed_transactions):
         return super().fetch_ifps_metadata(parsed_transactions)
