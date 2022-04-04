@@ -1,7 +1,7 @@
 """solana slots migration
 
 Revision ID: 11060779bb3a
-Revises: d321f0a00721
+Revises: 37a4458bb72c
 Create Date: 2022-03-29 18:49:45.022146
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "11060779bb3a"
-down_revision = "d321f0a00721"
+down_revision = "37a4458bb72c"
 branch_labels = None
 depends_on = None
 
