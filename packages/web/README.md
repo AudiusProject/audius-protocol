@@ -40,6 +40,25 @@ npm run start:<environment>
 npm run build:<environment>
 ```
 
+### Using local linked version of @audius/libs
+
+To run audius-client/web with a local version of @audius/libs run:
+
+- In a separate terminal for `audius-protocol/libs`
+```bash
+npm link
+npm run dev
+```
+
+This will link @audius/libs, and also run it it dev mode, which will transpiles changes and triggers a hot-reload in web.
+
+- In terminal for `audius-client/web`
+```bash
+npm link @audius/libs
+```
+
+Then start the application using the start/build commands above.
+
 ### Electron (Desktop App)
 
 To run electron using a static build:
