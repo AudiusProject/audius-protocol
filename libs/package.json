@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.100",
+  "version": "1.2.101",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,9 @@
     "dev": "rollup -c -w",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "publish-dry-run": "npm run build && npm publish . --access public --dry-run",
+    "publish": "npm run build && npm publish . --access public"
   },
   "dependencies": {
     "@audius/hedgehog": "1.0.12",
