@@ -1,4 +1,4 @@
-const { FileHasher } = require('@audius/libs')
+const { fileHasher } = require('@audius/libs')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -72,7 +72,7 @@ describe('test resizeImage', () => {
    */
   it('should not throw if generating CID fails', async () => {
     sinon
-      .stub(FileHasher, 'generateImageCids')
+      .stub(fileHasher, 'generateImageCids')
       .throws(new Error('generateImageCids failed!'))
     const job = {
       data: {

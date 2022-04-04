@@ -10,7 +10,7 @@ const crypto = require('crypto')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const { FileHasher } = require('@audius/libs')
+const { fileHasher } = require('@audius/libs')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -98,7 +98,7 @@ describe('test Polling Tracks with mocks', function () {
       {
         '@audius/libs': {
           generateNonImageCid: sinon
-            .stub(FileHasher, 'generateNonImageCid')
+            .stub(fileHasher, 'generateNonImageCid')
             .returns(
               new Promise((resolve) => {
                 return resolve(DUMMY_MULTIHASH)

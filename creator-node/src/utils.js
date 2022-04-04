@@ -11,7 +11,7 @@ const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { FileHasher } = require('@audius/libs')
+const { fileHasher } = require('@audius/libs')
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
@@ -151,7 +151,7 @@ async function findCIDInNetwork(
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
         // Verify that the file written matches the hash expected
-        const expectedCID = await FileHasher.generateNonImageCid(filePath)
+        const expectedCID = await fileHasher.generateNonImageCid(filePath)
 
         if (cid !== expectedCID) {
           await fs.unlink(filePath)

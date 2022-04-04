@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { FileHasher } = require('@audius/libs')
+const { fileHasher } = require('@audius/libs')
 const { findCIDInNetwork } = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
@@ -29,7 +29,7 @@ async function saveFileFromBufferToDisk(req, buffer) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  const cid = await FileHasher.generateNonImageCid(buffer, req.logContext)
+  const cid = await fileHasher.generateNonImageCid(buffer, req.logContext)
 
   // Write file to disk by cid for future retrieval
   const dstPath = DiskManager.computeFilePath(cid)
@@ -343,7 +343,7 @@ async function saveFileForMultihashToFS(
         )
       }
 
-      const expectedCid = await FileHasher.generateNonImageCid(
+      const expectedCid = await fileHasher.generateNonImageCid(
         expectedStoragePath
       )
       if (multihash !== expectedCid) {
