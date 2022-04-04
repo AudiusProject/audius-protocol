@@ -1,8 +1,11 @@
 # pylint: disable=C0302
+import asyncio
 import concurrent.futures
 import logging
 import time
+from datetime import datetime
 from operator import itemgetter, or_
+from typing import Any, Dict, Set, Tuple
 
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -30,12 +33,14 @@ from src.queries.get_skipped_transactions import (
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
-from src.tasks.tracks import track_state_update
+from src.tasks.tracks import track_event_types_lookup, track_state_update
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
-from src.tasks.users import user_state_update
+from src.tasks.users import user_event_types_lookup, user_state_update
+from src.utils import helpers, multihash
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -253,6 +258,117 @@ def fetch_tx_receipts(self, block):
             message=f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}",
         )
     return block_tx_with_receipts
+
+
+def fetch_cid_metadata(
+    db,
+    user_factory_txs,
+    track_factory_txs,
+):
+    start_time = datetime.now()
+    user_contract = update_task.user_contract
+    track_contract = update_task.track_contract
+
+    blacklisted_cids: Set[str] = set()
+    cids_txhash_set: Tuple[str, Any] = set()
+    cid_type: Dict[str, str] = {}  # cid -> entity type track / user
+
+    # cid -> user_id lookup to make fetching replica set more efficient
+    cid_to_user_id: Dict[str, int] = {}
+
+    cid_metadata: Dict[str, str] = {}  # cid -> metadata
+
+    # fetch transactions
+    with db.scoped_session() as session:
+        for tx_receipt in user_factory_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            user_events_tx = getattr(
+                user_contract.events, user_event_types_lookup["update_multihash"]
+            )().processReceipt(tx_receipt)
+            for entry in user_events_tx:
+                event_args = entry["args"]
+                cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
+                if not is_blacklisted_ipld(session, cid):
+                    cids_txhash_set.add((cid, txhash))
+                    cid_type[cid] = "user"
+                else:
+                    blacklisted_cids.add(cid)
+                user_id = event_args._userId
+                cid_to_user_id[cid] = user_id
+
+        for tx_receipt in track_factory_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            for event_type in [
+                track_event_types_lookup["new_track"],
+                track_event_types_lookup["update_track"],
+            ]:
+                track_events_tx = getattr(
+                    track_contract.events, event_type
+                )().processReceipt(tx_receipt)
+                for entry in track_events_tx:
+                    event_args = entry["args"]
+                    track_metadata_digest = event_args._multihashDigest.hex()
+                    track_metadata_hash_fn = event_args._multihashHashFn
+                    track_owner_id = event_args._trackOwnerId
+                    buf = multihash.encode(
+                        bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
+                    )
+                    cid = multihash.to_b58_string(buf)
+                    if not is_blacklisted_ipld(session, cid):
+                        cids_txhash_set.add((cid, txhash))
+                        cid_type[cid] = "track"
+                    else:
+                        blacklisted_cids.add(cid)
+                    cid_to_user_id[cid] = track_owner_id
+
+        # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
+        user_to_replica_set = dict(
+            session.query(User.user_id, User.creator_node_endpoint)
+            .filter(
+                User.is_current == True,
+                User.user_id.in_(cid_to_user_id.values()),
+            )
+            .group_by(User.user_id, User.creator_node_endpoint)
+            .all()
+        )
+
+    # first attempt - fetch all CIDs from replica set
+    try:
+        cid_metadata.update(
+            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                cid_metadata.keys(),
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set=True,
+            )
+        )
+    except asyncio.TimeoutError:
+        # swallow exception on first attempt fetching from replica set
+        pass
+
+    # second attempt - fetch missing CIDs from other cnodes
+    if len(cid_metadata) != len(cids_txhash_set):
+        cid_metadata.update(
+            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                cid_metadata.keys(),
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set=False,
+            )
+        )
+
+    if cid_type and len(cid_metadata) != len(cid_type.keys()):
+        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+        raise Exception(missing_cids_msg)
+
+    logger.info(
+        f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
+    )
+    return cid_metadata, blacklisted_cids
 
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
@@ -538,17 +654,10 @@ def index_blocks(self, db, blocks_list):
                     fetch_ipfs_metadata_start_time = time.time()
                     # pre-fetch cids asynchronously to not have it block in user_state_update
                     # and track_state_update
-                    (
-                        cid_metadata,
-                        blacklisted_cids,
-                    ) = update_task.cid_metadata_client.fetch_cid_metadata(
+                    cid_metadata, blacklisted_cids = fetch_cid_metadata(
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
-                        update_task.user_contract,
-                        update_task.track_contract,
-                        update_task.web3,
-                        get_contract_addresses(),
                     )
                     logger.info(
                         f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"

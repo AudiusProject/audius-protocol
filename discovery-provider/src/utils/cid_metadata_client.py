@@ -1,17 +1,11 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from datetime import datetime
-from typing import Any, Dict, KeysView, Set, Tuple
+from typing import Any, Dict, KeysView, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
-from src.models.models import User
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import track_metadata_format, user_metadata_format
-from src.tasks.tracks import track_event_types_lookup
-from src.tasks.users import user_event_types_lookup
-from src.utils import helpers, multihash
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
@@ -104,7 +98,7 @@ class CIDMetadataClient:
 
         return self._cnode_endpoints
 
-    async def fetch_metadata_from_gateway_endpoints(
+    async def _fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
         cids_txhash_set: Tuple[str, Any],
@@ -194,119 +188,22 @@ class CIDMetadataClient:
                 raise e
         return cid_metadata
 
-    def fetch_cid_metadata(
+    def fetch_metadata_from_gateway_endpoints(
         self,
-        db,
-        user_factory_txs,
-        track_factory_txs,
-        user_contract,
-        track_contract,
-        web3,
-        contract_addresses,
-    ):
-        start_time = datetime.now()
-
-        blacklisted_cids: Set[str] = set()
-        cids_txhash_set: Tuple[str, Any] = set()
-        cid_type: Dict[str, str] = {}  # cid -> entity type track / user
-
-        # cid -> user_id lookup to make fetching replica set more efficient
-        cid_to_user_id: Dict[str, int] = {}
-
-        cid_metadata: Dict[str, str] = {}  # cid -> metadata
-
-        # fetch transactions
-        with db.scoped_session() as session:
-            for tx_receipt in user_factory_txs:
-                txhash = web3.toHex(tx_receipt.transactionHash)
-                user_events_tx = getattr(
-                    user_contract.events, user_event_types_lookup["update_multihash"]
-                )().processReceipt(tx_receipt)
-                for entry in user_events_tx:
-                    event_args = entry["args"]
-                    cid = helpers.multihash_digest_to_cid(event_args._multihashDigest)
-                    if not is_blacklisted_ipld(session, cid):
-                        cids_txhash_set.add((cid, txhash))
-                        cid_type[cid] = "user"
-                    else:
-                        blacklisted_cids.add(cid)
-                    user_id = event_args._userId
-                    cid_to_user_id[cid] = user_id
-
-            for tx_receipt in track_factory_txs:
-                txhash = web3.toHex(tx_receipt.transactionHash)
-                for event_type in [
-                    track_event_types_lookup["new_track"],
-                    track_event_types_lookup["update_track"],
-                ]:
-                    track_events_tx = getattr(
-                        track_contract.events, event_type
-                    )().processReceipt(tx_receipt)
-                    for entry in track_events_tx:
-                        event_args = entry["args"]
-                        track_metadata_digest = event_args._multihashDigest.hex()
-                        track_metadata_hash_fn = event_args._multihashHashFn
-                        track_owner_id = event_args._trackOwnerId
-                        buf = multihash.encode(
-                            bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
-                        )
-                        cid = multihash.to_b58_string(buf)
-                        if not is_blacklisted_ipld(session, cid):
-                            cids_txhash_set.add((cid, txhash))
-                            cid_type[cid] = "track"
-                        else:
-                            blacklisted_cids.add(cid)
-                        cid_to_user_id[cid] = track_owner_id
-
-            # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
-            user_to_replica_set = dict(
-                session.query(User.user_id, User.creator_node_endpoint)
-                .filter(
-                    User.is_current == True,
-                    User.user_id.in_(cid_to_user_id.values()),
-                )
-                .group_by(User.user_id, User.creator_node_endpoint)
-                .all()
+        fetched_cids: KeysView[str],
+        cids_txhash_set: Tuple[str, Any],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, str],
+        cid_type: Dict[str, str],
+        should_fetch_from_replica_set: bool = True,
+    ) -> Dict[str, int]:
+        return asyncio.run(
+            self._fetch_metadata_from_gateway_endpoints(
+                fetched_cids,
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set,
             )
-
-        # first attempt - fetch all CIDs from replica set
-        try:
-            cid_metadata.update(
-                asyncio.run(
-                    self.fetch_metadata_from_gateway_endpoints(
-                        cid_metadata.keys(),
-                        cids_txhash_set,
-                        cid_to_user_id,
-                        user_to_replica_set,
-                        cid_type,
-                        should_fetch_from_replica_set=True,
-                    )
-                )
-            )
-        except asyncio.TimeoutError:
-            # swallow exception on first attempt fetching from replica set
-            pass
-
-        # second attempt - fetch missing CIDs from other cnodes
-        if len(cid_metadata) != len(cids_txhash_set):
-            cid_metadata.update(
-                asyncio.run(
-                    self.fetch_metadata_from_gateway_endpoints(
-                        cid_metadata.keys(),
-                        cids_txhash_set,
-                        cid_to_user_id,
-                        user_to_replica_set,
-                        cid_type,
-                        should_fetch_from_replica_set=False,
-                    )
-                )
-            )
-
-        if cid_type and len(cid_metadata) != len(cid_type.keys()):
-            missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
-            raise Exception(missing_cids_msg)
-
-        logger.info(
-            f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
         )
-        return cid_metadata, blacklisted_cids

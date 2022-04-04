@@ -87,7 +87,7 @@ def update_network_peers(self):
 
             logger.info(f"index_network_peers.py | All known peers {all_peers}")
             peers_list = list(all_peers)
-            # Update creator node url list in IPFS Client
+            # Update creator node url list in CID Metadata Client
             # This list of known nodes is used to traverse and retrieve metadata from gateways
             cid_metadata_client.update_cnode_urls(peers_list)
         else:
