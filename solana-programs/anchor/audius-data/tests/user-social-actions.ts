@@ -61,13 +61,15 @@ describe("user social actions", function () {
   };
 
   it("User social actions - Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    let tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
     });
+
+    await provider.send(tx, [adminStorageKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -158,12 +160,13 @@ describe("user social actions", function () {
       const message2 = newUser2Key.publicKey.toBytes();
 
       // disable admin writes
-      await updateAdmin({
+      const updateAdminTx = updateAdmin({
         program,
         isWriteEnabled: false,
         adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
+      await provider.send(updateAdminTx, [adminKeypair]);
 
       await testCreateUser({
         provider,
