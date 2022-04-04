@@ -30,7 +30,7 @@ def is_invalid_tx(response: types.RPCResponse) -> bool:
 
 async def fetch_tx_receipt(tx_hash: str) -> Optional[Dict]:
     solana_client = AsyncClient(RPC_ADDRESS)
-    tx_info = await solana_client.get_transaction(tx_hash)
+    tx_info = await solana_client.get_transaction(tx_hash, "base64")
     print(f"Tx info for {tx_hash}: {json.dumps(tx_info, indent=4)}")
     await solana_client.close()
     if is_invalid_tx(tx_info):

@@ -27,7 +27,7 @@ export class MultiProvider extends Web3.providers.HttpProvider {
    * Creates a MultiProvider
    * @param {Array<string | Provider> | string} - The providers to use.
    */
-  constructor (providers: Providers | string) {
+  constructor(providers: Providers | string) {
     let web3Providers: Providers | StringProviders
     if (typeof providers === 'string') {
       web3Providers = providers.split(',') as StringProviders
@@ -38,7 +38,9 @@ export class MultiProvider extends Web3.providers.HttpProvider {
     }
 
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
-    const web3ProviderInstances = web3Providers.map(provider => (new Web3(provider)).eth.currentProvider) as Providers
+    const web3ProviderInstances = web3Providers.map(
+      (provider) => new Web3(provider).eth.currentProvider
+    ) as Providers
     super(web3ProviderInstances[0]?.host)
 
     if (!web3ProviderInstances.every(getSendMethod)) {
@@ -55,7 +57,7 @@ export class MultiProvider extends Web3.providers.HttpProvider {
    * @method _send
    * @param {Object} payload
    */
-  async _send (payload: JsonRpcPayload) {
+  async _send(payload: JsonRpcPayload) {
     for (const provider of shuffle(this.providers)) {
       try {
         const send = promisify(getSendMethod(provider).bind(provider))

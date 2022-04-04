@@ -45,12 +45,12 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' --exit
 }
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
 ARG1=${@:$OPTIND:1}
