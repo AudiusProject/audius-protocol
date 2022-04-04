@@ -29,6 +29,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add rsyslog && \
     apk add docker && \
     apk add nodejs && \
+    apk add npm && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
 
 COPY requirements.txt requirements.txt
