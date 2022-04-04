@@ -3,7 +3,7 @@ import base64
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import base58
 from anchorpy import Idl, InstructionCoder
@@ -142,7 +142,7 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         idl = Idl.from_json(data)
         return idl
 
-    def _get_instruction_name(self, encoded_ix_data: bytes) -> str:
+    def _get_instruction_name(self, encoded_ix_data: bytes) -> Optional[str]:
         idl_instruction_name = self._instruction_coder.sighash_to_name.get(
             base58.b58decode(encoded_ix_data)[0:8]
         )
