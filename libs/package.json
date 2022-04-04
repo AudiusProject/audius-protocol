@@ -23,9 +23,7 @@
     "dev": "rollup -c -w",
     "lint": "eslint ./src",
     "lint:fix": "eslint ./src --fix",
-    "typecheck": "tsc --noEmit",
-    "publish-dry-run": "npm run build && npm publish . --access public --dry-run",
-    "publish": "npm run build && npm publish . --access public"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@audius/hedgehog": "1.0.12",
