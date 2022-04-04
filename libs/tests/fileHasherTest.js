@@ -13,7 +13,13 @@ describe('test FileHasher with randomized text content', () => {
     return uuid.v4()
   }
 
+  const createRandomTextFile = () => {
+    const filePath = path.join(__dirname, './assets/random.txt')
+    fs.writeFileSync(filePath, createRandomText())
+  }
+
   before(() => {
+    createRandomTextFile()
     randomText = createRandomText()
     randomTextFilePath = path.join(__dirname, './assets/random.txt')
   })
@@ -31,7 +37,7 @@ describe('test FileHasher with randomized text content', () => {
     }
   })
 
-  it('[random - generateNonImageCid] if `hashImages()` errors, `generateNonImageCid()` throws', async () => {
+  it('[random - generateNonImageCids] if `hashNonImages()` errors, `generateNonImageCid()` throws', async () => {
     sinon
       .stub(fileHasher, 'hashNonImages')
       .throws(new Error('failed to generate only hash'))
@@ -40,6 +46,21 @@ describe('test FileHasher with randomized text content', () => {
       await fileHasher.generateNonImageCid(randomTextFilePath)
       throw new Error(
         '`generateNonImageCid` should throw if `hashNonImages` fails'
+      )
+    } catch (e) {
+      assert.ok(e.toString().includes('failed to generate only hash'))
+    }
+  })
+
+  it('[random - generateImageCids] if `hashImages()` errors, `generateImageCids()` throws', async () => {
+    sinon
+      .stub(fileHasher, 'hashImages')
+      .throws(new Error('failed to generate only hash'))
+
+    try {
+      await fileHasher.generateImageCids(randomTextFilePath)
+      throw new Error(
+        '`generateImageCids` should throw if `hashImages` fails'
       )
     } catch (e) {
       assert.ok(e.toString().includes('failed to generate only hash'))
@@ -86,7 +107,7 @@ describe('test FileHasher with static content', () => {
       }
     })
 
-    it('[static - generateNonImageCid] if `hashImages()` errors, `generateNonImageCid()` throws', async () => {
+    it('[static - generateNonImageCid] if `hashNonImages()` errors, `generateNonImageCid()` throws', async () => {
       sinon
         .stub(fileHasher, 'hashNonImages')
         .throws(new Error('failed to generate only hash'))

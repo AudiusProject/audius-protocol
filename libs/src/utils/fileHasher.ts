@@ -1,4 +1,8 @@
-import { importer, UserImporterOptions } from 'ipfs-unixfs-importer'
+import {
+  ImportCandidate,
+  importer,
+  UserImporterOptions
+} from 'ipfs-unixfs-importer'
 import fs from 'fs'
 import { hrtime } from 'process'
 import { promisify } from 'util'
@@ -16,10 +20,14 @@ const fsReadFile = promisify(fs.readFile)
 
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
-type Content = Buffer | Uint8Array | string
-interface Hasher {
+type Content = AsyncIterable<Uint8Array> | Iterable<Uint8Array> | Uint8Array
+interface ImageHasher {
   options: UserImporterOptions
-  content: Content
+  content: ImportCandidate
+}
+interface NonImageHasher {
+  options: UserImporterOptions
+  content: Uint8Array
 }
 interface HashedImage {
   path: string | undefined
@@ -89,7 +97,24 @@ export const fileHasher = {
   /**
    * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
    */
-  initHasher(content: Content, options: UserImporterOptions): Hasher {
+  initImageHasher(
+    content: ImportCandidate,
+    options: UserImporterOptions
+  ): ImageHasher {
+    options = options || {}
+    options.onlyHash = true
+    options.cidVersion = 0
+
+    return { options, content }
+  },
+
+  /**
+   * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
+   */
+  initNonImageHasher(
+    content: string | Uint8Array,
+    options: UserImporterOptions
+  ): NonImageHasher {
     options = options || {}
     options.onlyHash = true
     options.cidVersion = 0
@@ -137,21 +162,17 @@ export const fileHasher = {
    * @returns the CID from content addressing logic
    */
   async hashNonImages(
-    content: Content,
+    content: string | Uint8Array,
     options: UserImporterOptions = {}
   ): Promise<string> {
-    ;({ options, content } = fileHasher.initHasher(content, options))
+    ;({ options, content } = fileHasher.initNonImageHasher(content, options))
 
-    let lastCid: CID = null as any
-    for await (const { cid } of importer(
-      [{ content }] as any,
-      block,
-      options
-    )) {
-      lastCid = cid
+    let lastCid: string = ''
+    for await (const { cid } of importer([{ content }], block, options)) {
+      lastCid = `${cid}`
     }
 
-    return `${lastCid}`
+    return lastCid
   },
 
   /**
@@ -190,13 +211,13 @@ export const fileHasher = {
     ]
   */
   async hashImages(
-    content: Content,
+    content: ImportCandidate,
     options: UserImporterOptions = {}
   ): Promise<HashedImage[]> {
-    ;({ options, content } = fileHasher.initHasher(content, options))
+    ;({ options, content } = fileHasher.initImageHasher(content, options))
 
     const result: HashedImage[] = []
-    for await (const file of importer(content as any, block, options)) {
+    for await (const file of importer(content, block, options)) {
       result.push({
         path: file.path,
         cid: `${file.cid}`,
@@ -243,7 +264,7 @@ export const fileHasher = {
    * @returns {HashedImage[]} only hash responses with the structure [{path: <string>, cid: <string>, size: <number>}]
    */
   async generateImageCids(
-    content: Buffer,
+    content: ImportCandidate,
     logger: any = console
   ): Promise<HashedImage[]> {
     const startHashing: bigint = hrtime.bigint()
