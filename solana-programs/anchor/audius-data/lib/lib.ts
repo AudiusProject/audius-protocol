@@ -1066,3 +1066,160 @@ export const deletePlaylistRepost = async ({
     }
   );
 };
+
+/**
+ * User social actions
+ */
+export const UserSocialActions = {
+  followUser: { followUser: {} },
+  unfollowUser: { unfollowUser: {} },
+  subscribeUser: { subscribeUser: {} },
+  unsubscribeUser: { unsubscribeUser: {} },
+};
+
+type UserSocialActionArgs = {
+  program: Program<AudiusData>;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  sourceUserStorageAccountPDA: anchor.web3.PublicKey;
+  targetUserStorageAccountPDA: anchor.web3.PublicKey;
+  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
+  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+  userAuthorityKeypair: Keypair;
+  adminStoragePublicKey: anchor.web3.PublicKey;
+  sourceUserHandleBytesArray: number[];
+  sourceUserBumpSeed: number;
+  targetUserHandleBytesArray: number[];
+  targetUserBumpSeed: number;
+};
+
+export const followUser = async ({
+  program,
+  baseAuthorityAccount,
+  sourceUserStorageAccountPDA,
+  targetUserStorageAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
+  userAuthorityKeypair,
+  sourceUserHandleBytesArray,
+  sourceUserBumpSeed,
+  targetUserHandleBytesArray,
+  targetUserBumpSeed,
+  adminStoragePublicKey,
+}: UserSocialActionArgs) => {
+  return program.rpc.writeUserSocialAction(
+    baseAuthorityAccount,
+    UserSocialActions.followUser,
+    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+    {
+      accounts: {
+        audiusAdmin: adminStoragePublicKey,
+        sourceUserStorage: sourceUserStorageAccountPDA,
+        targetUserStorage: targetUserStorageAccountPDA,
+        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const unfollowUser = async ({
+  program,
+  baseAuthorityAccount,
+  sourceUserStorageAccountPDA,
+  targetUserStorageAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
+  userAuthorityKeypair,
+  sourceUserHandleBytesArray,
+  sourceUserBumpSeed,
+  targetUserHandleBytesArray,
+  targetUserBumpSeed,
+  adminStoragePublicKey,
+}: UserSocialActionArgs) => {
+  return program.rpc.writeUserSocialAction(
+    baseAuthorityAccount,
+    UserSocialActions.unfollowUser,
+    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+    {
+      accounts: {
+        audiusAdmin: adminStoragePublicKey,
+        sourceUserStorage: sourceUserStorageAccountPDA,
+        targetUserStorage: targetUserStorageAccountPDA,
+        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const subscribeUser = async ({
+  program,
+  baseAuthorityAccount,
+  sourceUserStorageAccountPDA,
+  targetUserStorageAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
+  userAuthorityKeypair,
+  sourceUserHandleBytesArray,
+  sourceUserBumpSeed,
+  targetUserHandleBytesArray,
+  targetUserBumpSeed,
+  adminStoragePublicKey,
+}: UserSocialActionArgs) => {
+  return program.rpc.writeUserSocialAction(
+    baseAuthorityAccount,
+    UserSocialActions.subscribeUser,
+    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+    {
+      accounts: {
+        audiusAdmin: adminStoragePublicKey,
+        sourceUserStorage: sourceUserStorageAccountPDA,
+        targetUserStorage: targetUserStorageAccountPDA,
+        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};
+
+export const unsubscribeUser = async ({
+  program,
+  baseAuthorityAccount,
+  sourceUserStorageAccountPDA,
+  targetUserStorageAccountPDA,
+  userAuthorityDelegateAccountPDA,
+  authorityDelegationStatusAccountPDA,
+  userAuthorityKeypair,
+  sourceUserHandleBytesArray,
+  sourceUserBumpSeed,
+  targetUserHandleBytesArray,
+  targetUserBumpSeed,
+  adminStoragePublicKey,
+}: UserSocialActionArgs) => {
+  return program.rpc.writeUserSocialAction(
+    baseAuthorityAccount,
+    UserSocialActions.unsubscribeUser,
+    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+    {
+      accounts: {
+        audiusAdmin: adminStoragePublicKey,
+        sourceUserStorage: sourceUserStorageAccountPDA,
+        targetUserStorage: targetUserStorageAccountPDA,
+        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+        authority: userAuthorityKeypair.publicKey,
+      },
+      signers: [userAuthorityKeypair],
+    }
+  );
+};

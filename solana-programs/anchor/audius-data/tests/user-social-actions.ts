@@ -1,7 +1,14 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { expect, assert } from "chai";
-import { initAdmin, updateAdmin } from "../lib/lib";
+import {
+  followUser,
+  initAdmin,
+  subscribeUser,
+  unfollowUser,
+  unsubscribeUser,
+  updateAdmin,
+} from "../lib/lib";
 import { findDerivedPair, getTransactionWithData } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -193,25 +200,20 @@ describe("user social actions", function () {
 
     it("follow user", async function () {
       // Submit a tx where user 1 follows user 2
-      const followArgs = {
-        accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
-          authority: newUser1Key.publicKey,
-          sourceUserStorage: userStorageAccount1,
-          targetUserStorage: userStorageAccount2,
-          userAuthorityDelegate: SystemProgram.programId,
-          authorityDelegationStatus: SystemProgram.programId,
-        },
-        signers: [newUser1Key],
-      };
-
-      const followTx = await program.rpc.writeUserSocialAction(
+      const followTx = await followUser({
         baseAuthorityAccount,
-        UserActionEnumValues.followUser,
-        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
-        followArgs
-      );
+        program,
+        sourceUserStorageAccountPDA: userStorageAccount1,
+        targetUserStorageAccountPDA: userStorageAccount2,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        userAuthorityKeypair: newUser1Key,
+        sourceUserHandleBytesArray: handleBytesArray1,
+        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
+        targetUserHandleBytesArray: handleBytesArray2,
+        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+      });
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTx, 0);
@@ -244,28 +246,21 @@ describe("user social actions", function () {
       });
 
       // Submit a tx where user 1 follows user 2
-      const followArgs = {
-        accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
-          authority: userDelegate.userAuthorityDelegateKeypair.publicKey,
-          sourceUserStorage: userDelegate.userAccountPDA,
-          targetUserStorage: userStorageAccount2,
-          userAuthorityDelegate: userDelegate.userAuthorityDelegatePDA,
-          authorityDelegationStatus: userDelegate.authorityDelegationStatusPDA,
-        },
-        signers: [userDelegate.userAuthorityDelegateKeypair],
-      };
-
-      const followTx = await program.rpc.writeUserSocialAction(
+      const followTx = await followUser({
         baseAuthorityAccount,
-        UserActionEnumValues.followUser,
-        {
-          seed: userDelegate.userHandleBytesArray,
-          bump: userDelegate.userBumpSeed,
-        },
-        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
-        followArgs
-      );
+        program,
+        sourceUserStorageAccountPDA: userDelegate.userAccountPDA,
+        targetUserStorageAccountPDA: userStorageAccount2,
+        userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatusAccountPDA:
+          userDelegate.authorityDelegationStatusPDA,
+        userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+        sourceUserHandleBytesArray: userDelegate.userHandleBytesArray,
+        sourceUserBumpSeed: userDelegate.userBumpSeed,
+        targetUserHandleBytesArray: handleBytesArray2,
+        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+      });
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTx, 0);
@@ -293,25 +288,20 @@ describe("user social actions", function () {
 
     it("unfollow user", async function () {
       // Submit a tx where user 1 follows user 2
-      const followArgs = {
-        accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
-          payer: provider.wallet.publicKey,
-          authority: newUser1Key.publicKey,
-          sourceUserStorage: userStorageAccount1,
-          targetUserStorage: userStorageAccount2,
-          userAuthorityDelegate: SystemProgram.programId,
-          authorityDelegationStatus: SystemProgram.programId,
-        },
-        signers: [newUser1Key],
-      };
-      const unfollowTx = await program.rpc.writeUserSocialAction(
+      const unfollowTx = await unfollowUser({
         baseAuthorityAccount,
-        UserActionEnumValues.unfollowUser,
-        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
-        followArgs
-      );
+        program,
+        sourceUserStorageAccountPDA: userStorageAccount1,
+        targetUserStorageAccountPDA: userStorageAccount2,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        userAuthorityKeypair: newUser1Key,
+        sourceUserHandleBytesArray: handleBytesArray1,
+        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
+        targetUserHandleBytesArray: handleBytesArray2,
+        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+      });
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unfollowTx, 0);
@@ -435,25 +425,20 @@ describe("user social actions", function () {
     // subscribe tests
     it("subscribe user", async function () {
       // Submit a tx where user 1 subscribes user 2
-      const subscribeArgs = {
-        accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
-          authority: newUser1Key.publicKey,
-          sourceUserStorage: userStorageAccount1,
-          targetUserStorage: userStorageAccount2,
-          userAuthorityDelegate: SystemProgram.programId,
-          authorityDelegationStatus: SystemProgram.programId,
-        },
-        signers: [newUser1Key],
-      };
-
-      const subscribeTx = await program.rpc.writeUserSocialAction(
+      const subscribeTx = await subscribeUser({
         baseAuthorityAccount,
-        UserActionEnumValues.subscribeUser,
-        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
-        subscribeArgs
-      );
+        program,
+        sourceUserStorageAccountPDA: userStorageAccount1,
+        targetUserStorageAccountPDA: userStorageAccount2,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        userAuthorityKeypair: newUser1Key,
+        sourceUserHandleBytesArray: handleBytesArray1,
+        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
+        targetUserHandleBytesArray: handleBytesArray2,
+        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+      });
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, subscribeTx, 0);
@@ -479,25 +464,20 @@ describe("user social actions", function () {
 
     it("unsubscribe user", async function () {
       // Submit a tx where user 1 subscribes user 2
-      const subscribeArgs = {
-        accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
-          payer: provider.wallet.publicKey,
-          authority: newUser1Key.publicKey,
-          sourceUserStorage: userStorageAccount1,
-          targetUserStorage: userStorageAccount2,
-          userAuthorityDelegate: SystemProgram.programId,
-          authorityDelegationStatus: SystemProgram.programId,
-        },
-        signers: [newUser1Key],
-      };
-      const unsubscribeTx = await program.rpc.writeUserSocialAction(
+      const unsubscribeTx = await unsubscribeUser({
         baseAuthorityAccount,
-        UserActionEnumValues.unsubscribeUser,
-        { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-        { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
-        subscribeArgs
-      );
+        program,
+        sourceUserStorageAccountPDA: userStorageAccount1,
+        targetUserStorageAccountPDA: userStorageAccount2,
+        userAuthorityDelegateAccountPDA: SystemProgram.programId,
+        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        userAuthorityKeypair: newUser1Key,
+        sourceUserHandleBytesArray: handleBytesArray1,
+        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
+        targetUserHandleBytesArray: handleBytesArray2,
+        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        adminStoragePublicKey: adminStorageKeypair.publicKey,
+      });
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unsubscribeTx, 0);
