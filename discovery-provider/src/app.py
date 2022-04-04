@@ -554,7 +554,6 @@ def configure_celery(celery, test_config=None):
         redis_inst,
         db,
         solana_client_manager,
-        # TODO: Embed IDL for anchor py consumption
     )
 
     # Clear existing locks used in tasks if present
