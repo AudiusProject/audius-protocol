@@ -34,16 +34,16 @@ const block: Blockstore = {
   put: async (_key: CID, _val: Uint8Array, _options?: Options) => {
     throw new Error('unexpected block API put')
   },
-  open: function (): Promise<void> {
+  open: async function (): Promise<void> {
     throw new Error('Function not implemented.')
   },
-  close: function (): Promise<void> {
+  close: async function (): Promise<void> {
     throw new Error('Function not implemented.')
   },
-  has: function (_key: CID, _options?: Options): Promise<boolean> {
+  has: async function (_key: CID, _options?: Options): Promise<boolean> {
     throw new Error('Function not implemented.')
   },
-  delete: function (_key: CID, _options?: Options): Promise<void> {
+  delete: async function (_key: CID, _options?: Options): Promise<void> {
     throw new Error('Function not implemented.')
   },
   putMany: function (
@@ -81,15 +81,15 @@ const block: Blockstore = {
   }
 }
 
-export class FileHasher {
-  static convertNanosToMillis(nanoSeconds: bigint) {
+export const fileHasher = {
+  convertNanosToMillis(nanoSeconds: bigint) {
     return nanoSeconds / BigInt(1000000)
-  }
+  },
 
   /**
    * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
    */
-  static initHasher(content: Content, options: UserImporterOptions): Hasher {
+  initHasher(content: Content, options: UserImporterOptions): Hasher {
     options = options || {}
     options.onlyHash = true
     options.cidVersion = 0
@@ -99,7 +99,7 @@ export class FileHasher {
     }
 
     return { options, content }
-  }
+  },
 
   /**
    * Convert content to a buffer; used in `generateNonImageCid()`.
@@ -107,7 +107,7 @@ export class FileHasher {
    * @param {Object} logger
    * @returns buffer version of content
    */
-  static async convertToBuffer(content: Content, logger: any): Promise<Buffer> {
+  async convertToBuffer(content: Content, logger: any): Promise<Buffer> {
     if (Buffer.isBuffer(content)) return content
 
     let buffer: any = []
@@ -128,7 +128,7 @@ export class FileHasher {
     }
 
     return buffer
-  }
+  },
 
   /**
    * Custom fn to generate the content-hashing logic
@@ -136,13 +136,13 @@ export class FileHasher {
    * @param options options for importer
    * @returns the CID from content addressing logic
    */
-  static async hashNonImages(
+  async hashNonImages(
     content: Content,
     options: UserImporterOptions = {}
   ): Promise<string> {
-    ;({ options, content } = FileHasher.initHasher(content, options))
+    ;({ options, content } = fileHasher.initHasher(content, options))
 
-    let lastCid: CID = {} as CID
+    let lastCid: CID = null as any
     for await (const { cid } of importer(
       [{ content }] as any,
       block,
@@ -152,7 +152,7 @@ export class FileHasher {
     }
 
     return `${lastCid}`
-  }
+  },
 
   /**
    * Custom fn to generate the content-hashing logic
@@ -189,11 +189,11 @@ export class FileHasher {
       }
     ]
   */
-  static async hashImages(
+  async hashImages(
     content: Content,
     options: UserImporterOptions = {}
   ): Promise<HashedImage[]> {
-    ;({ options, content } = FileHasher.initHasher(content, options))
+    ;({ options, content } = fileHasher.initHasher(content, options))
 
     const result: HashedImage[] = []
     for await (const file of importer(content as any, block, options)) {
@@ -208,7 +208,7 @@ export class FileHasher {
     // the importer will return the root as the last file resp. This means that the dir should always be the last index.
     // (As we need it to be in resizeImage.js)
     return result
-  }
+  },
 
   /**
    * Generates CID for a non-image file (track segment, track transcode, metadata)
@@ -216,16 +216,16 @@ export class FileHasher {
    * @param {Object?} logger
    * @returns {string} only hash response cid
    */
-  static async generateNonImageCid(
+  async generateNonImageCid(
     content: Buffer,
     logger: any = console
   ): Promise<string> {
-    const buffer = await FileHasher.convertToBuffer(content, logger)
+    const buffer = await fileHasher.convertToBuffer(content, logger)
 
     const startHashing: bigint = hrtime.bigint()
-    const cid = await FileHasher.hashNonImages(buffer)
+    const cid = await fileHasher.hashNonImages(buffer)
 
-    const hashDurationMs = FileHasher.convertNanosToMillis(
+    const hashDurationMs = fileHasher.convertNanosToMillis(
       hrtime.bigint() - startHashing
     )
 
@@ -234,7 +234,7 @@ export class FileHasher {
     )
 
     return cid
-  }
+  },
 
   /**
    * Wrapper that generates multihashes for image files
@@ -242,13 +242,13 @@ export class FileHasher {
    * @param {Object?} logger
    * @returns {HashedImage[]} only hash responses with the structure [{path: <string>, cid: <string>, size: <number>}]
    */
-  static async generateImageCids(
+  async generateImageCids(
     content: Buffer,
     logger: any = console
   ): Promise<HashedImage[]> {
     const startHashing: bigint = hrtime.bigint()
-    const hashedImages: HashedImage[] = await FileHasher.hashImages(content)
-    const hashDurationMs = FileHasher.convertNanosToMillis(
+    const hashedImages: HashedImage[] = await fileHasher.hashImages(content)
+    const hashDurationMs = fileHasher.convertNanosToMillis(
       hrtime.bigint() - startHashing
     )
 
