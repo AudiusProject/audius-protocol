@@ -6,6 +6,7 @@ node_modules/
 *.swn
 .DS_Store*
 test.js
+tests/assets/random.txt
 *.code-workspace
 local-storage/
 initScripts/*-config.json
