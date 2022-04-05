@@ -1312,3 +1312,14 @@ class UserListeningHistory(Base):
         return f"<UserListeningHistory(\
 user_id={self.user_id},\
 listening_history={self.listening_history})>"
+
+
+class AudiusDataTx(Base):
+    __tablename__ = "audius_data_txs"
+    signature = Column(String, primary_key=True, nullable=False)
+    slot = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<AudiusDataTx,\
+self._signature={self.self._signature},\
+self.slot={self.self.slot})>"

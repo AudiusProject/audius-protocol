@@ -32,6 +32,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.helpers import split_list
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
@@ -457,11 +458,6 @@ def parse_sol_tx_batch(
         f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
     )
     return None
-
-
-def split_list(list, n):
-    for i in range(0, len(list), n):
-        yield list[i : i + n]
 
 
 # Push to head of array containing seen transactions
