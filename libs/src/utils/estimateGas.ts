@@ -2,20 +2,22 @@
 // will go through
 const GAS_LIMIT_MULTIPLIER = 1.05
 
-interface ContractMethod {
+export interface ContractMethod {
   estimateGas: (config: {
     from: string | undefined
     gas: number | undefined
-  }) => number
+  }) => Promise<number>
   _method: {
     name: string
   }
+  encodeABI: () => string
+  send: (config: { from: string; gas: number; gasPrice: number }) => unknown
 }
 
 interface EstimateGasConfig {
   method: ContractMethod
   from?: string
-  gasLimitMaximum?: number
+  gasLimitMaximum: number
   multiplier?: number
 }
 
