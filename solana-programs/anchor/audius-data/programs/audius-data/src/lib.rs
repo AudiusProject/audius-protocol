@@ -538,9 +538,8 @@ pub mod audius_data {
     pub fn add_user_authority_delegate(
         ctx: Context<AddUserAuthorityDelegate>,
         _base: Pubkey,
-        _handle_seed: [u8; 32],
-        _user_bump: u8,
-        user_authority_delegate: Pubkey,
+        _user_handle: UserHandle,
+        delegate_pubkey: Pubkey,
     ) -> Result<()> {
         // validate signer is the user or delegate
         validate_user_authority(
@@ -556,7 +555,7 @@ pub mod audius_data {
         ctx.accounts
             .current_user_authority_delegate
             .user_storage_account = ctx.accounts.user.key();
-        ctx.accounts.current_user_authority_delegate.delegate_authority = user_authority_delegate;
+        ctx.accounts.current_user_authority_delegate.delegate_authority = delegate_pubkey;
         Ok(())
     }
 
@@ -564,8 +563,7 @@ pub mod audius_data {
     pub fn remove_user_authority_delegate(
         ctx: Context<RemoveUserAuthorityDelegate>,
         _base: Pubkey,
-        _handle_seed: [u8; 32],
-        _user_bump: u8,
+        _user_handle: UserHandle,
         _user_authority_delegate: Pubkey,
         _delegate_bump: u8,
     ) -> Result<()> {
@@ -850,13 +848,13 @@ pub struct RevokeAuthorityDelegationStatus<'info> {
 /// Instruction container to allow user delegation
 /// Allocates a new account that will be used for fallback in auth scenarios
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, delegate_pubkey: Pubkey)]
+#[instruction(base: Pubkey, user_handle: UserHandle, delegate_pubkey: Pubkey)]
 pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
     )]
     pub user: Account<'info, User>,
     #[account(
@@ -883,19 +881,19 @@ pub struct AddUserAuthorityDelegate<'info> {
 /// Instruction container to remove allocated user authority delegation
 /// Returns funds to payer
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
+#[instruction(base: Pubkey, user_handle: UserHandle, delegate_pubkey: Pubkey, delegate_bump:u8)]
 pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
     )]
     pub user: Account<'info, User>,
     #[account(
         mut,
         close = payer,
-        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        seeds = [&user.key().to_bytes()[..32], &delegate_pubkey.to_bytes()[..32]],
         bump = delegate_bump
     )]
     pub current_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
