@@ -12,6 +12,7 @@ import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { makeStyles } from 'app/styles'
 
 import { TrackItemAction, TrackListItem } from './TrackListItem'
+import { TrackListItemSkeleton } from './TrackListItemSkeleton'
 import { TrackMetadata, TracksMetadata } from './types'
 
 type TrackListProps = {
@@ -23,6 +24,7 @@ type TrackListProps = {
   onSave?: (isSaved: boolean, trackId: ID) => void
   playingUid?: UID
   showDivider?: boolean
+  showSkeleton?: boolean
   showTopDivider?: boolean
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
@@ -59,6 +61,7 @@ export const TrackList = ({
   onReorder,
   onSave,
   showDivider,
+  showSkeleton,
   showTopDivider,
   togglePlay,
   trackItemAction,
@@ -69,6 +72,17 @@ export const TrackList = ({
 
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getPlayingUid)
+
+  const renderSkeletonTrack = ({ index }) => (
+    <View>
+      {showDivider && (showTopDivider || index > 0) ? (
+        <View
+          style={[styles.divider, noDividerMargin && styles.noMarginDivider]}
+        />
+      ) : null}
+      <TrackListItemSkeleton />
+    </View>
+  )
 
   const renderDraggableTrack: DraggableFlatListProps<
     TrackMetadata
@@ -90,7 +104,7 @@ export const TrackList = ({
             style={[
               styles.divider,
               hideDivider && styles.hideDivider,
-              noDividerMargin ? styles.noMarginDivider : {}
+              noDividerMargin && styles.noMarginDivider
             ]}
           />
         ) : null}
@@ -123,6 +137,15 @@ export const TrackList = ({
       drag: () => {},
       isActive: false
     }) as ReactElement
+
+  if (showSkeleton)
+    return (
+      <FlatList
+        {...otherProps}
+        data={tracks}
+        renderItem={renderSkeletonTrack}
+      />
+    )
 
   return isReorderable ? (
     <DraggableFlatList

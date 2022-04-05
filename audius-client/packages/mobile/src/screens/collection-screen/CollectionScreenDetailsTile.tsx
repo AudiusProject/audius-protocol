@@ -28,7 +28,8 @@ const messages = {
   playlist: 'Playlist',
   empty: 'This playlist is empty.',
   privatePlaylist: 'Private Playlist',
-  publishing: 'Publishing...'
+  publishing: 'Publishing...',
+  detailsPlaceholder: '---'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -85,20 +86,23 @@ export const CollectionScreenDetailsTile = ({
   )
 
   const details = useMemo(() => {
-    return numTracks > 0
-      ? [
-          {
-            label: 'Tracks',
-            value: formatCount(numTracks)
-          },
-          {
-            label: 'Duration',
-            value: formatSecondsAsText(duration)
-          },
-          ...extraDetails
-        ].filter(({ isHidden, value }) => !isHidden && !!value)
-      : []
-  }, [numTracks, duration, extraDetails])
+    if (!tracksLoading && numTracks === 0) return []
+    return [
+      {
+        label: 'Tracks',
+        value: tracksLoading
+          ? messages.detailsPlaceholder
+          : formatCount(numTracks)
+      },
+      {
+        label: 'Duration',
+        value: tracksLoading
+          ? messages.detailsPlaceholder
+          : formatSecondsAsText(duration)
+      },
+      ...extraDetails
+    ].filter(({ isHidden, value }) => !isHidden && !!value)
+  }, [tracksLoading, numTracks, duration, extraDetails])
 
   const isPlaying = useSelector(getPlaying)
   const playingUid = useSelector(getPlayingUid)
@@ -149,7 +153,15 @@ export const CollectionScreenDetailsTile = ({
   }, [isAlbum, isPrivate])
 
   const renderTrackList = () => {
-    return !tracksLoading && tracksLineup.entries.length === 0 ? (
+    if (tracksLoading)
+      return (
+        <>
+          <View style={styles.trackListDivider} />
+          <TrackList hideArt showDivider showSkeleton tracks={Array(20)} />
+        </>
+      )
+
+    return tracksLineup.entries.length === 0 ? (
       <Text style={styles.empty}>{messages.empty}</Text>
     ) : (
       <>
