@@ -38,7 +38,7 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { fileHasher } = require('@audius/libs')
+const { Utils } = require('@audius/libs')
 
 const { promisify } = require('util')
 
@@ -561,9 +561,9 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
   const content = await _generateContentToHash(resizeResp, dirCID)
 
   // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-  const multihashes = await fileHasher.generateImageCids(
+  const multihashes = await Utils.fileHasher.generateImageCids(
     content,
-    req.logContext
+    genericLogger.child(req.logContext)
   )
 
   // Ensure actual and expected dirCIDs match

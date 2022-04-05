@@ -5,7 +5,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
 
-const { fileHasher } = require('@audius/libs')
+const { Utils } = require('@audius/libs')
+const { logger: genericLogger } = require('../src/logging')
 const {
   removeTrackFolder,
   saveFileFromBufferToDisk,
@@ -105,9 +106,10 @@ describe('test fileManager', () => {
 
       const requestID = uuid()
       try {
-        await fileHasher.generateNonImageCid(srcPath, {
-          logContext: { requestID }
-        })
+        await Utils.fileHasher.generateNonImageCid(
+          srcPath,
+          genericLogger.child({ logContext: { requestID } })
+        )
       } catch (e) {
         assert.fail(e.message)
       }
@@ -176,7 +178,7 @@ describe('test fileManager', () => {
      */
     it('should throw an error if CID generation fails', async () => {
       sinon
-        .stub(fileHasher, 'generateNonImageCid')
+        .stub(Utils.fileHasher, 'generateNonImageCid')
         .rejects(new Error('generating CID has failed!'))
 
       try {
@@ -193,7 +195,7 @@ describe('test fileManager', () => {
      */
     it('should throw an error if writing file to filesystem fails', async () => {
       sinon
-        .stub(fileHasher, 'generateNonImageCid')
+        .stub(Utils.fileHasher, 'generateNonImageCid')
         .resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {

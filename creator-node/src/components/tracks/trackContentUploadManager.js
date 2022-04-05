@@ -8,7 +8,7 @@ const {
 const { getSegmentsDuration } = require('../../segmentDuration')
 
 const models = require('../../models')
-const { fileHasher } = require('@audius/libs')
+const { Utils } = require('@audius/libs')
 const DBManager = require('../../dbManager')
 const TranscodingQueue = require('../../TranscodingQueue')
 const FileManager = require('../../fileManager')
@@ -275,9 +275,10 @@ async function batchSaveFilesToDisk({
   transcodeFilePath,
   segmentFileNames
 }) {
-  const cid = await fileHasher.generateNonImageCid(transcodeFilePath, {
-    logContext
-  })
+  const cid = await Utils.fileHasher.generateNonImageCid(
+    transcodeFilePath,
+    genericLogger.child({ logContext })
+  )
   const dstPath = await FileManager.copyMultihashToFs(
     cid,
     transcodeFilePath,
@@ -299,9 +300,9 @@ async function batchSaveFilesToDisk({
           'segments',
           segmentFileName
         )
-        const multihash = await fileHasher.generateNonImageCid(
+        const multihash = await Utils.fileHasher.generateNonImageCid(
           segmentAbsolutePath,
-          { logContext }
+          genericLogger.child({ logContext })
         )
         const dstPath = await FileManager.copyMultihashToFs(
           multihash,

@@ -1,4 +1,4 @@
-const { fileHasher } = require('@audius/libs')
+const { Utils } = require('@audius/libs')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -14,7 +14,7 @@ const imageBuffer = fs.readFileSync(
   path.join(__dirname, imageTestDir, 'audiusDj.png')
 )
 
-let storagePath = config.get('storagePath')
+const storagePath = config.get('storagePath')
 
 // CIDs for audiusDj.png
 const DIR_CID_SQUARE = 'QmNfiyESzN4rNQikeHUiF4HBfAEKF38DTo1JtiDMukqwE9'
@@ -72,7 +72,7 @@ describe('test resizeImage', () => {
    */
   it('should not throw if generating CID fails', async () => {
     sinon
-      .stub(fileHasher, 'generateImageCids')
+      .stub(Utils.fileHasher, 'generateImageCids')
       .throws(new Error('generateImageCids failed!'))
     const job = {
       data: {
