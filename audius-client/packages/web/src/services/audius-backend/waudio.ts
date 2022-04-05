@@ -2,10 +2,8 @@ import { AccountInfo } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 
 import { Name } from 'common/models/Analytics'
-import { FeatureFlags } from 'common/services/remote-config'
 import { Nullable } from 'common/utils/typeUtils'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { track } from 'store/analytics/providers'
 
 // @ts-ignore
@@ -33,10 +31,6 @@ export const createUserBank = async (feePayerOverride = null) => {
 
 export const createUserBankIfNeeded = async (feePayerOverride = null) => {
   await waitForLibsInit()
-  const userbankEnabled = remoteConfigInstance.getFeatureEnabled(
-    FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP
-  )
-  if (!userbankEnabled) return
   const userId = libs().Account.getCurrentUser().user_id
   try {
     const userbankExists = await doesUserBankExist()
