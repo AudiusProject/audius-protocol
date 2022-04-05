@@ -43,7 +43,7 @@ describe('test fileHasher with randomized text content', () => {
       .throws(new Error('failed to generate only hash'))
 
     try {
-      await fileHasher.generateNonImageCid(randomTextFilePath)
+      await Utils.fileHasher.generateNonImageCid(randomTextFilePath)
       throw new Error(
         '`generateNonImageCid` should throw if `hashNonImages` fails'
       )
