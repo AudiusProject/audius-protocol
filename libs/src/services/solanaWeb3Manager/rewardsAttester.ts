@@ -407,13 +407,23 @@ export class RewardsAttester {
           await this._attestInParallel(toAttest)
 
         // Set state
-        this.startingBlock = highestBlock
-          ? highestBlock - 1
-          : this.startingBlock
-        this.offset = offset
+        // Set offset:
+        // - If same startingBlock as before, add offset
+        // - If new startingBlock, set offset
+        if (highestBlock && this.startingBlock === highestBlock - 1) {
+          this.offset += offset
+        } else {
+          this.offset = offset
+        }
+
         this.logger.info(
           `Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`
         )
+
+        this.startingBlock = highestBlock
+          ? highestBlock - 1
+          : this.startingBlock
+
 
         // Set the recently disbursed set
         this._addRecentlyDisbursed(results)
