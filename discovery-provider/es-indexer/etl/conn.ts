@@ -18,7 +18,8 @@ export function dialPg(): PG {
 let esc: ES | undefined = undefined
 export function dialEs() {
   if (!esc) {
-    let url = process.env.audius_elasticsearch_url || 'http://localhost:9200'
+    let url =
+      process.env.audius_elasticsearch_url || 'http://elasticsearch:9200'
     esc = new ES({ node: url })
   }
   return esc

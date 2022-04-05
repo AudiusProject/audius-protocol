@@ -38,96 +38,108 @@ def get_feed(args):
 
 def _es_get_feed(args, limit=10):
     current_user_id = str(args.get("user_id"))
-    # feed_filter = args.get("filter")
-    # load_reposts = feed_filter in ["repost", "all"]
-    # tracks_only = args.get("tracks_only", False)
+    feed_filter = args.get("filter", "all")
+    load_reposts = feed_filter in ["repost", "all"]
+    load_orig = feed_filter in ["original", "all"]
 
-    mdsl = [
-        {"index": "reposts"},
-        {
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "terms": {
-                                "user_id": {
-                                    "index": "users",
-                                    "id": current_user_id,
-                                    "path": "following_ids",
-                                },
-                            }
-                        },
-                        {"term": {"is_delete": False}},
-                    ]
-                }
-            },
-            # here doing some over-fetching to de-dupe later
-            # to approximate min_created_at + group by in SQL.
-            # could also do some kind of bucket aggregation + top hits
-            # to do a better approximation...
-            "size": limit * 3,
-            "sort": {"created_at": "desc"},
-        },
-        {"index": "tracks"},
-        {
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "terms": {
-                                "owner_id": {
-                                    "index": "users",
-                                    "id": current_user_id,
-                                    "path": "following_ids",
-                                },
-                            },
-                        },
-                        {"term": {"is_unlisted": False}},
-                        {"term": {"is_delete": False}},
-                    ]
-                }
-            },
-            "size": limit,
-            "sort": {"created_at": "desc"},
-        },
-        {"index": "playlists"},
-        {
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "terms": {
-                                "owner_id": {
-                                    "index": "users",
-                                    "id": current_user_id,
-                                    "path": "following_ids",
-                                },
-                            },
-                        },
-                        {"term": {"is_private": False}},
-                        {"term": {"is_delete": False}},
-                    ]
-                }
-            },
-            "size": limit,
-            "sort": {"created_at": "desc"},
-        },
-    ]
+    mdsl = []
+
+    def following_ids_terms_lookup(field):
+        """
+        does a "terms lookup" to query a field
+        with the user_ids that the current user follows
+        """
+        return {
+            "terms": {
+                field: {
+                    "index": "users",
+                    "id": current_user_id,
+                    "path": "following_ids",
+                },
+            }
+        }
+
+    if load_reposts:
+        mdsl.extend(
+            [
+                {"index": "reposts"},
+                {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                following_ids_terms_lookup("user_id"),
+                                {"term": {"is_delete": False}},
+                            ]
+                        }
+                    },
+                    # here doing some over-fetching to de-dupe later
+                    # to approximate min_created_at + group by in SQL.
+                    "size": limit * 3,
+                    "sort": {"created_at": "desc"},
+                },
+            ]
+        )
+
+    if load_orig:
+        mdsl.extend(
+            [
+                {"index": "tracks"},
+                {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                following_ids_terms_lookup("owner_id"),
+                                {"term": {"is_unlisted": False}},
+                                {"term": {"is_delete": False}},
+                            ]
+                        }
+                    },
+                    "size": limit,
+                    "sort": {"created_at": "desc"},
+                },
+                {"index": "playlists"},
+                {
+                    "query": {
+                        "bool": {
+                            "must": [
+                                following_ids_terms_lookup("playlist_owner_id"),
+                                {"term": {"is_private": False}},
+                                {"term": {"is_delete": False}},
+                            ]
+                        }
+                    },
+                    "size": limit,
+                    "sort": {"created_at": "desc"},
+                },
+            ]
+        )
+
+    reposts = []
+    tracks = []
+    playlists = []
 
     founds = esclient.msearch(searches=mdsl)
-    for found in founds["responses"]:
-        print("took:", found["took"])
+    # for found in founds["responses"]:
+    #     print("took:", found["took"])
 
-    (reposts, tracks, playlists) = [hits(r) for r in founds["responses"]]
+    if load_reposts:
+        reposts = hits(founds["responses"].pop(0))
+
+    if load_orig:
+        tracks = hits(founds["responses"].pop(0))
+        playlists = hits(founds["responses"].pop(0))
 
     # track timestamps and duplicates
     seen = set()
     unsorted_feed = []
 
     for playlist in playlists:
+        # Q: should es-indexer set item_key on track / playlist too?
+        #    instead of doing it dynamically here?
         playlist["item_key"] = item_key(playlist)
         seen.add(playlist["item_key"])
-        # add playlist tracks to seen?
+        # Q: should we add playlist tracks to seen?
+        #    get_feed will "debounce" tracks in playlist
         unsorted_feed.append(playlist)
 
     for track in tracks:
@@ -144,50 +156,48 @@ def _es_get_feed(args, limit=10):
         seen.add(k)
         unsorted_feed.append(r)
 
-    has_reposts = sorted(
+    # sorted feed with repost records
+    # the repost records are stubs that we'll now "hydrate"
+    # with the related track / playlist
+    sorted_with_reposts = sorted(
         unsorted_feed,
         key=lambda entry: entry["created_at"],
         reverse=True,
     )
-    has_reposts = has_reposts[0:limit]
+    sorted_with_reposts = sorted_with_reposts[0:limit]
 
-    # fetch underlying item for reposts
     mget_reposts = []
-    for r in has_reposts:
+    keyed_reposts = {}
+
+    for r in sorted_with_reposts:
         if r.get("repost_type") == "track":
             mget_reposts.append({"_index": "tracks", "_id": r["repost_item_id"]})
         elif r.get("repost_type") == "playlist":
             mget_reposts.append({"_index": "playlists", "_id": r["repost_item_id"]})
 
-    reposted_docs = esclient.mget(docs=mget_reposts)
-    keyed_reposts = {}
-    for doc in reposted_docs["docs"]:
-        if not doc["found"]:
-            # MISSING: track or playlist for repost??
-            # when can this happen?  a repost for an item not in the tracks or playlists
-            # probably if a track is unlisted / deleted, and thus removed from the
-            # tracks / playlists index?
-            # To match existing postgres behavior, probably need to index deleted docs
-            # instead of removing from index
-            print("---------------- NOT FOUND", doc["_index"], doc["_id"])
-            continue
-        s = doc["_source"]
-        s["item_key"] = item_key(s)
-        keyed_reposts[s["item_key"]] = s
+    if mget_reposts:
+        reposted_docs = esclient.mget(docs=mget_reposts)
+        for doc in reposted_docs["docs"]:
+            if not doc["found"]:
+                # MISSING: a repost for a track or playlist not in the index?
+                # this should only happen if repost indexing is running ahead of track / playlist
+                # should be transient... but should maybe still be tracked?
+                print("ES_MISSING", doc["_index"], doc["_id"])
+                continue
+            s = doc["_source"]
+            s["item_key"] = item_key(s)
+            keyed_reposts[s["item_key"]] = s
 
     # replace repost with underlying items
     sorted_feed = []
-    for x in has_reposts:
+    for x in sorted_with_reposts:
         if "repost_type" not in x:
             x["activity_timestamp"] = x["created_at"]
             sorted_feed.append(x)
         else:
-            # gotcha 2: strings vs int ids
             k = x["item_key"]
             if k not in keyed_reposts:
-                # MISSING: track or playlist for repost??
-                # from above
-                print("missing", k)
+                # MISSING: see above
                 continue
             item = keyed_reposts[k]
             item["activity_timestamp"] = x["created_at"]
@@ -195,65 +205,36 @@ def _es_get_feed(args, limit=10):
 
     # attach users
     user_id_list = get_users_ids(sorted_feed)
-    print("---------------", current_user_id)
     user_list = esclient.mget(index="users", ids=user_id_list)
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
     for item in sorted_feed:
-        # gotcha: es ids must be strings, but our ids are ints...
+        # GOTCHA: es ids must be strings, but our ids are ints...
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
         item["user"] = omit_indexed_fields(user_by_id[uid])
 
     # add context: followee_reposts, followee_saves
     item_keys = [i["item_key"] for i in sorted_feed]
+    save_repost_query = {
+        "query": {
+            "bool": {
+                "must": [
+                    following_ids_terms_lookup("user_id"),
+                    {"terms": {"item_key": item_keys}},
+                    {"term": {"is_delete": False}},
+                ]
+            }
+        },
+        "size": limit * 20,  # how mutch to overfetch?
+        "sort": {"created_at": "desc"},
+    }
     mdsl = [
         {"index": "reposts"},
-        {
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "terms": {
-                                "user_id": {
-                                    "index": "users",
-                                    "id": current_user_id,
-                                    "path": "following_ids",
-                                },
-                            }
-                        },
-                        {"terms": {"item_key": item_keys}},
-                        {"term": {"is_delete": False}},
-                    ]
-                }
-            },
-            "size": limit * 20,  # how mutch to overfetch?
-            "sort": {"created_at": "desc"},
-        },
+        save_repost_query,
         {"index": "saves"},
-        {
-            "query": {
-                "bool": {
-                    "must": [
-                        {
-                            "terms": {
-                                "user_id": {
-                                    "index": "users",
-                                    "id": current_user_id,
-                                    "path": "following_ids",
-                                },
-                            }
-                        },
-                        {"terms": {"item_key": item_keys}},
-                        {"term": {"is_delete": False}},
-                    ]
-                }
-            },
-            "size": limit * 20,  # how much to overfetch?
-            "sort": {"created_at": "desc"},
-        },
+        save_repost_query,
     ]
 
     founds = esclient.msearch(searches=mdsl)
-
     (reposts, saves) = [hits(r) for r in founds["responses"]]
 
     follow_reposts = defaultdict(list)
