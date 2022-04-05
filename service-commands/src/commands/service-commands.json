@@ -62,7 +62,7 @@
    "port": 8899,
    "health_check_endpoint": "",
    "up": [
-      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.8.14 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 100000'"
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.8.14 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 10000000'"
    ],
     "down": [
       "docker container stop solana || true",
@@ -74,7 +74,8 @@
     "up": [
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
-      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json",
+      "mkdir -p ./discovery-provider/idl/; cp solana-programs/anchor/audius-data/target/idl/audius_data.json discovery-provider/idl/audius_data.json"
     ],
     "add-sender": [
       "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
