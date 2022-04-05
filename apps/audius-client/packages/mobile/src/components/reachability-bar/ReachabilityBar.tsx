@@ -43,7 +43,7 @@ const useStyles = makeStyles(({ palette, typography }) => ({
 
 export const ReachabilityBar = () => {
   const translationAnim = useRef(new Animated.Value(-40)).current
-  const isNotReachable = useSelectorWeb(getIsReachable) === true
+  const isNotReachable = useSelectorWeb(getIsReachable) === false
 
   const styles = useStyles()
 
