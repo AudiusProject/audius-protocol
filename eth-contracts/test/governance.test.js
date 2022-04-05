@@ -1,6 +1,5 @@
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
-const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades')
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
@@ -3171,6 +3170,54 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm test contract is now registered
       assert.equal(await registry.getContract.call(contractRegKey), contract.address)
+
+      /**
+       * Register new contract via proposal
+       */
+      const newContractKey = web3.utils.utf8ToHex('TestContract2')
+      
+      // Confirm test contract is not yet registered
+      assert.equal(await registry.getContract.call(newContractKey), _lib.addressZero)
+
+      // Deploy test contract to register
+      const test0 = await TestContract.new({ from: proxyDeployerAddress })
+      const testInitData = _lib.encodeCall('initialize', [], [])
+      await AudiusAdminUpgradeabilityProxy.new(
+        test0.address,
+        governance.address,
+        testInitData,
+        { from: proxyDeployerAddress }
+      )
+      const test = await TestContract.at(contractProxy.address)
+
+      // Define proposal specs
+      const proposerAddress = stakerAccount1
+      const voterAddress = stakerAccount1
+
+      // Submit proposal
+      const submitTxReceipt = await governance.submitProposal(
+        registryRegKey,
+        callValue0,
+        'addContract(bytes32,address)',
+        _lib.abiEncode(['bytes32', 'address'], [newContractKey, test.address]),
+        proposalName,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+      const proposalId0 = _lib.parseTx(submitTxReceipt).event.args._proposalId
+
+      // Submit proposal vote for Yes
+      await governance.submitVote(proposalId0, Vote.Yes, { from: voterAddress })
+
+      // Advance blocks to after proposal evaluation period + execution delay
+      const proposalStartBlock = parseInt(submitTxReceipt.receipt.blockNumber)
+      await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
+
+      // Call evaluateProposalOutcome()
+      await governance.evaluateProposalOutcome(proposalId0, { from: proposerAddress })
+
+      // Confirm test contract is now registered
+      assert.equal(await registry.getContract.call(newContractKey), test.address)
     })
 
     it('Upgrade registry', async function () {
@@ -3350,18 +3397,5 @@ contract('Governance.sol', async (accounts) => {
       newVotingPeriod,
       "Incorrect voting period"
     )
-  })
-
-  it('Confirm GovernanceV2 proxy upgrade safety', async function () {
-    // https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades#test-usage
-    // deployProxy and upgradeProxy run some tests to ensure proxy upgrade safety
-
-    const governance = await deployProxy(
-      GovernanceV2,
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, maxInProgressProposals, guardianAddress]
-    )
-
-    // This call will error if not upgrade safe
-    await upgradeProxy(governance, GovernanceV2)
   })
 })
