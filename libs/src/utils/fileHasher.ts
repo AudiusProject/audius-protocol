@@ -16,7 +16,6 @@ import type {
   KeyQuery
 } from 'interface-store'
 import type { CID } from 'multiformats/cid'
-const fsReadFile = promisify(fs.readFile)
 
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
@@ -140,6 +139,7 @@ export const fileHasher = {
           content.on('error', (err: any) => reject(err))
         })
       } else {
+        const fsReadFile = promisify(fs.readFile)
         buffer = await fsReadFile(content as string)
       }
     } catch (e: any) {

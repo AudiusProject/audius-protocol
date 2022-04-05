@@ -10,8 +10,12 @@
     "crypto": false,
     "web3": false,
     "esm": false,
+    "ipfs-unixfs-importer": false,
+    "util": false,
     "stream": false,
-    "./utils/fileHasher": false
+    "interface-blockstore": false,
+    "interface-store": false,
+    "multiformats/cid": false
   },
   "scripts": {
     "init-local": "ts-node initScripts/local.js",
