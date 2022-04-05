@@ -600,7 +600,7 @@ def update_user_events(
 ) -> None:
     """Updates the user events table"""
     try:
-        if not isinstance(events, dict):
+        if not isinstance(events, dict) or not user_record.blocknumber:
             # There is something wrong with events, don't process it
             return
 

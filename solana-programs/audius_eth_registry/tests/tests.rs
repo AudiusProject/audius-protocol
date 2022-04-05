@@ -1,5 +1,8 @@
 #![cfg(feature = "test-bpf")]
 
+use core::time;
+use std::thread;
+
 use audius_eth_registry::*;
 use borsh::BorshDeserialize;
 use libsecp256k1::{PublicKey, SecretKey};
@@ -19,7 +22,9 @@ use solana_sdk::{
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
+    feature_set::FeatureSet
 };
+use {std::sync::Arc};
 
 use chrono::Utc;
 
@@ -424,14 +429,23 @@ async fn disable_signer_group_owner() {
         .unwrap()],
         Some(&payer.pubkey()),
     );
+    let recent_blockhash_1 = banks_client.get_recent_blockhash().await.unwrap();
     transaction.sign(
         &[&payer, &group_owner],
-        banks_client.get_recent_blockhash().await.unwrap(),
+        recent_blockhash_1,
     );
     let transaction_error = banks_client.process_transaction(transaction).await;
     assert!(transaction_error.is_err());
 
     // Confirm signer group cannot be re-initialized
+    let mut recent_blockhash_2 = banks_client.get_recent_blockhash().await.unwrap();
+    // Need to poll for new blockhash; otherwise if we accidentally reuse
+    // the old one, the transaction won't be processed and a cached value returned
+    while recent_blockhash_2 == recent_blockhash_1 {
+        thread::sleep(time::Duration::from_millis(100));
+        recent_blockhash_2 = banks_client.get_recent_blockhash().await.unwrap();
+    }
+
     let mut transaction_2 = Transaction::new_with_payer(
         &[
             instruction::init_signer_group(&id(), &signer_group.pubkey(), &group_owner.pubkey())
@@ -441,7 +455,7 @@ async fn disable_signer_group_owner() {
     );
     transaction_2.sign(
         &[&payer],
-        banks_client.get_recent_blockhash().await.unwrap(),
+        recent_blockhash_2
     );
     let tx_error_2 = banks_client.process_transaction(transaction_2).await;
     assert!(tx_error_2.is_err());
@@ -836,7 +850,8 @@ async fn validate_signature_index_exploit() {
         Some(&payer.pubkey()),
     );
     transaction.sign(&[&payer], recent_blockhash);
-    assert!(transaction.verify_precompiles(false).is_ok());
+    let feature_set = Arc::new(FeatureSet::all_enabled());
+    assert!(transaction.verify_precompiles(&feature_set).is_ok());
     // This fails because when verifying the instructions, we verify the length of provided instructions
     // aginst the length of the provided signature data array
     let transaction_error = banks_client.process_transaction(transaction).await;

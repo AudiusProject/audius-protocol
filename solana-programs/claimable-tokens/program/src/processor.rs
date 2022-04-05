@@ -305,11 +305,8 @@ impl Processor {
         expected_message: &[u8],
         rent: &Rent,
     ) -> Result<u64, ProgramError> {
-        if !sysvar::instructions::check_id(&instruction_info.key) {
-            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
-        }
-
-        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+        let index = sysvar::instructions::load_current_index_checked(&instruction_info)
+        .map_err(to_claimable_tokens_error)?;
 
         // instruction can't be first in transaction
         // because must follow after `new_secp256k1_instruction`
@@ -321,9 +318,9 @@ impl Processor {
         let secp_program_index = index - 1;
 
         // load previous instruction
-        let instruction = sysvar::instructions::load_instruction_at(
+        let instruction = sysvar::instructions::load_instruction_at_checked(
             secp_program_index as usize,
-            &instruction_info.data.borrow(),
+            &instruction_info,
         )
         .map_err(to_claimable_tokens_error)?;
 

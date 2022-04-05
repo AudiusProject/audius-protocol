@@ -404,7 +404,7 @@ class DescriptiveArgument(reqparse.Argument):
 
 current_user_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 current_user_parser.add_argument(
-    "user_id", required=False, help="The user ID of the user making the request"
+    "user_id", required=False, description="The user ID of the user making the request"
 )
 
 
@@ -425,6 +425,17 @@ pagination_with_current_user_parser.add_argument(
 
 search_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 search_parser.add_argument("query", required=True, description="The search query")
+
+full_search_parser = pagination_with_current_user_parser.copy()
+full_search_parser.add_argument("query", required=True, description="The search query")
+full_search_parser.add_argument(
+    "kind",
+    required=False,
+    type=str,
+    default="all",
+    choices=("all", "users", "tracks", "playlists", "albums"),
+    description="The type of response, one of: all, users, tracks, playlists, or albums",
+)
 
 full_trending_parser = pagination_parser.copy()
 full_trending_parser.add_argument(

@@ -2,7 +2,11 @@ import random
 from datetime import datetime
 from unittest.mock import patch
 
-from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
+from integration_tests.challenges.index_helpers import (
+    AttrDict,
+    CIDMetadataClient,
+    UpdateTask,
+)
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models import (
     Block,
@@ -86,7 +90,7 @@ multihash2 = helpers.multihash_digest_to_cid(
     + b"\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q"
 )
 
-ipfs_client = IPFSClient(
+cid_metadata_client = CIDMetadataClient(
     {
         multihash: {
             "owner_id": 1,
@@ -194,7 +198,7 @@ def test_index_tracks(mock_index_task, app):
         db = get_db()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         web3 = Web3()
-        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
+        update_task = UpdateTask(cid_metadata_client, web3, challenge_event_bus)
 
     pending_track_routes = []
 
@@ -250,7 +254,9 @@ def test_index_tracks(mock_index_task, app):
             b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
             + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
         )
-        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+        track_metadata = update_task.cid_metadata_client.get_metadata(
+            entry_multihash, "", ""
+        )
 
         track_record = parse_track_event(
             None,  # self - not used
@@ -330,7 +336,9 @@ def test_index_tracks(mock_index_task, app):
             b"\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B"
             + b"\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q"
         )
-        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+        track_metadata = update_task.cid_metadata_client.get_metadata(
+            entry_multihash, "", ""
+        )
 
         parse_track_event(
             None,
@@ -396,7 +404,9 @@ def test_index_tracks(mock_index_task, app):
             b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
             + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
         )
-        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+        track_metadata = update_task.cid_metadata_client.get_metadata(
+            entry_multihash, "", ""
+        )
 
         parse_track_event(
             None,
@@ -530,7 +540,7 @@ def test_track_indexing_skip_tx(app, mocker):
         db = get_db()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         web3 = Web3()
-        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
+        update_task = UpdateTask(cid_metadata_client, web3, challenge_event_bus)
 
     class TestTrackTransaction:
         pass
