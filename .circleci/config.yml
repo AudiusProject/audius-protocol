@@ -609,9 +609,10 @@ jobs:
       - run:
           name: anchor tests
           command: |
+            cd "$CIRCLE_WORKING_DIRECTORY/libs" && npm install
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
             solana-keygen new --no-bip39-passphrase
-            cd solana-programs/anchor/audius-data
+            cd "$CIRCLE_WORKING_DIRECTORY/solana-programs/anchor/audius-data"
             yarn
             npx anchor test
       - save_cache:
@@ -681,6 +682,7 @@ jobs:
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
+            cd "$CIRCLE_WORKING_DIRECTORY/libs" && npm install
       - run:
           name: anchor program seed CLI tests
           command: |
