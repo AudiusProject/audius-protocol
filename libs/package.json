@@ -9,7 +9,9 @@
     "node-localstorage": false,
     "crypto": false,
     "web3": false,
-    "esm": false
+    "esm": false,
+    "stream": false,
+    "./utils/fileHasher": false
   },
   "scripts": {
     "init-local": "ts-node initScripts/local.js",

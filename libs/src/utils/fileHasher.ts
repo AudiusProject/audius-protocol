@@ -20,7 +20,7 @@ const fsReadFile = promisify(fs.readFile)
 
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
-export type Content = NodeJS.ReadableStream | Buffer | string
+export type Content = ReadableStream | Buffer | string
 export interface ImageHasher {
   options: UserImporterOptions
   content: ImportCandidate
@@ -95,7 +95,7 @@ export const fileHasher = {
   },
 
   /**
-   * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
+   * Used to initalize the only hash fns. See Alan Shaw's reference code for more context.
    */
   initImageHasher(
     content: ImportCandidate,

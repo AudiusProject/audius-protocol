@@ -4,9 +4,9 @@ const path = require('path')
 const uuid = require('uuid')
 const sinon = require('sinon')
 
-const { fileHasher } = require('../src/utils')
+const { Utils } = require('../src/utils')
 
-describe('test FileHasher with randomized text content', () => {
+describe('test fileHasher with randomized text content', () => {
   let randomText, randomTextFilePath
 
   const createRandomText = () => {
@@ -30,7 +30,7 @@ describe('test FileHasher with randomized text content', () => {
 
   it('[random - generateNonImageCid] passing in improper content throws', async () => {
     try {
-      await fileHasher.generateNonImageCid(randomText)
+      await Utils.fileHasher.generateNonImageCid(randomText)
       throw new Error('passing in improper data should have failed')
     } catch (e) {
       assert.ok(e.toString().includes('Could not convert content into buffer'))
@@ -39,11 +39,11 @@ describe('test FileHasher with randomized text content', () => {
 
   it('[random - generateNonImageCids] if `hashNonImages()` errors, `generateNonImageCid()` throws', async () => {
     sinon
-      .stub(fileHasher, 'hashNonImages')
+      .stub(Utils.fileHasher, 'hashNonImages')
       .throws(new Error('failed to generate only hash'))
 
     try {
-      await fileHasher.generateNonImageCid(randomTextFilePath)
+      await Utils.fileHasher.generateNonImageCid(randomTextFilePath)
       throw new Error(
         '`generateNonImageCid` should throw if `hashNonImages` fails'
       )
@@ -54,11 +54,11 @@ describe('test FileHasher with randomized text content', () => {
 
   it('[random - generateImageCids] if `hashImages()` errors, `generateImageCids()` throws', async () => {
     sinon
-      .stub(fileHasher, 'hashImages')
+      .stub(Utils.fileHasher, 'hashImages')
       .throws(new Error('failed to generate only hash'))
 
     try {
-      await fileHasher.generateImageCids(randomTextFilePath)
+      await Utils.fileHasher.generateImageCids(randomTextFilePath)
       throw new Error(
         '`generateImageCids` should throw if `hashImages` fails'
       )
@@ -98,7 +98,7 @@ describe('test FileHasher with static content', () => {
 
     it('[static - generateNonImageCid] passing in improper content throws', async () => {
       try {
-        await fileHasher.generateNonImageCid('some static string')
+        await Utils.fileHasher.generateNonImageCid('some static string')
         throw new Error('passing in improper data should have failed')
       } catch (e) {
         assert.ok(
@@ -109,11 +109,11 @@ describe('test FileHasher with static content', () => {
 
     it('[static - generateNonImageCid] if `hashNonImages()` errors, `generateNonImageCid()` throws', async () => {
       sinon
-        .stub(fileHasher, 'hashNonImages')
+        .stub(Utils.fileHasher, 'hashNonImages')
         .throws(new Error('failed to generate only hash'))
 
       try {
-        await fileHasher.generateNonImageCid(filePath)
+        await Utils.fileHasher.generateNonImageCid(filePath)
         throw new Error(
           '`generateNonImageCid` should throw if `hashNonImages` fails'
         )
