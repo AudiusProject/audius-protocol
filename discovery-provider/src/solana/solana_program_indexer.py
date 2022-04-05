@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 BASE_ERROR = "Must be implemented in subclass"
 
 TX_SIGNATURES_PROCESSING_SIZE = 100
+PARSE_TX_TIMEOUT = 1000
 
 
 class IndexerBase(ABC):
@@ -131,7 +132,7 @@ class SolanaProgramIndexer(IndexerBase):
         for tx_sig in tx_sig_batch_records:
             future = asyncio.ensure_future(self.parse_tx(tx_sig))
             futures.append(future)
-        for future in asyncio.as_completed(futures, timeout=100000):
+        for future in asyncio.as_completed(futures, timeout=PARSE_TX_TIMEOUT):
             try:
                 future_result = await future
                 self.msg(f"{future_result}")
@@ -163,7 +164,7 @@ class SolanaProgramIndexer(IndexerBase):
         """
         raise Exception(BASE_ERROR)
 
-    def get_transactions_to_process(self):
+    def get_transaction_batches_to_process(self):
         """
         Calculate the delta between database and chain tail and return an array of arrays containing transaction batches
         """

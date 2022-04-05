@@ -106,7 +106,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def process_index_task(self):
         self.msg("Processing indexing task")
         # Retrieve transactions to process
-        transaction_signatures = self.get_transactions_to_process()
+        transaction_signatures = self.get_transaction_batches_to_process()
         # Break down batch into records of size 100
         for tx_sig_batch in transaction_signatures:
             for tx_sig_batch_records in split_list(
