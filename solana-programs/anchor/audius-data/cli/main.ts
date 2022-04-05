@@ -23,6 +23,10 @@ import {
   randomId,
 } from "../lib/utils";
 
+import { getEthContractAccounts } from "../../../../libs/initScripts/helpers/utils.js"
+
+import { initAudiusLibs } from "../../../../libs/examples/initAudiusLibs.js"
+
 import { Command } from "commander";
 import fs = require("fs");
 
@@ -292,7 +296,8 @@ program
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
-  .option("--cn-sp-id <string>", "ID of incoming content node")
+  .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
+  // .option("-sp-pk, --cn-sp-private-key <string>", "hex private key of incoming content node")
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option("-ds, --delegate-status <string>", "user authority delegation status pda");
@@ -334,6 +339,7 @@ const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
   const userAuthorityDelegateAccountPDA = options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
   const authorityDelegationStatusAccountPDA = options.authorityDelegationStatusAccountPDA ?? SYSTEM_PROGRAM_ID;
+
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
@@ -346,8 +352,14 @@ const main = async () => {
       break;
     case functionTypes.initContentNode:
       console.log(`Initializing content node`)
+      const audiusLibs = await initAudiusLibs(true)
+      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
+      const ethAccounts = await ethWeb3.eth.getAccounts()
       // TODO - This authority should be a delegate private key propagated from local env or passed in
-      const contentNodeAuthority = anchor.web3.Keypair.generate();
+      const delegateWallet = ethAccounts[parseInt(options.cnSpId)]
+      const ganacheEthAccounts = await getEthContractAccounts()
+      const delegatePrivateKey = ganacheEthAccounts.private_keys[`${delegateWallet}`]
+      const contentNodeAuthority = anchor.web3.Keypair.fromSecretKey(Buffer.from(delegatePrivateKey));
       console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
@@ -368,7 +380,7 @@ const main = async () => {
           spID: cnInfo.spId,
           ownerEthAddress: options.ethAddress
         })
-        console.log(`Initialized with ${tx}`)
+        console.log(`Initialized content node with ${tx}`)
       })();
       break;
     case functionTypes.initUser:
