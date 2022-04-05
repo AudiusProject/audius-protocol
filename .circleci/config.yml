@@ -610,7 +610,6 @@ jobs:
           name: anchor tests
           command: |
             export PROTOCOL_DIR="/home/circleci/project"
-            cd "$PROTOCOL_DIR/libs" && npm install
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
             solana-keygen new --no-bip39-passphrase
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
@@ -683,7 +682,6 @@ jobs:
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
-            cd "$PROTOCOL_DIR/libs" && npm install
       - run:
           name: anchor program seed CLI tests
           command: |

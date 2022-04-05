@@ -1,4 +1,6 @@
 import * as anchor from "@project-serum/anchor";
+import * as fs from "fs/promises";
+import path from "path";
 import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
@@ -6,8 +8,7 @@ import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
 import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
-import { getEthContractAccounts } from "../../../../libs/initScripts/helpers/utils.js"
-import initAudiusLibs from "../../../../libs/examples/initAudiusLibs.js"
+import web3 from "web3";
 import { DUMMY_CN_WALLET_ADDRESSES } from "./constants";
 
 export const SystemSysVarProgramKey = new PublicKey(
@@ -186,14 +187,15 @@ export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }) => 
     contentNodeAuthority = anchor.web3.Keypair.generate();
     delegateWallet = DUMMY_CN_WALLET_ADDRESSES[cnSpId - 1]
   } else {
-    const audiusLibs = await initAudiusLibs(true)
-    const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-    const ethAccounts = await ethWeb3.eth.getAccounts()
-    delegateWallet = ethWeb3.utils.toHex(ethAccounts[cnSpId])
-    const ganacheEthAccounts = await getEthContractAccounts()
-    const delegatePrivateKey = ganacheEthAccounts.private_keys[String(delegateWallet)]
-    const uint8SecretKey = Uint8Array.from(ethWeb3.utils.hexToBytes(`0x${delegatePrivateKey}`))
-    contentNodeAuthority = anchor.web3.Keypair.fromSeed(uint8SecretKey);
+    const spConfigFilePath = `creator-node/compose/env/tmp/shellEnv${cnSpId}.sh`
+    try {
+      const spConfig = await fs.readFile(path.join(process.env.PROTOCOL_DIR, spConfigFilePath), "utf-8");
+      const delegatePrivateKey = spConfig.split('delegatePrivateKey=')[1].split('\nexport')[0];
+      const uint8SecretKey = Uint8Array.from(web3.utils.hexToBytes(`0x${delegatePrivateKey}`))
+      contentNodeAuthority = anchor.web3.Keypair.fromSeed(uint8SecretKey);
+    } catch (error) {
+      throw new Error(`Error getting private key from sp config file ${spConfigFilePath}`);
+    }
   }
   return {
     contentNodeAuthority,
