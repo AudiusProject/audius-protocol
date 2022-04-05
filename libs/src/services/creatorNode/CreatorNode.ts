@@ -589,6 +589,7 @@ export class CreatorNode {
       }
       return await axios(req)
     }
+    return
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
