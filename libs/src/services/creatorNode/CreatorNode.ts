@@ -40,7 +40,7 @@ type FileUploadResponse = {
 }
 
 // Currently only supports a single logged-in audius user
-class CreatorNode {
+export class CreatorNode {
   /* Static Utils */
 
   /**
@@ -1059,5 +1059,3 @@ class CreatorNode {
     }
   }
 }
-
-module.exports = CreatorNode
