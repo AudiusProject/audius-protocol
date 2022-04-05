@@ -6,6 +6,9 @@ import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
 import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
+import { getEthContractAccounts } from "../../../../libs/initScripts/helpers/utils.js"
+import initAudiusLibs from "../../../../libs/examples/initAudiusLibs.js"
+import { DUMMY_CN_WALLET_ADDRESSES } from "./constants";
 
 export const SystemSysVarProgramKey = new PublicKey(
   "Sysvar1nstructions1111111111111111111111111"
@@ -168,3 +171,32 @@ export const getContentNode = async (
     derivedAddress,
   };
 };
+
+/**
+ * Returns object containing
+ * content node delegate wallet address and 
+ * authority KeyPair based on spId; when ci=true
+ * returns hardcoded wallet address and new KeyPair
+ */
+export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }) => {
+  const cnSpId = parseInt(spId);
+  let contentNodeAuthority;
+  let delegateWallet;
+  if (ci) {
+    contentNodeAuthority = anchor.web3.Keypair.generate();
+    delegateWallet = DUMMY_CN_WALLET_ADDRESSES[cnSpId - 1]
+  } else {
+    const audiusLibs = await initAudiusLibs(true)
+    const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
+    const ethAccounts = await ethWeb3.eth.getAccounts()
+    delegateWallet = ethWeb3.utils.toHex(ethAccounts[cnSpId])
+    const ganacheEthAccounts = await getEthContractAccounts()
+    const delegatePrivateKey = ganacheEthAccounts.private_keys[String(delegateWallet)]
+    const uint8SecretKey = Uint8Array.from(ethWeb3.utils.hexToBytes(`0x${delegatePrivateKey}`))
+    contentNodeAuthority = anchor.web3.Keypair.fromSeed(uint8SecretKey);
+  }
+  return {
+    contentNodeAuthority,
+    delegateWallet
+  }
+}

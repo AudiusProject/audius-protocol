@@ -21,11 +21,8 @@ import {
   getContentNode,
   randomCID,
   randomId,
+  getContentNodeWalletAndAuthority
 } from "../lib/utils";
-
-import { getEthContractAccounts } from "../../../../libs/initScripts/helpers/utils.js"
-
-import initAudiusLibs from "../../../../libs/examples/initAudiusLibs.js"
 
 import { Command } from "commander";
 import fs = require("fs");
@@ -297,7 +294,7 @@ program
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
   .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
-  // .option("-sp-pk, --cn-sp-private-key <string>", "hex private key of incoming content node")
+  .option("-ci, <boolean>", "set to true to seed content node wallet and pkey with dummy values", false)
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option("-ds, --delegate-status <string>", "user authority delegation status pda");
@@ -352,14 +349,7 @@ const main = async () => {
       break;
     case functionTypes.initContentNode:
       console.log(`Initializing content node`)
-      const audiusLibs = await initAudiusLibs(true)
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const ethAccounts = await ethWeb3.eth.getAccounts()
-      const delegateWallet = ethWeb3.utils.toHex(ethAccounts[parseInt(options.cnSpId)])
-      const ganacheEthAccounts = await getEthContractAccounts()
-      const delegatePrivateKey = ganacheEthAccounts.private_keys[String(delegateWallet)]
-      const uint8SecretKey = Uint8Array.from(ethWeb3.utils.hexToBytes(`0x${delegatePrivateKey}`))
-      const contentNodeAuthority = anchor.web3.Keypair.fromSeed(uint8SecretKey);
+      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, ci: options.ci });
       console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
