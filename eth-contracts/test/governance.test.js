@@ -1,18 +1,19 @@
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades')
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
 const StakingUpgraded = artifacts.require('StakingUpgraded')
 const Governance = artifacts.require('Governance')
 const GovernanceUpgraded = artifacts.require('GovernanceUpgraded')
+const GovernanceV2 = artifacts.require('GovernanceV2')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const DelegateManager = artifacts.require('DelegateManager')
 const TestContract = artifacts.require('TestContract')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
-const GovernanceV2 = artifacts.require('GovernanceV2')
 const MockAccount = artifacts.require('MockAccount')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -3221,6 +3222,30 @@ contract('Governance.sol', async (accounts) => {
     const govProxy = await AudiusAdminUpgradeabilityProxy.at(governance.address)
     const govLogicAddress = await govProxy.implementation.call({ from: proxyAdminAddress })
 
+    // Submit arbitrary proposals
+    const proposerAddress = stakerAccount1
+    const submitProposalTx0Receipt = await governance.submitProposal(
+      governanceKey,
+      callValue0,
+      'setVotingPeriod(uint256)',
+      _lib.abiEncode(['uint256'], [votingPeriod]),
+      proposalName,
+      proposalDescription,
+      { from: proposerAddress }
+    )
+    const proposalId0 = _lib.parseTx(submitProposalTx0Receipt).event.args._proposalId
+    const submitProposalTx1Receipt = await governance.submitProposal(
+      governanceKey,
+      callValue0,
+      'setVotingPeriod(uint256)',
+      _lib.abiEncode(['uint256'], [votingPeriod]),
+      proposalName,
+      proposalDescription,
+      { from: proposerAddress }
+    )
+    const proposalId1 = _lib.parseTx(submitProposalTx1Receipt).event.args._proposalId
+    assert.isTrue(proposalId1.eq(proposalId0.add(_lib.toBN(1))), 'proposalId should increment by 1')
+
     // Deploy new logic contract to later upgrade to
     const governanceV2Logic = await GovernanceV2.new({ from: proxyDeployerAddress })
 
@@ -3230,7 +3255,6 @@ contract('Governance.sol', async (accounts) => {
     const callValueZero = _lib.toBN(0)
     const functionSignature = 'upgradeTo(address)'
     const callData = _lib.abiEncode(['address'], [governanceV2Logic.address])
-    const proposerAddress = stakerAccount1
     const voterAddress = stakerAccount1
     const outcome = Outcome.ApprovedExecuted
     const lastBlock = (await _lib.getLatestBlock(web3)).number
@@ -3247,6 +3271,9 @@ contract('Governance.sol', async (accounts) => {
       { from: proposerAddress }
     )
     const proposalId = _lib.parseTx(submitTxReceipt).event.args._proposalId
+
+    // Assert proposalId did not get reset after governance upgrade
+    assert.isTrue(proposalId.eq(proposalId1.add(_lib.toBN(1))), 'proposalId should not reset after governance contract proxy upgrade 😅')
 
     // Submit proposal vote for Yes
     await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
@@ -3297,5 +3324,18 @@ contract('Governance.sol', async (accounts) => {
       govLogicAddress,
       'Expected updated proxy implementation address'
     )
+  })
+
+  it('Confirm GovernanceV2 proxy upgrade safety', async function () {
+    // https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades#test-usage
+    // deployProxy and upgradeProxy run some tests to ensure proxy upgrade safety
+
+    const governance = await deployProxy(
+      GovernanceV2,
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, maxInProgressProposals, guardianAddress]
+    )
+
+    // This call will error if not upgrade safe
+    await upgradeProxy(governance, GovernanceV2)
   })
 })

@@ -11,6 +11,7 @@ import "./InitializableV2.sol";
 /**
  * This contract is identical to Governance.sol with the following differences:
  * - Uses DelegateManagerV2.sol instead of DelegateManager.sol
+ * - Removes the assignment of state variable `lastProposalId for proxy upgradeability
  */
 contract GovernanceV2 is InitializableV2 {
     using SafeMath for uint256;
@@ -121,7 +122,7 @@ contract GovernanceV2 is InitializableV2 {
     /***** Proposal storage *****/
 
     /// @notice ID of most recently created proposal. Ids are monotonically increasing and 1-indexed.
-    uint256 lastProposalId = 0;
+    uint256 lastProposalId;
 
     /// @notice mapping of proposalId to Proposal struct with all proposal state
     mapping(uint256 => Proposal) proposals;
