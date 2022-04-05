@@ -20,16 +20,16 @@ const fsReadFile = promisify(fs.readFile)
 
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
-type Content = AsyncIterable<Uint8Array> | Iterable<Uint8Array> | Uint8Array
-interface ImageHasher {
+export type Content = NodeJS.ReadableStream | Buffer | string
+export interface ImageHasher {
   options: UserImporterOptions
   content: ImportCandidate
 }
-interface NonImageHasher {
+export interface NonImageHasher {
   options: UserImporterOptions
   content: Uint8Array
 }
-interface HashedImage {
+export interface HashedImage {
   path: string | undefined
   cid: string
   size: number
@@ -112,16 +112,12 @@ export const fileHasher = {
    * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
    */
   initNonImageHasher(
-    content: string | Uint8Array,
+    content: Uint8Array,
     options: UserImporterOptions
   ): NonImageHasher {
     options = options || {}
     options.onlyHash = true
     options.cidVersion = 0
-
-    if (typeof content === 'string') {
-      content = new TextEncoder().encode(content)
-    }
 
     return { options, content }
   },
@@ -135,7 +131,7 @@ export const fileHasher = {
   async convertToBuffer(content: Content, logger: any): Promise<Buffer> {
     if (Buffer.isBuffer(content)) return content
 
-    let buffer: any = []
+    let buffer: any
     try {
       if (content instanceof Stream.Readable) {
         await new Promise((resolve, reject) => {
@@ -162,7 +158,7 @@ export const fileHasher = {
    * @returns the CID from content addressing logic
    */
   async hashNonImages(
-    content: string | Uint8Array,
+    content: Uint8Array,
     options: UserImporterOptions = {}
   ): Promise<string> {
     ;({ options, content } = fileHasher.initNonImageHasher(content, options))
@@ -238,7 +234,7 @@ export const fileHasher = {
    * @returns {string} only hash response cid
    */
   async generateNonImageCid(
-    content: Buffer,
+    content: Content,
     logger: any = console
   ): Promise<string> {
     const buffer = await fileHasher.convertToBuffer(content, logger)
