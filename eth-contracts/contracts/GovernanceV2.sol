@@ -11,7 +11,7 @@ import "./InitializableV2.sol";
 /**
  * This contract is identical to Governance.sol with the following differences:
  * - Uses DelegateManagerV2.sol instead of DelegateManager.sol
- * - Removes the assignment of state variable `lastProposalId for proxy upgradeability
+ * - Removes the assignment of state variable lastProposalId for proxy upgradeability
  */
 contract GovernanceV2 is InitializableV2 {
     using SafeMath for uint256;
