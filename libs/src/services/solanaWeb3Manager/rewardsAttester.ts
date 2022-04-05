@@ -424,7 +424,6 @@ export class RewardsAttester {
           ? highestBlock - 1
           : this.startingBlock
 
-
         // Set the recently disbursed set
         this._addRecentlyDisbursed(results)
 
@@ -795,7 +794,7 @@ export class RewardsAttester {
           amount,
           handle,
           wallet,
-          completed_blocknumber, // eslint-disable-line
+          completed_blocknumber // eslint-disable-line
         }) => ({
           challengeId: challenge_id,
           userId: user_id,
