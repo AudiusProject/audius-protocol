@@ -1,6 +1,9 @@
 const assert = require('assert')
 const sinon = require('sinon')
+const { AttestationPhases, SubmitAndEvaluateError } = require('../src/api/rewards')
 const { RewardsAttester, AttestationDelayCalculator } = require('../src/services/solanaWeb3Manager/rewardsAttester')
+const { Utils } = require('../src/utils')
+const { encodeHashId } = Utils
 
 function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
   this.getSlot = getSlot
@@ -158,51 +161,9 @@ describe('Rewards Attester Tests', () => {
     rewardsMock.expects("getUndisbursedChallenges")
       .exactly(3)
       .onFirstCall()
-      .returns({
-        success: [
-          {
-            challenge_id: "profile-completion",
-            user_id: "7eP5n",
-            specifier: "1",
-            amount: "1",
-            completed_blocknumber: 1,
-            handle: "firstUser",
-            wallet: "0xFirstUser"
-          },
-          {
-            challenge_id: "profile-completion",
-            user_id: "ML51L",
-            specifier: "2",
-            amount: "1",
-            completed_blocknumber: 2,
-            handle: "secondUser",
-            wallet: "0xSecondUser"
-          }
-        ]
-      })
+      .returns(withSuccess([1,2].map(i => makeChallenge(i, i))))
       .onSecondCall()
-      .returns({
-        success: [
-          {
-            challenge_id: "profile-completion",
-            user_id: "lebQD",
-            specifier: "3",
-            amount: "1",
-            completed_blocknumber: 3,
-            handle: "thirdUser",
-            wallet: "0xThirdUser"
-          },
-          {
-            challenge_id: "profile-completion",
-            user_id: "ELKzn",
-            specifier: "4",
-            amount: "1",
-            completed_blocknumber: 4,
-            handle: "fourthUser",
-            wallet: "0xFouthUser"
-          }
-        ]
-      })
+      .returns(withSuccess([3,4].map(i => makeChallenge(i, i))))
       .onThirdCall()
       .callsFake(() => {
         attester.stop()
@@ -221,4 +182,124 @@ describe('Rewards Attester Tests', () => {
     assert.equal(attester.offset, 0)
     rewardsMock.verify()
   })
+
+  it("Sets offset correctly for unretryable errors with same starting block", async () => {
+    // This tests that we *add* offsets correctly if each challenge we return has the same starting block.
+    // For this test, fetch challenges in batches of 2, and the first 4 all share the same completed block
+    // and are unretryable, so the offset should be 4 by the end
+    const libs = new MockLibs()
+    const rewardsStub = sinon.stub(libs.Rewards)
+
+    const attester = new RewardsAttester({
+      libs,
+      startingBlock: 0,
+      offset: 0,
+      parallelization: 2,
+      quorumSize: 2,
+      aaoEndpoint: 'https://fakeaao.co',
+      aaoAddress: '0xFakeOracle',
+      challengeIdsDenyList: [],
+      endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override'
+    })
+
+    const [attesterPromise, resolve] = makeAttesterPromise()
+
+    rewardsStub.getUndisbursedChallenges
+      .onFirstCall()
+      .returns(withSuccess([0, 1].map(i => makeChallenge(i, 1))))
+      .onSecondCall()
+      .returns(withSuccess([2, 3].map(i => makeChallenge(i, 1))))
+      .onThirdCall()
+      .callsFake(() => {
+        attester.stop()
+        resolve()
+        return withSuccess([])
+      })
+
+    // Entries 0-3 should return rejection (no retry)
+    rewardsStub.submitAndEvaluate.withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3])})).returns({
+      success: false,
+      error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
+      phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+    })
+
+    await attester.start()
+    await attesterPromise
+
+    assert.equal(attester.startingBlock, 0)
+    assert.equal(attester.offset, 4)
+  })
+
+  it("Sets offset correctly for unretryable errors with different starting block", async () => {
+    // If we get some unretryable errors with a different starting block,
+    // we should *reset* the offset instead of accumulating it.
+
+    const libs = new MockLibs()
+    const rewardsStub = sinon.stub(libs.Rewards)
+
+    const attester = new RewardsAttester({
+      libs,
+      startingBlock: 0,
+      offset: 0,
+      parallelization: 2,
+      quorumSize: 2,
+      aaoEndpoint: 'https://fakeaao.co',
+      aaoAddress: '0xFakeOracle',
+      challengeIdsDenyList: [],
+      endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override'
+    })
+
+    const [attesterPromise, resolve] = makeAttesterPromise()
+
+    rewardsStub.getUndisbursedChallenges
+      .onFirstCall()
+      .returns(withSuccess([0, 1].map(i => makeChallenge(i, 1))))
+      .onSecondCall()
+      .returns(withSuccess([2, 3].map(i => makeChallenge(i, 2))))
+      .onThirdCall()
+      .callsFake(() => {
+        attester.stop()
+        resolve()
+        return withSuccess([])
+      })
+
+    // Entries 0-3 should return rejection (no retry)
+    rewardsStub.submitAndEvaluate.withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3])})).returns({
+      success: false,
+      error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
+      phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+    })
+
+
+    await attester.start()
+    await attesterPromise
+
+    assert.equal(attester.startingBlock, 1)
+    assert.equal(attester.offset, 2)
+
+  })
+})
+
+const makeAttesterPromise = () => {
+  let res = null
+  const promise = new Promise((resolve) => res = resolve)
+  return [promise, res]
+}
+
+const withSuccess = (objs) => ({
+  success: objs
+})
+
+const makeChallenge = (index, completedBlocknumber) => ({
+  challenge_id: "profile-completion",
+  user_id: encodeHashId(index),
+  specifier: index,
+  amount: "1",
+  completed_blocknumber: completedBlocknumber,
+  handle: `user_ ${index}`,
+  wallet: `0x${index}`
 })
