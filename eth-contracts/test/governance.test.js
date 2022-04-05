@@ -3218,22 +3218,42 @@ contract('Governance.sol', async (accounts) => {
     })
   })
 
-  it('Upgrade governance contract via proposal', async function () {
+  it('Upgrade governance contract via proposal + ensure upgrade safety', async function () {
     const govProxy = await AudiusAdminUpgradeabilityProxy.at(governance.address)
     const govLogicAddress = await govProxy.implementation.call({ from: proxyAdminAddress })
 
-    // Submit arbitrary proposals
+    // Submit and execute arbitrary proposals
+    assert.equal(
+      await governance.getVotingPeriod(),
+      votingPeriod,
+      "Incorrect voting period"
+    )
     const proposerAddress = stakerAccount1
+    const voterAddress = stakerAccount1
+    const newVotingPeriod = votingPeriod + 1
     const submitProposalTx0Receipt = await governance.submitProposal(
       governanceKey,
       callValue0,
       'setVotingPeriod(uint256)',
-      _lib.abiEncode(['uint256'], [votingPeriod]),
+      _lib.abiEncode(['uint256'], [newVotingPeriod]),
       proposalName,
       proposalDescription,
       { from: proposerAddress }
     )
     const proposalId0 = _lib.parseTx(submitProposalTx0Receipt).event.args._proposalId
+    // Submit proposal vote for Yes
+    await governance.submitVote(proposalId0, Vote.Yes, { from: voterAddress })
+    // Advance blocks to after proposal evaluation period + execution delay
+    const proposal0StartBlock = parseInt(submitProposalTx0Receipt.receipt.blockNumber)
+    await time.advanceBlockTo(proposal0StartBlock + votingPeriod + executionDelay)
+    // Call evaluateProposalOutcome()
+    await governance.evaluateProposalOutcome(proposalId0, { from: proposerAddress })
+    assert.equal(
+      await governance.getVotingPeriod(),
+      newVotingPeriod,
+      "Incorrect voting period"
+    )
+
     const submitProposalTx1Receipt = await governance.submitProposal(
       governanceKey,
       callValue0,
@@ -3255,7 +3275,6 @@ contract('Governance.sol', async (accounts) => {
     const callValueZero = _lib.toBN(0)
     const functionSignature = 'upgradeTo(address)'
     const callData = _lib.abiEncode(['address'], [governanceV2Logic.address])
-    const voterAddress = stakerAccount1
     const outcome = Outcome.ApprovedExecuted
     const lastBlock = (await _lib.getLatestBlock(web3)).number
     const returnData = null
@@ -3280,7 +3299,7 @@ contract('Governance.sol', async (accounts) => {
 
     // Advance blocks to after proposal evaluation period + execution delay
     const proposalStartBlock = parseInt(submitTxReceipt.receipt.blockNumber)
-    await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
+    await time.advanceBlockTo(proposalStartBlock + newVotingPeriod + executionDelay)
 
     // Call evaluateProposalOutcome()
     const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
@@ -3323,6 +3342,13 @@ contract('Governance.sol', async (accounts) => {
       await govProxy.implementation.call({ from: proxyAdminAddress }),
       govLogicAddress,
       'Expected updated proxy implementation address'
+    )
+
+    // Confirm that contract has updated voting period from earlier proposal
+    assert.equal(
+      await governance.getVotingPeriod(),
+      newVotingPeriod,
+      "Incorrect voting period"
     )
   })
 
