@@ -10,7 +10,7 @@ class AttrDict(dict):
         self.__dict__ = self
 
 
-class IPFSClient:
+class CIDMetadataClient:
     def __init__(self, metadata_dict):
         self.metadata_dict = metadata_dict
 
@@ -19,8 +19,8 @@ class IPFSClient:
 
 
 class UpdateTask:
-    def __init__(self, ipfs_client, web3, challenge_event_bus, redis=None):
-        self.ipfs_client = ipfs_client
+    def __init__(self, cid_metadata_client, web3, challenge_event_bus, redis=None):
+        self.cid_metadata_client = cid_metadata_client
         self.web3 = web3
         self.challenge_event_bus: ChallengeEventBus = challenge_event_bus
         self.redis = redis
