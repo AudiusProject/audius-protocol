@@ -355,13 +355,12 @@ const main = async () => {
       const audiusLibs = await initAudiusLibs(true)
       const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
       const ethAccounts = await ethWeb3.eth.getAccounts()
-      // TODO - This authority should be a delegate private key propagated from local env or passed in
-      const delegateWallet = ethAccounts[parseInt(options.cnSpId)]
+      const delegateWallet = ethWeb3.utils.toHex(ethAccounts[parseInt(options.cnSpId)])
       const ganacheEthAccounts = await getEthContractAccounts()
-      const delegatePrivateKey = ganacheEthAccounts.private_keys[String(delegateWallet)] // TODO why does this not work...
-      console.log(delegateWallet, 'AAAAAAAAAAAAA', Object.keys(ganacheEthAccounts.private_keys), delegatePrivateKey)
-      const contentNodeAuthority = anchor.web3.Keypair.fromSecretKey(Buffer.from(delegatePrivateKey));
-      console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
+      const delegatePrivateKey = ganacheEthAccounts.private_keys[String(delegateWallet)]
+      const uint8SecretKey = Uint8Array.from(ethWeb3.utils.hexToBytes(`0x${delegatePrivateKey}`))
+      const contentNodeAuthority = anchor.web3.Keypair.fromSeed(uint8SecretKey);
+      console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
         const cnInfo = await getContentNode(
@@ -379,7 +378,7 @@ const main = async () => {
           contentNodeAuthority: contentNodeAuthority.publicKey,
           contentNodeAcct: cnInfo.derivedAddress,
           spID: cnInfo.spId,
-          ownerEthAddress: options.ethAddress
+          ownerEthAddress: delegateWallet
         })
         console.log(`Initialized content node with ${tx}`)
       })();
