@@ -2,7 +2,6 @@
 export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
   PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled',
-  CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up',
   CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SOL_WALLET_AUDIO_ENABLED = 'sol_wallet_audio_enabled',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
@@ -20,7 +19,6 @@ export enum FeatureFlags {
 export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
-  [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
@@ -50,10 +48,6 @@ export const flagCohortType: {
 } = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: FeatureFlagCohortType.USER_ID,
-  // Create wAudio user bank on sign up is a session id experiment because it only impacts
-  // unauthenticated sessions during sign up
-  [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]:
-    FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
