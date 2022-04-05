@@ -3,24 +3,23 @@ import base64
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-import base58
 from anchorpy import Idl, InstructionCoder
-from solana.transaction import Transaction, TransactionInstruction
+from solana.transaction import Transaction
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
+from src.solana.anchor_parser import parse_instruction
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.utils.helpers import split_list
 
 logger = logging.getLogger(__name__)
 
-BASE_ERROR = "Must be implemented in subclass"
 TX_SIGNATURES_PROCESSING_SIZE = 100
 AUDIUS_DATA_IDL_PATH = "./idl/audius_data.json"
 
 
-class AnchorDataIndexer(SolanaProgramIndexer):
+class AnchorProgramIndexer(SolanaProgramIndexer):
     """
     Indexer for the audius user data layer
     """
@@ -38,13 +37,12 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         super().__init__(program_id, label, redis, db, solana_client_manager)
         self._init_instruction_coder()
 
-    def get_tx_in_db(self, session: Any, tx_sig: str):
+    def is_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
         tx_sig_db_count = (
             session.query(AudiusDataTx).filter(AudiusDataTx.signature == tx_sig)
         ).count()
         exists = tx_sig_db_count > 0
-        self.msg(f"{tx_sig} exists={exists}")
         return exists
 
     def get_latest_slot(self):
@@ -73,6 +71,7 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         self.msg(
             f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
         )
+        # TODO: Conditionally add database modifications here depending on transaction information
         with self._db.scoped_session() as session:
             for transaction in processed_transactions:
                 session.add(
@@ -82,18 +81,27 @@ class AnchorDataIndexer(SolanaProgramIndexer):
                     )
                 )
 
-    # TODO - This is where we will deserialize instruction data and accounts
-    # tx_metadata should contain TxType, Deserialized Instruction Data, etc
-    def parse_tx(self, tx_sig):
-        t = super().parse_tx(tx_sig)
+    async def parse_tx(self, tx_sig):
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
         encoded_data = tx_receipt["result"].get("transaction")[0]
-        encoded_data_hex = base64.b64decode(encoded_data).hex()
-        res = Transaction.deserialize(bytes.fromhex(encoded_data_hex))
-        for instruction in res.instructions:
-            parsed_instr = self._parse_instruction(instruction)
-            self.msg(f"{tx_sig} | {parsed_instr}")
-        return t
+        decoded_data = base64.b64decode(encoded_data)
+        decoded_data_hex = decoded_data.hex()
+        tx = Transaction.deserialize(bytes.fromhex(decoded_data_hex))
+        tx_metadata = {}
+
+        # Append each parsed transaction to parsed metadata
+        tx_instructions = []
+        for instruction in tx.instructions:
+            parsed_instr = parse_instruction(instruction, self._instruction_coder)
+            tx_instructions.append(parsed_instr)
+
+        tx_metadata["instructions"] = tx_instructions
+
+        """
+        For example:
+            Embed instruction specific information in tx_metadata
+        """
+        return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
 
     def process_index_task(self):
         self.msg("Processing indexing task")
@@ -109,21 +117,10 @@ class AnchorDataIndexer(SolanaProgramIndexer):
         self.msg("Finished processing indexing task")
 
     # TODO - Override with actual remote fetch operation
+    # parsed_transactions will contain an array of txs w/instructions
+    # each containing relevant metadata in container
     async def fetch_ipfs_metadata(self, parsed_transactions):
-        return super().fetch_ifps_metadata(parsed_transactions)
-
-    def _parse_instruction(self, instruction: TransactionInstruction) -> Dict:
-        encoded_ix_data = base58.b58encode(instruction.data)
-        idl_instruction_name = self._get_instruction_name(encoded_ix_data)
-        account_addresses = self._get_instruction_context_accounts(instruction)
-        decoded_data = self._decode_instruction_data(
-            encoded_ix_data, self._instruction_coder
-        )
-        return {
-            "instruction_name": idl_instruction_name,
-            "accounts": account_addresses,
-            "data": decoded_data,
-        }
+        return super().fetch_ipfs_metadata(parsed_transactions)
 
     def _init_instruction_coder(self):
         idl = self._get_idl()
@@ -140,31 +137,3 @@ class AnchorDataIndexer(SolanaProgramIndexer):
 
         idl = Idl.from_json(data)
         return idl
-
-    def _get_instruction_name(self, encoded_ix_data: bytes) -> Optional[str]:
-        idl_instruction_name = self._instruction_coder.sighash_to_name.get(
-            base58.b58decode(encoded_ix_data)[0:8]
-        )
-        if idl_instruction_name == None:
-            return ""
-        return idl_instruction_name
-
-    # Maps account indices for ix context to pubkeys
-    def _get_instruction_context_accounts(
-        self,
-        instruction: TransactionInstruction,
-    ) -> List[str]:
-        return [str(account_meta.pubkey) for account_meta in instruction.keys]
-
-    def _decode_instruction_data(
-        self, encoded_ix_data: bytes, instruction_coder: InstructionCoder
-    ) -> Any:
-        ix = base58.b58decode(encoded_ix_data)
-        ix_sighash = ix[0:8]
-        data = ix[8:]
-        decoder = instruction_coder.sighash_layouts.get(ix_sighash)
-        if not decoder:
-            return None
-        else:
-            decoded_data = decoder.parse(data)
-            return decoded_data

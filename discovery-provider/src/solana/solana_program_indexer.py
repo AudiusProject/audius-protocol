@@ -89,7 +89,7 @@ class SolanaProgramIndexer(IndexerBase):
         self._redis_queue_cache_prefix = f"{self._label}-tx-cache-queue"
 
     @abstractmethod
-    def get_tx_in_db(self, session: Any, tx_sig: str):
+    def is_tx_in_db(self, session: Any, tx_sig: str):
         """
         Return a boolean value indicating whether tx signature is found
         @param session: DB session
@@ -146,7 +146,7 @@ class SolanaProgramIndexer(IndexerBase):
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
         # Fetch metadata in parallel
-        metadata_dictionary = self.fetch_ipfs_metadata(parsed_transactions)
+        metadata_dictionary = await self.fetch_ipfs_metadata(parsed_transactions)
 
         self.validate_and_save_parsed_tx_records(
             parsed_transactions, metadata_dictionary
@@ -216,7 +216,7 @@ class SolanaProgramIndexer(IndexerBase):
                                 slot={slot}, sig={tx_sig},\
                                 latest_processed_slot(db)={latest_processed_slot}"
                             )
-                            exists = self.get_tx_in_db(read_session, tx_sig)
+                            exists = self.is_tx_in_db(read_session, tx_sig)
                             if exists:
                                 # Exit loop and set terminal condition since this tx has been found in DB
                                 # Transactions are returned with most recently committed first, so we can assume
