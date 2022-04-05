@@ -920,7 +920,10 @@ export class RewardsAttester {
         report.reason = errorType
         this.reporter.reportAAORejection(report)
       } else if (isFinalAttempt) {
-        // Final attempt at retries
+        // Final attempt at retries,
+        // should be classified as noRetry
+        // and reported as a failure
+        noRetry.push(res)
         this.reporter.reportFailure(report)
       } else {
         // Otherwise, retry it
