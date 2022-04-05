@@ -33,7 +33,7 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
-from src.solana.anchor_program_indexer import AnchorDataIndexer
+from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
@@ -548,7 +548,7 @@ def configure_celery(celery, test_config=None):
     delete_last_scanned_eth_block_redis(redis_inst)
 
     # Initialize Anchor Indexer
-    anchor_program_indexer = AnchorDataIndexer(
+    anchor_program_indexer = AnchorProgramIndexer(
         shared_config["solana"]["anchor_data_program_id"],
         "index_solana_user_data",
         redis_inst,
