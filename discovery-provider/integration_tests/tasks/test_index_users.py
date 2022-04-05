@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest import mock
 
-from integration_tests.challenges.index_helpers import AttrDict, IPFSClient
+from integration_tests.challenges.index_helpers import AttrDict, CIDMetadataClient
 from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models import (
@@ -142,7 +142,7 @@ multihash = helpers.multihash_digest_to_cid(
     + b"\x93\xdf\x9bf?\xe7h\xb3y\xa6\x19\x0c\x81\xb0"
 )
 
-ipfs_client = IPFSClient(
+cid_metadata_client = CIDMetadataClient(
     {
         multihash: {
             "is_creator": True,
@@ -216,7 +216,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         web3 = Web3()
         bus_mock(redis)
         update_task = DatabaseTask(
-            ipfs_client=ipfs_client,
+            cid_metadata_client=cid_metadata_client,
             web3=web3,
             challenge_event_bus=bus_mock,
             redis=redis,
@@ -467,7 +467,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
-            update_task.ipfs_client.get_metadata(
+            update_task.cid_metadata_client.get_metadata(
                 helpers.multihash_digest_to_cid(entry.args._multihashDigest),
                 user_metadata_format,
                 "",
@@ -477,7 +477,9 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         session.flush()
 
         entry_multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
-        ipfs_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+        ipfs_metadata = update_task.cid_metadata_client.get_metadata(
+            entry_multihash, "", ""
+        )
 
         assert user_record.profile_picture == ipfs_metadata["profile_picture"]
         assert user_record.cover_photo == ipfs_metadata["cover_photo"]
@@ -566,7 +568,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         web3 = Web3()
         bus_mock(redis)
         update_task = DatabaseTask(
-            ipfs_client=ipfs_client,
+            cid_metadata_client=cid_metadata_client,
             web3=web3,
             challenge_event_bus=bus_mock,
             redis=redis,

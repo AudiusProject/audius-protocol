@@ -12,7 +12,7 @@ class DatabaseTask(Task):
         abi_values=None,
         eth_abi_values=None,
         shared_config=None,
-        ipfs_client=None,
+        cid_metadata_client=None,
         redis=None,
         eth_web3_provider=None,
         solana_client_manager=None,
@@ -23,7 +23,7 @@ class DatabaseTask(Task):
         self._abi_values = abi_values
         self._eth_abi_values = eth_abi_values
         self._shared_config = shared_config
-        self._ipfs_client = ipfs_client
+        self._cid_metadata_client = cid_metadata_client
         self._redis = redis
         self._eth_web3_provider = eth_web3_provider
         self._solana_client_manager = solana_client_manager
@@ -50,8 +50,8 @@ class DatabaseTask(Task):
         return self._shared_config
 
     @property
-    def ipfs_client(self):
-        return self._ipfs_client
+    def cid_metadata_client(self):
+        return self._cid_metadata_client
 
     @property
     def redis(self) -> Redis:
