@@ -25,7 +25,7 @@ import {
 
 import { getEthContractAccounts } from "../../../../libs/initScripts/helpers/utils.js"
 
-import { initAudiusLibs } from "../../../../libs/examples/initAudiusLibs.js"
+import initAudiusLibs from "../../../../libs/examples/initAudiusLibs.js"
 
 import { Command } from "commander";
 import fs = require("fs");
@@ -358,7 +358,8 @@ const main = async () => {
       // TODO - This authority should be a delegate private key propagated from local env or passed in
       const delegateWallet = ethAccounts[parseInt(options.cnSpId)]
       const ganacheEthAccounts = await getEthContractAccounts()
-      const delegatePrivateKey = ganacheEthAccounts.private_keys[`${delegateWallet}`]
+      const delegatePrivateKey = ganacheEthAccounts.private_keys[String(delegateWallet)] // TODO why does this not work...
+      console.log(delegateWallet, 'AAAAAAAAAAAAA', Object.keys(ganacheEthAccounts.private_keys), delegatePrivateKey)
       const contentNodeAuthority = anchor.web3.Keypair.fromSecretKey(Buffer.from(delegatePrivateKey));
       console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
