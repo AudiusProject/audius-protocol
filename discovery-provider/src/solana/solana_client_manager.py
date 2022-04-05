@@ -49,7 +49,7 @@ class SolanaClientManager:
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}"
                     )
-                    tx_info: ConfirmedTransaction = client.get_confirmed_transaction(
+                    tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
                     )
                     logger.info(
