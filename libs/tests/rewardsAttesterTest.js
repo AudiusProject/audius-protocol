@@ -268,25 +268,72 @@ describe('Rewards Attester Tests', () => {
       })
 
     // Entries 0-3 should return rejection (no retry)
-    rewardsStub.submitAndEvaluate.withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3])})).returns({
-      success: false,
-      error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
-      phase: AttestationPhases.AGGREGATE_ATTESTATIONS
-    })
-
+    rewardsStub.submitAndEvaluate
+      .withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3]) }))
+      .returns({
+        success: false,
+        error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
+        phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+      })
 
     await attester.start()
     await attesterPromise
 
     assert.equal(attester.startingBlock, 1)
     assert.equal(attester.offset, 2)
+  })
 
+  it('Handles errors in processChallenges after retrying', async () => {
+    // processChallenges needs to return an error after it retries and fails,
+    // so that clients can act upon the error
+
+    const libs = new MockLibs()
+    const rewardsMock = sinon.mock(libs.Rewards)
+
+    const attester = new RewardsAttester({
+      libs,
+      startingBlock: 0,
+      offset: 0,
+      parallelization: 2,
+      quorumSize: 2,
+      aaoEndpoint: 'https://fakeaao.co',
+      aaoAddress: '0xFakeOracle',
+      challengeIdsDenyList: [],
+      endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override',
+      maxCooldownMsec: 100
+    })
+
+    // Have it always return a retryable error
+    rewardsMock
+      .expects("submitAndEvaluate")
+      .exactly(5)
+      .returns({
+        success: false,
+        error: SubmitAndEvaluateError.CHALLENGE_INCOMPLETE,
+        phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+      })
+
+    const { errors } = await attester.processChallenges([
+      {
+        challengeId: 'profile-completion',
+        userId: encodeHashId(1),
+        specifier: '1',
+        amount: '1',
+        completedBlocknumber: 1,
+        handle: 'user_1',
+        wallet: '0x1'
+      }
+    ])
+
+    assert.equal(errors?.length, 1)
   })
 })
 
 const makeAttesterPromise = () => {
   let res = null
-  const promise = new Promise((resolve) => res = resolve)
+  const promise = new Promise((resolve) => (res = resolve))
   return [promise, res]
 }
 
