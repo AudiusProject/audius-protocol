@@ -2,7 +2,6 @@ import asyncio
 from unittest.mock import create_autospec
 
 from construct import ListContainer
-from sqlalchemy import desc
 from src.models.models import AudiusDataTx
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
