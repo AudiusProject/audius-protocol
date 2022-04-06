@@ -154,7 +154,9 @@ describe('Test Health Check', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
@@ -218,7 +220,9 @@ describe('Test Health Check', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
@@ -274,7 +278,9 @@ describe('Test Health Check', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -343,7 +349,9 @@ describe('Test Health Check Verbose', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
