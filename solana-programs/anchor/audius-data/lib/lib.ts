@@ -61,7 +61,7 @@ export type InitUserParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   ethAddress: string;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
   metadata: string;
   userStorageAccount: anchor.web3.PublicKey;
@@ -81,7 +81,7 @@ export const initUser = ({
   payer,
   program,
   ethAddress,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   replicaSet,
   replicaSetBumps,
@@ -101,7 +101,7 @@ export const initUser = ({
       [...anchor.utils.bytes.hex.decode(ethAddress)],
       replicaSet,
       replicaSetBumps,
-      handleBytesArray,
+      userIdBytesArray,
       bumpSeed,
       metadata,
       {
@@ -368,7 +368,7 @@ export type CreateUserParams = {
   ethAccount: Account;
   message: Uint8Array;
   userId: anchor.BN;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
   metadata: string;
   userSolPubkey: anchor.web3.PublicKey;
@@ -389,7 +389,7 @@ export const createUser = ({
   message,
   replicaSet,
   replicaSetBumps,
-  handleBytesArray,
+  userIdBytesArray,
   cn1,
   cn2,
   cn3,
@@ -426,7 +426,7 @@ export const createUser = ({
       [...anchor.utils.bytes.hex.decode(ethAccount.address)],
       replicaSet,
       replicaSetBumps,
-      handleBytesArray,
+      userIdBytesArray,
       bumpSeed,
       metadata,
       userId,
@@ -718,7 +718,7 @@ export type CreateEntityParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
   userAuthorityPublicKey: anchor.web3.PublicKey;
   userStorageAccountPDA: anchor.web3.PublicKey;
@@ -799,7 +799,7 @@ export type UpdateEntityParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
   metadata: string;
   id: anchor.BN;
@@ -830,7 +830,7 @@ export type EntitySocialActionArgs = {
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
   id: string;
 };
@@ -844,7 +844,7 @@ export const updateTrack = ({
   userStorageAccountPDA,
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
-  handleBytesArray,
+  userIdBytesArray,
   adminStorageAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
@@ -852,7 +852,7 @@ export const updateTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.update,
       id,
@@ -881,7 +881,7 @@ export const deleteTrack = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   adminStorageAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
@@ -889,7 +889,7 @@ export const deleteTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.delete,
       id,
@@ -919,7 +919,7 @@ export const createPlaylist = ({
   authorityDelegationStatusAccountPDA,
   userStorageAccountPDA,
   metadata,
-  handleBytesArray,
+  userIdBytesArray,
   adminStorageAccount,
   bumpSeed,
 }: CreateEntityParams) => {
@@ -927,7 +927,7 @@ export const createPlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.create,
       id,
@@ -957,7 +957,7 @@ export const updatePlaylist = ({
   authorityDelegationStatusAccountPDA,
   userStorageAccountPDA,
   metadata,
-  handleBytesArray,
+  userIdBytesArray,
   adminStorageAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
@@ -965,7 +965,7 @@ export const updatePlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.update,
       id,
@@ -993,7 +993,7 @@ export const deletePlaylist = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   adminStorageAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
@@ -1001,7 +1001,7 @@ export const deletePlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.delete,
       id,
@@ -1048,7 +1048,7 @@ type EntitySocialActionParams = {
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
   id: string;
 };
@@ -1061,7 +1061,7 @@ export const addTrackSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1070,7 +1070,7 @@ export const addTrackSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.addSave,
       EntityTypesEnumValues.track,
       id,
@@ -1095,7 +1095,7 @@ export const deleteTrackSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1104,7 +1104,7 @@ export const deleteTrackSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.deleteSave,
       EntityTypesEnumValues.track,
       id,
@@ -1129,7 +1129,7 @@ export const addTrackRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1138,7 +1138,7 @@ export const addTrackRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.addRepost,
       EntityTypesEnumValues.track,
       id,
@@ -1172,7 +1172,7 @@ export const deleteTrackRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.deleteRepost,
       EntityTypesEnumValues.track,
       id,
@@ -1197,7 +1197,7 @@ export const addPlaylistSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1206,7 +1206,7 @@ export const addPlaylistSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.addSave,
       EntityTypesEnumValues.playlist,
       id,
@@ -1231,7 +1231,7 @@ export const deletePlaylistSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1240,7 +1240,7 @@ export const deletePlaylistSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.deleteSave,
       EntityTypesEnumValues.playlist,
       id,
@@ -1265,7 +1265,7 @@ export const addPlaylistRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1274,7 +1274,7 @@ export const addPlaylistRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.addRepost,
       EntityTypesEnumValues.playlist,
       id,
@@ -1299,7 +1299,7 @@ export const deletePlaylistRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1308,7 +1308,7 @@ export const deletePlaylistRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { seed: userIdBytesArray, bump: bumpSeed },
       EntitySocialActions.deleteRepost,
       EntityTypesEnumValues.playlist,
       id,
@@ -1416,7 +1416,8 @@ export const unfollowUser = ({
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }      }
+        }
+      }
     )
   );
   return tx;

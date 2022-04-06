@@ -43,24 +43,24 @@ What are these 2 accounts?
 
 ## 2. Initializing a user account from administrator
 
-For a user with handle=`handlebcdef` and ethereum public key = `0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7`
+For a user with userId=1 and ethereum public key = `0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7`
 
 ```
 yarn run ts-node cli/main.ts -f initUser \
 -k ~/.config/solana/id.json \
 --admin-keypair $PWD/adminKeypair.json \
 --admin-storage-keypair $PWD/adminStorageKeypair.json \
--h handlebcdef \
+--user-id 1 \
 -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 # this value is hard-coded
 ```
 
 Output:
 
 ```
-Initialized user=handlebcdef, tx=3M88gDkFm8bXuwdmCRV28NPNakLENutdFx7N4tzWjQydaQt2mQccG2STTqtdm29hR8FSD6aGsavGqXYNo1FbbK6h, userAcct=BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
+Initialized user id=1, tx=3M88gDkFm8bXuwdmCRV28NPNakLENutdFx7N4tzWjQydaQt2mQccG2STTqtdm29hR8FSD6aGsavGqXYNo1FbbK6h, userAcct=BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx
 ```
 
-At this point, the account associated with the handle has been initialized by the administrator account, at `BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx`
+At this point, the account associated with the user ID has been initialized by the administrator account, at `BmBwwWjcSduP7ZWUoavxBh1kV8dvHmakmfrqjsVyA2Sx`
 
 Export the value after `userAcct=` as `USER_STORAGE_PUBKEY`.
 
@@ -94,7 +94,7 @@ yarn run ts-node cli/main.ts -f createTrack \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
 --admin-storage-keypair $PWD/adminStorageKeypair.json \
---handle handlebcdef
+--user-id 1
 ```
 
 ## 4. Creating a playlist
@@ -107,7 +107,7 @@ yarn run ts-node cli/main.ts -f createPlaylist \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
 --admin-storage-keypair $PWD/adminStorageKeypair.json \
---handle handlebcdef
+--user-id 1
 ```
 
 Export the created playlist ID in logs as $PLAYLIST_ID.
@@ -122,7 +122,7 @@ yarn run ts-node cli/main.ts -f updatePlaylist \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
 --admin-storage-keypair $PWD/adminStorageKeypair.json \
 --id "$PLAYLIST_ID" \
---handle handlebcdef
+--user-id 1
 ```
 
 ## 4. Delete a playlist
@@ -134,5 +134,5 @@ yarn run ts-node cli/main.ts -f deletePlaylist \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
 --id "$PLAYLIST_ID" \
---handle handlebcdef
+--user-id 1
 ```
