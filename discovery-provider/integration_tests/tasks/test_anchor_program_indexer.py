@@ -14,7 +14,7 @@ PROGRAM_ID = shared_config["solana"]["anchor_data_program_id"]
 LABEL = "test_indexer"
 
 
-def test_exists_in_db(app):  # pylint: disable=W0621
+def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
     with app.app_context():
         db = get_db()
         redis = get_redis()
