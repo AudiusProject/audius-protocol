@@ -7,7 +7,7 @@
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
         "install-dev": "./scripts/install-dev-dependencies.sh",
         "build-dev": "./scripts/build-dev.sh",
-        "deploy-dev": "solana airdrop 1000000 && anchor deploy",
+        "deploy-dev": "anchor deploy",
         "localnet-down": "killall -9 solana-test-validator",
         "localnet-up": "solana-test-validator --reset --limit-ledger-size 100000",
         "localnet-up-ci": "solana-test-validator --reset --limit-ledger-size 100000 --quiet &",
