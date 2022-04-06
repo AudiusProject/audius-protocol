@@ -94,6 +94,11 @@ const healthCheck = async (
   const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
     await getAsyncProcessingQueueJobs()
 
+  let solSigningAuthPubKey = ''
+  try {
+    solSigningAuthPubKey = config.get('solSigningAuthPubKey')
+  } catch (_) {}
+
   const response = {
     ...versionInfo,
     healthy: true,
@@ -134,7 +139,8 @@ const healthCheck = async (
     transcodeActive,
     transcodeWaiting,
     fileProcessingActive,
-    fileProcessingWaiting
+    fileProcessingWaiting,
+    solSigningAuthPubKey
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object

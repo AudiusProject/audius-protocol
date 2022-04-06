@@ -10,6 +10,10 @@ const { MONITORS } = require('../../monitors/monitors')
 
 const TEST_ENDPOINT = 'test_endpoint'
 
+// Generated when delegatePrivateKey env var is0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25
+const SOL_PUB_KEY =
+  '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
+
 const snapbackSMMock = {
   highestEnabledReconfigMode: 'RECONFIG_DISABLED'
 }
@@ -98,6 +102,7 @@ describe('Test Health Check', function () {
     config.set('snapbackJobInterval', 1000)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
+    config.set('solSigningAuthPubKey', SOL_PUB_KEY)
 
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
@@ -154,7 +159,8 @@ describe('Test Health Check', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      solSigningAuthPubKey: SOL_PUB_KEY
     })
   })
 
@@ -166,6 +172,7 @@ describe('Test Health Check', function () {
     config.set('snapbackJobInterval', 1000)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
+    config.set('solSigningAuthPubKey', SOL_PUB_KEY)
 
     const res = await healthCheck(
       { snapbackSM: snapbackSMMock },
@@ -218,7 +225,8 @@ describe('Test Health Check', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      solSigningAuthPubKey: SOL_PUB_KEY
     })
   })
 
@@ -274,7 +282,8 @@ describe('Test Health Check', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      solSigningAuthPubKey: SOL_PUB_KEY
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -343,7 +352,8 @@ describe('Test Health Check Verbose', function () {
       transcodeActive: 4,
       transcodeWaiting: 0,
       fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      fileProcessingWaiting: 2,
+      solSigningAuthPubKey: SOL_PUB_KEY
     })
   })
 

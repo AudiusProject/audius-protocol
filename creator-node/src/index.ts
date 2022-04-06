@@ -2,6 +2,7 @@
 
 const ON_DEATH = require('death')
 const EthereumWallet = require('ethereumjs-wallet')
+const { Keypair } = require('@solana/web3.js')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -98,6 +99,14 @@ const startApp = async () => {
     exitWithError(
       'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
     )
+  }
+
+  try {
+    const solSigningAuthority = Keypair.fromSeed(privateKeyBuffer)
+    const solSigningAuthPubKey = solSigningAuthority.publicKey
+    config.set('solSigningAuthPubKey', `${solSigningAuthPubKey}`)
+  } catch (e: any) {
+    logger.error(`Failed to derive Solana public key: ${e.message}`)
   }
 
   const mode = getMode()
