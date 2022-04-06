@@ -655,7 +655,7 @@ jobs:
             nvm install "$NODE_VERSION"
       - restore_cache:
           keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock }}
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
             - anchor-node-deps-
       - run:
           name: Setup dev dependencies
@@ -674,13 +674,12 @@ jobs:
           command: |
             export PROTOCOL_DIR="/home/circleci/project"
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/lbin:$PATH"
-            solana-keygen new --no-bip39-passphrase
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             npm test
       - save_cache:
           paths:
             - solana-programs/anchor/audius-data/node_modules
-          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock }}
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
       - run:
           name: anchor program seed CLI tests
           command: |
