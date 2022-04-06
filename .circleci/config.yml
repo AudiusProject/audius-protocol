@@ -633,7 +633,7 @@ jobs:
       #     paths:
       #       - solana-programs/track_listen_count/target
       #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
-  test-solana-programs-seed-cli:
+  test-solana-programs-anchor:
     resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
@@ -653,6 +653,10 @@ jobs:
             curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
             source ~/.bashrc
             nvm install "$NODE_VERSION"
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock }}
+            - anchor-node-deps-
       - run:
           name: Setup dev dependencies
           command: |
@@ -665,10 +669,6 @@ jobs:
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
-      - restore_cache:
-          keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
-            - anchor-node-deps-
       - run:
           name: anchor tests
           command: |
@@ -680,7 +680,7 @@ jobs:
       - save_cache:
           paths:
             - solana-programs/anchor/audius-data/node_modules
-          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock }}
       - run:
           name: anchor program seed CLI tests
           command: |
@@ -691,7 +691,7 @@ jobs:
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
-            npm install # wtf
+            yarn
             source /opt/circleci/.nvm/nvm.sh
             npm run localnet-up-ci
             npm run dev-setup
@@ -806,8 +806,8 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
-      - test-solana-programs-seed-cli:
-          name: test-solana-programs-seed-cli
+      - test-solana-programs-anchor:
+          name: test-solana-programs-anchor
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs

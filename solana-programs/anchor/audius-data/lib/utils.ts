@@ -190,7 +190,7 @@ export const getContentNodeConfigValue = async ({ spId, key }: { spId: number, k
 }
 
 /**
- * converts hex eth pk value (eg 358edb5f358b697c32d3dd3c0107da568635334078a21bb755aaa41f084681ff) 
+ * converts hex eth pk value (eg 358edb5f358b697c32d3dd3c0107da5686353etcetc) 
  * Uint8Array(32) to create web3 Keypair.
  */
 export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
