@@ -438,7 +438,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       userAcct: user.pda,
-      userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+      userSeedBump: { seed: [...user.userIdBytesArray], bump: user.bumpSeed },
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       replicaSet: [2, 3, 6],
       replicaSetBumps: [
@@ -483,7 +483,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       userAcct: user.pda,
-      userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+      userSeedBump: { seed: [...user.userIdBytesArray], bump: user.bumpSeed },
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       replicaSet: [6, 7, 8],
       replicaSetBumps: [
@@ -528,7 +528,7 @@ describe("replicaSet", function () {
         program,
         baseAuthorityAccount,
         userAcct: user.pda,
-        userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+        userSeedBump: { seed: [...user.userIdBytesArray], bump: user.bumpSeed },
         adminStoragePublicKey: adminStorageKeypair.publicKey,
         replicaSet: [2, 7, 8],
         replicaSetBumps: [

@@ -2,7 +2,6 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import Web3 from "web3";
 import { Account } from "web3-core";
-import { randomBytes } from "crypto";
 import { expect } from "chai";
 import {
   findDerivedPair,
@@ -38,26 +37,23 @@ const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 type InitTestConsts = {
   ethAccount: Account;
-  handle: string;
-  handleBytes: Buffer;
-  handleBytesArray: number[];
+  userIdBytes: Buffer;
+  userIdBytesArray: number[];
   metadata: string;
   userId: anchor.BN;
 };
 
 export const initTestConstants = (): InitTestConsts => {
   const ethAccount = EthWeb3.eth.accounts.create();
-  const handle = randomBytes(40).toString("hex");
-  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
-  const metadata = randomCID();
   const userId = randomId();
+  const userIdBytes = Buffer.from(anchor.utils.bytes.utf8.encode(userId.toString()));
+  const userIdBytesArray = Array.from({ ...userIdBytes, length: 32 });
+  const metadata = randomCID();
 
   return {
     ethAccount,
-    handle,
-    handleBytes,
-    handleBytesArray,
+    userIdBytes,
+    userIdBytesArray,
     metadata,
     userId,
   };
@@ -68,7 +64,7 @@ export const testInitUser = async ({
   program,
   baseAuthorityAccount,
   ethAddress,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   metadata,
   userStorageAccount,
@@ -86,7 +82,7 @@ export const testInitUser = async ({
     ethAddress,
     replicaSet,
     replicaSetBumps,
-    handleBytesArray,
+    userIdBytesArray,
     bumpSeed,
     metadata,
     userStorageAccount,
@@ -162,7 +158,6 @@ export const testCreateUser = async ({
   message,
   baseAuthorityAccount,
   ethAccount,
-  handleBytesArray,
   bumpSeed,
   metadata,
   newUserKeypair,
@@ -173,14 +168,13 @@ export const testCreateUser = async ({
   cn1,
   cn2,
   cn3,
-  userId,
+  userIdBytesArray,
 }) => {
   const tx = createUser({
     payer: provider.wallet.publicKey,
     program,
     ethAccount,
     message,
-    handleBytesArray,
     bumpSeed,
     replicaSet,
     replicaSetBumps,
@@ -192,7 +186,7 @@ export const testCreateUser = async ({
     cn1,
     cn2,
     cn3,
-    userId,
+    userIdBytesArray,
   });
   const txSignature = await provider.send(tx)
 
@@ -204,7 +198,8 @@ export const testCreateUser = async ({
   expect(decodedData.ethAddress).to.deep.equal([
     ...anchor.utils.bytes.hex.decode(ethAccount.address),
   ]);
-  expect(decodedData.handleSeed).to.deep.equal(handleBytesArray);
+  console.log('DECODED DATAAAAAAAAAAAAA', JSON.stringify(decodedData))
+  expect(decodedData.userSeed).to.deep.equal(userIdBytesArray);
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
   expect(accountPubKeys[0]).to.equal(userStorageAccount.toString());
@@ -227,7 +222,7 @@ export const testCreateTrack = async ({
   program,
   id,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStorageAccount,
   trackMetadata,
@@ -245,7 +240,7 @@ export const testCreateTrack = async ({
     authorityDelegationStatusAccountPDA,
     metadata: trackMetadata,
     baseAuthorityAccount,
-    handleBytesArray,
+    userIdBytesArray,
     adminStorageAccount,
     bumpSeed,
   });
@@ -276,7 +271,7 @@ export const testDeleteTrack = async ({
   authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStorageAccount,
 }) => {
@@ -288,7 +283,7 @@ export const testDeleteTrack = async ({
     authorityDelegationStatusAccountPDA,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     baseAuthorityAccount,
-    handleBytesArray,
+    userIdBytesArray,
     bumpSeed,
     adminStorageAccount,
   });
@@ -318,14 +313,14 @@ export const testUpdateTrack = async ({
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStorageAccount,
 }) => {
   const tx = await updateTrack({
     program,
     baseAuthorityAccount,
-    handleBytesArray,
+    userIdBytesArray,
     bumpSeed,
     adminStorageAccount,
     id,
@@ -358,7 +353,7 @@ export const testCreatePlaylist = async ({
   program,
   id,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStorageAccount,
   playlistMetadata,
@@ -376,7 +371,7 @@ export const testCreatePlaylist = async ({
     authorityDelegationStatusAccountPDA,
     metadata: playlistMetadata,
     baseAuthorityAccount,
-    handleBytesArray,
+    userIdBytesArray,
     adminStorageAccount,
     bumpSeed,
   });
@@ -408,7 +403,7 @@ export const testDeletePlaylist = async ({
   authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStorageAccount,
 }) => {
@@ -420,7 +415,7 @@ export const testDeletePlaylist = async ({
     authorityDelegationStatusAccountPDA,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     baseAuthorityAccount,
-    handleBytesArray,
+    userIdBytesArray,
     bumpSeed,
     adminStorageAccount,
   });
@@ -449,14 +444,14 @@ export const testUpdatePlaylist = async ({
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStorageAccount,
 }) => {
   const tx = await updatePlaylist({
     program,
     baseAuthorityAccount,
-    handleBytesArray,
+    userIdBytesArray,
     bumpSeed,
     adminStorageAccount,
     id,
@@ -556,7 +551,7 @@ export const testCreateUserDelegate = async ({
     program,
     adminStoragePublicKey: adminStorageKeypair.publicKey,
     baseAuthorityAccount: user.authority,
-    userHandleBytesArray: user.handleBytesArray,
+    userIdBytesArray: user.userIdBytesArray,
     userBumpSeed: user.bumpSeed,
     user: user.pda,
     currentUserAuthorityDelegate: userAuthorityDelegatePDA,
@@ -584,17 +579,17 @@ export const testCreateUserDelegate = async ({
   expect(addUserAuthorityDelegateData.base.toString()).to.equal(
     user.authority.toString()
   );
-  expect(addUserAuthorityDelegateData.userHandle.seed.toString()).to.equal(
-    user.handleBytesArray.toString()
+  expect(addUserAuthorityDelegateData.userBumpSeed.seed.toString()).to.equal(
+    user.userIdBytesArray.toString()
   );
-  expect(addUserAuthorityDelegateData.userHandle.bump).to.equal(user.bumpSeed);
+  expect(addUserAuthorityDelegateData.userBumpSeed.bump).to.equal(user.bumpSeed);
   expect(addUserAuthorityDelegateData.delegatePubkey.toString()).to.equal(
     userAuthorityDelegateKeypair.publicKey.toString()
   );
 
   return {
     baseAuthorityAccount: user.authority,
-    userHandleBytesArray: user.handleBytesArray,
+    userIdBytesArray: user.userIdBytesArray,
     userBumpSeed: user.bumpSeed,
     userAccountPDA: user.pda,
     userAuthorityDelegatePDA,
@@ -664,7 +659,7 @@ export const createSolanaUser = async (
   } = await findDerivedPair(
     program.programId,
     adminStorageKeypair.publicKey,
-    Buffer.from(testConsts.handleBytesArray)
+    Buffer.from(testConsts.userIdBytesArray)
   );
 
   // New sol key that will be used to permission user updates
@@ -682,7 +677,7 @@ export const createSolanaUser = async (
     payer: provider.wallet.publicKey,
     program,
     ethAccount: testConsts.ethAccount,
-    handleBytesArray: testConsts.handleBytesArray,
+    userIdBytesArray: testConsts.userIdBytesArray,
     message,
     bumpSeed,
     metadata: testConsts.metadata,
@@ -695,7 +690,6 @@ export const createSolanaUser = async (
     cn1: cn1.derivedAddress,
     cn2: cn2.derivedAddress,
     cn3: cn3.derivedAddress,
-    userId: testConsts.userId,
   });
 
   await provider.send(tx)
@@ -705,7 +699,7 @@ export const createSolanaUser = async (
   return {
     account,
     pda: newUserAcctPDA,
-    handleBytesArray: testConsts.handleBytesArray,
+    userIdBytesArray: testConsts.userIdBytesArray,
     bumpSeed,
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,

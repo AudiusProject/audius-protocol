@@ -345,7 +345,7 @@ pub mod audius_data {
         _replica_set_bumps: [u8; 3],
         _user_bump: u8,
         _metadata: String,
-        _id: u64,
+        _id_bytes_array: [u8; 32],
         user_authority: Pubkey,
     ) -> Result<()> {
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
