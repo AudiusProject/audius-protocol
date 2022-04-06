@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
 import { Utils, uuid } from '../../utils'
-import * as SchemaValidator from '../schemaValidator'
+import { userSchemaType, trackSchemaType, Schemas } from '../schemaValidator'
 import type Web3Manager from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
@@ -140,7 +140,7 @@ export class CreatorNode {
   isServer: boolean
   userStateManager: UserStateManager
   lazyConnect: boolean
-  schemas: SchemaValidator.Schemas
+  schemas: Schemas
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
@@ -169,7 +169,7 @@ export class CreatorNode {
     isServer: boolean,
     userStateManager: UserStateManager,
     lazyConnect: boolean,
-    schemas: SchemaValidator.Schemas,
+    schemas: Schemas,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {}
@@ -262,7 +262,7 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[SchemaValidator.userSchemaType].validate?.(metadata)
+      this.schemas[userSchemaType].validate?.(metadata)
 
       const requestObj: AxiosRequestConfig = {
         url: '/audius_users/metadata',
@@ -381,7 +381,7 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[SchemaValidator.trackSchemaType].validate?.(metadata)
+      this.schemas[trackSchemaType].validate?.(metadata)
     } catch (e) {
       console.error('Error validating track metadata', e)
     }
@@ -589,7 +589,6 @@ export class CreatorNode {
       }
       return await axios(req)
     }
-    return
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
