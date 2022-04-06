@@ -19,7 +19,7 @@ import { makeStyles } from 'app/styles'
 
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
-import { NOW_PLAYING_HEIGHT } from './constants'
+import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
 
 const SEEK_INTERVAL = 200
 
@@ -155,7 +155,11 @@ export const PlayBar = ({
           opacity: translationAnim.interpolate({
             // Interpolate the animation such that the play bar fades out
             // at 25% up the screen.
-            inputRange: [0, 0.75 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
+            inputRange: [
+              0,
+              0.75 * (NOW_PLAYING_HEIGHT - PLAY_BAR_HEIGHT),
+              NOW_PLAYING_HEIGHT - PLAY_BAR_HEIGHT
+            ],
             outputRange: [0, 0, 1],
             extrapolate: 'extend'
           })
