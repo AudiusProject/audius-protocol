@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs
+from flask_restx import Namespace, Resource, fields, inputs, marshal_with
 from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
@@ -190,18 +190,24 @@ full_track_route_parser = current_user_parser.copy()
 full_track_route_parser.add_argument(
     "handle",
     required=False,
-    description="The User handle of the track owner (deprecated, prefer using route)",
+    doc=False,  # Deprecated
 )
 full_track_route_parser.add_argument(
     "slug",
     required=False,
-    description="The title slug of the track (deprecated, prefer using route)",
+    doc=False,  # Deprecated
 )
 full_track_route_parser.add_argument(
-    "route",
+    "route", action="append", required=False, doc=False  # Deprecated
+)
+full_track_route_parser.add_argument(
+    "permalink",
     action="append",
     required=False,
     description="The permalink of the track(s)",
+)
+full_track_route_parser.add_argument(
+    "id", action="append", required=False, description="The ID of the track(s)"
 )
 
 track_slug_parser = full_track_route_parser.copy()
@@ -212,34 +218,51 @@ track_slug_parser.remove_argument("user_id")
 class TrackByRoute(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Tracks""",
-        description="""Gets a list of tracks using their routes/permalinks in the form `{handle}/{slug}`""",
+        id="""Get Bulk Tracks""",
+        description="""Gets a list of tracks using their IDs or permalinks""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @ns.response(
+        200, "Success", tracks_response
+    )  # Manually set the expected response to be a list of tracks using using @ns.response
     @ns.expect(track_slug_parser)
-    @ns.marshal_with(track_response)
+    @marshal_with(
+        track_response
+    )  # Don't document using the marshaller - required for backwards compat supporting non-list responses
     @cache(ttl_sec=5)
     def get(self):
         args = track_slug_parser.parse_args()
         slug, handle = (args.get("slug"), args.get("handle"))
         routes = args.get("route")
+        permalinks = args.get("permalink")
+        ids = args.get("id")
 
-        if not ((slug and handle) or routes):
-            ns.abort(400, "Missing required param slug, handle, or route")
+        routes = (routes or []) + (permalinks or [])
+        if not ((slug and handle) or routes or ids):
+            ns.abort(400, "Expected query param 'permalink' or 'id'")
+        elif routes and ids:
+            ns.abort(
+                400,
+                "Ambiguous query params: Expected one of 'id', 'permalink' but not both",
+            )
         routes_parsed = routes if routes else []
         try:
             routes_parsed = parse_routes(routes_parsed)
         except IndexError:
-            abort_bad_request_param("route", ns)
+            abort_bad_request_param("permalink", ns)
         if slug and handle:
             routes_parsed.append({"handle": handle, "slug": slug})
-
-        tracks = get_tracks({"routes": routes_parsed, "with_users": True})
+        if ids:
+            tracks = get_tracks({"with_users": True, "id": decode_ids_array(ids)})
+        else:
+            tracks = get_tracks({"with_users": True, "routes": routes_parsed})
         if not tracks:
             if handle and slug:
                 abort_not_found(f"{handle}/{slug}", ns)
-            else:
+            elif routes:
                 abort_not_found(routes, ns)
+            else:
+                abort_not_found(ids, ns)
 
         # For backwards compatibility, the old handle/slug route returned an object, not an array
         if handle and slug:
@@ -253,8 +276,8 @@ class TrackByRoute(Resource):
 class FullTrackByRoute(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Tracks""",
-        description="""Gets a list of tracks using their routes/permalinks in the form `{handle}/{slug}`""",
+        id="""Get Bulk Tracks""",
+        description="""Gets a list of tracks using their IDs or permalinks""",
     )
     @full_ns.expect(full_track_route_parser)
     @full_ns.marshal_with(full_track_response)
@@ -263,28 +286,43 @@ class FullTrackByRoute(Resource):
         args = full_track_route_parser.parse_args()
         slug, handle = args.get("slug"), args.get("handle")
         routes = args.get("route")
+        permalinks = args.get("permalink")
         current_user_id = get_current_user_id(args)
-        if not ((slug and handle) or routes):
-            full_ns.abort(400, "Missing required param slug, handle, or route")
+        ids = args.get("id")
+
+        routes = (routes or []) + (permalinks or [])
+        if not ((slug and handle) or routes or ids):
+            full_ns.abort(400, "Expected query param 'permalink' or 'id'")
         routes_parsed = routes if routes else []
         try:
             routes_parsed = parse_routes(routes_parsed)
         except IndexError:
-            abort_bad_request_param("route", full_ns)
+            abort_bad_request_param("permalink", full_ns)
         if slug and handle:
             routes_parsed.append({"handle": handle, "slug": slug})
-        tracks = get_tracks(
-            {
-                "routes": routes_parsed,
-                "with_users": True,
-                "current_user_id": current_user_id,
-            }
-        )
+        if ids:
+            tracks = get_tracks(
+                {
+                    "with_users": True,
+                    "id": decode_ids_array(ids),
+                    "current_user_id": current_user_id,
+                }
+            )
+        else:
+            tracks = get_tracks(
+                {
+                    "with_users": True,
+                    "routes": routes_parsed,
+                    "current_user_id": current_user_id,
+                }
+            )
         if not tracks:
             if handle and slug:
                 abort_not_found(f"{handle}/{slug}", full_ns)
-            else:
+            elif routes:
                 abort_not_found(routes, full_ns)
+            else:
+                abort_not_found(ids, full_ns)
 
         # For backwards compatibility, the old handle/slug route returned an object, not an array
         if handle and slug:

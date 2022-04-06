@@ -375,6 +375,7 @@ class DescriptiveArgument(reqparse.Argument):
         trim=False,
         nullable=True,
         description=None,
+        doc=True
     ):
         super().__init__(
             name,
@@ -394,9 +395,12 @@ class DescriptiveArgument(reqparse.Argument):
             nullable,
         )
         self.description = description
+        self.doc = doc
 
     @property
     def __schema__(self):
+        if self.doc == False:
+            return None
         param = super().__schema__
         param["description"] = self.description
         return param
