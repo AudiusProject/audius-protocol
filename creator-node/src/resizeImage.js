@@ -3,12 +3,9 @@ const ExifParser = require('exif-parser')
 const fs = require('fs-extra')
 const path = require('path')
 
-const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { ipfsAddImages } = require('./ipfsAdd')
+const { generateImageMultihashes } = require('./fileHasher')
 const DiskManager = require('./diskManager')
-
-const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xffffffff
@@ -125,7 +122,7 @@ module.exports = async (job) => {
     })
   )
 
-  // Add all the images to IPFS including the original
+  // Compute multihash/CID of all the images, including the original
   const toAdd = Object.keys(sizes).map((size, i) => {
     return {
       path: path.join(fileName, size),
@@ -139,17 +136,12 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const ipfsAddResp = await ipfsAddImages(
-    toAdd,
-    { pin: false } /* ipfs add config */,
-    {} /* logContext */,
-    ENABLE_IPFS_ADD_IMAGES
-  )
+  const multihashes = await generateImageMultihashes(toAdd)
 
   // Write all the images to file storage and
   // return the CIDs and storage paths to write to db
   // in the main thread
-  const dirCID = ipfsAddResp[ipfsAddResp.length - 1].cid
+  const dirCID = multihashes[multihashes.length - 1].cid
   const dirDestPath = DiskManager.computeFilePath(dirCID)
 
   const resp = {
@@ -162,19 +154,19 @@ module.exports = async (job) => {
 
   // Save all image file buffers to disk
   try {
-    // Slice ipfsAddResp to remove dir entry at last index
-    const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
+    // Slice multihashes to remove dir entry at last index
+    const multihashesMinusDir = multihashes.slice(0, multihashes.length - 1)
 
     await Promise.all(
-      ipfsFileResps.map(async (fileResp, i) => {
+      multihashesMinusDir.map(async (multihash, i) => {
         // Save file to disk
-        const destPath = DiskManager.computeFilePathInDir(dirCID, fileResp.cid)
+        const destPath = DiskManager.computeFilePathInDir(dirCID, multihash.cid)
         await fs.writeFile(destPath, resizes[i])
 
         // Append saved file info to response object
         resp.files.push({
-          multihash: fileResp.cid,
-          sourceFile: fileResp.path,
+          multihash: multihash.cid,
+          sourceFile: multihash.path,
           storagePath: destPath
         })
       })

@@ -1,10 +1,15 @@
 import * as anchor from "@project-serum/anchor";
+import * as fs from "fs/promises";
+import path from "path";
 import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
+import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
+import web3 from "web3";
+import { DUMMY_CN_WALLET_ADDRESSES } from "./constants";
 
 export const SystemSysVarProgramKey = new PublicKey(
   "Sysvar1nstructions1111111111111111111111111"
@@ -17,10 +22,10 @@ export const ethAddressToArray = (ethAddress: string) => {
 };
 
 /// Retrieve a transaction with retries
-export const getTransaction = async (provider: Provider, tx: string) => {
-  let info = await provider.connection.getTransaction(tx);
+export const getTransaction = async (provider: Provider, txHash: string) => {
+  let info = await provider.connection.getTransaction(txHash);
   while (info == null) {
-    info = await provider.connection.getTransaction(tx);
+    info = await provider.connection.getTransaction(txHash);
   }
   return info;
 };
@@ -90,6 +95,11 @@ export const randomString = (size: number) => {
   return objectId;
 };
 
+/// Generate random anchor BN id
+export const randomId = () => {
+  return new anchor.BN(Math.floor(Math.random() * 10000));
+};
+
 /// Generate mock CID by appending `Qm` with a rand string
 export const randomCID = () => {
   const randomSuffix = randomString(44);
@@ -141,3 +151,85 @@ export const findDerivedPair = async (programId, adminAccount, seed) => {
 
   return { baseAuthorityAccount, derivedAddress, bumpSeed };
 };
+
+export const getContentNode = async (
+  program: anchor.Program<AudiusData>,
+  adminStoragePublicKey: anchor.web3.PublicKey,
+  spId: string
+) => {
+  const seed = Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    new anchor.BN(spId).toBuffer("le", 2),
+  ]);
+
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+    await findDerivedPair(program.programId, adminStoragePublicKey, seed);
+
+  return {
+    spId: new anchor.BN(spId),
+    baseAuthorityAccount,
+    bumpSeed,
+    derivedAddress,
+  };
+};
+
+/**
+ * Returns property value from CN shellEnv#.sh from local service-commands provisioning.
+ * 
+ */
+export const getContentNodeConfigValue = async ({ spId, key }: { spId: number, key: string }): Promise<string> => {
+  const spConfigFilePath = `creator-node/compose/env/tmp/shellEnv${spId}.sh`
+  let value;
+  try {
+    const spConfig = await fs.readFile(path.join(process.env.PROTOCOL_DIR, spConfigFilePath), "utf-8");
+    value = spConfig.split(`${key}=`)[1].split("\nexport")[0];
+  } catch (error) {
+    throw new Error(`Error getting private key from sp config file ${spConfigFilePath}: ${error}`);
+  }
+  return value;
+}
+
+/**
+ * converts hex eth pk value (eg 358edb5f358b697c32d3dd3c0107da5686353etcetc) 
+ * Uint8Array(32) to create web3 Keypair.
+ */
+export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
+  const fullHexAddress = `0x${hexPrivateKey}`;
+  const uint8SecretKey = Uint8Array.from(web3.utils.hexToBytes(fullHexAddress));
+  return uint8SecretKey;
+}
+
+/**
+ * Returns object containing
+ * content node delegate wallet address and 
+ * authority KeyPair based on spId; when ci=true
+ * returns hardcoded wallet address and new KeyPair
+ */
+export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }: { spId: string, ci: boolean }): Promise<any> => {
+  const cnSpId = parseInt(spId);
+  let contentNodeAuthority;
+  let delegateWallet;
+  if (ci) {
+    contentNodeAuthority = anchor.web3.Keypair.generate();
+    delegateWallet = DUMMY_CN_WALLET_ADDRESSES[cnSpId - 1]
+  } else {
+    delegateWallet = await getContentNodeConfigValue({
+      spId: cnSpId,
+      key: "delegateOwnerWallet"
+    });
+    const delegatePrivateKey = await getContentNodeConfigValue({
+      spId: cnSpId,
+      key: "delegatePrivateKey"
+    });
+    try {
+      const seed = hexPrivateKeyToUint8(delegatePrivateKey);
+      contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
+    } catch (error) {
+      throw new Error(`Error getting keypair from delegate private key ${delegatePrivateKey}: ${error}`);
+    }
+  }
+  return {
+    contentNodeAuthority,
+    delegateWallet
+  }
+}

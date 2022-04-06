@@ -12,8 +12,12 @@ RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime && \
 RUN apt-get update && \
     apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3 python3-pip && \
     pip3 install --no-cache-dir web3 && \
-    curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-    sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
+    curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN rustup install 1.55.0 && \
+    sh -c "$(curl -sSfL https://release.solana.com/v1.8.14/install)"
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
@@ -34,7 +38,6 @@ COPY track_listen_count track_listen_count
 COPY cli cli
 COPY claimable-tokens claimable-tokens
 COPY reward-manager reward-manager
-COPY anchor anchor
 
 RUN cd audius_eth_registry && \
     cargo build-bpf && \
@@ -45,12 +48,17 @@ RUN cd audius_eth_registry && \
     cd ../claimable-tokens/program && \
     cargo build-bpf && \
     cd ../cli && \
-    cargo build && \ 
+    cargo build && \
     cd ../../reward-manager/program && \
     cargo build-bpf && \
     cd ../cli && \
-    cargo build && \
-    cd ../../anchor/audius-data && \
+    cargo build
+
+ARG BUILD_ID
+LABEL prune=true
+LABEL build=$BUILD_ID
+COPY anchor anchor
+RUN cd anchor/audius-data && \
     anchor build 
 
 COPY start.sh ./

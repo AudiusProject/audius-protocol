@@ -12,39 +12,8 @@ const { getMonitors, MONITORS } = require('../monitors/monitors')
 const DiskManager = require('../diskManager')
 
 const MAX_DB_CONNECTIONS = config.get('dbConnectionPoolMax')
-const HEALTH_CHECK_IPFS_TIMEOUT_MS = config.get('healthCheckIpfsTimeoutMs')
 
 module.exports = function (app) {
-  /**
-   * Performs diagnostic ipfs operations to confirm functionality
-   */
-  app.get(
-    '/health_check/ipfs',
-    handleResponse(async (req, res) => {
-      if (config.get('isReadOnlyMode')) {
-        return errorResponseServerError()
-      }
-
-      const timeout =
-        parseInt(req.query.timeout) || HEALTH_CHECK_IPFS_TIMEOUT_MS
-
-      const [value] = await getMonitors([MONITORS.IPFS_READ_WRITE_STATUS])
-      if (!value) {
-        return errorResponseServerError({ error: 'IPFS not healthy' })
-      }
-
-      const { hash, duration } = value
-
-      if (duration > timeout) {
-        return errorResponseServerError({
-          error: `IPFS took over the specified timeout of ${timeout}ms. Time taken ${duration}ms`
-        })
-      }
-
-      return successResponse({ hash, duration: `${duration}ms` })
-    })
-  )
-
   /**
    * Exposes current and max db connection stats.
    * Returns error if db connection threshold exceeded, else success.

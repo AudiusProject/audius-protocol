@@ -420,12 +420,6 @@ const config = convict({
     env: 'creatorNodeIsDebug',
     default: false
   },
-  rehydrateMaxConcurrency: {
-    doc: 'Number of concurrent rehydrate queue tasks running',
-    format: 'nat',
-    env: 'rehydrateMaxConcurrency',
-    default: 10
-  },
   snapbackHighestReconfigMode: {
     doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
     format: String,
@@ -455,12 +449,6 @@ const config = convict({
     format: String,
     env: 'cidWhitelist',
     default: ''
-  },
-  enableRehydrate: {
-    doc: 'Flag to enable or disable rehydrate',
-    format: Boolean,
-    env: 'enableRehydrate',
-    default: true
   },
 
   /** sync / snapback configs */
@@ -511,13 +499,13 @@ const config = convict({
     doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
     format: 'nat',
     env: 'snapbackModuloBase',
-    default: 24
+    default: 48
   },
   snapbackJobInterval: {
-    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
+    doc: 'Interval [ms] that snapbackSM jobs are fired',
     format: 'nat',
     env: 'snapbackJobInterval',
-    default: 3600000
+    default: 1800000 // 30min
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -623,42 +611,6 @@ const config = convict({
     env: 'skippedCIDRetryQueueMaxAgeHr',
     default: 8760 // 1 year in hrs
   },
-  saveFileForMultihashToFSIPFSFallback: {
-    doc: 'Boolean indicating if `saveFileForMultihashToFS()` should fallback to IPFS retrieval if gateway retrieval fails',
-    format: 'BooleanCustom',
-    env: 'saveFileForMultihashToFSIPFSFallback',
-    default: true
-  },
-  enableIPFSAddTracks: {
-    doc: '[TRACKS] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
-    format: 'BooleanCustom',
-    env: 'enableIPFSAddTracks',
-    default: false
-  },
-  enableIPFSAddImages: {
-    doc: '[IMAGES] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
-    format: 'BooleanCustom',
-    env: 'enableIPFSAddImages',
-    default: false
-  },
-  enableIPFSAddMetadata: {
-    doc: '[METADATA] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
-    format: 'BooleanCustom',
-    env: 'enableIPFSAddMetadata',
-    default: true
-  },
-  IPFSAddTimeoutMs: {
-    doc: 'The default timeout in ms for ipfs add',
-    format: 'nat',
-    env: 'IPFSAddTimeoutMs',
-    default: 90000 // 90s
-  },
-  healthCheckIpfsTimeoutMs: {
-    doc: 'Default timeout for the ipfs health check route in timing add content',
-    format: 'nat',
-    env: 'healthCheckIpfsTimeoutMs',
-    default: 30000 // 30s
-  },
   openRestyCacheCIDEnabled: {
     doc: 'Flag to enable or disable OpenResty',
     format: 'BooleanCustom',
@@ -671,6 +623,12 @@ const config = convict({
     env: 'reconfigNodeWhitelist',
     default: ''
   },
+  minimumTranscodingSlotsAvailable: {
+    doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
+    format: 'nat',
+    env: 'minimumTranscodingSlotsAvailable',
+    default: 1
+  },
   trustedNotifierID: {
     doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
     format: 'nat',
@@ -682,6 +640,12 @@ const config = convict({
     format: String,
     env: 'nodeOperatorEmailAddress',
     default: ''
+  },
+  maxBatchClockStatusBatchSize: {
+    doc: 'Maximum number of wallets the /users/batch_clock_status route will accept at one time',
+    format: 'nat',
+    env: 'maxBatchClockStatusBatchSize',
+    default: 5000
   }
   /**
    * unsupported options at the moment

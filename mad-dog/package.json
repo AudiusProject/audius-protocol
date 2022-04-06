@@ -4,8 +4,7 @@
   "description": "🐶 Audius Protocol System Level Test Suite",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js --inspect",
-    "link-deps": "npm link @audius/libs && npm link @audius/service-commands"
+    "start": "node src/index.js --inspect"
   },
   "repository": {
     "type": "git",
@@ -26,7 +25,7 @@
     "axios": "^0.20.0",
     "convict": "^6.0.0",
     "fs-extra": "^9.0.1",
-    "ipfs-http-client": "^33.1.1",
+    "ipfs-unixfs-importer": "^9.0.6",
     "lodash": "^4.17.15",
     "logform": "^2.1.2",
     "moment": "^2.29.1",

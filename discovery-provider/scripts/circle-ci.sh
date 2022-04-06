@@ -3,7 +3,7 @@ source ./scripts/utilities.sh
 
 function main {
   set -e
-  source venv/bin/activate
+  source env/bin/activate
 
   # run contract migrations
   cd_contracts_repo

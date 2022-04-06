@@ -3,8 +3,7 @@ const axios = require('axios')
 const config = require('../config')
 const { logger } = require('../logging')
 
-// Used in determining peer health
-const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = config.get(
+const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
 )
 const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
@@ -20,6 +19,8 @@ const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
 const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
+
+const DEFAULT_AXIOS_TIMEOUT_MS = 5000 // 5s
 
 class PeerSetManager {
   constructor({
@@ -183,7 +184,8 @@ class PeerSetManager {
       url: `v1/full/users/content_node/all`,
       params: {
         creator_node_endpoint: this.creatorNodeEndpoint
-      }
+      },
+      timeout: DEFAULT_AXIOS_TIMEOUT_MS
     }
 
     // Will throw error on non-200 response
@@ -217,7 +219,8 @@ class PeerSetManager {
       url: `users/creator_node`,
       params: {
         creator_node_endpoint: this.creatorNodeEndpoint
-      }
+      },
+      timeout: DEFAULT_AXIOS_TIMEOUT_MS
     }
 
     // Will throw error on non-200 response
@@ -265,7 +268,7 @@ class PeerSetManager {
       baseURL: endpoint,
       url: '/health_check/verbose',
       method: 'get',
-      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT
+      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS
     })
 
     return resp.data.data

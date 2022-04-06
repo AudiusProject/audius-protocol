@@ -12,6 +12,7 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
+const fileHasher = require('../src/fileHasher')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -20,7 +21,6 @@ const {
   createSession
 } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
-const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { saveFileToStorage } = require('./lib/helpers')
 
@@ -41,10 +41,8 @@ describe('Test createNewDataRecord()', async function () {
   /** Init server to run DB migrations */
   before(async function () {
     const appInfo = await getApp(
-      getIPFSMock(),
       getLibsMock(),
-      BlacklistManager,
-      getIPFSMock(true)
+      BlacklistManager
     )
     server = appInfo.server
   })
@@ -393,7 +391,7 @@ describe('Test ClockRecord model', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -603,7 +601,7 @@ describe('Test deleteSessionTokensFromDB() when provided an Array of SessionToke
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -657,21 +655,16 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     cnodeUser,
     cnodeUserUUID,
     server,
-    ipfsMock,
-    ipfsLatestMock,
-    libsMock
+    libsMock,
+    mockServiceRegistry
 
   /** Init server to run DB migrations */
   before(async () => {
     const spId = 1
-    ipfsMock = getIPFSMock()
-    ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
     const appInfo = await getApp(
-      ipfsMock,
       libsMock,
       BlacklistManager,
-      ipfsLatestMock,
       null,
       spId
     )
@@ -694,8 +687,8 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
 
   /** Wipe all CNodeUsers + dependent data */
   after(async () => {
+    sinon.restore()
     await destroyUsers()
-
     await server.close()
   })
 
@@ -721,27 +714,30 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
 
     const uploadTrackState = async () => {
-      // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
-      const MockSavefileMultihash =
+      // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
+      const mockMultihash =
         'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
-          '../../fileManager': {
-            saveFileToIPFSFromFS: sinon
-              .stub(FileManager, 'saveFileToIPFSFromFS')
+          '../../fileHasher': {
+            generateNonImageMultihash: sinon
+              .stub(fileHasher, 'generateNonImageMultihash')
               .returns(
                 new Promise((resolve, reject) => {
-                  const multihash = MockSavefileMultihash
+                  const multihash = mockMultihash
                   return resolve(multihash)
                 })
               ),
+            '@global': true
+          },
+          '../../fileManager': {
             copyMultihashToFs: sinon
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
                   const dstPath = DiskManager.computeFilePath(
-                    MockSavefileMultihash
+                    mockMultihash
                   )
                   return resolve(dstPath)
                 })
@@ -872,10 +868,8 @@ describe('Test fetchFilesHashFromDB()', async () => {
   /** Init server to run DB migrations */
   before(async () => {
     const appInfo = await getApp(
-      getIPFSMock(),
       getLibsMock(),
       BlacklistManager,
-      getIPFSMock(true)
     )
     server = appInfo.server
   })
