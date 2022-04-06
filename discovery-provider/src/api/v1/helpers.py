@@ -375,7 +375,7 @@ class DescriptiveArgument(reqparse.Argument):
         trim=False,
         nullable=True,
         description=None,
-        doc=True
+        doc=True,
     ):
         super().__init__(
             name,
