@@ -473,18 +473,22 @@ pub mod audius_data {
         Ok(())
     }
 
-    /// Follow a user, transaction sent from 1 known valid user to another
-    /// Both User accounts are re-derived from the handle seed and validated
-    /// Only the follower must have already claimed their solana public key -
-    /// in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
-    /// Note that both follow and unfollow are handled in this single function through an enum, with identical
-    /// validation for both paths.
-    pub fn follow_user(
-        ctx: Context<FollowUser>,
+    /*
+        User social action functions
+
+        Follow/subscribe a user, transaction sent from 1 known valid source user to another target user
+        Both User accounts are re-derived from the handle seed and validated
+        Only the follower must have already claimed their solana public key -
+        in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
+        Note that both follow/subscribe and unfollow/unsubscribe are handled in this single function through an enum, with identical
+        validation for both paths.
+    */
+    pub fn write_user_social_action(
+        ctx: Context<WriteUserSocialAction>,
         base: Pubkey,
         _user_action: UserAction,
-        _follower_handle: UserHandle,
-        _followee_handle: UserHandle,
+        _source_user_handle: UserHandle,
+        _target_user_handle: UserHandle,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
@@ -498,7 +502,7 @@ pub mod audius_data {
         // validate user has authority and check for delegate
         validate_user_authority(
             ctx.program_id,
-            &ctx.accounts.follower_user_storage,
+            &ctx.accounts.source_user_storage,
             &ctx.accounts.user_authority_delegate,
             &ctx.accounts.authority,
             &ctx.accounts.authority_delegation_status,
@@ -534,9 +538,8 @@ pub mod audius_data {
     pub fn add_user_authority_delegate(
         ctx: Context<AddUserAuthorityDelegate>,
         _base: Pubkey,
-        _handle_seed: [u8; 32],
-        _user_bump: u8,
-        user_authority_delegate: Pubkey,
+        _user_handle: UserHandle,
+        delegate_pubkey: Pubkey,
     ) -> Result<()> {
         // validate signer is the user or delegate
         validate_user_authority(
@@ -552,7 +555,7 @@ pub mod audius_data {
         ctx.accounts
             .current_user_authority_delegate
             .user_storage_account = ctx.accounts.user.key();
-        ctx.accounts.current_user_authority_delegate.delegate_authority = user_authority_delegate;
+        ctx.accounts.current_user_authority_delegate.delegate_authority = delegate_pubkey;
         Ok(())
     }
 
@@ -560,8 +563,7 @@ pub mod audius_data {
     pub fn remove_user_authority_delegate(
         ctx: Context<RemoveUserAuthorityDelegate>,
         _base: Pubkey,
-        _handle_seed: [u8; 32],
-        _user_bump: u8,
+        _user_handle: UserHandle,
         _user_authority_delegate: Pubkey,
         _delegate_bump: u8,
     ) -> Result<()> {
@@ -846,13 +848,13 @@ pub struct RevokeAuthorityDelegationStatus<'info> {
 /// Instruction container to allow user delegation
 /// Allocates a new account that will be used for fallback in auth scenarios
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, delegate_pubkey: Pubkey)]
+#[instruction(base: Pubkey, user_handle: UserHandle, delegate_pubkey: Pubkey)]
 pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
     )]
     pub user: Account<'info, User>,
     #[account(
@@ -879,19 +881,19 @@ pub struct AddUserAuthorityDelegate<'info> {
 /// Instruction container to remove allocated user authority delegation
 /// Returns funds to payer
 #[derive(Accounts)]
-#[instruction(base: Pubkey, handle_seed: [u8;32], user_bump:u8, user_authority_delegate: Pubkey, delegate_bump:u8)]
+#[instruction(base: Pubkey, user_handle: UserHandle, delegate_pubkey: Pubkey, delegate_bump:u8)]
 pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
-        bump = user_bump
+        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
+        bump = user_handle.bump
     )]
     pub user: Account<'info, User>,
     #[account(
         mut,
         close = payer,
-        seeds = [&user.key().to_bytes()[..32], &user_authority_delegate.to_bytes()[..32]],
+        seeds = [&user.key().to_bytes()[..32], &delegate_pubkey.to_bytes()[..32]],
         bump = delegate_bump
     )]
     pub current_user_authority_delegate: Account<'info, UserAuthorityDelegate>,
@@ -959,18 +961,18 @@ pub struct WriteEntitySocialAction<'info> {
     pub authority_delegation_status: AccountInfo<'info>,
 }
 
-/// Instruction container for follow
+/// Instruction container for user social actions
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_instr:UserAction, follower_handle: UserHandle, followee_handle: UserHandle)]
-pub struct FollowUser<'info> {
+#[instruction(base: Pubkey, user_instr:UserAction, source_user_handle: UserHandle, target_user_handle: UserHandle)]
+pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
-    // Confirm the follower PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], follower_handle.seed.as_ref()], bump = follower_handle.bump)]
-    pub follower_user_storage: Account<'info, User>,
-    // Confirm the followee PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], followee_handle.seed.as_ref()], bump = followee_handle.bump)]
-    pub followee_user_storage: Account<'info, User>,
+    // Confirm the source user PDA matches the expected value provided the target handle and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], source_user_handle.seed.as_ref()], bump = source_user_handle.bump)]
+    pub source_user_storage: Account<'info, User>,
+    // Confirm the target user PDA matches the expected value provided the target handle and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], target_user_handle.seed.as_ref()], bump = target_user_handle.bump)]
+    pub target_user_storage: Account<'info, User>,
     /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
     pub user_authority_delegate: AccountInfo<'info>,
@@ -987,7 +989,6 @@ pub struct FollowUser<'info> {
 #[instruction(base: Pubkey, user_handle: UserHandle)]
 pub struct UpdateIsVerified<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
-    // Confirm the follower PDA matches the expected value provided the target handle and base
     #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
     pub user: Account<'info, User>,
     pub verifier: Signer<'info>,
@@ -1039,6 +1040,8 @@ pub struct AuthorityDelegationStatus {
 pub enum UserAction {
     FollowUser,
     UnfollowUser,
+    SubscribeUser,
+    UnsubscribeUser,
 }
 
 // Track actions enum, used to save / repost based on function arguments

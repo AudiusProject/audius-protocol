@@ -1,53 +1,59 @@
 import { sampleSize } from 'lodash'
-import { raceRequests, allRequests, ServiceName, ServiceWithEndpoint, Service, } from '../utils/network'
+import {
+  raceRequests,
+  allRequests,
+  ServiceName,
+  ServiceWithEndpoint,
+  Service
+} from '../utils'
 import { DECISION_TREE_STATE } from './constants'
 import type { AxiosResponse } from 'axios'
 
-function isVerbose (service: Service): service is ServiceWithEndpoint {
+function isVerbose(service: Service): service is ServiceWithEndpoint {
   return typeof service !== 'string'
 }
 
 export type GetServicesInput =
-  (() => Promise<ServiceName[]>) |
-  ((config: {verbose: false}) => Promise<ServiceName[]>)|
-  ((config: {verbose: true}) => Promise<ServiceWithEndpoint[]>)
+  | (() => Promise<ServiceName[]>)
+  | ((config: { verbose: false }) => Promise<ServiceName[]>)
+  | ((config: { verbose: true }) => Promise<ServiceWithEndpoint[]>)
 
 interface GetServices {
   (): Promise<ServiceName[]>
-  (config: {verbose: false}): Promise<ServiceName[]>
-  (config: {verbose: true}): Promise<ServiceWithEndpoint[]>
-  (config: {verbose: boolean}): Promise<Service[]>
+  (config: { verbose: false }): Promise<ServiceName[]>
+  (config: { verbose: true }): Promise<ServiceWithEndpoint[]>
+  (config: { verbose: boolean }): Promise<Service[]>
 }
 
 interface Decision {
-  stage: DECISION_TREE_STATE
+  stage: string
   val?: unknown
 }
 
-interface ServiceSelectionConfig {
+export interface ServiceSelectionConfig {
   // services from this list should not be picked
-  blacklist?: Set<string>
+  blacklist?: Set<string> | undefined | null
   // only services from this list are allowed to be picked
-  whitelist?: Set<string>
+  whitelist?: Set<string> | undefined | null
   /*
-    * an (async) method to get a
+   * an (async) method to get a
    * list of services to choose from. Optionally may return a verbose object with service metadata
    */
   getServices: GetServicesInput
   /*
-    * the maximum number of requests allowed to fire at
+   * the maximum number of requests allowed to fire at
    * once. Tweaking this value may impact browser performance
    */
   maxConcurrentRequests?: number
   // the timeout at which to give up on a service
   requestTimeout?: number
   /*
-*the point at which the unhealthy services are freed so they
+   *the point at which the unhealthy services are freed so they
    * may be tried again (re-requested)
    */
   unhealthyTTL?: number
   /*
- * the point at which backup services are freed so they may be
+   * the point at which backup services are freed so they may be
    * tried again (re-requested)
    */
   backupsTTL?: number
@@ -81,8 +87,8 @@ interface ServiceSelectionConfig {
  * of them and is generally how this class is intended to be used.
  */
 export class ServiceSelection {
-  blacklist: Set<string> | undefined
-  whitelist: Set<string> | undefined
+  blacklist: Set<string> | undefined | null
+  whitelist: Set<string> | undefined | null
   getServices: GetServices
   maxConcurrentRequests: number
   requestTimeout: number
@@ -95,7 +101,7 @@ export class ServiceSelection {
   unhealthyCleanupTimeout: NodeJS.Timeout | null = null
   backupCleanupTimeout: NodeJS.Timeout | null = null
 
-  constructor ({
+  constructor({
     blacklist,
     whitelist,
     getServices,
@@ -130,55 +136,84 @@ export class ServiceSelection {
    * Selects a service
    * @param reset if reset is true, clear the decision tree
    */
-  async select (reset = true): Promise<string | undefined | null> {
-    if (reset) { this.decisionTree = [] }
+  // we need any type here to allow sub-classes to more strictly type return type
+  async select(reset = true): Promise<any> {
+    if (reset) {
+      this.decisionTree = []
+    }
 
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = this.shortcircuit()
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.CHECK_SHORT_CIRCUIT, val: shortcircuit })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.CHECK_SHORT_CIRCUIT,
+      val: shortcircuit
+    })
     // If there is a shortcircuit defined and we have not blacklisted it, pick it
-    if (shortcircuit && (!this.blacklist || !this.blacklist.has(shortcircuit))) return shortcircuit
+    if (shortcircuit && (!this.blacklist || !this.blacklist.has(shortcircuit)))
+      return shortcircuit
 
     // Get all the services
     let services = await this.getServices()
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.GET_ALL_SERVICES,
+      val: services
+    })
 
     // If a whitelist is provided, filter down to it
     if (this.whitelist) {
       services = this.filterToWhitelist(services)
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST, val: services })
+      this.decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
+        val: services
+      })
     }
 
     // if a blacklist is provided, filter out services in the list
     if (this.blacklist) {
       services = this.filterFromBlacklist(services)
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST, val: services })
+      this.decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
+        val: services
+      })
     }
 
     // Filter out anything we know is already unhealthy
     const filteredServices = this.filterOutKnownUnhealthy(services)
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY, val: filteredServices })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
+      val: filteredServices
+    })
 
     // Randomly sample a "round" to test
     const round = this.getSelectionRound(filteredServices)
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_SELECTION_ROUND, val: round })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.GET_SELECTION_ROUND,
+      val: round
+    })
 
     this.totalAttempts += round.length
 
     // If there are no services left to try, either pick a backup or return null
     if (filteredServices.length === 0) {
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.NO_SERVICES_LEFT_TO_TRY })
+      this.decisionTree.push({
+        stage: DECISION_TREE_STATE.NO_SERVICES_LEFT_TO_TRY
+      })
       if (this.getBackupsSize() > 0) {
         // Some backup exists
         const backup = await this.selectFromBackups()
-        this.decisionTree.push({ stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP, val: backup })
+        this.decisionTree.push({
+          stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP,
+          val: backup
+        })
         return backup
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
         this.unhealthy = new Set([])
         this.backups = {}
-        this.decisionTree.push({ stage: DECISION_TREE_STATE.FAILED_AND_RESETTING })
+        this.decisionTree.push({
+          stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
+        })
         return null
       }
     }
@@ -189,7 +224,7 @@ export class ServiceSelection {
     const { best, errored } = await this.race(round)
 
     // Mark all the errored ones as unhealthy
-    errored.forEach(e => {
+    errored.forEach((e) => {
       if (e) {
         this.addUnhealthy(e)
       }
@@ -205,7 +240,10 @@ export class ServiceSelection {
       return await this.select(/* reset */ false)
     }
 
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.MADE_A_SELECTION, val: best })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.MADE_A_SELECTION,
+      val: best
+    })
     // If we made it this far, we found the best service! (of the rounds we tried)
     return best
   }
@@ -217,20 +255,29 @@ export class ServiceSelection {
    * @param {boolean} verbose whether or not to return full services metadata
    * @param {Set} whitelist a whitelist to override the set of endpoints
    */
-  async findAll ({ verbose = false, whitelist = this.whitelist } = {}) {
+  async findAll({ verbose = false, whitelist = this.whitelist } = {}) {
     // Get all the services
     let services = await this.getServices({ verbose })
 
     // If a whitelist is provided, filter down to it
     if (whitelist) {
-      services = services.filter(service => whitelist.has(isVerbose(service) ? service.endpoint : service))
+      services = services.filter((service) =>
+        whitelist.has(isVerbose(service) ? service.endpoint : service)
+      )
     }
 
     // Key the services by their health check endpoint
-    const urlMap = services.reduce<Record<string, Service>>((urlMap, service) => {
-      urlMap[ServiceSelection.getHealthCheckEndpoint(isVerbose(service) ? service.endpoint : service)] = service
-      return urlMap
-    }, {})
+    const urlMap = services.reduce<Record<string, Service>>(
+      (urlMap, service) => {
+        urlMap[
+          ServiceSelection.getHealthCheckEndpoint(
+            isVerbose(service) ? service.endpoint : service
+          )
+        ] = service
+        return urlMap
+      },
+      {}
+    )
 
     try {
       const results = await allRequests({
@@ -246,7 +293,7 @@ export class ServiceSelection {
   }
 
   /** Triggers a clean up of unhealthy and backup services so they can be retried later */
-  triggerCleanup () {
+  triggerCleanup() {
     if (this.unhealthyCleanupTimeout) {
       clearTimeout(this.unhealthyCleanupTimeout)
     }
@@ -255,20 +302,24 @@ export class ServiceSelection {
       clearTimeout(this.backupCleanupTimeout)
     }
 
-    this.unhealthyCleanupTimeout = setTimeout(() => { this.clearUnhealthy() }, this.unhealthyTTL)
-    this.backupCleanupTimeout = setTimeout(() => { this.clearBackups() }, this.backupsTTL)
+    this.unhealthyCleanupTimeout = setTimeout(() => {
+      this.clearUnhealthy()
+    }, this.unhealthyTTL)
+    this.backupCleanupTimeout = setTimeout(() => {
+      this.clearBackups()
+    }, this.backupsTTL)
   }
 
-  clearUnhealthy () {
+  clearUnhealthy() {
     this.unhealthy = new Set([])
   }
 
-  clearBackups () {
+  clearBackups() {
     this.backups = {}
   }
 
   /** A short-circuit. If overriden, can be used to skip selection (which could be slow) */
-  shortcircuit (): null | string {
+  shortcircuit(): null | string {
     return null
   }
 
@@ -276,32 +327,32 @@ export class ServiceSelection {
    * Filter out services that are in the blacklist
    * @param services endpoints
    */
-  filterFromBlacklist (services: string[]) {
-    return services.filter(s => !this.blacklist?.has(s))
+  filterFromBlacklist(services: string[]) {
+    return services.filter((s) => !this.blacklist?.has(s))
   }
 
   /** Filter down services to those in the whitelist */
-  filterToWhitelist (services: string[]) {
-    return services.filter(s => this.whitelist?.has(s))
+  filterToWhitelist(services: string[]) {
+    return services.filter((s) => this.whitelist?.has(s))
   }
 
   /** Filter out known unhealthy services from the provided */
-  filterOutKnownUnhealthy (services: string[]) {
-    return services.filter(s => !this.unhealthy.has(s))
+  filterOutKnownUnhealthy(services: string[]) {
+    return services.filter((s) => !this.unhealthy.has(s))
   }
 
   /** Given a list of services, samples maxConcurrentRequests from them */
-  getSelectionRound (services: string[]) {
+  getSelectionRound(services: string[]) {
     return sampleSize(services, this.maxConcurrentRequests)
   }
 
   /** Gets the total number of attempts we've made this instantiation */
-  getTotalAttempts () {
+  getTotalAttempts() {
     return this.totalAttempts
   }
 
   /** Where does the health check for this type of service live */
-  static getHealthCheckEndpoint (service: string) {
+  static getHealthCheckEndpoint(service: string) {
     return `${service}/health_check`
   }
 
@@ -311,12 +362,12 @@ export class ServiceSelection {
    * @param {{ [key: string]: string}} urlMap health check urls mapped to their cannonical url
    * e.g. https://discoveryprovider.audius.co/health_check => https://discoveryprovider.audius.co
    */
-  isHealthy (response: AxiosResponse, _urlMap: Record<string, Service>) {
+  isHealthy(response: AxiosResponse, _urlMap: Record<string, Service>) {
     return response.status === 200
   }
 
   /** Races requests against each other with provided timeouts and health checks */
-  async race (services: string[]) {
+  async race(services: string[]) {
     // Key the services by their health check endpoint
     const serviceMap = services.reduce<Record<string, string>>((acc, s) => {
       acc[ServiceSelection.getHealthCheckEndpoint(s)] = s
@@ -327,26 +378,34 @@ export class ServiceSelection {
     try {
       const { errored } = await raceRequests(
         Object.keys(serviceMap),
-        (url) => { best = serviceMap[url] as string },
+        (url) => {
+          best = serviceMap[url] as string
+        },
         {},
         /* timeout */ this.requestTimeout,
         /* timeBetweenRequests */ 0,
         /* validationCheck */ (resp) => this.isHealthy(resp, serviceMap)
       )
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.RACED_AND_FOUND_BEST, val: best })
-      return { best, errored: errored.map(e => serviceMap[e.config.url ?? '']) }
+      this.decisionTree.push({
+        stage: DECISION_TREE_STATE.RACED_AND_FOUND_BEST,
+        val: best
+      })
+      return {
+        best,
+        errored: errored.map((e) => serviceMap[e.config.url ?? ''])
+      }
     } catch (e) {
       return { best: null, errored: [] }
     }
   }
 
   /** Adds a service to the unhealthy set */
-  addUnhealthy (service: string) {
+  addUnhealthy(service: ServiceName) {
     this.unhealthy.add(service)
   }
 
   /** Gets unhealthy set size */
-  getUnhealthySize () {
+  getUnhealthySize() {
     return this.unhealthy.size
   }
 
@@ -354,7 +413,7 @@ export class ServiceSelection {
    * Removes from unhealthy set
    * @param key service endpoint
    */
-  removeFromUnhealthy (key: string) {
+  removeFromUnhealthy(key: string) {
     if (this.unhealthy.has(key)) this.unhealthy.delete(key)
   }
 
@@ -364,7 +423,7 @@ export class ServiceSelection {
    * @param response the services response. This can be used to weigh various
    * backups against eachother
    */
-  addBackup (service: string, response: AxiosResponse) {
+  addBackup(service: string, response: AxiosResponse) {
     this.backups[service] = response
   }
 
@@ -372,7 +431,7 @@ export class ServiceSelection {
    * Controls how a backup is picked. Overriding methods may choose to use the backup's response.
    * e.g. pick a backup that's the fewest versions behind
    */
-  selectFromBackups () {
+  selectFromBackups() {
     return Object.keys(this.backups)[0]
   }
 
@@ -380,15 +439,16 @@ export class ServiceSelection {
    * Removes from backups
    * @param key service endpoint
    */
-  removeFromBackups (key: string) {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    if (Object.prototype.hasOwnProperty.call(this.backups, key)) delete this.backups[key]
+  removeFromBackups(key: string) {
+    if (Object.prototype.hasOwnProperty.call(this.backups, key))
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete this.backups[key]
   }
 
   /**
    * Returns the size of backups
    */
-  getBackupsSize () {
+  getBackupsSize() {
     return Object.keys(this.backups).length
   }
 }
