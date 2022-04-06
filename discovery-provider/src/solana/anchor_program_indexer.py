@@ -67,14 +67,14 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
         )
         # TODO: Conditionally add database modifications here depending on transaction information
-        # with self._db.scoped_session() as session:
-        #     for transaction in processed_transactions:
-        #         session.add(
-        #             AudiusDataTx(
-        #                 signature=transaction["tx_sig"],
-        #                 slot=transaction["result"]["slot"],
-        #             )
-        #         )
+        with self._db.scoped_session() as session:
+            for transaction in processed_transactions:
+                session.add(
+                    AudiusDataTx(
+                        signature=transaction["tx_sig"],
+                        slot=transaction["result"]["slot"],
+                    )
+                )
 
     async def parse_tx(self, tx_sig):
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
