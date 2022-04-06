@@ -21,7 +21,7 @@
     done
 
     cd audius_eth_registry
-    cargo build-
+    cargo build-bpf
     
     solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius_eth_registry-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
