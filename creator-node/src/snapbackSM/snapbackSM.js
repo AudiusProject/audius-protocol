@@ -123,9 +123,6 @@ class SnapbackSM {
       ? new Set(reconfigNodeWhitelist.split(','))
       : null
 
-    // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
-
     // Throw an error if no libs are provided
     if (
       !this.audiusLibs ||
