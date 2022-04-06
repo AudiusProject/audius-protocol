@@ -712,7 +712,7 @@ pub struct PublicDeleteContentNode<'info> {
 #[instruction(base: Pubkey, user_id: UserSeedBump, replica_set: [u16; 3], replica_set_bumps: [u8; 3])]
 pub struct UpdateUserReplicaSet<'info> {
     pub admin: Account<'info, AudiusAdmin>,
-    #[account(mut, seeds = [&base.to_bytes()[..32], user_id.seed.as_ref()], bump=user_id.bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], user_id.user_id.to_le_bytes().as_ref()], bump=user_id.bump)]
     pub user: Account<'info, User>,
     #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[0].to_le_bytes()], bump = replica_set_bumps[0])]
     pub cn1: Account<'info, ContentNode>,
@@ -851,7 +851,7 @@ pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], user_id.seed.as_ref()],
+        seeds = [&base.to_bytes()[..32], user_id.user_id.to_le_bytes().as_ref()],
         bump = user_id.bump
     )]
     pub user: Account<'info, User>,
@@ -884,7 +884,7 @@ pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], user_id.seed.as_ref()],
+        seeds = [&base.to_bytes()[..32], user_id.user_id.to_le_bytes().as_ref()],
         bump = user_id.bump
     )]
     pub user: Account<'info, User>,
@@ -925,7 +925,7 @@ pub struct ManageEntity<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Audiusadmin
     #[account(
-        seeds = [&base.to_bytes()[..32], user_id.seed.as_ref()],
+        seeds = [&base.to_bytes()[..32], user_id.user_id.to_le_bytes().as_ref()],
         bump = user_id.bump
     )]
     pub user: Account<'info, User>,
@@ -947,7 +947,7 @@ pub struct WriteEntitySocialAction<'info> {
     // TODO - Verify removal here
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(seeds = [&base.to_bytes()[..32], user_id.seed.as_ref()], bump = user_id.bump)]
+    #[account(seeds = [&base.to_bytes()[..32], user_id.user_id.to_le_bytes().as_ref()], bump = user_id.bump)]
     pub user: Account<'info, User>,
     #[account()]
     pub authority: Signer<'info>, 
@@ -966,10 +966,10 @@ pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Confirm the source user PDA matches the expected value provided the target id and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], source_user_id.seed.as_ref()], bump = source_user_id.bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], source_user_id.user_id.to_le_bytes().as_ref()], bump = source_user_id.bump)]
     pub source_user_storage: Account<'info, User>,
     // Confirm the target user PDA matches the expected value provided the target id and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], target_user_id.seed.as_ref()], bump = target_user_id.bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], target_user_id.user_id.to_le_bytes().as_ref()], bump = target_user_id.bump)]
     pub target_user_storage: Account<'info, User>,
     /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
@@ -987,7 +987,7 @@ pub struct WriteUserSocialAction<'info> {
 #[instruction(base: Pubkey, user_id: UserSeedBump)]
 pub struct UpdateIsVerified<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(seeds = [&base.to_bytes()[..32], user_id.seed.as_ref()], bump = user_id.bump)]
+    #[account(seeds = [&base.to_bytes()[..32], user_id.user_id.to_le_bytes().as_ref()], bump = user_id.bump)]
     pub user: Account<'info, User>,
     pub verifier: Signer<'info>,
 }
@@ -1067,7 +1067,7 @@ pub enum EntityTypes {
 // Seed & bump used to validate the user's id with the account base
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub struct UserSeedBump {
-    pub seed: [u8; 32],
+    pub user_id: u32,
     pub bump: u8,
 }
 
