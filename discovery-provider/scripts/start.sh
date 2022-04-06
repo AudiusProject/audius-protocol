@@ -73,7 +73,7 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 export audius_prometheus_container=server
 
 # start es-indexer in polling mode
-if [ -z "$audius_elasticsearch_url" ]; then
+if [[ "$audius_elasticsearch_url" ]]; then
     cd es-indexer && npm i && npm start &
 fi
 
