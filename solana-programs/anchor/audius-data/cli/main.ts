@@ -21,6 +21,7 @@ import {
   getContentNode,
   randomCID,
   randomId,
+  getContentNodeWalletAndAuthority
 } from "../lib/utils";
 
 import { Command } from "commander";
@@ -292,7 +293,8 @@ program
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
-  .option("--cn-sp-id <string>", "ID of incoming content node")
+  .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
+  .option("-ci, <boolean>", "set to true to seed content node wallet and pkey with dummy values", false)
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option("-ds, --delegate-status <string>", "user authority delegation status pda");
@@ -334,6 +336,7 @@ const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
   const userAuthorityDelegateAccountPDA = options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
   const authorityDelegationStatusAccountPDA = options.authorityDelegationStatusAccountPDA ?? SYSTEM_PROGRAM_ID;
+
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
@@ -346,9 +349,8 @@ const main = async () => {
       break;
     case functionTypes.initContentNode:
       console.log(`Initializing content node`)
-      // TODO - This authority should be a delegate private key propagated from local env or passed in
-      const contentNodeAuthority = anchor.web3.Keypair.generate();
-      console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
+      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, ci: options.ci });
+      console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
         const cnInfo = await getContentNode(
@@ -366,9 +368,9 @@ const main = async () => {
           contentNodeAuthority: contentNodeAuthority.publicKey,
           contentNodeAcct: cnInfo.derivedAddress,
           spID: cnInfo.spId,
-          ownerEthAddress: options.ethAddress
+          ownerEthAddress: delegateWallet
         })
-        console.log(`Initialized with ${tx}`)
+        console.log(`Initialized content node with ${tx}`)
       })();
       break;
     case functionTypes.initUser:

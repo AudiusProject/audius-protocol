@@ -181,6 +181,7 @@ type ConstructorArgs = {
   feePayerOverride: string | null
   maxAggregationAttempts?: number
   updateStateCallback?: (state: AttesterState) => Promise<void>
+  maxCooldownMsec?: number
 }
 
 type Challenge = {
@@ -309,7 +310,8 @@ export class RewardsAttester {
     isSolanaChallenge = (_) => true,
     feePayerOverride = null,
     maxAggregationAttempts = 20,
-    updateStateCallback = async (_) => {}
+    updateStateCallback = async (_) => {},
+    maxCooldownMsec = 15000
   }: ConstructorArgs) {
     this.libs = libs
     this.logger = logger
@@ -330,7 +332,7 @@ export class RewardsAttester {
     this.recentlyDisbursedQueue = []
     this.cooldownMsec = 2000
     this.backoffExponent = 1.8
-    this.maxCooldownMsec = 15000
+    this.maxCooldownMsec = maxCooldownMsec
     this.getStartingBlockOverride = getStartingBlockOverride
     this.feePayerOverride = feePayerOverride
     this.attesterState = {
@@ -403,7 +405,7 @@ export class RewardsAttester {
         const toAttest = this.undisbursedQueue.splice(0, this.parallelization)
 
         // Attest for batch in parallel
-        const { highestBlock, offset, results, successCount } =
+        const { highestBlock, offset, successCount } =
           await this._attestInParallel(toAttest)
 
         // Set state
@@ -425,7 +427,7 @@ export class RewardsAttester {
           : this.startingBlock
 
         // Set the recently disbursed set
-        this._addRecentlyDisbursed(results)
+        this._addRecentlyDisbursed(toAttest)
 
         // run the `updateValues` callback
         await this.updateValues({
@@ -585,60 +587,69 @@ export class RewardsAttester {
       ? Math.max(...poaAttestations.map((e) => e.completedBlocknumber))
       : null
 
-    // Attempt to attest in a single sweep
-    await this._updatePhase('ATTESTING')
-    const results = await Promise.all(
-      toAttest.map(this._performSingleAttestation)
-    )
-
-    // "Process" the results of attestation into noRetry and needsRetry errors,
-    // as well as a flag that indicates whether we should reselect.
-    let { successful, noRetry, needsRetry, shouldReselect } =
-      await this._processResponses(results, false)
-    let successCount = successful.length
-    let accumulatedErrors = noRetry
-
-    // Increment offset by the # of errors we're not retrying that have the max block #.
-    //
-    // Note: any successfully completed rewards will eventually be flushed from the
-    // disbursable queue on DN, but ignored rewards will stay stuck in that list, so we
-    // have to move past them with offset if they're not already moved past with `startingBlock`.
-    let offset = 0
-    offset += noRetry.filter(
-      ({ completedBlocknumber }) => completedBlocknumber === highestBlock
-    ).length
-
-    // Retry loop
     let retryCount = 0
-    while (needsRetry.length && retryCount < this.maxRetries) {
-      await this._backoff(retryCount++)
+    let successful: AttestationResult[] = []
+    let noRetry: AttestationResult[] = []
+    let needsAttestation: AttestationResult[] = toAttest
+    let shouldReselect = false
+    let accumulatedErrors: AttestationResult[] = []
+    let successCount = 0
+    let offset = 0
+
+    do {
+      // Attempt to attest in a single sweep
+      await this._updatePhase('ATTESTING')
+      if (retryCount !== 0) {
+        await this._backoff(retryCount)
+      }
+
+      this.logger.info(
+        `Attestation attempt ${retryCount + 1}, max ${this.maxRetries}`
+      )
+
       if (shouldReselect) {
         await this._selectDiscoveryNodes()
       }
-      await this._updatePhase('ATTESTING')
-      const res = await Promise.all(
-        needsRetry.map(this._performSingleAttestation)
+
+      const results = await Promise.all(
+        needsAttestation.map(this._performSingleAttestation)
       )
-      ;({ successful, needsRetry, noRetry, shouldReselect } =
-        await this._processResponses(res, retryCount === this.maxRetries))
+
+      // "Process" the results of attestation into noRetry and needsAttestation errors,
+      // as well as a flag that indicates whether we should reselect.
+      ;({
+        successful,
+        noRetry,
+        needsRetry: needsAttestation,
+        shouldReselect
+      } = await this._processResponses(
+        results,
+        retryCount === this.maxRetries - 1
+      ))
+
+      successCount += successful.length
       accumulatedErrors = [...accumulatedErrors, ...noRetry]
 
+      // Increment offset by the # of errors we're not retrying that have the max block #.
+      //
+      // Note: any successfully completed rewards will eventually be flushed from the
+      // disbursable queue on DN, but ignored rewards will stay stuck in that list, so we
+      // have to move past them with offset if they're not already moved past with `startingBlock`.
       offset += noRetry.filter(
         ({ completedBlocknumber }) => completedBlocknumber === highestBlock
       ).length
-      successCount += successful.length
-    }
+
+      retryCount++
+    } while (needsAttestation.length && retryCount < this.maxRetries)
 
     if (retryCount === this.maxRetries) {
       this.logger.error(`Gave up with ${retryCount} retries`)
-      accumulatedErrors = [...accumulatedErrors, ...needsRetry]
     }
 
     return {
       accumulatedErrors,
       highestBlock,
       offset,
-      results,
       successCount
     }
   }
@@ -721,10 +732,8 @@ export class RewardsAttester {
   }
 
   async _selectDiscoveryNodes() {
-    await this._updatePhase('SLEEPING')
-    this.logger.info('Selecting discovery nodes', {
-      endpointPool: this.endpointPool
-    })
+    await this._updatePhase('SELECTING_NODES')
+    this.logger.info('Selecting discovery nodes...')
     const startTime = Date.now()
     const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll(
       {
@@ -920,7 +929,10 @@ export class RewardsAttester {
         report.reason = errorType
         this.reporter.reportAAORejection(report)
       } else if (isFinalAttempt) {
-        // Final attempt at retries
+        // Final attempt at retries,
+        // should be classified as noRetry
+        // and reported as a failure
+        noRetry.push(res)
         this.reporter.reportFailure(report)
       } else {
         // Otherwise, retry it
