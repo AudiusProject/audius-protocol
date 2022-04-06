@@ -80,8 +80,6 @@ const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
 const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
 
-const STATE_MACHINE_QUEUE_LOCK_KEY = 'stateMachineQueueJobLock'
-
 /*
   SnapbackSM aka Snapback StateMachine
   Ensures file availability through recurring sync operations
@@ -856,23 +854,6 @@ class SnapbackSM {
    * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
    */
   async processStateMachineOperation() {
-    /**
-     * Ensure lock available, and acquire it - else error
-     * @notice Bull will not enqueue further jobs if all active spots are full, but this provides added
-     *    assurance, especially if queue concurrency were ever set to > 1
-     */
-    const lockExp = this.snapbackJobInterval * 2
-    const acquired = await redis.lock.acquireLock(
-      STATE_MACHINE_QUEUE_LOCK_KEY,
-      lockExp
-    )
-    if (!acquired) {
-      this.logError(
-        `[stateMachineQueue] Cannot start new job; lock held by previous job.`
-      )
-      return
-    }
-
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = []
     this._addToStateMachineQueueDecisionTree(
