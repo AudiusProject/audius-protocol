@@ -1,5 +1,7 @@
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
+const { Keypair } = require('@solana/web3.js')
+
 const config = require('../../config')
 const utils = require('../../utils.js')
 const { MONITORS } = require('../../monitors/monitors')
@@ -94,9 +96,16 @@ const healthCheck = async (
   const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
     await getAsyncProcessingQueueJobs()
 
-  let solSigningAuthPubKey = ''
+  let solDelegatePublicKeyBase58 = ''
   try {
-    solSigningAuthPubKey = config.get('solSigningAuthPubKey')
+    const solDelegatePrivateKey = config.get('solDelegatePrivateKeyBase64')
+    const solDelegatePrivateKeyBuffer = new Uint8Array(
+      Buffer.from(solDelegatePrivateKey, 'base64')
+    )
+    const solDelegateKeyPair = Keypair.fromSecretKey(
+      solDelegatePrivateKeyBuffer
+    )
+    solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
   const response = {
@@ -140,7 +149,7 @@ const healthCheck = async (
     transcodeWaiting,
     fileProcessingActive,
     fileProcessingWaiting,
-    solSigningAuthPubKey
+    solDelegatePublicKeyBase58
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object

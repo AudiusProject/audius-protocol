@@ -102,11 +102,16 @@ const startApp = async () => {
   }
 
   try {
-    const solSigningAuthority = Keypair.fromSeed(privateKeyBuffer)
-    const solSigningAuthPubKey = solSigningAuthority.publicKey
-    config.set('solSigningAuthPubKey', `${solSigningAuthPubKey}`)
+    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
+    const solDelegatePrivateKey = solDelegateKeypair.secretKey
+    config.set(
+      'solDelegatePrivateKeyBase64',
+      Buffer.from(solDelegatePrivateKey).toString('base64')
+    )
   } catch (e: any) {
-    logger.error(`Failed to derive Solana public key: ${e.message}`)
+    logger.error(
+      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
+    )
   }
 
   const mode = getMode()
