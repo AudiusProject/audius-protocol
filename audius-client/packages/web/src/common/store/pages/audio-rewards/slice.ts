@@ -97,18 +97,15 @@ const slice = createSlice({
       if (userChallenges === null) {
         state.userChallenges = {}
       } else {
-        state.userChallenges = userChallenges.reduce((acc, challenge) => {
-          // TODO: AUD-1536
-          // Remove this custom override logic when we have identified the proper fix
-          if (
-            challenge.challenge_id === 'listen-streak' &&
-            challenge.is_complete
-          ) {
-            challenge.current_step_count = challenge.max_steps
-          }
-          acc[challenge.challenge_id] = challenge
-          return acc
-        }, {} as Partial<Record<ChallengeRewardID, UserChallenge>>)
+        state.userChallenges = userChallenges.reduce<
+          Partial<Record<ChallengeRewardID, UserChallenge>>
+        >(
+          (acc, challenge) => ({
+            ...acc,
+            [challenge.challenge_id]: challenge
+          }),
+          {}
+        )
       }
       state.loading = false
     },
@@ -119,7 +116,9 @@ const slice = createSlice({
       state,
       action: PayloadAction<UndisbursedUserChallenge[]>
     ) => {
-      state.undisbursedChallenges = action.payload
+      if (state.undisbursedChallenges.length > 0 || action.payload.length > 0) {
+        state.undisbursedChallenges = action.payload
+      }
     },
     setUserChallengesDisbursed: (
       state,
