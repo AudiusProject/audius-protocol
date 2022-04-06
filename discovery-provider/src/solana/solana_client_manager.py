@@ -36,7 +36,9 @@ class SolanaClientManager:
         index = random.randrange(0, len(self.clients))
         return self.clients[index]
 
-    def get_sol_tx_info(self, tx_sig: str, retries=DEFAULT_MAX_RETRIES):
+    def get_sol_tx_info(
+        self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json"
+    ):
         """Fetches a solana transaction by signature with retries and a delay."""
 
         def handle_get_sol_tx_info(client, index):
@@ -47,8 +49,8 @@ class SolanaClientManager:
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}"
                     )
-                    tx_info: ConfirmedTransaction = client.get_confirmed_transaction(
-                        tx_sig
+                    tx_info: ConfirmedTransaction = client.get_transaction(
+                        tx_sig, encoding
                     )
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}"

@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.101",
+  "version": "1.2.102",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,13 @@
     "node-localstorage": false,
     "crypto": false,
     "web3": false,
-    "esm": false
+    "esm": false,
+    "ipfs-unixfs-importer": false,
+    "util": false,
+    "stream": false,
+    "interface-blockstore": false,
+    "interface-store": false,
+    "multiformats/cid": false
   },
   "scripts": {
     "init-local": "ts-node initScripts/local.js",
@@ -46,6 +52,9 @@
     "ethers": "5.4.7",
     "form-data": "3.0.0",
     "hashids": "2.2.10",
+    "interface-blockstore": "^2.0.3",
+    "interface-store": "^2.0.2",
+    "ipfs-unixfs-importer": "^9.0.6",
     "jsonschema": "1.2.6",
     "keccak256": "1.0.2",
     "lodash": "4.17.21",

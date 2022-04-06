@@ -8,6 +8,8 @@ import {
   importDataContractABIs,
   importEthContractABIs
 } from './importContractABI'
+import { fileHasher } from './fileHasher'
+import type { ImageHasher, NonImageHasher, HashedImage } from './fileHasher'
 
 // Hashids
 
@@ -16,6 +18,8 @@ const MIN_LENGTH = 5
 const hashids = new Hashids(HASH_SALT, MIN_LENGTH)
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
+
+export type { ImageHasher, NonImageHasher, HashedImage }
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- this should just be esm
 export class Utils {
@@ -226,4 +230,6 @@ export class Utils {
     })
     return await Promise.race([promise, timeoutPromise])
   }
+
+  static fileHasher = fileHasher
 }
