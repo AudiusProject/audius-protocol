@@ -245,6 +245,8 @@ class AudiusLibs {
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
    * @param {Uint8Array} feePayerSecretKeys fee payer secret keys, if client wants to switch between different fee payers during relay
    * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
+   * @param {string} anchorAdminStorageKeypairPublicKey
+   * @param {string} anchorProgramId
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -258,7 +260,9 @@ class AudiusLibs {
     rewardsManagerTokenPDA,
     useRelay,
     feePayerSecretKeys,
-    confirmationTimeout
+    confirmationTimeout,
+    anchorAdminStorageKeypairPublicKey,
+    anchorProgramId
   }) {
     return {
       solanaClusterEndpoint,
@@ -272,7 +276,9 @@ class AudiusLibs {
       rewardsManagerTokenPDA,
       useRelay,
       feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
-      confirmationTimeout
+      confirmationTimeout,
+      anchorAdminStorageKeypairPublicKey,
+      anchorProgramId
     }
   }
 

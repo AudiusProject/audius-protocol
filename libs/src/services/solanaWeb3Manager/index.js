@@ -101,6 +101,8 @@ class SolanaWeb3Manager {
       anchorAdminStorageKeypairPublicKey
     } = this.solanaWeb3Config
 
+    console.log('THIS IS THE SOLANAWEB3CONFIG', this.solanaWeb3Config, anchorProgramId, anchorAdminStorageKeypairPublicKey)
+
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
       confirmTransactionInitialTimeout: confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
@@ -135,18 +137,8 @@ class SolanaWeb3Manager {
     this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
-    this.anchorProgramId = anchorProgramId
-    this.anchorAdminStorageKeypairPublicKey = anchorAdminStorageKeypairPublicKey
-
-    const provider = anchor.Provider.local(this.solanaClusterEndpoint, {
-      preflightCommitment: 'confirmed',
-      commitment: 'confirmed'
-    })
-    anchor.setProvider(provider)
-
-    // TODO: ?? not sure
-    this.program = anchor.workspace.AudiusData
-    this.programId = anchor.workspace.AudiusData.programId
+    this.anchorProgramId = SolanaUtils.newPublicKeyNullable(anchorProgramId)
+    this.anchorAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(anchorAdminStorageKeypairPublicKey)
   }
 
   /**
@@ -507,6 +499,7 @@ class SolanaWeb3Manager {
   }
 
   async findProgramAddress (programId, pubkey) {
+    console.log('findProgramAddress', programId, pubkey)
     return PublicKey.findProgramAddress(
       [pubkey.toBytes().slice(0, 32)],
       programId
@@ -529,40 +522,47 @@ class SolanaWeb3Manager {
     )
   }
 
-  // Finds the target PDA with the base audius admin as the initial seed
-  // In conjunction with the secondary seed as the users handle in bytes
-
   /**
    * Finds the target PDA with the base audius admin as the initial seed
    * In conjunction with the secondary seed as the users handle in bytes
-   * @param {string} programId
-   * @param {string} adminAccount
+   * @param {PublicKey} programId
+   * @param {PublicKey} adminAccount
    * @param {string} seed
    */
   async findDerivedPair (programId, adminAccount, seed) {
+    programId = SolanaUtils.newPublicKeyNullable(programId)
+    adminAccount = SolanaUtils.newPublicKeyNullable(adminAccount)
+
     const [baseAuthorityAccount] = await this.findProgramAddress(
       programId,
       adminAccount
     )
-    const derivedAddresInfo = await this.findDerivedAddress(
+    const derivedAddressInfo = await this.findDerivedAddress(
       programId,
       baseAuthorityAccount,
       seed
     )
 
-    const derivedAddress = derivedAddresInfo.result[0]
-    const bumpSeed = derivedAddresInfo.result[1]
+    console.log('what is derivedAddressInfo', derivedAddressInfo)
+    const derivedAddress = derivedAddressInfo[0]
+    const bumpSeed = derivedAddressInfo[1]
 
     return { baseAuthorityAccount, derivedAddress, bumpSeed }
   }
 
   /**
-   * Encodes and returns the utf8 encoding for the inpiut
-   * @param {string} input
-   * @returns the utf8 encoded input
+   * Given a handle, returns the byte array
+   * @param {string} handle user handle
+   * @returns handle converted to array of bytes
    */
-  encodeUtf8 (input) {
-    return anchor.utils.bytes.utf8.encode(input)
+  getHandleBytesArray (handle) {
+    const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
+    const handleBytesArray = Array.from({ ...handleBytes, length: 32 })
+    return handleBytesArray
+  }
+
+  encodeb58 (buffer) {
+    return anchor.utils.bytes.bs58.encode(buffer)
   }
 }
 

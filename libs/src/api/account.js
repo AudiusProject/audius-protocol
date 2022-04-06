@@ -5,6 +5,7 @@ const { AuthHeaders } = require('../constants')
 const {
   getPermitDigest, sign
 } = require('../utils/signatures')
+const { PublicKey } = require('@solana/web3.js')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -599,18 +600,43 @@ class Account extends Base {
   async checkAccountExistsOnSol () {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
-    const handleUtf8 = this.solanaWeb3Manager.encodeUtf8(this.getCurrentUser().handle)
-    const handleBuffer = Buffer.from(handleUtf8)
+    // const handleUtf8 = this.solanaWeb3Manager.encodeUtf8(this.getCurrentUser().handle)
+    // const handleUtf8 = this.solanaWeb3Manager.encodeUtf8('handlebcdef')
+    const handleBytesArray = this.solanaWeb3Manager.getHandleBytesArray('handlebcdef')
 
     const {
       baseAuthorityAccount,
       bumpSeed,
       derivedAddress: newUserAcctPDA
     } = await this.solanaWeb3Manager.findDerivedPair(
-      this.solanaWeb3Manager.programId,
-      this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
-      handleBuffer
+      // this.solanaWeb3Manager.anchorProgramId,
+      // this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
+      // handleBuffer
+      // Derived from seed-tx.sh logs
+      '4j6Tmp2VQ3SHkKWgwfap9hNqKEosSRdVXCKUBdtDvWat',
+      'FMTJ3AmeGnvSZdSUjnJkUxp1jRx5KsTpTT7DSwWeLiF1',
+      handleBytesArray
     )
+
+    console.log('this is everything', baseAuthorityAccount, bumpSeed, newUserAcctPDA)
+
+    const accInfo = await this.solanaWeb3Manager.connection.getAccountInfo(newUserAcctPDA)
+    // const accInfo = await this.solanaWeb3Manager.connection.getAccountInfo(new PublicKey('9X1b54vrKvT2RmjXSSjCQAkezvqYMNpx3t8j3TAGvsDT'))
+
+    console.log('this is the accInfo????', accInfo, !accInfo)
+
+    if (!accInfo) return false
+    console.log('acc info not null', accInfo.data)
+    const derivedEthWallet = this.solanaWeb3Manager.encodeb58(accInfo.data)
+
+    console.log('what is derived eth wallet', derivedEthWallet)
+    return true
+
+    // check eth keys in accInfo.data
+
+    // convert b58 -> utf8
+    // if (accInfo.data.ethWallet === currentWallet) return true
+    // else return false
   }
 }
 
