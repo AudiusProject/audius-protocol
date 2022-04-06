@@ -233,9 +233,6 @@ class SnapbackSM {
       }
     )
 
-    // Ensure stateMachineQueue lock is unlocked
-    await redis.lock.removeLock(STATE_MACHINE_QUEUE_LOCK_KEY)
-
     // Enqueue stateMachineQueue jobs on a cron, after an initial delay
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
@@ -1135,9 +1132,6 @@ class SnapbackSM {
 
       // Increment and adjust current slice by this.moduloBase
       this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
-
-      // Release lock
-      await redis.lock.removeLock(STATE_MACHINE_QUEUE_LOCK_KEY)
     }
   }
 
