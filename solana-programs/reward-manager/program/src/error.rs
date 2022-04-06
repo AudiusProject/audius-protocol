@@ -6,7 +6,6 @@ use solana_program::{
     decode_error::DecodeError,
     msg,
     program_error::{PrintProgramError, ProgramError},
-    sanitize::SanitizeError,
 };
 use thiserror::Error;
 
@@ -89,7 +88,7 @@ impl PrintProgramError for AudiusProgramError {
     }
 }
 
-/// Convert SanitizeError to AudiusProgramError
-pub fn to_audius_program_error(_e: SanitizeError) -> AudiusProgramError {
+/// Convert ProgramError to AudiusProgramError
+pub fn to_audius_program_error(_e: ProgramError) -> AudiusProgramError {
     AudiusProgramError::InstructionLoadError
 }

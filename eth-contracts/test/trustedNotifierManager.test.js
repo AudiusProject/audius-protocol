@@ -1,10 +1,7 @@
-const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades')
-
 import * as _lib from '../utils/lib.js'
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const TrustedNotifierManager = artifacts.require('TrustedNotifierManager')
-const TrustedNotifierManager2 = artifacts.require('TrustedNotifierManager')
 
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const trustedNotifierManagerKey = web3.utils.utf8ToHex('TrustedNotifierManager')
@@ -531,16 +528,5 @@ contract('TrustedNotifierManager', async function (accounts) {
     // Confirm new governanceAddress
     governanceAddress = await trustedNotifierManager.getGovernanceAddress.call()
     assert.isTrue(governanceAddress === governance2.address)
-  })
-
-  it('Test proxy upgrade safety via openzeppelin tooling', async () => {
-    // https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades#test-usage
-    // deployProxy and upgradeProxy run some tests to ensure
-
-    const trustedNotifierManager1 = await deployProxy(
-      TrustedNotifierManager,
-      [governance.address, notifier1Wallet, notifier1Endpoint, notifier1Email]
-    )
-    await upgradeProxy(trustedNotifierManager1, TrustedNotifierManager2)
   })
 })

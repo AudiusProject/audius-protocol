@@ -35,6 +35,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
 COPY requirements.txt requirements.txt
 
 RUN apk add libseccomp-dev && \
+    # Upgrade pip to accomodate anchor.py installation
+    python3 -m pip install --upgrade pip && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 

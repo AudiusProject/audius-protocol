@@ -1,6 +1,10 @@
 from datetime import datetime
 
-from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
+from integration_tests.challenges.index_helpers import (
+    AttrDict,
+    CIDMetadataClient,
+    UpdateTask,
+)
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.models import (
     Block,
@@ -20,10 +24,10 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
     """Tests that URSM indexing skips cursed txs without throwing an error and are able to process other tx in block"""
     with app.app_context():
         db = get_db()
-        ipfs_client = IPFSClient({})
+        cid_metadata_client = CIDMetadataClient({})
         web3 = Web3()
         challenge_event_bus = setup_challenge_bus()
-        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
+        update_task = UpdateTask(cid_metadata_client, web3, challenge_event_bus)
 
     class TestUserReplicaSetTransaction:
         pass

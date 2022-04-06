@@ -407,13 +407,22 @@ export class RewardsAttester {
           await this._attestInParallel(toAttest)
 
         // Set state
-        this.startingBlock = highestBlock
-          ? highestBlock - 1
-          : this.startingBlock
-        this.offset = offset
+        // Set offset:
+        // - If same startingBlock as before, add offset
+        // - If new startingBlock, set offset
+        if (highestBlock && this.startingBlock === highestBlock - 1) {
+          this.offset += offset
+        } else {
+          this.offset = offset
+        }
+
         this.logger.info(
           `Updating values: startingBlock: ${this.startingBlock}, offset: ${this.offset}`
         )
+
+        this.startingBlock = highestBlock
+          ? highestBlock - 1
+          : this.startingBlock
 
         // Set the recently disbursed set
         this._addRecentlyDisbursed(results)
@@ -785,7 +794,7 @@ export class RewardsAttester {
           amount,
           handle,
           wallet,
-          completed_blocknumber, // eslint-disable-line
+          completed_blocknumber // eslint-disable-line
         }) => ({
           challengeId: challenge_id,
           userId: user_id,
@@ -842,7 +851,8 @@ export class RewardsAttester {
     const AAO_ERRORS = new Set([
       errors.HCAPTCHA,
       errors.COGNITO_FLOW,
-      errors.AAO_ATTESTATION_REJECTION
+      errors.AAO_ATTESTATION_REJECTION,
+      errors.AAO_ATTESTATION_UNKNOWN_RESPONSE
     ])
     // Account for errors from DN aggregation + Solana program
     // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
@@ -903,9 +913,10 @@ export class RewardsAttester {
         const errorType = {
           [errors.HCAPTCHA]: 'hcaptcha',
           [errors.COGNITO_FLOW]: 'cognito',
-          [errors.AAO_ATTESTATION_REJECTION]: 'rejection'
+          [errors.AAO_ATTESTATION_REJECTION]: 'rejection',
+          [errors.AAO_ATTESTATION_UNKNOWN_RESPONSE]: 'unknown'
           // Some hacky typing here because we haen't typed the imported error type yet
-        }[error] as unknown as 'hcaptcha' | 'cognito' | 'rejection'
+        }[error] as unknown as 'hcaptcha' | 'cognito' | 'rejection' | 'unknown'
         report.reason = errorType
         this.reporter.reportAAORejection(report)
       } else if (isFinalAttempt) {
