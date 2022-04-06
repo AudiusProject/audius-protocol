@@ -26,6 +26,8 @@ import {
   deletePlaylist,
   updatePlaylist,
   updateAdmin,
+  initAuthorityDelegationStatus,
+  addUserAuthorityDelegate,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
@@ -500,21 +502,13 @@ export const testCreateUserDelegate = async ({
   const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
   const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
 
-  const initAuthorityDelegationStatusArgs = {
-    accounts: {
-      delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-      authorityDelegationStatusPda: authorityDelegationStatusPDA,
-      payer: provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [userAuthorityDelegateKeypair],
-  };
-
-  const initAuthorityDelegationStatusTx =
-    await program.rpc.initAuthorityDelegationStatus(
-      "authority_name",
-      initAuthorityDelegationStatusArgs
-    );
+  const initAuthorityDelegationStatusTx = await initAuthorityDelegationStatus({
+    program,
+    authorityName: "authority_name",
+    userAuthorityDelegateKeypair,
+    authorityDelegationStatusPDA,
+    payer: provider.wallet.publicKey,
+  });
 
   const {
     decodedInstruction: authorityDelegationInstruction,
@@ -544,27 +538,20 @@ export const testCreateUserDelegate = async ({
   const userAuthorityDelegatePDA = res[0];
   const userAuthorityDelegateBump = res[1];
 
-  const addUserAuthorityDelegateArgs = {
-    accounts: {
-      admin: adminStorageKeypair.publicKey,
-      user: user.pda,
-      currentUserAuthorityDelegate: userAuthorityDelegatePDA,
-      signerUserAuthorityDelegate: SystemProgram.programId,
-      authorityDelegationStatus: SystemProgram.programId,
-      authority: user.keypair.publicKey,
-      payer: provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [user.keypair],
-  };
-
-  const addUserAuthorityDelegateTx = await program.rpc.addUserAuthorityDelegate(
-    user.authority,
-    user.handleBytesArray,
-    user.bumpSeed,
-    userAuthorityDelegateKeypair.publicKey,
-    addUserAuthorityDelegateArgs
-  );
+  const addUserAuthorityDelegateTx = await addUserAuthorityDelegate({
+    program,
+    adminStoragePublicKey: adminStorageKeypair.publicKey,
+    baseAuthorityAccount: user.authority,
+    userHandleBytesArray: user.handleBytesArray,
+    userBumpSeed: user.bumpSeed,
+    user: user.pda,
+    currentUserAuthorityDelegate: userAuthorityDelegatePDA,
+    signerUserAuthorityDelegate: SystemProgram.programId,
+    authorityDelegationStatus: SystemProgram.programId,
+    delegatePublicKey: userAuthorityDelegateKeypair.publicKey,
+    authority: user.keypair,
+    payer: provider.wallet.publicKey,
+  });
 
   const {
     decodedInstruction: addUserAuthorityDelegateInstruction,
@@ -582,13 +569,13 @@ export const testCreateUserDelegate = async ({
   expect(addUserAuthorityDelegateData.base.toString()).to.equal(
     user.authority.toString()
   );
-  expect(addUserAuthorityDelegateData.handleSeed.toString()).to.equal(
+  expect(addUserAuthorityDelegateData.userHandle.seed.toString()).to.equal(
     user.handleBytesArray.toString()
   );
-  expect(addUserAuthorityDelegateData.userBump).to.equal(user.bumpSeed);
-  expect(
-    addUserAuthorityDelegateData.userAuthorityDelegate.toString()
-  ).to.equal(userAuthorityDelegateKeypair.publicKey.toString());
+  expect(addUserAuthorityDelegateData.userHandle.bump).to.equal(user.bumpSeed);
+  expect(addUserAuthorityDelegateData.delegatePubkey.toString()).to.equal(
+    userAuthorityDelegateKeypair.publicKey.toString()
+  );
 
   return {
     baseAuthorityAccount: user.authority,

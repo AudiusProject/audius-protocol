@@ -14,8 +14,8 @@ GET_METADATA_TIMEOUT_SECONDS = 2
 GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 5
 
 
-class IPFSClient:
-    """Helper class for Audius Discovery Provider + IPFS interaction"""
+class CIDMetadataClient:
+    """Helper class for Audius Discovery Provider + CID Metadata interaction"""
 
     def __init__(
         self,
@@ -24,10 +24,8 @@ class IPFSClient:
         redis=None,
         eth_abi_values=None,
     ):
-        # logger.warning("IPFSCLIENT | initializing")
-
         # Fetch list of registered content nodes to use during init.
-        # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
+        # During indexing, if cid metadata fetch fails, _cnode_endpoints and user_replica_set are empty
         # it might fail to find content and throw an error. To prevent race conditions between
         # indexing starting and this getting populated, run this on init in the instance
         # in the celery worker
@@ -38,16 +36,18 @@ class IPFSClient:
                 )
             )
             logger.warning(
-                f"IPFSCLIENT | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
+                f"CIDMetadataClient | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
             )
         else:
             self._cnode_endpoints = []
-            logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
+            logger.warning(
+                "CIDMetadataClient | couldn't fetch _cnode_endpoints on init"
+            )
 
     def update_cnode_urls(self, cnode_endpoints):
         if len(cnode_endpoints):
             logger.info(
-                f"IPFSCLIENT | update_cnode_urls with endpoints {cnode_endpoints}"
+                f"CIDMetadataClient | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
 
@@ -66,7 +66,7 @@ class IPFSClient:
             validate_url = urlparse(url)
             if not validate_url.scheme:
                 raise Exception(
-                    f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
+                    f"CIDMetadataClient | Invalid URL from provided gateway addr - {url}"
                 )
 
             async with async_session.get(
@@ -77,11 +77,11 @@ class IPFSClient:
                     return (multihash, json_resp)
         except asyncio.TimeoutError:
             logger.info(
-                f"IPFSCLIENT | _get_metadata_async TimeoutError fetching gateway address - {url}"
+                f"CIDMetadataClient | _get_metadata_async TimeoutError fetching gateway address - {url}"
             )
             return None
         except Exception as e:
-            logger.info(f"IPFSCLIENT | _get_metadata_async Exception - {str(e)}")
+            logger.info(f"CIDMetadataClient | _get_metadata_async Exception - {str(e)}")
             return None
 
     def _get_gateway_endpoints(
@@ -98,7 +98,7 @@ class IPFSClient:
 
         return self._cnode_endpoints
 
-    async def fetch_metadata_from_gateway_endpoints(
+    async def _fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
         cids_txhash_set: Tuple[str, Any],
@@ -181,9 +181,29 @@ class IPFSClient:
 
             except asyncio.TimeoutError:
                 logger.info(
-                    "IPFSCLIENT | fetch_metadata_from_gateway_endpoints TimeoutError"
+                    "CIDMetadataClient | fetch_metadata_from_gateway_endpoints TimeoutError"
                 )
             except Exception as e:
-                logger.info("IPFSCLIENT | Error in fetch cid metadata")
+                logger.info("CIDMetadataClient | Error in fetch cid metadata")
                 raise e
         return cid_metadata
+
+    def fetch_metadata_from_gateway_endpoints(
+        self,
+        fetched_cids: KeysView[str],
+        cids_txhash_set: Tuple[str, Any],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, str],
+        cid_type: Dict[str, str],
+        should_fetch_from_replica_set: bool = True,
+    ) -> Dict[str, int]:
+        return asyncio.run(
+            self._fetch_metadata_from_gateway_endpoints(
+                fetched_cids,
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set,
+            )
+        )

@@ -115,7 +115,6 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false,
     handleUserBankOutcomes = () => {},
     userBankOutcomes = {},
     feePayerOverride = null,
@@ -154,7 +153,7 @@ class Account extends Base {
       // Create a wAudio user bank address.
       // If userbank creation fails, we still proceed
       // through signup
-      if (createWAudioUserBank && this.solanaWeb3Manager) {
+      if (this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION;
         // Fire and forget createUserBank. In the case of failure, we will
         // retry to create user banks in a later session before usage
