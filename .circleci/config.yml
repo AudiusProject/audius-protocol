@@ -604,7 +604,7 @@ jobs:
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
       - restore_cache:
           keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
             - anchor-node-deps-
       - run:
           name: anchor tests
@@ -613,12 +613,12 @@ jobs:
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
             solana-keygen new --no-bip39-passphrase
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            yarn
+            npm install
             npx anchor test
       - save_cache:
           paths:
             - solana-programs/anchor/audius-data/node_modules
-          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
       # - restore_cache:
       #     keys:
       #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
