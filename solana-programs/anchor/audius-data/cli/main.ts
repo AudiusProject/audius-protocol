@@ -294,7 +294,7 @@ program
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
   .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
-  .option("-ci, <boolean>", "set to true to seed content node wallet and pkey with dummy values", false)
+  .option("--deterministic, <boolean>", "set to false to seed content node wallet and pkey dynamically from local env (only when running ganache without --deterministic)", true)
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option("-ds, --delegate-status <string>", "user authority delegation status pda");
@@ -349,7 +349,7 @@ const main = async () => {
       break;
     case functionTypes.initContentNode:
       console.log(`Initializing content node`)
-      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, ci: options.ci });
+      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, deterministic: options.deterministic });
       console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
