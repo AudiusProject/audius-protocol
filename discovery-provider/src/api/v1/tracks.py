@@ -17,7 +17,6 @@ from src.api.v1.helpers import (
     format_limit,
     format_offset,
     full_trending_parser,
-    get_authed_user_id,
     get_current_user_id,
     get_default_max,
     get_encoded_track_id,
@@ -59,7 +58,6 @@ from src.trending_strategies.trending_strategy_factory import (
     TrendingStrategyFactory,
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils.auth_middleware import auth_middleware
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
