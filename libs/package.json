@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.101",
+  "version": "1.2.102",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,8 +10,12 @@
     "crypto": false,
     "web3": false,
     "esm": false,
+    "ipfs-unixfs-importer": false,
+    "util": false,
     "stream": false,
-    "./utils/fileHasher": false
+    "interface-blockstore": false,
+    "interface-store": false,
+    "multiformats/cid": false
   },
   "scripts": {
     "init-local": "ts-node initScripts/local.js",
