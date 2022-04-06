@@ -174,12 +174,38 @@ export const getContentNode = async (
 };
 
 /**
+ * Returns property value from CN shellEnv#.sh from local service-commands provisioning.
+ * 
+ */
+export const getContentNodeConfigValue = async ({ spId, key }: { spId: number, key: string }): Promise<string> => {
+  const spConfigFilePath = `creator-node/compose/env/tmp/shellEnv${spId}.sh`
+  let value;
+  try {
+    const spConfig = await fs.readFile(path.join(process.env.PROTOCOL_DIR, spConfigFilePath), "utf-8");
+    value = spConfig.split(`${key}=`)[1].split('\nexport')[0];
+  } catch (error) {
+    throw new Error(`Error getting private key from sp config file ${spConfigFilePath}: ${error}`);
+  }
+  return value;
+}
+
+/**
+ * converts hex eth pk value (eg 358edb5f358b697c32d3dd3c0107da568635334078a21bb755aaa41f084681ff) 
+ * Uint8Array(32) to create web3 Keypair.
+ */
+export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
+  const fullHexAddress = `0x${hexPrivateKey}`;
+  const uint8SecretKey = Uint8Array.from(web3.utils.hexToBytes(fullHexAddress));
+  return uint8SecretKey;
+}
+
+/**
  * Returns object containing
  * content node delegate wallet address and 
  * authority KeyPair based on spId; when ci=true
  * returns hardcoded wallet address and new KeyPair
  */
-export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }) => {
+export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }: { spId: string, ci: boolean }): Promise<any> => {
   const cnSpId = parseInt(spId);
   let contentNodeAuthority;
   let delegateWallet;
@@ -187,14 +213,13 @@ export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }) => 
     contentNodeAuthority = anchor.web3.Keypair.generate();
     delegateWallet = DUMMY_CN_WALLET_ADDRESSES[cnSpId - 1]
   } else {
-    const spConfigFilePath = `creator-node/compose/env/tmp/shellEnv${cnSpId}.sh`
+    delegateWallet = await getContentNodeConfigValue({ spId: cnSpId, key: 'delegateOwnerWallet' });
+    const delegatePrivateKey = await getContentNodeConfigValue({ spId: cnSpId, key: 'delegatePrivateKey' });
     try {
-      const spConfig = await fs.readFile(path.join(process.env.PROTOCOL_DIR, spConfigFilePath), "utf-8");
-      const delegatePrivateKey = spConfig.split('delegatePrivateKey=')[1].split('\nexport')[0];
-      const uint8SecretKey = Uint8Array.from(web3.utils.hexToBytes(`0x${delegatePrivateKey}`))
-      contentNodeAuthority = anchor.web3.Keypair.fromSeed(uint8SecretKey);
+      const seed = hexPrivateKeyToUint8(delegatePrivateKey);
+      contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
     } catch (error) {
-      throw new Error(`Error getting private key from sp config file ${spConfigFilePath}`);
+      throw new Error(`Error getting keypair from delegate private key ${delegatePrivateKey}: ${error}`);
     }
   }
   return {
