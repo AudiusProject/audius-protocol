@@ -238,7 +238,7 @@ class TrackByRoute(Resource):
         routes = (routes or []) + (permalinks or [])
         if not ((slug and handle) or routes or ids):
             ns.abort(400, "Expected query param 'permalink' or 'id'")
-        elif routes and ids:
+        elif ids and (routes or (slug and handle)):
             ns.abort(
                 400,
                 "Ambiguous query params: Expected one of 'id', 'permalink' but not both",
@@ -291,6 +291,11 @@ class FullTrackByRoute(Resource):
         routes = (routes or []) + (permalinks or [])
         if not ((slug and handle) or routes or ids):
             full_ns.abort(400, "Expected query param 'permalink' or 'id'")
+        elif ids and (routes or (slug and handle)):
+            full_ns.abort(
+                400,
+                "Ambiguous query params: Expected one of 'id', 'permalink' but not both",
+            )
         routes_parsed = routes if routes else []
         try:
             routes_parsed = parse_routes(routes_parsed)
