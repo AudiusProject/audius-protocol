@@ -152,10 +152,10 @@ cd ../../
 cat <<EOF
 {
     "anchorProgramId": "$anchor_program_id",
-    "anchorAdminKeypairPublicKey": "$admin_keypair_publickey",
-    "anchorAdminKeypairPrivateKey": "$admin_keypair_privatekey",
-    "anchorAdminStorageKeypairPublicKey": "$admin_storage_keypair_publickey",
-    "anchorAdminStorageKeypairPrivateKey": "$admin_storage_keypair_privatekey",
+    "anchorAdminPublicKey": "$admin_keypair_publickey",
+    "anchorAdminPrivateKey": "$admin_keypair_privatekey",
+    "anchorAdminStoragePublicKey": "$admin_storage_keypair_publickey",
+    "anchorAdminStoragePrivateKey": "$admin_storage_keypair_privatekey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",
