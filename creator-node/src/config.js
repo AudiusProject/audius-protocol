@@ -617,6 +617,12 @@ const config = convict({
     env: 'openRestyCacheCIDEnabled',
     default: false
   },
+  reconfigNodeWhitelist: {
+    doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
+    format: String,
+    env: 'reconfigNodeWhitelist',
+    default: ''
+  },
   minimumTranscodingSlotsAvailable: {
     doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
     format: 'nat',
