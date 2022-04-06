@@ -1,15 +1,12 @@
 import asyncio
 import base64
-import json
 import logging
-from pathlib import Path
 from typing import Any
 
-from anchorpy import Idl, InstructionCoder
 from solana.transaction import Transaction
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
-from src.solana.anchor_parser import parse_instruction
+from src.solana.anchor_parser import AnchorParser
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.utils.helpers import split_list
 
@@ -24,8 +21,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     Indexer for the audius user data layer
     """
 
-    _instruction_coder: InstructionCoder
-
     def __init__(
         self,
         program_id: str,
@@ -35,7 +30,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         solana_client_manager: Any,
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
-        self._init_instruction_coder()
+        self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
 
     def is_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -72,16 +67,14 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
         )
         # TODO: Conditionally add database modifications here depending on transaction information
-        with self._db.scoped_session() as session:
-            for transaction in processed_transactions:
-                self.is_valid_tx(transaction)
-
-                session.add(
-                    AudiusDataTx(
-                        signature=transaction["tx_sig"],
-                        slot=transaction["result"]["slot"],
-                    )
-                )
+        # with self._db.scoped_session() as session:
+        #     for transaction in processed_transactions:
+        #         session.add(
+        #             AudiusDataTx(
+        #                 signature=transaction["tx_sig"],
+        #                 slot=transaction["result"]["slot"],
+        #             )
+        #         )
 
     async def parse_tx(self, tx_sig):
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
@@ -96,7 +89,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # Append each parsed transaction to parsed metadata
         tx_instructions = []
         for instruction in tx.instructions:
-            parsed_instr = parse_instruction(instruction, self._instruction_coder)
+            parsed_instr = self.anchor_parser.parse_instruction(instruction)
             tx_instructions.append(parsed_instr)
 
         tx_metadata["instructions"] = tx_instructions
@@ -130,19 +123,3 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # each containing relevant metadata in container
     async def fetch_ipfs_metadata(self, parsed_transactions):
         return super().fetch_ipfs_metadata(parsed_transactions)
-
-    def _init_instruction_coder(self):
-        idl = self._get_idl()
-        self._instruction_coder = InstructionCoder(idl)
-
-    def _get_idl(self):
-        path = Path(AUDIUS_DATA_IDL_PATH)
-        with path.open() as f:
-            data = json.load(f)
-
-        # Modify 'metadata':'address' field if mismatched with config
-        if data["metadata"]["address"] != self._program_id:
-            data["metadata"]["address"] = self._program_id
-
-        idl = Idl.from_json(data)
-        return idl
