@@ -188,6 +188,24 @@ class FullTopGenreUsers(Resource):
         pass
 """
 
+doc_false_with_route_param_example = """
+@ns.route(
+    \"/trending\",
+    defaults={\"version\": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+    doc={
+        "get": {
+            "id": \"Get Trending Tracks\",
+            "description": \"Gets the top 100 trending (most popular) tracks on Audius\",
+        }
+    },
+)
+@ns.route(\"/trending/<string:version>\", doc=False)
+class Trending(Resource):
+    def get(self, version):
+        pass
+"""
+
 
 def _results(s: str):
     tree = ast.parse(s)
@@ -273,6 +291,10 @@ def test_doc_missing():
 
 def test_method_id_in_route():
     assert not _results(method_id_in_route_doc_example)
+
+
+def test_doc_false_with_route_param():
+    assert not _results(doc_false_with_route_param_example)
 
 
 def test_plugin_format():
