@@ -211,7 +211,7 @@ def test_index_operations(celery_app, celery_app_contracts, mocker):
     new_user_id = seed_data["new_user_id"]
 
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        "src.utils.cid_metadata_client.CIDMetadataClient._get_gateway_endpoints",
         return_value=["https://test-content-node.audius.co"],
         autospec=True,
     )
@@ -260,7 +260,7 @@ def test_index_operations_metadata_fetch_error(
         raise Exception("Broken fetch")
 
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient.fetch_metadata_from_gateway_endpoints",
+        "src.utils.cid_metadata_client.CIDMetadataClient.fetch_metadata_from_gateway_endpoints",
         side_effect=fetch_metadata_stub,
     )
 
@@ -380,7 +380,7 @@ def test_index_operations_tx_parse_error(celery_app, celery_app_contracts, mocke
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        "src.utils.cid_metadata_client.CIDMetadataClient._get_gateway_endpoints",
         return_value=["https://test-content-node.audius.co"],
         autospec=True,
     )
@@ -436,7 +436,7 @@ def test_index_operations_indexing_error_on_commit(
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        "src.utils.cid_metadata_client.CIDMetadataClient._get_gateway_endpoints",
         return_value=["https://test-content-node.audius.co"],
         autospec=True,
     )
@@ -508,7 +508,7 @@ def test_index_operations_skip_block(celery_app, celery_app_contracts, mocker):
 
     seed_data = seed_contract_data(task, celery_app_contracts, web3)
     mocker.patch(
-        "src.utils.ipfs_lib.IPFSClient._get_gateway_endpoints",
+        "src.utils.cid_metadata_client.CIDMetadataClient._get_gateway_endpoints",
         return_value=["https://test-content-node.audius.co"],
         autospec=True,
     )

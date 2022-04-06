@@ -568,7 +568,7 @@ jobs:
       - run:
           name: Setup solana
           command: |
-            sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
+            sh -c "$(curl -sSfL https://release.solana.com/v1.8.14/install)"
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
 
       - restore_cache:
@@ -602,22 +602,6 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
-      - restore_cache:
-          keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
-            - anchor-node-deps-
-      - run:
-          name: anchor tests
-          command: |
-            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-            solana-keygen new --no-bip39-passphrase
-            cd solana-programs/anchor/audius-data
-            yarn
-            npx anchor test
-      - save_cache:
-          paths:
-            - solana-programs/anchor/audius-data/node_modules
-          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
       # - restore_cache:
       #     keys:
       #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
@@ -649,7 +633,7 @@ jobs:
       #     paths:
       #       - solana-programs/track_listen_count/target
       #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
-  test-solana-programs-seed-cli:
+  test-solana-programs-anchor:
     resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
@@ -669,6 +653,10 @@ jobs:
             curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
             source ~/.bashrc
             nvm install "$NODE_VERSION"
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+            - anchor-node-deps-
       - run:
           name: Setup dev dependencies
           command: |
@@ -682,6 +670,17 @@ jobs:
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
       - run:
+          name: anchor tests
+          command: |
+            export PROTOCOL_DIR="/home/circleci/project"
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/lbin:$PATH"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            npm test
+      - save_cache:
+          paths:
+            - solana-programs/anchor/audius-data/node_modules
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+      - run:
           name: anchor program seed CLI tests
           command: |
             export NODE_VERSION="v14.18.1"
@@ -691,7 +690,7 @@ jobs:
             export PROTOCOL_DIR="/home/circleci/project"
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
-            npm install # wtf
+            yarn
             source /opt/circleci/.nvm/nvm.sh
             npm run localnet-up-ci
             npm run dev-setup
@@ -806,8 +805,8 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
-      - test-solana-programs-seed-cli:
-          name: test-solana-programs-seed-cli
+      - test-solana-programs-anchor:
+          name: test-solana-programs-anchor
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs

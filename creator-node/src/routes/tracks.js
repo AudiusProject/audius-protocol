@@ -27,8 +27,7 @@ const {
 } = require('../middlewares')
 
 const { getCID } = require('./files')
-const { decode } = require('../hashids.js')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { decode } = require('../hashids')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')

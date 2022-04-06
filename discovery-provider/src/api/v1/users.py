@@ -514,6 +514,7 @@ class TrackHistoryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get User's Track History""",
+        description="""Get the tracks the user recently listened to.""",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -547,7 +548,7 @@ class UserSearchResult(Resource):
     @record_metrics
     @ns.doc(
         id="""Search Users""",
-        params={"query": "Search query"},
+        description="""Search for users that match the given query""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(search_parser)
@@ -681,12 +682,12 @@ top_genre_users_response = make_full_response(
 
 @full_ns.route("/genre/top")
 class FullTopGenreUsers(Resource):
-    @full_ns.expect(top_genre_users_route_parser)
     @full_ns.doc(
         id="""Get Top Users In Genre""",
         description="""Get the Top Users for a Given Genre""",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
+    @full_ns.expect(top_genre_users_route_parser)
     @full_ns.marshal_with(top_genre_users_response)
     @cache(ttl_sec=60 * 60 * 24)
     def get(self):

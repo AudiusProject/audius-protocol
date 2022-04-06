@@ -1,15 +1,22 @@
-import axios, { AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios'
+import axios, {
+  AxiosRequestConfig,
+  AxiosResponse,
+  CancelTokenSource
+} from 'axios'
 import semver from 'semver'
 
 import { Utils } from './utils'
 import { promiseFight } from './promiseFight'
 
 export type ServiceName = string
-export interface ServiceWithEndpoint {endpoint: string}
+export interface ServiceWithEndpoint {
+  endpoint: string
+  spID?: string
+}
 export type Service = ServiceName | ServiceWithEndpoint
 
 interface Request {
-  id?: number
+  id?: string
   url: string
 }
 
@@ -17,16 +24,19 @@ interface TimingConfig {
   timeout?: number
 }
 
-interface Timing {
+export interface Timing {
   request: Request
   response: AxiosResponse | null
   millis: number | null
 }
 
 /**
-* Fetches a url and times how long it took the request to complete.
-*/
-async function timeRequest (request: Request, timeout?: number | null): Promise<Timing> {
+ * Fetches a url and times how long it took the request to complete.
+ */
+async function timeRequest(
+  request: Request,
+  timeout?: number | null
+): Promise<Timing> {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
@@ -50,17 +60,17 @@ interface SortServiceTimingsConfig {
   sortByVersion: boolean
   currentVersion?: string | null
   /*
- *  the number of milliseconds at which we consider services to be equally as fast
- *  and pick randomly between them. Default of null implies that the faster service
- *  (even if by 1ms) will be picked always.
- */
+   *  the number of milliseconds at which we consider services to be equally as fast
+   *  and pick randomly between them. Default of null implies that the faster service
+   *  (even if by 1ms) will be picked always.
+   */
   equivalencyDelta?: number | null
 }
 
 /**
  * Custom sort for `serviceTimings`, the response from `timeRequest()` function above
  */
-function sortServiceTimings ({
+function sortServiceTimings({
   serviceTimings,
   sortByVersion,
   currentVersion = null, // only required if `sortByVersion` = false
@@ -80,7 +90,10 @@ function sortServiceTimings ({
       if (semver.lt(aVersion, bVersion)) return 1
     } else if (!sortByVersion && currentVersion) {
       // Only sort by version if behind current on-chain version
-      if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
+      if (
+        semver.gt(currentVersion, aVersion) &&
+        semver.gt(currentVersion, bVersion)
+      ) {
         if (semver.gt(aVersion, bVersion)) return -1
         if (semver.lt(aVersion, bVersion)) return 1
       } else if (semver.gt(currentVersion, aVersion)) {
@@ -110,10 +123,10 @@ interface TimeRequestsConfig {
   // ms applied to each individual request
   timeout?: number | null
   /*
- *  the number of milliseconds at which we consider services to be equally as fast
- *  and pick randomly between them. Default of null implies that the faster service
- *  (even if by 1ms) will be picked always.
- */
+   *  the number of milliseconds at which we consider services to be equally as fast
+   *  and pick randomly between them. Default of null implies that the faster service
+   *  (even if by 1ms) will be picked always.
+   */
   equivalencyDelta?: number | null
 }
 
@@ -121,7 +134,7 @@ interface TimeRequestsConfig {
  * Fetches multiple urls and times each request and returns the results sorted
  * first by version and then by lowest-latency.
  */
-async function timeRequests ({
+async function timeRequests({
   requests,
   sortByVersion = false,
   currentVersion = null, // only required if `sortByVersion` = false
@@ -129,12 +142,12 @@ async function timeRequests ({
   timeout = null,
   equivalencyDelta = null
 }: TimeRequestsConfig) {
-  let serviceTimings = await Promise.all(requests.map(async request =>
-    await timeRequest(request, timeout)
-  ))
+  let serviceTimings = await Promise.all(
+    requests.map(async (request) => await timeRequest(request, timeout))
+  )
 
   if (filterNonResponsive) {
-    serviceTimings = serviceTimings.filter(timing => timing.response !== null)
+    serviceTimings = serviceTimings.filter((timing) => timing.response !== null)
   }
 
   return sortServiceTimings({
@@ -145,8 +158,11 @@ async function timeRequests ({
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- this is a return type
-type RequestResponses = {blob: AxiosResponse, url: string} | AxiosResponse | void
+type RequestResponses =
+  | { blob: AxiosResponse; url: string }
+  | AxiosResponse
+  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- this is a return type
+  | void
 
 /**
  * Races multiple requests
@@ -156,7 +172,7 @@ type RequestResponses = {blob: AxiosResponse, url: string} | AxiosResponse | voi
  * @param timeout timeout for any requests to be considered bad
  * @param timeBetweenRequests time between requests being dispatched to free up client network interface
  */
-async function raceRequests (
+async function raceRequests(
   urls: string[],
   callback: (url: string) => void,
   axiosConfig: AxiosRequestConfig,
@@ -184,7 +200,7 @@ async function raceRequests (
         cancelToken: source.token,
         ...axiosConfig
       })
-        .then(response => {
+        .then((response) => {
           const isValid = validationCheck(response)
           if (isValid) {
             hasFinished = true
@@ -211,14 +227,17 @@ async function raceRequests (
   let response
   let errored: AxiosResponse[]
   try {
-    const { val, errored: e } = await promiseFight<RequestResponses, AxiosResponse>(requests, true)
+    const { val, errored: e } = await promiseFight<
+      RequestResponses,
+      AxiosResponse
+    >(requests, true)
     response = val
     errored = e
   } catch (e: any) {
     response = null
     errored = e
   }
-  sources.forEach(source => {
+  sources.forEach((source) => {
     source.cancel('Fetch already succeeded')
   })
 
@@ -232,11 +251,13 @@ async function raceRequests (
 
 interface AllRequestsConfig {
   /*
-  * map of actual URL to hit (e.g. https://resource/endpoint)
-  * and identifying value (e.g. https://resource)
-  */
+   * map of actual URL to hit (e.g. https://resource/endpoint)
+   * and identifying value (e.g. https://resource)
+   */
   urlMap: Record<string, Service>
-  // timeout for any request to be considered bad
+  /*
+   * timeout for any request to be considered bad
+   */
   timeout: number
   /* a check invoked for each response.
    *  If invalid, the response is filtered out.
@@ -248,7 +269,7 @@ interface AllRequestsConfig {
 /**
  * Gets the response for many requests with a timeout to each
  */
-async function allRequests ({
+async function allRequests({
   urlMap,
   timeout,
   validationCheck
@@ -261,7 +282,7 @@ async function allRequests ({
         timeout,
         url
       })
-        .then(response => {
+        .then((response) => {
           const isValid = validationCheck(response)
           if (isValid) {
             resolve(urlMap[url] as Service)
