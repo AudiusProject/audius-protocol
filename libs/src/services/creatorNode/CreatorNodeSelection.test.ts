@@ -128,7 +128,10 @@ describe('test CreatorNodeSelection', () => {
     const cns = new CreatorNodeSelection({
       creatorNode: mockCreatorNode,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([healthy, healthyButSlow, healthyButSlowest], '1.2.3'),
+      ethContracts: mockEthContracts(
+        [healthy, healthyButSlow, healthyButSlowest],
+        '1.2.3'
+      ),
       whitelist: new Set([]),
       blacklist: null
     })
