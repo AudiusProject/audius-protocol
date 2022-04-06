@@ -182,7 +182,7 @@ export const getContentNodeConfigValue = async ({ spId, key }: { spId: number, k
   let value;
   try {
     const spConfig = await fs.readFile(path.join(process.env.PROTOCOL_DIR, spConfigFilePath), "utf-8");
-    value = spConfig.split(`${key}=`)[1].split('\nexport')[0];
+    value = spConfig.split(`${key}=`)[1].split("\nexport")[0];
   } catch (error) {
     throw new Error(`Error getting private key from sp config file ${spConfigFilePath}: ${error}`);
   }
@@ -213,8 +213,14 @@ export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }: { s
     contentNodeAuthority = anchor.web3.Keypair.generate();
     delegateWallet = DUMMY_CN_WALLET_ADDRESSES[cnSpId - 1]
   } else {
-    delegateWallet = await getContentNodeConfigValue({ spId: cnSpId, key: 'delegateOwnerWallet' });
-    const delegatePrivateKey = await getContentNodeConfigValue({ spId: cnSpId, key: 'delegatePrivateKey' });
+    delegateWallet = await getContentNodeConfigValue({
+      spId: cnSpId,
+      key: "delegateOwnerWallet"
+    });
+    const delegatePrivateKey = await getContentNodeConfigValue({
+      spId: cnSpId,
+      key: "delegatePrivateKey"
+    });
     try {
       const seed = hexPrivateKeyToUint8(delegatePrivateKey);
       contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
