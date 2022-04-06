@@ -187,6 +187,13 @@ const actionsMap: any = {
     state: NotificationState,
     action: actions.SetPlaylistUpdates
   ) {
+    if (
+      action.playlistUpdates.length === 0 &&
+      state.playlistUpdates.length === 0
+    ) {
+      return state
+    }
+
     return {
       ...state,
       playlistUpdates: action.playlistUpdates || []
