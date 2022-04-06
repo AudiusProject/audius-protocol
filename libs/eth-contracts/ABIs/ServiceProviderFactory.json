@@ -405,6 +405,15 @@
     },
     {
       "constant": false,
+      "inputs": [],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
       "inputs": [
         {
           "internalType": "address",
@@ -427,15 +436,6 @@
           "type": "uint256"
         }
       ],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
       "name": "initialize",
       "outputs": [],
       "payable": false,

@@ -94,6 +94,11 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "arbiterFee",
+          "type": "uint256"
+        },
+        {
           "internalType": "uint32",
           "name": "_nonce",
           "type": "uint32"
