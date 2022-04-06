@@ -12,7 +12,7 @@ const defaultOptions = {
   jobs: 'users,tracks,playlists,reposts,saves',
 }
 
-const jobTable: Record<string, Job> = {
+export const jobTable: Record<string, Job> = {
   follows: followsEtl,
   playlists: playlistEtl,
   plays: playsEtl,

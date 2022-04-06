@@ -1,26 +1,21 @@
+import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
-
-// plays: 94 264 256
-// saves: 3 672 906
-// reposts: 2 005 490
 
 export const savesEtl: Job = {
   tableName: 'saves',
   idField: 'save_id',
   indexBatchSize: 20000,
   indexSettings: {
-    index: 'saves',
+    index: indexNames.saves,
     settings: {
       index: {
+        refresh_interval: '10s',
         number_of_shards: 1,
         number_of_replicas: 0,
       },
     },
     mappings: {
       dynamic: false,
-      // _source: {
-      //   enabled: false,
-      // },
       properties: {
         blocknumber: { type: 'integer' },
         user_id: { type: 'keyword' },

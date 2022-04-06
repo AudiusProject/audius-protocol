@@ -9,7 +9,7 @@ from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import paginate_query, populate_user_metadata
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.elasticdsl import docs_and_ids, esclient, listify
+from src.utils.elasticdsl import ES_USERS, docs_and_ids, esclient, listify
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ def get_users(args):
 _es_fields = {
     "id": "_id",
     "handle": "handle",
-    "wallet": "wallet",  # TODO: need to index
+    "wallet": "wallet",
     "is_creator": "is_creator",
 }
 
@@ -116,7 +116,7 @@ def _es_get_users_and_ids(args):
     for key, value in args.items():
         musts.append({"terms": {_es_fields[key]: listify(value)}})
 
-    found = esclient.search(index="users", query={"bool": {"must": musts}})
+    found = esclient.search(index=ES_USERS, query={"bool": {"must": musts}})
     print("--- es users took", found["took"])
     return docs_and_ids(found)
 

@@ -3,6 +3,8 @@ import { dialEs, queryCursor } from './conn'
 import { BlocknumberCheckpoint, Job, JobOptions } from './job'
 import Debug from 'debug'
 import _ from 'lodash'
+import { jobTable } from './etlRunner'
+import { indexNames } from './indexNames'
 
 export async function runJob(
   job: Job,
@@ -23,9 +25,6 @@ export async function runJob(
   } else {
     await es.indices.create(job.indexSettings, { ignore: [400] })
   }
-
-  // option to update existing mapping
-  // es.indices.putMapping
 
   let rowCounter = 0
   const highBlock = checkpoints[job.tableName]
@@ -68,7 +67,7 @@ export async function runJob(
       updates.forEach(job.forEach)
     }
 
-    await indexDocs(es, job.tableName, job.idField, updates)
+    await indexDocs(es, job.indexSettings.index, job.idField, updates)
 
     rowCounter += rows.length
     debug({
@@ -112,28 +111,21 @@ export async function indexDocs(
  * Used for incremental indexing to understand "where we were" so we can load new data from postgres
  */
 export async function getBlocknumberCheckpoints(): Promise<BlocknumberCheckpoint> {
-  const indexes = [
-    'users',
-    'tracks',
-    'playlists',
-    'follows',
-    'reposts',
-    'saves',
-  ]
+  const searches = []
 
-  const searches = indexes.flatMap((indexName) => [
-    { index: indexName },
-    {
+  for (let [tableName, indexName] of Object.entries(indexNames)) {
+    searches.push({ index: indexName })
+    searches.push({
       size: 0,
       aggs: {
         max_blocknumber: {
           max: {
-            field: checkpointField(indexName),
+            field: checkpointField(tableName),
           },
         },
       },
-    },
-  ])
+    })
+  }
 
   const multi: any = await dialEs().msearch({ searches })
 
@@ -141,7 +133,8 @@ export async function getBlocknumberCheckpoints(): Promise<BlocknumberCheckpoint
     (r: any) => r.aggregations?.max_blocknumber?.value || 0
   )
 
-  const checkpoints = _.zipObject(indexes, values) as any
+  const tableNames = Object.keys(indexNames)
+  const checkpoints = _.zipObject(tableNames, values) as any
   return checkpoints
 }
 

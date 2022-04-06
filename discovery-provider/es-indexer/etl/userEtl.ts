@@ -1,15 +1,17 @@
 import { groupBy } from 'lodash'
 import { UserDoc } from '../types/docs'
 import { dialPg } from './conn'
+import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
 
 export const userEtl: Job = {
   tableName: 'users',
   idField: 'user_id',
   indexSettings: {
-    index: 'users',
+    index: indexNames.users,
     settings: {
       index: {
+        refresh_interval: '10s',
         number_of_shards: 1,
         number_of_replicas: 0,
       },
@@ -113,7 +115,6 @@ export const userEtl: Job = {
 
   forEach: (row: UserDoc) => {
     row.following_count = row.following_ids.length
-    // row.follower_count = row.follower_ids.length
   },
 }
 
@@ -140,65 +141,3 @@ async function pgTracksForUsers(userIds: number[]) {
   const grouped = groupBy(allTracks.rows, 'owner_id')
   return grouped
 }
-
-/*
-
-identify stale ids
-
-select follower_user_id from follows where is_current and blocknumber > 12345
-union
-select followee_user_id from follows where is_current and blocknumber > 12345
-union
-select owner_id from tracks where is_current and blocknumber > 12345
-;
-
-
-*/
-
-/*
-
-  -- saved track / playlist ids
-  -- reposted track / playlist ids
-  -- inline these on user? for user similarity search stuff?
-  -- or just index the reposts / saves table?
-  -- reposts is def required
-  array(
-    select save_item_id 
-    from saves
-    where user_id = users.user_id
-      and save_type = 'track'
-    and is_current = true
-    and is_delete = false
-    order by created_at desc
-  ) as saved_track_ids,
-
-  array(
-    select save_item_id 
-    from saves
-    where user_id = users.user_id
-      and save_type = 'playlist'
-    and is_current = true
-    and is_delete = false
-    order by created_at desc
-  ) as saved_playlist_ids,
-
-  array(
-    select repost_item_id 
-    from reposts
-    where user_id = users.user_id
-      and repost_type = 'track'
-    and is_current = true
-    and is_delete = false
-    order by created_at desc
-  ) as reposted_track_ids,
-
-  array(
-    select repost_item_id 
-    from reposts
-    where user_id = users.user_id
-      and repost_type = 'playlist'
-    and is_current = true
-    and is_delete = false
-    order by created_at desc
-  ) as reposted_playlist_ids,
-*/

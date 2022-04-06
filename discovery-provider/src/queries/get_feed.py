@@ -17,7 +17,16 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.elasticdsl import esclient, hits, omit_indexed_fields
+from src.utils.elasticdsl import (
+    ES_PLAYLISTS,
+    ES_REPOSTS,
+    ES_SAVES,
+    ES_TRACKS,
+    ES_USERS,
+    esclient,
+    omit_indexed_fields,
+    pluck_hits,
+)
 
 trackDedupeMaxMinutes = 10
 
@@ -52,7 +61,7 @@ def _es_get_feed(args, limit=10):
         return {
             "terms": {
                 field: {
-                    "index": "users",
+                    "index": ES_USERS,
                     "id": current_user_id,
                     "path": "following_ids",
                 },
@@ -62,7 +71,7 @@ def _es_get_feed(args, limit=10):
     if load_reposts:
         mdsl.extend(
             [
-                {"index": "reposts"},
+                {"index": ES_REPOSTS},
                 {
                     "query": {
                         "bool": {
@@ -83,7 +92,7 @@ def _es_get_feed(args, limit=10):
     if load_orig:
         mdsl.extend(
             [
-                {"index": "tracks"},
+                {"index": ES_TRACKS},
                 {
                     "query": {
                         "bool": {
@@ -97,7 +106,7 @@ def _es_get_feed(args, limit=10):
                     "size": limit,
                     "sort": {"created_at": "desc"},
                 },
-                {"index": "playlists"},
+                {"index": ES_PLAYLISTS},
                 {
                     "query": {
                         "bool": {
@@ -123,11 +132,11 @@ def _es_get_feed(args, limit=10):
     #     print("took:", found["took"])
 
     if load_reposts:
-        reposts = hits(founds["responses"].pop(0))
+        reposts = pluck_hits(founds["responses"].pop(0))
 
     if load_orig:
-        tracks = hits(founds["responses"].pop(0))
-        playlists = hits(founds["responses"].pop(0))
+        tracks = pluck_hits(founds["responses"].pop(0))
+        playlists = pluck_hits(founds["responses"].pop(0))
 
     # track timestamps and duplicates
     seen = set()
@@ -171,9 +180,9 @@ def _es_get_feed(args, limit=10):
 
     for r in sorted_with_reposts:
         if r.get("repost_type") == "track":
-            mget_reposts.append({"_index": "tracks", "_id": r["repost_item_id"]})
+            mget_reposts.append({"_index": ES_TRACKS, "_id": r["repost_item_id"]})
         elif r.get("repost_type") == "playlist":
-            mget_reposts.append({"_index": "playlists", "_id": r["repost_item_id"]})
+            mget_reposts.append({"_index": ES_PLAYLISTS, "_id": r["repost_item_id"]})
 
     if mget_reposts:
         reposted_docs = esclient.mget(docs=mget_reposts)
@@ -205,7 +214,7 @@ def _es_get_feed(args, limit=10):
 
     # attach users
     user_id_list = get_users_ids(sorted_feed)
-    user_list = esclient.mget(index="users", ids=user_id_list)
+    user_list = esclient.mget(index=ES_USERS, ids=user_id_list)
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
     for item in sorted_feed:
         # GOTCHA: es ids must be strings, but our ids are ints...
@@ -228,14 +237,14 @@ def _es_get_feed(args, limit=10):
         "sort": {"created_at": "desc"},
     }
     mdsl = [
-        {"index": "reposts"},
+        {"index": ES_REPOSTS},
         save_repost_query,
-        {"index": "saves"},
+        {"index": ES_SAVES},
         save_repost_query,
     ]
 
     founds = esclient.msearch(searches=mdsl)
-    (reposts, saves) = [hits(r) for r in founds["responses"]]
+    (reposts, saves) = [pluck_hits(r) for r in founds["responses"]]
 
     follow_reposts = defaultdict(list)
     follow_saves = defaultdict(list)

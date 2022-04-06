@@ -5,6 +5,12 @@ from elasticsearch import Elasticsearch
 es_url = os.getenv("ES_URL", "http://elasticsearch:9200")
 esclient = Elasticsearch(es_url)
 
+ES_PLAYLISTS = "playlists1"
+ES_REPOSTS = "reposts1"
+ES_SAVES = "saves1"
+ES_TRACKS = "tracks1"
+ES_USERS = "users1"
+
 
 def listify(things):
     if isinstance(things, list):
@@ -12,7 +18,7 @@ def listify(things):
     return [str(things)]
 
 
-def hits(found):
+def pluck_hits(found):
     return [h["_source"] for h in found["hits"]["hits"]]
 
 

@@ -1,3 +1,4 @@
+import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
 
 export const followsEtl: Job = {
@@ -5,9 +6,10 @@ export const followsEtl: Job = {
   idField: 'follow_id',
   indexBatchSize: 50000,
   indexSettings: {
-    index: 'follows',
+    index: indexNames.follows,
     settings: {
       index: {
+        refresh_interval: '10s',
         number_of_shards: 1,
         number_of_replicas: 0,
       },

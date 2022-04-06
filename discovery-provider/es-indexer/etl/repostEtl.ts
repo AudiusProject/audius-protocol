@@ -1,3 +1,4 @@
+import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
 
 export const repostEtl: Job = {
@@ -5,20 +6,16 @@ export const repostEtl: Job = {
   idField: 'repost_id',
   indexBatchSize: 10000,
   indexSettings: {
-    index: 'reposts',
+    index: indexNames.reposts,
     settings: {
       index: {
+        refresh_interval: '10s',
         number_of_shards: 1,
         number_of_replicas: 0,
       },
     },
     mappings: {
       dynamic: false,
-
-      // _source: {
-      //   enabled: false,
-      // },
-
       properties: {
         blocknumber: { type: 'integer' },
         item_key: { type: 'keyword' },

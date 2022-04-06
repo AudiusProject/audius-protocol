@@ -1,16 +1,17 @@
 import { TrackDoc } from '../types/docs'
+import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
 
 export const trackEtl: Job = {
   tableName: 'tracks',
   idField: 'track_id',
   indexSettings: {
-    index: 'tracks',
+    index: indexNames.tracks,
     settings: {
       index: {
+        refresh_interval: '10s',
         number_of_shards: 1,
         number_of_replicas: 0,
-        refresh_interval: '5s',
 
         analysis: {
           tokenizer: {
@@ -159,7 +160,7 @@ export const trackEtl: Job = {
     )
 
     // some alternate routes...
-    // unshift be last one is_current
+    // unshift because last one is_current
     let slug = row.route_id.substring(row.route_id.indexOf('/') + 1)
     row.routes.unshift(slug)
     row.routes.unshift(`${slug}-${row.track_id}`)

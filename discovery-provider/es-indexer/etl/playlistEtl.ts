@@ -2,6 +2,7 @@ import _ from 'lodash'
 import { keyBy } from 'lodash'
 import { PlaylistDoc } from '../types/docs'
 import { dialPg } from './conn'
+import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
 
 /*
@@ -16,9 +17,10 @@ export const playlistEtl: Job = {
   idField: 'playlist_id',
   indexBatchSize: 4000,
   indexSettings: {
-    index: 'playlists',
+    index: indexNames.playlists,
     settings: {
       index: {
+        refresh_interval: '10s',
         number_of_shards: 1,
         number_of_replicas: 0,
       },
@@ -88,7 +90,7 @@ export const playlistEtl: Job = {
 
     if (checkpoint.playlists > 0) {
       // really we should mark playlist stale if any of the playlist tracks changes
-      // but don't know how to do the sql for that... so the low tech solution is to re-do playlists from scratch
+      // but don't know how to do the sql for that... so the low tech solution would be to re-do playlists from scratch
       // which might actually be faster, since it's a very small collection
       // in which case we could just delete this function
       sql += `

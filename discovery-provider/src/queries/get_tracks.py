@@ -14,7 +14,7 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
-from src.utils.elasticdsl import docs_and_ids, esclient, listify
+from src.utils.elasticdsl import ES_TRACKS, docs_and_ids, esclient, listify
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +241,7 @@ def _es_get_tracks_and_ids(args: GetTrackArgs):
     for key, value in args.items():
         musts.append({"terms": {_es_fields[key]: listify(value)}})
 
-    found = esclient.search(index="tracks", query={"bool": {"must": musts}})
+    found = esclient.search(index=ES_TRACKS, query={"bool": {"must": musts}})
     print("--- es tracks took", found["took"])
     return docs_and_ids(found)
 
