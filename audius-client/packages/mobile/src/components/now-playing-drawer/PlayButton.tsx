@@ -8,39 +8,45 @@ import { AnimatedButton, AnimatedButtonProps } from 'app/components/core'
 import { pause, play } from 'app/store/audio/actions'
 import { getPlaying } from 'app/store/audio/selectors'
 import { colorize } from 'app/utils/colorizeLottie'
-import { useThemeColors } from 'app/utils/theme'
+import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 type PlayButtonProps = Omit<AnimatedButtonProps, 'iconJSON'>
 
 export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   const isPlaying = useSelector(getPlaying)
   const dispatch = useDispatch()
-  const { background, primary } = useThemeColors()
+  const themeVariant = useThemeVariant()
+  const { primary, staticWhite, background } = useThemeColors()
+
+  const iconColor = useMemo(
+    () => (themeVariant === Theme.MATRIX ? background : staticWhite),
+    [background, staticWhite, themeVariant]
+  )
 
   const iconJSON = useMemo(() => {
     const ColorizedPlayIcon = colorize(IconPlay, {
       // #playpause1.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k': background,
+      'layers.0.shapes.0.it.1.c.k': iconColor,
       // #playpause2.Left.Fill 1
-      'layers.1.shapes.0.it.1.c.k': background,
+      'layers.1.shapes.0.it.1.c.k': iconColor,
       // #playpause2.Right.Fill 1
-      'layers.1.shapes.1.it.1.c.k': background,
+      'layers.1.shapes.1.it.1.c.k': iconColor,
       // #primaryBG.Group 2.Fill 1
       'layers.2.shapes.0.it.1.c.k': primary
     })
 
     const ColorizedPauseIcon = colorize(IconPause, {
       // #playpause1.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k': background,
+      'layers.0.shapes.0.it.1.c.k': iconColor,
       // #playpause2.Left.Fill 1
-      'layers.1.shapes.0.it.1.c.k': background,
+      'layers.1.shapes.0.it.1.c.k': iconColor,
       // #playpause2.Right.Fill 1
-      'layers.1.shapes.1.it.1.c.k': background,
+      'layers.1.shapes.1.it.1.c.k': iconColor,
       // #primaryBG.Group 2.Fill 1
       'layers.2.shapes.0.it.1.c.k': primary
     })
     return [ColorizedPlayIcon, ColorizedPauseIcon]
-  }, [background, primary])
+  }, [iconColor, primary])
 
   const handlePress = useCallback(() => {
     if (isPlaying) {
