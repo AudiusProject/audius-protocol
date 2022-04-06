@@ -505,13 +505,13 @@ const config = convict({
     doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
     format: 'nat',
     env: 'snapbackModuloBase',
-    default: 24
+    default: 48
   },
   snapbackJobInterval: {
-    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
+    doc: 'Interval [ms] that snapbackSM jobs are fired',
     format: 'nat',
     env: 'snapbackJobInterval',
-    default: 3600000
+    default: 1800000 // 30min
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -622,6 +622,12 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'openRestyCacheCIDEnabled',
     default: false
+  },
+  reconfigNodeWhitelist: {
+    doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
+    format: String,
+    env: 'reconfigNodeWhitelist',
+    default: ''
   },
   minimumTranscodingSlotsAvailable: {
     doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',

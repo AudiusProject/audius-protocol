@@ -171,7 +171,9 @@ describe('Test Health Check', function () {
       transcodeWaiting: 0,
       fileProcessingActive: 0,
       fileProcessingWaiting: 2,
-      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
@@ -237,7 +239,9 @@ describe('Test Health Check', function () {
       transcodeWaiting: 0,
       fileProcessingActive: 0,
       fileProcessingWaiting: 2,
-      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
@@ -294,7 +298,9 @@ describe('Test Health Check', function () {
       transcodeWaiting: 0,
       fileProcessingActive: 0,
       fileProcessingWaiting: 2,
-      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -391,7 +397,9 @@ describe('Test Health Check Verbose', function () {
       transcodeWaiting: 0,
       fileProcessingActive: 0,
       fileProcessingWaiting: 2,
-      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 

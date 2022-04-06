@@ -65,7 +65,9 @@ const healthCheck = async (
     dailySyncSuccessCount,
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
-    latestSyncFailTimestamp
+    latestSyncFailTimestamp,
+    stateMachineQueueLatestJobSuccess,
+    stateMachineQueueLatestJobStart
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -83,7 +85,9 @@ const healthCheck = async (
     MONITORS.DAILY_SYNC_SUCCESS_COUNT,
     MONITORS.DAILY_SYNC_FAIL_COUNT,
     MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP,
-    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
+    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP,
+    MONITORS.LATEST_STATE_MACHINE_QUEUE_SUCCESS,
+    MONITORS.LATEST_STATE_MACHINE_QUEUE_START
   ])
 
   let currentSnapbackReconfigMode
@@ -149,7 +153,13 @@ const healthCheck = async (
     transcodeWaiting,
     fileProcessingActive,
     fileProcessingWaiting,
-    solDelegatePublicKeyBase58
+    solDelegatePublicKeyBase58,
+    stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
+      ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
+      : null,
+    stateMachineQueueLatestJobStart: stateMachineQueueLatestJobStart
+      ? new Date(parseInt(stateMachineQueueLatestJobStart)).toISOString()
+      : null
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
