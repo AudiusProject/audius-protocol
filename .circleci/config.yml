@@ -602,23 +602,6 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
-      - restore_cache:
-          keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
-            - anchor-node-deps-
-      - run:
-          name: anchor tests
-          command: |
-            export PROTOCOL_DIR="/home/circleci/project"
-            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-            solana-keygen new --no-bip39-passphrase
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            npm install
-            npx anchor test
-      - save_cache:
-          paths:
-            - solana-programs/anchor/audius-data/node_modules
-          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
       # - restore_cache:
       #     keys:
       #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
@@ -682,6 +665,22 @@ jobs:
             cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
             source /opt/circleci/.nvm/nvm.sh
             npm run install-dev
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
+            - anchor-node-deps-
+      - run:
+          name: anchor tests
+          command: |
+            export PROTOCOL_DIR="/home/circleci/project"
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/lbin:$PATH"
+            solana-keygen new --no-bip39-passphrase
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            npm test
+      - save_cache:
+          paths:
+            - solana-programs/anchor/audius-data/node_modules
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/package-lock.json }}
       - run:
           name: anchor program seed CLI tests
           command: |
