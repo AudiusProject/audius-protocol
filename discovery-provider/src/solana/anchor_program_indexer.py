@@ -74,6 +74,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # TODO: Conditionally add database modifications here depending on transaction information
         with self._db.scoped_session() as session:
             for transaction in processed_transactions:
+                self.is_valid_tx(transaction)
+
                 session.add(
                     AudiusDataTx(
                         signature=transaction["tx_sig"],
@@ -89,6 +91,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         tx = Transaction.deserialize(bytes.fromhex(decoded_data_hex))
         tx_metadata = {}
 
+        self.verify_tx(tx)
+            
         # Append each parsed transaction to parsed metadata
         tx_instructions = []
         for instruction in tx.instructions:
@@ -102,6 +106,11 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             Embed instruction specific information in tx_metadata
         """
         return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
+    
+    def verify_tx(self, tx: Transaction):
+        tx.instructions[0].
+
+        # if it's not valid throw exception
 
     def process_index_task(self):
         self.msg("Processing indexing task")
