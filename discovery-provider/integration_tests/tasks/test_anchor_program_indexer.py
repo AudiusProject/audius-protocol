@@ -89,8 +89,8 @@ def test_parse_tx(app):
         f"0x{bytes(owner_eth_address_array).hex()}"
     )
     assert sp_id == 1
-    assert base == "DUvTEvu2WHLWstwgn38S5fCpE23L8yd36WDKxYoAHHax"
-    assert authority == "HEpbkzohyMFbc2cQ4KPRbXRUVbgFW3uVrHaKPdMD6pqJ"
+    assert str(base) == "DUvTEvu2WHLWstwgn38S5fCpE23L8yd36WDKxYoAHHax"
+    assert str(authority) == "HEpbkzohyMFbc2cQ4KPRbXRUVbgFW3uVrHaKPdMD6pqJ"
     assert owner_eth_address_hex == "0x25A3Acd4758Ab107ea0Bd739382B8130cD1F204d"
 
 
