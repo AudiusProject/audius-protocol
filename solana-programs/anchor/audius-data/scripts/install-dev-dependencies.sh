@@ -34,9 +34,6 @@ yarn install
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$HOME/.config/solana/id.json"
 
-# airdrop funds
-solana airdrop 1000000
-
 if [[ "${CI:-false}" == false ]]; then
     # reload shell 
     exec $SHELL
