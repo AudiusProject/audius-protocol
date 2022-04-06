@@ -582,7 +582,7 @@ const main = async () => {
       (async () => {
         const promises = [];
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const userIdBytesArray = getUserIdBytesArray(options.handle);
+        const userIdBytesArray = getUserIdBytesArray(options.userId);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
@@ -629,7 +629,7 @@ const main = async () => {
       (async () => {
         const promises = [];
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const userIdBytesArray = getUserIdBytesArray(options.handle);
+        const userIdBytesArray = getUserIdBytesArray(options.userId);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
@@ -675,7 +675,7 @@ const main = async () => {
       );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const userIdBytesArray = getUserIdBytesArray(options.handle);
+        const userIdBytesArray = getUserIdBytesArray(options.userId);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
@@ -716,7 +716,7 @@ const main = async () => {
       );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const userIdBytesArray = getUserIdBytesArray(options.handle);
+        const userIdBytesArray = getUserIdBytesArray(options.userId);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
