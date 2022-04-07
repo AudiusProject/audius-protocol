@@ -700,7 +700,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
 
     const uploadTrackState = async () => {
       // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
-      const mockMultihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
@@ -709,7 +709,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               fileHasher: {
                 generateNonImageCid: sinon.stub().returns(
                   new Promise((resolve) => {
-                    return resolve(mockMultihash)
+                    return resolve(mockCid)
                   })
                 )
               }
@@ -721,7 +721,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
-                  const dstPath = DiskManager.computeFilePath(mockMultihash)
+                  const dstPath = DiskManager.computeFilePath(mockCid)
                   return resolve(dstPath)
                 })
               ),

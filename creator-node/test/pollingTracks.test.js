@@ -92,7 +92,7 @@ describe('test Polling Tracks with mocks', function () {
     session = await createStarterCNodeUser(userId, userWallet)
 
     // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
-    const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
@@ -101,7 +101,7 @@ describe('test Polling Tracks with mocks', function () {
             fileHasher: {
               generateNonImageCid: sinon.stub().returns(
                 new Promise((resolve) => {
-                  return resolve(DUMMY_MULTIHASH)
+                  return resolve(mockCid)
                 })
               )
             }
@@ -113,7 +113,7 @@ describe('test Polling Tracks with mocks', function () {
             .stub(FileManager, 'copyMultihashToFs')
             .returns(
               new Promise((resolve) => {
-                const dstPath = DiskManager.computeFilePath(DUMMY_MULTIHASH)
+                const dstPath = DiskManager.computeFilePath(mockCid)
                 return resolve(dstPath)
               })
             ),
