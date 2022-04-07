@@ -34,7 +34,8 @@ class AnchorParser:
         )
         return {
             "instruction_name": idl_instruction_name,
-            "accounts": (account_name_address_dict, account_addresses),
+            "accounts": account_addresses,
+            "account_names_map": account_name_address_dict,
             "data": decoded_data,
         }
 
