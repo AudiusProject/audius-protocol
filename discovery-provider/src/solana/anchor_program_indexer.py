@@ -191,7 +191,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     records.append(user)
                     db_models["users"][user_id] = user
                     # ipfs_metadata = metadata_dictionary.get("metadata_multihash")
-                    # self.update_user_model_meatdata(user, ipfs_metadata)
+                    # self.update_user_model_metadata(user, ipfs_metadata)
                     pass
 
                 elif instruction_name == "update_user":
@@ -235,7 +235,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             ).update({"is_current": False})
 
     # Update a user orm model with the ipfs metadata
-    def update_user_model_meatdata(self, user_record: User, ipfs_metadata: Dict):
+    def update_user_model_metadata(self, user_record: User, ipfs_metadata: Dict):
         # Fields also stored on chain
         if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
             user_record.profile_picture = ipfs_metadata["profile_picture"]
