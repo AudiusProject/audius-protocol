@@ -543,7 +543,7 @@ const main = async () => {
           return await getContentNode(
             cliVars.program,
             adminStorageKeypair.publicKey,
-            `${x}`
+            `${spId}`
           )
         }))
         const replicaSetBumps = [
