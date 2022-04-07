@@ -179,7 +179,7 @@ async function initUserCLI(args: initUserCLIParams) {
 
   const userStorageAddress = derivedAddress;
   console.log("Initing user");
-  const tx = await initUser({
+  const tx = initUser({
     payer: cliVars.provider.wallet.publicKey,
     program: cliVars.program,
     ethAddress,
@@ -243,7 +243,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(tx, [userAuthorityKeypair]);
+        tx = await provider.send(transaction, [userAuthorityKeypair]);
       } else if (
         manageAction == ManagementActions.create &&
         entityType == EntityTypesEnumValues.playlist
@@ -262,7 +262,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(tx, [userAuthorityKeypair]);
+        tx = await provider.send(transaction, [userAuthorityKeypair]);
       } else if (
         manageAction == ManagementActions.update &&
         entityType == EntityTypesEnumValues.playlist
@@ -281,7 +281,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(tx, [userAuthorityKeypair]);
+        tx = await provider.send(transaction, [userAuthorityKeypair]);
       } else if (
         manageAction == ManagementActions.delete &&
         entityType == EntityTypesEnumValues.playlist
@@ -299,7 +299,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(tx, [userAuthorityKeypair]);
+        tx = await provider.send(transaction, [userAuthorityKeypair]);
       }
 
       await provider.connection.confirmTransaction(tx);
@@ -523,14 +523,16 @@ const main = async () => {
       (async () => {
         console.log({ writeEnabled });
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const tx = await updateAdmin({
+        const tx = updateAdmin({
           program: cliVars.program,
           isWriteEnabled: Boolean(writeEnabled),
           adminStorageAccount: adminStorageKeypair.publicKey,
           adminAuthorityKeypair: adminKeypair,
         });
-        await cliVars.provider.connection.confirmTransaction(tx);
-        console.log(`updateAdmin = ${tx}`);
+        const txHash = await cliVars.provider.send(tx, [adminKeypair]);
+
+        await cliVars.provider.connection.confirmTransaction(txHash);
+        console.log(`updateAdmin = ${txHash}`);
       })();
       break;
     case functionTypes.createUser:
@@ -549,15 +551,15 @@ const main = async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
         const userReplicaSetSpIds = options.userReplicaSet
           .split(",")
-          .map((x) => {
-            return parseInt(x);
+          .map((spId: string) => {
+            return parseInt(spId);
           });
         const userContentNodeInfo = await Promise.all(
           userReplicaSet.map(async (spId) => {
             return await getContentNode(
               cliVars.program,
               adminStorageKeypair.publicKey,
-              `${x}`
+              `${spId}`
             );
           })
         );
@@ -566,9 +568,9 @@ const main = async () => {
           userContentNodeInfo[1].bumpSeed,
           userContentNodeInfo[2].bumpSeed,
         ];
-        const tx = await createUser({
+        const tx = createUser({
           program: cliVars.program,
-          provider: cliVars.provider,
+          payer: cliVars.provider.wallet.publicKey,
           ethAccount,
           message: userSolKeypair.publicKey.toBytes(),
           userId: new anchor.BN(userId),
@@ -579,15 +581,16 @@ const main = async () => {
           userStorageAccount: derivedAddress,
           adminStoragePublicKey: adminStorageKeypair.publicKey,
           baseAuthorityAccount: baseAuthorityAccount,
-          replicaSet: userReplicaSet,
+          replicaSet: userReplicaSetSpIds,
           replicaSetBumps,
           cn1: userContentNodeInfo[0].derivedAddress,
           cn2: userContentNodeInfo[1].derivedAddress,
           cn3: userContentNodeInfo[2].derivedAddress,
         });
-        await cliVars.provider.connection.confirmTransaction(tx);
+        const txHash = await cliVars.provider.send(tx);
+        await cliVars.provider.connection.confirmTransaction(txHash);
         console.log(
-          `createUserTx = ${tx}, userStorageAccount = ${derivedAddress}`
+          `createUserTx = ${txHash}, userStorageAccount = ${derivedAddress}`
         );
       })();
       break;
