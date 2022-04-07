@@ -98,8 +98,8 @@ class User(Resource):
     )
     @ns.marshal_with(user_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        user_id = decode_with_abort(user_id, ns)
+    def get(self, id):
+        user_id = decode_with_abort(id, ns)
         return get_single_user(user_id, None)
 
 
@@ -115,8 +115,8 @@ class FullUser(Resource):
     @full_ns.expect(current_user_parser)
     @full_ns.marshal_with(full_user_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        user_id = decode_with_abort(user_id, ns)
+    def get(self, id):
+        user_id = decode_with_abort(id, ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
@@ -178,8 +178,8 @@ class TrackList(Resource):
     @ns.marshal_with(tracks_response)
     @auth_middleware()
     @cache(ttl_sec=5)
-    def get(self, user_id, authed_user_id=None):
-        decoded_id = decode_with_abort(user_id, ns)
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, ns)
         args = user_tracks_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
@@ -223,8 +223,8 @@ class FullTrackList(Resource):
     @full_ns.marshal_with(full_tracks_response)
     @auth_middleware()
     @cache(ttl_sec=5)
-    def get(self, user_id, authed_user_id=None):
-        decoded_id = decode_with_abort(user_id, ns)
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, ns)
         args = user_tracks_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
@@ -308,8 +308,8 @@ class RepostList(Resource):
     @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(reposts_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, ns)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
         args = pagination_with_current_user_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
@@ -350,8 +350,8 @@ class FullRepostList(Resource):
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_reposts_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, ns)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
         args = pagination_with_current_user_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
@@ -433,8 +433,8 @@ class FavoritedTracks(Resource):
     )
     @ns.marshal_with(favorites_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, ns)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
         favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
@@ -457,9 +457,9 @@ class MostUsedTags(Resource):
     @full_ns.expect(tags_route_parser)
     @ns.marshal_with(tags_response)
     @cache(ttl_sec=60 * 5)
-    def get(self, user_id):
+    def get(self, id):
         """Fetch most used tags in a user's tracks."""
-        decoded_id = decode_with_abort(user_id, ns)
+        decoded_id = decode_with_abort(id, ns)
         args = tags_route_parser.parse_args()
         limit = format_limit(args)
         tags = get_top_user_track_tags({"user_id": decoded_id, "limit": limit})
@@ -483,10 +483,10 @@ class FavoritedTracksFull(Resource):
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(favorites_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
+    def get(self, id):
         """Fetch favorited tracks for a user."""
         args = pagination_with_current_user_parser.parse_args()
-        decoded_id = decode_with_abort(user_id, ns)
+        decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
 
         offset = format_offset(args)
@@ -521,9 +521,9 @@ class TrackHistoryFull(Resource):
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(history_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
+    def get(self, id):
         args = pagination_with_current_user_parser.parse_args()
-        decoded_id = decode_with_abort(user_id, ns)
+        decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
         offset = format_offset(args)
         limit = format_limit(args)
@@ -591,8 +591,8 @@ class FollowerUsers(Resource):
     @ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(followers_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, full_ns)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
         args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -625,8 +625,8 @@ class FollowingUsers(Resource):
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(following_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, full_ns)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
         args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -661,11 +661,11 @@ class RelatedUsers(Resource):
     @full_ns.expect(related_artist_route_parser)
     @full_ns.marshal_with(related_artist_response)
     @cache(ttl_sec=5)
-    def get(self, user_id):
+    def get(self, id):
         args = related_artist_route_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         current_user_id = get_current_user_id(args)
-        decoded_id = decode_with_abort(user_id, full_ns)
+        decoded_id = decode_with_abort(id, full_ns)
         users = get_related_artists(decoded_id, current_user_id, limit)
         users = list(map(extend_user, users))
         return success_response(users)
@@ -809,8 +809,8 @@ class ConnectedWallets(Resource):
     )
     @ns.marshal_with(connected_wallets_response)
     @cache(ttl_sec=10)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, full_ns)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
         wallets = get_associated_user_wallet({"user_id": decoded_id})
         return success_response(
             {"erc_wallets": wallets["eth"], "spl_wallets": wallets["sol"]}
@@ -878,10 +878,10 @@ class GetChallenges(Resource):
     @ns.expect(get_challenges_route_parser)
     @ns.marshal_with(get_challenges_response)
     @cache(ttl_sec=5)
-    def get(self, user_id: str):
+    def get(self, id: str):
         args = get_challenges_route_parser.parse_args()
         show_historical = args.get("show_historical")
-        decoded_id = decode_with_abort(user_id, ns)
+        decoded_id = decode_with_abort(id, ns)
         db = get_db_read_replica()
 
         with db.scoped_session() as session:
