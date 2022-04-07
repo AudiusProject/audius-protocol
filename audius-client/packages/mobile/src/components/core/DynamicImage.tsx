@@ -104,8 +104,8 @@ export const DynamicImage = memo(function DynamicImage({
   const [firstImage, setFirstImage] = useState<string>()
   const [secondImage, setSecondImage] = useState<string>()
 
-  const firstOpacity = useRef(new Animated.Value(0)).current
-  const secondOpacity = useRef(new Animated.Value(0)).current
+  const firstOpacity = useRef(new Animated.Value(0.5)).current
+  const secondOpacity = useRef(new Animated.Value(0.5)).current
 
   const [isFirstImageActive, setIsFirstImageActive] = useState(true)
 
