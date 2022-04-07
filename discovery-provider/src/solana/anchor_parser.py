@@ -9,7 +9,7 @@ from solana.transaction import TransactionInstruction
 
 
 class AnchorParser:
-    def __init__(self, idl_path, program_id):
+    def __init__(self, idl_path: str, program_id: str):
         data = self._get_json_data(idl_path, program_id)
         self.instruction_account_name_dict = self._get_instruction_account_name_dict(
             data
@@ -38,7 +38,7 @@ class AnchorParser:
             "data": decoded_data,
         }
 
-    def _get_json_data(self, idl_path, program_id):
+    def _get_json_data(self, idl_path: str, program_id: str) -> Dict:
         path = Path(idl_path)
         with path.open() as f:
             data = json.load(f)
@@ -49,7 +49,7 @@ class AnchorParser:
 
         return data
 
-    def _get_instruction_account_name_dict(self, data):
+    def _get_instruction_account_name_dict(self, data: dict) -> OrderedDict:
         instruction_account_name_dict = OrderedDict()
         for instruction in data["instructions"]:
             instruction_account_name_dict[instruction["name"]] = [
@@ -83,7 +83,9 @@ class AnchorParser:
             return ""
         return idl_instruction_name
 
-    def _map_account_name_to_address(self, instruction_name, account_addresses):
+    def _map_account_name_to_address(
+        self, instruction_name: str, account_addresses: List[str]
+    ) -> OrderedDict[str, str]:
         if not instruction_name:
             return {}
 
@@ -93,6 +95,6 @@ class AnchorParser:
             account_name_address_dict[account_name] = account_addresses[i]
         return account_name_address_dict
 
-    def _convert_snake_to_camel_case(self, string):
+    def _convert_snake_to_camel_case(self, string: str) -> str:
         words = string.split("_")
         return words[0] + "".join(word.capitalize() for word in words[1:])
