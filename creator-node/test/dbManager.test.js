@@ -12,7 +12,7 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
-const fileHasher = require('../src/fileHasher')
+const { Utils } = require('@audius/libs')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -40,10 +40,7 @@ describe('Test createNewDataRecord()', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(
-      getLibsMock(),
-      BlacklistManager
-    )
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -650,27 +647,15 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
   }
 
-  let session,
-    app,
-    cnodeUser,
-    cnodeUserUUID,
-    server,
-    libsMock,
-    mockServiceRegistry
+  let session, app, cnodeUser, cnodeUserUUID, server, libsMock
 
   /** Init server to run DB migrations */
   before(async () => {
     const spId = 1
     libsMock = getLibsMock()
-    const appInfo = await getApp(
-      libsMock,
-      BlacklistManager,
-      null,
-      spId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     server = appInfo.server
     app = appInfo.app
-    mockServiceRegistry = appInfo.mockServiceRegistry
   })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
@@ -714,21 +699,21 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
 
     const uploadTrackState = async () => {
-      // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
-      const mockMultihash =
-        'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
+      const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
-          '../../fileHasher': {
-            generateNonImageMultihash: sinon
-              .stub(fileHasher, 'generateNonImageMultihash')
-              .returns(
-                new Promise((resolve, reject) => {
-                  const multihash = mockMultihash
-                  return resolve(multihash)
-                })
-              ),
+          '@audius/libs': {
+            Utils: {
+              fileHasher: {
+                generateNonImageCid: sinon.stub().returns(
+                  new Promise((resolve) => {
+                    return resolve(mockCid)
+                  })
+                )
+              }
+            },
             '@global': true
           },
           '../../fileManager': {
@@ -736,9 +721,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
-                  const dstPath = DiskManager.computeFilePath(
-                    mockMultihash
-                  )
+                  const dstPath = DiskManager.computeFilePath(mockCid)
                   return resolve(dstPath)
                 })
               ),
@@ -759,8 +742,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
         track_segments: trackSegments,
         source_file: sourceFile,
         transcodedTrackUUID
-      } =
-        trackContentResp
+      } = trackContentResp
       const trackMetadata = {
         test: 'field1',
         track_segments: trackSegments,
@@ -867,10 +849,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
 
   /** Init server to run DB migrations */
   before(async () => {
-    const appInfo = await getApp(
-      getLibsMock(),
-      BlacklistManager,
-    )
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
