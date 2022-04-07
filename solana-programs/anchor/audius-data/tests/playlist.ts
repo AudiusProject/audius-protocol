@@ -20,7 +20,7 @@ const { SystemProgram } = anchor.web3;
 
 chai.use(chaiAsPromised);
 
-describe("audius-data", function () {
+describe("playlists", function () {
   const provider = anchor.Provider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
@@ -53,13 +53,15 @@ describe("audius-data", function () {
     };
   };
   it("Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    let tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
     });
+
+    await provider.send(tx, [adminStorageKeypair])
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
     );
@@ -212,12 +214,16 @@ describe("audius-data", function () {
       Buffer.from(handleBytesArray)
     );
 
-    await updateAdmin({
+    // disable admin writes
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
       adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.send(updateAdminTx, [adminKeypair])
+
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
@@ -289,12 +295,14 @@ describe("audius-data", function () {
     );
 
     // Disable admin writes
-    await updateAdmin({
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
       adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.send(updateAdminTx, [adminKeypair])
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
