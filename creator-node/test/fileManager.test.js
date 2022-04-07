@@ -5,7 +5,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
 
-const fileHasher = require('../src/fileHasher')
+const { Utils } = require('@audius/libs')
+const { logger: genericLogger } = require('../src/logging')
 const {
   removeTrackFolder,
   saveFileFromBufferToDisk,
@@ -35,7 +36,7 @@ const req = {
 }
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-// consts used for testing generateNonImageMultihash()
+// consts used for testing generateNonImageCid()
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
@@ -58,8 +59,8 @@ describe('test fileManager', () => {
     sinon.restore()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ generateNonImageMultihash() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test generateNonImageMultihash()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ generateNonImageCid() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test generateNonImageCid()', () => {
     /**
      * Given: copyMultihashToFs is called
      * When: file copying fails
@@ -92,23 +93,22 @@ describe('test fileManager', () => {
     })
 
     /**
-     * Given: a file is being saved to ipfs from fs
+     * Given: a file is being saved to file storage
      * When: everything works as expected
      * Then:
      *  - 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
      *  - that segment content should match the original sourcefile
-     *  - that segment should be present in IPFS
      */
-    it('should pass saving file to ipfs from fs (happy path)', async () => {
+    it('should pass saving file to file storage (happy path)', async () => {
       sinon
         .stub(models.File, 'create')
         .returns({ dataValues: { fileUUID: 'uuid' } })
 
       const requestID = uuid()
       try {
-        await fileHasher.generateNonImageMultihash(
+        await Utils.fileHasher.generateNonImageCid(
           srcPath,
-          { logContext: { requestID } }
+          genericLogger.child({ logContext: { requestID } })
         )
       } catch (e) {
         assert.fail(e.message)
@@ -159,10 +159,7 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileFromBufferToDisk(
-          reqOverride,
-          buffer
-        )
+        await saveFileFromBufferToDisk(reqOverride, buffer)
         assert.fail(
           'Should not have passed if cnodeUserUUID is not present in request.'
         )
@@ -175,22 +172,19 @@ describe('test fileManager', () => {
     })
 
     /**
-     * Given: a file buffer is being saved to ipfs, fs, and db
-     * When: ipfs is down
+     * Given: a file buffer is being saved to file storage and db
+     * When: generating the CID fails
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs wrapper hash fails', async () => {
+    it('should throw an error if CID generation fails', async () => {
       sinon
-        .stub(fileHasher, 'generateNonImageMultihash')
-        .rejects(new Error('ipfs wrapper hash failed!'))
+        .stub(Utils.fileHasher, 'generateNonImageCid')
+        .rejects(new Error('generating CID has failed!'))
 
       try {
-        await saveFileFromBufferToDisk(
-          req,
-          buffer
-        )
+        await saveFileFromBufferToDisk(req, buffer)
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs wrapper hash failed!')
+        assert.deepStrictEqual(e.message, 'generating CID has failed!')
       }
     })
 
@@ -200,7 +194,9 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if writing file to filesystem fails', async () => {
-      sinon.stub(fileHasher, 'generateNonImageMultihash').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
+      sinon
+        .stub(Utils.fileHasher, 'generateNonImageCid')
+        .resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
         await saveFileFromBufferToDisk(req, buffer)

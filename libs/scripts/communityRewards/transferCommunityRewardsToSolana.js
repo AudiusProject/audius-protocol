@@ -14,6 +14,7 @@ const {
   postVaaSolana,
   CHAIN_ID_ETH
 } = require('@certusone/wormhole-sdk')
+const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm.js')
 const EthRewardManagerABI = require('../../eth-contracts/ABIs/EthRewardsManager.json').abi
 
 const { grpc } = require('@improbable-eng/grpc-web')
@@ -22,6 +23,8 @@ const { NodeHttpTransport } = require('@improbable-eng/grpc-web-node-http-transp
 // Without this, we get the error:
 // "This environment's XHR implementation cannot support binary transfer."
 grpc.setDefaultTransport(NodeHttpTransport())
+
+setDefaultWasm('node')
 
 // Please provide an eth RPC provider endpoint here
 // For example https://mainnet.infura.io/v3/<your-key-here>

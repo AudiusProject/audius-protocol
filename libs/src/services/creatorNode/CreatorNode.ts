@@ -163,9 +163,7 @@ export class CreatorNode {
    * @param schemas
    * @param passList whether or not to include only specified nodes (default null)
    * @param blockList whether or not to exclude any nodes (default null)
-   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   * @param {function} monitoringCallbacks.request
-   * @param {function} monitoringCallbacks.healthCheck
+   * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
    */
   constructor(
     web3Manager: Web3Manager,
