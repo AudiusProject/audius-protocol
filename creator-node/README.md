@@ -1,4 +1,4 @@
-An Audius Creator Node maintains the availability of creators' content on IPFS. The information stored includes audius user metadata, images, and audio content. The content is backed by either aws S3 or a local directory.
+An Audius Content Node (previously known as Creator Node) maintains the availability of content on Audius's decentralized network. The information stored includes Audius user metadata, images, and audio content. The content is backed by either aws S3 or a local directory.
 
 To blacklist content on an already running node:
 1. Export the keys `delegatePrivateKey`, `creatorNodeEndpoint`, and `discoveryProviderEndpoint` in your terminal

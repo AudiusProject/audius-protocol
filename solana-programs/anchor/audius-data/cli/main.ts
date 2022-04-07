@@ -1,6 +1,7 @@
+import Web3 from "web3";
 import { Program, Provider, web3 } from "@project-serum/anchor";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import { Connection, PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
+import { Account, Connection, PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
 import {
@@ -14,17 +15,22 @@ import {
   createPlaylist,
   updatePlaylist,
   deletePlaylist,
+  createUser,
   createContentNode,
+  updateAdmin,
 } from "../lib/lib";
 import {
   findDerivedPair,
   getContentNode,
   randomCID,
   randomId,
+  getContentNodeWalletAndAuthority
 } from "../lib/utils";
 
 import { Command } from "commander";
 import fs = require("fs");
+
+const EthWeb3 = new Web3();
 
 const AUDIUS_PROD_RPC_POOL = "https://audius.rpcpool.com/";
 const LOCALHOST_RPC_POOL = "http://localhost:8899";
@@ -261,9 +267,11 @@ async function timeManageEntity(args: CreateEntityParams, provider: Provider, ma
 
 const functionTypes = Object.freeze({
   initAdmin: "initAdmin",
+  updateAdmin: "updateAdmin",
   initUser: "initUser",
   initContentNode: "initContentNode",
   initUserSolPubkey: "initUserSolPubkey",
+  createUser: "createUser",
   createTrack: "createTrack",
   getTrackId: "getTrackId",
   createPlaylist: "createPlaylist",
@@ -292,7 +300,10 @@ program
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
-  .option("--cn-sp-id <string>", "ID of incoming content node")
+  .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
+  .option("-uid, --user-id <integer>", "ID of incoming user")
+  .option("-we, --write-enabled <bool>", "If write is enabled for admin", false)
+  .option("-ci, <boolean>", "set to true to seed content node wallet and pkey with dummy values", false)
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option("-ds, --delegate-status <string>", "user authority delegation status pda");
@@ -334,6 +345,7 @@ const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
   const userAuthorityDelegateAccountPDA = options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
   const authorityDelegationStatusAccountPDA = options.authorityDelegationStatusAccountPDA ?? SYSTEM_PROGRAM_ID;
+
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
@@ -346,9 +358,8 @@ const main = async () => {
       break;
     case functionTypes.initContentNode:
       console.log(`Initializing content node`)
-      // TODO - This authority should be a delegate private key propagated from local env or passed in
-      const contentNodeAuthority = anchor.web3.Keypair.generate();
-      console.log(`Using spID=${options.cnSpId} ethAddress=${options.ethAddress}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
+      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, ci: options.ci });
+      console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
         const cnInfo = await getContentNode(
@@ -366,9 +377,9 @@ const main = async () => {
           contentNodeAuthority: contentNodeAuthority.publicKey,
           contentNodeAcct: cnInfo.derivedAddress,
           spID: cnInfo.spId,
-          ownerEthAddress: options.ethAddress
+          ownerEthAddress: delegateWallet
         })
-        console.log(`Initialized with ${tx}`)
+        console.log(`Initialized content node with ${tx}`)
       })();
       break;
     case functionTypes.initUser:
@@ -422,6 +433,75 @@ const main = async () => {
         await cliVars.provider.connection.confirmTransaction(tx);
         console.log(
           `initUserTx = ${tx}, userStorageAccount = ${options.userStoragePubkey}`
+        );
+      })();
+      break;
+
+    case functionTypes.updateAdmin:
+      const { writeEnabled } = options;
+
+      (async () => {
+        console.log({ writeEnabled })
+        const cliVars = initializeCLI(network, options.ownerKeypair);
+        const tx = await updateAdmin({
+          program: cliVars.program,
+          isWriteEnabled: Boolean(writeEnabled),
+          adminStorageAccount: adminStorageKeypair.publicKey,
+          adminAuthorityKeypair: adminKeypair,
+        });
+        await cliVars.provider.connection.confirmTransaction(tx);
+        console.log(
+          `updateAdmin = ${tx}`
+        );
+      })();
+      break;
+    case functionTypes.createUser:
+      const { userId, handle } = options;
+      console.log({ userId })
+      const ethAccount = EthWeb3.eth.accounts.create();
+
+      const handleBytesArray = getHandleBytesArray(handle);
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStorageKeypair.publicKey, handleBytesArray);
+      (async () => {
+
+        const cliVars = initializeCLI(network, options.ownerKeypair);
+        const userReplicaSetSpIds = options.userReplicaSet.split(',').map(x => {
+          return parseInt(x);
+        })
+        const userContentNodeInfo = await Promise.all(userReplicaSet.map(async (spId) => {
+          return await getContentNode(
+            cliVars.program,
+            adminStorageKeypair.publicKey,
+            `${x}`
+          )
+        }))
+        const replicaSetBumps = [
+          userContentNodeInfo[0].bumpSeed,
+          userContentNodeInfo[1].bumpSeed,
+          userContentNodeInfo[2].bumpSeed
+        ]
+        const tx = await createUser({
+          program: cliVars.program,
+          provider: cliVars.provider,
+          ethAccount,
+          message: userSolKeypair.publicKey.toBytes(),
+          userId: new anchor.BN(userId),
+          handleBytesArray,
+          bumpSeed,
+          metadata: randomCID(),
+          userSolPubkey: userSolKeypair.publicKey,
+          userStorageAccount: derivedAddress,
+          adminStoragePublicKey: adminStorageKeypair.publicKey,
+          baseAuthorityAccount: baseAuthorityAccount,
+          replicaSet: userReplicaSet,
+          replicaSetBumps,
+          cn1: userContentNodeInfo[0].derivedAddress,
+          cn2: userContentNodeInfo[1].derivedAddress,
+          cn3: userContentNodeInfo[2].derivedAddress,
+        });
+        await cliVars.provider.connection.confirmTransaction(tx);
+        console.log(
+          `createUserTx = ${tx}, userStorageAccount = ${derivedAddress}`
         );
       })();
       break;
