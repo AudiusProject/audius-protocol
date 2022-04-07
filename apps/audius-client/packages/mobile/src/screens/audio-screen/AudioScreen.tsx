@@ -11,7 +11,7 @@ import { getAccountTotalBalance } from 'audius-client/src/common/store/wallet/se
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { formatWei } from 'audius-client/src/common/utils/wallet'
 import BN from 'bn.js'
-import { Dimensions, Image, Linking, View } from 'react-native'
+import { Image, Linking, View } from 'react-native'
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -24,7 +24,7 @@ import Gold from 'app/assets/images/tokenBadgeGold108.png'
 import Platinum from 'app/assets/images/tokenBadgePlatinum108.png'
 import Silver from 'app/assets/images/tokenBadgeSilver108.png'
 import TokenStill from 'app/assets/images/tokenSpinStill.png'
-import { Button, GradientText, Text, Tile } from 'app/components/core'
+import { Screen, Button, GradientText, Text, Tile } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -62,13 +62,7 @@ const messages = {
   whatBody2: `Still confused? Don't worry, more details coming soon!`
 }
 
-const screenHeight = Dimensions.get('window').height
-
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  root: {
-    display: 'flex',
-    height: screenHeight
-  },
   tiles: {
     height: '100%'
   },
@@ -411,7 +405,7 @@ export const AudioScreen = () => {
   }
 
   return (
-    <View style={styles.root}>
+    <Screen>
       <Header text={messages.title} />
       <ScrollView style={styles.tiles}>
         <View>
@@ -423,6 +417,6 @@ export const AudioScreen = () => {
           {renderWhatTile()}
         </View>
       </ScrollView>
-    </View>
+    </Screen>
   )
 }
