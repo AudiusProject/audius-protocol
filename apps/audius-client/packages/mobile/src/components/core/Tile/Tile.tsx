@@ -3,7 +3,6 @@ import { ComponentProps, ComponentType, ReactNode, useCallback } from 'react'
 import {
   Animated,
   GestureResponderEvent,
-  Pressable,
   PressableProps,
   StyleProp,
   View,
@@ -14,6 +13,8 @@ import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles/makeStyles'
 import { useThemeColors } from 'app/utils/theme'
+
+import { Pressable } from '../Pressable'
 
 import { TileShadow } from './TileShadow'
 
