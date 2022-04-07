@@ -49,8 +49,8 @@ export const TrackingBar = ({
             // the now playing drawer is opened so that the drawer may
             // animate in corner radius without showing at the same time
             // as the tracker.
-            inputRange: [0, 0.95 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
-            outputRange: [0, 0, 1]
+            inputRange: [0, 0.9 * NOW_PLAYING_HEIGHT, NOW_PLAYING_HEIGHT],
+            outputRange: [0, 0, 2]
           })
         }
       ]}
