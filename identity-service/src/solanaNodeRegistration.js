@@ -4,7 +4,7 @@ const { logger } = require('./logging')
 
 // TODO: set this to 15 min when done testing...
 
-const JOB_FREQUENCY_MS = 15 /* min */ * 60 /* sec */ * 1000 /* msec */
+const JOB_FREQUENCY_MS = 1 /* min */ * 60 /* sec */ * 1000 /* msec */
 
 const registerNodes = async (audiusLibs, logger) => {
   logger.info('Beginning node registration job')
