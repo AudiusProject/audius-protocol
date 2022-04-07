@@ -75,17 +75,16 @@ class AnchorParser:
         self.instruction_coder.ix_layout
         return [str(account_meta.pubkey) for account_meta in instruction.keys]
 
-    def _get_instruction_name(self, encoded_ix_data: bytes) -> Optional[str]:
+    def _get_instruction_name(self, encoded_ix_data: bytes) -> str:
+        # Default to empty string for empty instruction names (program deployments)
         idl_instruction_name = self.instruction_coder.sighash_to_name.get(
-            base58.b58decode(encoded_ix_data)[0:8]
+            base58.b58decode(encoded_ix_data)[0:8], ""
         )
-        if idl_instruction_name == None:  # Program deployments have no name
-            return ""
         return idl_instruction_name
 
     def _map_account_name_to_address(
         self, instruction_name: str, account_addresses: List[str]
-    ) -> OrderedDict[str, str]:
+    ) -> Dict:
         if not instruction_name:
             return {}
 
