@@ -1,10 +1,7 @@
 const Bull = require('bull')
 const config = require('./config.js')
 
-// TODO: set this to 15 min when done testing...
-
-const JOB_FREQUENCY_MS = 1 /* min */ * 60 /* sec */ * 1000 /* msec */
-const ENDPOINTS = ['https://discoveryprovider2.audius.co', 'https://dn1.nodeoperator.io', 'https://dn1.monophonic.digital']
+const JOB_FREQUENCY_MS = 15 /* min */ * 60 /* sec */ * 1000 /* msec */
 
 const registerNodes = async (audiusLibs, logger) => {
   logger.info('Beginning node registration job')
@@ -33,8 +30,7 @@ const registerNodes = async (audiusLibs, logger) => {
       const res = await audiusLibs.Rewards.createSenderPublic({
         senderEthAddress: node.delegateOwnerWallet,
         operatorEthAddress: node.owner,
-        senderEndpoint: node.endpoint,
-        endpoints: ENDPOINTS
+        senderEndpoint: node.endpoint
       })
 
       if (!res.error) {
