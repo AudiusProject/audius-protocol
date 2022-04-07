@@ -2,7 +2,11 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
 import { Utils, uuid } from '../../utils'
-import * as SchemaValidator from '../schemaValidator'
+import {
+  userSchemaType,
+  trackSchemaType,
+  Schemas
+} from '../schemaValidator/SchemaValidator'
 import type Web3Manager from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
@@ -140,7 +144,7 @@ export class CreatorNode {
   isServer: boolean
   userStateManager: UserStateManager
   lazyConnect: boolean
-  schemas: SchemaValidator.Schemas
+  schemas: Schemas
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
@@ -154,14 +158,12 @@ export class CreatorNode {
    * @param web3Manager
    * @param creatorNodeEndpoint fallback creator node endpoint (to be deprecated)
    * @param isServer
-   * @param userStateManagern  singleton UserStateManager instance
+   * @param userStateManager  singleton UserStateManager instance
    * @param lazyConnect whether or not to lazy connect (sign in) on load
    * @param schemas
    * @param passList whether or not to include only specified nodes (default null)
    * @param blockList whether or not to exclude any nodes (default null)
-   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   * @param {function} monitoringCallbacks.request
-   * @param {function} monitoringCallbacks.healthCheck
+   * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
    */
   constructor(
     web3Manager: Web3Manager,
@@ -169,7 +171,7 @@ export class CreatorNode {
     isServer: boolean,
     userStateManager: UserStateManager,
     lazyConnect: boolean,
-    schemas: SchemaValidator.Schemas,
+    schemas: Schemas,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {}
@@ -262,7 +264,7 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[SchemaValidator.userSchemaType].validate?.(metadata)
+      this.schemas[userSchemaType].validate?.(metadata)
 
       const requestObj: AxiosRequestConfig = {
         url: '/audius_users/metadata',
@@ -381,7 +383,7 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas[SchemaValidator.trackSchemaType].validate?.(metadata)
+      this.schemas[trackSchemaType].validate?.(metadata)
     } catch (e) {
       console.error('Error validating track metadata', e)
     }
@@ -909,6 +911,7 @@ export class CreatorNode {
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
+    // @ts-expect-error re-throwing at the end of this function breaks exisiting impl
   ): Promise<FileUploadResponse> {
     await this.ensureConnected()
 
@@ -982,7 +985,8 @@ export class CreatorNode {
           `Network Error in request ${requestId} with ${retries} retries... retrying`
         )
         console.warn(error)
-        return await this._uploadFile(
+        // eslint-disable-next-line @typescript-eslint/return-await -- possible issue with return await
+        return this._uploadFile(
           file,
           route,
           onProgress,
@@ -1001,7 +1005,7 @@ export class CreatorNode {
         }
       }
 
-      throw await this._handleErrorHelper(error, url, requestId)
+      await this._handleErrorHelper(error, url, requestId)
     }
   }
 

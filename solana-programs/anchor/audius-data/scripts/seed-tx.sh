@@ -21,27 +21,23 @@ yarn run ts-node cli/main.ts -f initAdmin \
 
 echo "Registering content nodes!"
 # Register content nodes
-# DUMMY ETH ADDRESSES
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 1 \
-    --eth-address 0x25A3Acd4758Ab107ea0Bd739382B8130cD1F204d
+    --cn-sp-id 1
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 2 \
-    --eth-address 0x71B55d7bDe40D751087A27e2072F0fF8cacA400a
+    --cn-sp-id 2
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 3 \
-    --eth-address 0xb4bD6911d3F633A1F7B14D955E68061F6f845027
+    --cn-sp-id 3
 
 echo "Init user"
 

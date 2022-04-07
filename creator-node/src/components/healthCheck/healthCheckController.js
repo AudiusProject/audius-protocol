@@ -89,7 +89,7 @@ const healthCheckController = async (req) => {
     return errorResponseServerError()
   }
 
-  const { randomBytesToSign } = req.query
+  const { randomBytesToSign, enforceStateMachineQueueHealth } = req.query
 
   const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
 
@@ -104,6 +104,19 @@ const healthCheckController = async (req) => {
     numberOfCPUs,
     randomBytesToSign
   )
+
+  const { stateMachineQueueLatestJobSuccess } = response
+  if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
+    const healthyThresholdMs = 5 * config.get('snapbackJobInterval')
+
+    const delta = Date.now() - stateMachineQueueLatestJobSuccess.getTime()
+    if (delta > healthyThresholdMs) {
+      return errorResponseServerError(
+        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${healthyThresholdMs}ms`
+      )
+    }
+  }
+
   return successResponse(response)
 }
 

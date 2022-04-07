@@ -1,4 +1,6 @@
 import * as anchor from "@project-serum/anchor";
+import * as fs from "fs/promises";
+import path from "path";
 import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
@@ -6,6 +8,8 @@ import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
 import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
+import web3 from "web3";
+import { LOCAL_DEV_SP_WALLETS, LOCAL_DEV_SP_PRIVATE_KEYS } from "./constants";
 
 export const SystemSysVarProgramKey = new PublicKey(
   "Sysvar1nstructions1111111111111111111111111"
@@ -168,3 +172,66 @@ export const getContentNode = async (
     derivedAddress,
   };
 };
+
+/**
+ * Returns property value from CN shellEnv#.sh from local service-commands provisioning.
+ * 
+ */
+export const getContentNodeConfigValue = async ({ spId, key }: { spId: number, key: string }): Promise<string> => {
+  const spConfigFilePath = `creator-node/compose/env/tmp/shellEnv${spId}.sh`
+  let value;
+  try {
+    const spConfig = await fs.readFile(path.join(process.env.PROTOCOL_DIR, spConfigFilePath), "utf-8");
+    value = spConfig.split(`${key}=`)[1].split("\nexport")[0];
+  } catch (error) {
+    throw new Error(`Error getting private key from sp config file ${spConfigFilePath}: ${error}`);
+  }
+  return value;
+}
+
+/**
+ * converts hex eth pk value (eg 358edb5f358b697c32d3dd3c0107da5686353etcetc) 
+ * Uint8Array(32) to create web3 Keypair.
+ */
+export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
+  const fullHexAddress = `0x${hexPrivateKey}`;
+  const uint8SecretKey = Uint8Array.from(web3.utils.hexToBytes(fullHexAddress));
+  return uint8SecretKey;
+}
+
+/**
+ * Returns object containing
+ * content node delegate wallet address and 
+ * authority KeyPair based on spId; when deterministic=false
+ * returns wallet address and keypair from local env
+ */
+export const getContentNodeWalletAndAuthority = async ({ spId, deterministic = true }: { spId: string, deterministic: boolean }): Promise<any> => {
+  const cnSpId = parseInt(spId);
+  let delegatePrivateKey;
+  let delegateWallet;
+  let contentNodeAuthority;
+  if (deterministic) {
+    delegateWallet = LOCAL_DEV_SP_WALLETS[cnSpId];
+    delegatePrivateKey = LOCAL_DEV_SP_PRIVATE_KEYS[cnSpId];
+  } else {
+    // fetch dynamically from CN env vars
+    delegateWallet = await getContentNodeConfigValue({
+      spId: cnSpId,
+      key: "delegateOwnerWallet"
+    });
+    delegatePrivateKey = await getContentNodeConfigValue({
+      spId: cnSpId,
+      key: "delegatePrivateKey"
+    });
+  }
+  try {
+    const seed = hexPrivateKeyToUint8(delegatePrivateKey);
+    contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
+  } catch (error) {
+    throw new Error(`Error getting keypair from delegate private key ${delegatePrivateKey}: ${error}`);
+  }
+  return {
+    contentNodeAuthority,
+    delegateWallet
+  }
+}

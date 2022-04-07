@@ -309,17 +309,7 @@ trending_playlist_parser.remove_argument("genre")
         }
     },
 )
-@ns.route(
-    "/trending/<string:version>",
-    doc={
-        "get": {
-            "id": """Get Trending Playlists With Version""",
-            "description": """Gets trending playlists for a time period based on the given trending strategy version""",
-            "params": {"version": "The strategy version of trending to use"},
-            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
-        }
-    },
-)
+@ns.route("/trending/<string:version>", doc=False)
 class TrendingPlaylists(Resource):
     @record_metrics
     @ns.expect(trending_playlist_parser)

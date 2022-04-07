@@ -26,6 +26,16 @@ def is_route_decorator(decorator: ast.Call):
 route_parser_regex = re.compile(".*<[^:]*:?(.*)>.*")
 
 
+def is_route_decorator_documented(route_decorator: ast.Call):
+    """Checks if the given route decorator is marked doc=False"""
+    for keyword in route_decorator.keywords:
+        if keyword.arg == "doc":
+            if isinstance(keyword.value, ast.Constant):
+                if keyword.value.value == False:
+                    return False
+    return True
+
+
 def parse_route_args(route_decorator: ast.Call, route_args_dict):
     """Parses an @api.route()'s first arg to get the route arguments"""
     can_check_route_args = False
@@ -82,7 +92,7 @@ def find_and_process_route_doc(
                 methods_with_ids = [
                     method for method in get_method_ids_from_route_doc(keyword.value)
                 ]
-    return (True, methods_with_ids)
+    return methods_with_ids
 
 
 def find_param_descriptions_in_route_doc(doc: ast.Dict):
