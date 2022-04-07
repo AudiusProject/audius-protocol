@@ -52,7 +52,7 @@ attest_parser.add_argument(
 )
 
 
-@ns.route(attest_route)
+@ns.route(attest_route, doc=False)
 class Attest(Resource):
     @ns.doc(
         id="Get Challenge Attestation",
@@ -114,7 +114,7 @@ get_challenges_response = make_response(
 )
 
 
-@ns.route(undisbursed_route)
+@ns.route(undisbursed_route, doc=False)
 class GetUndisbursedChallenges(Resource):
     @ns.doc(
         id="""Get Undisbursed Challenges""",
@@ -159,7 +159,7 @@ create_sender_attestation_response = make_response(
 )
 
 
-@ns.route(create_sender_attest_route)
+@ns.route(create_sender_attest_route, doc=False)
 class CreateSenderAttestation(Resource):
     @ns.doc(
         id="""Get Create Sender Attestation""",

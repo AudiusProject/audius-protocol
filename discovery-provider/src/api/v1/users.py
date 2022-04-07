@@ -745,7 +745,7 @@ associated_wallet_response = make_response(
 @ns.deprecated
 @ns.route(
     "/associated_wallets",
-    doc={"description": "(Deprecated in favor of `/<user_id>/connected_wallets`)"},
+    doc=False,
 )
 class AssociatedWalletByUserId(Resource):
     @ns.doc(
@@ -867,7 +867,7 @@ get_challenges_response = make_response(
 )
 
 
-@ns.route("/<string:id>/challenges")
+@ns.route("/<string:id>/challenges", doc=False)
 class GetChallenges(Resource):
     @ns.doc(
         id="""Get User Challenges""",
