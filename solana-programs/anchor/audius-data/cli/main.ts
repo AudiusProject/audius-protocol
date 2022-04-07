@@ -355,17 +355,10 @@ program
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
   .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
+  .option("--deterministic, <boolean>", "set to false to seed content node wallet and pkey dynamically from local env (only when running ganache without --deterministic)", true)
   .option("-uid, --user-id <integer>", "ID of incoming user")
   .option("-we, --write-enabled <bool>", "If write is enabled for admin", false)
-  .option(
-    "-ci, <boolean>",
-    "set to true to seed content node wallet and pkey with dummy values",
-    false
-  )
-  .option(
-    "--user-replica-set <string>",
-    "Comma separated list of integers representing spIDs - ex. 2,3,1"
-  )
+  .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option(
     "-ds, --delegate-status <string>",
@@ -422,15 +415,9 @@ const main = async () => {
       });
       break;
     case functionTypes.initContentNode:
-      console.log(`Initializing content node`);
-      const { delegateWallet, contentNodeAuthority } =
-        await getContentNodeWalletAndAuthority({
-          spId: options.cnSpId,
-          ci: options.ci,
-        });
-      console.log(
-        `Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`
-      );
+      console.log(`Initializing content node`)
+      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, deterministic: options.deterministic });
+      console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
         const cnInfo = await getContentNode(
@@ -549,20 +536,16 @@ const main = async () => {
         );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const userReplicaSetSpIds = options.userReplicaSet
-          .split(",")
-          .map((spId: string) => {
-            return parseInt(spId);
-          });
-        const userContentNodeInfo = await Promise.all(
-          userReplicaSet.map(async (spId) => {
-            return await getContentNode(
-              cliVars.program,
-              adminStorageKeypair.publicKey,
-              `${spId}`
-            );
-          })
-        );
+        const userReplicaSetSpIds = options.userReplicaSet.split(',').map(x => {
+          return parseInt(x);
+        })
+        const userContentNodeInfo = await Promise.all(userReplicaSetSpIds.map(async (spId) => {
+          return await getContentNode(
+            cliVars.program,
+            adminStorageKeypair.publicKey,
+            `${spId}`
+          )
+        }))
         const replicaSetBumps = [
           userContentNodeInfo[0].bumpSeed,
           userContentNodeInfo[1].bumpSeed,
@@ -774,4 +757,5 @@ const main = async () => {
     }
   }
 };
+
 main();
