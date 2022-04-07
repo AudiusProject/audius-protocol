@@ -302,7 +302,7 @@ program
   .option("--id <integer>", "ID of entity targeted by transaction")
   .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
   .option("-uid, --user-id <integer>", "ID of incoming user")
-  .option("-we, --write-enabled <bool>", "If write is enabled", false)
+  .option("-we, --write-enabled <bool>", "If write is enabled for admin", false)
   .option("-ci, <boolean>", "set to true to seed content node wallet and pkey with dummy values", false)
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
