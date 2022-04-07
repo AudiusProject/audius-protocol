@@ -5,6 +5,15 @@
       "es2021",
       "dom"
     ],
-    "checkJs": false
-  }
+    "checkJs": false,
+    "resolveJsonModule": true,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "types"
+  ]
 }
