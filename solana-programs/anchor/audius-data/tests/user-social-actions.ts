@@ -61,13 +61,15 @@ describe("user social actions", function () {
   };
 
   it("User social actions - Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    let tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
     });
+
+    await provider.send(tx, [adminStorageKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -158,12 +160,13 @@ describe("user social actions", function () {
       const message2 = newUser2Key.publicKey.toBytes();
 
       // disable admin writes
-      await updateAdmin({
+      const updateAdminTx = updateAdmin({
         program,
         isWriteEnabled: false,
         adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
+      await provider.send(updateAdminTx, [adminKeypair]);
 
       await testCreateUser({
         provider,
@@ -200,23 +203,24 @@ describe("user social actions", function () {
 
     it("follow user", async function () {
       // Submit a tx where user 1 follows user 2
-      const followTx = await followUser({
+      const followTx = followUser({
         baseAuthorityAccount,
         program,
         sourceUserStorageAccountPDA: userStorageAccount1,
         targetUserStorageAccountPDA: userStorageAccount2,
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
-        userAuthorityKeypair: newUser1Key,
+        userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserHandleBytesArray: handleBytesArray1,
         sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
         targetUserHandleBytesArray: handleBytesArray2,
         targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
+      const followTxSig = await provider.send(followTx, [newUser1Key])
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, followTx, 0);
+        await getTransactionWithData(program, provider, followTxSig, 0);
 
       expect(decodedInstruction.name).to.equal("writeUserSocialAction");
       expect(decodedData.base.toString()).to.equal(
@@ -246,7 +250,7 @@ describe("user social actions", function () {
       });
 
       // Submit a tx where user 1 follows user 2
-      const followTx = await followUser({
+      const followTx = followUser({
         baseAuthorityAccount,
         program,
         sourceUserStorageAccountPDA: userDelegate.userAccountPDA,
@@ -254,16 +258,17 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
         authorityDelegationStatusAccountPDA:
           userDelegate.authorityDelegationStatusPDA,
-        userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+        userAuthorityPublicKey: userDelegate.userAuthorityDelegateKeypair.publicKey,
         sourceUserHandleBytesArray: userDelegate.userHandleBytesArray,
         sourceUserBumpSeed: userDelegate.userBumpSeed,
         targetUserHandleBytesArray: handleBytesArray2,
         targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
+      const followTxSig = await provider.send(followTx, [userDelegate.userAuthorityDelegateKeypair])
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, followTx, 0);
+        await getTransactionWithData(program, provider, followTxSig, 0);
 
       expect(decodedInstruction.name).to.equal("writeUserSocialAction");
       expect(decodedData.base.toString()).to.equal(
@@ -288,23 +293,24 @@ describe("user social actions", function () {
 
     it("unfollow user", async function () {
       // Submit a tx where user 1 follows user 2
-      const unfollowTx = await unfollowUser({
+      const unfollowTx = unfollowUser({
         baseAuthorityAccount,
         program,
         sourceUserStorageAccountPDA: userStorageAccount1,
         targetUserStorageAccountPDA: userStorageAccount2,
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
-        userAuthorityKeypair: newUser1Key,
+        userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserHandleBytesArray: handleBytesArray1,
         sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
         targetUserHandleBytesArray: handleBytesArray2,
         targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
+      const unfollowTxSig = await provider.send(unfollowTx, [newUser1Key])
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, unfollowTx, 0);
+        await getTransactionWithData(program, provider, unfollowTxSig, 0);
 
       expect(decodedInstruction.name).to.equal("writeUserSocialAction");
       expect(decodedData.base.toString()).to.equal(
@@ -425,23 +431,24 @@ describe("user social actions", function () {
     // subscribe tests
     it("subscribe user", async function () {
       // Submit a tx where user 1 subscribes user 2
-      const subscribeTx = await subscribeUser({
+      const subscribeTx = subscribeUser({
         baseAuthorityAccount,
         program,
         sourceUserStorageAccountPDA: userStorageAccount1,
         targetUserStorageAccountPDA: userStorageAccount2,
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
-        userAuthorityKeypair: newUser1Key,
+        userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserHandleBytesArray: handleBytesArray1,
         sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
         targetUserHandleBytesArray: handleBytesArray2,
         targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
+      const subscribeTxSig = await provider.send(subscribeTx, [newUser1Key])
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, subscribeTx, 0);
+        await getTransactionWithData(program, provider, subscribeTxSig, 0);
 
       expect(decodedInstruction.name).to.equal("writeUserSocialAction");
       expect(decodedData.base.toString()).to.equal(
@@ -464,23 +471,24 @@ describe("user social actions", function () {
 
     it("unsubscribe user", async function () {
       // Submit a tx where user 1 subscribes user 2
-      const unsubscribeTx = await unsubscribeUser({
+      const unsubscribeTx = unsubscribeUser({
         baseAuthorityAccount,
         program,
         sourceUserStorageAccountPDA: userStorageAccount1,
         targetUserStorageAccountPDA: userStorageAccount2,
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
-        userAuthorityKeypair: newUser1Key,
+        userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserHandleBytesArray: handleBytesArray1,
         sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
         targetUserHandleBytesArray: handleBytesArray2,
         targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
+      const unsubscribeTxSig = await provider.send(unsubscribeTx, [newUser1Key])
 
       const { decodedInstruction, decodedData, accountPubKeys } =
-        await getTransactionWithData(program, provider, unsubscribeTx, 0);
+        await getTransactionWithData(program, provider, unsubscribeTxSig, 0);
 
       expect(decodedInstruction.name).to.equal("writeUserSocialAction");
       expect(decodedData.base.toString()).to.equal(
