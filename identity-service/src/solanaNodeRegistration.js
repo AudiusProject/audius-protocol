@@ -1,23 +1,23 @@
 const Bull = require('bull')
 const config = require('./config.js')
-const { logger } = require('./logging')
 
 // TODO: set this to 15 min when done testing...
 
 const JOB_FREQUENCY_MS = 1 /* min */ * 60 /* sec */ * 1000 /* msec */
+const ENDPOINTS = ['https://discoveryprovider2.audius.co', 'https://dn1.nodeoperator.io', 'https://dn1.monophonic.digital']
 
 const registerNodes = async (audiusLibs, logger) => {
   logger.info('Beginning node registration job')
-	const nodes = await audiusLibs.ServiceProvider.discoveryProvider.serviceSelector.getServices({verbose: true})
-	const unregistered = []
-	for (const node of nodes) {
-		const isRegistered = await audiusLibs.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
+  const nodes = await audiusLibs.ServiceProvider.discoveryProvider.serviceSelector.getServices({ verbose: true })
+  const unregistered = []
+  for (const node of nodes) {
+    const isRegistered = await audiusLibs.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
 
-		if (!isRegistered) {
+    if (!isRegistered) {
       logger.info(`Node ${node.endpoint} is unregistered!`)
-			unregistered.push(node)
-		}
-	}
+      unregistered.push(node)
+    }
+  }
 
   if (unregistered.length) {
     logger.info(`Found unregistered nodes: ${JSON.stringify(unregistered.map(n => n.endpoint))}}`)
@@ -34,12 +34,11 @@ const registerNodes = async (audiusLibs, logger) => {
         senderEthAddress: node.delegateOwnerWallet,
         operatorEthAddress: node.owner,
         senderEndpoint: node.endpoint,
-        endpoints:['https://discoveryprovider2.audius.co', 'https://dn1.nodeoperator.io', 'https://dn1.monophonic.digital'],
+        endpoints: ENDPOINTS
       })
 
       if (!res.error) {
         logger.info(`Registered ${node.endpoint}`)
-        didSucceed = true
       } else {
         logger.error(`Error registering: ${node.endpoint}`)
       }
@@ -75,4 +74,3 @@ const startRegistrationQueue = async (audiusLibs, logger) => {
 module.exports = {
   startRegistrationQueue
 }
-
