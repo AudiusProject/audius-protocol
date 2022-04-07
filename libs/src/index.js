@@ -1,6 +1,6 @@
 const packageJSON = require('../package.json')
 
-const EthWeb3Manager = require('./services/ethWeb3Manager/index')
+const { EthWeb3Manager } = require('./services/ethWeb3Manager')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
