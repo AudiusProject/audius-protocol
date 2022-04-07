@@ -100,9 +100,9 @@ export const useOverflowHandlers = ({
   const onScroll = attachToScroll(scrollAnim)
 
   return {
-    isRefreshing: isRefreshing || isDebouncing,
+    isRefreshing: onRefresh ? isRefreshing || isDebouncing : undefined,
     isRefreshDisabled: isMomentumScroll,
-    handleRefresh,
+    handleRefresh: onRefresh ? handleRefresh : undefined,
     scrollAnim,
     onScroll,
     onScrollBeginDrag,

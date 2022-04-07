@@ -22,10 +22,11 @@ const CollapsibleFlatList = ({
   sceneName,
   ...other
 }: CollapsibleFlatListProps) => {
+  const { onRefresh } = other
   const scrollPropsAndRef = useCollapsibleScene(sceneName)
   return (
     <View>
-      <PullToRefresh />
+      {onRefresh ? <PullToRefresh /> : null}
       <Animated.FlatList {...other} {...scrollPropsAndRef} />
     </View>
   )
@@ -54,12 +55,14 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
 
     return (
       <View>
-        <PullToRefresh
-          isRefreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          scrollAnim={scrollAnim}
-          isRefreshDisabled={isRefreshDisabled}
-        />
+        {handleRefresh ? (
+          <PullToRefresh
+            isRefreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            scrollAnim={scrollAnim}
+            isRefreshDisabled={isRefreshDisabled}
+          />
+        ) : null}
         <Animated.FlatList
           scrollToOverflowEnabled
           ref={ref || scrollRef}

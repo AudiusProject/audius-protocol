@@ -40,10 +40,8 @@ const useCollapsibleSectionListScene = (sceneName: string) => {
   }
 }
 
-const CollapsibleSectionList = ({
-  sceneName,
-  ...other
-}: CollapsibleSectionListProps) => {
+const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
+  const { sceneName, ...other } = props
   const { refreshing, onRefresh, scrollY: collapsibleScrollAnim } = useContext(
     CollapsibleTabNavigatorContext
   )
@@ -53,15 +51,17 @@ const CollapsibleSectionList = ({
 
   return (
     <View>
-      <Portal hostName='PullToRefreshPortalHost'>
-        <PullToRefresh
-          isRefreshing={refreshing}
-          onRefresh={onRefresh}
-          scrollAnim={collapsibleScrollAnim}
-          topOffset={40}
-          color={staticWhite}
-        />
-      </Portal>
+      {onRefresh ? (
+        <Portal hostName='PullToRefreshPortalHost'>
+          <PullToRefresh
+            isRefreshing={refreshing}
+            onRefresh={onRefresh}
+            scrollAnim={collapsibleScrollAnim}
+            topOffset={40}
+            color={staticWhite}
+          />
+        </Portal>
+      ) : null}
       <Animated.SectionList {...other} {...scrollPropsAndRef} />
     </View>
   )
@@ -69,9 +69,10 @@ const CollapsibleSectionList = ({
 
 const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
   function AnimatedSectionList(
-    { refreshing, onRefresh, ...other },
+    props,
     ref: MutableRefObject<RNSectionList<any, DefaultSectionT> | null>
   ) {
+    const { refreshing, onRefresh, ...other } = props
     const scrollResponder = ref.current?.getScrollResponder()
     const {
       isRefreshing,
@@ -89,12 +90,14 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
 
     return (
       <View>
-        <PullToRefresh
-          isRefreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          scrollAnim={scrollAnim}
-          isRefreshDisabled={isRefreshDisabled}
-        />
+        {handleRefresh ? (
+          <PullToRefresh
+            isRefreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            scrollAnim={scrollAnim}
+            isRefreshDisabled={isRefreshDisabled}
+          />
+        ) : null}
         <Animated.SectionList
           scrollToOverflowEnabled
           ref={ref}
