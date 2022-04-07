@@ -1,5 +1,4 @@
 import asyncio
-import base64
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict
@@ -10,7 +9,6 @@ from src.solana.constants import (
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_transaction_types import TransactionInfoResult
-from solana.transaction import Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -117,22 +115,15 @@ class SolanaProgramIndexer(IndexerBase):
         """
         tx_info = self._solana_client_manager.get_sol_tx_info(tx_sig)
         result: TransactionInfoResult = tx_info["result"]
-        encoded_data = tx_info["result"].get("transaction")[0]
-        decoded_data = base64.b64decode(encoded_data)
-        decoded_data_hex = decoded_data.hex()
-        tx = Transaction.deserialize(bytes.fromhex(decoded_data_hex))
-        self.verify_tx(tx)
-
         return {"tx_sig": tx_sig, "tx_metadata": {}, "result": result}
 
     @abstractmethod
-    def verify_tx(self, tx):
+    def is_valid_instruction(self, tx):
         """
-        Throws asyncio.CancelledError if tx is invalid, cancels async parse.
+        Returns a boolean value indicating whether an instruction is valid.
         @param tx: transaction to be parsed
         """
         raise Exception("Must be implemented in subclass")
-
 
     @abstractmethod
     async def fetch_ipfs_metadata(self, parsed_transactions):

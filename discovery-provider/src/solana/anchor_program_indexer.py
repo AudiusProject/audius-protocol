@@ -1,7 +1,7 @@
 import asyncio
 import base64
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from solana.transaction import Transaction
 from sqlalchemy import desc
@@ -24,6 +24,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def __init__(
         self,
         program_id: str,
+        admin_storage_public_key: str,
         label: str,
         redis: Any,
         db: Any,
@@ -31,6 +32,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
         self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
+        self.admin_storage_public_key = admin_storage_public_key
 
     def is_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -84,13 +86,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         tx = Transaction.deserialize(bytes.fromhex(decoded_data_hex))
         tx_metadata = {}
 
-        self.verify_tx(tx)
-            
         # Append each parsed transaction to parsed metadata
         tx_instructions = []
         for instruction in tx.instructions:
             parsed_instr = self.anchor_parser.parse_instruction(instruction)
-            tx_instructions.append(parsed_instr)
+            if self.is_valid_instruction(parsed_instr):
+                tx_instructions.append(parsed_instr)
 
         tx_metadata["instructions"] = tx_instructions
 
@@ -99,11 +100,21 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             Embed instruction specific information in tx_metadata
         """
         return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
-    
-    def verify_tx(self, tx: Transaction):
-        tx.instructions[0].
 
-        # if it's not valid throw exception
+    def is_valid_instruction(self, parsed_instr: Dict):
+        if parsed_instr["instruction_name"] == "init_user":
+            if (
+                parsed_instr["account_names_map"]["admin"]
+                != self.admin_storage_public_key
+            ):
+                return False
+        # TODO implement remaining instruction validation
+        # consider creating classes for each instruction type
+        # then implementing instruction validation / updating user records for each.
+        # consider renaming admin accounts in program for consistency 
+        # then dynamically validating.
+
+        return True
 
     def process_index_task(self):
         self.msg("Processing indexing task")
