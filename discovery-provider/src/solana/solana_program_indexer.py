@@ -121,7 +121,7 @@ class SolanaProgramIndexer(IndexerBase):
     def is_valid_instruction(self, tx):
         """
         Returns a boolean value indicating whether an instruction is valid.
-        @param tx: transaction to be parsed
+        @param tx: transaction to be validated
         """
         raise Exception("Must be implemented in subclass")
 

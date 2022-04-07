@@ -111,7 +111,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # TODO implement remaining instruction validation
         # consider creating classes for each instruction type
         # then implementing instruction validation / updating user records for each.
-        # consider renaming admin accounts in program for consistency 
+        # consider renaming admin accounts in program for consistency
         # then dynamically validating.
 
         return True
