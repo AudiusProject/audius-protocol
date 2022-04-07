@@ -11,6 +11,8 @@ from src.utils.redis_connection import get_redis
 from web3 import Web3
 
 PROGRAM_ID = shared_config["solana"]["anchor_data_program_id"]
+ADMIN_STORAGE_PUBLIC_KEY = shared_config["solana"]["anchor_admin_storage_public_key"]
+
 LABEL = "test_indexer"
 
 
@@ -21,7 +23,12 @@ def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     anchor_program_indexer = AnchorProgramIndexer(
-        PROGRAM_ID, LABEL, redis, db, solana_client_manager_mock
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
     )
 
     TEST_TX_HASH = "3EvzmLSZekcQn3zEGFUkaoXej9nUrwkomyTpu9PRBaJJDAtzFQ3woYuGmnLHrqY6kZJtxamqCgeu17euyGp3EN4W"
@@ -43,7 +50,12 @@ def test_validate_and_save_parsed_tx_records(app):
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     anchor_program_indexer = AnchorProgramIndexer(
-        PROGRAM_ID, LABEL, redis, db, solana_client_manager_mock
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
     )
     processed_transactions = [
         {"tx_sig": "test_sig1", "result": {"slot": 1}},
@@ -67,7 +79,12 @@ def test_parse_tx(app):
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
     anchor_program_indexer = AnchorProgramIndexer(
-        PROGRAM_ID, LABEL, redis, db, solana_client_manager_mock
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
     )
     resp = asyncio.run(
         anchor_program_indexer.parse_tx(
