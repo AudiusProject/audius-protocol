@@ -301,7 +301,7 @@ program
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
   .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
-  .option("-u-id, --user-id <integer>", "ID of incoming user")
+  .option("-uid, --user-id <integer>", "ID of incoming user")
   .option("-we, --write-enabled <bool>", "If write is enabled", false)
   .option("-ci, <boolean>", "set to true to seed content node wallet and pkey with dummy values", false)
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
