@@ -514,53 +514,59 @@ export const updateAdmin = ({
 type InitAuthorityDelegationStatusParams = {
   program: Program<AudiusData>;
   authorityName: string;
-  userAuthorityDelegateKeypair: anchor.web3.Keypair;
+  userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
   authorityDelegationStatusPDA: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
 
-export const initAuthorityDelegationStatus = async ({
+export const initAuthorityDelegationStatus = ({
   program,
   authorityName,
-  userAuthorityDelegateKeypair,
+  userAuthorityDelegatePublicKey,
   authorityDelegationStatusPDA,
   payer,
 }: InitAuthorityDelegationStatusParams) => {
-  return program.rpc.initAuthorityDelegationStatus(authorityName, {
-    accounts: {
-      delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-      authorityDelegationStatusPda: authorityDelegationStatusPDA,
-      payer,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [userAuthorityDelegateKeypair],
-  });
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.initAuthorityDelegationStatus(authorityName, {
+      accounts: {
+        delegateAuthority: userAuthorityDelegatePublicKey,
+        authorityDelegationStatusPda: authorityDelegationStatusPDA,
+        payer,
+        systemProgram: SystemProgram.programId,
+      },
+    })
+  );
+  return tx;
 };
 
 type RevokeAuthorityDelegationParams = {
   program: Program<AudiusData>;
   authorityDelegationBump: number;
-  userAuthorityDelegateKeypair: anchor.web3.Keypair;
+  userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
   authorityDelegationStatusPDA: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
 
-export const revokeAuthorityDelegation = async ({
+export const revokeAuthorityDelegation = ({
   program,
   authorityDelegationBump,
-  userAuthorityDelegateKeypair,
+  userAuthorityDelegatePublicKey,
   authorityDelegationStatusPDA,
   payer,
 }: RevokeAuthorityDelegationParams) => {
-  return program.rpc.revokeAuthorityDelegation(authorityDelegationBump, {
-    accounts: {
-      delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-      authorityDelegationStatusPda: authorityDelegationStatusPDA,
-      payer,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [userAuthorityDelegateKeypair],
-  });
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.revokeAuthorityDelegation(authorityDelegationBump, {
+      accounts: {
+        delegateAuthority: userAuthorityDelegatePublicKey,
+        authorityDelegationStatusPda: authorityDelegationStatusPDA,
+        payer,
+        systemProgram: SystemProgram.programId,
+      },
+    })
+  );
+  return tx;
 };
 
 type AddUserAuthorityDelegateParams = {
@@ -574,11 +580,11 @@ type AddUserAuthorityDelegateParams = {
   userBumpSeed: number;
   signerUserAuthorityDelegate: anchor.web3.PublicKey;
   authorityDelegationStatus: anchor.web3.PublicKey;
-  authority: anchor.web3.Keypair;
+  authorityPublicKey: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
 
-export const addUserAuthorityDelegate = async ({
+export const addUserAuthorityDelegate = ({
   program,
   baseAuthorityAccount,
   delegatePublicKey,
@@ -589,27 +595,30 @@ export const addUserAuthorityDelegate = async ({
   userBumpSeed,
   adminStoragePublicKey,
   signerUserAuthorityDelegate,
-  authority,
+  authorityPublicKey,
   payer,
 }: AddUserAuthorityDelegateParams) => {
-  return program.rpc.addUserAuthorityDelegate(
-    baseAuthorityAccount,
-    { seed: userHandleBytesArray, bump: userBumpSeed },
-    delegatePublicKey,
-    {
-      accounts: {
-        admin: adminStoragePublicKey,
-        user,
-        currentUserAuthorityDelegate,
-        signerUserAuthorityDelegate,
-        authorityDelegationStatus,
-        authority: authority.publicKey,
-        payer,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [authority],
-    }
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.addUserAuthorityDelegate(
+      baseAuthorityAccount,
+      { seed: userHandleBytesArray, bump: userBumpSeed },
+      delegatePublicKey,
+      {
+        accounts: {
+          admin: adminStoragePublicKey,
+          user,
+          currentUserAuthorityDelegate,
+          signerUserAuthorityDelegate,
+          authorityDelegationStatus,
+          authority: authorityPublicKey,
+          payer,
+          systemProgram: SystemProgram.programId,
+        },
+      }
+    )
   );
+  return tx;
 };
 
 type RemoveUserAuthorityDelegateParams = {
@@ -624,11 +633,11 @@ type RemoveUserAuthorityDelegateParams = {
   userBumpSeed: number;
   signerUserAuthorityDelegate: anchor.web3.PublicKey;
   authorityDelegationStatus: anchor.web3.PublicKey;
-  authority: anchor.web3.Keypair;
+  authorityPublicKey: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
 
-export const removeUserAuthorityDelegate = async ({
+export const removeUserAuthorityDelegate = ({
   program,
   baseAuthorityAccount,
   delegatePublicKey,
@@ -640,28 +649,31 @@ export const removeUserAuthorityDelegate = async ({
   userBumpSeed,
   adminStoragePublicKey,
   signerUserAuthorityDelegate,
-  authority,
+  authorityPublicKey,
   payer,
 }: RemoveUserAuthorityDelegateParams) => {
-  return program.rpc.removeUserAuthorityDelegate(
-    baseAuthorityAccount,
-    { seed: userHandleBytesArray, bump: userBumpSeed },
-    delegatePublicKey,
-    delegateBump,
-    {
-      accounts: {
-        admin: adminStoragePublicKey,
-        user,
-        currentUserAuthorityDelegate,
-        signerUserAuthorityDelegate,
-        authorityDelegationStatus,
-        authority: authority.publicKey,
-        payer,
-        systemProgram: SystemProgram.programId,
-      },
-      signers: [authority],
-    }
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.removeUserAuthorityDelegate(
+      baseAuthorityAccount,
+      { seed: userHandleBytesArray, bump: userBumpSeed },
+      delegatePublicKey,
+      delegateBump,
+      {
+        accounts: {
+          admin: adminStoragePublicKey,
+          user,
+          currentUserAuthorityDelegate,
+          signerUserAuthorityDelegate,
+          authorityDelegationStatus,
+          authority: authorityPublicKey,
+          payer,
+          systemProgram: SystemProgram.programId,
+        },
+      }
+    )
   );
+  return tx;
 };
 
 // Verify user with authenticatorKeypair.
@@ -708,7 +720,7 @@ export type CreateEntityParams = {
   adminStorageAccount: anchor.web3.PublicKey;
   handleBytesArray: number[];
   bumpSeed: number;
-  userAuthorityKeypair: Keypair;
+  userAuthorityPublicKey: anchor.web3.PublicKey;
   userStorageAccountPDA: anchor.web3.PublicKey;
   userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
@@ -1331,7 +1343,7 @@ type UserSocialActionParams = {
   targetUserStorageAccountPDA: anchor.web3.PublicKey;
   userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-  userAuthorityKeypair: Keypair;
+  userAuthorityPublicKey: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
   sourceUserHandleBytesArray: number[];
   sourceUserBumpSeed: number;
@@ -1339,136 +1351,147 @@ type UserSocialActionParams = {
   targetUserBumpSeed: number;
 };
 
-export const followUser = async ({
+export const followUser = ({
   program,
   baseAuthorityAccount,
   sourceUserStorageAccountPDA,
   targetUserStorageAccountPDA,
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
-  userAuthorityKeypair,
+  userAuthorityPublicKey,
   sourceUserHandleBytesArray,
   sourceUserBumpSeed,
   targetUserHandleBytesArray,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
-  return program.rpc.writeUserSocialAction(
-    baseAuthorityAccount,
-    UserSocialActions.followUser,
-    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
-    {
-      accounts: {
-        audiusAdmin: adminStoragePublicKey,
-        sourceUserStorage: sourceUserStorageAccountPDA,
-        targetUserStorage: targetUserStorageAccountPDA,
-        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.writeUserSocialAction(
+      baseAuthorityAccount,
+      UserSocialActions.followUser,
+      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      {
+        accounts: {
+          audiusAdmin: adminStoragePublicKey,
+          sourceUserStorage: sourceUserStorageAccountPDA,
+          targetUserStorage: targetUserStorageAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          authority: userAuthorityPublicKey,
+        },
+      }
+    )
   );
+  return tx;
 };
 
-export const unfollowUser = async ({
+export const unfollowUser = ({
   program,
   baseAuthorityAccount,
   sourceUserStorageAccountPDA,
   targetUserStorageAccountPDA,
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
-  userAuthorityKeypair,
+  userAuthorityPublicKey,
   sourceUserHandleBytesArray,
   sourceUserBumpSeed,
   targetUserHandleBytesArray,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
-  return program.rpc.writeUserSocialAction(
-    baseAuthorityAccount,
-    UserSocialActions.unfollowUser,
-    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
-    {
-      accounts: {
-        audiusAdmin: adminStoragePublicKey,
-        sourceUserStorage: sourceUserStorageAccountPDA,
-        targetUserStorage: targetUserStorageAccountPDA,
-        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.writeUserSocialAction(
+      baseAuthorityAccount,
+      UserSocialActions.unfollowUser,
+      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      {
+        accounts: {
+          audiusAdmin: adminStoragePublicKey,
+          sourceUserStorage: sourceUserStorageAccountPDA,
+          targetUserStorage: targetUserStorageAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          authority: userAuthorityPublicKey,
+        }      }
+    )
   );
+  return tx;
 };
 
-export const subscribeUser = async ({
+export const subscribeUser = ({
   program,
   baseAuthorityAccount,
   sourceUserStorageAccountPDA,
   targetUserStorageAccountPDA,
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
-  userAuthorityKeypair,
+  userAuthorityPublicKey,
   sourceUserHandleBytesArray,
   sourceUserBumpSeed,
   targetUserHandleBytesArray,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
-  return program.rpc.writeUserSocialAction(
-    baseAuthorityAccount,
-    UserSocialActions.subscribeUser,
-    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
-    {
-      accounts: {
-        audiusAdmin: adminStoragePublicKey,
-        sourceUserStorage: sourceUserStorageAccountPDA,
-        targetUserStorage: targetUserStorageAccountPDA,
-        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.writeUserSocialAction(
+      baseAuthorityAccount,
+      UserSocialActions.subscribeUser,
+      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      {
+        accounts: {
+          audiusAdmin: adminStoragePublicKey,
+          sourceUserStorage: sourceUserStorageAccountPDA,
+          targetUserStorage: targetUserStorageAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          authority: userAuthorityPublicKey,
+        }
+      }
+    )
   );
+  return tx;
 };
 
-export const unsubscribeUser = async ({
+export const unsubscribeUser = ({
   program,
   baseAuthorityAccount,
   sourceUserStorageAccountPDA,
   targetUserStorageAccountPDA,
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
-  userAuthorityKeypair,
+  userAuthorityPublicKey,
   sourceUserHandleBytesArray,
   sourceUserBumpSeed,
   targetUserHandleBytesArray,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
-  return program.rpc.writeUserSocialAction(
-    baseAuthorityAccount,
-    UserSocialActions.unsubscribeUser,
-    { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-    { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
-    {
-      accounts: {
-        audiusAdmin: adminStoragePublicKey,
-        sourceUserStorage: sourceUserStorageAccountPDA,
-        targetUserStorage: targetUserStorageAccountPDA,
-        userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-        authorityDelegationStatus: authorityDelegationStatusAccountPDA,
-        authority: userAuthorityKeypair.publicKey,
-      },
-      signers: [userAuthorityKeypair],
-    }
+  const tx = new Transaction();
+  tx.add(
+    program.instruction.writeUserSocialAction(
+      baseAuthorityAccount,
+      UserSocialActions.unsubscribeUser,
+      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
+      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      {
+        accounts: {
+          audiusAdmin: adminStoragePublicKey,
+          sourceUserStorage: sourceUserStorageAccountPDA,
+          targetUserStorage: targetUserStorageAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          authority: userAuthorityPublicKey,
+        },
+      }
+    )
   );
+  return tx;
 };
 
 /**

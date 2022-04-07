@@ -515,13 +515,14 @@ export const testCreateUserDelegate = async ({
   const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
   const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
 
-  const initAuthorityDelegationStatusTx = await initAuthorityDelegationStatus({
+  const initAuthorityDelegationStatusTx = initAuthorityDelegationStatus({
     program,
     authorityName: "authority_name",
-    userAuthorityDelegateKeypair,
+    userAuthorityDelegatePublicKey: userAuthorityDelegateKeypair.publicKey,
     authorityDelegationStatusPDA,
     payer: provider.wallet.publicKey,
   });
+  const initAuthorityDelegationStatusTxSig =  await provider.send(initAuthorityDelegationStatusTx, [userAuthorityDelegateKeypair])
 
   const {
     decodedInstruction: authorityDelegationInstruction,
@@ -529,7 +530,7 @@ export const testCreateUserDelegate = async ({
   } = await getTransactionWithData(
     program,
     provider,
-    initAuthorityDelegationStatusTx,
+    initAuthorityDelegationStatusTxSig,
     0
   );
   expect(authorityDelegationInstruction.name).to.equal(
@@ -551,7 +552,7 @@ export const testCreateUserDelegate = async ({
   const userAuthorityDelegatePDA = res[0];
   const userAuthorityDelegateBump = res[1];
 
-  const addUserAuthorityDelegateTx = await addUserAuthorityDelegate({
+  const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
     program,
     adminStoragePublicKey: adminStorageKeypair.publicKey,
     baseAuthorityAccount: user.authority,
@@ -562,9 +563,10 @@ export const testCreateUserDelegate = async ({
     signerUserAuthorityDelegate: SystemProgram.programId,
     authorityDelegationStatus: SystemProgram.programId,
     delegatePublicKey: userAuthorityDelegateKeypair.publicKey,
-    authority: user.keypair,
+    authorityPublicKey: user.keypair.publicKey,
     payer: provider.wallet.publicKey,
   });
+  const addUserAuthorityDelegateTxSig =  await provider.send(addUserAuthorityDelegateTx, [user.keypair])
 
   const {
     decodedInstruction: addUserAuthorityDelegateInstruction,
@@ -572,7 +574,7 @@ export const testCreateUserDelegate = async ({
   } = await getTransactionWithData(
     program,
     provider,
-    addUserAuthorityDelegateTx,
+    addUserAuthorityDelegateTxSig,
     0
   );
   expect(addUserAuthorityDelegateInstruction.name).to.equal(

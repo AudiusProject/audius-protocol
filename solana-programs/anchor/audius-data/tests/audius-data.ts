@@ -643,7 +643,7 @@ describe("audius-data", function () {
       signers: [userDelegate.userKeypair],
     };
 
-    await removeUserAuthorityDelegate({
+    const removeUserAuthorityDelegateTx = removeUserAuthorityDelegate({
       program,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       baseAuthorityAccount: userDelegate.baseAuthorityAccount,
@@ -655,9 +655,11 @@ describe("audius-data", function () {
       authorityDelegationStatus: userDelegate.authorityDelegationStatusPDA,
       delegatePublicKey: userDelegate.userAuthorityDelegateKeypair.publicKey,
       delegateBump: userDelegate.userAuthorityDelegateBump,
-      authority: userDelegate.userKeypair,
+      authorityPublicKey: userDelegate.userKeypair.publicKey,
       payer: provider.wallet.publicKey,
     });
+
+    await provider.send(removeUserAuthorityDelegateTx, [userDelegate.userKeypair]);
 
     // Confirm account deallocated after removal
     await pollAccountBalance({
@@ -723,13 +725,18 @@ describe("audius-data", function () {
     ]);
 
     // revoke authority delegation
-    await revokeAuthorityDelegation({
+    const revokeAuthorityDelegationTx = revokeAuthorityDelegation({
       program,
       authorityDelegationBump: userDelegate.authorityDelegationStatusBump,
-      userAuthorityDelegateKeypair: userDelegate.userAuthorityDelegateKeypair,
+      userAuthorityDelegatePublicKey:
+        userDelegate.userAuthorityDelegateKeypair.publicKey,
       authorityDelegationStatusPDA: userDelegate.authorityDelegationStatusPDA,
       payer: provider.wallet.publicKey,
     });
+
+    await provider.send(revokeAuthorityDelegationTx, [
+      userDelegate.userAuthorityDelegateKeypair,
+    ]);
 
     // Confirm revoked delegation cannot update user
     await expect(
@@ -781,7 +788,7 @@ describe("audius-data", function () {
     const currentUserAuthorityDelegatePDA = res[0];
     const currentUserAuthorityDelegateBump = res[1];
 
-    await addUserAuthorityDelegate({
+    const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
       program,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       baseAuthorityAccount: firstUserDelegate.baseAuthorityAccount,
@@ -793,11 +800,13 @@ describe("audius-data", function () {
       authorityDelegationStatus: firstUserDelegate.authorityDelegationStatusPDA,
       delegatePublicKey:
         secondUserDelegate.userAuthorityDelegateKeypair.publicKey,
-      authority: firstUserDelegate.userAuthorityDelegateKeypair,
+      authorityPublicKey: firstUserDelegate.userAuthorityDelegateKeypair.publicKey,
       payer: provider.wallet.publicKey,
     });
 
-    await removeUserAuthorityDelegate({
+    await provider.send(addUserAuthorityDelegateTx, [firstUserDelegate.userAuthorityDelegateKeypair]);
+
+    const removeUserAuthorityDelegateTx = removeUserAuthorityDelegate({
       program,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       baseAuthorityAccount: firstUserDelegate.baseAuthorityAccount,
@@ -810,9 +819,10 @@ describe("audius-data", function () {
       delegatePublicKey:
         secondUserDelegate.userAuthorityDelegateKeypair.publicKey, // seed for userAuthorityDelegatePda
       delegateBump: currentUserAuthorityDelegateBump,
-      authority: firstUserDelegate.userAuthorityDelegateKeypair,
+      authorityPublicKey: firstUserDelegate.userAuthorityDelegateKeypair.publicKey,
       payer: provider.wallet.publicKey,
     });
+    await provider.send(removeUserAuthorityDelegateTx, [firstUserDelegate.userAuthorityDelegateKeypair]);
   });
 
   it("creating initialized user should fail", async function () {
@@ -1157,16 +1167,19 @@ describe("audius-data", function () {
     ).to.be.rejectedWith(Error);
 
     // Init AuthorityDelegationStatus for a new authority
-    await initAuthorityDelegationStatus({
+    const initAuthorityDelegationStatusTx = initAuthorityDelegationStatus({
       program,
       authorityName: "authority_name",
-      userAuthorityDelegateKeypair,
+      userAuthorityDelegatePublicKey: userAuthorityDelegateKeypair.publicKey,
       authorityDelegationStatusPDA,
       payer: provider.wallet.publicKey,
     });
+    await provider.send(initAuthorityDelegationStatusTx, [
+      userAuthorityDelegateKeypair,
+    ]);
 
     // Add a user delegate relationship
-    await addUserAuthorityDelegate({
+    const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
       program,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       baseAuthorityAccount: baseAuthorityAccount,
@@ -1177,9 +1190,12 @@ describe("audius-data", function () {
       signerUserAuthorityDelegate: SystemProgram.programId,
       authorityDelegationStatus: SystemProgram.programId,
       delegatePublicKey: userAuthorityDelegateKeypair.publicKey,
-      authority: newUserKeypair,
+      authorityPublicKey: newUserKeypair.publicKey,
       payer: provider.wallet.publicKey,
     });
+    await provider.send(addUserAuthorityDelegateTx, [
+      newUserKeypair,
+    ]);
 
     await expect(
       testCreateTrack({
