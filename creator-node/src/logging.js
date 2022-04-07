@@ -21,6 +21,7 @@ logger.info('Loglevel set to:', logLevel)
 const excludedRoutes = [
   '/health_check',
   '/ipfs',
+  '/content',
   '/tracks/download_status',
   '/db_check',
   '/version',

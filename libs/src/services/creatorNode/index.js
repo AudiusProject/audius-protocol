@@ -98,7 +98,7 @@ class CreatorNode {
    * @param {Web3Manager} web3Manager
    * @param {string} creatorNodeEndpoint fallback creator node endpoint (to be deprecated)
    * @param {boolean} isServer
-   * @param {UserStateManager} userStateManagern  singleton UserStateManager instance
+   * @param {UserStateManager} userStateManager  singleton UserStateManager instance
    * @param {boolean} lazyConnect whether or not to lazy connect (sign in) on load
    * @param {*} schemas
    * @param {Set<string>?} passList whether or not to include only specified nodes (default null)

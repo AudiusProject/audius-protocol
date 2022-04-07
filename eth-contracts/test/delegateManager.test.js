@@ -2831,7 +2831,7 @@ contract('DelegateManager', async (accounts) => {
 
     it('Test proxy upgrade safety via openzeppelin tooling', async () => {
       // https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades#test-usage
-      // deployProxy and upgradeProxy run some tests to ensure
+      // deployProxy and upgradeProxy run some tests to ensure proxy upgrade safety
 
       const delManP1 = await deployProxy(DelegateManager, [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION])
       await upgradeProxy(delManP1, DelegateManagerV2)
