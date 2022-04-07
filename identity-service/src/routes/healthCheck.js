@@ -435,7 +435,8 @@ module.exports = function (app) {
     // Only use the deltas if the corresponding drift parameter exists
     const healthyMaxDrift = !maxDrift || lastChallengeDelta < maxDrift
     const healthySuccessDrift = !maxSuccessDrift || lastSuccessChallengeDelta < maxSuccessDrift
-    const healthyActionDrift = !maxActionDrift || lastActionDelta < lastActionDelta
+    const healthyActionDrift = !maxActionDrift || lastActionDelta < maxActionDrift
+
     const isHealthy = healthyMaxDrift && healthySuccessDrift && healthyActionDrift
 
     const resp = { phase, lastChallengeDelta, lastSuccessChallengeDelta }
