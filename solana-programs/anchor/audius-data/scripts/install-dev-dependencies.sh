@@ -18,6 +18,9 @@ rustup component add rustfmt
 sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_CLI_VERSION/install)"
 # add solana to PATH
 export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' | tee -a "$HOME/.profile"
+# set local validator
+solana config set --url localhost
 
 # install yarn
 npm install -g yarn
@@ -29,7 +32,7 @@ anchor --version
 yarn install
 
 # init solana keypair
-solana-keygen new --no-bip39-passphrase --force -o "~/.config/solana/id.json"
+solana-keygen new --no-bip39-passphrase --force -o "$HOME/.config/solana/id.json"
 
 if [[ "${CI:-false}" == false ]]; then
     # reload shell 
