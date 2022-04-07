@@ -610,8 +610,8 @@ class Account extends Base {
       // this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
       // handleBuffer
       // Derived from seed-tx.sh logs
-      '4j6Tmp2VQ3SHkKWgwfap9hNqKEosSRdVXCKUBdtDvWat',
-      '8NzAMWzDDLEAgKocJGrMeLyUPZUK8a3fbT4sVwxiTAdy',
+      '4epch6hWN6cuaLR1VHdPdXqnVr4F8CyK2yKjhBsenFs5',
+      '2avdcDMWeN3gwVUE6iEPZHKaotfKjG5NEWxxzwJ5c7xP',
       handleBytesArray
     )
 
@@ -623,15 +623,15 @@ class Account extends Base {
     console.log('this is the accInfo!-.-', accInfo, !accInfo)
 
     if (!accInfo) return false
-    console.log('acc info not null', accInfo.data)
+    console.log('acc info not null???!!!!!', accInfo.data)
 
-    const derivedEthWallet1 = this.solanaWeb3Manager.deriveEthWalletFromAccountInfo(accInfo)
-    const derivedEthWallet2 = this.solanaWeb3Manager.deriveEthWalletFromAddress(newUserAcctPDA)
+    const derivedEthWallet2 = await this.solanaWeb3Manager.deriveEthWalletFromAddress(newUserAcctPDA)
     // cut off version and eth address from valid signer data
 
     // const derivedEthWallet = this.solanaWeb3Manager.encodeb58(accInfo.data)
 
-    console.log('what is derived eth wallet', derivedEthWallet1, derivedEthWallet2)
+    console.log('what is derived eth wallet', derivedEthWallet2)
+    console.log('PLEASE BE TRUE', derivedEthWallet2 === '0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7')
 
     // 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 need this
     return true

@@ -36,11 +36,15 @@ class AudiusLibsWrapper {
       rewardsManagerProgramId: config.get('solanaRewardsManagerProgramId'),
       rewardsManagerProgramPDA: config.get('solanaRewardsManagerProgramPDA'),
       rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
+      anchorProgramId: config.get('anchorProgramId'),
+      anchorAdminStorageKeypairPublicKey: config.get('anchorAdminStorageKeypairPublicKey'),
       // Never use the relay path in identity
       useRelay: false,
       feePayerSecretKeys,
       confirmationTimeout: config.get('solanaConfirmationTimeout')
     })
+
+    console.log('what is audiusLibsInstance sol config', solanaWeb3Config)
 
     const wormholeConfig = AudiusLibs.configWormhole({
       rpcHosts: config.get('wormholeRPCHosts'),

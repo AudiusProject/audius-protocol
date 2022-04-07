@@ -820,7 +820,9 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
     solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount,
+    anchorProgramId: solanaContractConfig.anchorProgramId,
+    anchorAdminStorageKeypairPublicKey: solanaContractConfig.anchorAdminStoragePublicKey
   })
 }
 

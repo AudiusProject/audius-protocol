@@ -6,6 +6,7 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
+const solanaProgramConfig = require('../solana-program-config.json')
 
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -296,7 +297,22 @@ class ServiceRegistry {
       'discoveryNodeUnhealthyBlockDiff'
     )
 
+    // load in solana-program-config.json here and create config here
+// TODO: get it working client first then server
+    const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
+      anchorProgramId: solanaProgramConfig.anchorProgramId,
+      solanaClusterEndpoint: solanaProgramConfig.endpoint
+      // mintAddress: solanaProgramConfig.splToken,
+      // claimableTokenProgramAddress: solanaProgramConfig.claimableTokenProgramAddress,
+      // rewardsManagerProgramId: solanaProgramConfig.rewardsManagerAddress,
+      // rewardsManagerProgramPDA: solanaProgramConfig.rewardsManagerAccount,
+      // rewardsManagerTokenPDA: solanaProgramConfig.rewardsManagerTokenAccount,
+      // anchorAdminStorageKeypairPublicKey: solanaProgramConfig.anchorAdminStorageKeypairPublicKey,
+      // feePayerAddress: solanaProgramConfig.feePayerWalletPubkey
+    })
+
     const audiusLibs = new AudiusLibs({
+      solanaWeb3Config,
       ethWeb3Config: AudiusLibs.configEthWeb3(
         config.get('ethTokenAddress'),
         config.get('ethRegistryAddress'),

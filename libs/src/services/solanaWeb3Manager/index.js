@@ -16,6 +16,7 @@ const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSenderFromEthAddress } = require('./rewards')
 const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
+const idl = require('../../../idl/audius_data.json') // TODO: make sure to commit this file
 
 const { PublicKey } = solanaWeb3
 const { SystemProgram } = anchor.web3
@@ -100,10 +101,10 @@ class SolanaWeb3Manager {
       confirmationTimeout,
       anchorProgramId,
       anchorAdminStorageKeypairPublicKey,
-      idl
     } = this.solanaWeb3Config
 
     console.log('THIS IS THE SOLANAWEB3CONFIG', this.solanaWeb3Config, anchorProgramId, anchorAdminStorageKeypairPublicKey)
+
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
@@ -159,6 +160,12 @@ class SolanaWeb3Manager {
     console.log('got connection')
     const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
       console.log('got provider')
+
+      console.log('what is the idl....', idl)
+      
+      // Update this adddress since the file is static 
+      idl.metadata.address = anchorProgramId
+      console.log('the idl???', idl)
 
     // let anchorProgram = null
     // if (!isBrowser) {
@@ -616,9 +623,14 @@ class SolanaWeb3Manager {
 
   deriveEthWalletFromAddress (pda) {
     // const provider = new anchor.Provider(this.anchorConnection)
-    return this.anchorProgram.account.user.fetch(
-      pda
-    )
+    const account = await program.account.user.fetch(userStorageAccount);
+
+    // const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
+    let chainEthAddress = Buffer.from(account.ethAddress).toString('hex');
+
+    console.log('WHAT IS CHAINETHADDR', chainEthAddress)
+
+    return chainEthAddress
   }
 }
 
