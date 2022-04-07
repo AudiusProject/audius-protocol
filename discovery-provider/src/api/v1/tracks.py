@@ -213,7 +213,7 @@ track_slug_parser.remove_argument("user_id")
 
 
 @ns.route("")
-class TrackByRoute(Resource):
+class BulkTracks(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Bulk Tracks""",
@@ -271,7 +271,7 @@ class TrackByRoute(Resource):
 
 
 @full_ns.route("")
-class FullTrackByRoute(Resource):
+class FullBulkTracks(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get Bulk Tracks""",
