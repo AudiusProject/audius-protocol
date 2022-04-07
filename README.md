@@ -1,8 +1,17 @@
-<img src="https://avatars1.githubusercontent.com/u/38231615?s=400&u=c00678880596dabd2746dae13a47edbe7ea7210e&v=4" width="150px" >
+<p align="center">
+  <br/>
+  <a target="_blank" href="https://audius.co">
+    <img src="https://avatars1.githubusercontent.com/u/38231615?s=400&u=c00678880596dabd2746dae13a47edbe7ea7210e&v=4" width="150px" >
+  </a>
+  <br/>
 
----
+  <p align="center">
+    <b>Audius Protocol</b>
+  </p>
+</p>
 
-# audius-protocol
+<br/>
+<br/>
 
 [![CircleCI](https://circleci.com/gh/AudiusProject/audius-protocol/tree/master.svg?style=svg&circle-token=e272a756b49e50a54dcc096af8fd8b0405f6bf41)](https://circleci.com/gh/AudiusProject/audius-protocol/tree/master)
 
@@ -56,6 +65,13 @@ Packages for developers to run and test Audius
 
 ## Development
 
+### Prerequisites
+
+* Install docker & docker-compose [https://docs.docker.com/get-docker](https://docs.docker.com/get-docker)
+* Install rust https://rustup.rs/
+* Install nvm & node (v14.17.5) https://github.com/nvm-sh/nvm
+
+### Running the protocol
 ```bash
 git clone https://github.com/AudiusProject/audius-protocol.git
 
