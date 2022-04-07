@@ -468,7 +468,7 @@ const main = async () => {
         const userReplicaSetSpIds = options.userReplicaSet.split(',').map(x => {
           return parseInt(x);
         })
-        const userContentNodeInfo = await Promise.all(userReplicaSet.map(async (x) => {
+        const userContentNodeInfo = await Promise.all(userReplicaSet.map(async (spId) => {
           return await getContentNode(
             cliVars.program,
             adminStorageKeypair.publicKey,
