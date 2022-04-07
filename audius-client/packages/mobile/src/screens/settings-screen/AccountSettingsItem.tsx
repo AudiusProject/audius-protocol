@@ -51,7 +51,7 @@ export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
         title={buttonTitle}
         icon={buttonIcon}
         iconPosition='left'
-        variant='common'
+        variant='commonAlt'
         fullWidth
         onPress={onPress}
       />
