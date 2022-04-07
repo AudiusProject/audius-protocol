@@ -1,24 +1,30 @@
 const assert = require('assert')
 const sinon = require('sinon')
-const { AttestationPhases, SubmitAndEvaluateError } = require('../src/api/rewards')
-const { RewardsAttester, AttestationDelayCalculator } = require('../src/services/solanaWeb3Manager/rewardsAttester')
+const {
+  AttestationPhases,
+  SubmitAndEvaluateError
+} = require('../src/api/rewards')
+const {
+  RewardsAttester,
+  AttestationDelayCalculator
+} = require('../src/services/solanaWeb3Manager/rewardsAttester')
 const { Utils } = require('../src/utils')
 const { encodeHashId } = Utils
 
-function MockLibs (getSlot = () => 100, getBlockNumber = () => 100) {
+function MockLibs(getSlot = () => 100, getBlockNumber = () => 100) {
   this.getSlot = getSlot
   this.getBlockNumber = getBlockNumber
   this.solanaWeb3Manager = {
-      getSlot: () => this.getSlot(),
-      hasBalance: ({ publicKey}) => true,
+    getSlot: () => this.getSlot(),
+    hasBalance: ({ publicKey }) => true
   }
   this.web3Manager = {
-      getWeb3: () => ({
-        eth: {
-          getBlockNumber: () => this.getBlockNumber()
-        }
-      })
-    }
+    getWeb3: () => ({
+      eth: {
+        getBlockNumber: () => this.getBlockNumber()
+      }
+    })
+  }
   this.Rewards = {
     submitAndEvaluate: (args) => {},
     getUndisbursedChallenges: (args) => {},
@@ -46,7 +52,10 @@ describe('Delay calculator tests', () => {
 
   it('Should get Slot and block threshold on fresh start', async () => {
     calc = new AttestationDelayCalculator({
-      libs: new MockLibs(() => 100, () => 100),
+      libs: new MockLibs(
+        () => 100,
+        () => 100
+      ),
       runBehindSec: 5,
       allowedStalenessSec: 1
     })
@@ -61,7 +70,10 @@ describe('Delay calculator tests', () => {
   })
 
   it('Should cache slot and block values', async () => {
-    const libs = new MockLibs(() => 100, () => 100)
+    const libs = new MockLibs(
+      () => 100,
+      () => 100
+    )
     calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
@@ -81,7 +93,10 @@ describe('Delay calculator tests', () => {
   })
 
   it('Should get new values after the cache expires', async () => {
-    const libs = new MockLibs(() => 100, () => 100)
+    const libs = new MockLibs(
+      () => 100,
+      () => 100
+    )
     calc = new AttestationDelayCalculator({
       libs,
       runBehindSec: 5,
@@ -92,7 +107,7 @@ describe('Delay calculator tests', () => {
     await calc.getPOABlockThreshold()
 
     // Test cached values
-    await new Promise(res => setTimeout(res, 1100))
+    await new Promise((res) => setTimeout(res, 1100))
     libs.getSlot = () => 110
     libs.getBlockNumber = () => 110
     const slotThreshold = await calc.getSolanaSlotThreshold()
@@ -110,7 +125,10 @@ describe('Delay calculator tests', () => {
       solSlot.last += 1
     }, 250)
 
-    const libs = new MockLibs(() => solSlot.last, () => 100)
+    const libs = new MockLibs(
+      () => solSlot.last,
+      () => 100
+    )
 
     calc = new AttestationDelayCalculator({
       libs,
@@ -124,7 +142,7 @@ describe('Delay calculator tests', () => {
     assert.strictEqual(slotThreshold1, 90)
 
     // Wait for staleness interval
-    await new Promise(res => setTimeout(res, 1100))
+    await new Promise((res) => setTimeout(res, 1100))
     const slotThreshold2 = await calc.getSolanaSlotThreshold()
     // Current slot should be 104, and there should be 4 slots/sec,
     // so 5 sec lag behind = 104 - 5 * 4 = 84
@@ -158,12 +176,13 @@ describe('Rewards Attester Tests', () => {
 
     const rewardsMock = sinon.mock(libs.Rewards)
 
-    rewardsMock.expects("getUndisbursedChallenges")
+    rewardsMock
+      .expects('getUndisbursedChallenges')
       .exactly(3)
       .onFirstCall()
-      .returns(withSuccess([1,2].map(i => makeChallenge(i, i))))
+      .returns(withSuccess([1, 2].map((i) => makeChallenge(i, i))))
       .onSecondCall()
-      .returns(withSuccess([3,4].map(i => makeChallenge(i, i))))
+      .returns(withSuccess([3, 4].map((i) => makeChallenge(i, i))))
       .onThirdCall()
       .callsFake(() => {
         attester.stop()
@@ -172,10 +191,10 @@ describe('Rewards Attester Tests', () => {
         }
       })
 
-    rewardsMock.expects("submitAndEvaluate")
+    rewardsMock
+      .expects('submitAndEvaluate')
       .exactly(4)
       .returns({ success: true })
-
 
     await attester.start()
     assert.equal(attester.startingBlock, 3)
@@ -183,7 +202,7 @@ describe('Rewards Attester Tests', () => {
     rewardsMock.verify()
   })
 
-  it("Sets offset correctly for unretryable errors with same starting block", async () => {
+  it('Sets offset correctly for unretryable errors with same starting block', async () => {
     // This tests that we *add* offsets correctly if each challenge we return has the same starting block.
     // For this test, fetch challenges in batches of 2, and the first 4 all share the same completed block
     // and are unretryable, so the offset should be 4 by the end
@@ -208,9 +227,9 @@ describe('Rewards Attester Tests', () => {
 
     rewardsStub.getUndisbursedChallenges
       .onFirstCall()
-      .returns(withSuccess([0, 1].map(i => makeChallenge(i, 1))))
+      .returns(withSuccess([0, 1].map((i) => makeChallenge(i, 1))))
       .onSecondCall()
-      .returns(withSuccess([2, 3].map(i => makeChallenge(i, 1))))
+      .returns(withSuccess([2, 3].map((i) => makeChallenge(i, 1))))
       .onThirdCall()
       .callsFake(() => {
         attester.stop()
@@ -219,11 +238,13 @@ describe('Rewards Attester Tests', () => {
       })
 
     // Entries 0-3 should return rejection (no retry)
-    rewardsStub.submitAndEvaluate.withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3])})).returns({
-      success: false,
-      error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
-      phase: AttestationPhases.AGGREGATE_ATTESTATIONS
-    })
+    rewardsStub.submitAndEvaluate
+      .withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3]) }))
+      .returns({
+        success: false,
+        error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
+        phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+      })
 
     await attester.start()
     await attesterPromise
@@ -232,7 +253,7 @@ describe('Rewards Attester Tests', () => {
     assert.equal(attester.offset, 4)
   })
 
-  it("Sets offset correctly for unretryable errors with different starting block", async () => {
+  it('Sets offset correctly for unretryable errors with different starting block', async () => {
     // If we get some unretryable errors with a different starting block,
     // we should *reset* the offset instead of accumulating it.
 
@@ -257,9 +278,9 @@ describe('Rewards Attester Tests', () => {
 
     rewardsStub.getUndisbursedChallenges
       .onFirstCall()
-      .returns(withSuccess([0, 1].map(i => makeChallenge(i, 1))))
+      .returns(withSuccess([0, 1].map((i) => makeChallenge(i, 1))))
       .onSecondCall()
-      .returns(withSuccess([2, 3].map(i => makeChallenge(i, 2))))
+      .returns(withSuccess([2, 3].map((i) => makeChallenge(i, 2))))
       .onThirdCall()
       .callsFake(() => {
         attester.stop()
@@ -268,25 +289,72 @@ describe('Rewards Attester Tests', () => {
       })
 
     // Entries 0-3 should return rejection (no retry)
-    rewardsStub.submitAndEvaluate.withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3])})).returns({
-      success: false,
-      error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
-      phase: AttestationPhases.AGGREGATE_ATTESTATIONS
-    })
-
+    rewardsStub.submitAndEvaluate
+      .withArgs(sinon.match({ specifier: sinon.match.in([0, 1, 2, 3]) }))
+      .returns({
+        success: false,
+        error: SubmitAndEvaluateError.AAO_ATTESTATION_REJECTION,
+        phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+      })
 
     await attester.start()
     await attesterPromise
 
     assert.equal(attester.startingBlock, 1)
     assert.equal(attester.offset, 2)
+  })
 
+  it('Handles errors in processChallenges after retrying', async () => {
+    // processChallenges needs to return an error after it retries and fails,
+    // so that clients can act upon the error
+
+    const libs = new MockLibs()
+    const rewardsMock = sinon.mock(libs.Rewards)
+
+    const attester = new RewardsAttester({
+      libs,
+      startingBlock: 0,
+      offset: 0,
+      parallelization: 2,
+      quorumSize: 2,
+      aaoEndpoint: 'https://fakeaao.co',
+      aaoAddress: '0xFakeOracle',
+      challengeIdsDenyList: [],
+      endpoints: ['https://dn1.co', 'https://dn2.co', 'https://dn3.co'],
+      isSolanaChallenge: () => false,
+      feePayerOverride: 'test feepayer override',
+      maxCooldownMsec: 100
+    })
+
+    // Have it always return a retryable error
+    rewardsMock
+      .expects("submitAndEvaluate")
+      .exactly(5)
+      .returns({
+        success: false,
+        error: SubmitAndEvaluateError.CHALLENGE_INCOMPLETE,
+        phase: AttestationPhases.AGGREGATE_ATTESTATIONS
+      })
+
+    const { errors } = await attester.processChallenges([
+      {
+        challengeId: 'profile-completion',
+        userId: encodeHashId(1),
+        specifier: '1',
+        amount: '1',
+        completedBlocknumber: 1,
+        handle: 'user_1',
+        wallet: '0x1'
+      }
+    ])
+
+    assert.equal(errors?.length, 1)
   })
 })
 
 const makeAttesterPromise = () => {
   let res = null
-  const promise = new Promise((resolve) => res = resolve)
+  const promise = new Promise((resolve) => (res = resolve))
   return [promise, res]
 }
 
@@ -295,10 +363,10 @@ const withSuccess = (objs) => ({
 })
 
 const makeChallenge = (index, completedBlocknumber) => ({
-  challenge_id: "profile-completion",
+  challenge_id: 'profile-completion',
   user_id: encodeHashId(index),
   specifier: index,
-  amount: "1",
+  amount: '1',
   completed_blocknumber: completedBlocknumber,
   handle: `user_ ${index}`,
   wallet: `0x${index}`
