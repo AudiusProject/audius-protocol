@@ -23,7 +23,6 @@ const registerNodes = async (audiusLibs, logger) => {
     return
   }
 
-  // Can comment this part out if unnecessary
   for (const node of unregistered) {
     logger.info(`Attempting to register node: ${node.endpoint}`)
     try {
