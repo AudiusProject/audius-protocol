@@ -157,7 +157,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     # Validate that the user row doesn't already exist - error if it does
                     user_id = instruction.get("data").get("id")
                     # TODO: validate uniqueness on handle
-                    # TODO: validate replica set
                     replica_set = list(instruction.get("data").get("replica_set"))
 
                     eth_address = Web3.toChecksumAddress(
@@ -170,14 +169,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         blocknumber=None,
                         slot=transaction["result"]["slot"],
                         user_storage_account=str(
-                            instruction.get("accounts")[0]
-                        ),  # NOTE: to be updated to be named instead of index
+                            instruction.get("account_names_map").get("user")
+                        ),
                         user_authority_account=str(
                             instruction.get("data").get("user_authority")
                         ),
-                        txhash=transaction[
-                            "tx_sig"
-                        ],  # NOTE: firgure out how to get this
+                        txhash=transaction["tx_sig"],
                         user_id=user_id,
                         is_current=True,
                         wallet=eth_address,
