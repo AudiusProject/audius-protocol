@@ -11,7 +11,6 @@ do
   esac
 done
 
-IPFS_CONTAINER=cn-test-ipfs-node
 DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
 
@@ -36,10 +35,8 @@ fi
 
 tear_down () {
   set +e
-  docker container stop $IPFS_CONTAINER
   docker container stop $DB_CONTAINER
   docker container stop $REDIS_CONTAINER
-  docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
   docker volume prune -f
@@ -59,18 +56,11 @@ run_integration_tests () {
 ARG1=${@:$OPTIND:1}
 
 if [ "${ARG1}" == "standalone_creator" ]; then
-  export ipfsPort=6901
   export redisPort=4377
   PG_PORT=1432
   # Ignore error on create audius_dev network
-  IPFS_EXISTS=$(docker ps -q -f status=running -f name=^/${IPFS_CONTAINER}$)
   DB_EXISTS=$(docker ps -q -f status=running -f name=^/${DB_CONTAINER}$)
   REDIS_EXISTS=$(docker ps -q -f status=running -f name=^/${REDIS_CONTAINER}$)
-
-  if [ ! "${IPFS_EXISTS}" ]; then
-    echo "IPFS Container doesn't exist"
-    docker run -d --name $IPFS_CONTAINER -p 127.0.0.1:$ipfsPort:5001 ipfs/go-ipfs:v0.4.23 daemon
-  fi
 
   if [ ! "${DB_EXISTS}" ]; then
     echo "DB Container doesn't exist"

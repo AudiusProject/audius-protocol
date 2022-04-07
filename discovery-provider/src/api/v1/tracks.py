@@ -467,16 +467,7 @@ class TrackSearchResult(Resource):
         }
     },
 )
-@ns.route(
-    "/trending/<string:version>",
-    doc={
-        "get": {
-            "id": """Get Trending Tracks With Version""",
-            "description": """Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version""",
-            "params": {"version": "The strategy version of trending to use"},
-        }
-    },
-)
+@ns.route("/trending/<string:version>", doc=False)
 class Trending(Resource):
     @record_metrics
     @ns.expect(trending_parser)
@@ -606,25 +597,9 @@ recommended_track_parser.add_argument(
     "/recommended",
     defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
     strict_slashes=False,
-    doc={
-        "get": {
-            "id": """Get Recommended Tracks""",
-            "description": """Get recommended tracks""",
-            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
-        }
-    },
+    doc=False,
 )
-@ns.route(
-    "/recommended/<string:version>",
-    doc={
-        "get": {
-            "id": """Get Recommended Tracks With Version""",
-            "description": """Get recommended tracks using the given trending strategy version""",
-            "params": {"version": "The strategy version of trending to use"},
-            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
-        }
-    },
-)
+@ns.route("/recommended/<string:version>", doc=False)
 class RecommendedTrack(Resource):
     @record_metrics
     @ns.expect(recommended_track_parser)
@@ -1111,7 +1086,7 @@ class MostLoved(Resource):
         return success_response(tracks)
 
 
-@ns.route("/latest")
+@ns.route("/latest", doc=False)
 class LatestTrack(Resource):
     @record_metrics
     @ns.doc(

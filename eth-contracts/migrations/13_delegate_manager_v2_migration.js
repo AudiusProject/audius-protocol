@@ -22,7 +22,7 @@ module.exports = (deployer, network, accounts) => {
 
     const governanceAddress = process.env.governanceAddress
     const governance = await Governance.at(governanceAddress)
-    const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
+    const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyDeployerAddress })
 
     /**
      * Submit contract proxy upgrade via governance guardian

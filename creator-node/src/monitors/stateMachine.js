@@ -1,3 +1,5 @@
+const redis = require('../redis')
+
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
 const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
 
@@ -65,11 +67,21 @@ const getLatestSyncFailTimestamp = async () => {
   return fail
 }
 
+const getStateMachineQueueLatestJobSuccess = async () => {
+  return redis.get('stateMachineQueueLatestJobSuccess')
+}
+
+const getStateMachineQueueLatestJobStart = async () => {
+  return redis.get('stateMachineQueueLatestJobStart')
+}
+
 module.exports = {
   get30DayRollingSyncSuccessCount,
   get30DayRollingSyncFailCount,
   getDailySyncSuccessCount,
   getDailySyncFailCount,
   getLatestSyncSuccessTimestamp,
-  getLatestSyncFailTimestamp
+  getLatestSyncFailTimestamp,
+  getStateMachineQueueLatestJobSuccess,
+  getStateMachineQueueLatestJobStart
 }
