@@ -433,9 +433,10 @@ module.exports = function (app) {
     const lastActionDelta = lastActionTime ? (Date.now() - lastActionTime) / 1000 : Number.POSITIVE_INFINITY
 
     // Only use the deltas if the corresponding drift parameter exists
-    const isHealthy = (!maxDrift || lastChallengeDelta < maxDrift) &&
-      (!maxSuccessDrift || lastSuccessChallengeDelta < maxSuccessDrift) &&
-      (!maxActionDrift || lastActionDelta < lastActionDelta)
+    const healthyMaxDrift = !maxDrift || lastChallengeDelta < maxDrift
+    const healthySuccessDrift = !maxSuccessDrift || lastSuccessChallengeDelta < maxSuccessDrift
+    const healthyActionDrift = !maxActionDrift || lastActionDelta < lastActionDelta
+    const isHealthy = healthyMaxDrift && healthySuccessDrift && healthyActionDrift
 
     const resp = { phase, lastChallengeDelta, lastSuccessChallengeDelta }
     return (isHealthy ? successResponse : errorResponseServerError)(resp)
