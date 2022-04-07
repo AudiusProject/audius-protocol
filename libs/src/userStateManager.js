@@ -1,25 +1,14 @@
-import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from './constants'
+const CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY = require('./constants').CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY
 
-const supportsLocalStorage = () =>
-  typeof window !== 'undefined' && window && window.localStorage
-
-export type CurrentUser = {
-  user_id: string
-  wallet: string
-  blocknumber: number
-  track_blocknumber: number
-  creator_node_endpoint: string
-}
+const supportsLocalStorage = () => typeof window !== 'undefined' && window && window.localStorage
 
 /**
  * Singleton class to store the current user if initialized.
  * Some instances of AudiusLibs and services require a current user to
  * return valid queries, e.g. requesting the a discprov to return a reposted track.
  */
-export class UserStateManager {
-  currentUser: CurrentUser | null
-
-  constructor() {
+class UserStateManager {
+  constructor () {
     // Should reflect the same fields as discovery node's /users?handle=<handle>
     this.currentUser = null
   }
@@ -28,25 +17,27 @@ export class UserStateManager {
    * Sets this.currentUser with currentUser
    * @param {Object} currentUser fields to override this.currentUser with
    */
-  setCurrentUser(currentUser: CurrentUser) {
+  setCurrentUser (currentUser) {
     this.currentUser = currentUser
     if (supportsLocalStorage()) {
-      window.localStorage.setItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY, 'true')
+      window.localStorage.setItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY, true)
     }
   }
 
-  getCurrentUser() {
+  getCurrentUser () {
     return this.currentUser
   }
 
-  getCurrentUserId() {
+  getCurrentUserId () {
     return this.currentUser ? this.currentUser.user_id : null
   }
 
-  clearUser() {
+  clearUser () {
     this.currentUser = null
     if (supportsLocalStorage()) {
       window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
 }
+
+module.exports = UserStateManager

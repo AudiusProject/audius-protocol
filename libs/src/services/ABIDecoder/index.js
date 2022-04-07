@@ -1,11 +1,9 @@
-import abiDecoder from 'abi-decoder'
-import { Utils } from '../../utils'
-import type { AbiItem, AbiInput } from 'web3-utils'
-import type { Log } from 'web3-core'
+const abiDecoder = require('abi-decoder')
+const { Utils } = require('../../utils')
 
-const abiMap: Record<string, AbiItem[]> = {}
+const abiMap = {}
 
-function loadABI(abiFile: string) {
+function loadABI (abiFile) {
   const contract = Utils.importDataContractABI(abiFile)
   abiDecoder.addABI(contract.abi)
   abiMap[contract.contractName] = contract.abi
@@ -20,9 +18,8 @@ loadABI('PlaylistFactory.json')
 loadABI('UserLibraryFactory.json')
 loadABI('UserReplicaSetManager.json')
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- should just use esm
-export class AudiusABIDecoder {
-  static decodeMethod(contractName: string, encodedABI: string) {
+class AudiusABIDecoder {
+  static decodeMethod (contractName, encodedABI) {
     const decoded = abiDecoder.decodeMethod(encodedABI)
     if (!decoded) {
       throw new Error('No Audius ABI matches given data')
@@ -35,37 +32,34 @@ export class AudiusABIDecoder {
       throw new Error('Unrecognized contract name')
     }
 
-    let foundFunction: AbiItem | undefined
+    let foundFunction
     abi.forEach((item) => {
       if (item.type === 'function' && item.name === decoded.name) {
         foundFunction = item
       }
     })
-
     if (!foundFunction) {
-      throw new Error(
-        `Unrecognized function ${decoded.name} for contract ${contractName}`
-      )
+      throw new Error('Unrecognized function ' + decoded.name + ' for contract ' + contractName)
     }
 
-    const paramSpecs = foundFunction.inputs as AbiInput[]
+    const paramSpecs = foundFunction.inputs
     decoded.params.forEach((param, idx) => {
       if (idx >= paramSpecs.length) {
         throw new Error('Extra parameter')
       }
 
       const paramSpec = paramSpecs[idx]
-      if (paramSpec?.name !== param.name || paramSpec.type !== param.type) {
-        throw new Error(
-          `Invalid name or value for param ${paramSpec?.name}: ${paramSpec?.type}`
-        )
+      if (paramSpec.name !== param.name || paramSpec.type !== param.type) {
+        throw new Error('Invalid name or value for param ' + paramSpec.name + ': ' + paramSpec.type)
       }
     })
 
     return decoded
   }
 
-  static decodeLogs(_: string, logs: Log[]) {
+  static decodeLogs (contractName, logs) {
     return abiDecoder.decodeLogs(logs)
   }
 }
+
+module.exports = AudiusABIDecoder

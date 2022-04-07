@@ -21,7 +21,7 @@ type Timeout = number | null
  * In memory dictionary used to query spID from endpoint
  * Eliminates duplicate web3 calls within same session
  */
-const contentNodeEndpointToSpID: Record<string, string | undefined> = {}
+const contentNodeEndpointToSpID: Record<string, unknown> = {}
 
 export function getSpIDForEndpoint(endpoint: string) {
   return contentNodeEndpointToSpID[endpoint]

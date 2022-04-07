@@ -1,4 +1,4 @@
-const { CreatorNode } = require('../services/creatorNode')
+const CreatorNode = require('../services/creatorNode')
 
 /**
  * Add secondary creator nodes for a user if they don't have any

@@ -1,4 +1,4 @@
-const { CreatorNode } = require('../services/creatorNode')
+const CreatorNode = require('../services/creatorNode')
 /**
  * Syncs a creator node if its blocknubmer is behind the passed
  * in blocknumber.

@@ -1,9 +1,4 @@
-import type { AbiItem } from 'web3-utils'
-
-export type ContractABI = {
-  abi: AbiItem[]
-  contractName: string
-}
-
-export const importDataContractABIs: (pathStr: string) => ContractABI
+export const importDataContractABIs: (
+  pathStr: string
+) => Record<string, unknown>
 export const importEthContractABIs: (pathStr: string) => Record<string, unknown>
