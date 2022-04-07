@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { View, Text } from 'react-native'
 
-import { IconAudioBadge } from 'app/components/audio-rewards'
+import { IconAudioBadge, TierText } from 'app/components/audio-rewards'
 import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -39,8 +39,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   tierText: {
     fontSize: 22,
     fontFamily: typography.fontByWeight.heavy,
-    textTransform: 'uppercase',
-    color: palette.neutralLight3
+    textTransform: 'uppercase'
   }
 }))
 
@@ -68,7 +67,9 @@ export const ProfileBadge = () => {
         <Text style={styles.tierNumber}>
           {messages.tier} {tierNumber}
         </Text>
-        <Text style={styles.tierText}>{tier}</Text>
+        <TierText style={styles.tierText} tier={tier}>
+          {tier}
+        </TierText>
       </View>
     </Tile>
   )
