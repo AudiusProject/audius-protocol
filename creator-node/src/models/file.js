@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       // the queryable filename if this file entry is inside a dir
-      // used for images that are stored in IPFS directories (e.g. /CID/fileName.jpg)
+      // used for images that are stored in CID directories (e.g. /CID/fileName.jpg)
       fileName: {
         type: DataTypes.TEXT,
         allowNull: true
