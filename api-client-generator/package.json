@@ -14,7 +14,6 @@
     "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
     "gen:prod:default": "node ./gen.js",
     "gen:prod:full": "node ./gen.js --api-flavor full",
-    "templates": "node ./gen.js template",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

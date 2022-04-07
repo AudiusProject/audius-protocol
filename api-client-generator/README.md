@@ -47,3 +47,43 @@ npm run gen:prod
 npm run gen:prod:default
 npm run gen:prod:full
 ```
+
+### Manually
+
+Alternatively, run the script manually:
+
+```bash
+node ./gen.js --help
+```
+
+```
+Usage: gen [options] [command]
+
+Options:
+  -h, --help            display help for command
+
+Commands:
+  generate [options]    Generates the client
+  template [generator]  Download templates for the given generator
+  help [command]        display help for command
+```
+
+## Getting templates
+
+See also: https://openapi-generator.tech/docs/templating
+
+```bash
+node ./gen.js template --help
+```
+
+```bash
+Usage: gen template [options] [generator]
+
+Download templates for the given generator
+
+Arguments:
+  generator   The generator to download templates for (default: "typescript-fetch")
+
+Options:
+  -h, --help  display help for command
+```
