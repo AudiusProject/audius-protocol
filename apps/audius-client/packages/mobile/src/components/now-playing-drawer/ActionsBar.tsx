@@ -24,9 +24,9 @@ import {
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { View, StyleSheet } from 'react-native'
+import { CastButton } from 'react-native-google-cast'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
-import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
@@ -35,8 +35,6 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
-
-import { useChromecast } from '../audio/GoogleCast'
 
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
@@ -143,7 +141,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   }, [track, currentUserId, dispatchWeb])
 
   const { openAirplayDialog } = useAirplay()
-  const { openChromecastDialog } = useChromecast()
 
   const renderCastButton = () => {
     if (castMethod === 'airplay') {
@@ -157,11 +154,12 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       )
     }
     return (
-      <IconButton
-        onPress={openChromecastDialog}
-        icon={IconChromecast}
-        fill={isCasting ? primary : neutral}
-        styles={{ icon: styles.icon, root: styles.button }}
+      <CastButton
+        style={{
+          ...styles.button,
+          ...styles.icon,
+          tintColor: isCasting ? primary : neutral
+        }}
       />
     )
   }
