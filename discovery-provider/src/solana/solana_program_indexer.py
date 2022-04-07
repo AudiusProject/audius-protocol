@@ -142,7 +142,7 @@ class SolanaProgramIndexer(IndexerBase):
         futures = []
         tx_sig_futures_map: Dict[str, Dict] = {}
         for tx_sig in tx_sig_batch_records:
-            future = asyncio.ensure_future(self.parse_tx(tx_sig))
+            future: asyncio.Future = asyncio.ensure_future(self.parse_tx(tx_sig))
             futures.append(future)
         for future in asyncio.as_completed(futures, timeout=PARSE_TX_TIMEOUT):
             try:
