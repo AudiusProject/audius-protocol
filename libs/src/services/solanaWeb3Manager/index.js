@@ -1,6 +1,7 @@
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const anchor = require('@project-serum/anchor')
+const { NodeWallet } = require('@project-serum/anchor/dist/cjs/nodewallet')
 
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
@@ -98,7 +99,8 @@ class SolanaWeb3Manager {
       feePayerKeypairs,
       confirmationTimeout,
       anchorProgramId,
-      anchorAdminStorageKeypairPublicKey
+      anchorAdminStorageKeypairPublicKey,
+      idl
     } = this.solanaWeb3Config
 
     console.log('THIS IS THE SOLANAWEB3CONFIG', this.solanaWeb3Config, anchorProgramId, anchorAdminStorageKeypairPublicKey)
@@ -139,6 +141,49 @@ class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
     this.anchorProgramId = SolanaUtils.newPublicKeyNullable(anchorProgramId)
     this.anchorAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(anchorAdminStorageKeypairPublicKey)
+
+    // Error: Provider local is not available on browser.
+    // const provider = anchor.Provider.local(this.solanaClusterEndpoint, {
+    //   preflightCommitment: 'confirmed',
+    //   commitment: 'confirmed'
+    // })
+    // Configure the client to use the local cluster.
+    // anchor.setProvider(anchor.Provider.env())
+    // this.anchorProvider = provider
+
+    const isBrowser = typeof window !== 'undefined'
+
+    console.log('start of solanaweb3')
+    // keypair.new use solanaweb3 api
+    const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
+    console.log('got connection')
+    const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
+      console.log('got provider')
+
+    // let anchorProgram = null
+    // if (!isBrowser) {
+    //   try {
+    //     console.log('what is solana cluster endpt', this.solanaClusterEndpoint, solanaClusterEndpoint)
+    //     this.solanaClusterEndpoint = 'http://localhost:8899'
+    //     const provider = anchor.Provider.local(this.solanaClusterEndpoint, {
+    //       preflightCommitment: 'confirmed',
+    //       commitment: 'confirmed'
+    //     })
+    //     console.log('made provider')
+    //     // Configure the client to use the local cluster.
+    //     anchor.setProvider(anchor.Provider.env())
+    //     console.log('set anchor provider')
+    //     anchorProgram = anchor.workspace.AudiusData
+    //     console.log('got anchorprogram')
+    //   } catch (e) {
+    //     console.log('is it erring ehre', e)
+    //   }
+    // }
+    // this.anchorProgram = anchorProgram
+
+    // this.anchorProgram = new anchor.Program(idl, anchorProgramId)
+    this.anchorProgram = new anchor.Program(idl, anchorProgramId, provider)
+    console.log('got anchor program')
   }
 
   /**
@@ -561,8 +606,19 @@ class SolanaWeb3Manager {
     return handleBytesArray
   }
 
-  encodeb58 (buffer) {
-    return anchor.utils.bytes.bs58.encode(buffer)
+  deriveEthWalletFromAccountInfo (accInfo) {
+    console.log('quick maths')
+    console.log(SolanaUtils.newPublicKeyNullable(accInfo.data.toJSON().data.slice(33, 53)).toString())
+    console.log(SolanaUtils.newPublicKeyNullable(accInfo.data.toJSON().data.slice(-20)).toString())
+    // console.log(SolanaUtils.newPublicKeyNullable(accInfo.data.toJSON().data.slice(60)).toString())
+    return SolanaUtils.newPublicKeyNullable(accInfo.toJSON().data.slice(1, 33)).toString()
+  }
+
+  deriveEthWalletFromAddress (pda) {
+    // const provider = new anchor.Provider(this.anchorConnection)
+    return this.anchorProgram.account.user.fetch(
+      pda
+    )
   }
 }
 

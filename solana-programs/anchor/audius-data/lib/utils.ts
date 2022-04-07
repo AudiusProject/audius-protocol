@@ -140,14 +140,14 @@ export const findDerivedPair = async (programId, adminAccount, seed) => {
     programId,
     adminAccount
   );
-  const derivedAddresInfo = await findDerivedAddress(
+  const derivedAddressInfo = await findDerivedAddress(
     programId,
     baseAuthorityAccount,
     seed
   );
 
-  const derivedAddress = derivedAddresInfo.result[0];
-  const bumpSeed = derivedAddresInfo.result[1];
+  const derivedAddress = derivedAddressInfo.result[0];
+  const bumpSeed = derivedAddressInfo.result[1];
 
   return { baseAuthorityAccount, derivedAddress, bumpSeed };
 };

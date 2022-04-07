@@ -262,8 +262,27 @@ class AudiusLibs {
     feePayerSecretKeys,
     confirmationTimeout,
     anchorAdminStorageKeypairPublicKey,
-    anchorProgramId
+    anchorProgramId,
+    idl
   }) {
+
+    console.log('what is configSolanaWeb3', {
+      solanaClusterEndpoint,
+      mintAddress,
+      solanaTokenAddress,
+      claimableTokenPDA,
+      feePayerAddress,
+      claimableTokenProgramAddress,
+      rewardsManagerProgramId,
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA,
+      useRelay,
+      feePayerSecretKeys,
+      confirmationTimeout,
+      anchorAdminStorageKeypairPublicKey,
+      anchorProgramId,
+      idl
+    })
     return {
       solanaClusterEndpoint,
       mintAddress,
@@ -278,7 +297,8 @@ class AudiusLibs {
       feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
       confirmationTimeout,
       anchorAdminStorageKeypairPublicKey,
-      anchorProgramId
+      anchorProgramId,
+      idl
     }
   }
 
