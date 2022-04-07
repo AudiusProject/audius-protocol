@@ -465,7 +465,7 @@ const main = async () => {
       (async () => {
 
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const userReplicaSet = options.userReplicaSet.split(',').map(x => {
+        const userReplicaSetSpIds = options.userReplicaSet.split(',').map(x => {
           return parseInt(x);
         })
         const userContentNodeInfo = await Promise.all(userReplicaSet.map(async (x) => {
