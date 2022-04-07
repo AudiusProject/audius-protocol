@@ -2,7 +2,11 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
 import { Utils, uuid } from '../../utils'
-import { userSchemaType, trackSchemaType, Schemas } from '../schemaValidator/SchemaValidator'
+import {
+  userSchemaType,
+  trackSchemaType,
+  Schemas
+} from '../schemaValidator/SchemaValidator'
 import type Web3Manager from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
@@ -909,7 +913,7 @@ export class CreatorNode {
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
-    //@ts-ignore re-throwing at the end of this function breaks exisiting impl
+    // @ts-expect-error re-throwing at the end of this function breaks exisiting impl
   ): Promise<FileUploadResponse> {
     await this.ensureConnected()
 
@@ -983,7 +987,7 @@ export class CreatorNode {
           `Network Error in request ${requestId} with ${retries} retries... retrying`
         )
         console.warn(error)
-        // eslint-disable-next-line -- possible issue with return await
+        // eslint-disable-next-line @typescript-eslint/return-await -- possible issue with return await
         return this._uploadFile(
           file,
           route,
