@@ -61,7 +61,7 @@ export const LineupTile = ({
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
 
-  const opacity = useRef(new Animated.Value(0)).current
+  const opacity = useRef(new Animated.Value(0.5)).current
 
   const isOwner = user_id === currentUserId
   const isLoaded = artworkLoaded
