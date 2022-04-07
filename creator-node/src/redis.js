@@ -16,6 +16,12 @@ class RedisLock {
     return redisClient.get(key)
   }
 
+  static async acquireLock(key, expiration = EXPIRATION) {
+    console.log(`SETTING LOCK IF NOT EXISTS ${key}`)
+    const response = await redisClient.set(key, true, 'NX', 'EX', expiration)
+    return !!response
+  }
+
   static async removeLock(key) {
     console.log(`DELETING LOCK ${key}`)
     return redisClient.del(key)
