@@ -10,6 +10,7 @@ from src.utils.elasticdsl import (
     esclient,
     omit_indexed_fields,
     pluck_hits,
+    popuate_user_metadata_es,
 )
 
 
@@ -51,7 +52,7 @@ def get_feed_es(args, limit=10):
                     },
                     # here doing some over-fetching to de-dupe later
                     # to approximate min_created_at + group by in SQL.
-                    "size": limit * 3,
+                    "size": limit * 20,
                     "sort": {"created_at": "desc"},
                 },
             ]
@@ -178,13 +179,24 @@ def get_feed_es(args, limit=10):
             sorted_feed.append(item)
 
     # attach users
-    user_id_list = get_users_ids(sorted_feed)
+    user_id_list = [str(id) for id in get_users_ids(sorted_feed)]
+    user_id_list.append(current_user_id)
     user_list = esclient.mget(index=ES_USERS, ids=user_id_list)
-    user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
+    user_by_id = {
+        d["_source"]["user_id"]: d["_source"] for d in user_list["docs"] if d["found"]
+    }
+
+    # popuate_user_metadata_es:
+    #   does_current_user_follow
+    #   does_follow_current_user
+    current_user = user_by_id.pop(str(current_user_id))
+    for user in user_by_id.values():
+        popuate_user_metadata_es(user, current_user)
+
     for item in sorted_feed:
         # GOTCHA: es ids must be strings, but our ids are ints...
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
-        item["user"] = omit_indexed_fields(user_by_id[uid])
+        item["user"] = user_by_id[uid]
 
     # add context: followee_reposts, followee_saves
     item_keys = [i["item_key"] for i in sorted_feed]

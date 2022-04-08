@@ -2,7 +2,7 @@ import os
 
 from elasticsearch import Elasticsearch
 
-es_url = os.getenv("ES_URL", "http://elasticsearch:9200")
+es_url = os.getenv("audius_elasticsearch_url", "http://elasticsearch:9200")
 esclient = Elasticsearch(es_url)
 
 ES_PLAYLISTS = "playlists1"
@@ -37,6 +37,14 @@ def hits_by_id(found):
     return {h["_id"]: h["_source"] for h in found["hits"]["hits"]}
 
 
+def popuate_user_metadata_es(user, current_user):
+    user_following = user.get("following_ids", [])
+    current_user_following = current_user.get("following_ids", [])
+    user["does_current_user_follow"] = user["user_id"] in current_user_following
+    user["does_follow_current_user"] = current_user["user_id"] in user_following
+    return omit_indexed_fields(user)
+
+
 omit_keys = [
     # user index
     "following_ids",
@@ -51,6 +59,7 @@ omit_keys = [
 
 
 def omit_indexed_fields(doc):
+    # return a copy??
     for key in omit_keys:
         if key in doc:
             del doc[key]

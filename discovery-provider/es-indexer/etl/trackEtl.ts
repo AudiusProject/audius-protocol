@@ -77,6 +77,7 @@ export const trackEtl: Job = {
     -- etl tracks
     select 
       tracks.*,
+      aggregate_plays.count as play_count,
 
       json_build_object(
         'handle', users.handle,
@@ -118,6 +119,7 @@ export const trackEtl: Job = {
     from tracks
     join users on owner_id = user_id 
     join aggregate_user on users.user_id = aggregate_user.user_id
+    join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
       WHERE tracks.is_current = true 
         AND users.is_current = true
     `
