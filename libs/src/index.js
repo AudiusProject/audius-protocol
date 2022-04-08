@@ -265,24 +265,6 @@ class AudiusLibs {
     anchorProgramId,
     idl
   }) {
-
-    console.log('what is configSolanaWeb3', {
-      solanaClusterEndpoint,
-      mintAddress,
-      solanaTokenAddress,
-      claimableTokenPDA,
-      feePayerAddress,
-      claimableTokenProgramAddress,
-      rewardsManagerProgramId,
-      rewardsManagerProgramPDA,
-      rewardsManagerTokenPDA,
-      useRelay,
-      feePayerSecretKeys,
-      confirmationTimeout,
-      anchorAdminStorageKeypairPublicKey,
-      anchorProgramId,
-      idl
-    })
     return {
       solanaClusterEndpoint,
       mintAddress,

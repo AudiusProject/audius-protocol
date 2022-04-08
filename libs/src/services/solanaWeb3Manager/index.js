@@ -16,7 +16,7 @@ const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSenderFromEthAddress } = require('./rewards')
 const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
-const idl = require('../../../idl/audius_data.json') // TODO: make sure to commit this file
+const idl = require('../../../idl/audius_data.json')
 
 const { PublicKey } = solanaWeb3
 const { SystemProgram } = anchor.web3
@@ -103,8 +103,6 @@ class SolanaWeb3Manager {
       anchorAdminStorageKeypairPublicKey
     } = this.solanaWeb3Config
 
-    console.log('THIS IS THE SOLANAWEB3CONFIG', this.solanaWeb3Config, anchorProgramId, anchorAdminStorageKeypairPublicKey)
-
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
       confirmTransactionInitialTimeout: confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
@@ -141,55 +139,14 @@ class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
     this.anchorProgramId = SolanaUtils.newPublicKeyNullable(anchorProgramId)
     this.anchorAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(anchorAdminStorageKeypairPublicKey)
-
-    // Error: Provider local is not available on browser.
-    // const provider = anchor.Provider.local(this.solanaClusterEndpoint, {
-    //   preflightCommitment: 'confirmed',
-    //   commitment: 'confirmed'
-    // })
-    // Configure the client to use the local cluster.
-    // anchor.setProvider(anchor.Provider.env())
-    // this.anchorProvider = provider
-
-    const isBrowser = typeof window !== 'undefined'
-
-    console.log('start of solanaweb3')
-    // keypair.new use solanaweb3 api
+    
     const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
-    console.log('got connection')
     const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
-    console.log('got provider')
-
-    console.log('what is the idl....', idl)
 
     // Update this adddress since the file is static
     idl.metadata.address = anchorProgramId
-    console.log('the idl???', idl)
 
-    // let anchorProgram = null
-    // if (!isBrowser) {
-    //   try {
-    //     console.log('what is solana cluster endpt', this.solanaClusterEndpoint, solanaClusterEndpoint)
-    //     this.solanaClusterEndpoint = 'http://localhost:8899'
-    //     const provider = anchor.Provider.local(this.solanaClusterEndpoint, {
-    //       preflightCommitment: 'confirmed',
-    //       commitment: 'confirmed'
-    //     })
-    //     console.log('made provider')
-    //     // Configure the client to use the local cluster.
-    //     anchor.setProvider(anchor.Provider.env())
-    //     console.log('set anchor provider')
-    //     anchorProgram = anchor.workspace.AudiusData
-    //     console.log('got anchorprogram')
-    //   } catch (e) {
-    //     console.log('is it erring ehre', e)
-    //   }
-    // }
-    // this.anchorProgram = anchorProgram
-
-    // this.anchorProgram = new anchor.Program(idl, anchorProgramId)
     this.anchorProgram = new anchor.Program(idl, anchorProgramId, provider)
-    console.log('got anchor program')
   }
 
   /**

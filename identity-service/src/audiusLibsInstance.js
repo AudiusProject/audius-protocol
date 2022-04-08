@@ -44,8 +44,6 @@ class AudiusLibsWrapper {
       confirmationTimeout: config.get('solanaConfirmationTimeout')
     })
 
-    console.log('what is audiusLibsInstance sol config', solanaWeb3Config)
-
     const wormholeConfig = AudiusLibs.configWormhole({
       rpcHosts: config.get('wormholeRPCHosts'),
       solBridgeAddress: config.get('solBridgeAddress'),
