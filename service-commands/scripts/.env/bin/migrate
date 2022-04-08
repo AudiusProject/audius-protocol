@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+
+GIT_URL=git@github.com:joaquincasares/.env.git
+GIT_SSH_KEY=~/.ssh/id_ed25519.github
+
+OLD_BOX=${1}
+BOX=${2}
+
+# enable zsh
+ssh $BOX 'sudo chsh -s /bin/zsh $USER'
+
+# copy ~/.gituser
+[ -f "~/.gituser" ] && scp ~/.gituser $BOX:
+
+# setup .env repo
+ssh-add ${GIT_SSH_KEY}
+ssh -t $BOX 'ssh -T git@github.com' || true
+ssh $BOX "[ ! -d '.env' ] && git clone ${GIT_URL} || true"
+
+# install .env file links
+ssh $BOX 'sudo apt-get install -y colordiff'
+ssh $BOX 'cd .env; INIT=1 ./bin/.env.install'
+ssh $BOX 'cd .env; ./bin/.env.install'
+ssh $BOX 'cd .env; ./bin/apt-install'
+
+# clone load-test-tools
+ssh $BOX '[ ! -d "load-test-tools" ] && git clone git@github.com:AudiusProject/load-test-tools.git || true'
+
+# update audius-protocol
+ssh $BOX '[ -d "audius-protocol" ] && cd audius-protocol; git checkout -f; git pull'
+
+# copy shell history
+scp $OLD_BOX:.zsh_history /tmp/.zsh_history
+scp /tmp/.zsh_history $BOX:.zsh_history
+
+# reset sessions
+ssh $BOX 'loginctl terminate-user $USER' || true

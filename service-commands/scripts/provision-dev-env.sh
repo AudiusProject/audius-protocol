@@ -34,7 +34,7 @@ function setup_linux_toolchains() {
         cd /tmp
         tar xf /tmp/sift.tar.gz
         sudo mv sift_*/sift /usr/local/bin/sift
-        sudo rm sift*
+        sudo rm -rf sift*
     )
 }
 
