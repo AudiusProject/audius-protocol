@@ -1,7 +1,10 @@
-import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/libs/src/constants'
-import { DISCOVERY_PROVIDER_TIMESTAMP } from '@audius/libs/src/services/discoveryProvider/constants'
-
 import { User } from 'common/models/User'
+
+// TODO: the following should come from @audius/libs/constants when we build
+// it with esm. Importing with common-js breaks the app since it tries
+// to import all of libs, which we try to do async later on.
+const CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY = '@audius/libs:found-user'
+const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-node-timestamp'
 
 const AUDIUS_ACCOUNT_KEY = '@audius/account'
 const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'
