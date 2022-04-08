@@ -126,7 +126,7 @@ class ServiceProvider extends Base {
       discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
     }
 
-    discoveryProviders.filter(node => filter(node))
+    discoveryProviders.filter(filter)
 
     // Group nodes by owner
     const grouped = discoveryProviders.reduce((acc, curr) => {
