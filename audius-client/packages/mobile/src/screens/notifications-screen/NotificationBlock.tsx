@@ -14,6 +14,7 @@ import {
 } from 'audius-client/src/common/store/notifications/types'
 import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
+import { isEqual } from 'lodash'
 import {
   StyleSheet,
   View,
@@ -161,14 +162,20 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
   const dispatchWeb = useDispatchWeb()
 
   const user = useSelectorWeb(state => getNotificationUser(state, notification))
-  const users = useSelectorWeb(state =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+
+  const users = useSelectorWeb(
+    state => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    isEqual
   )
-  const entity = useSelectorWeb(state =>
-    getNotificationEntity(state, notification)
+
+  const entity = useSelectorWeb(
+    state => getNotificationEntity(state, notification),
+    isEqual
   )
-  const entities = useSelectorWeb(state =>
-    getNotificationEntities(state, notification)
+
+  const entities = useSelectorWeb(
+    state => getNotificationEntities(state, notification),
+    isEqual
   )
 
   // TODO: Type notifications & their selectors more strictly.

@@ -11,6 +11,7 @@ import {
   makeGetAllNotifications
 } from 'audius-client/src/common/store/notifications/selectors'
 import { Notification } from 'audius-client/src/common/store/notifications/types'
+import { isEqual } from 'lodash'
 import { StyleSheet, View } from 'react-native'
 
 import { FlatList } from 'app/components/core/FlatList'
@@ -45,7 +46,7 @@ export const List = () => {
   const dispatchWeb = useDispatchWeb()
 
   const getNotifications = makeGetAllNotifications()
-  const notifications = useSelectorWeb(getNotifications)
+  const notifications = useSelectorWeb(getNotifications, isEqual)
   const status = useSelectorWeb(getNotificationStatus)
   const hasMore = useSelectorWeb(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)

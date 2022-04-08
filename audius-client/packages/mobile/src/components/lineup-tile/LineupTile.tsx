@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { Animated, Easing } from 'react-native'
@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 
 import { LineupTileProps } from 'app/components/lineup-tile/types'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { AppState } from 'app/store'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
@@ -55,7 +56,9 @@ export const LineupTile = ({
   } = item
   const { _artist_pick, name, user_id } = user
 
-  const playingUid = useSelector(getPlayingUid)
+  const isPlayingUid = useSelector(
+    (state: AppState) => getPlayingUid(state) === uid
+  )
   const isPlaying = useSelector(getPlaying)
   const currentUserId = useSelectorWeb(getUserId)
 
@@ -78,8 +81,15 @@ export const LineupTile = ({
     }
   }, [onLoad, isLoaded, index, opacity])
 
+  const handlePress = useCallback(() => {
+    onPress?.({
+      isPlayingUid,
+      isPlaying
+    })
+  }, [isPlayingUid, isPlaying, onPress])
+
   return (
-    <LineupTileRoot onPress={onPress}>
+    <LineupTileRoot onPress={handlePress}>
       {showArtistPick && _artist_pick === id ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
       ) : null}
@@ -98,7 +108,7 @@ export const LineupTile = ({
           coSign={coSign}
           imageUrl={imageUrl}
           onPressTitle={onPressTitle}
-          isPlaying={uid === playingUid && isPlaying}
+          isPlaying={isPlayingUid && isPlaying}
           setArtworkLoaded={setArtworkLoaded}
           title={title}
           user={user}

@@ -102,9 +102,18 @@ const TrackTileComponent = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const handlePress = useCallback(() => {
-    togglePlay(lineupTileProps.uid, track_id, PlaybackSource.TRACK_TILE)
-  }, [togglePlay, lineupTileProps.uid, track_id])
+  const handlePress = useCallback(
+    ({ isPlaying, isPlayingUid }) => {
+      togglePlay({
+        uid: lineupTileProps.uid,
+        id: track_id,
+        source: PlaybackSource.TRACK_TILE,
+        isPlaying,
+        isPlayingUid
+      })
+    },
+    [togglePlay, lineupTileProps.uid, track_id]
+  )
 
   const handlePressTitle = useCallback(() => {
     navigation.push({

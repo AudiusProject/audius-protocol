@@ -30,7 +30,13 @@ export type LineupItemProps = {
   showRankIcon?: boolean
 
   /** Function that will toggle play of a track */
-  togglePlay: (uid: UID, id: ID, source: PlaybackSource) => void
+  togglePlay: (args: {
+    uid: UID
+    id: ID
+    source: PlaybackSource
+    isPlaying: boolean
+    isPlayingUid: boolean
+  }) => void
 
   /** Uid of the item */
   uid: UID
@@ -64,7 +70,7 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   item: Track | Collection
 
   /** Function to call when tile is pressed */
-  onPress?: GestureResponderHandler
+  onPress?: (args: { isPlaying: boolean; isPlayingUid: boolean }) => void
 
   /** Function to call when the overflow menu button is pressed */
   onPressOverflow?: GestureResponderHandler
