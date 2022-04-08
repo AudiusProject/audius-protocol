@@ -594,7 +594,6 @@ class SolanaWeb3Manager {
       seed
     )
 
-    console.log('what is derivedAddressInfo', derivedAddressInfo)
     const derivedAddress = derivedAddressInfo[0]
     const bumpSeed = derivedAddressInfo[1]
 
@@ -612,24 +611,33 @@ class SolanaWeb3Manager {
     return handleBytesArray
   }
 
-  deriveEthWalletFromAccountInfo (accInfo) {
-    console.log('quick maths')
-    console.log(SolanaUtils.newPublicKeyNullable(accInfo.data.toJSON().data.slice(33, 53)).toString())
-    console.log(SolanaUtils.newPublicKeyNullable(accInfo.data.toJSON().data.slice(-20)).toString())
-    // console.log(SolanaUtils.newPublicKeyNullable(accInfo.data.toJSON().data.slice(60)).toString())
-    return SolanaUtils.newPublicKeyNullable(accInfo.toJSON().data.slice(1, 33)).toString()
+  /**
+   * Fetch account on Solana given the program derived address
+   * @param {PublicKey} pda the program derived address from findDerivedPair()
+   */
+  async fetchAccount (pda) {
+    let account
+    try {
+      account = await this.anchorProgram.account.user.fetch(pda)
+      return account
+    } catch (e) {
+      return null
+    }
   }
 
-  async deriveEthWalletFromAddress (pda) {
-    const account = await this.anchorProgram.account.user.fetch(pda)
+  /**
+   * Given the eth address buffer from the account, convert to hex
+   * @param {Buffer} accountEthAddress
+   * @returns hex string of input bytes
+   */
+  async deriveEthWalletFromAddress (accountEthAddress) {
+    let encodedEthAddress = Buffer.from(accountEthAddress).toString('hex')
 
-    let chainEthAddress = Buffer.from(account.ethAddress).toString('hex')
-
-    if (!chainEthAddress.startsWith('0x')) {
-      chainEthAddress = '0x' + chainEthAddress
+    if (!encodedEthAddress.startsWith('0x')) {
+      encodedEthAddress = '0x' + encodedEthAddress
     }
 
-    return chainEthAddress
+    return encodedEthAddress
   }
 }
 

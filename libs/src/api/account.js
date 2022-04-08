@@ -596,6 +596,10 @@ class Account extends Base {
     })
   }
 
+  /**
+   * Checks that the current account exists on libs
+   * @returns true or false
+   */
   async checkAccountExistsOnSol () {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
@@ -610,13 +614,16 @@ class Account extends Base {
       handleBytesArray
     )
 
-    const accInfo = await this.solanaWeb3Manager.connection.getAccountInfo(newUserAcctPDA)
+    const account = await this.solanaWeb3Manager.fetchAccount(newUserAcctPDA)
 
-    if (!accInfo) return false
+    if (!account) return false
 
-    const derivedEthWallet = await this.solanaWeb3Manager.deriveEthWalletFromAddress(newUserAcctPDA)
+    const derivedEthWallet = await this.solanaWeb3Manager.deriveEthWalletFromAddress(account.ethAddress)
 
-    return derivedEthWallet.toLowerCase() === wallet.toLowerCase()
+    const userExistsOnChain = derivedEthWallet.toLowerCase() === wallet.toLowerCase()
+    const userUpgradedToSol = PublicKey.default.toString() !== account.authority.toString()
+
+    return userExistsOnChain && userUpgradedToSol
   }
 }
 
