@@ -439,7 +439,7 @@ module.exports = function (app) {
 
     const isHealthy = healthyMaxDrift && healthySuccessDrift && healthyActionDrift
 
-    const resp = { phase, lastChallengeDelta, lastSuccessChallengeDelta }
+    const resp = { phase, lastChallengeDelta, lastSuccessChallengeDelta, lastActionDelta }
     return (isHealthy ? successResponse : errorResponseServerError)(resp)
   }))
 }
