@@ -22,21 +22,5 @@ function start_ui () {
 }
 alias tail_ui='tail -f ${PROTOCOL_DIR}/../audius-client.out'
 
-alias aup='
-  sc
-  sh scripts/init-repos.sh
-  libs
-  npm install
-  npm install lodash
-  npm install web3
-  npm link
-  sc
-  npm link @audius/libs
-  md
-  npm link @audius/libs
-  npm link @audius/service-commands
-  A up
-'
-
 alias Ar='A run discovery-provider restart'
 alias fl='FIX_LINT=1 sh scripts/lint.sh'
