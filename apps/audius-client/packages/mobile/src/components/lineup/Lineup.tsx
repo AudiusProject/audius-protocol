@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
@@ -130,6 +130,7 @@ export const Lineup = ({
 }: LineupProps) => {
   const dispatchWeb = useDispatchWeb()
   const ref = useRef<RNSectionList>(null)
+  const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
   useScrollToTop(() => {
     ref.current?.scrollToLocation({
       sectionIndex: 0,
@@ -189,6 +190,14 @@ export const Lineup = ({
     includeLineupStatus,
     limit
   ])
+
+  // When scrolled past the end threshold of the lineup and the lineup is not loading,
+  // trigger another load
+  useEffect(() => {
+    if (isPastLoadThreshold && lineup.status !== Status.LOADING) {
+      handleLoadMore()
+    }
+  }, [isPastLoadThreshold, lineup.status, handleLoadMore])
 
   useEffect(() => {
     if (selfLoad && lineup.entries.length === 0) {
@@ -366,10 +375,30 @@ export const Lineup = ({
     limit
   ])
 
+  const handleScroll = useCallback(
+    ({ nativeEvent }) => {
+      const { layoutMeasurement, contentOffset, contentSize } = nativeEvent
+      if (
+        layoutMeasurement.height + contentOffset.y >=
+        contentSize.height - LOAD_MORE_THRESHOLD * layoutMeasurement.height
+      ) {
+        if (!isPastLoadThreshold) {
+          setIsPastLoadThreshold(true)
+        }
+      } else {
+        if (isPastLoadThreshold) {
+          setIsPastLoadThreshold(false)
+        }
+      }
+    },
+    [isPastLoadThreshold]
+  )
+
   return (
     <SectionList
       {...listProps}
       ref={ref}
+      onScroll={handleScroll}
       ListHeaderComponent={header}
       ListFooterComponent={<View style={{ height: 16 }} />}
       onEndReached={handleLoadMore}
