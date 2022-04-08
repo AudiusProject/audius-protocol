@@ -1,7 +1,8 @@
 import asyncio
 from unittest.mock import create_autospec
 
-from construct import ListContainer
+from construct import Container, ListContainer
+from integration_tests.utils import populate_mock_db
 from src.models.models import AudiusDataTx
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
@@ -125,12 +126,15 @@ def test_fetch_metadata(app):
         db = get_db()
         redis = get_redis()
 
+    populate_mock_db(db, basic_entities, block_offset=3)
+
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+
     cid_metadata_client_mock.fetch_metadata_from_gateway_endpoints.return_value = (
         mock_cid_metadata
     )
-    solana_client_manager_mock.get_sol_tx_info.return_value = mock_init_user_tx_info
+
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
         ADMIN_STORAGE_PUBLIC_KEY,
@@ -140,14 +144,22 @@ def test_fetch_metadata(app):
         solana_client_manager_mock,
         cid_metadata_client_mock,
     )
-    parsed_tx = asyncio.run(
-        anchor_program_indexer.parse_tx(
-            "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV"
-        )
-    )
-    parsed_transactions = [{parsed_tx}]
+    parsed_tx = {
+        "tx_metadata": {
+            "instructions": [
+                {
+                    "instruction_name": "init_user",
+                    "data": Container(
+                        [("metadata", list(mock_cid_metadata.keys())[0])]
+                    ),
+                }
+            ]
+        },
+        "tx_sig": "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV",
+    }
+    mock_parsed_transactions = [parsed_tx]
     cid_metadata = asyncio.run(
-        anchor_program_indexer.fetch_ipfs_metadata(parsed_transactions)
+        anchor_program_indexer.fetch_ipfs_metadata(mock_parsed_transactions)
     )
     assert cid_metadata == mock_cid_metadata
 
@@ -208,72 +220,14 @@ mock_tx_info = {
     "id": 1,
 }
 
-"""
-init_user
+mock_cid_metadata = {"QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS": "test metadata"}
 
-Transaction hash: 49JukZRppwZoKPJdmVbYx7LzLBrYWk4WtE1tNy1gT6MZ6mgBeLMSnPzWQoshMqw4StnhX9oLimftz6oAnxgkdVmw
-"""
-mock_init_user_tx_info = {
-    "jsonrpc": "2.0",
-    "result": {
-        "blockTime": 1647654197,
-        "meta": {
-            "err": None,
-            "fee": 10000,
-            "innerInstructions": [
-                {
-                    "index": 0,
-                    "instructions": [
-                        {
-                            "accounts": [0, 2],
-                            "data": "11114YXfGxkrVTyKRDJVxTUsxshYiLDV9gbUjmj9LPu5KC9LFHhBAMiMrhuqZopQBVdrvb",
-                            "programIdIndex": 3,
-                        }
-                    ],
-                }
-            ],
-            "logMessages": [
-                "Program FTGuS5uffmTm6tyqt5ZXpotvx3przDrjXWebpJjcDiPR invoke [1]",
-                "Program log: Instruction: InitUser",
-                "Program 11111111111111111111111111111111 invoke [2]",
-                "Program 11111111111111111111111111111111 success",
-                "Program FTGuS5uffmTm6tyqt5ZXpotvx3przDrjXWebpJjcDiPR consumed 36389 of 200000 compute units",
-                "Program FTGuS5uffmTm6tyqt5ZXpotvx3przDrjXWebpJjcDiPR success",
-            ],
-            "postBalances": [
-                499999983752906760,
-                0,
-                1350240,
-                1,
-                1308480,
-                1308480,
-                1398960,
-                1308480,
-                1141440,
-            ],
-            "postTokenBalances": [],
-            "preBalances": [
-                499999983754267000,
-                0,
-                0,
-                1,
-                1308480,
-                1308480,
-                1398960,
-                1308480,
-                1141440,
-            ],
-            "preTokenBalances": [],
-            "rewards": [],
-            "status": {"Ok": None},
-        },
-        "slot": 40982,
-        "transaction": [
-            "Ap03V0cVVm6r878HWBH6H+Arh0WPGX7pVOsrBQxfTEzUOzqygRnOB6tq8LtYBHqNN8A/Sw8pvt2EM5pgL8wtNg4KgjY2elfGAs2GgUW1nTGxHxuiu9FKpiTNbE7Rnu0UiQtGcvGmKbHB0S4Vmv7MmsB/KbY3hp0175fXDVm97twGAgAGCZtj1J/VlcaC7M8Ef61LU2v4aBtsmBsfhdAKRS35T8/UD+2NQ3oVhAnDMa5xZdRO1PSRknN+KZzCpeTNa0brf9Fp98juYTteVpICugplx7NrFLMpEHNkTl2GBEkVnPzC4gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADv44VsY0loYMws5o4nsQ+YepLJPTbyhZw/VUzpqDmCNObf9d5N3ZI5ng18WpQZM2yjMBpStC6dNLe+apOWoKCKadzZJf3qt+itMewY/0Zjxu3Ja/HLjM1hiYAufGICkGtBuTjtRVBRW5T9ctbXrTA5noj3h7AC9XyWhwVb/XEHbWvrNisIwb4xE5XvvrWvpeQc3ucMHITXy1dQFtWzQu6O2lUxOvqcxw0sh/d6AUlKuYHC6EYOofsIrUtW/Z2BPYAQgIBgIHBAUBAAOYAQ4zRJ/tTp5mJWak54ES3z9N2obW5GyS65PZExEXRLcRWGuadSx/2LYKk9jLC+hbPqjzP6Y1ANEY3ryD9wEAAgADAP7+/2hhbmRsZWJjZGVmAAAAAAAAAAAAAAAAAAAAAAAAAAAA/i4AAABRbXlFSEhXWGJFUzFuT1VCSU04OWVZZnNtTTI1cjNDdzdpQnBGWnlaOWxiZlJT",
-            "base64",
-        ],
-    },
-    "id": 1,
+basic_entities = {
+    "users": [
+        {
+            "user_id": 1,
+            "is_current": True,
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+        }
+    ],
 }
-
-mock_cid_metadata = {"QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS": "test"}

@@ -190,20 +190,48 @@ class CIDMetadataClient:
 
     def fetch_metadata_from_gateway_endpoints(
         self,
-        fetched_cids: KeysView[str],
         cids_txhash_set: Tuple[str, Any],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
-        should_fetch_from_replica_set: bool = True,
     ) -> Dict[str, int]:
-        return asyncio.run(
-            self._fetch_metadata_from_gateway_endpoints(
-                fetched_cids,
-                cids_txhash_set,
-                cid_to_user_id,
-                user_to_replica_set,
-                cid_type,
-                should_fetch_from_replica_set,
+        cid_metadata: Dict[str, int] = {}
+
+        # first attempt - fetch all CIDs from replica set
+        try:
+            cid_metadata.update(
+                asyncio.run(
+                    self._fetch_metadata_from_gateway_endpoints(
+                        cid_metadata.keys(),
+                        cids_txhash_set,
+                        cid_to_user_id,
+                        user_to_replica_set,
+                        cid_type,
+                        should_fetch_from_replica_set=True,
+                    )
+                )
             )
-        )
+        except asyncio.TimeoutError:
+            # swallow exception on first attempt fetching from replica set
+            pass
+
+        # second attempt - fetch missing CIDs from other cnodes
+        if len(cid_metadata) != len(cids_txhash_set):
+            cid_metadata.update(
+                asyncio.run(
+                    self._fetch_metadata_from_gateway_endpoints(
+                        cid_metadata.keys(),
+                        cids_txhash_set,
+                        cid_to_user_id,
+                        user_to_replica_set,
+                        cid_type,
+                        should_fetch_from_replica_set=False,
+                    )
+                )
+            )
+
+        if cid_type and len(cid_metadata) != len(cid_type.keys()):
+            missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+            raise Exception(missing_cids_msg)
+
+        return cid_metadata

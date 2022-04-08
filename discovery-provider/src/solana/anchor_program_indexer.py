@@ -8,7 +8,7 @@ from sqlalchemy import desc
 from src.models.models import AudiusDataTx, User
 from src.solana.anchor_parser import AnchorParser
 from src.solana.solana_program_indexer import SolanaProgramIndexer
-from src.utils import session_manager
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.helpers import split_list
 from src.utils.session_manager import SessionManager
@@ -30,7 +30,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         admin_storage_public_key: str,
         label: str,
         redis: Any,
-        db: Any,
+        db: SessionManager,
         solana_client_manager: Any,
         cid_metadata_client: CIDMetadataClient,
     ):
@@ -38,6 +38,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
         self.admin_storage_public_key = admin_storage_public_key
         self.cid_metadata_client = cid_metadata_client
+
+        # TODO fill out the rest
+        self.instruction_type = {
+            "init_user": "user",
+            "create_track": "track",
+        }
 
     def is_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -140,20 +146,30 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
     async def fetch_ipfs_metadata(self, parsed_transactions):
+
         cid_to_user_id: Dict[str, int] = {}
-        cid_metadata: Dict[str, str] = {}  # cid -> metadata
         cids_txhash_set: Set[Tuple(str, Any)] = set()
         cid_type: Dict[str, str] = {}  # cid -> entity type track / user
-
-        # any instructions with  metadata
-        for transaction in parsed_transactions:
-            for instruction in transaction["tx_metadata"]["instructions"]:
-                if "metadata" in instruction["data"]:
-                    cids_txhash_set.add(
-                        (instruction["data"]["metadata"], transaction["tx_sig"])
-                    )
+        blacklisted_cids: Set[str] = set()
 
         with self.db.scoped_session() as session:
+
+            # any instructions with  metadata
+            for transaction in parsed_transactions:
+                for instruction in transaction["tx_metadata"]["instructions"]:
+                    if "metadata" in instruction["data"]:
+                        cid = instruction["data"]["metadata"]
+                        if is_blacklisted_ipld(session, cid):
+                            blacklisted_cids.add(cid)
+                        else:
+                            cids_txhash_set.add((cid, transaction["tx_sig"]))
+                            cid_type[cid] = self.instruction_type[
+                                instruction["instruction_name"]
+                            ]
+
+                        # TODO once user_id changes are merged in
+                        # cid_to_user_id[cid] = user_id
+
             user_replica_set = dict(
                 session.query(User.user_id, User.creator_node_endpoint)
                 .filter(
@@ -165,19 +181,13 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             )
 
         # first attempt - fetch all CIDs from replica set
-        try:
-            cid_metadata.update(
-                self.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-                    cid_metadata.keys(),
-                    cids_txhash_set,
-                    cid_to_user_id,
-                    user_replica_set,
-                    cid_type,
-                    should_fetch_from_replica_set=True,
-                )
-            )
-        except asyncio.TimeoutError:
-            # swallow exception on first attempt fetching from replica set
-            pass
+        cid_metadata: Dict[
+            str, str
+        ] = self.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+            cids_txhash_set,
+            cid_to_user_id,
+            user_replica_set,
+            cid_type,
+        )
 
         return cid_metadata

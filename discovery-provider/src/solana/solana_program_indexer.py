@@ -9,6 +9,7 @@ from src.solana.constants import (
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_transaction_types import TransactionInfoResult
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ class SolanaProgramIndexer(IndexerBase):
         program_id: str,
         label: str,
         redis: Any,
-        db: Any,
+        db: SessionManager,
         solana_client_manager: Any,
     ):
         """
