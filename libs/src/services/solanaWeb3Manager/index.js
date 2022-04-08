@@ -1,7 +1,6 @@
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const anchor = require('@project-serum/anchor')
-const { NodeWallet } = require('@project-serum/anchor/dist/cjs/nodewallet')
 
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
@@ -19,7 +18,6 @@ const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 const idl = require('../../../idl/audius_data.json')
 
 const { PublicKey } = solanaWeb3
-const { SystemProgram } = anchor.web3
 
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
@@ -139,7 +137,7 @@ class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
     this.anchorProgramId = SolanaUtils.newPublicKeyNullable(anchorProgramId)
     this.anchorAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(anchorAdminStorageKeypairPublicKey)
-    
+ 
     const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
     const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
 
