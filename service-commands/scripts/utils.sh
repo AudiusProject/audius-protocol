@@ -168,6 +168,7 @@ configure_etc_hosts() {
 	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
 		IP=$(get_ip_addr $provider $name)
 		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.bashrc
 		sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
 		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
 	fi
@@ -179,44 +180,5 @@ set_ssh_serveralive() {
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
 			echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
 		fi
-	fi
-}
-
-upload_gitconfig() {
-	read -p "Configure remote gitconfig? (local ~/.gitconfig/.remote-dev required) [y/N] " -n 1 -r && echo
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		if [[ -f "$HOME/.gitconfig.remote-dev" ]]; then
-			copy_file_to_remote $provider $user $name '~/.gitconfig.remote-dev' '~/.gitconfig'
-		fi
-	fi
-}
-
-setup_zsh() {
-	read -p "Configure zshell? (local config required) [y/N] " -n 1 -r && echo
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
-
-		zshenv=$PROTOCOL_DIR/service-commands/scripts/.zshenv
-		if [[ -f "$HOME/.zshenv.remote-dev" ]]; then
-			zshenv=~/.zshenv.remote-dev
-		fi
-		cp $zshenv ~/.zshenv.tmp
-		IP=$(get_ip_addr $provider $name)
-		echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.zshenv.tmp
-		echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.zshenv.tmp
-		copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
-		rm ~/.zshenv.tmp
-
-		zshrc=$PROTOCOL_DIR/service-commands/scripts/.zshrc
-		if [[ -f "$HOME/.zshrc.remote-dev" ]]; then
-			zshrc=~/.zshrc.remote-dev
-		fi
-		copy_file_to_remote $provider $user $name $zshrc '~/.zshrc'
-
-		p10k_zsh=$PROTOCOL_DIR/service-commands/scripts/.p10k.zsh
-		if [[ -f "$HOME/.p10k.zsh.remote-dev" ]]; then
-			p10k_zsh=~/.p10k.zsh.remote-dev
-		fi
-		copy_file_to_remote $provider $user $name $p10k_zsh '~/.p10k.zsh'
 	fi
 }
