@@ -297,18 +297,11 @@ class ServiceRegistry {
       'discoveryNodeUnhealthyBlockDiff'
     )
 
-    // load in solana-program-config.json here and create config here
-// TODO: get it working client first then server
+    // This is not an exhaustive of all the solana configs, i.e. some Solana web3 api
+    // calls may not work. If necessary, update this config as need be
     const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
       anchorProgramId: solanaProgramConfig.anchorProgramId,
       solanaClusterEndpoint: solanaProgramConfig.endpoint
-      // mintAddress: solanaProgramConfig.splToken,
-      // claimableTokenProgramAddress: solanaProgramConfig.claimableTokenProgramAddress,
-      // rewardsManagerProgramId: solanaProgramConfig.rewardsManagerAddress,
-      // rewardsManagerProgramPDA: solanaProgramConfig.rewardsManagerAccount,
-      // rewardsManagerTokenPDA: solanaProgramConfig.rewardsManagerTokenAccount,
-      // anchorAdminStorageKeypairPublicKey: solanaProgramConfig.anchorAdminStorageKeypairPublicKey,
-      // feePayerAddress: solanaProgramConfig.feePayerWalletPubkey
     })
 
     const audiusLibs = new AudiusLibs({
