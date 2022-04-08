@@ -30,7 +30,7 @@ from src.queries.query_helpers import (
 )
 from src.tasks.generate_trending import time_delta_map
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import TrendingType
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
@@ -215,7 +215,25 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
         for playlist in playlists:
             playlist["tracks"] = playlist_tracks_map.get(playlist["playlist_id"], [])
 
-        return (playlists, playlist_ids)
+        results = []
+        for playlist in playlists:
+            # For the BDNxn strategy, filter out playlists with < 3 tracks from other users
+            if strategy.version == TrendingVersion.BDNxn:
+                playlist_owner_id = playlist["playlist_owner_id"]
+                track_owner_ids = list(
+                    filter(
+                        lambda owner_id: owner_id != playlist_owner_id,
+                        map(
+                            lambda track: track["owner_id"],
+                            playlist["tracks"]
+                        )
+                    )
+                )
+                if len(track_owner_ids) < 3:
+                    continue
+            results.append(playlist)
+
+        return (results, list(map(lambda playlist: playlist["playlist_id"], results)))
 
     return wrapped
 
