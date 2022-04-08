@@ -599,48 +599,24 @@ class Account extends Base {
   async checkAccountExistsOnSol () {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
-    const handleBytesArray = this.solanaWeb3Manager.getHandleBytesArray('handlebcdef')
+    const { wallet, handle } = this.getCurrentUser()
+    const handleBytesArray = this.solanaWeb3Manager.getHandleBytesArray(handle)
 
     const {
-      baseAuthorityAccount,
-      bumpSeed,
       derivedAddress: newUserAcctPDA
     } = await this.solanaWeb3Manager.findDerivedPair(
-      // this.solanaWeb3Manager.anchorProgramId,
-      // this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
-      // handleBuffer
-      // Derived from seed-tx.sh logs
-      '4epch6hWN6cuaLR1VHdPdXqnVr4F8CyK2yKjhBsenFs5',
-      '2avdcDMWeN3gwVUE6iEPZHKaotfKjG5NEWxxzwJ5c7xP',
+      this.solanaWeb3Manager.anchorProgramId,
+      this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
       handleBytesArray
     )
 
-    console.log('this is everything', baseAuthorityAccount, bumpSeed, newUserAcctPDA)
-
     const accInfo = await this.solanaWeb3Manager.connection.getAccountInfo(newUserAcctPDA)
-    // const accInfo = await this.solanaWeb3Manager.connection.getAccountInfo(new PublicKey('9X1b54vrKvT2RmjXSSjCQAkezvqYMNpx3t8j3TAGvsDT'))
-
-    console.log('this is the accInfo!-.-', accInfo, !accInfo)
 
     if (!accInfo) return false
-    console.log('acc info not null???!!!!!', accInfo.data)
 
-    const derivedEthWallet2 = await this.solanaWeb3Manager.deriveEthWalletFromAddress(newUserAcctPDA)
-    // cut off version and eth address from valid signer data
+    const derivedEthWallet = await this.solanaWeb3Manager.deriveEthWalletFromAddress(newUserAcctPDA)
 
-    // const derivedEthWallet = this.solanaWeb3Manager.encodeb58(accInfo.data)
-
-    console.log('what is derived eth wallet', derivedEthWallet2)
-    console.log('PLEASE BE TRUE', derivedEthWallet2 === '0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7')
-
-    // 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 need this
-    return true
-
-    // check eth keys in accInfo.data
-
-    // convert b58 -> utf8
-    // if (accInfo.data.ethWallet === currentWallet) return true
-    // else return false
+    return derivedEthWallet.toLowerCase() === wallet.toLowerCase()
   }
 }
 

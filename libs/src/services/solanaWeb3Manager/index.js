@@ -100,11 +100,10 @@ class SolanaWeb3Manager {
       feePayerKeypairs,
       confirmationTimeout,
       anchorProgramId,
-      anchorAdminStorageKeypairPublicKey,
+      anchorAdminStorageKeypairPublicKey
     } = this.solanaWeb3Config
 
     console.log('THIS IS THE SOLANAWEB3CONFIG', this.solanaWeb3Config, anchorProgramId, anchorAdminStorageKeypairPublicKey)
-
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
@@ -159,13 +158,13 @@ class SolanaWeb3Manager {
     const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
     console.log('got connection')
     const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
-      console.log('got provider')
+    console.log('got provider')
 
-      console.log('what is the idl....', idl)
-      
-      // Update this adddress since the file is static 
-      idl.metadata.address = anchorProgramId
-      console.log('the idl???', idl)
+    console.log('what is the idl....', idl)
+
+    // Update this adddress since the file is static
+    idl.metadata.address = anchorProgramId
+    console.log('the idl???', idl)
 
     // let anchorProgram = null
     // if (!isBrowser) {
@@ -621,14 +620,14 @@ class SolanaWeb3Manager {
     return SolanaUtils.newPublicKeyNullable(accInfo.toJSON().data.slice(1, 33)).toString()
   }
 
-  deriveEthWalletFromAddress (pda) {
-    // const provider = new anchor.Provider(this.anchorConnection)
-    const account = await program.account.user.fetch(userStorageAccount);
+  async deriveEthWalletFromAddress (pda) {
+    const account = await this.anchorProgram.account.user.fetch(pda)
 
-    // const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
-    let chainEthAddress = Buffer.from(account.ethAddress).toString('hex');
+    let chainEthAddress = Buffer.from(account.ethAddress).toString('hex')
 
-    console.log('WHAT IS CHAINETHADDR', chainEthAddress)
+    if (!chainEthAddress.startsWith('0x')) {
+      chainEthAddress = '0x' + chainEthAddress
+    }
 
     return chainEthAddress
   }
