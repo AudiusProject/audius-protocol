@@ -436,7 +436,10 @@ function* confirmUpdateProfile(userId, metadata) {
       },
       function* () {
         yield put(profileActions.updateProfileFailed())
-      }
+      },
+      undefined,
+      undefined,
+      { operationId: 'OVERWRITE', squashable: true }
     )
   )
 }

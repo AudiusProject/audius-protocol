@@ -37,7 +37,9 @@ const onSagaError = (
     sagaStack: string
   }
 ) => {
-  console.error(`Caught saga error: ${error} ${errorInfo}`)
+  console.error(
+    `Caught saga error: ${error} ${JSON.stringify(errorInfo, null, 4)}`
+  )
   store.dispatch(pushRoute(ERROR_PAGE))
 
   reportToSentry({
