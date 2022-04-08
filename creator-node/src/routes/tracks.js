@@ -31,6 +31,7 @@ const { decode } = require('../hashids')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const BlacklistManager = require('../blacklistManager')
+const PrometheusMetric = require('../services/PrometheusMetric')
 
 const readFile = promisify(fs.readFile)
 
@@ -202,8 +203,15 @@ module.exports = function (app) {
         transcodedTrackUUID
       } = req.body
 
+      metric = new PrometheusMetric(
+        'routes_tracks_runtime_seconds',
+        'Runtimes for src.routes.tracks:/tracks',
+        ['scope']
+      )
+
       // Input validation
       if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
+        metric.saveTime({'scope': 'error'})
         return errorResponseBadRequest(
           'Must include blockchainTrackId, blockNumber, and metadataFileUUID.'
         )
@@ -212,6 +220,7 @@ module.exports = function (app) {
       // Error on outdated blocknumber
       const cnodeUser = req.session.cnodeUser
       if (blockNumber < cnodeUser.latestBlockNumber) {
+        metric.saveTime({'scope': 'error'})
         return errorResponseBadRequest(
           `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
         )
@@ -223,6 +232,7 @@ module.exports = function (app) {
         where: { fileUUID: metadataFileUUID, cnodeUserUUID }
       })
       if (!file) {
+        metric.saveTime({'scope': 'error'})
         return errorResponseBadRequest(
           `No file db record found for provided metadataFileUUID ${metadataFileUUID}.`
         )
@@ -237,11 +247,13 @@ module.exports = function (app) {
           !Array.isArray(metadataJSON.track_segments) ||
           !metadataJSON.track_segments.length
         ) {
+          metric.saveTime({'scope': 'error'})
           return errorResponseServerError(
             `Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`
           )
         }
       } catch (e) {
+        metric.saveTime({'scope': 'error'})
         return errorResponseServerError(
           `No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`
         )
@@ -255,6 +267,7 @@ module.exports = function (app) {
           metadataJSON.cover_art_sizes
         )
       } catch (e) {
+        metric.saveTime({'scope': 'error'})
         return errorResponseServerError(e.message)
       }
 
@@ -441,10 +454,12 @@ module.exports = function (app) {
 
         await issueAndWaitForSecondarySyncRequests(req)
 
+        metric.saveTime({'scope': 'full'})
         return successResponse()
       } catch (e) {
         req.logger.error(e.message)
         await transaction.rollback()
+        metric.saveTime({'scope': 'transaction_error'})
         return errorResponseServerError(e.message)
       }
     })
