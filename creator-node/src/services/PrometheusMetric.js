@@ -28,15 +28,15 @@ class PrometheusMetric {
         // set metric prefix of audius_project_
         name = `audius_cn_${name}`
 
-        self.metricType = metric_type
-        if (self.metricType === undefined) {
-            self.metricType = PrometheusType.HISTOGRAM
+        this.metricType = metric_type
+        if (this.metricType === undefined) {
+            this.metricType = PrometheusType.HISTOGRAM
         }
 
         // CollectorRegistries must be uniquely named
         // NOTE: we only set labelNames once.
         // unsure if overloading is supported.
-        if (this.metricType === PrometheusMetric.HISTOGRAM) {
+        if (this.metricType == PrometheusType.HISTOGRAM) {
             this._initMetric(
                 name,
                 description,
@@ -44,7 +44,7 @@ class PrometheusMetric {
                 PrometheusMetric.histograms,
                 client.Histogram
             )
-        } else if (this.metricType === PrometheusMetric.HISTOGRAM) {
+        } else if (this.metricType == PrometheusType.GAUGE) {
             this._initMetric(name,
                 description,
                 labelNames,

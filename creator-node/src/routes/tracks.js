@@ -203,7 +203,7 @@ module.exports = function (app) {
         transcodedTrackUUID
       } = req.body
 
-      metric = new PrometheusMetric(
+      let metric = new PrometheusMetric(
         'routes_tracks_runtime_seconds',
         'Runtimes for src.routes.tracks:/tracks',
         ['scope']
