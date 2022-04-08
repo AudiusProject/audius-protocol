@@ -4,7 +4,7 @@ import { BlocknumberCheckpoint, Job } from './job'
 export const repostEtl: Job = {
   tableName: 'reposts',
   idField: 'repost_id',
-  indexBatchSize: 10000,
+  indexBatchSize: 20000,
   indexSettings: {
     index: indexNames.reposts,
     settings: {

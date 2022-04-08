@@ -5,12 +5,9 @@ import { dialPg } from './conn'
 import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint, Job } from './job'
 
-/*
-don't know how to do the sql to populate moods, genres, tags
-based on join with playlist_contents
-
-so uses withBatch callback to load that stuff up and attach it
-*/
+// don't know how to do the sql to populate moods, genres, tags
+// based on join with playlist_contents
+// so uses withBatch callback to load that stuff up and attach it
 
 export const playlistEtl: Job = {
   tableName: 'playlists',

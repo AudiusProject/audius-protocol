@@ -45,6 +45,8 @@ omit_keys = [
     # track index
     "reposted_by",
     "saved_by",
+    # saves + reposts
+    "item_key",
 ]
 
 
@@ -52,4 +54,6 @@ def omit_indexed_fields(doc):
     for key in omit_keys:
         if key in doc:
             del doc[key]
+    if "tags" in doc and isinstance(doc["tags"], list):
+        doc["tags"] = ",".join(doc["tags"])
     return doc

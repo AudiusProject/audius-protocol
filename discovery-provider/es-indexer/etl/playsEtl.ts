@@ -16,9 +16,6 @@ export const playsEtl: Job = {
     },
     mappings: {
       dynamic: false,
-      // _source: {
-      //   enabled: false,
-      // },
       properties: {
         user_id: { type: 'keyword' },
         play_item_id: { type: 'keyword' },

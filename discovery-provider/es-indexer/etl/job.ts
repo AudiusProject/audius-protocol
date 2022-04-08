@@ -1,3 +1,5 @@
+import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
+
 export type Job = {
   tableName:
     | 'users'
@@ -9,10 +11,10 @@ export type Job = {
     | 'follows'
   idField: string
   indexBatchSize?: number
-  indexSettings: any
+  indexSettings: IndicesCreateRequest
   sql2: (checkpoints: BlocknumberCheckpoint) => string
-  withBatch?: any
-  forEach?: any
+  withBatch?: (batch: Object[]) => Promise<void>
+  forEach?: (doc: Object) => void
 }
 
 export type JobOptions = {
@@ -29,15 +31,3 @@ export type BlocknumberCheckpoint = {
   saves: number
   plays: any
 }
-
-/*
-
-select
-  (select max(blocknumber) from users) as users,
-  (select max(blocknumber) from tracks) as tracks,
-  (select max(blocknumber) from playlists) as playlists,
-  (select max(blocknumber) from reposts) as reposts,
-  (select max(blocknumber) from saves) as saves,
-;
-
-*/

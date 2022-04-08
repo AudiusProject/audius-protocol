@@ -3,7 +3,6 @@ import { dialEs, queryCursor } from './conn'
 import { BlocknumberCheckpoint, Job, JobOptions } from './job'
 import Debug from 'debug'
 import _ from 'lodash'
-import { jobTable } from './etlRunner'
 import { indexNames } from './indexNames'
 
 export async function runJob(
@@ -11,10 +10,9 @@ export async function runJob(
   opts: JobOptions,
   checkpoints: BlocknumberCheckpoint
 ) {
-  const debug = Debug(`fugue:etl:${job.tableName}`)
+  const debug = Debug(`es-indexer:${job.tableName}`)
   const es = dialEs()
 
-  // BOUNCE???
   if (opts.drop) {
     debug('dropping index')
     await es.indices.delete(
@@ -27,6 +25,7 @@ export async function runJob(
   }
 
   let rowCounter = 0
+  let startedAt = new Date()
   const highBlock = checkpoints[job.tableName]
   debug('starting at blocknumber:', highBlock)
 
@@ -36,12 +35,6 @@ export async function runJob(
   // checkpoint expects us to order by the checkpoint field
   sql += ` order by ${checkpointField(job.tableName)} asc `
 
-  // console.log(`
-  // ------------------------------------------
-  // ${sql}
-  // -----------------------------------
-  // `)
-
   const { client, cursor } = await queryCursor(sql)
   const batchSize = job.indexBatchSize || 2000
 
@@ -49,34 +42,29 @@ export async function runJob(
     const rows = await cursor.read(batchSize)
     if (rows.length == 0) break
 
-    // previously we'd partition on is_deleted
-    // and remove deletes from index
-    // but they're still expected to be there...
-    // so for now we'll not delete them
-    const updates = rows
-
-    // process updates
     if (job.withBatch) {
-      const l = `withBatch for ${job.tableName}`
-      console.time(l)
-      await job.withBatch(updates)
-      console.timeEnd(l)
+      await job.withBatch(rows)
     }
 
     if (job.forEach) {
-      updates.forEach(job.forEach)
+      rows.forEach(job.forEach)
     }
 
-    await indexDocs(es, job.indexSettings.index, job.idField, updates)
+    await indexDocs(es, job.indexSettings.index, job.idField, rows)
 
     rowCounter += rows.length
     debug({
-      updates: updates.length,
+      updates: rows.length,
       rowsProcessed: rowCounter,
     })
   }
 
-  debug(`finished ${job.tableName}`) // total time?
+  debug({
+    message: 'finished',
+    rowsProcessed: rowCounter,
+    startedAt,
+    endedAt: new Date(),
+  })
   await cursor.close()
   client.release()
 }
@@ -92,18 +80,13 @@ export async function indexDocs(
     doc,
   ])
 
-  const l = `Index ${docs.length} ${indexName} took`
-  // console.time(l)
-  const got = await es.bulk({ refresh: true, body })
-  // console.timeEnd(l)
+  const got = await es.bulk({ body })
 
   // check errors?
   if (got.errors) {
     console.log('bad news')
     console.log(JSON.stringify(got.items[0]))
   }
-
-  // const { count } = await es.count({ index: indexName });
 }
 
 /**
@@ -127,14 +110,14 @@ export async function getBlocknumberCheckpoints(): Promise<BlocknumberCheckpoint
     })
   }
 
-  const multi: any = await dialEs().msearch({ searches })
+  const multi = await dialEs().msearch({ searches })
 
   const values = multi.responses.map(
     (r: any) => r.aggregations?.max_blocknumber?.value || 0
   )
 
   const tableNames = Object.keys(indexNames)
-  const checkpoints = _.zipObject(tableNames, values) as any
+  const checkpoints = _.zipObject(tableNames, values) as BlocknumberCheckpoint
   return checkpoints
 }
 

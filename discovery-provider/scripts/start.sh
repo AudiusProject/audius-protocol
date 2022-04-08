@@ -82,7 +82,7 @@ if [ "$audius_db_run_migrations" != false ]; then
 fi
 
 # start es-indexer in polling mode
-if [[ "$audius_elasticsearch_url" ]]; then
+if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
     cd es-indexer && npm i && npm start &
 fi
 

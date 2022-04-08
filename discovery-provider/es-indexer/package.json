@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "DEBUG=fugue:* ts-node etl/etl.ts --poll",
+    "start": "DEBUG=es-indexer:* ts-node etl/etl.ts --poll",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

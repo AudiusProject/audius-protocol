@@ -14,9 +14,6 @@ export type UserDoc = UserRow & {
 
   following_ids: number[]
   following_count: number
-
-  // follower_ids: number[]
-  // follower_count: number
 }
 
 export type TrackDoc = TrackRow & {

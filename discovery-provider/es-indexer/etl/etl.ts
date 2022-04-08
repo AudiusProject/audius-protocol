@@ -3,8 +3,11 @@ import 'dotenv/config'
 import { dialPg } from './conn'
 import { runEtl } from './etlRunner'
 
+// Sleep 1 minute between ETL polling runs
+const ETL_POLL_INTERVAL_MS = 1000 * 60 * 1
+
 program
-  .name('fuguestate-etl')
+  .name('es-indexer')
   .description('Load data into ElasticSearch')
   .version('0.0.0')
 
@@ -22,9 +25,8 @@ program
       if (!options.poll) {
         break
       }
-      // sleep 2 minutes between polls
-      console.log('sleeping...')
-      await new Promise((r) => setTimeout(r, 1000 * 60 * 2))
+      // sleep
+      await new Promise((r) => setTimeout(r, ETL_POLL_INTERVAL_MS))
     }
     await dialPg().end()
   })

@@ -2,7 +2,7 @@ Run it (outside of docker)
 
 ```
 export audius_elasticsearch_url=http://localhost:9200
-export DEBUG=fugue:*
+export DEBUG=es-indexer:*
 npm i
 time ./node_modules/.bin/ts-node etl/etl.ts --drop
 ```

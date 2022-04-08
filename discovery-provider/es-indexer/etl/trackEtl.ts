@@ -14,19 +14,6 @@ export const trackEtl: Job = {
         number_of_replicas: 0,
 
         analysis: {
-          tokenizer: {
-            comma: {
-              type: 'pattern',
-              pattern: ',',
-            },
-          },
-          analyzer: {
-            comma: {
-              type: 'custom',
-              tokenizer: 'comma',
-              filter: ['lowercase', 'asciifolding'],
-            },
-          },
           normalizer: {
             lower_ascii: {
               type: 'custom',

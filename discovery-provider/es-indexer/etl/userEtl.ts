@@ -16,34 +16,33 @@ export const userEtl: Job = {
         number_of_replicas: 0,
       },
     },
-    body: {
-      mappings: {
-        dynamic: false,
-        properties: {
-          blocknumber: { type: 'integer' },
-          created_at: { type: 'date' },
-          wallet: { type: 'keyword' },
-          handle: { type: 'keyword' }, // should have a "searchable" treatment
-          name: { type: 'text' }, // default should be keyword, with a searchable treatment
-          is_creator: { type: 'boolean' },
-          is_verified: { type: 'boolean' },
-          is_deactivated: { type: 'boolean' },
-          bio: { type: 'text' },
-          location: { type: 'keyword' },
-          // following
-          following_ids: { type: 'keyword' },
-          following_count: { type: 'integer' },
-          // followers
-          // follower_ids: { type: 'keyword' },
-          follower_count: { type: 'integer' },
+    mappings: {
+      dynamic: false,
+      properties: {
+        blocknumber: { type: 'integer' },
+        created_at: { type: 'date' },
+        wallet: { type: 'keyword' },
+        handle: { type: 'keyword' }, // should have a "searchable" treatment
+        name: { type: 'text' }, // default should be keyword, with a searchable treatment
+        is_creator: { type: 'boolean' },
+        is_verified: { type: 'boolean' },
+        is_deactivated: { type: 'boolean' },
+        bio: { type: 'text' },
+        location: { type: 'keyword' },
 
-          track_count: { type: 'integer' },
-          tracks: {
-            properties: {
-              mood: { type: 'keyword' },
-              genre: { type: 'keyword' },
-              tags: { type: 'keyword' },
-            },
+        // following
+        following_ids: { type: 'keyword' },
+        following_count: { type: 'integer' },
+
+        // followers
+        follower_count: { type: 'integer' },
+
+        track_count: { type: 'integer' },
+        tracks: {
+          properties: {
+            mood: { type: 'keyword' },
+            genre: { type: 'keyword' },
+            tags: { type: 'keyword' },
           },
         },
       },

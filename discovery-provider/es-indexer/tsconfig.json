@@ -1,16 +1,11 @@
 {
-	"compilerOptions": {
-		// "baseUrl": ".",
+  "compilerOptions": {
     "skipLibCheck": true,
     "noEmit": true,
     "target": "es5",
     "esModuleInterop": true,
     "module": "CommonJS",
-    // "lib": ["esnext", "dom"],
     "moduleResolution": "node",
-    "isolatedModules": true,
-    // "incremental": true
-	},
-  // "include": ["**/*.ts"],
-  // "exclude": ["node_modules"]
+    "isolatedModules": true
+  }
 }

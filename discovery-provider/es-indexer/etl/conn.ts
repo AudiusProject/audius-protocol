@@ -2,7 +2,6 @@ import 'dotenv/config'
 
 import { Pool as PG } from 'pg'
 import { Client as ES } from '@elastic/elasticsearch'
-// @ts-ignore
 import Cursor from 'pg-cursor'
 
 let pool: PG | undefined = undefined
@@ -18,8 +17,7 @@ export function dialPg(): PG {
 let esc: ES | undefined = undefined
 export function dialEs() {
   if (!esc) {
-    let url =
-      process.env.audius_elasticsearch_url || 'http://elasticsearch:9200'
+    let url = process.env.audius_elasticsearch_url
     esc = new ES({ node: url })
   }
   return esc
