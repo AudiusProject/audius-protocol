@@ -1,15 +1,12 @@
 import asyncio
 import base64
-import json
 import logging
-from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
-from anchorpy import Idl, InstructionCoder
 from solana.transaction import Transaction
 from sqlalchemy import desc
 from src.models.models import AudiusDataTx
-from src.solana.anchor_parser import parse_instruction
+from src.solana.anchor_parser import AnchorParser
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.utils.helpers import split_list
 
@@ -24,18 +21,18 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     Indexer for the audius user data layer
     """
 
-    _instruction_coder: InstructionCoder
-
     def __init__(
         self,
         program_id: str,
+        admin_storage_public_key: str,
         label: str,
         redis: Any,
         db: Any,
         solana_client_manager: Any,
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
-        self._init_instruction_coder()
+        self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
+        self.admin_storage_public_key = admin_storage_public_key
 
     def is_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -92,8 +89,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # Append each parsed transaction to parsed metadata
         tx_instructions = []
         for instruction in tx.instructions:
-            parsed_instr = parse_instruction(instruction, self._instruction_coder)
-            tx_instructions.append(parsed_instr)
+            parsed_instr = self.anchor_parser.parse_instruction(instruction)
+            if self.is_valid_instruction(parsed_instr):
+                tx_instructions.append(parsed_instr)
 
         tx_metadata["instructions"] = tx_instructions
 
@@ -102,6 +100,21 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             Embed instruction specific information in tx_metadata
         """
         return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
+
+    def is_valid_instruction(self, parsed_instr: Dict):
+        if parsed_instr["instruction_name"] == "init_user":
+            if (
+                parsed_instr["account_names_map"]["admin"]
+                != self.admin_storage_public_key
+            ):
+                return False
+        # TODO implement remaining instruction validation
+        # consider creating classes for each instruction type
+        # then implementing instruction validation / updating user records for each.
+        # consider renaming admin accounts in program for consistency
+        # then dynamically validating.
+
+        return True
 
     def process_index_task(self):
         self.msg("Processing indexing task")
@@ -121,19 +134,3 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # each containing relevant metadata in container
     async def fetch_ipfs_metadata(self, parsed_transactions):
         return super().fetch_ipfs_metadata(parsed_transactions)
-
-    def _init_instruction_coder(self):
-        idl = self._get_idl()
-        self._instruction_coder = InstructionCoder(idl)
-
-    def _get_idl(self):
-        path = Path(AUDIUS_DATA_IDL_PATH)
-        with path.open() as f:
-            data = json.load(f)
-
-        # Modify 'metadata':'address' field if mismatched with config
-        if data["metadata"]["address"] != self._program_id:
-            data["metadata"]["address"] = self._program_id
-
-        idl = Idl.from_json(data)
-        return idl

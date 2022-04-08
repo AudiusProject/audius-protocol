@@ -351,7 +351,7 @@ trailing_app_name_parser.add_argument(
 )
 
 
-@ns.route("/app_name/trailing/<string:time_range>")
+@ns.route("/app_name/trailing/<string:time_range>", doc=False)
 @ns.expect(trailing_app_name_parser)
 class TrailingAppNameMetrics(Resource):
     @ns.doc(

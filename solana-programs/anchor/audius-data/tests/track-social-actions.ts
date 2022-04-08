@@ -40,13 +40,15 @@ describe("track-actions", function () {
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("track actions - Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    let tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
     });
+
+    await provider.send(tx, [adminStorageKeypair])
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -61,12 +63,14 @@ describe("track-actions", function () {
     }
 
     // disable admin writes
-    await updateAdmin({
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
       adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.send(updateAdminTx, [adminKeypair])
   });
 
   it("Initializing Content Node accounts!", async function () {
@@ -96,18 +100,19 @@ describe("track-actions", function () {
   it("Delete save for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const txHash = await deleteTrackSave({
+    const tx = deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
+    const txHash = await provider.send(tx, [user.keypair])
     const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -130,18 +135,20 @@ describe("track-actions", function () {
   it("Save a newly created track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const txHash = await addTrackSave({
+    const tx = addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
+    const txHash = await provider.send(tx, [user.keypair])
+
     const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -164,18 +171,20 @@ describe("track-actions", function () {
   it("Repost a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const txHash = await addTrackRepost({
+    const tx = addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
+    const txHash = await provider.send(tx, [user.keypair])
+
     const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -203,7 +212,7 @@ describe("track-actions", function () {
       provider,
     });
 
-    const txHash = await addTrackRepost({
+    const tx = addTrackRepost({
       program,
       baseAuthorityAccount: userDelegate.baseAuthorityAccount,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -211,11 +220,12 @@ describe("track-actions", function () {
       userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
       authorityDelegationStatusAccountPDA:
         userDelegate.authorityDelegationStatusPDA,
-      userAuthorityKeypair: userDelegate.userAuthorityDelegateKeypair,
+      userAuthorityPublicKey: userDelegate.userAuthorityDelegateKeypair.publicKey,
       handleBytesArray: userDelegate.userHandleBytesArray,
       bumpSeed: userDelegate.userBumpSeed,
       id: randomString(10),
     });
+    const txHash = await provider.send(tx, [userDelegate.userAuthorityDelegateKeypair])
     const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -240,18 +250,19 @@ describe("track-actions", function () {
   it("Delete repost for a track", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const txHash = await deleteTrackRepost({
+    const tx = deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
+    const txHash = await provider.send(tx, [user.keypair])
 
     const info = await getTransaction(provider, txHash);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
