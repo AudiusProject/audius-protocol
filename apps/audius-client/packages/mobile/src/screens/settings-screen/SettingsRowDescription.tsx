@@ -15,5 +15,6 @@ type SettingsRowDescriptionProps = TextProps
 export const SettingsRowDescription = (props: SettingsRowDescriptionProps) => {
   const styles = useStyles()
   const { children } = props
+
   return <Text style={styles.root}>{children}</Text>
 }
