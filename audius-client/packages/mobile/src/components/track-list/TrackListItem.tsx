@@ -41,6 +41,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   trackContainerActive: {
     backgroundColor: palette.neutralLight9
   },
+  trackContainerDisabled: {
+    backgroundColor: palette.neutralLight9
+  },
   trackInnerContainer: {
     height: '100%',
     width: '100%',
@@ -121,12 +124,13 @@ export const TrackListItem = ({
     has_current_user_reposted,
     has_current_user_saved,
     is_delete,
+    is_unlisted,
     title,
     track_id,
     uid,
     user: { name, is_deactivated, user_id }
   } = track
-  const isDeleted = is_delete || !!is_deactivated
+  const isDeleted = is_delete || !!is_deactivated || is_unlisted
 
   const messages = getMessages({ isDeleted })
   const styles = useStyles()
@@ -196,13 +200,15 @@ export const TrackListItem = ({
     <View
       style={[
         styles.trackContainer,
-        isActive ? styles.trackContainerActive : {}
+        isActive && styles.trackContainerActive,
+        isDeleted && styles.trackContainerDisabled
       ]}
     >
       <TouchableOpacity
         style={styles.trackInnerContainer}
         onPress={onPressTrack}
         onLongPress={drag}
+        disabled={isDeleted}
       >
         {!hideArt ? (
           <TrackArtwork
