@@ -134,20 +134,20 @@ export const findDerivedAddress = async (
 };
 
 // Finds the target PDA with the base audius admin as the initial seed
-// In conjunction with the secondary seed as the users handle in bytes
+// In conjunction with the secondary seed as the users ID in bytes
 export const findDerivedPair = async (programId, adminAccount, seed) => {
   const [baseAuthorityAccount] = await findProgramAddress(
     programId,
     adminAccount
   );
-  const derivedAddresInfo = await findDerivedAddress(
+  const derivedAddressInfo = await findDerivedAddress(
     programId,
     baseAuthorityAccount,
     seed
   );
 
-  const derivedAddress = derivedAddresInfo.result[0];
-  const bumpSeed = derivedAddresInfo.result[1];
+  const derivedAddress = derivedAddressInfo.result[0];
+  const bumpSeed = derivedAddressInfo.result[1];
 
   return { baseAuthorityAccount, derivedAddress, bumpSeed };
 };

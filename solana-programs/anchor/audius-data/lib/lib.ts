@@ -212,7 +212,7 @@ export type UpdateUserReplicaSet = {
   cn2: anchor.web3.PublicKey;
   cn3: anchor.web3.PublicKey;
   userAcct: anchor.web3.PublicKey;
-  userHandle: { seed: number[]; bump: number };
+  userId: { seed: number[]; bump: number };
 };
 
 export const updateUserReplicaSet = ({
@@ -223,7 +223,7 @@ export const updateUserReplicaSet = ({
   replicaSet,
   userAcct,
   replicaSetBumps,
-  userHandle,
+  userId,
   contentNodeAuthorityPublicKey,
   cn1,
   cn2,
@@ -233,7 +233,7 @@ export const updateUserReplicaSet = ({
   tx.add(
     program.instruction.updateUserReplicaSet(
       baseAuthorityAccount,
-      userHandle,
+      userId,
       replicaSet,
       replicaSetBumps,
       {
@@ -734,7 +734,7 @@ export type DeleteEntityParams = {
   userStorageAccountPDA: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userIdBytesArray: number[];
   bumpSeed: number;
 };
 
@@ -752,6 +752,7 @@ export const createTrack = ({
   bumpSeed,
 }: CreateEntityParams) => {
   const tx = new Transaction();
+  console.log('MANAGING ENTITYYYYY', 'create trac', userIdBytesArray, bumpSeed)
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
@@ -1160,7 +1161,7 @@ export const deleteTrackRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userIdBytesArray,
   bumpSeed,
   adminStoragePublicKey,
   id,

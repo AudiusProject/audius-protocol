@@ -517,16 +517,16 @@ const main = async () => {
       })();
       break;
     case functionTypes.createUser:
-      const { userId, handle } = options;
+      const { userId } = options;
       console.log({ userId });
       const ethAccount = EthWeb3.eth.accounts.create();
 
-      const handleBytesArray = getHandleBytesArray(handle);
+      const userIdBytesArray = getUserIdBytesArray(userId);
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
           adminStorageKeypair.publicKey,
-          handleBytesArray
+          userIdBytesArray
         );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -551,7 +551,7 @@ const main = async () => {
           ethAccount,
           message: userSolKeypair.publicKey.toBytes(),
           userId: new anchor.BN(userId),
-          handleBytesArray,
+          userIdBytesArray,
           bumpSeed,
           metadata: randomCID(),
           userSolPubkey: userSolKeypair.publicKey,
