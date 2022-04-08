@@ -88,6 +88,7 @@ class SolanaProgramIndexer(IndexerBase):
         self._program_id = program_id
         self._solana_client_manager = solana_client_manager
         self._redis_queue_cache_prefix = f"{self._label}-tx-cache-queue"
+        self.db = db
 
     @abstractmethod
     def is_tx_in_db(self, session: Any, tx_sig: str):
@@ -118,10 +119,10 @@ class SolanaProgramIndexer(IndexerBase):
         return {"tx_sig": tx_sig, "tx_metadata": {}, "result": result}
 
     @abstractmethod
-    def is_valid_instruction(self, tx):
+    def is_valid_instruction(self, instruction):
         """
         Returns a boolean value indicating whether an instruction is valid.
-        @param tx: transaction to be validated
+        @param instruction: transaction to be validated
         """
         raise Exception("Must be implemented in subclass")
 

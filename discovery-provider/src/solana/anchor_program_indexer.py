@@ -1,14 +1,17 @@
 import asyncio
 import base64
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Set, Tuple
 
 from solana.transaction import Transaction
 from sqlalchemy import desc
-from src.models.models import AudiusDataTx
+from src.models.models import AudiusDataTx, User
 from src.solana.anchor_parser import AnchorParser
 from src.solana.solana_program_indexer import SolanaProgramIndexer
+from src.utils import session_manager
+from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.helpers import split_list
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +32,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         redis: Any,
         db: Any,
         solana_client_manager: Any,
+        cid_metadata_client: CIDMetadataClient,
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
         self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
         self.admin_storage_public_key = admin_storage_public_key
+        self.cid_metadata_client = cid_metadata_client
 
     def is_tx_in_db(self, session: Any, tx_sig: str):
         exists = False
@@ -102,12 +107,14 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
 
     def is_valid_instruction(self, parsed_instr: Dict):
-        if parsed_instr["instruction_name"] == "init_user":
-            if (
-                parsed_instr["account_names_map"]["admin"]
-                != self.admin_storage_public_key
-            ):
-                return False
+        # TODO uncomment pending a way to reconcile admin in mocks / config
+        # if parsed_instr["instruction_name"] == "init_user":
+        # if (
+        #     parsed_instr["account_names_map"]["admin"]
+        #     != self.admin_storage_public_key
+        # ):
+        #     return False
+
         # TODO implement remaining instruction validation
         # consider creating classes for each instruction type
         # then implementing instruction validation / updating user records for each.
@@ -133,4 +140,44 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
     async def fetch_ipfs_metadata(self, parsed_transactions):
-        return super().fetch_ipfs_metadata(parsed_transactions)
+        cid_to_user_id: Dict[str, int] = {}
+        cid_metadata: Dict[str, str] = {}  # cid -> metadata
+        cids_txhash_set: Set[Tuple(str, Any)] = set()
+        cid_type: Dict[str, str] = {}  # cid -> entity type track / user
+
+        # any instructions with  metadata
+        for transaction in parsed_transactions:
+            for instruction in transaction["tx_metadata"]["instructions"]:
+                if "metadata" in instruction["data"]:
+                    cids_txhash_set.add(
+                        (instruction["data"]["metadata"], transaction["tx_sig"])
+                    )
+
+        with self.db.scoped_session() as session:
+            user_replica_set = dict(
+                session.query(User.user_id, User.creator_node_endpoint)
+                .filter(
+                    User.is_current == True,
+                    User.user_id.in_(cid_to_user_id.values()),
+                )
+                .group_by(User.user_id, User.creator_node_endpoint)
+                .all()
+            )
+
+        # first attempt - fetch all CIDs from replica set
+        try:
+            cid_metadata.update(
+                self.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=True,
+                )
+            )
+        except asyncio.TimeoutError:
+            # swallow exception on first attempt fetching from replica set
+            pass
+
+        return cid_metadata
