@@ -13,15 +13,14 @@ import { AppState } from 'app/store'
 import * as audioActions from 'app/store/audio/actions'
 import { RepeatMode } from 'app/store/audio/reducer'
 import {
-  getTrack,
   getPlaying,
   getSeek,
-  getIndex,
   getQueueLength,
   getRepeatMode,
   getIsShuffleOn,
   getShuffleIndex,
-  getQueueAutoplay
+  getQueueAutoplay,
+  getTrackAndIndex
 } from 'app/store/audio/selectors'
 import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
 import { postMessage } from 'app/utils/postMessage'
@@ -63,8 +62,7 @@ type Props = OwnProps &
 
 const Audio = ({
   webRef,
-  track,
-  index,
+  trackAndIndex: { track, index },
   queueLength,
   playing,
   seek,
@@ -438,8 +436,7 @@ const Audio = ({
 }
 
 const mapStateToProps = (state: AppState) => ({
-  track: getTrack(state),
-  index: getIndex(state),
+  trackAndIndex: getTrackAndIndex(state),
   queueLength: getQueueLength(state),
   playing: getPlaying(state),
   seek: getSeek(state),

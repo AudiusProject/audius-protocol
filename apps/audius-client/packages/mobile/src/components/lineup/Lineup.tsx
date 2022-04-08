@@ -11,7 +11,6 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { SectionList } from 'app/components/core'
 import {
@@ -21,7 +20,6 @@ import {
 } from 'app/components/lineup-tile'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { make, track } from 'app/utils/analytics'
 
 import { Delineator } from './Delineator'
@@ -140,8 +138,6 @@ export const Lineup = ({
     })
   }, disableTopTabScroll)
 
-  const playing = useSelector(getPlaying)
-  const playingUid = useSelector(getPlayingUid)
   const itemCounts = useItemCounts(variant)
 
   // Item count based on the current page
@@ -195,18 +191,30 @@ export const Lineup = ({
   ])
 
   useEffect(() => {
-    if (selfLoad) {
+    if (selfLoad && lineup.entries.length === 0) {
       handleLoadMore()
     }
-  }, [handleLoadMore, selfLoad])
+  }, [handleLoadMore, selfLoad, lineup])
 
   const togglePlay = useCallback(
-    (uid: UID, id: ID, source: PlaybackSource) => {
+    ({
+      uid,
+      id,
+      source,
+      isPlayingUid,
+      isPlaying
+    }: {
+      uid: UID
+      id: ID
+      source: PlaybackSource
+      isPlayingUid: boolean
+      isPlaying: boolean
+    }) => {
       // setImmediate prevents this cpu-intensive callback from firing until
       // the lineup-tile press animation finishes. This may not be needed when
       // we remove the web-view.
       setImmediate(() => {
-        if (uid !== playingUid || (uid === playingUid && !playing)) {
+        if (!isPlayingUid || !isPlaying) {
           dispatchWeb(actions.play(uid))
           track(
             make({
@@ -215,7 +223,7 @@ export const Lineup = ({
               source: source || PlaybackSource.TRACK_TILE
             })
           )
-        } else if (uid === playingUid && playing) {
+        } else if (isPlayingUid && isPlaying) {
           dispatchWeb(actions.pause())
           track(
             make({
@@ -227,7 +235,7 @@ export const Lineup = ({
         }
       })
     },
-    [actions, dispatchWeb, playing, playingUid]
+    [actions, dispatchWeb]
   )
 
   const getLineupTileComponent = (item: LineupItem) => {

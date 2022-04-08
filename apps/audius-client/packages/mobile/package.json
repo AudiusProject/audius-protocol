@@ -60,6 +60,7 @@
     "@svgr/core": "5.5.0",
     "array.prototype.flat": "1.2.5",
     "audius-client": "file:../web",
+    "babel-plugin-transform-remove-console": "6.9.4",
     "bn.js": "5.2.0",
     "color": "4.2.1",
     "expo-crypto": "9.2.0",
