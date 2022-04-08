@@ -1,5 +1,5 @@
 const { Base, Services } = require('./base')
-const CreatorNodeService = require('../services/creatorNode/index')
+const { CreatorNode } = require('../services/creatorNode')
 const { Utils } = require('../utils')
 const { AuthHeaders } = require('../constants')
 const {
@@ -71,7 +71,7 @@ class Account extends Base {
       this.userStateManager.setCurrentUser(userAccount)
       const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
+        this.creatorNode.setEndpoint(CreatorNode.getPrimary(creatorNodeEndpoint))
       }
       return { user: userAccount, error: false, phase }
     }

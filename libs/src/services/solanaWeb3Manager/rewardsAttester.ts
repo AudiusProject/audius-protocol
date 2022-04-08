@@ -213,6 +213,7 @@ type AttesterState = {
   phase: ATTESTER_PHASE
   lastSuccessChallengeTime: number | null
   lastChallengeTime: number | null
+  lastActionTime: number
 }
 
 /**
@@ -338,7 +339,8 @@ export class RewardsAttester {
     this.attesterState = {
       phase: 'HALTED',
       lastSuccessChallengeTime: null,
-      lastChallengeTime: null
+      lastChallengeTime: null,
+      lastActionTime: Date.now()
     }
 
     // Calculate delay
@@ -1032,7 +1034,8 @@ export class RewardsAttester {
     try {
       this.attesterState = {
         ...this.attesterState,
-        ...newState
+        ...newState,
+        lastActionTime: Date.now()
       }
       await this._updateStateCallback(this.attesterState)
     } catch (e) {

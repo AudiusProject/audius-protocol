@@ -2,7 +2,7 @@ const { sampleSize } = require('lodash')
 
 const { Base } = require('./base')
 const { timeRequests } = require('../utils/network')
-const { CreatorNodeSelection } = require('../services/creatorNode/CreatorNodeSelection')
+const { CreatorNodeSelection } = require('../services/creatorNode')
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
