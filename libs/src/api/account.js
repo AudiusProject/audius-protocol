@@ -600,10 +600,16 @@ class Account extends Base {
    * Checks that the current account exists on libs
    * @returns true or false
    */
-  async checkAccountExistsOnSol () {
+  async checkAccountExistsOnSol ({ handle, wallet } = { handle: null, wallet: null }) {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
-    const { wallet, handle } = this.getCurrentUser()
+    // If wallet or handle are not passed in, use the user loaded in libs
+    if (!wallet || !handle) {
+      const user = this.getCurrentUser()
+      wallet = user.wallet
+      handle = user.handle
+    }
+
     const handleBytesArray = this.solanaWeb3Manager.getHandleBytesArray(handle)
 
     const {

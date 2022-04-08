@@ -35,22 +35,6 @@ const BlacklistManager = require('../blacklistManager')
 const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
-
-  app.get('/test_sol', handleResponse(async(req, res) => {
-    const libs = req.app.get('audiusLibs')
-
-    let resp
-    try {
-      resp = await libs.Account.checkAccountExistsOnSol()
-      req.logger.info(`resp=${resp}`)
-    } catch (e) {
-      req.logger.error({error: e}, 'intereresting')
-    }
-
-    return successResponse({
-      resp
-    })
-  }))
   /**
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
    * @note this track content route is used in conjunction with the polling.
