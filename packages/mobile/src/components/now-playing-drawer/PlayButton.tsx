@@ -60,7 +60,6 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
     <AnimatedButton
       {...props}
       haptics
-      waitForAnimationFinish
       iconJSON={iconJSON}
       onPress={handlePress}
       iconIndex={isPlaying ? 1 : 0}

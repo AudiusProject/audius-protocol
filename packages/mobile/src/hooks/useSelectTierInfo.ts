@@ -1,5 +1,6 @@
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { makeGetTierAndVerifiedForUser } from 'audius-client/src/common/store/wallet/utils'
+import { isEqual } from 'lodash'
 
 import { useSelectorWeb } from './useSelectorWeb'
 
@@ -12,5 +13,5 @@ const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
 export const useSelectTierInfo = (userId: ID) => {
   return useSelectorWeb(state => {
     return getTierAndVerifiedForUser(state, { userId })
-  })
+  }, isEqual)
 }

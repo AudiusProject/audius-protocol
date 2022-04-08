@@ -1,3 +1,5 @@
+import { createSelector } from 'reselect'
+
 import { AppState } from 'app/store'
 
 import { RepeatMode } from './reducer'
@@ -26,3 +28,8 @@ export const getShuffleIndex = (state: AppState) =>
   getBaseState(state).shuffleIndex
 export const getQueueAutoplay = (state: AppState) =>
   getBaseState(state).queueAutoplay
+
+export const getTrackAndIndex = createSelector(
+  [getTrack, getIndex],
+  (track, index) => ({ track, index })
+)

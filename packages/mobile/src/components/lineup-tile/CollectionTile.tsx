@@ -127,14 +127,24 @@ const CollectionTileComponent = ({
         )
   }, [collection, user])
 
-  const handlePress = useCallback(() => {
-    const trackUid = tracks[0] ? tracks[0].uid : null
-    const trackId = tracks[0] ? tracks[0].track_id : null
-    if (!trackUid || !trackId) {
-      return
-    }
-    togglePlay(trackUid, trackId, PlaybackSource.PLAYLIST_TILE_TRACK)
-  }, [togglePlay, tracks])
+  const handlePress = useCallback(
+    ({ isPlaying, isPlayingUid }) => {
+      const trackUid = tracks[0] ? tracks[0].uid : null
+      const trackId = tracks[0] ? tracks[0].track_id : null
+      if (!trackUid || !trackId) {
+        return
+      }
+
+      togglePlay({
+        uid: trackUid,
+        id: trackId,
+        source: PlaybackSource.PLAYLIST_TILE_TRACK,
+        isPlaying,
+        isPlayingUid
+      })
+    },
+    [togglePlay, tracks]
+  )
 
   const handlePressTitle = useCallback(() => {
     navigation.push({
