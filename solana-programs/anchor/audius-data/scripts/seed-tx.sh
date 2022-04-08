@@ -25,22 +25,19 @@ yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 1 \
-    -ci "${CI:=false}"
+    --cn-sp-id 1
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 2 \
-    -ci "${CI:=false}"
+    --cn-sp-id 2
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 3 \
-    -ci "${CI:=false}"
+    --cn-sp-id 3
 
 echo "Init user"
 
