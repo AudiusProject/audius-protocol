@@ -137,7 +137,7 @@ class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
     this.anchorProgramId = SolanaUtils.newPublicKeyNullable(anchorProgramId)
     this.anchorAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(anchorAdminStorageKeypairPublicKey)
- 
+
     const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
     const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
 
