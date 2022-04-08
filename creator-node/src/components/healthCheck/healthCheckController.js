@@ -109,7 +109,8 @@ const healthCheckController = async (req) => {
   if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
     const healthyThresholdMs = 5 * config.get('snapbackJobInterval')
 
-    const delta = Date.now() - stateMachineQueueLatestJobSuccess.getTime()
+    const delta =
+      Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
     if (delta > healthyThresholdMs) {
       return errorResponseServerError(
         `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${healthyThresholdMs}ms`

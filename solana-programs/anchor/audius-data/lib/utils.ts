@@ -9,7 +9,7 @@ import keccak256 from "keccak256";
 import { AudiusData } from "../target/types/audius_data";
 const { PublicKey } = anchor.web3;
 import web3 from "web3";
-import { DUMMY_CN_WALLET_ADDRESSES } from "./constants";
+import { LOCAL_DEV_SP_WALLETS, LOCAL_DEV_SP_PRIVATE_KEYS } from "./constants";
 
 export const SystemSysVarProgramKey = new PublicKey(
   "Sysvar1nstructions1111111111111111111111111"
@@ -202,31 +202,33 @@ export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
 /**
  * Returns object containing
  * content node delegate wallet address and 
- * authority KeyPair based on spId; when ci=true
- * returns hardcoded wallet address and new KeyPair
+ * authority KeyPair based on spId; when deterministic=false
+ * returns wallet address and keypair from local env
  */
-export const getContentNodeWalletAndAuthority = async ({ spId, ci = false }: { spId: string, ci: boolean }): Promise<any> => {
+export const getContentNodeWalletAndAuthority = async ({ spId, deterministic = true }: { spId: string, deterministic: boolean }): Promise<any> => {
   const cnSpId = parseInt(spId);
-  let contentNodeAuthority;
+  let delegatePrivateKey;
   let delegateWallet;
-  if (ci) {
-    contentNodeAuthority = anchor.web3.Keypair.generate();
-    delegateWallet = DUMMY_CN_WALLET_ADDRESSES[cnSpId - 1]
+  let contentNodeAuthority;
+  if (deterministic) {
+    delegateWallet = LOCAL_DEV_SP_WALLETS[cnSpId];
+    delegatePrivateKey = LOCAL_DEV_SP_PRIVATE_KEYS[cnSpId];
   } else {
+    // fetch dynamically from CN env vars
     delegateWallet = await getContentNodeConfigValue({
       spId: cnSpId,
       key: "delegateOwnerWallet"
     });
-    const delegatePrivateKey = await getContentNodeConfigValue({
+    delegatePrivateKey = await getContentNodeConfigValue({
       spId: cnSpId,
       key: "delegatePrivateKey"
     });
-    try {
-      const seed = hexPrivateKeyToUint8(delegatePrivateKey);
-      contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
-    } catch (error) {
-      throw new Error(`Error getting keypair from delegate private key ${delegatePrivateKey}: ${error}`);
-    }
+  }
+  try {
+    const seed = hexPrivateKeyToUint8(delegatePrivateKey);
+    contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
+  } catch (error) {
+    throw new Error(`Error getting keypair from delegate private key ${delegatePrivateKey}: ${error}`);
   }
   return {
     contentNodeAuthority,

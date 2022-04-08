@@ -28,7 +28,7 @@
   "contracts": {
     "up": [
       "cd contracts/",
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5 --deterministic true",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
@@ -44,7 +44,7 @@
     "path": "eth-contracts",
     "up": [
       "cd eth-contracts/; sudo rm -rf build",
-      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000 --deterministic true",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
@@ -56,23 +56,23 @@
       "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
     ]
   },
- "solana-validator": {
-   "protocol": "http",
-   "host": "localhost",
-   "port": 8899,
-   "health_check_endpoint": "",
-   "up": [
+  "solana-validator": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8899,
+    "health_check_endpoint": "",
+    "up": [
       "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.8.14 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 10000000'"
-   ],
+    ],
     "down": [
       "docker container stop solana || true",
       "docker container rm solana || true"
     ]
- },
- "solana-programs": {
+  },
+  "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
+      "cd solana-programs/; docker run --name audius_solana_programs --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service; cp solana-program-config.json ../creator-node",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json",
       "mkdir -p ./discovery-provider/idl/; cp solana-programs/anchor/audius-data/target/idl/audius_data.json discovery-provider/idl/audius_data.json"
