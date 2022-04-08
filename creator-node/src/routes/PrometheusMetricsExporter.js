@@ -1,24 +1,21 @@
-const Prometheus = require('prom-client');
+const Prometheus = require('prom-client')
 
-const {
-    handleResponse
-} = require('../apiHelpers')
+const { handleResponse } = require('../apiHelpers')
 const PrometheusMetric = require('../services/PrometheusMetric')
 
-const collectDefaultMetrics = Prometheus.collectDefaultMetrics;
-const metricPrefix = 'audius_cn_';
-
+const collectDefaultMetrics = Prometheus.collectDefaultMetrics
+const metricPrefix = 'audius_cn_'
 
 module.exports = function (app) {
-    collectDefaultMetrics({ prefix: metricPrefix })
-    app.get('/prometheus_metrics', async (req, res) => {
-        try {
-            PrometheusMetric.populateCollectors()
-            res.set('Content-Type', Prometheus.register.contentType);
-            res.end(await Prometheus.register.metrics())
-        } catch (ex) {
-            res.status(500).send({ ex })
-            console.error('Prometheus Metrics Exporter error:', ex)
-        }
-    })
+  collectDefaultMetrics({ prefix: metricPrefix })
+  app.get('/prometheus_metrics', async (req, res) => {
+    try {
+      PrometheusMetric.populateCollectors()
+      res.set('Content-Type', Prometheus.register.contentType)
+      res.end(await Prometheus.register.metrics())
+    } catch (ex) {
+      res.status(500).send({ ex })
+      console.error('Prometheus Metrics Exporter error:', ex)
+    }
+  })
 }
