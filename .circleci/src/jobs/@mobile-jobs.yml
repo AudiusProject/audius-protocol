@@ -65,7 +65,7 @@ mobile-build-staging-web-app:
 mobile-build-upload-staging-ios:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
-    xcode: "13.1.0"
+    xcode: "13.3.0"
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
@@ -84,7 +84,7 @@ mobile-build-upload-staging-ios:
 mobile-build-upload-production-ios:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
-    xcode: "13.1.0"
+    xcode: "13.3.0"
   environment:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail

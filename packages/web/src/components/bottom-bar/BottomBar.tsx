@@ -50,9 +50,11 @@ const BottomBar = ({
   const [tempCurrentPage, setTempCurrentPage] = useState<string | null>(
     currentPage
   )
+
   useEffect(() => {
     setTempCurrentPage(currentPage)
   }, [currentPage, setTempCurrentPage])
+
   const { location } = useHistory()
   const { pathname } = location
 
