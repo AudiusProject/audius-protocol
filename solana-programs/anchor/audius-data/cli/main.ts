@@ -141,7 +141,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
 }
 
 type initUserCLIParams = {
-  handle: string;
+  userId: anchor.BN;
   metadata: string;
   adminStoragePublicKey: PublicKey;
   ethAddress: string;
@@ -157,7 +157,7 @@ type initUserCLIParams = {
 async function initUserCLI(args: initUserCLIParams) {
   const {
     adminKeypair,
-    handle,
+    userId,
     ethAddress,
     ownerKeypairPath,
     metadata,
@@ -169,12 +169,11 @@ async function initUserCLI(args: initUserCLIParams) {
     cn3,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  const handleBytesArray = getHandleBytesArray(handle);
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       cliVars.programID,
       adminStoragePublicKey,
-      handleBytesArray
+      userId
     );
 
   const userStorageAddress = derivedAddress;
@@ -185,7 +184,7 @@ async function initUserCLI(args: initUserCLIParams) {
     ethAddress,
     replicaSet,
     replicaSetBumps,
-    handleBytesArray,
+    userId,
     bumpSeed,
     metadata,
     userStorageAccount: userStorageAddress,
@@ -201,7 +200,7 @@ async function initUserCLI(args: initUserCLIParams) {
   await cliVars.provider.connection.confirmTransaction(txHash);
 
   console.log(
-    `Initialized user=${handle}, tx=${txHash}, userAcct=${userStorageAddress}`
+    `Initialized user id=${userId}, tx=${txHash}, userAcct=${userStorageAddress}`
   );
 }
 
@@ -220,8 +219,7 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
-          args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
         }`
       );
 
@@ -394,8 +392,8 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-  ? AUDIUS_PROD_RPC_POOL
-  : LOCALHOST_RPC_POOL;
+    ? AUDIUS_PROD_RPC_POOL
+    : LOCALHOST_RPC_POOL;
 
 const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -557,7 +555,6 @@ const main = async () => {
           ethAccount,
           message: userSolKeypair.publicKey.toBytes(),
           userId: new anchor.BN(userId),
-          handleBytesArray,
           bumpSeed,
           metadata: randomCID(),
           userSolPubkey: userSolKeypair.publicKey,
