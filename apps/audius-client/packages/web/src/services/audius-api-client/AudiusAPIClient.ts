@@ -1256,7 +1256,16 @@ class AudiusAPIClient {
     return challenges
   }
 
-  async getBlockConfirmation(blockhash: string, blocknumber: number) {
+  async getBlockConfirmation(
+    blockhash: string,
+    blocknumber: number
+  ): Promise<
+    | {
+        block_found: boolean
+        block_passed: boolean
+      }
+    | {}
+  > {
     const response: Nullable<APIResponse<
       APIBlockConfirmation
     >> = await this._getResponse(

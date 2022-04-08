@@ -86,7 +86,7 @@ export function* retrieveTracksForCollections(
  * Retrieves a single collection via API client
  * @param playlistId
  */
-function* retrieveCollection(playlistId: ID) {
+export function* retrieveCollection(playlistId: ID) {
   const userId: ReturnType<typeof getUserId> = yield select(getUserId)
   const playlists: UserCollectionMetadata[] = yield apiClient.getPlaylist({
     playlistId,

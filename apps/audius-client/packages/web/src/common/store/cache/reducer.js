@@ -93,7 +93,7 @@ export const mergeCustomizer = (objValue, srcValue, key) => {
       if (!mappedList) return t
 
       const mappedTrack = mappedList.shift()
-      if (!mappedTrack.uid) return t
+      if (!mappedTrack?.uid) return t
 
       return {
         ...t,
