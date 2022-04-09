@@ -1,4 +1,5 @@
 import logging  # pylint: disable=C0302
+import json
 from datetime import date, datetime, timedelta
 from typing import List, Tuple
 
@@ -34,6 +35,7 @@ from src.queries.query_helpers import (
 )
 from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
 from src.utils.config import shared_config
+from src.utils import web3_provider
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import (
@@ -239,6 +241,7 @@ def notifications():
     """
 
     db = get_db_read_replica()
+    web3 = web3_provider.get_web3()
     min_block_number = request.args.get("min_block_number", type=int)
     max_block_number = request.args.get("max_block_number", type=int)
 
@@ -863,6 +866,71 @@ def notifications():
                 }
                 publish_playlist_notif[const.notification_metadata] = metadata
                 created_notifications.append(publish_playlist_notif)
+
+        # Playlists that had tracks added to them
+        # Get all playlists that were modified over this range
+        playlist_track_added_query = session.query(Playlist).filter(
+            Playlist.is_current == True,
+            Playlist.is_delete == False,
+            Playlist.is_private == False,
+            Playlist.blocknumber > min_block_number,
+            Playlist.blocknumber <= max_block_number,
+        )
+        playlist_track_added_results = playlist_track_added_query.all()
+        # Loop over all playlist updates and determine if there were tracks added
+        # at the block that the playlist update is at
+        track_added_to_playlist_notifications = []
+        track_ids = []
+        for entry in playlist_track_added_results:
+            # Get the track_ids from entry["playlist_contents"]
+            if "playlist_contents" not in entry:
+                continue
+            playlist_contents = json.loads(entry.playlist_contents)
+            playlist_blocknumber = entry.blocknumber
+            playlist_block = web3.eth.get_block(playlist_blocknumber)
+            playlist_block_timestamp = playlist_block.timestamp
+
+            for track in playlist_contents["track_ids"]:
+                track_id = track["track"]
+                track_timestamp = track["time"]
+                # We know that this track was added to the playlist at this specific update
+                if track_timestamp == playlist_block_timestamp:
+                    track_ids.append(track_id)
+                    track_added_to_playlist_notification = {
+                        const.notification_type: const.notification_type_track_added_to_playlist,
+                        const.notification_blocknumber: entry.blocknumber,
+                        const.notification_timestamp: entry.created_at,
+                        const.notification_initiator: entry.playlist_owner_id,
+                    }
+                    metadata = {
+                        const.notification_entity_id: track_id,
+                        const.notification_entity_type: "track"
+                    }
+                    notification[const.notification_metadata] = metadata
+                    track_added_to_playlist_notification.append(track_added_to_playlist_notification)
+
+        tracks = (
+            session.query(Track.owner_id, Track.track_id)
+            .filter(
+                Track.track_id.in_(track_ids),
+                Track.is_unlisted == False,
+                Track.is_delete == False,
+                Track.is_current == True,
+            )
+            .all()
+        )
+        track_owner_map = {}
+        for track in tracks:
+            [ owner_id, track_id ] = track
+            track_owner_map[track_id] = owner_id
+
+        # Loop over notifications and populate their metadata
+        for notification in track_added_to_playlist_notifications:
+            track_id = notification[const.notification_metadata][const.notification_entity_id]
+            track_owner_id = track_owner_map[track_id]
+            notification[const.notification_metadata][const.notification_entity_owner_id] = \
+                track_owner_id
+            created_notifications.append(notification)
 
         notifications_unsorted.extend(created_notifications)
 
