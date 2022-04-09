@@ -1,8 +1,8 @@
-from src.trending_strategies.EJ57D_trending_playlists_strategy import (
-    TrendingPlaylistsStrategyEJ57D,
-)
 from src.trending_strategies.BDNxn_trending_playlists_strategy import (
     TrendingPlaylistsStrategyBDNxn,
+)
+from src.trending_strategies.EJ57D_trending_playlists_strategy import (
+    TrendingPlaylistsStrategyEJ57D,
 )
 from src.trending_strategies.EJ57D_trending_tracks_strategy import (
     TrendingTracksStrategyEJ57D,
