@@ -7,7 +7,6 @@ const collectDefaultMetrics = Prometheus.collectDefaultMetrics
 const metricPrefix = 'audius_cn_'
 
 console.log('we were here')
-Prometheus.register.clear()
 collectDefaultMetrics({ prefix: metricPrefix })
 
 module.exports = function (app) {

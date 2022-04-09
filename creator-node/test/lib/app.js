@@ -5,6 +5,7 @@ const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
+const Prometheus = require('prom-client')
 
 async function getApp (libsClient, blacklistManager, setMockFn = null, spId = null) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
@@ -55,6 +56,7 @@ function getServiceRegistryMock (libsClient, blacklistManager) {
 
 function clearRequireCache () {
   console.log('DELETING CACHE')
+  Prometheus.register.clear()
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool
     // every time and we hit a db error if we clear the cache and keep creating new pg pools
