@@ -6,8 +6,11 @@ const PrometheusMetric = require('../services/PrometheusMetric')
 const collectDefaultMetrics = Prometheus.collectDefaultMetrics
 const metricPrefix = 'audius_cn_'
 
+console.log("we were here")
+collectDefaultMetrics({ prefix: metricPrefix })
+
 module.exports = function (app) {
-  collectDefaultMetrics({ prefix: metricPrefix })
+  console.log("we were there")
   app.get('/prometheus_metrics', async (req, res) => {
     try {
       PrometheusMetric.populateCollectors()
