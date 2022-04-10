@@ -27,7 +27,7 @@ import { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
-  ExploreStack: undefined
+  Explore: undefined
   // Smart Collection Screens
   UnderTheRadar: undefined
   MostLoved: undefined
@@ -69,7 +69,7 @@ export const ExploreTabScreen = createAppTabScreenStack<
   ExploreTabScreenParamList
 >(Stack => (
   <>
-    <Stack.Screen name='ExploreStack' component={ExploreScreen} />
+    <Stack.Screen name='Explore' component={ExploreScreen} />
     <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
     <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
     <Stack.Screen

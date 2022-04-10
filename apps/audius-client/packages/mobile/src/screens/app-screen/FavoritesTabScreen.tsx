@@ -5,7 +5,7 @@ import { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type FavoritesTabScreenParamList = AppTabScreenParamList & {
-  FavoritesStack: undefined
+  Favorites: undefined
   CreatePlaylist: undefined
 }
 

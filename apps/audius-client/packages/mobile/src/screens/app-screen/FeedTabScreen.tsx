@@ -4,7 +4,7 @@ import { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type FeedTabScreenParamList = AppTabScreenParamList & {
-  FeedStack: undefined
+  Feed: undefined
 }
 
 export const FeedTabScreen = createAppTabScreenStack<FeedTabScreenParamList>(
