@@ -349,7 +349,7 @@ const WebApp = ({
     const login = urlParams.login
     const warning = urlParams.warning
     const email = urlParams.email
-    return { login, warning, email }
+    return login || warning || email ? { login, warning, email } : null
   }, [])
 
   const getSearchParams = (searchString: string) => {

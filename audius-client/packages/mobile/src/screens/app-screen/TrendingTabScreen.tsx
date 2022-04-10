@@ -4,7 +4,7 @@ import { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type TrendingTabScreenParamList = AppTabScreenParamList & {
-  TrendingStack: undefined
+  Trending: undefined
 }
 
 export const TrendingTabScreen = createAppTabScreenStack<
