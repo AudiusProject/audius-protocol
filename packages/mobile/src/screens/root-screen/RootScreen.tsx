@@ -21,7 +21,9 @@ import { NotificationsScreen } from '../notifications-screen/NotificationsScreen
 
 export type RootScreenParamList = {
   signOn: undefined
-  App: NavigatorScreenParams<AppScreenParamList>
+  App: NavigatorScreenParams<{
+    MainStack: NavigatorScreenParams<AppScreenParamList>
+  }>
 }
 
 const Drawer = createDrawerNavigator()

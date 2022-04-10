@@ -15,7 +15,7 @@ import { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ProfileTabScreenParamList = AppTabScreenParamList & {
-  ProfileStack: undefined
+  UserProfile: undefined
   EditProfile: undefined
   SettingsScreen: undefined
   AboutScreen: undefined
