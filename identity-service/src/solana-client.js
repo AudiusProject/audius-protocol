@@ -119,6 +119,7 @@ function getFeePayerKeypair (singleFeePayer = true) {
 
 async function createAndVerifyMessage (
   connection,
+  logger,
   validSigner,
   privateKey,
   userId,
@@ -190,7 +191,7 @@ async function createAndVerifyMessage (
   })
 
   let feePayerAccount = getFeePayerKeypair(false)
-  let signature = await sendAndSignTransaction(connection, transaction, feePayerAccount, 30000)
+  let signature = await sendAndSignTransaction(connection, transaction, feePayerAccount, 30000, logger)
 
   return signature
 }
@@ -206,7 +207,7 @@ async function delay (ms) {
 // Adapted from mango send function
 // https://github.com/blockworks-foundation/mango-ui/blob/b6abfc6c13b71fc17ebbe766f50b8215fa1ec54f/src/utils/send.tsx#L785
 // THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
-async function sendAndSignTransaction (connection, transaction, signers, timeout) {
+async function sendAndSignTransaction (connection, transaction, signers, timeout, logger) {
   // Sign transaction
   let recentBlockHash = (await connection.getRecentBlockhash('confirmed')).blockhash
   transaction.recentBlockhash = recentBlockHash
@@ -232,7 +233,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   })()
 
   try {
-    awaitTransactionSignatureConfirmation(txid, timeout, connection)
+    awaitTransactionSignatureConfirmation(txid, timeout, connection, logger)
   } catch (e) {
     throw new Error(e)
   } finally {
@@ -264,7 +265,7 @@ async function awaitTransactionSignatureConfirmation (
         connection.onSignature(
           txid,
           (result) => {
-            console.log('WS confirmed', txid, result)
+            logger.info('WS confirmed', txid, result)
             done = true
             if (result.err) {
               reject(result.err)
@@ -274,10 +275,10 @@ async function awaitTransactionSignatureConfirmation (
           },
           connection.commitment
         )
-        console.log('Set up WS connection', txid)
+        logger.info('Set up WS connection', txid)
       } catch (e) {
         done = true
-        console.log('WS error in setup', txid, e)
+        logger.error('WS error in setup', txid, e)
       }
       while (!done) {
         // eslint-disable-next-line no-loop-func
@@ -289,22 +290,22 @@ async function awaitTransactionSignatureConfirmation (
             const result = signatureStatuses && signatureStatuses.value[0]
             if (!done) {
               if (!result) {
-                // console.log('REST null result for', txid, result);
+                // logger.error('REST null result for', txid, result);
               } else if (result.err) {
-                console.log('REST error for', txid, result)
+                logger.error('REST error for', txid, result)
                 done = true
                 reject(result.err)
               } else if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) {
-                console.log('REST not confirmed', txid, result)
+                logger.info('REST not confirmed', txid, result)
               } else {
-                console.log('REST confirmed', txid, result)
+                logger.info('REST confirmed', txid, result)
                 done = true
                 resolve(result)
               }
             }
           } catch (e) {
             if (!done) {
-              console.log('REST connection error: txid', txid, e)
+              logger.error('REST connection error: txid', txid, e)
             }
           }
         })()

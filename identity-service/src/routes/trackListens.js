@@ -333,6 +333,7 @@ module.exports = function (app) {
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
           connection,
+          req.logger,
           null,
           config.get('solanaSignerPrivateKey'),
           userId.toString(),
