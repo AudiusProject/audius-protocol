@@ -65,7 +65,7 @@ import collectibleDetailsReducer, {
 } from 'common/store/ui/collectible-details/slice'
 import createPlaylistModalReducer from 'common/store/ui/createPlaylistModal/reducer'
 import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
-import deletePlaylistConfirmationReducer from 'common/store/ui/delete-playlist-confirmation-modal/reducers'
+import deletePlaylistConfirmationReducer from 'common/store/ui/delete-playlist-confirmation-modal/slice'
 import { DeletePlaylistConfirmationModalState } from 'common/store/ui/delete-playlist-confirmation-modal/types'
 import mobileOverflowModalReducer from 'common/store/ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from 'common/store/ui/mobile-overflow-menu/types'
