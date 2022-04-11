@@ -213,7 +213,7 @@ class Playlists extends Base {
    * @param {File} coverPhotoFile the file to upload as the cover photo
    * @return {string} CID of the uploaded cover photo
    */
-   async uploadPlaylistCoverPhoto (playlistId, coverPhotoFile) {
+  async uploadPlaylistCoverPhoto (playlistId, coverPhotoFile) {
     this.REQUIRES(Services.CREATOR_NODE)
 
     const updatedPlaylistImage = await this.creatorNode.uploadImage(
@@ -236,7 +236,8 @@ class Playlists extends Base {
     const updatedPlaylistImageDirCid = await this.uploadPlaylistCoverPhoto(coverPhoto, true)
     return this.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
       playlistId,
-      Utils.formatOptionalMultihash(updatedPlaylistImageDirCID))
+      Utils.formatOptionalMultihash(updatedPlaylistImageDirCid)
+    )
   }
 
   /**
