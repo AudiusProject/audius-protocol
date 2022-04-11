@@ -6,8 +6,7 @@ import { useSelector } from 'react-redux'
 
 import { LineupTileProps } from 'app/components/lineup-tile/types'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { AppState } from 'app/store'
-import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
+import { getPlaying } from 'app/store/audio/selectors'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import {
@@ -30,6 +29,7 @@ export const LineupTile = ({
   id,
   imageUrl,
   index,
+  isPlayingUid,
   isTrending,
   isUnlisted,
   onLoad,
@@ -55,10 +55,6 @@ export const LineupTile = ({
     save_count
   } = item
   const { _artist_pick, name, user_id } = user
-
-  const isPlayingUid = useSelector(
-    (state: AppState) => getPlayingUid(state) === uid
-  )
   const isPlaying = useSelector(getPlaying)
   const currentUserId = useSelectorWeb(getUserId)
 
@@ -82,11 +78,8 @@ export const LineupTile = ({
   }, [onLoad, isLoaded, index, opacity])
 
   const handlePress = useCallback(() => {
-    onPress?.({
-      isPlayingUid,
-      isPlaying
-    })
-  }, [isPlayingUid, isPlaying, onPress])
+    onPress?.({ isPlaying })
+  }, [isPlaying, onPress])
 
   return (
     <LineupTileRoot onPress={handlePress}>
