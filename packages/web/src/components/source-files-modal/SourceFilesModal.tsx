@@ -5,7 +5,8 @@ import {
   ButtonSize,
   ButtonType,
   IconRemove,
-  Modal
+  Modal,
+  IconButton
 } from '@audius/stems'
 import cn from 'classnames'
 
@@ -15,7 +16,6 @@ import {
   StemUpload
 } from 'common/models/Stems'
 import { Download } from 'common/models/Track'
-import IconButton from 'components/icon-button/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import Switch from 'components/switch/Switch'
@@ -83,6 +83,7 @@ const StemRow = ({
       <div className={styles.deleteButton}>
         {allowDelete ? (
           <IconButton
+            aria-label='delete'
             className={styles.deleteButtonIcon}
             onClick={() => {
               if (!allowDelete) return

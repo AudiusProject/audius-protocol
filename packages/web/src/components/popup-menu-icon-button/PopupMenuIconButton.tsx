@@ -1,9 +1,7 @@
 import React from 'react'
 
-import { PopupMenu, PopupMenuProps } from '@audius/stems'
+import { PopupMenu, PopupMenuProps, IconButton } from '@audius/stems'
 import cn from 'classnames'
-
-import IconButton from 'components/icon-button/IconButton'
 
 import styles from './PopupMenuIconButton.module.css'
 
@@ -24,6 +22,7 @@ export const PopupMenuIconButton = (props: PopupMenuIconButtonProps) => {
       {...popupMenuProps}
       renderTrigger={(ref, triggerPopup) => (
         <IconButton
+          aria-label='open'
           ref={ref}
           className={cn(styles.icon, style, iconClassName)}
           icon={icon}

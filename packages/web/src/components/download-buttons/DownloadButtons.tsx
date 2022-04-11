@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react'
 
-import { IconDownload } from '@audius/stems'
+import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -12,7 +12,6 @@ import {
 } from 'common/hooks/useDownloadTrackButtons'
 import { ID } from 'common/models/Identifiers'
 import { toast } from 'common/store/ui/toast/slice'
-import IconButton from 'components/icon-button/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
 import {
@@ -82,7 +81,7 @@ const DownloadButton = ({
 
     return (
       <div className={styles.iconDownload}>
-        <IconButton icon={<IconDownload />} />
+        <IconButton aria-label='Download' icon={<IconDownload />} />
       </div>
     )
   }

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { IconKebabHorizontal } from '@audius/stems'
+import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import ReactMarkdown from 'react-markdown'
@@ -8,7 +8,6 @@ import ReactMarkdown from 'react-markdown'
 import { ReactComponent as IconAnnouncement } from 'assets/img/iconAnnouncement.svg'
 import { ReactComponent as IconAnnouncementUnread } from 'assets/img/iconAnnouncementUnread.svg'
 import { Name } from 'common/models/Analytics'
-import IconButton from 'components/icon-button/IconButton'
 import { make, useRecord } from 'store/analytics/actions'
 
 import styles from './Announcement.module.css'
@@ -106,6 +105,7 @@ const Announcement = ({
           <span className={styles.date}>{displayTime}</span>
           <div className={styles.iconContainer}>
             <IconButton
+              aria-label='menu'
               className={styles.menu}
               icon={<IconKebabHorizontal />}
               onClick={onOptionsClick}

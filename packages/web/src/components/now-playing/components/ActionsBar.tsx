@@ -4,14 +4,14 @@ import {
   IconShare,
   IconKebabHorizontal,
   IconAirplay,
-  IconChromecast
+  IconChromecast,
+  IconButton
 } from '@audius/stems'
 import cn from 'classnames'
 
 import { CastMethod } from 'common/store/cast/slice'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
-import IconButton from 'components/icon-button/IconButton'
 import { AirplayMessage } from 'services/native-mobile-interface/cast'
 import { ShowGoogleCastPickerMessage } from 'services/native-mobile-interface/googleCast'
 
@@ -52,11 +52,12 @@ const ActionsBar = ({
     <div className={styles.actionsBar}>
       {NATIVE_MOBILE && (
         <IconButton
+          aria-label='cast'
           isActive={isCasting}
           className={cn(styles.icon, styles.iconCast)}
           activeClassName={styles.activeButton}
           icon={isAirplay ? <IconAirplay /> : <IconChromecast />}
-          onClick={e => {
+          onClick={(e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation()
             const message = isAirplay
               ? new AirplayMessage()
@@ -86,14 +87,16 @@ const ActionsBar = ({
         altVariant
       />
       <IconButton
+        aria-label='share'
         icon={<IconShare />}
         onClick={onShare}
         className={styles.icon}
       />
       <IconButton
+        aria-label='more actions'
         icon={<IconKebabHorizontal />}
         className={styles.icon}
-        onClick={e => {
+        onClick={(e: React.MouseEvent<Element, MouseEvent>) => {
           e.stopPropagation()
           onClickOverflow()
         }}
