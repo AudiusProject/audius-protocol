@@ -29,7 +29,7 @@ def upgrade():
 
             ALTER TABLE users DROP CONSTRAINT IF EXISTS users_pkey;
             UPDATE users
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE users ADD PRIMARY KEY (is_current, user_id, txhash);
 

@@ -23,7 +23,7 @@ def upgrade():
 
             ALTER TABLE tracks DROP CONSTRAINT IF EXISTS tracks_pkey;
             UPDATE tracks
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE tracks ADD PRIMARY KEY (is_current, track_id, txhash);
 

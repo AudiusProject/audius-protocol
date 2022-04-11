@@ -24,7 +24,7 @@ def upgrade():
 
             ALTER TABLE ursm_content_nodes DROP CONSTRAINT IF EXISTS ursm_content_nodes_pkey;
             UPDATE ursm_content_nodes
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE ursm_content_nodes ADD PRIMARY KEY (is_current, cnode_sp_id, txhash);
 
@@ -36,7 +36,7 @@ def upgrade():
 
             ALTER TABLE follows DROP CONSTRAINT IF EXISTS follows_pkey;
             UPDATE follows
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE follows ADD PRIMARY KEY (is_current, follower_user_id, followee_user_id, txhash);
 
