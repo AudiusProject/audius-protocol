@@ -11,7 +11,7 @@ async function run (
 ) {
   const start = Date.now()
 
-  requests = requests || 50
+  requests = 50
 
   const success = await Promise.all(
     Array.apply(null, { length: requests }).map(async () => {

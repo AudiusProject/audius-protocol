@@ -770,7 +770,7 @@
       ]
     },
     {
-      "name": "followUser",
+      "name": "writeUserSocialAction",
       "accounts": [
         {
           "name": "audiusAdmin",
@@ -778,12 +778,12 @@
           "isSigner": false
         },
         {
-          "name": "followerUserStorage",
+          "name": "sourceUserStorage",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "followeeUserStorage",
+          "name": "targetUserStorage",
           "isMut": true,
           "isSigner": false
         },
@@ -815,13 +815,13 @@
           }
         },
         {
-          "name": "followerHandle",
+          "name": "sourceUserHandle",
           "type": {
             "defined": "UserHandle"
           }
         },
         {
-          "name": "followeeHandle",
+          "name": "targetUserHandle",
           "type": {
             "defined": "UserHandle"
           }
@@ -940,20 +940,13 @@
           "type": "publicKey"
         },
         {
-          "name": "handleSeed",
+          "name": "userHandle",
           "type": {
-            "array": [
-              "u8",
-              32
-            ]
+            "defined": "UserHandle"
           }
         },
         {
-          "name": "userBump",
-          "type": "u8"
-        },
-        {
-          "name": "userAuthorityDelegate",
+          "name": "delegatePubkey",
           "type": "publicKey"
         }
       ]
@@ -1008,17 +1001,10 @@
           "type": "publicKey"
         },
         {
-          "name": "handleSeed",
+          "name": "userHandle",
           "type": {
-            "array": [
-              "u8",
-              32
-            ]
+            "defined": "UserHandle"
           }
-        },
-        {
-          "name": "userBump",
-          "type": "u8"
         },
         {
           "name": "userAuthorityDelegate",
@@ -1185,6 +1171,12 @@
           },
           {
             "name": "UnfollowUser"
+          },
+          {
+            "name": "SubscribeUser"
+          },
+          {
+            "name": "UnsubscribeUser"
           }
         ]
       }
@@ -1279,6 +1271,6 @@
     }
   ],
   "metadata": {
-    "address": "8dwroDmUoVXoFkSxLLhM9mEGc6LTjN24LR1FytrU8wU1"
+    "address": "AyEEZSNfPFpAkcwRoqVvf81iFyfze764V2Xo58fpcDoH"
   }
 }

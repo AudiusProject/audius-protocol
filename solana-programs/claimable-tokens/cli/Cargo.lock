@@ -415,7 +415,7 @@ dependencies = [
  "num-traits",
  "num_enum",
  "solana-program",
- "spl-token 3.2.0 (git+https://github.com/solana-labs/solana-program-library?tag=token-v3.2.0)",
+ "spl-token",
  "thiserror",
 ]
 
@@ -436,7 +436,7 @@ dependencies = [
  "solana-program",
  "solana-sdk",
  "spl-associated-token-account",
- "spl-token 3.2.0 (git+https://github.com/solana-labs/solana-program-library?tag=token-v3.2.0)",
+ "spl-token",
 ]
 
 [[package]]
@@ -2521,7 +2521,7 @@ dependencies = [
  "solana-config-program",
  "solana-sdk",
  "solana-vote-program",
- "spl-token 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "spl-token",
  "thiserror",
  "zstd",
 ]
@@ -3050,7 +3050,7 @@ dependencies = [
  "solana-vote-program",
  "spl-associated-token-account",
  "spl-memo",
- "spl-token 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "spl-token",
  "thiserror",
 ]
 
@@ -3104,7 +3104,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "393e2240d521c3dd770806bff25c2c00d761ac962be106e14e22dd912007f428"
 dependencies = [
  "solana-program",
- "spl-token 3.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "spl-token",
 ]
 
 [[package]]
@@ -3121,19 +3121,6 @@ name = "spl-token"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93bfdd5bd7c869cb565c7d7635c4fafe189b988a0bdef81063cd9585c6b8dc01"
-dependencies = [
- "arrayref",
- "num-derive",
- "num-traits",
- "num_enum",
- "solana-program",
- "thiserror",
-]
-
-[[package]]
-name = "spl-token"
-version = "3.2.0"
-source = "git+https://github.com/solana-labs/solana-program-library?tag=token-v3.2.0#ddc029e14dc99f54d9cc76b433d300efb6ed9902"
 dependencies = [
  "arrayref",
  "num-derive",

@@ -143,6 +143,109 @@ class TransactionHandler {
     }
   }
 
+  async _delay (waitTime) {
+    return await new Promise((resolve) => setTimeout(resolve, waitTime))
+  }
+
+  _getUnixTs () {
+    return new Date().getTime() / 1000
+  }
+
+  async _sendSignedRawTransaction (connection, transaction, timeout) {
+    // Serialize and grab raw transaction bytes
+    let rawTransaction = transaction.serialize()
+    const startTime = this._getUnixTs()
+    const txid = await connection.sendRawTransaction(
+      rawTransaction,
+      {
+        skipPreflight: true,
+      },
+    )
+
+    let done = false
+    // Anonymous function to retry sending until confirmation
+    (async () => {
+      while (!done && this._getUnixTs() - startTime < timeout) {
+        connection.sendRawTransaction(rawTransaction, {
+          skipPreflight: true,
+        })
+        await this._delay(300)
+      }
+    })();
+  }
+
+  async _awaitTransactionSignatureConfirmation (
+    txid,
+    timeout,
+    connection,
+  ) {
+    let done = false
+    const result = await new Promise((resolve, reject) => {
+      (async () => {
+        setTimeout(() => {
+          if (done) {
+            return
+          }
+          done = true
+          console.log('Timed out for txid', txid)
+          reject(new Error(`Timeout for ${txid}`))
+        }, timeout)
+        try {
+          connection.onSignature(
+            txid,
+            (result) => {
+              console.log('WS confirmed', txid, result)
+              done = true
+              if (result.err) {
+                reject(result.err)
+              } else {
+                resolve(result)
+              }
+            },
+            connection.commitment,
+          )
+          console.log('Set up WS connection', txid)
+        } catch (e) {
+          done = true
+          console.log('WS error in setup', txid, e)
+        }
+        while (!done) {
+          // eslint-disable-next-line no-loop-func
+          (async () => {
+            try {
+              const signatureStatuses = await connection.getSignatureStatuses([
+                txid,
+              ])
+              const result = signatureStatuses && signatureStatuses.value[0]
+              if (!done) {
+                if (!result) {
+                  // console.log('REST null result for', txid, result);
+                } else if (result.err) {
+                  console.log('REST error for', txid, result)
+                  done = true
+                  reject(result.err)
+                } else if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) {
+                  console.log('REST not confirmed', txid, result)
+                } else {
+                  console.log('REST confirmed', txid, result)
+                  done = true
+                  resolve(result)
+                }
+              }
+            } catch (e) {
+              if (!done) {
+                console.log('REST connection error: txid', txid, e)
+              }
+            }
+          })()
+          await this._delay(300)
+        }
+      })()
+    })
+    done = true
+    return result
+  }
+
   /**
    * Attempts to parse an error code out of a message of the form:
    * "... custom program error: 0x1", where the return in this case would be the number 1.

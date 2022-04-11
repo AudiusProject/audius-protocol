@@ -855,24 +855,24 @@ generators.getUpdateReplicaSetRequestData = function (
  */
 function browserRandomHash (nChar) {
   // convert number of characters to number of bytes
-  const nBytes = Math.ceil(nChar = (+nChar || 8) / 2)
+  var nBytes = Math.ceil(nChar = (+nChar || 8) / 2)
 
   // create a typed array of that many bytes
-  const u = new Uint8Array(nBytes)
+  var u = new Uint8Array(nBytes)
 
   // populate it wit crypto-random values
   window.crypto.getRandomValues(u)
 
   // convert it to an Array of Strings (e.g. '01', 'AF', ..)
-  const zpad = function (str) {
+  var zpad = function (str) {
     return '00'.slice(str.length) + str
   }
-  const a = Array.prototype.map.call(u, function (x) {
+  var a = Array.prototype.map.call(u, function (x) {
     return zpad(x.toString(16))
   })
 
   // Array of String to String
-  let str = a.join('').toLowerCase()
+  var str = a.join('').toLowerCase()
   // and snip off the excess digit if we want an odd number
   if (nChar % 2) str = str.slice(1)
 
