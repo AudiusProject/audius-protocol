@@ -310,7 +310,7 @@ export class CreatorNode {
    * @param trackFile the audio content
    * @param coverArtFile the image content
    * @param metadata the metadata for the track
-   * @param onProgress an optional on progerss callback
+   * @param onProgress an optional on progress callback
    */
   async uploadTrackContent(
     trackFile: File,

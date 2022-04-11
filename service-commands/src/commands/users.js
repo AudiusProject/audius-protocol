@@ -70,6 +70,30 @@ User.uploadPhotoAndUpdateMetadata = async (libsWrapper, {
   return newMetadata
 }
 
+User.uploadProfilePic = async (libsWrapper, picturePath) => {
+  const userPicFile = fs.createReadStream(picturePath)
+
+  const resp = await libsWrapper.libsInstance.File.uploadImage(
+    userPicFile,
+    'true', // square, this weirdly has to be a boolean string
+    10000 // timeoutMs
+  )
+
+  return resp.dirCID
+}
+
+User.uploadCoverPhoto = async (libsWrapper, photoPath) => {
+  const coverPhotoFile = fs.createReadStream(photoPath)
+
+  const resp = await libsWrapper.libsInstance.File.uploadImage(
+    coverPhotoFile,
+    'false', // square, this weirdly has to be a boolean string
+    10000 // timeoutMs
+  )
+
+  return resp.dirCID
+}
+
 User.updateAndUploadMetadata = async (libsWrapper, { newMetadata, userId }) => {
   await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
 }
@@ -128,6 +152,10 @@ User.setCurrentUser = (libs, user) => {
 
 User.getLibsUserInfo = async libs => {
   return libs.getLibsUserInfo()
+}
+
+User.cleanUserMetadata = (libsWrapper, metadata) => {
+  return libsWrapper.cleanUserMetadata(metadata)
 }
 
 User.updateMultihash = async (libsWrapper, userId, multihashDigest) => {
