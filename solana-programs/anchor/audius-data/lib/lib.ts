@@ -96,7 +96,6 @@ export const initUser = ({
   cn3,
 }: InitUserParams) => {
   const tx = new Transaction();
-  console.log('AAAAAAAAAAAAAA', userId.toNumber(), bumpSeed)
   tx.add(
     program.instruction.initUser(
       baseAuthorityAccount,
@@ -214,7 +213,7 @@ export type UpdateUserReplicaSet = {
   cn2: anchor.web3.PublicKey;
   cn3: anchor.web3.PublicKey;
   userAcct: anchor.web3.PublicKey;
-  userIdSeedBump: { userId: anchor.BN; bump: number };
+  userIdSeedBump: { userId: number; bump: number };
 };
 
 export const updateUserReplicaSet = ({
@@ -420,15 +419,33 @@ export const createUser = ({
       recoveryId,
     })
   );
+  console.log(`
+  baseAuthorityAccount: ${baseAuthorityAccount}
+  program: ${program}
+  ethAccount: ${ethAccount}
+  message: ${message}
+  replicaSet: ${replicaSet}
+  replicaSetBumps: ${replicaSetBumps}
+  cn1: ${cn1}
+  cn2: ${cn2}
+  cn3: ${cn3}
+  userId: ${userId}
+  bumpSeed: ${bumpSeed}
+  metadata: ${metadata}
+  payer: ${payer}
+  userSolPubkey: ${userSolPubkey}
+  userStorageAccount: ${userStorageAccount}
+  adminStoragePublicKey: ${adminStoragePublicKey}
+  `)
   tx.add(
     program.instruction.createUser(
       baseAuthorityAccount,
       [...anchor.utils.bytes.hex.decode(ethAccount.address)],
       replicaSet,
       replicaSetBumps,
+      userId.toNumber(),
       bumpSeed,
       metadata,
-      userId,
       userSolPubkey,
       {
         accounts: {
@@ -601,7 +618,7 @@ export const addUserAuthorityDelegate = ({
   tx.add(
     program.instruction.addUserAuthorityDelegate(
       baseAuthorityAccount,
-      { userId: userId, bump: userBumpSeed },
+      { userId: userId.toNumber(), bump: userBumpSeed },
       delegatePublicKey,
       {
         accounts: {
@@ -655,7 +672,7 @@ export const removeUserAuthorityDelegate = ({
   tx.add(
     program.instruction.removeUserAuthorityDelegate(
       baseAuthorityAccount,
-      { userId: userId, bump: userBumpSeed },
+      { userId: userId.toNumber(), bump: userBumpSeed },
       delegatePublicKey,
       delegateBump,
       {
@@ -700,7 +717,7 @@ export const updateIsVerified = ({
   tx.add(
     program.instruction.updateIsVerified(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       {
         accounts: {
           user: userStorageAccount,
@@ -757,7 +774,7 @@ export const createTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.create,
       id,
@@ -851,7 +868,7 @@ export const updateTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.update,
       id,
@@ -888,7 +905,7 @@ export const deleteTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.delete,
       id,
@@ -926,7 +943,7 @@ export const createPlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.create,
       id,
@@ -964,7 +981,7 @@ export const updatePlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.update,
       id,
@@ -1000,7 +1017,7 @@ export const deletePlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.delete,
       id,
@@ -1069,7 +1086,7 @@ export const addTrackSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addSave,
       EntityTypesEnumValues.track,
       id,
@@ -1103,7 +1120,7 @@ export const deleteTrackSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteSave,
       EntityTypesEnumValues.track,
       id,
@@ -1137,7 +1154,7 @@ export const addTrackRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addRepost,
       EntityTypesEnumValues.track,
       id,
@@ -1171,7 +1188,7 @@ export const deleteTrackRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteRepost,
       EntityTypesEnumValues.track,
       id,
@@ -1205,7 +1222,7 @@ export const addPlaylistSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addSave,
       EntityTypesEnumValues.playlist,
       id,
@@ -1239,7 +1256,7 @@ export const deletePlaylistSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteSave,
       EntityTypesEnumValues.playlist,
       id,
@@ -1273,7 +1290,7 @@ export const addPlaylistRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addRepost,
       EntityTypesEnumValues.playlist,
       id,
@@ -1307,7 +1324,7 @@ export const deletePlaylistRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { userId: userId, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteRepost,
       EntityTypesEnumValues.playlist,
       id,

@@ -71,11 +71,10 @@ pub mod audius_data {
         eth_address: [u8; 20],
         replica_set: [u16; 3],
         _replica_set_bumps: [u8; 3],
-        user_id: u16,
+        user_id: u32,
         _user_bump: u8,
         _metadata: String,
     ) -> Result<()> {
-        msg!("AAAAAAAAAAAAA");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
             &[&ctx.accounts.admin.key().to_bytes()[..32]],
@@ -91,12 +90,10 @@ pub mod audius_data {
             &[&derived_base.to_bytes()[..32], &user_id.to_le_bytes()],
             ctx.program_id,
         );
-        msg!("BBBBBBBBBBBBB");
 
         if derived_user_acct != ctx.accounts.user.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
-        msg!("CCCCCCCCCCCcc");
 
         if ctx.accounts.authority.key() != ctx.accounts.admin.authority {
             return Err(ErrorCode::Unauthorized.into());
@@ -608,7 +605,7 @@ pub struct Initialize<'info> {
 /// `payer` is the account responsible for the lamports required to allocate this account.le
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], user_id: u16)]
+#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], user_id: u32)]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
@@ -750,9 +747,9 @@ pub struct InitializeUserSolIdentity<'info> {
     eth_address: [u8;20],
     replica_set: [u16; 3],
     replica_set_bumps:[u8; 3],
+    _id: u32,
     _user_bump: u8,
     _metadata: String,
-    _id: u32,
     _user_authority: Pubkey,
 )]
 pub struct CreateUser<'info> {
