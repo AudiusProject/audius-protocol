@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { BNWei } from 'audius-client/src/common/models/Wallet'
+import { BNWei, StringWei } from 'audius-client/src/common/models/Wallet'
 import { getHasAssociatedWallets } from 'audius-client/src/common/store/pages/token-dashboard/selectors'
 import {
   setModalState,
@@ -8,6 +8,7 @@ import {
 } from 'audius-client/src/common/store/pages/token-dashboard/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { getAccountTotalBalance } from 'audius-client/src/common/store/wallet/selectors'
+import { getTierAndNumberForBalance } from 'audius-client/src/common/store/wallet/utils'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { formatWei } from 'audius-client/src/common/utils/wallet'
 import BN from 'bn.js'
@@ -35,7 +36,7 @@ import { ChallengeRewards } from './ChallengeRewards'
 import { Tier } from './Tier'
 import { TrendingRewards } from './TrendingRewards'
 
-const LEARN_MORE_LINK = 'https://blog.audius.co/posts/community-meet-audio'
+const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 
 const messages = {
   title: '$AUDIO & Rewards',
@@ -155,10 +156,18 @@ export const AudioScreen = () => {
 
   const totalBalance: Nullable<BNWei> =
     useSelectorWeb(getAccountTotalBalance) ?? null
+
+  const totalBalanceWei =
+    useSelectorWeb(state => state.wallet.totalBalance) ?? ('0' as StringWei)
+
+  const { tierNumber } = getTierAndNumberForBalance(totalBalanceWei)
+
   const hasMultipleWallets = useSelectorWeb(getHasAssociatedWallets)
+
   const onPressWalletInfo = useCallback(() => {
     dispatchWeb(setVisibility({ modal: 'AudioBreakdown', visible: true }))
   }, [dispatchWeb])
+
   const renderAudioTile = () => {
     return (
       <Tile
@@ -204,11 +213,13 @@ export const AudioScreen = () => {
       setVisibility({ modal: 'TransferAudioMobileWarning', visible: true })
     )
   }, [dispatchWeb])
+
   const onPressReceive = useCallback(() => {
     dispatchWeb(
       setVisibility({ modal: 'TransferAudioMobileWarning', visible: true })
     )
   }, [dispatchWeb])
+
   const onPressConnectWallets = useCallback(() => {
     dispatchWeb(
       setVisibility({ modal: 'MobileConnectWalletsDrawer', visible: true })
@@ -327,7 +338,7 @@ export const AudioScreen = () => {
           colors={['rgba(141, 48, 8, 0.5)', 'rgb(182, 97, 11)']}
           minAmount={10}
           image={<Image source={Bronze} />}
-          isCurrentTier={false}
+          isCurrentTier={tierNumber === 1}
         />
         <Tier
           tierNumber={2}
@@ -335,7 +346,7 @@ export const AudioScreen = () => {
           colors={['rgba(179, 182, 185, 0.5)', 'rgb(189, 189, 189)']}
           minAmount={100}
           image={<Image source={Silver} />}
-          isCurrentTier={true}
+          isCurrentTier={tierNumber === 2}
         />
         <Tier
           tierNumber={3}
@@ -343,7 +354,7 @@ export const AudioScreen = () => {
           colors={['rgb(236, 173, 11)', 'rgb(236, 173, 11)']}
           minAmount={1000}
           image={<Image source={Gold} />}
-          isCurrentTier={false}
+          isCurrentTier={tierNumber === 2}
         />
         <Tier
           tierNumber={4}
@@ -351,7 +362,7 @@ export const AudioScreen = () => {
           colors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
           minAmount={10000}
           image={<Image source={Platinum} />}
-          isCurrentTier={false}
+          isCurrentTier={tierNumber === 3}
         />
         <Button
           title={messages.learnMore}
@@ -408,14 +419,12 @@ export const AudioScreen = () => {
     <Screen>
       <Header text={messages.title} />
       <ScrollView style={styles.tiles}>
-        <View>
-          {renderAudioTile()}
-          {renderWalletTile()}
-          {renderRewardsTile()}
-          {renderTrendingTile()}
-          {renderTierTile()}
-          {renderWhatTile()}
-        </View>
+        {renderAudioTile()}
+        {renderWalletTile()}
+        {renderRewardsTile()}
+        {renderTrendingTile()}
+        {renderTierTile()}
+        {renderWhatTile()}
       </ScrollView>
     </Screen>
   )

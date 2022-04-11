@@ -2,15 +2,15 @@ import { useCallback } from 'react'
 
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { getCompletionStages } from 'audius-client/src/common/store/challenges/selectors/profile-progress'
-import { profilePage, AUDIO_PAGE } from 'audius-client/src/utils/route'
 import { StyleSheet, View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconValidationCheck from 'app/assets/images/iconValidationCheck.svg'
 import Text from 'app/components/text'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
 import { ThemeColors } from 'app/utils/theme'
 
 import Button, { ButtonType } from '../button'
@@ -65,14 +65,14 @@ export const ProfileCompletionChecks = ({
 }) => {
   const currentUser = useSelectorWeb(getAccountUser)
   const completionStages = useSelectorWeb(getCompletionStages)
-  const pushRouteWeb = usePushRouteWeb()
   const styles = useThemedStyles(createStyles)
+  const navigation = useNavigation<ProfileTabScreenParamList>()
   const goToProfile = useCallback(() => {
     onClose()
     if (currentUser?.handle) {
-      pushRouteWeb(profilePage(currentUser.handle), AUDIO_PAGE, false)
+      navigation.goBack()
     }
-  }, [pushRouteWeb, currentUser, onClose])
+  }, [currentUser, onClose, navigation])
 
   if (!currentUser || !currentUser?.handle) {
     return null

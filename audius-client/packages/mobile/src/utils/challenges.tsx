@@ -4,8 +4,7 @@ import {
 } from 'audius-client/src/common/models/AudioRewards'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
-  TRENDING_PAGE,
-  UPLOAD_PAGE
+  TRENDING_PAGE
 } from 'audius-client/src/utils/route'
 import { ImageSourcePropType } from 'react-native'
 
@@ -89,6 +88,11 @@ export const challenges = {
   trackUploadButton: 'Upload Tracks'
 }
 
+export type ChallengesParamList = {
+  trending: undefined
+  AccountVerificationScreen: undefined
+}
+
 export type ChallengeConfig = {
   icon: ImageSourcePropType
   title: string
@@ -98,7 +102,13 @@ export type ChallengeConfig = {
   remainingLabel?: string
   isVerifiedChallenge?: boolean
   buttonInfo?: {
-    link?: string
+    navigation?: {
+      native: {
+        screen: keyof ChallengesParamList
+        params?: ChallengesParamList[keyof ChallengesParamList]
+      }
+      web: { route: string }
+    }
     label: string
     renderIcon?: (color: string) => React.ReactElement
     iconPosition?: 'left' | 'right'
@@ -114,7 +124,10 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     progressLabel: challenges.connectVerifiedProgressLabel,
     buttonInfo: {
       label: challenges.connectVerifiedButton,
-      link: ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+      navigation: {
+        native: { screen: 'AccountVerificationScreen' },
+        web: { route: ACCOUNT_VERIFICATION_SETTINGS_PAGE }
+      },
       renderIcon: color => <IconCheck fill={color} />,
       iconPosition: 'right'
     }
@@ -127,7 +140,10 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     progressLabel: challenges.listenStreakProgressLabel,
     buttonInfo: {
       label: challenges.listenStreakButton,
-      link: TRENDING_PAGE,
+      navigation: {
+        native: { screen: 'trending' },
+        web: { route: TRENDING_PAGE }
+      },
       renderIcon: color => <IconArrow fill={color} />,
       iconPosition: 'right'
     }
@@ -187,7 +203,6 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     progressLabel: challenges.trackUploadProgressLabel,
     buttonInfo: {
       label: challenges.trackUploadButton,
-      link: UPLOAD_PAGE,
       renderIcon: color => <IconUpload fill={color} />,
       iconPosition: 'right'
     }
