@@ -237,7 +237,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   })()
 
   try {
-    awaitTransactionSignatureConfirmation(txid, timeout, connection, logger)
+    await awaitTransactionSignatureConfirmation(txid, timeout, connection, logger)
   } catch (e) {
     throw new Error(e)
   } finally {
