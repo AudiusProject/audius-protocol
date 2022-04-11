@@ -11,6 +11,7 @@ import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { ConnectWalletsDrawer } from 'app/components/connect-wallets-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
+import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
@@ -81,7 +82,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   Overflow: OverflowMenuDrawer,
   SignOutConfirmation: SignOutConfirmationDrawer,
   AddToPlaylist: AddToPlaylistDrawer,
-  AudioBreakdown: AudioBreakdownDrawer
+  AudioBreakdown: AudioBreakdownDrawer,
+  DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

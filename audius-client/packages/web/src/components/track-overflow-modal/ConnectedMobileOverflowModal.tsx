@@ -44,7 +44,7 @@ import {
 } from 'common/store/social/users/actions'
 import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
 import { open as openEditPlaylist } from 'common/store/ui/createPlaylistModal/actions'
-import { setOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-confirmation-modal/actions'
+import { requestOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-confirmation-modal/slice'
 import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
 import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
@@ -327,7 +327,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       dispatch(unsaveCollection(collectionId, FavoriteSource.OVERFLOW)),
     editPlaylist: (playlistId: ID) => dispatch(openEditPlaylist(playlistId)),
     deletePlaylist: (playlistId: ID) =>
-      dispatch(openDeletePlaylist(playlistId)),
+      dispatch(openDeletePlaylist({ playlistId })),
     publishPlaylist: (playlistId: ID) => dispatch(publishPlaylist(playlistId)),
 
     // Users

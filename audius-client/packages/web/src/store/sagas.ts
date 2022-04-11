@@ -13,6 +13,7 @@ import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
+import deletePlaylistConfirmationModalSagas from 'common/store/ui/delete-playlist-confirmation-modal/sagas'
 import overflowMenuSagas from 'common/store/ui/mobile-overflow-menu/sagas'
 import shareModalSagas from 'common/store/ui/share-modal/sagas'
 import toastSagas from 'common/store/ui/toast/sagas'
@@ -137,6 +138,7 @@ export default function* rootSaga() {
     changePasswordSagas(),
     deactivateAccountSagas(),
     deletedSagas(),
+    deletePlaylistConfirmationModalSagas(),
     favoritePageSagas(),
     firstUploadModalSagas(),
     followersPageSagas(),
