@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 
-import { IconKebabHorizontal } from '@audius/stems'
+import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -12,7 +12,6 @@ import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { ID } from 'common/models/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
-import IconButton from 'components/icon-button/IconButton'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -156,7 +155,7 @@ const TrackListItem = ({
     if (onSave) onSave(isSaved, trackId)
   }
 
-  const onRemoveTrack = (e: React.MouseEvent) => {
+  const onRemoveTrack = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.stopPropagation()
     if (onRemove) onRemove(index)
   }
@@ -216,9 +215,10 @@ const TrackListItem = ({
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (
         <div className={styles.iconContainer}>
           <IconButton
+            aria-label='more actions'
             icon={<IconKebabHorizontal />}
             className={styles.kebabContainer}
-            onClick={(e: any) => {
+            onClick={(e: React.MouseEvent<Element, MouseEvent>) => {
               e.stopPropagation()
               onClickOverflow()
             }}
@@ -228,6 +228,7 @@ const TrackListItem = ({
       {onRemove && (
         <div className={styles.iconContainer}>
           <IconButton
+            aria-label='remove track'
             icon={<IconRemoveTrack />}
             className={cn(styles.removeTrackContainer, {
               [styles.isRemoveActive]: isRemoveActive

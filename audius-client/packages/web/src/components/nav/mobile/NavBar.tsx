@@ -5,7 +5,8 @@ import {
   IconRemove,
   IconNotification,
   IconSettings,
-  IconCrown
+  IconCrown,
+  IconButton
 } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
@@ -19,7 +20,6 @@ import {
   RouterContext,
   SlideDirection
 } from 'components/animated-switch/RouterContextProvider'
-import IconButton from 'components/icon-button/IconButton'
 import NavContext, {
   LeftPreset,
   CenterPreset,
@@ -148,6 +148,7 @@ const NavBar = ({
   if (leftElement === LeftPreset.BACK) {
     left = (
       <IconButton
+        aria-label='go back'
         className={cn(styles.leftIconButton, styles.caretRight)}
         icon={<IconCaretRight />}
         onClick={onGoBack}
@@ -156,6 +157,7 @@ const NavBar = ({
   } else if (leftElement === LeftPreset.CLOSE) {
     left = (
       <IconButton
+        aria-label='close'
         className={styles.leftIconButton}
         icon={<IconRemove />}
         onClick={getIsIOS() ? goBackAndResetSlide : goBackAndDoNotAnimate}
@@ -164,6 +166,7 @@ const NavBar = ({
   } else if (leftElement === LeftPreset.CLOSE_NO_ANIMATION) {
     left = (
       <IconButton
+        aria-label='close'
         className={styles.leftIconButton}
         icon={<IconRemove />}
         onClick={goBackAndDoNotAnimate}
@@ -179,6 +182,7 @@ const NavBar = ({
     left = (
       <>
         <IconButton
+          aria-label='notifications'
           className={cn(styles.leftIconButton, styles.notificationIcon, {
             [styles.hasUnread]: notificationCount > 0
           })}
@@ -194,11 +198,13 @@ const NavBar = ({
     left = (
       <>
         <IconButton
+          aria-label='settings'
           className={styles.leftIconButton}
           icon={<IconSettings />}
           onClick={goToSettingsPage}
         />
         <IconButton
+          aria-label='audio rewards'
           icon={<IconCrown />}
           className={styles.crownButton}
           onClick={goToAudioPage}

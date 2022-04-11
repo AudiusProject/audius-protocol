@@ -1,13 +1,12 @@
 import React, { useCallback } from 'react'
 
-import { IconShare } from '@audius/stems'
+import { IconShare, IconButton } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { ShareSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
 import { Nullable } from 'common/utils/typeUtils'
-import IconButton from 'components/icon-button/IconButton'
 
 import styles from './ShareUserButton.module.css'
 
@@ -31,6 +30,7 @@ export const ShareUserButton = ({ userId }: ShareUserButtonProps) => {
 
   return (
     <IconButton
+      aria-label='share'
       className={styles.button}
       icon={<IconShare />}
       onClick={handleClick}
