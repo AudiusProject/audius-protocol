@@ -1,9 +1,7 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import {
-  CardStyleInterpolators,
-  StackNavigationOptions
-} from '@react-navigation/stack'
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { CardStyleInterpolators } from '@react-navigation/stack'
 import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
 import { getNotificationUnreadCount } from 'audius-client/src/common/store/notifications/selectors'
 import { Text, View } from 'react-native'
@@ -25,8 +23,8 @@ import { AppScreenParamList } from './AppScreen'
 import { AppTabScreenParamList } from './AppTabScreen'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  headerLeft: { paddingLeft: spacing(2), width: 40 },
-  headerRight: { paddingRight: spacing(3) },
+  headerLeft: { marginLeft: -1 * spacing(2), width: 40 },
+  headerRight: {},
   title: {
     fontSize: 18,
     fontFamily: typography.fontByWeight.heavy,
@@ -94,27 +92,34 @@ export const useAppScreenOptions = () => {
     })
   }, [navigation])
 
-  const screenOptions: StackNavigationOptions = useMemo(
+  const goBack = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
+
+  const screenOptions: NativeStackNavigationOptions = useMemo(
     () => ({
+      fullScreenGestureEnabled: true,
       detachPreviousScreen: false,
       cardOverlayEnabled: true,
       cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-      gestureEnabled: true,
-      headerLeftContainerStyle: styles.headerLeft,
+      headerShadowVisible: false,
       headerLeft: props => {
         const { canGoBack, ...other } = props
         if (canGoBack) {
           return (
-            <IconButton
-              icon={IconCaretRight}
-              fill={neutralLight4}
-              styles={{ icon: styles.iconArrowBack }}
-              {...other}
-            />
+            <View style={styles.headerLeft}>
+              <IconButton
+                icon={IconCaretRight}
+                fill={neutralLight4}
+                styles={{ icon: styles.iconArrowBack }}
+                {...other}
+                onPress={goBack}
+              />
+            </View>
           )
         }
         return (
-          <View>
+          <View style={styles.headerLeft}>
             <IconButton
               icon={IconNotification}
               styles={{ icon: styles.iconNotification }}
@@ -153,12 +158,14 @@ export const useAppScreenOptions = () => {
       headerRightContainerStyle: styles.headerRight,
       headerRight: () => {
         return (
-          <IconButton
-            icon={IconSearch}
-            fill={neutralLight4}
-            styles={{ icon: styles.iconSearch }}
-            onPress={handlePressSearch}
-          />
+          <View style={styles.headerRight}>
+            <IconButton
+              icon={IconSearch}
+              fill={neutralLight4}
+              styles={{ icon: styles.iconSearch }}
+              onPress={handlePressSearch}
+            />
+          </View>
         )
       }
     }),

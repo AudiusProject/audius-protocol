@@ -413,7 +413,7 @@ PODS:
     - React-Core
   - react-native-netinfo (5.9.10):
     - React-Core
-  - react-native-pager-view (5.4.9):
+  - react-native-pager-view (5.4.6):
     - React-Core
   - react-native-safe-area-context (3.3.2):
     - React-Core
@@ -527,7 +527,7 @@ PODS:
     - React-Core
   - RNReanimated (1.13.4):
     - React-Core
-  - RNScreens (3.6.0):
+  - RNScreens (3.13.0):
     - React-Core
     - React-RCTImage
   - RNSentry (3.2.8):
@@ -856,7 +856,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: ae1202414bd5c37c00b2a701daa5b6194a06b7d9
   react-native-music-control: 0eef94942456152af21316afd53923e1dd6360b0
   react-native-netinfo: 52cf0ee8342548a485e28f4b09e56b477567244d
-  react-native-pager-view: 311c10a4eead1be627cad59062aa059d8108b943
+  react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd
   react-native-safe-area-context: 5cf05f49df9d17261e40e518481f2e334c6cd4b5
   react-native-static-server: 201b2a945a35096be3ae7f43e367c65bcbd61343
   react-native-version-number: 15563dc4145a94aabfc1faab2a9af10174a4204e
@@ -888,7 +888,7 @@ SPEC CHECKSUMS:
   RNPermissions: 3e5bb8afd93c787681bbacbf54d586a6272ecc92
   RNReactNativeHapticFeedback: 653a8c126a0f5e88ce15ffe280b3ff37e1fbb285
   RNReanimated: c1b56d030d1616239861534d9adb531f8cffab68
-  RNScreens: eb0dfb2d6b21d2d7f980ad46b14eb306d2f1062e
+  RNScreens: aa12070b21c1d6011b3627a0b1d09b627232b070
   RNSentry: fe878ca3982d7871e502ccbb90072fe764c8d07d
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   Sentry: 5c5dd4005f3b7b9765d5a8871232cddbd0d888b7
