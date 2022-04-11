@@ -1,7 +1,8 @@
-import { ComponentProps, ReactNode, useCallback, useContext } from 'react'
+import { ComponentProps, useCallback, useContext, useState } from 'react'
 
-import { Linking } from 'react-native'
-import RNHyperlink from 'react-native-hyperlink'
+import { Match } from 'autolinker/dist/es2015'
+import { LayoutRectangle, Linking, Text, View } from 'react-native'
+import Autolink from 'react-native-autolink'
 
 import { ToastContext } from 'app/components/toast/ToastContext'
 import { makeStyles } from 'app/styles'
@@ -12,21 +13,40 @@ const messages = {
   error: 'Unable to open this URL'
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, typography }) => ({
   link: {
     color: palette.primary
+  },
+  linkText: {
+    ...typography.body
+  },
+  linksContainer: {
+    position: 'absolute'
+  },
+  hiddenLink: {
+    marginBottom: -3,
+    opacity: 0
   }
 }))
 
-export type HyperlinkProps = ComponentProps<typeof RNHyperlink> & {
-  children: ReactNode
+type PositionedLink = {
+  text: string
+  match: Match
+  layout: LayoutRectangle
+}
+
+export type HyperlinkProps = ComponentProps<typeof Autolink> & {
   source: 'profile page' | 'track page' | 'collection page'
+  // Pass touches through text elements
+  allowPointerEventsToPassThrough?: boolean
 }
 
 export const Hyperlink = (props: HyperlinkProps) => {
-  const { children, source, ...other } = props
+  const { allowPointerEventsToPassThrough, source, ...other } = props
   const styles = useStyles()
   const { toast } = useContext(ToastContext)
+
+  const [links, setLinks] = useState<Record<number, PositionedLink>>({})
 
   const handlePress = useCallback(
     async (url: string) => {
@@ -41,9 +61,57 @@ export const Hyperlink = (props: HyperlinkProps) => {
     [source, toast]
   )
 
+  const renderLink = useCallback(
+    (text, match, index) => (
+      <View
+        onLayout={e => {
+          setLinks({
+            ...links,
+            [index]: {
+              text,
+              match,
+              layout: e.nativeEvent.layout
+            }
+          })
+        }}
+        style={styles.hiddenLink}
+      >
+        <Text style={styles.linkText}>{text}</Text>
+      </View>
+    ),
+    [links, styles]
+  )
+
   return (
-    <RNHyperlink onPress={handlePress} linkStyle={styles.link} {...other}>
-      {children}
-    </RNHyperlink>
+    <>
+      <View
+        pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
+      >
+        <Autolink
+          onPress={handlePress}
+          linkStyle={[styles.linkText, styles.link]}
+          renderLink={allowPointerEventsToPassThrough ? renderLink : undefined}
+          email
+          url
+          {...other}
+        />
+      </View>
+
+      <View style={styles.linksContainer}>
+        {Object.values(links).map(({ layout, text, match }) => (
+          <Text
+            key={`${layout.x} ${layout.y}`}
+            style={[
+              styles.linkText,
+              styles.link,
+              { position: 'absolute', top: layout.y, left: layout.x }
+            ]}
+            onPress={() => handlePress(match.getAnchorHref())}
+          >
+            {text}
+          </Text>
+        ))}
+      </View>
+    </>
   )
 }

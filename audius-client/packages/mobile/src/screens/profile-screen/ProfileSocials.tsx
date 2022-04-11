@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { View } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
-import IconTikTok from 'app/assets/images/iconTikTok.svg'
+import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { IconButton, useLink } from 'app/components/core'
 import { makeStyles } from 'app/styles/makeStyles'
