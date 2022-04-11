@@ -53,6 +53,8 @@ def downgrade():
             ALTER TABLE tracks ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE tracks ALTER COLUMN blocknumber SET NOT NULL;
 
+            UPDATE tracks SET txhash = '' WHERE txhash LIKE 'unset_%%';
+
         commit;
     """
     )

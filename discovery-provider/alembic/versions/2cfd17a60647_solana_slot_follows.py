@@ -73,6 +73,8 @@ def downgrade():
             ALTER TABLE ursm_content_nodes ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE ursm_content_nodes ALTER COLUMN blocknumber SET NOT NULL;
 
+            UPDATE ursm_content_nodes SET txhash = '' WHERE txhash LIKE 'unset_%%';
+
             ALTER TABLE follows DROP CONSTRAINT IF EXISTS follows_pkey;
             ALTER TABLE follows ADD PRIMARY KEY (is_current, follower_user_id, followee_user_id, blockhash, txhash);
             ALTER TABLE follows DROP COLUMN IF EXISTS slot;
@@ -81,6 +83,7 @@ def downgrade():
             ALTER TABLE follows ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE follows ALTER COLUMN blocknumber SET NOT NULL;
 
+            UPDATE follows SET txhash = '' WHERE txhash LIKE 'unset_%%';
 
             -- Drop NOT NULL Constraint on POA blockhash and tx hash columns
             ALTER TABLE user_events DROP COLUMN IF EXISTS slot;
