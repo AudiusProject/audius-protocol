@@ -1,8 +1,7 @@
 const { pick, isEqual } = require('lodash')
 const { Base, Services } = require('./base')
 const { Utils } = require('../utils')
-const CreatorNode = require('../services/creatorNode')
-const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
+const { CreatorNode, getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode')
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values

@@ -118,6 +118,14 @@ class SolanaProgramIndexer(IndexerBase):
         return {"tx_sig": tx_sig, "tx_metadata": {}, "result": result}
 
     @abstractmethod
+    def is_valid_instruction(self, tx):
+        """
+        Returns a boolean value indicating whether an instruction is valid.
+        @param tx: transaction to be validated
+        """
+        raise Exception("Must be implemented in subclass")
+
+    @abstractmethod
     async def fetch_ipfs_metadata(self, parsed_transactions):
         """
         Fetch all metadata objects in parallel (if required). Certain indexing tasks will not require this step and can skip appropriately

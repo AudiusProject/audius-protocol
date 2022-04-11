@@ -41,15 +41,6 @@ const connectToDBAndRunMigrations = async () => {
   await runDBMigrations()
 }
 
-const getMode = () => {
-  const arg = process.argv[2]
-  const modes = ['--run-migrations', '--run-app', '--run-all']
-  if (!modes.includes(arg)) {
-    return '--run-all'
-  }
-  return arg
-}
-
 /**
  * Setting a different port is necessary for OpenResty to work. If OpenResty
  * is enabled, have the app run on port 3000. Else, run on its configured port.
@@ -113,29 +104,19 @@ const startApp = async () => {
       `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
     )
   }
+  
+  await connectToDBAndRunMigrations()
 
-  const mode = getMode()
-  let appInfo: any
+  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+  await serviceRegistry.initServices()
+  logger.info(`Initialized services (Node running in ${nodeMode})`)
 
-  if (mode === '--run-migrations') {
-    await connectToDBAndRunMigrations()
-    process.exit(0)
-  } else {
-    if (mode === '--run-all') {
-      await connectToDBAndRunMigrations()
-    }
+  const appInfo = initializeApp(getPort(), serviceRegistry)
+  logger.info('Initialized app and server')
 
-    const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-    await serviceRegistry.initServices()
-    logger.info(`Initialized services (Node running in ${nodeMode})`)
-
-    appInfo = initializeApp(getPort(), serviceRegistry)
-    logger.info('Initialized app and server')
-
-    // Some Services cannot start until server is up. Start them now
-    // No need to await on this as this process can take a while and can run in the background
-    serviceRegistry.initServicesThatRequireServer()
-  }
+  // Some Services cannot start until server is up. Start them now
+  // No need to await on this as this process can take a while and can run in the background
+  serviceRegistry.initServicesThatRequireServer()
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {
