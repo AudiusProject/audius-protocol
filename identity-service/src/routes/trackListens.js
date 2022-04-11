@@ -329,9 +329,11 @@ module.exports = function (app) {
       await redis.incr(trackingRedisKeys.submission)
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
+      // TODO: Move retry out of here
       const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
           connection,
+          req.logger,
           null,
           config.get('solanaSignerPrivateKey'),
           userId.toString(),

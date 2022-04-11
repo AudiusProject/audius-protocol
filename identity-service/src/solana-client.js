@@ -119,6 +119,7 @@ function getFeePayerKeypair (singleFeePayer = true) {
 
 async function createAndVerifyMessage (
   connection,
+  logger,
   validSigner,
   privateKey,
   userId,
@@ -164,8 +165,7 @@ async function createAndVerifyMessage (
     instructionData
   )
 
-  let recentBlockHash = connection.getRecentBlockhash('confirmed')
-  let transaction = new solanaWeb3.Transaction(recentBlockHash)
+  let transaction = new solanaWeb3.Transaction()
 
   let secpInstruction = solanaWeb3.Secp256k1Program.createInstructionWithPublicKey(
     {
@@ -191,19 +191,130 @@ async function createAndVerifyMessage (
   })
 
   let feePayerAccount = getFeePayerKeypair(false)
+  let signature = await sendAndSignTransaction(connection, transaction, feePayerAccount, 30000, logger)
 
-  let signature = await solanaWeb3.sendAndConfirmTransaction(
-    connection,
-    transaction,
-    [feePayerAccount],
+  return signature
+}
+
+const getUnixTs = () => {
+  return new Date().getTime() / 1000
+}
+
+async function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// Adapted from mango send function
+// https://github.com/blockworks-foundation/mango-ui/blob/b6abfc6c13b71fc17ebbe766f50b8215fa1ec54f/src/utils/send.tsx#L785
+// THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
+async function sendAndSignTransaction (connection, transaction, signers, timeout, logger) {
+  // Sign transaction
+  let recentBlockHash = (await connection.getRecentBlockhash('confirmed')).blockhash
+  transaction.recentBlockhash = recentBlockHash
+  transaction.sign(signers)
+  // Serialize and grab raw transaction bytes
+  let rawTransaction = transaction.serialize()
+  const startTime = getUnixTs()
+  const txid = await connection.sendRawTransaction(
+    rawTransaction,
     {
-      skipPreflight: false,
-      commitment: config.get('solanaTxCommitmentLevel'),
-      preflightCommitment: config.get('solanaTxCommitmentLevel')
+      skipPreflight: true
     }
   )
 
-  return signature
+  let done = false;
+  // Anonymous function to retry sending until confirmation
+  (async () => {
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (!done && getUnixTs() - startTime < timeout) {
+      connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
+      await delay(300)
+    }
+  })()
+
+  try {
+    awaitTransactionSignatureConfirmation(txid, timeout, connection, logger)
+  } catch (e) {
+    throw new Error(e)
+  } finally {
+    done = true
+  }
+  return txid
+}
+
+// Adapted from mango send function
+// https://github.com/blockworks-foundation/mango-ui/blob/b6abfc6c13b71fc17ebbe766f50b8215fa1ec54f/src/utils/send.tsx#L785
+// THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
+async function awaitTransactionSignatureConfirmation (
+  txid,
+  timeout,
+  connection,
+  logger
+) {
+  let done = false
+  const result = await new Promise((resolve, reject) => {
+    (async () => {
+      setTimeout(() => {
+        if (done) {
+          return
+        }
+        done = true
+        reject(new Error(`Timed out for txid`, txid))
+      }, timeout)
+      try {
+        connection.onSignature(
+          txid,
+          (result) => {
+            logger.info('WS confirmed', txid, result)
+            done = true
+            if (result.err) {
+              reject(result.err)
+            } else {
+              resolve(result)
+            }
+          },
+          connection.commitment
+        )
+        logger.info('Set up WS connection', txid)
+      } catch (e) {
+        done = true
+        logger.error('WS error in setup', txid, e)
+      }
+      while (!done) {
+        // eslint-disable-next-line no-loop-func
+        (async () => {
+          try {
+            const signatureStatuses = await connection.getSignatureStatuses([
+              txid
+            ])
+            const result = signatureStatuses && signatureStatuses.value[0]
+            if (!done) {
+              if (!result) {
+                // logger.error('REST null result for', txid, result);
+              } else if (result.err) {
+                logger.error('REST error for', txid, result)
+                done = true
+                reject(result.err)
+              } else if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) {
+                logger.info('REST not confirmed', txid, result)
+              } else {
+                logger.info('REST confirmed', txid, result)
+                done = true
+                resolve(result)
+              }
+            }
+          } catch (e) {
+            if (!done) {
+              logger.error('REST connection error: txid', txid, e)
+            }
+          }
+        })()
+        await delay(300)
+      }
+    })()
+  })
+  done = true
+  return result
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
