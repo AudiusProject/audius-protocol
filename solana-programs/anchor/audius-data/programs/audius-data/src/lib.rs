@@ -755,8 +755,8 @@ pub struct CreateUser<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [&base.to_bytes()[..32], _id.to_le_bytes()],
-        _user_bump,
+        seeds = [&base.to_bytes()[..32], &_id.to_le_bytes()],
+        bump,
         space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
@@ -851,7 +851,7 @@ pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        &seeds = [&base.to_bytes()[..32], user_id_seed_bump.user_id.to_le_bytes()],
+        &seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
         bump = user_id_seed_bump.bump
     )]
     pub user: Account<'info, User>,
@@ -884,7 +884,7 @@ pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        &seeds = [&base.to_bytes()[..32], user_id_seed_bump.user_id.to_le_bytes()],
+        &seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
         bump = user_id_seed_bump.bump
     )]
     pub user: Account<'info, User>,
@@ -925,7 +925,7 @@ pub struct ManageEntity<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Audiusadmin
     #[account(
-        &seeds = [&base.to_bytes()[..32], user_id_seed_bump.user_id.to_le_bytes()],
+        &seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
         bump = user_id_seed_bump.bump
     )]
     pub user: Account<'info, User>,
@@ -966,10 +966,10 @@ pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Confirm the source user PDA matches the expected value provided the target user id and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], source_user_id_seed_bump.user_id.&to_le_bytes()], bump = source_user_id_seed_bump.bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], &source_user_id_seed_bump.user_id.to_le_bytes()], bump = source_user_id_seed_bump.bump)]
     pub source_user_storage: Account<'info, User>,
     // Confirm the target user PDA matches the expected value provided the target user id and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], target_user_id_seed_bump.user_id.&to_le_bytes()], bump = target_user_id_seed_bump.bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], &target_user_id_seed_bump.user_id.to_le_bytes()], bump = target_user_id_seed_bump.bump)]
     pub target_user_storage: Account<'info, User>,
     /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
