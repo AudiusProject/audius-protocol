@@ -228,6 +228,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   (async () => {
     // eslint-disable-next-line no-unmodified-loop-condition
     while (!done && getUnixTs() - startTime < timeout) {
+      logger.info(`TrackListen | Sending tx retry ${txid}`)
       connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
       await delay(300)
     }
@@ -266,7 +267,7 @@ async function awaitTransactionSignatureConfirmation (
         connection.onSignature(
           txid,
           (result) => {
-            logger.info('WS confirmed', txid, result)
+            logger.info('TrackListen | WS confirmed', txid, result)
             done = true
             if (result.err) {
               reject(result.err)
@@ -276,10 +277,10 @@ async function awaitTransactionSignatureConfirmation (
           },
           connection.commitment
         )
-        logger.info('Set up WS connection', txid)
+        logger.info('TrackListen |Set up WS connection', txid)
       } catch (e) {
         done = true
-        logger.error('WS error in setup', txid, e)
+        logger.error('TrackListen | WS error in setup', txid, e)
       }
       while (!done) {
         // eslint-disable-next-line no-loop-func
@@ -289,16 +290,17 @@ async function awaitTransactionSignatureConfirmation (
               txid
             ])
             const result = signatureStatuses && signatureStatuses.value[0]
+            logger.info(`TrackListen | ${txid} result ${signatureStatuses}`)
             if (!done) {
               if (!result) {
               } else if (result.err) {
-                logger.error('REST error for', txid, result)
+                logger.error('TrackListen | REST error for', txid, result)
                 done = true
                 reject(result.err)
               } else if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) {
-                logger.info('REST not confirmed', txid, result)
+                logger.info('TrackListen | REST not confirmed', txid, result)
               } else {
-                logger.info('REST confirmed', txid, result)
+                logger.info('TrackListen | REST confirmed', txid, result)
                 done = true
                 resolve(result)
               }

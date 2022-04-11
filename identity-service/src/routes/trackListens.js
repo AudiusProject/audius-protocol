@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
-const retry = require('async-retry')
+// const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 
 const models = require('../models')
@@ -348,7 +348,7 @@ module.exports = function (app) {
         return successResponse({
           solTxSignature
         })
-      } catch(e) {
+      } catch (e) {
         return errorResponseBadRequest(`TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`)
       }
     }
