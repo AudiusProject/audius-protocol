@@ -27,12 +27,15 @@ import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/s
 import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { isEqual } from 'lodash'
+import { useSelector } from 'react-redux'
 
 import { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
+import { AppState } from 'app/store'
+import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { LineupTile } from './LineupTile'
 
@@ -78,6 +81,9 @@ const TrackTileComponent = ({
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelectorWeb(getUserId)
+  const isPlayingUid = useSelector(
+    (state: AppState) => getPlayingUid(state) === lineupTileProps.uid
+  )
 
   const {
     _cover_art_sizes,
@@ -103,7 +109,7 @@ const TrackTileComponent = ({
   })
 
   const handlePress = useCallback(
-    ({ isPlaying, isPlayingUid }) => {
+    ({ isPlaying }) => {
       togglePlay({
         uid: lineupTileProps.uid,
         id: track_id,
@@ -112,7 +118,7 @@ const TrackTileComponent = ({
         isPlayingUid
       })
     },
-    [togglePlay, lineupTileProps.uid, track_id]
+    [togglePlay, lineupTileProps.uid, track_id, isPlayingUid]
   )
 
   const handlePressTitle = useCallback(() => {
@@ -199,6 +205,7 @@ const TrackTileComponent = ({
   return (
     <LineupTile
       {...lineupTileProps}
+      isPlayingUid={isPlayingUid}
       duration={duration}
       favoriteType={FavoriteType.TRACK}
       repostType={RepostType.TRACK}

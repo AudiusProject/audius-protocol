@@ -33,11 +33,14 @@ import { RepostType } from 'audius-client/src/common/store/user-list/reposts/typ
 import { albumPage, playlistPage } from 'audius-client/src/utils/route'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
 import { isEqual } from 'lodash'
+import { useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { AppState } from 'app/store'
+import { getPlayingUid } from 'app/store/audio/selectors'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
@@ -98,6 +101,14 @@ const CollectionTileComponent = ({
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const currentUserId = useSelectorWeb(getUserId)
+  const currentTrack = useSelector((state: AppState) => {
+    const uid = getPlayingUid(state)
+    return tracks.find(track => track.uid === uid) ?? null
+  })
+  const isPlayingUid = useSelector((state: AppState) => {
+    const uid = getPlayingUid(state)
+    return tracks.some(track => track.uid === uid)
+  })
 
   const {
     _cover_art_sizes,
@@ -128,22 +139,18 @@ const CollectionTileComponent = ({
   }, [collection, user])
 
   const handlePress = useCallback(
-    ({ isPlaying, isPlayingUid }) => {
-      const trackUid = tracks[0] ? tracks[0].uid : null
-      const trackId = tracks[0] ? tracks[0].track_id : null
-      if (!trackUid || !trackId) {
-        return
-      }
+    ({ isPlaying }) => {
+      if (!tracks.length) return
 
       togglePlay({
-        uid: trackUid,
-        id: trackId,
+        uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
+        id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
         source: PlaybackSource.PLAYLIST_TILE_TRACK,
         isPlaying,
         isPlayingUid
       })
     },
-    [togglePlay, tracks]
+    [isPlayingUid, currentTrack, togglePlay, tracks]
   )
 
   const handlePressTitle = useCallback(() => {
@@ -238,6 +245,7 @@ const CollectionTileComponent = ({
       repostType={RepostType.COLLECTION}
       id={playlist_id}
       imageUrl={imageUrl}
+      isPlayingUid={isPlayingUid}
       onPress={handlePress}
       onPressOverflow={handlePressOverflow}
       onPressRepost={handlePressRepost}

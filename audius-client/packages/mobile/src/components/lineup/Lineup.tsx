@@ -232,7 +232,7 @@ export const Lineup = ({
               source: source || PlaybackSource.TRACK_TILE
             })
           )
-        } else if (isPlayingUid && isPlaying) {
+        } else {
           dispatchWeb(actions.pause())
           track(
             make({
