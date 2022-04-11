@@ -4,7 +4,7 @@ import {
 } from '@react-navigation/drawer'
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import { NavigatorScreenParams } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useSelector } from 'react-redux'
 
 import { AppScreen, AppScreenParamList } from 'app/screens/app-screen'
@@ -27,7 +27,7 @@ export type RootScreenParamList = {
 }
 
 const Drawer = createDrawerNavigator()
-const Stack = createStackNavigator()
+const Stack = createNativeStackNavigator()
 
 /**
  * The sign up & sign in stack when not authenticated

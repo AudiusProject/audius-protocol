@@ -1,0 +1,45 @@
+diff --git a/node_modules/react-native-pager-view/ios/ReactNativePageView.m b/node_modules/react-native-pager-view/ios/ReactNativePageView.m
+index 78f266b..cc094a3 100644
+--- a/node_modules/react-native-pager-view/ios/ReactNativePageView.m
++++ b/node_modules/react-native-pager-view/ios/ReactNativePageView.m
+@@ -83,6 +83,16 @@ - (void)didMoveToWindow {
+         [self embed];
+         [self setupInitialController];
+     }
++    
++    if (self.reactViewController.navigationController != nil) {
++        for (UIGestureRecognizer *recognizer in self.reactViewController.navigationController.view.gestureRecognizers) {
++             [self.scrollView.panGestureRecognizer requireGestureRecognizerToFail:recognizer];
++        }
++    }
++
++    if (self.reactViewController.navigationController != nil && self.reactViewController.navigationController.interactivePopGestureRecognizer != nil) {
++        [self.scrollView.panGestureRecognizer requireGestureRecognizerToFail:self.reactViewController.navigationController.interactivePopGestureRecognizer];
++    }
+ }
+ 
+ - (void)embed {
+@@ -333,6 +343,23 @@ - (void)pageViewController:(UIPageViewController *)pageViewController
+         [self.eventDispatcher sendEvent:[[RCTOnPageSelected alloc] initWithReactTag:self.reactTag position:@(currentIndex) coalescingKey:_coalescingKey++]];
+         [self.eventDispatcher sendEvent:[[RCTOnPageScrollEvent alloc] initWithReactTag:self.reactTag position:@(currentIndex) offset:@(0.0)]];
+         self.lastReportedIndex = currentIndex;
++
++        if (self.reactViewController.navigationController != nil) {
++            if (currentIndex == 0) {
++                // On the first tab, we want to listen to the navigation's gestures, so
++                // swipe back works.
++                for (UIGestureRecognizer *recognizer in self.reactViewController.navigationController.view.gestureRecognizers) {
++                    recognizer.enabled = YES;
++                    [self.scrollView.panGestureRecognizer requireGestureRecognizerToFail:recognizer];
++                }
++            } else {
++                // On other tabs, we should disable the navigations's gestures
++                for (UIGestureRecognizer *recognizer in self.reactViewController.navigationController.view.gestureRecognizers) {
++                    recognizer.enabled = NO;
++                }
++            }
++
++        }
+     }
+ }
+ 
