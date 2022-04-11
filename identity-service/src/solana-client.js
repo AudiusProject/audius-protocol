@@ -232,6 +232,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
       connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
       await delay(300)
     }
+    logger.info(`TrackListen | Exited retry send loop for ${txid}`)
   })()
 
   try {
@@ -277,7 +278,7 @@ async function awaitTransactionSignatureConfirmation (
           },
           connection.commitment
         )
-        logger.info('TrackListen |Set up WS connection', txid)
+        logger.info('TrackListen | Set up WS connection', txid)
       } catch (e) {
         done = true
         logger.error('TrackListen | WS error in setup', txid, e)
@@ -290,7 +291,7 @@ async function awaitTransactionSignatureConfirmation (
               txid
             ])
             const result = signatureStatuses && signatureStatuses.value[0]
-            logger.info(`TrackListen | ${txid} result ${signatureStatuses}`)
+            logger.info(`TrackListen | ${txid} result ${JSON.stringify(signatureStatuses)}`)
             if (!done) {
               if (!result) {
               } else if (result.err) {
