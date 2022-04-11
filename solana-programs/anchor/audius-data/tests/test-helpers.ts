@@ -153,7 +153,6 @@ export const testCreateUser = async ({
   message,
   baseAuthorityAccount,
   ethAccount,
-  userId,
   bumpSeed,
   metadata,
   newUserKeypair,

@@ -97,7 +97,8 @@ export const randomString = (size: number) => {
 
 /// Generate random anchor BN id
 export const randomId = () => {
-  return new anchor.BN(Math.floor(Math.random() * 10000));
+  return new anchor.BN(200);
+  // return new anchor.BN(Math.floor(Math.random() * 10000));
 };
 
 /// Generate mock CID by appending `Qm` with a rand string

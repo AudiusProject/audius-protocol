@@ -10,6 +10,7 @@ import * as secp256k1 from "secp256k1";
 import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
+import * as borsh from '@project-serum/borsh';
 
 /**
  * Audius Admin
@@ -95,24 +96,25 @@ export const initUser = ({
   cn3,
 }: InitUserParams) => {
   const tx = new Transaction();
+  console.log('AAAAAAAAAAAAAA', userId.toNumber(), bumpSeed)
   tx.add(
     program.instruction.initUser(
       baseAuthorityAccount,
       [...anchor.utils.bytes.hex.decode(ethAddress)],
       replicaSet,
       replicaSetBumps,
-      userId,
+      userId.toNumber(),
       bumpSeed,
       metadata,
       {
         accounts: {
           admin: adminStorageAccount,
-          payer,
           user: userStorageAccount,
           cn1,
           cn2,
           cn3,
           authority: adminAuthorityPublicKey,
+          payer,
           systemProgram: SystemProgram.programId,
         },
       }
@@ -172,7 +174,7 @@ export const createContentNode = ({
   adminStoragePublicKey,
   adminPublicKey,
   baseAuthorityAccount,
-  spID,
+  spID, // new anchor.BN(3)
   contentNodeAuthority,
   contentNodeAcct,
   ownerEthAddress,
@@ -182,7 +184,7 @@ export const createContentNode = ({
   tx.add(
     program.instruction.createContentNode(
       baseAuthorityAccount,
-      spID.toNumber(),
+      spID.toNumber(), // u16
       contentNodeAuthority,
       [...anchor.utils.bytes.hex.decode(ownerEthAddress)],
       {
