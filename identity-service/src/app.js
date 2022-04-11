@@ -30,6 +30,7 @@ const {
 const cors = require('./corsMiddleware')
 const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
 const { setupRewardsAttester } = require('./utils/configureAttester')
+const { startRegistrationQueue } = require('./solanaNodeRegistration')
 
 const DOMAIN = 'mail.audius.co'
 
@@ -97,6 +98,7 @@ class App {
         cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
+        await this.configureDiscoveryNodeRegistration(audiusInstance)
         await this.configureReporter()
 
         // Fork extra web server workers
@@ -210,6 +212,11 @@ class App {
       childLogger: logger
     })
     this.express.set('slackWormholeErrorReporter', slackWormholeErrorReporter)
+  }
+
+  async configureDiscoveryNodeRegistration (libs) {
+    const childLogger = logger.child({ 'service': 'Discovery Node Registration' })
+    await startRegistrationQueue(libs, childLogger)
   }
 
   async configureAudiusInstance () {

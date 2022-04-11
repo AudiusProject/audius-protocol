@@ -37,13 +37,15 @@ describe("playlist-actions", function () {
   const contentNodes = {};
 
   it("playlist actions - Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    let tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
     });
+
+    await provider.send(tx, [adminStorageKeypair])
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -58,12 +60,14 @@ describe("playlist-actions", function () {
     }
 
     // disable admin writes
-    await updateAdmin({
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
       adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.send(updateAdminTx, [adminKeypair])
   });
 
   it("Initializing Content Node accounts!", async function () {
@@ -96,19 +100,22 @@ describe("playlist-actions", function () {
   it("Delete save for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await deletePlaylistSave({
+    const tx = deletePlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    
+    const txSignature = await provider.send(tx, [user.keypair])
+
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
@@ -130,19 +137,21 @@ describe("playlist-actions", function () {
   it("Save a newly created playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await addPlaylistSave({
+    const tx = addPlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const txSignature = await provider.send(tx, [user.keypair])
+
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
@@ -164,19 +173,21 @@ describe("playlist-actions", function () {
   it("Repost a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await addPlaylistRepost({
+    const tx = addPlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const txSignature = await provider.send(tx, [user.keypair])
+
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
@@ -198,19 +209,20 @@ describe("playlist-actions", function () {
   it("Delete repost for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await deletePlaylistRepost({
+    const tx = deletePlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
+      userAuthorityPublicKey: user.keypair.publicKey,
       handleBytesArray: user.handleBytesArray,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const txSignature = await provider.send(tx, [user.keypair])
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,

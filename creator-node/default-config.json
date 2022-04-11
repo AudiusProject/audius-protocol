@@ -3,8 +3,6 @@
   "awsBucket": "",
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",
-  "ipfsHost": "localhost",
-  "ipfsPort": 6001,
   "dbUrl": "postgres://postgres:postgres@localhost:4432/audius_creator_node",
   "port": 4000,
   "logLevel": "debug",
