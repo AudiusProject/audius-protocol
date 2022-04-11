@@ -31,9 +31,14 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     paddingVertical: spacing(6)
   },
   header: {
-    paddingHorizontal: spacing(6),
-    marginBottom: spacing(4)
+    paddingHorizontal: spacing(4),
+    marginTop: spacing(4),
+    marginBottom: spacing(2)
   },
+  headerContent: {
+    padding: spacing(4)
+  },
+
   title: {
     fontFamily: typography.fontByWeight.heavy,
     fontSize: 24,
@@ -93,34 +98,27 @@ export const CollectiblesTab = () => {
   const collectibles = [...collectibleList, ...solanaCollectibleList]
 
   return (
-    <View style={styles.root}>
-      <Tile styles={{ tile: styles.tile, content: styles.tileContent }}>
-        <FlatList
-          ref={ref}
-          listKey='profile-collectibles'
-          ListHeaderComponent={
-            <View style={styles.header}>
-              <GradientText accessibilityRole='header' style={styles.title}>
-                {messages.title}
-              </GradientText>
-              <Text style={styles.subtitle}>{messages.subtitle('you')}</Text>
-              <Pressable style={styles.shareButtonRoot}>
-                <IconShare
-                  fill={neutralLight4}
-                  style={styles.shareButtonIcon}
-                />
-                <Text style={styles.shareButtonText}>Share</Text>
-              </Pressable>
-            </View>
-          }
-          data={collectibles}
-          renderItem={({ item }) => (
-            <View style={styles.collectibleListItem}>
-              <CollectiblesCard collectible={item} />
-            </View>
-          )}
-        />
-      </Tile>
-    </View>
+    <FlatList
+      ref={ref}
+      listKey='profile-collectibles'
+      ListHeaderComponent={
+        <Tile styles={{ root: styles.header, content: styles.headerContent }}>
+          <GradientText accessibilityRole='header' style={styles.title}>
+            {messages.title}
+          </GradientText>
+          <Text style={styles.subtitle}>{messages.subtitle('you')}</Text>
+          <Pressable style={styles.shareButtonRoot}>
+            <IconShare fill={neutralLight4} style={styles.shareButtonIcon} />
+            <Text style={styles.shareButtonText}>Share</Text>
+          </Pressable>
+        </Tile>
+      }
+      data={collectibles}
+      renderItem={({ item }) => (
+        <View style={styles.collectibleListItem}>
+          <CollectiblesCard collectible={item} />
+        </View>
+      )}
+    />
   )
 }
