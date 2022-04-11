@@ -1,22 +1,19 @@
 import { useCallback } from 'react'
 
-import { Name } from 'audius-client/src/common/models/Analytics'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { squashNewLines } from 'audius-client/src/common/utils/formatUtil'
-import { ImageStyle, Linking, TouchableOpacity, View } from 'react-native'
-import HyperLink from 'react-native-hyperlink'
+import { ImageStyle, TouchableOpacity, View } from 'react-native'
 
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { Button, DynamicImage, Tile } from 'app/components/core'
+import { Button, DynamicImage, Hyperlink, Tile } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { make, track } from 'app/utils/analytics'
 
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileStats } from './DetailsTileStats'
@@ -27,7 +24,7 @@ const messages = {
   pause: 'pause'
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   topContent: {
     paddingHorizontal: spacing(6),
     paddingTop: spacing(4),
@@ -85,7 +82,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
 
   description: {
-    fontSize: 16,
+    ...typography.body,
+    color: palette.neutralLight2,
     textAlign: 'left',
     width: '100%',
     marginBottom: spacing(6)
@@ -196,24 +194,6 @@ export const DetailsTile = ({
     })
   }, [navigation, user])
 
-  const handleExternalLinkClick = useCallback(
-    url => {
-      Linking.canOpenURL(url).then(supported => {
-        if (supported) {
-          Linking.openURL(url)
-          track(
-            make({
-              eventName: Name.LINK_CLICKING,
-              url,
-              source: descriptionLinkPressSource
-            })
-          )
-        }
-      })
-    },
-    [descriptionLinkPressSource]
-  )
-
   const detailLabels = details.filter(
     ({ isHidden, value }) => !isHidden && !!value
   )
@@ -316,18 +296,12 @@ export const DetailsTile = ({
         />
         <View style={styles.descriptionContainer}>
           {description ? (
-            <HyperLink
-              onPress={handleExternalLinkClick}
+            <Hyperlink
+              source={descriptionLinkPressSource}
+              style={styles.description}
               linkStyle={styles.link}
-            >
-              <Text
-                style={styles.description}
-                suppressHighlighting
-                weight='medium'
-              >
-                {squashNewLines(description)}
-              </Text>
-            </HyperLink>
+              text={squashNewLines(description)}
+            />
           ) : null}
         </View>
         <View
