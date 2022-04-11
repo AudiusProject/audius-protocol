@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { IconShare, IconKebabHorizontal } from '@audius/stems'
+import { IconShare, IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -8,7 +8,6 @@ import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import AnimatedIconButton, {
   AnimatedIconType
 } from 'components/animated-button/AnimatedIconButton'
-import IconButton from 'components/icon-button/IconButton'
 
 import styles from './ActionButtonRow.module.css'
 
@@ -85,6 +84,7 @@ const ActionButtonRow = ({
   const renderShareButton = () => {
     return (
       <IconButton
+        aria-label='share'
         className={cn(styles.actionButton, {
           [styles.disabledButton]: !isPublished
         })}
@@ -111,6 +111,7 @@ const ActionButtonRow = ({
   const renderOverflowMenu = () => {
     return (
       <IconButton
+        aria-label='more actions'
         className={cn(styles.actionButton)}
         icon={<IconKebabHorizontal />}
         onClick={onClickOverflow}
