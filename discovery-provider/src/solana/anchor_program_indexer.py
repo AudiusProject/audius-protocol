@@ -180,7 +180,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 .all()
             )
 
-        # first attempt - fetch all CIDs from replica set
         cid_metadata: Dict[
             str, str
         ] = self.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
