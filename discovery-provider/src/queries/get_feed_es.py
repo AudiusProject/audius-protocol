@@ -182,9 +182,7 @@ def get_feed_es(args, limit=10):
     user_id_list = [str(id) for id in get_users_ids(sorted_feed)]
     user_id_list.append(current_user_id)
     user_list = esclient.mget(index=ES_USERS, ids=user_id_list)
-    user_by_id = {
-        d["_source"]["user_id"]: d["_source"] for d in user_list["docs"] if d["found"]
-    }
+    user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
 
     # popuate_user_metadata_es:
     #   does_current_user_follow

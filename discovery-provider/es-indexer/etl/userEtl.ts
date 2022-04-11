@@ -77,22 +77,22 @@ export const userEtl: Job = {
       // so it'll just use the user blocknumber checkpoint for now
       // which is probably fine, since follows move ahead of users typically
 
-      // sql += `
-      // and users.user_id in (
-      //   select user_id from users where is_current and blocknumber >= ${checkpoint.users}
-      //   union
-      //   select follower_user_id from follows where is_current and blocknumber >= ${checkpoint.users}
-      //   union
-      //   select followee_user_id from follows where is_current and blocknumber >= ${checkpoint.users}
-      //   union
-      //   select owner_id from tracks where is_current and blocknumber >= ${checkpoint.tracks}
-      // )
-      // `
+      sql += `
+      and users.user_id in (
+        select user_id from users where is_current and blocknumber >= ${checkpoint.users}
+        union
+        select follower_user_id from follows where is_current and blocknumber >= ${checkpoint.users}
+        union
+        select followee_user_id from follows where is_current and blocknumber >= ${checkpoint.users}
+        union
+        select owner_id from tracks where is_current and blocknumber >= ${checkpoint.tracks}
+      )
+      `
 
       // if above is too slow... this might be good enough for now
       // also the aggregate_user table could have a blocknumber or updated_at column we could just query
       // or we could scan the whole aggregate_user every time and find rows diff from last time
-      sql += ` and blocknumber >= ${checkpoint.users} `
+      // sql += ` and blocknumber >= ${checkpoint.users} `
     }
 
     return sql

@@ -133,6 +133,8 @@ export const trackEtl: Job = {
         select save_item_id from saves where is_current and save_type = 'track' and blocknumber >= ${checkpoint.saves}
         union
         select repost_item_id from reposts where is_current and repost_type = 'track' and blocknumber >= ${checkpoint.reposts}
+        union
+        select play_item_id FROM plays WHERE created_at > NOW() - INTERVAL '5 minutes'
       )`
     }
 
