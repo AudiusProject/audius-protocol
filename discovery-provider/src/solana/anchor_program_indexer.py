@@ -113,13 +113,13 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
 
     def is_valid_instruction(self, parsed_instr: Dict):
-        # TODO uncomment pending a way to reconcile admin in mocks / config
-        # if parsed_instr["instruction_name"] == "init_user":
-        # if (
-        #     parsed_instr["account_names_map"]["admin"]
-        #     != self.admin_storage_public_key
-        # ):
-        #     return False
+        # TODO find a better way to reconcile admin in mocks / default config
+        if parsed_instr["instruction_name"] == "init_user":
+            if (
+                parsed_instr["account_names_map"]["admin"]
+                != self.admin_storage_public_key
+            ):
+                return False
 
         # TODO implement remaining instruction validation
         # consider creating classes for each instruction type
