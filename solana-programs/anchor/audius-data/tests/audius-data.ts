@@ -19,6 +19,7 @@ import {
   findDerivedPair,
   randomCID,
   randomId,
+  convertBNToUserIdSeed
 } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
@@ -143,7 +144,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -171,7 +172,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -225,7 +226,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -271,7 +272,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -338,7 +339,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -440,7 +441,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // enable admin writes
@@ -487,7 +488,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // disable admin writes
@@ -534,7 +535,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // disable admin writes
@@ -832,7 +833,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -884,7 +885,7 @@ describe("audius-data", function () {
     const { baseAuthorityAccount, bumpSeed } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // New sol key that will be used to permission user updates
@@ -936,7 +937,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // New sol key that will be used to permission user updates
@@ -985,7 +986,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     await updateAdmin({
@@ -1060,7 +1061,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // disable admin writes
@@ -1329,7 +1330,7 @@ describe("audius-data", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      userId.toBuffer("le", 4)
+      convertBNToUserIdSeed(userId)
     );
 
     // Disable admin writes

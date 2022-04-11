@@ -11,6 +11,8 @@ import {
   getTransactionWithData,
   getContentNode,
   randomId,
+  convertBNToSpIdSeed,
+  convertBNToUserIdSeed,
 } from "../lib/utils";
 import {
   createContentNode,
@@ -193,7 +195,7 @@ export const testCreateUser = async ({
   expect(decodedData.ethAddress).to.deep.equal([
     ...anchor.utils.bytes.hex.decode(ethAccount.address),
   ]);
-  expect(decodedData.userId).to.deep.equal(userId);
+  expect(decodedData.userId).to.deep.equal(userId.toNumber());
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
   expect(accountPubKeys[0]).to.equal(userStorageAccount.toString());
@@ -556,7 +558,6 @@ export const testCreateUserDelegate = async ({
     payer: provider.wallet.publicKey,
   });
   const addUserAuthorityDelegateTxSig = await provider.send(addUserAuthorityDelegateTx, [user.keypair])
-
   const {
     decodedInstruction: addUserAuthorityDelegateInstruction,
     decodedData: addUserAuthorityDelegateData,
@@ -573,10 +574,10 @@ export const testCreateUserDelegate = async ({
   expect(addUserAuthorityDelegateData.base.toString()).to.equal(
     user.authority.toString()
   );
-  expect(addUserAuthorityDelegateData.userIdBumpSeed.userId.toString()).to.equal(
+  expect(addUserAuthorityDelegateData.userIdSeedBump.userId.toString()).to.equal(
     user.userId.toString()
   );
-  expect(addUserAuthorityDelegateData.userIdBumpSeed.bump).to.equal(user.bumpSeed);
+  expect(addUserAuthorityDelegateData.userIdSeedBump.bump).to.equal(user.bumpSeed);
   expect(addUserAuthorityDelegateData.delegatePubkey.toString()).to.equal(
     userAuthorityDelegateKeypair.publicKey.toString()
   );
@@ -653,7 +654,7 @@ export const createSolanaUser = async (
   } = await findDerivedPair(
     program.programId,
     adminStorageKeypair.publicKey,
-    Buffer.from(testConsts.userId)
+    convertBNToUserIdSeed(testConsts.userId)
   );
 
   // New sol key that will be used to permission user updates
@@ -709,10 +710,7 @@ export const createSolanaContentNode = async (props: {
 }) => {
   const ownerEth = EthWeb3.eth.accounts.create();
   const authority = anchor.web3.Keypair.generate();
-  const seed = Buffer.concat([
-    Buffer.from("sp_id", "utf8"),
-    props.spId.toBuffer("le", 2),
-  ]);
+  const seed = convertBNToSpIdSeed(props.spId);
 
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(

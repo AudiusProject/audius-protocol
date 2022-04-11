@@ -8,7 +8,7 @@ use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 use std::collections::BTreeMap;
 
-declare_id!("7ttUzVvh848JpnCZxZYfy2u1hFQ9mtpsycRtPWFm5twq"); // default program ID to be replaced in start.sh
+declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
 
 #[program]
 pub mod audius_data {
@@ -344,7 +344,7 @@ pub mod audius_data {
         eth_address: [u8; 20],
         replica_set: [u16; 3],
         _replica_set_bumps: [u8; 3],
-        _id: u32,
+        _user_id: u32,
         _user_bump: u8,
         _metadata: String,
         user_authority: Pubkey,
@@ -747,7 +747,7 @@ pub struct InitializeUserSolIdentity<'info> {
     eth_address: [u8;20],
     replica_set: [u16; 3],
     replica_set_bumps:[u8; 3],
-    _id: u32,
+    _user_id: u32,
     _user_bump: u8,
     _metadata: String,
     _user_authority: Pubkey,
@@ -756,7 +756,7 @@ pub struct CreateUser<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [&base.to_bytes()[..32], &_id.to_le_bytes()],
+        seeds = [&base.to_bytes()[..32], &_user_id.to_le_bytes()],
         bump,
         space = USER_ACCOUNT_SIZE
     )]

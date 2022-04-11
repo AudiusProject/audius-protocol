@@ -419,24 +419,6 @@ export const createUser = ({
       recoveryId,
     })
   );
-  console.log(`
-  baseAuthorityAccount: ${baseAuthorityAccount}
-  program: ${program}
-  ethAccount: ${ethAccount}
-  message: ${message}
-  replicaSet: ${replicaSet}
-  replicaSetBumps: ${replicaSetBumps}
-  cn1: ${cn1}
-  cn2: ${cn2}
-  cn3: ${cn3}
-  userId: ${userId}
-  bumpSeed: ${bumpSeed}
-  metadata: ${metadata}
-  payer: ${payer}
-  userSolPubkey: ${userSolPubkey}
-  userStorageAccount: ${userStorageAccount}
-  adminStoragePublicKey: ${adminStoragePublicKey}
-  `)
   tx.add(
     program.instruction.createUser(
       baseAuthorityAccount,
