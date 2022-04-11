@@ -1,5 +1,5 @@
 import { ParamListBase } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { AppTabScreen } from './AppTabScreen'
 
@@ -10,9 +10,9 @@ import { AppTabScreen } from './AppTabScreen'
  */
 export const createAppTabScreenStack = <StackParamList extends ParamListBase>(
   baseScreen: (
-    Stack: ReturnType<typeof createStackNavigator>
+    Stack: ReturnType<typeof createNativeStackNavigator>
   ) => React.ReactNode
 ) => {
-  const Stack = createStackNavigator<StackParamList>()
+  const Stack = createNativeStackNavigator<StackParamList>()
   return () => <AppTabScreen Stack={Stack} baseScreen={baseScreen} />
 }

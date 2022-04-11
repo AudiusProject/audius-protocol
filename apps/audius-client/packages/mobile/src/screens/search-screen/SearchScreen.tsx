@@ -1,3 +1,4 @@
+import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Screen } from 'app/components/core'
@@ -14,16 +15,22 @@ import SearchHistory from './SearchHistory'
 import SearchResults from './SearchResults'
 import EmptySearch from './content/EmptySearch'
 
+const SCREEN_WIDTH = Dimensions.get('window').width
+
 const useStyles = makeStyles(({ spacing }) => ({
   topbarLeft: {
-    flexGrow: 0,
-    flexBasis: 0,
-    paddingTop: spacing(2) + 1,
-    paddingHorizontal: spacing(2)
+    paddingTop: spacing(2) + 1
   },
   topbarRight: {
+    alignItems: 'flex-end',
+    width: SCREEN_WIDTH - 80
+  },
+  searchBar: {
     width: '100%',
-    paddingRight: spacing(2)
+    flexGrow: 1
+  },
+  buffer: {
+    flexGrow: 1
   }
 }))
 
@@ -48,11 +55,16 @@ export const SearchScreen = () => {
 
   return (
     <Screen
-      topbarRight={<SearchBar />}
-      topbarRightStyle={styles.topbarRight}
-      topbarLeftStyle={styles.topbarLeft}
+      topbarRight={
+        <View style={styles.topbarRight}>
+          <View style={styles.searchBar}>
+            <SearchBar />
+          </View>
+        </View>
+      }
       variant='white'
-      title='none'
+      title={null}
+      headerTitle={null}
     >
       <Header text='Search' />
       {renderBody()}

@@ -19,7 +19,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     height: 52,
     borderBottomWidth: 1,
     borderBottomColor: palette.neutralLight8,
-    paddingHorizontal: spacing(3)
+    paddingHorizontal: spacing(3),
+    borderTopWidth: 1,
+    borderTopColor: palette.neutralLight8
   },
   header: {
     fontSize: 24,

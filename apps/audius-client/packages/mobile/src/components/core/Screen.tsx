@@ -29,6 +29,7 @@ export type ScreenProps = {
   topbarRight?: Nullable<ReactElement>
   topbarRightStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
   title?: Nullable<string>
+  headerTitle?: ReactNode
   style?: StyleProp<ViewStyle>
   variant?: 'primary' | 'secondary' | 'white'
 }
@@ -39,6 +40,7 @@ export const Screen = (props: ScreenProps) => {
     topbarLeft,
     topbarRight,
     title = null,
+    headerTitle,
     topbarRightStyle,
     topbarLeftStyle,
     variant = 'primary'
@@ -49,7 +51,6 @@ export const Screen = (props: ScreenProps) => {
   useEffect(() => {
     navigation.setOptions(
       removeUndefined({
-        headerLeftContainerStyle: topbarLeftStyle,
         headerLeft: topbarLeft === undefined ? undefined : () => topbarLeft,
         headerRight:
           topbarRight === undefined
@@ -57,8 +58,8 @@ export const Screen = (props: ScreenProps) => {
             : topbarRight === null
             ? null
             : () => topbarRight,
-        headerRightContainerStyle: topbarRightStyle,
-        title
+        title,
+        headerTitle
       })
     )
   }, [
@@ -67,7 +68,8 @@ export const Screen = (props: ScreenProps) => {
     topbarLeft,
     topbarRight,
     topbarRightStyle,
-    title
+    title,
+    headerTitle
   ])
 
   return <View style={styles.root}>{children}</View>

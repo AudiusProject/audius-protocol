@@ -1,8 +1,8 @@
 import { ParamListBase, RouteProp } from '@react-navigation/native'
 import {
-  createStackNavigator,
-  StackNavigationOptions
-} from '@react-navigation/stack'
+  createNativeStackNavigator,
+  NativeStackNavigationOptions
+} from '@react-navigation/native-stack'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { NotificationType } from 'audius-client/src/common/store/notifications/types'
@@ -59,9 +59,9 @@ const forFade = ({ current }) => ({
 
 type AppTabScreenProps = {
   baseScreen: (
-    Stack: ReturnType<typeof createStackNavigator>
+    Stack: ReturnType<typeof createNativeStackNavigator>
   ) => React.ReactNode
-  Stack: ReturnType<typeof createStackNavigator>
+  Stack: ReturnType<typeof createNativeStackNavigator>
 }
 
 const stackScreenOptions = ({ route }: { route: RouteProp<ParamListBase> }) => {
@@ -70,14 +70,17 @@ const stackScreenOptions = ({ route }: { route: RouteProp<ParamListBase> }) => {
   // the tricky bit is that StackNavigationOptions aren't known to the RouteProp.
   // A better solution may be to wrap <Stack.Screen> in our own variant that
   // can do some better generics & inference.
-  const options: StackNavigationOptions = {}
+  const options: NativeStackNavigationOptions = {}
   if (params) {
-    if ('animationEnabled' in params) {
-      options.animationEnabled = (params as StackNavigationOptions).animationEnabled
-    }
-    if ('transitionSpec' in params) {
-      options.transitionSpec = (params as StackNavigationOptions).transitionSpec
-    }
+    // TODO: The following behavior is not supported by native stack, so it is disabled.
+    // Notifications currently uses this in order to remove animations when going from the drawer
+    // to a nested stack screen.
+    // if ('animationEnabled' in params) {
+    //   options.animationEnabled = (params as StackNavigationOptions).animationEnabled
+    // }
+    // if ('transitionSpec' in params) {
+    //   options.transitionSpec = (params as StackNavigationOptions).transitionSpec
+    // }
   }
   return options
 }
