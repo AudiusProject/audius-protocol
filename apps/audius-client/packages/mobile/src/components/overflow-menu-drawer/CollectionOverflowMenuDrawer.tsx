@@ -18,7 +18,7 @@ import {
   shareCollection
 } from 'audius-client/src/common/store/social/collections/actions'
 import { open as openEditPlaylist } from 'audius-client/src/common/store/ui/createPlaylistModal/actions'
-import { setOpen as openDeletePlaylist } from 'audius-client/src/common/store/ui/delete-playlist-confirmation-modal/actions'
+import { requestOpen as openDeletePlaylist } from 'audius-client/src/common/store/ui/delete-playlist-confirmation-modal/slice'
 import { getMobileOverflowModal } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
 import {
   OverflowAction,
@@ -97,7 +97,8 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
       })
       dispatchWeb(openEditPlaylist(id))
     },
-    [OverflowAction.DELETE_PLAYLIST]: () => dispatchWeb(openDeletePlaylist(id)),
+    [OverflowAction.DELETE_PLAYLIST]: () =>
+      dispatchWeb(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.PUBLISH_PLAYLIST]: () =>
       is_album ? () => {} : dispatchWeb(publishPlaylist(id))
   }

@@ -1,69 +1,59 @@
-import React, { useCallback, useContext } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 
-import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { push } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { ID } from 'common/models/Identifiers'
+import { useModalState } from 'common/hooks/useModalState'
 import { deletePlaylist } from 'common/store/cache/collections/actions'
-import * as actions from 'common/store/ui/delete-playlist-confirmation-modal/actions'
-import {
-  getIsOpen,
-  getPlaylistId
-} from 'common/store/ui/delete-playlist-confirmation-modal/selectors'
+import { getPlaylistId } from 'common/store/ui/delete-playlist-confirmation-modal/selectors'
+import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
-import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
 
-import DeletePlaylistConfirmationModal from './components/DeletePlaylistConfirmationModal'
+const messages = {
+  delete: 'Delete',
+  cancel: 'Cancel'
+}
 
-type DeletePlaylistConfirmationModalProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+const actions = [
+  { text: messages.delete, isDestructive: true },
+  { text: messages.cancel }
+]
 
-// A modal that asks the user to confirm a playlist delete
-const ConnectedDeletePlaylistConfirmationModal = ({
-  isOpen,
-  playlistId,
-  onClose,
-  onDelete,
-  goToRoute
-}: DeletePlaylistConfirmationModalProps) => {
+const DeletePlaylistConfirmationModal = () => {
+  const [isOpen, setIsOpen] = useModalState('DeletePlaylistConfirmation')
+  const playlistId = useSelector(getPlaylistId) ?? -1
+  const dispatch = useDispatch()
   const { setStackReset } = useContext(RouterContext)
-  const handleOnDelete = useCallback(
-    (playlistId: ID) => {
-      setStackReset(true)
-      goToRoute(TRENDING_PAGE)
-      onDelete(playlistId)
-    },
-    [onDelete, goToRoute, setStackReset]
-  )
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false)
+  }, [setIsOpen])
+
+  const handleDelete = useCallback(() => {
+    setStackReset(true)
+    dispatch(push(TRENDING_PAGE))
+    dispatch(deletePlaylist(playlistId))
+    handleClose()
+  }, [dispatch, setStackReset, playlistId, handleClose])
+
+  const actionCallbacks = useMemo(() => [handleDelete, handleClose], [
+    handleDelete,
+    handleClose
+  ])
+
+  const didSelectRow = (row: number) => {
+    actionCallbacks[row]()
+  }
 
   return (
-    <DeletePlaylistConfirmationModal
+    <ActionSheetModal
       isOpen={isOpen}
-      onClose={onClose}
-      onDelete={handleOnDelete}
-      playlistId={playlistId || -1}
+      onClose={handleClose}
+      actions={actions}
+      didSelectRow={didSelectRow}
     />
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isOpen: getIsOpen(state),
-    playlistId: getPlaylistId(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
-    onDelete: (id: ID) => dispatch(deletePlaylist(id)),
-    onClose: () => dispatch(actions.setClosed())
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(ConnectedDeletePlaylistConfirmationModal)
+export default DeletePlaylistConfirmationModal
