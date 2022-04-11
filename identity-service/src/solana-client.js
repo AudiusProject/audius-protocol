@@ -119,6 +119,7 @@ function getFeePayerKeypair (singleFeePayer = true) {
 
 async function createAndVerifyMessage (
   connection,
+  timeout,
   logger,
   validSigner,
   privateKey,
@@ -191,7 +192,7 @@ async function createAndVerifyMessage (
   })
 
   let feePayerAccount = getFeePayerKeypair(false)
-  let signature = await sendAndSignTransaction(connection, transaction, feePayerAccount, 30000, logger)
+  let signature = await sendAndSignTransaction(connection, transaction, feePayerAccount, timeout, logger)
 
   return signature
 }
@@ -290,7 +291,6 @@ async function awaitTransactionSignatureConfirmation (
             const result = signatureStatuses && signatureStatuses.value[0]
             if (!done) {
               if (!result) {
-                // logger.error('REST null result for', txid, result);
               } else if (result.err) {
                 logger.error('REST error for', txid, result)
                 done = true

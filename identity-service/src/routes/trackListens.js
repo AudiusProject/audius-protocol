@@ -312,6 +312,7 @@ module.exports = function (app) {
     const optimizelyClient = app.get('optimizelyClient')
     const isSolanaListenEnabled = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_LISTEN_ENABLED_SERVER)
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
+    const timeout = req.body.timeout || 60000
 
     const currentHour = trimToHour(new Date())
     // Dedicated listen flow
@@ -329,10 +330,10 @@ module.exports = function (app) {
       await redis.incr(trackingRedisKeys.submission)
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
-      // TODO: Move retry out of here
-      const response = await retry(async () => {
+      try {
         let solTxSignature = await solClient.createAndVerifyMessage(
           connection,
+          timeout,
           req.logger,
           null,
           config.get('solanaSignerPrivateKey'),
@@ -341,28 +342,15 @@ module.exports = function (app) {
           'relay' // Static source value to indicate relayed listens
         )
         req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
-
         // Increment success tracker
         await redis.incr(trackingRedisKeys.success)
         await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, Date.now(), Date.now() + entropy)
-
         return successResponse({
           solTxSignature
         })
-      }, {
-        // Retry function 3x by default
-        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
-        minTimeout: 500,
-        maxTimeout: 8000,
-        factor: 3,
-        retries: 3,
-        onRetry: (err, i) => {
-          if (err) {
-            req.logger.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
-          }
-        }
-      })
-      return response
+      } catch(e) {
+        return errorResponseBadRequest(`TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`)
+      }
     }
 
     // TODO: Make all of this conditional based on request parameters
