@@ -227,12 +227,13 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   // Anonymous function to retry sending until confirmation
   (async () => {
     // eslint-disable-next-line no-unmodified-loop-condition
-    while (!done && getUnixTs() - startTime < timeout) {
+    const elapsed = getUnixTs() - startTime
+    while (!done &&  elapsed < timeout) {
       logger.info(`TrackListen | Sending tx retry ${txid}`)
       connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
       await delay(300)
     }
-    logger.info(`TrackListen | Exited retry send loop for ${txid}`)
+    logger.info(`TrackListen | Exited retry send loop for ${txid}, elapsed=${elapsed}, done=${done}, timeout=${timeout}, start=${start}`)
   })()
 
   try {
