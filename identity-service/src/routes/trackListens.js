@@ -7,7 +7,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
-const solClient = require('../solana-client.js')
+const { createTrackListenTransaction, getFeePayerKeypair, sendAndSignTransaction } = require('../solana-client.js')
 const config = require('../config.js')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
@@ -314,6 +314,8 @@ module.exports = function (app) {
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
     const timeout = req.body.timeout || 60000
 
+    const sendRawTransaction = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_SEND_RAW_TRANSACTION)
+
     const currentHour = trimToHour(new Date())
     // Dedicated listen flow
     if (solanaListen) {
@@ -331,17 +333,29 @@ module.exports = function (app) {
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
       try {
-        let solTxSignature = await solClient.createAndVerifyMessage(
-          connection,
-          timeout,
-          req.logger,
-          null,
-          config.get('solanaSignerPrivateKey'),
-          userId.toString(),
-          trackId.toString(),
-          'relay' // Static source value to indicate relayed listens
-        )
+        let trackListenTransaction = await createTrackListenTransaction({
+          validSigner,
+          privateKey,
+          userId,
+          trackId,
+          source
+        })
+        let feePayerAccount = getFeePayerKeypair(false)
+
+        if (sendRawTransaction) {
+          let solTxSignature = await sendAndSignTransaction(
+            connection,
+            trackListenTransaction,
+            feePayerAccount,
+            timeout,
+            logger
+          )
+        } else {
+
+        }
+
         req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+
         // Increment success tracker
         await redis.incr(trackingRedisKeys.success)
         await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, Date.now(), Date.now() + entropy)

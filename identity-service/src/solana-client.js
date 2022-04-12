@@ -117,16 +117,13 @@ function getFeePayerKeypair (singleFeePayer = true) {
   return feePayerKeypairs[randomFeePayerIndex]
 }
 
-async function createAndVerifyMessage (
-  connection,
-  timeout,
-  logger,
-  validSigner,
-  privateKey,
-  userId,
-  trackId,
-  source
-) {
+async function createTrackListenTransaction ({
+    validSigner,
+    privateKey,
+    userId,
+    trackId,
+    source
+}) {
   validSigner = validSigner || VALID_SIGNER
 
   let privKey = Buffer.from(privateKey, 'hex')
@@ -191,8 +188,29 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
+  return transaction
+}
+
+// Send a transaction to the trackListenCount
+async function createAndVerifyMessage (
+  connection,
+  timeout,
+  logger,
+  validSigner,
+  privateKey,
+  userId,
+  trackId,
+  source
+) {
+  let trackListenTransaction = await createTrackListenTransaction({
+    validSigner,
+    privateKey,
+    userId,
+    trackId,
+    source
+  })
   let feePayerAccount = getFeePayerKeypair(false)
-  let signature = await sendAndSignTransaction(connection, transaction, feePayerAccount, timeout, logger)
+  let signature = await sendAndSignTransaction(connection, trackListenTransaction, feePayerAccount, timeout, logger)
 
   return signature
 }
@@ -322,4 +340,5 @@ async function awaitTransactionSignatureConfirmation (
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
+exports.createTrackListenTransaction = createTrackListenTransaction
 exports.getFeePayerKeypair = getFeePayerKeypair
