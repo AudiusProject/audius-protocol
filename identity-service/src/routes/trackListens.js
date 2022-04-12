@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
-// const retry = require('async-retry')
+const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 
 const models = require('../models')
@@ -302,6 +302,7 @@ module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const libs = req.app.get('audiusLibs')
     const connection = libs.solanaWeb3Manager.connection
+    const solanaWeb3 = libs.solanaWeb3Manager.solanaWeb3
     const redis = req.app.get('redis')
     const trackId = parseInt(req.params.id)
     const userId = req.body.userId
@@ -333,17 +334,19 @@ module.exports = function (app) {
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
       try {
+        req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId} - sending raw transaction`)
         let trackListenTransaction = await createTrackListenTransaction({
-          validSigner,
-          privateKey,
+          validSigner: null,
+          privateKey: config.get('solanaSignerPrivateKey'),
           userId,
           trackId,
-          source
+          source: 'relay',
+          connection
         })
         let feePayerAccount = getFeePayerKeypair(false)
-
+        let solTxSignature
         if (sendRawTransaction) {
-          let solTxSignature = await sendAndSignTransaction(
+          solTxSignature = await sendAndSignTransaction(
             connection,
             trackListenTransaction,
             feePayerAccount,
@@ -351,7 +354,30 @@ module.exports = function (app) {
             logger
           )
         } else {
-
+          await retry(async () => {
+            solTxSignature = await solanaWeb3.sendAndConfirmTransaction(
+              connection,
+              trackListenTransaction,
+              [feePayerAccount],
+              {
+                skipPreflight: false,
+                commitment: config.get('solanaTxCommitmentLevel'),
+                preflightCommitment: config.get('solanaTxCommitmentLevel')
+              }
+            )
+          }, {
+            // Retry function 3x by default
+            // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
+            minTimeout: 500,
+            maxTimeout: 8000,
+            factor: 3,
+            retries: 3,
+            onRetry: (err, i) => {
+              if (err) {
+                req.logger.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
+              }
+            }
+          })
         }
 
         req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)

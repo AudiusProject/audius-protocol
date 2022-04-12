@@ -118,11 +118,12 @@ function getFeePayerKeypair (singleFeePayer = true) {
 }
 
 async function createTrackListenTransaction ({
-    validSigner,
-    privateKey,
-    userId,
-    trackId,
-    source
+  validSigner,
+  privateKey,
+  userId,
+  trackId,
+  source,
+  connection
 }) {
   validSigner = validSigner || VALID_SIGNER
 
@@ -191,30 +192,6 @@ async function createTrackListenTransaction ({
   return transaction
 }
 
-// Send a transaction to the trackListenCount
-async function createAndVerifyMessage (
-  connection,
-  timeout,
-  logger,
-  validSigner,
-  privateKey,
-  userId,
-  trackId,
-  source
-) {
-  let trackListenTransaction = await createTrackListenTransaction({
-    validSigner,
-    privateKey,
-    userId,
-    trackId,
-    source
-  })
-  let feePayerAccount = getFeePayerKeypair(false)
-  let signature = await sendAndSignTransaction(connection, trackListenTransaction, feePayerAccount, timeout, logger)
-
-  return signature
-}
-
 const getUnixTs = () => {
   return new Date().getTime() / 1000
 }
@@ -244,14 +221,14 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   let done = false;
   // Anonymous function to retry sending until confirmation
   (async () => {
-    // eslint-disable-next-line no-unmodified-loop-condition
     const elapsed = getUnixTs() - startTime
-    while (!done &&  elapsed < timeout) {
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (!done && elapsed < timeout) {
       logger.info(`TrackListen | Sending tx retry ${txid}`)
       connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
       await delay(300)
     }
-    logger.info(`TrackListen | Exited retry send loop for ${txid}, elapsed=${elapsed}, done=${done}, timeout=${timeout}, start=${start}`)
+    logger.info(`TrackListen | Exited retry send loop for ${txid}, elapsed=${elapsed}, done=${done}, timeout=${timeout}, startTime=${startTime}`)
   })()
 
   try {
@@ -339,6 +316,6 @@ async function awaitTransactionSignatureConfirmation (
   return result
 }
 
-exports.createAndVerifyMessage = createAndVerifyMessage
 exports.createTrackListenTransaction = createTrackListenTransaction
 exports.getFeePayerKeypair = getFeePayerKeypair
+exports.sendAndSignTransaction = sendAndSignTransaction
