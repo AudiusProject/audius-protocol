@@ -221,6 +221,7 @@ jobs:
             export ipfsHost="localhost"
             export ipfsPort=6001
             npm run start << parameters.mad-dog-type >> verbose
+            npm run start << parameters.mad-dog-type >> 2 verbose
       - store_artifacts:
           path: /home/circleci/project/service-commands/output.log
       - store_artifacts:
