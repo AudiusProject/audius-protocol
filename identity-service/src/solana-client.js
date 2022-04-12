@@ -257,7 +257,7 @@ async function awaitTransactionSignatureConfirmation (
           return
         }
         done = true
-        reject(new Error(`Timed out for txid`, txid))
+        reject(new Error(`Timed out for txid ${txid}`))
       }, timeout)
       try {
         connection.onSignature(

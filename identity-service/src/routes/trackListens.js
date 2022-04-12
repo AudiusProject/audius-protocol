@@ -4,7 +4,7 @@ const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 
 const models = require('../models')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 const { createTrackListenTransaction, getFeePayerKeypair, sendAndSignTransaction } = require('../solana-client.js')
@@ -390,7 +390,7 @@ module.exports = function (app) {
           solTxSignature
         })
       } catch (e) {
-        return errorResponseBadRequest(`TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`)
+        return errorResponseServerError(`TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`)
       }
     }
 
