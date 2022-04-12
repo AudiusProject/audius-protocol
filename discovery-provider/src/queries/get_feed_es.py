@@ -52,7 +52,7 @@ def get_feed_es(args, limit=10):
                     },
                     # here doing some over-fetching to de-dupe later
                     # to approximate min_created_at + group by in SQL.
-                    "size": limit * 20,
+                    "size": limit * 10,
                     "sort": {"created_at": "desc"},
                 },
             ]
@@ -148,8 +148,10 @@ def get_feed_es(args, limit=10):
     for r in sorted_with_reposts:
         if r.get("repost_type") == "track":
             mget_reposts.append({"_index": ES_TRACKS, "_id": r["repost_item_id"]})
-        elif r.get("repost_type") == "playlist":
+        elif r.get("repost_type") in ["playlist", "album"]:
             mget_reposts.append({"_index": ES_PLAYLISTS, "_id": r["repost_item_id"]})
+        else:
+            raise Exception("no can fetch repost type: " + r.get("repost_type"))
 
     if mget_reposts:
         reposted_docs = esclient.mget(docs=mget_reposts)
@@ -243,6 +245,8 @@ def item_key(item):
     if "track_id" in item:
         return "track:" + str(item["track_id"])
     elif "playlist_id" in item:
+        if item["is_album"]:
+            return "album:" + str(item["playlist_id"])
         return "playlist:" + str(item["playlist_id"])
     else:
         raise Exception("item_key unknown type")

@@ -89,6 +89,18 @@ export async function indexDocs(
   }
 }
 
+export async function waitForHealthyCluster(): Promise<void> {
+  const health = await dialEs().cluster.health(
+    {
+      wait_for_status: 'green',
+    },
+    {
+      requestTimeout: '60s',
+    }
+  )
+  console.log('ES helath', health)
+}
+
 /**
  * Gets the max(blocknumber) from elasticsearch indexes
  * Used for incremental indexing to understand "where we were" so we can load new data from postgres

@@ -2,6 +2,7 @@ import { program } from 'commander'
 import 'dotenv/config'
 import { dialPg } from './conn'
 import { runEtl } from './etlRunner'
+import { waitForHealthyCluster } from './jobRunner'
 
 // Sleep 1 minute between ETL polling runs
 const ETL_POLL_INTERVAL_MS = 1000 * 60 * 1
@@ -20,6 +21,8 @@ program
   )
   .option('--poll', 're-run etl polling style')
   .action(async function (options) {
+    await waitForHealthyCluster()
+
     while (true) {
       await runEtl(options)
       if (!options.poll) {
