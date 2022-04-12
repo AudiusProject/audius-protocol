@@ -1,7 +1,7 @@
 import asyncio
 import base64
 import logging
-from typing import Any, Dict, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from solana.transaction import Transaction
 from sqlalchemy import desc
@@ -145,7 +145,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # TODO - Override with actual remote fetch operation
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
-    async def fetch_ipfs_metadata(self, parsed_transactions):
+    async def fetch_ipfs_metadata(
+        self, parsed_transactions: List[Dict[str, str]]
+    ) -> Tuple[Dict[str, str], Set[str]]:
 
         cid_to_user_id: Dict[str, int] = {}
         cids_txhash_set: Set[Tuple(str, str)] = set()
@@ -180,7 +182,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 .all()
             )
 
-        return (
+        cid_metadata = (
             await self.cid_metadata_client.async_fetch_metadata_from_gateway_endpoints(
                 cids_txhash_set,
                 cid_to_user_id,
@@ -188,3 +190,4 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 cid_type,
             )
         )
+        return cid_metadata, blacklisted_cids

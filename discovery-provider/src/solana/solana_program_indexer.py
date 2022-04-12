@@ -157,20 +157,18 @@ class SolanaProgramIndexer(IndexerBase):
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
         # Fetch metadata in parallel
-        metadata_dictionary = await self.fetch_ipfs_metadata(parsed_transactions)
-
-        self.validate_and_save_parsed_tx_records(
-            parsed_transactions, metadata_dictionary
+        cid_metadata, blacklisted_cids = await self.fetch_ipfs_metadata(
+            parsed_transactions
         )
 
+        self.validate_and_save_parsed_tx_records(parsed_transactions, cid_metadata)
+
     @abstractmethod
-    def validate_and_save_parsed_tx_records(
-        self, parsed_transactions, metadata_dictionary
-    ):
+    def validate_and_save_parsed_tx_records(self, parsed_transactions, cid_metadata):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
         @param parsed_transactions: Array of transaction signatures in order
-        @param metadata_dictionary: Dictionary of remote metadata
+        @param cid_metadata: Dictionary of remote metadata
         """
         raise Exception(BASE_ERROR)
 
