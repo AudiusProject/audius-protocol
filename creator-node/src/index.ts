@@ -104,7 +104,7 @@ const startApp = async () => {
       `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
     )
   }
-  
+
   await connectToDBAndRunMigrations()
 
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
