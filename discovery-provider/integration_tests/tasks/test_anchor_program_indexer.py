@@ -4,7 +4,7 @@ from unittest.mock import create_autospec
 import pytest
 from construct import Container, ListContainer
 from integration_tests.utils import populate_mock_db
-from src.models.models import AudiusDataTx
+from src.models.models import AudiusDataTx, BlacklistedIPLD
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.utils.cid_metadata_client import CIDMetadataClient
@@ -160,7 +160,7 @@ async def test_fetch_metadata(app, mocker):
         "tx_sig": "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV",
     }
     mock_parsed_transactions = [parsed_tx]
-    cid_metadata = await anchor_program_indexer.fetch_ipfs_metadata(
+    cid_metadata, blacklisted_cids = await anchor_program_indexer.fetch_ipfs_metadata(
         mock_parsed_transactions
     )
 

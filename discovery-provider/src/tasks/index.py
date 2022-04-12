@@ -1,4 +1,5 @@
 # pylint: disable=C0302
+import asyncio
 import concurrent.futures
 import logging
 import time
@@ -274,6 +275,7 @@ def fetch_cid_metadata(
 
     # cid -> user_id lookup to make fetching replica set more efficient
     cid_to_user_id: Dict[str, int] = {}
+    cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
     # fetch transactions
     with db.scoped_session() as session:
@@ -329,14 +331,38 @@ def fetch_cid_metadata(
             .all()
         )
 
-    cid_metadata = (
-        update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-            cids_txhash_set,
-            cid_to_user_id,
-            user_to_replica_set,
-            cid_type,
+    # first attempt - fetch all CIDs from replica set
+    try:
+        cid_metadata.update(
+            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                cid_metadata.keys(),
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set=True,
+            )
         )
-    )
+    except asyncio.TimeoutError:
+        # swallow exception on first attempt fetching from replica set
+        pass
+
+    # second attempt - fetch missing CIDs from other cnodes
+    if len(cid_metadata) != len(cids_txhash_set):
+        cid_metadata.update(
+            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                cid_metadata.keys(),
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set=False,
+            )
+        )
+
+    if cid_type and len(cid_metadata) != len(cid_type.keys()):
+        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+        raise Exception(missing_cids_msg)
 
     logger.info(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"

@@ -256,7 +256,7 @@ def test_index_operations_metadata_fetch_error(
     web3 = celery_app_contracts["web3"]
 
     # patch ipfs metadata event to raise an exception
-    def fetch_metadata_stub(*_):
+    def fetch_metadata_stub(*_, should_fetch_from_replica_set):
         raise Exception("Broken fetch")
 
     mocker.patch(
