@@ -173,7 +173,7 @@ export const createContentNode = ({
   adminStoragePublicKey,
   adminPublicKey,
   baseAuthorityAccount,
-  spID, // new anchor.BN(3)
+  spID,
   contentNodeAuthority,
   contentNodeAcct,
   ownerEthAddress,
@@ -183,7 +183,7 @@ export const createContentNode = ({
   tx.add(
     program.instruction.createContentNode(
       baseAuthorityAccount,
-      spID.toNumber(), // u16
+      spID.toNumber(),
       contentNodeAuthority,
       [...anchor.utils.bytes.hex.decode(ownerEthAddress)],
       {
