@@ -28,7 +28,7 @@ def get_tasks() -> List[GetTasksItem]:
     celery_tasks = []
     for _, tasks in active.items():
         for task in tasks:
-            activeItems.append(
+            celery_tasks.append(
                 GetTasksItem(
                     taskId=task["id"], 
                     taskName=task["name"], 
