@@ -4,18 +4,6 @@ from src.tasks.celery import celery
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 
 
-class GetTasksItem(TypedDict):
-
-    # Id of the Celery Task
-    taskId: str
-
-    # Name of the Celery Task
-    taskName: str
-
-    # datetime the task was started at
-    startedAt: str
-
-
 def get_tasks() -> List[GetTasksItem]:
 
     # Inspect all nodes.
@@ -29,11 +17,11 @@ def get_tasks() -> List[GetTasksItem]:
         for task in tasks:
             try:
                 celery_tasks.append(
-                    GetTasksItem(
-                        taskId=task["id"],
-                        taskName=task["name"],
-                        startedAt=task["time_start"],
-                    )
+                    {
+                        "task_id": task["id"],
+                        "task_name": task["name"],
+                        "started_at": htask["time_start"],
+                    }
                 )
 
             except KeyError:
