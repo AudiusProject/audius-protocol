@@ -1,20 +1,20 @@
 import { Client } from '@elastic/elasticsearch'
 import { dialEs, queryCursor } from './conn'
 import { BlocknumberCheckpoint, Job, JobOptions } from './job'
-import Debug from 'debug'
 import _ from 'lodash'
 import { indexNames } from './indexNames'
+import pino from 'pino'
 
 export async function runJob(
   job: Job,
   opts: JobOptions,
   checkpoints: BlocknumberCheckpoint
 ) {
-  const debug = Debug(`es-indexer:${job.tableName}`)
+  const logger = pino({ name: `es-indexer:${job.tableName}` })
   const es = dialEs()
 
   if (opts.drop) {
-    debug('dropping index')
+    logger.info('dropping index: ' + job.indexSettings.index)
     await es.indices.delete(
       { index: job.indexSettings.index },
       { ignore: [404] }
@@ -26,8 +26,8 @@ export async function runJob(
 
   let rowCounter = 0
   let startedAt = new Date()
-  const highBlock = checkpoints[job.tableName]
-  debug('starting at blocknumber:', highBlock)
+  const startingAtBlocknumber = checkpoints[job.tableName]
+  logger.info({ startingAtBlocknumber })
 
   // etl sql
   let sql = job.sql2(checkpoints)
@@ -53,18 +53,20 @@ export async function runJob(
     await indexDocs(es, job.indexSettings.index, job.idField, rows)
 
     rowCounter += rows.length
-    debug({
+    logger.info({
       updates: rows.length,
       rowsProcessed: rowCounter,
     })
   }
 
-  debug({
-    message: 'finished',
-    rowsProcessed: rowCounter,
-    startedAt,
-    endedAt: new Date(),
-  })
+  logger.info(
+    {
+      rowsProcessed: rowCounter,
+      startedAt,
+      endedAt: new Date(),
+    },
+    'finished'
+  )
   await cursor.close()
   client.release()
 }

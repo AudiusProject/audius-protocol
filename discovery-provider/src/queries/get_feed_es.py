@@ -150,8 +150,6 @@ def get_feed_es(args, limit=10):
             mget_reposts.append({"_index": ES_TRACKS, "_id": r["repost_item_id"]})
         elif r.get("repost_type") in ["playlist", "album"]:
             mget_reposts.append({"_index": ES_PLAYLISTS, "_id": r["repost_item_id"]})
-        else:
-            raise Exception("no can fetch repost type: " + r.get("repost_type"))
 
     if mget_reposts:
         reposted_docs = esclient.mget(docs=mget_reposts)

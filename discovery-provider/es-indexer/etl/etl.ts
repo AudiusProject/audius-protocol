@@ -1,5 +1,4 @@
 import { program } from 'commander'
-import 'dotenv/config'
 import { dialPg } from './conn'
 import { runEtl } from './etlRunner'
 import { waitForHealthyCluster } from './jobRunner'

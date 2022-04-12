@@ -1,5 +1,3 @@
-import 'dotenv/config'
-
 import { Pool as PG } from 'pg'
 import { Client as ES } from '@elastic/elasticsearch'
 import Cursor from 'pg-cursor'
