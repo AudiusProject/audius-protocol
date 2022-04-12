@@ -49,7 +49,7 @@ export const SearchResultsTab = (props: SearchResultsTabProps) => {
   if (
     isRefreshing ||
     searchStatus === Status.LOADING ||
-    status === Status.LOADING
+    (status === Status.LOADING && noResults)
   ) {
     return <LoadingSpinner style={styles.spinner} />
   }
