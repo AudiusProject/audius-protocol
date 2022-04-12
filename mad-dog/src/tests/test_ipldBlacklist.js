@@ -658,7 +658,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
     const randomCoverPhotoFilePath = await getRandomImageFilePath(TEMP_STORAGE_PATH)
     const cid = await executeOne(
       CREATOR_INDEX,
-      libsWrapper => uploadPlaylistCoverPhoto(libsWrapper, playlistId, randomCoverPhotoFilePath)
+      libsWrapper => uploadPlaylistCoverPhoto(libsWrapper, randomCoverPhotoFilePath)
     )
     return cid
   }
@@ -778,10 +778,10 @@ async function testUpdateFlow(
     // Create another property, upload it to a CN, and blacklist it
     const blacklistedCid = await executeOne(CREATOR_INDEX, libs => createAndUploadProperty(libs))
     const { digest: blacklistedDigest } = Utils.decodeMultihash(blacklistedCid)
-      const ipldTxReceipt = await executeOne(
-        BLACKLISTER_INDEX,
-        libs => addIPLDToBlacklist(libs, blacklistedDigest)
-      )
+    await executeOne(
+      BLACKLISTER_INDEX,
+      libs => addIPLDToBlacklist(libs, blacklistedDigest)
+    )
     await executeOne(BLACKLISTER_INDEX, libs => libs.waitForLatestIPLDBlock())
     
     // Attempt to update the object to have a blacklisted property

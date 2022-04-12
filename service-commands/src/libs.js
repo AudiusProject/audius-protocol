@@ -255,8 +255,7 @@ function LibsWrapper (walletIndex = 0) {
     const coverArtFile = fs.createReadStream(coverArtFilePath)
     const resp = await this.libsInstance.File.uploadImage(
       coverArtFile,
-      'true', // square, this weirdly has to be a boolean string
-      10000 // timeoutMs
+      'true' // square, this weirdly has to be a boolean string
     )
     const { dirCID } = resp
     return dirCID
@@ -591,13 +590,9 @@ function LibsWrapper (walletIndex = 0) {
     return addPlaylistTrackTxReceipt
   }
 
-  this.uploadPlaylistCoverPhoto = async (
-    playlistId,
-    coverPhotoFile
-  ) => {
+  this.uploadPlaylistCoverPhoto = async (coverPhotoFile) => {
     assertLibsDidInit()
     const dirCid = await this.libsInstance.Playlist.uploadPlaylistCoverPhoto(
-      playlistId,
       coverPhotoFile
     )
     return dirCid

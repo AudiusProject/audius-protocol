@@ -22,13 +22,10 @@ Playlist.createPlaylist = async (
 
 Playlist.uploadPlaylistCoverPhoto = async (
   libs,
-  playlistId,
   coverPhotoFilePath
 ) => {
   const coverPhotoFile = fs.createReadStream(coverPhotoFilePath)
-  const dirCid = await libs.uploadPlaylistCoverPhoto(
-    playlistId, coverPhotoFile
-  )
+  const dirCid = await libs.uploadPlaylistCoverPhoto(coverPhotoFile)
   return dirCid
 }
 

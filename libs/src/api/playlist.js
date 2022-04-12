@@ -209,18 +209,15 @@ class Playlists extends Base {
 
   /**
    * Uploads a cover photo for a playlist without updating the actual playlist
-   * @param {number} playlistId
    * @param {File} coverPhotoFile the file to upload as the cover photo
    * @return {string} CID of the uploaded cover photo
    */
-  async uploadPlaylistCoverPhoto (playlistId, coverPhotoFile) {
+  async uploadPlaylistCoverPhoto (coverPhotoFile) {
     this.REQUIRES(Services.CREATOR_NODE)
 
     const updatedPlaylistImage = await this.creatorNode.uploadImage(
       coverPhotoFile,
-      'true', // square, this weirdly has to be a boolean string
-      () => {}, // onProgress
-      10000 // timeoutMs
+      'true' // square, this weirdly has to be a boolean string
     )
     return updatedPlaylistImage.dirCID
   }
