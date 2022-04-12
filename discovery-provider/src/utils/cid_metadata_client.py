@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from typing import Any, Dict, KeysView, Set, Tuple
+from typing import Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -101,12 +101,12 @@ class CIDMetadataClient:
     async def _fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
-        cids_txhash_set: Tuple[str, Any],
+        cids_txhash_set: Set[Tuple[str, str]],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Dict]:
         """Fetch CID metadata from gateway endpoints and update cid_metadata dict.
 
         fetched_cids -- CIDs already successfully fetched
@@ -193,12 +193,12 @@ class CIDMetadataClient:
     def fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
-        cids_txhash_set: Tuple[str, Any],
+        cids_txhash_set: Set[Tuple[str, str]],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
-    ) -> Dict[str, int]:
+    ):
         return asyncio.run(
             self._fetch_metadata_from_gateway_endpoints(
                 fetched_cids,
@@ -217,8 +217,8 @@ class CIDMetadataClient:
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
-    ) -> Dict[str, int]:
-        cid_metadata: Dict[str, int] = {}
+    ) -> Dict[str, Dict]:
+        cid_metadata: Dict[str, Dict] = {}
 
         # first attempt - fetch all CIDs from replica set
         try:

@@ -329,13 +329,13 @@ def fetch_cid_metadata(
             .all()
         )
 
-    cid_metadata: Dict[
-        str, str
-    ] = update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-        cids_txhash_set,
-        cid_to_user_id,
-        user_to_replica_set,
-        cid_type,
+    cid_metadata = (
+        update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+            cids_txhash_set,
+            cid_to_user_id,
+            user_to_replica_set,
+            cid_type,
+        )
     )
 
     logger.info(

@@ -146,11 +146,11 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
     async def fetch_ipfs_metadata(
-        self, parsed_transactions: List[Dict[str, str]]
-    ) -> Tuple[Dict[str, str], Set[str]]:
+        self, parsed_transactions: List[Dict]
+    ) -> Tuple[Dict[str, Dict], Set[str]]:
 
         cid_to_user_id: Dict[str, int] = {}
-        cids_txhash_set: Set[Tuple(str, str)] = set()
+        cids_txhash_set: Set[Tuple[str, str]] = set()
         cid_type: Dict[str, str] = {}  # cid -> entity type track / user
         blacklisted_cids: Set[str] = set()
 
