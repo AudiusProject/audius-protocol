@@ -8,6 +8,7 @@ import {
   NativeSyntheticEvent,
   ScrollView
 } from 'react-native'
+import { usePrevious } from 'react-use'
 
 import IconRefreshPull from 'app/assets/animations/iconRefreshPull.json'
 import IconRefreshSpin from 'app/assets/animations/iconRefreshSpin.json'
@@ -70,6 +71,8 @@ export const useOverflowHandlers = ({
   const [isMomentumScroll, setIsMomentumScroll] = useState(false)
   const [isDebouncing, setIsDebouncing] = useState(false)
 
+  const wasRefreshing = usePrevious(isRefreshing)
+
   const handleRefresh = useCallback(() => {
     onRefresh?.()
     setIsDebouncing(true)
@@ -91,10 +94,10 @@ export const useOverflowHandlers = ({
   )
 
   useEffect(() => {
-    if (!isRefreshing && !isDebouncing) {
+    if (!isRefreshing && !isDebouncing && wasRefreshing) {
       scrollTo(0)
     }
-  }, [isRefreshing, isDebouncing, scrollTo])
+  }, [isRefreshing, isDebouncing, wasRefreshing, scrollTo])
 
   const onScrollBeginDrag = useCallback(() => {
     setIsMomentumScroll(false)
