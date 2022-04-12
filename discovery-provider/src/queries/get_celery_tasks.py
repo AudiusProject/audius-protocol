@@ -1,4 +1,6 @@
 
+from typing import Dict, List, TypedDict
+
 from src.tasks.celery import celery
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 
