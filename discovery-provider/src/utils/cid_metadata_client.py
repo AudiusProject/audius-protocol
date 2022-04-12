@@ -188,7 +188,29 @@ class CIDMetadataClient:
                 raise e
         return cid_metadata
 
+    # Used in POA indexing
     def fetch_metadata_from_gateway_endpoints(
+        self,
+        fetched_cids: KeysView[str],
+        cids_txhash_set: Tuple[str, Any],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, str],
+        cid_type: Dict[str, str],
+        should_fetch_from_replica_set: bool = True,
+    ) -> Dict[str, int]:
+        return asyncio.run(
+            self._fetch_metadata_from_gateway_endpoints(
+                fetched_cids,
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set,
+            )
+        )
+
+    # Used in SOL indexing
+    async def async_fetch_metadata_from_gateway_endpoints(
         self,
         cids_txhash_set: Tuple[str, Any],
         cid_to_user_id: Dict[str, int],
@@ -199,16 +221,15 @@ class CIDMetadataClient:
 
         # first attempt - fetch all CIDs from replica set
         try:
+
             cid_metadata.update(
-                asyncio.run(
-                    self._fetch_metadata_from_gateway_endpoints(
-                        cid_metadata.keys(),
-                        cids_txhash_set,
-                        cid_to_user_id,
-                        user_to_replica_set,
-                        cid_type,
-                        should_fetch_from_replica_set=True,
-                    )
+                await self._fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=True,
                 )
             )
         except asyncio.TimeoutError:
@@ -218,15 +239,13 @@ class CIDMetadataClient:
         # second attempt - fetch missing CIDs from other cnodes
         if len(cid_metadata) != len(cids_txhash_set):
             cid_metadata.update(
-                asyncio.run(
-                    self._fetch_metadata_from_gateway_endpoints(
-                        cid_metadata.keys(),
-                        cids_txhash_set,
-                        cid_to_user_id,
-                        user_to_replica_set,
-                        cid_type,
-                        should_fetch_from_replica_set=False,
-                    )
+                await self._fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=False,
                 )
             )
 

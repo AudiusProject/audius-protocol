@@ -1,6 +1,7 @@
 import asyncio
 from unittest.mock import create_autospec
 
+import pytest
 from construct import Container, ListContainer
 from integration_tests.utils import populate_mock_db
 from src.models.models import AudiusDataTx
@@ -121,7 +122,8 @@ def test_parse_tx(app):
     assert owner_eth_address_hex == "0x25A3Acd4758Ab107ea0Bd739382B8130cD1F204d"
 
 
-def test_fetch_metadata(app):
+@pytest.mark.asyncio
+async def test_fetch_metadata(app, mocker):
     with app.app_context():
         db = get_db()
         redis = get_redis()
@@ -131,7 +133,7 @@ def test_fetch_metadata(app):
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
 
-    cid_metadata_client_mock.fetch_metadata_from_gateway_endpoints.return_value = (
+    cid_metadata_client_mock.async_fetch_metadata_from_gateway_endpoints.return_value = (
         mock_cid_metadata
     )
 
@@ -158,10 +160,22 @@ def test_fetch_metadata(app):
         "tx_sig": "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV",
     }
     mock_parsed_transactions = [parsed_tx]
-    cid_metadata = asyncio.run(
-        anchor_program_indexer.fetch_ipfs_metadata(mock_parsed_transactions)
+    cid_metadata = await anchor_program_indexer.fetch_ipfs_metadata(
+        mock_parsed_transactions
     )
+
     assert cid_metadata == mock_cid_metadata
+
+
+basic_entities = {
+    "users": [
+        {
+            "user_id": 1,
+            "is_current": True,
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+        }
+    ],
+}
 
 
 """
@@ -220,14 +234,25 @@ mock_tx_info = {
     "id": 1,
 }
 
-mock_cid_metadata = {"QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS": "test metadata"}
-
-basic_entities = {
-    "users": [
-        {
-            "user_id": 1,
-            "is_current": True,
-            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
-        }
-    ],
+mock_cid_metadata = {
+    "QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS": {
+        "is_creator": False,
+        "is_verified": False,
+        "is_deactivated": False,
+        "name": "test user name",
+        "handle": "test_handle",
+        "profile_picture": None,
+        "profile_picture_sizes": "QmProfilePictures",
+        "cover_photo": None,
+        "cover_photo_sizes": None,
+        "bio": None,
+        "location": None,
+        "creator_node_endpoint": "https://creatornode3.audius.co,https://creatornode2.audius.co,https://content-node.audius.co",
+        "associated_wallets": None,
+        "associated_sol_wallets": None,
+        "collectibles": None,
+        "playlist_library": None,
+        "events": None,
+        "user_id": 1,
+    }
 }

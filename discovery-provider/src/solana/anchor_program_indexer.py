@@ -167,8 +167,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                                 instruction["instruction_name"]
                             ]
 
-                        # TODO once user_id changes are merged in
-                        # cid_to_user_id[cid] = user_id
+                        # TODO update once user_id changes are merged in
+                        cid_to_user_id[cid] = 1
 
             user_replica_set = dict(
                 session.query(User.user_id, User.creator_node_endpoint)
@@ -180,13 +180,11 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 .all()
             )
 
-        cid_metadata: Dict[
-            str, str
-        ] = self.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-            cids_txhash_set,
-            cid_to_user_id,
-            user_replica_set,
-            cid_type,
+        return (
+            await self.cid_metadata_client.async_fetch_metadata_from_gateway_endpoints(
+                cids_txhash_set,
+                cid_to_user_id,
+                user_replica_set,
+                cid_type,
+            )
         )
-
-        return cid_metadata

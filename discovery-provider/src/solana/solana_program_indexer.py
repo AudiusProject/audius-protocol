@@ -128,7 +128,7 @@ class SolanaProgramIndexer(IndexerBase):
         raise Exception("Must be implemented in subclass")
 
     @abstractmethod
-    async def fetch_ipfs_metadata(self, parsed_transactions):
+    def fetch_ipfs_metadata(self, parsed_transactions):
         """
         Fetch all metadata objects in parallel (if required). Certain indexing tasks will not require this step and can skip appropriately
         @param parsed_transactions: Array of transactions containing deserialized information, ideally pointing to a metadata object
