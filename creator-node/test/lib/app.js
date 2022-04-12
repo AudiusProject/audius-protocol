@@ -56,7 +56,6 @@ function getServiceRegistryMock (libsClient, blacklistManager) {
 
 function clearRequireCache () {
   console.log('DELETING CACHE')
-  Prometheus.register.clear()
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool
     // every time and we hit a db error if we clear the cache and keep creating new pg pools
@@ -64,6 +63,11 @@ function clearRequireCache () {
       delete require.cache[key]
     }
   })
+
+  // since the require caches are cleared, we will be calling
+  // Prometheus.collectDefaultMetrics() again.
+  // we will clear our metrics registry to avoid name collisions
+  Prometheus.register.clear()
 }
 
 module.exports = { getApp, getServiceRegistryMock }

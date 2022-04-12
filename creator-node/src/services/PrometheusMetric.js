@@ -94,7 +94,7 @@ class PrometheusMetric {
     PrometheusMetric.registeredCollectors[name] = collectorFunc
   }
 
-  static populateCollectors(name, collectorFunc) {
+  static populateCollectors() {
     for (const collectorFunc of Object.values(
       PrometheusMetric.registeredCollectors
     )) {
