@@ -28,13 +28,16 @@ def get_tasks() -> List[GetTasksItem]:
     celery_tasks = []
     for _, tasks in active.items():
         for task in tasks:
-            celery_tasks.append(
-                GetTasksItem(
-                    taskId=task["id"], 
-                    taskName=task["name"], 
-                    startedAt=task["time_start"]
+            try:
+                celery_tasks.append(
+                    GetTasksItem(
+                        taskId=task["id"], 
+                        taskName=task["name"], 
+                        startedAt=task["time_start"]
+                    )
                 )
-            )
+            except KeyError as e:
+                continue
 
     return celery_tasks
 
