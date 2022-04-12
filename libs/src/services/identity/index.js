@@ -354,18 +354,20 @@ class IdentityService {
   //   }
   // }
   async solanaRelay (transactionData) {
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await this.web3Manager.sign(message)
+    const headers = {}
+    if (this.web3Manager) {
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const message = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager.sign(message)
+      headers[AuthHeaders.MESSAGE] = message
+      headers[AuthHeaders.SIGNATURE] = signature
+    }
 
     return this._makeRequest({
       url: '/solana/relay',
       method: 'post',
       data: transactionData,
-      headers: {
-        [AuthHeaders.MESSAGE]: message,
-        [AuthHeaders.SIGNATURE]: signature
-      }
+      headers
     })
   }
 
