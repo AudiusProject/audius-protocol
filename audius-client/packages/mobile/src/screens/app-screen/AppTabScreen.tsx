@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import {
   ParamListBase,
   RouteProp,
@@ -14,6 +16,7 @@ import { RepostType } from 'audius-client/src/common/store/user-list/reposts/typ
 import { MessageType } from 'audius-client/src/services/native-mobile-interface/types'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
@@ -98,6 +101,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const navigation = useNavigation()
   const drawerNavigation = navigation.getParent()?.getParent()
+  const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
+
+  useEffect(() => {
+    drawerNavigation?.setOptions({ swipeEnabled: !isNowPlayingDrawerOpen })
+  }, [drawerNavigation, isNowPlayingDrawerOpen])
 
   return (
     <Stack.Navigator

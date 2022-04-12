@@ -132,13 +132,15 @@ export const Slider = memo(
     // The position of the drag-handle
     const [handlePosition, setHandlePosition] = useState(0)
 
-    useEffect(() => {
+    const getRailPageX = () => {
       if (railRef.current) {
         railRef.current.measure((x, y, width, height, pageX, pageY) => {
           setRailPageX(pageX)
         })
       }
-    }, [railRef])
+    }
+
+    useEffect(getRailPageX, [railRef])
 
     const currentAnimation = useRef<Animated.CompositeAnimation>()
     const play = useCallback(
@@ -283,6 +285,7 @@ export const Slider = memo(
           onLayout={e => {
             const { width } = e.nativeEvent.layout
             setRailWidth(width)
+            getRailPageX()
           }}
           style={styles.rail}
           onTouchStart={onPressRail}
