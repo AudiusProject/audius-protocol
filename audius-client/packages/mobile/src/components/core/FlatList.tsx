@@ -34,7 +34,7 @@ const CollapsibleFlatList = ({
 
 const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
   function AnimatedFlatList(
-    { refreshing, onRefresh, ...other },
+    { refreshing, onRefresh, onScroll, ...other },
     ref: MutableRefObject<RNFlatList<any> | null>
   ) {
     const scrollRef = useRef<Animated.FlatList>(null)
@@ -44,13 +44,14 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
       isRefreshDisabled,
       handleRefresh,
       scrollAnim,
-      onScroll,
+      handleScroll,
       onScrollBeginDrag,
       onScrollEndDrag
     } = useOverflowHandlers({
       isRefreshing: refreshing,
       scrollResponder: ref?.current || scrollRef.current,
-      onRefresh
+      onRefresh,
+      onScroll
     })
 
     return (
@@ -64,12 +65,12 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
           />
         ) : null}
         <Animated.FlatList
+          {...other}
           scrollToOverflowEnabled
           ref={ref || scrollRef}
-          onScroll={onScroll}
+          onScroll={handleScroll}
           onScrollBeginDrag={onScrollBeginDrag}
           onScrollEndDrag={onScrollEndDrag}
-          {...other}
         />
       </View>
     )

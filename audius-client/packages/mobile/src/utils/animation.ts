@@ -1,4 +1,8 @@
-import { Animated, GestureResponderEvent } from 'react-native'
+import {
+  Animated,
+  GestureResponderEvent,
+  NativeScrollEvent
+} from 'react-native'
 
 export const attachToDx = (animation: Animated.Value, newValue: number) => (
   e: GestureResponderEvent
@@ -41,7 +45,11 @@ export const attachToDy = (animation: Animated.Value, newValue: number) => (
  * If you wish to add custom scroll functionality and attach an animation,
  * native driver cannot be used.
  */
-export const attachToScroll = (animation: Animated.Value) =>
+export const attachToScroll = (
+  animation: Animated.Value,
+  config?: Partial<Animated.EventConfig<NativeScrollEvent>>
+) =>
   Animated.event([{ nativeEvent: { contentOffset: { y: animation } } }], {
-    useNativeDriver: true
+    useNativeDriver: true,
+    ...config
   })
