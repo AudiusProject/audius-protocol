@@ -459,7 +459,6 @@ export class RewardsAttester {
    * Called from the client to attest challenges
    */
   async processChallenges(challenges: Challenge[]) {
-    console.log("v1!!!")
     await this._selectDiscoveryNodes()
     const toProcess = [...challenges]
     while (toProcess.length) {
@@ -702,8 +701,7 @@ export class RewardsAttester {
         endpoints: this.endpoints,
         logger: this.logger,
         feePayerOverride: this._getFeePayer(),
-        // maxAggregationAttempts: this.maxAggregationAttempts
-        maxAggregationAttempts: 2
+        maxAggregationAttempts: this.maxAggregationAttempts
       })
 
     if (success) {

@@ -312,17 +312,13 @@ class Rewards extends Base {
         logger,
         maxAttempts
       })
-      console.log({discoveryNodeAttestationResults})
 
       const discoveryNodeSuccesses = discoveryNodeAttestationResults.map(r => r.success)
       const discoveryNodeErrors = discoveryNodeAttestationResults.map(r => r.error)
       const error = discoveryNodeErrors.find(Boolean)
       if (error) {
         // Propagate out the specific nodes that errored
-
-        console.log('got error!!!!!')
         const erroringNodes = discoveryNodeAttestationResults.filter(r => r.error).map(r => r.endpoint)
-        console.log({erroringNodes})
         return {
           discoveryNodeAttestations: null,
           aaoAttestation: null,
