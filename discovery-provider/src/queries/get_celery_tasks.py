@@ -1,5 +1,5 @@
 
-from typing import Dict, List, TypedDict
+from typing import List, TypedDict
 
 from src.tasks.celery import celery
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
@@ -23,7 +23,7 @@ def get_tasks() -> List[GetTasksItem]:
     celery_tasks: List[GetTasksItem] = []
 
     # Inspect all nodes.
-    i = my_app.control.inspect()
+    i = celery.control.inspect()
 
     # Show tasks that are currently active.
     active = i.active()
