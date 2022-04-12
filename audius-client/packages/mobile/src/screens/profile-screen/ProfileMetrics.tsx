@@ -7,6 +7,7 @@ import { Pressable, Text, View } from 'react-native'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles/makeStyles'
+import { formatCount } from 'app/utils/format'
 
 import { useSelectProfile } from './selectors'
 
@@ -79,15 +80,15 @@ export const ProfileMetrics = () => {
   return (
     <View pointerEvents='box-none' style={styles.root}>
       <View style={styles.metric}>
-        <Text style={styles.value}>{track_count}</Text>
+        <Text style={styles.value}>{formatCount(track_count)}</Text>
         <Text style={styles.label}>{messages.tracks}</Text>
       </View>
       <Pressable style={styles.metric} onPress={handlePressFollowers}>
-        <Text style={styles.value}>{follower_count}</Text>
+        <Text style={styles.value}>{formatCount(follower_count)}</Text>
         <Text style={styles.label}>{messages.followers}</Text>
       </Pressable>
       <Pressable style={styles.metric} onPress={handlePressFollowing}>
-        <Text style={styles.value}>{followee_count}</Text>
+        <Text style={styles.value}>{formatCount(followee_count)}</Text>
         <Text style={styles.label}>{messages.following}</Text>
       </Pressable>
     </View>
