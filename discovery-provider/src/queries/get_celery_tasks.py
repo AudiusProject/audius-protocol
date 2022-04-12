@@ -36,7 +36,7 @@ def get_tasks() -> List[GetTasksItem]:
                         startedAt=task["time_start"]
                     )
                 )
-            except KeyError as e:
+            except KeyError:
                 continue
 
     return celery_tasks
