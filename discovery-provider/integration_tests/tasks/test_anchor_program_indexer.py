@@ -151,16 +151,14 @@ async def test_fetch_metadata(app, mocker):
             "instructions": [
                 {
                     "instruction_name": "init_user",
-                    "data": Container(
-                        [("metadata", list(mock_cid_metadata.keys())[0])]
-                    ),
+                    "data": Container([("metadata", mock_cid)]),
                 }
             ]
         },
         "tx_sig": "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV",
     }
     mock_parsed_transactions = [parsed_tx]
-    cid_metadata, blacklisted_cids = await anchor_program_indexer.fetch_ipfs_metadata(
+    cid_metadata, blacklisted_cids = await anchor_program_indexer.fetch_cid_metadata(
         mock_parsed_transactions
     )
 
@@ -234,8 +232,9 @@ mock_tx_info = {
     "id": 1,
 }
 
+mock_cid = "QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS"
 mock_cid_metadata = {
-    "QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS": {
+    mock_cid: {
         "is_creator": False,
         "is_verified": False,
         "is_deactivated": False,

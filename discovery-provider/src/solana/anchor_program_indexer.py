@@ -145,13 +145,13 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # TODO - Override with actual remote fetch operation
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
-    async def fetch_ipfs_metadata(
+    async def fetch_cid_metadata(
         self, parsed_transactions: List[Dict]
     ) -> Tuple[Dict[str, Dict], Set[str]]:
 
         cid_to_user_id: Dict[str, int] = {}
         cids_txhash_set: Set[Tuple[str, str]] = set()
-        cid_type: Dict[str, str] = {}  # cid -> entity type track / user
+        cid_to_entity_type: Dict[str, str] = {}  # cid -> entity type track / user
         blacklisted_cids: Set[str] = set()
 
         with self.db.scoped_session() as session:
@@ -165,7 +165,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                             blacklisted_cids.add(cid)
                         else:
                             cids_txhash_set.add((cid, transaction["tx_sig"]))
-                            cid_type[cid] = self.instruction_type[
+                            cid_to_entity_type[cid] = self.instruction_type[
                                 instruction["instruction_name"]
                             ]
 
@@ -187,7 +187,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 cids_txhash_set,
                 cid_to_user_id,
                 user_replica_set,
-                cid_type,
+                cid_to_entity_type,
             )
         )
         return cid_metadata, blacklisted_cids
