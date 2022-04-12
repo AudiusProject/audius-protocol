@@ -1,4 +1,8 @@
-import { ParamListBase, RouteProp } from '@react-navigation/native'
+import {
+  ParamListBase,
+  RouteProp,
+  useNavigation
+} from '@react-navigation/native'
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions
@@ -92,10 +96,22 @@ const stackScreenOptions = ({ route }: { route: RouteProp<ParamListBase> }) => {
 export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const dispatchWeb = useDispatchWeb()
   const screenOptions = useAppScreenOptions()
+  const navigation = useNavigation()
+  const drawerNavigation = navigation.getParent()?.getParent()
+
   return (
     <Stack.Navigator
       screenOptions={screenOptions}
       screenListeners={{
+        state: e => {
+          // @ts-ignore: this is cool, but doesn't exist according to types
+          const isStackOpen = e?.data?.state?.routes.length > 1
+          if (isStackOpen) {
+            drawerNavigation?.setOptions({ swipeEnabled: false })
+          } else {
+            drawerNavigation?.setOptions({ swipeEnabled: true })
+          }
+        },
         beforeRemove: e => {
           // hack for now to prevent pop for some pages
           if (

@@ -5,6 +5,7 @@ import {
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { AppScreen, AppScreenParamList } from 'app/screens/app-screen'
@@ -25,6 +26,8 @@ export type RootScreenParamList = {
     MainStack: NavigatorScreenParams<AppScreenParamList>
   }>
 }
+
+const SCREEN_WIDTH = Dimensions.get('window').width
 
 const Drawer = createDrawerNavigator()
 const Stack = createNativeStackNavigator()
@@ -99,7 +102,8 @@ export const RootScreen = () => {
         headerShown: false,
         drawerStyle: {
           width: '100%'
-        }
+        },
+        swipeEdgeWidth: SCREEN_WIDTH
       }}
       drawerContent={NotificationsDrawerContents}
     >
