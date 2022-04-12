@@ -1,4 +1,3 @@
-
 from typing import List, TypedDict
 
 from src.tasks.celery import celery
@@ -31,11 +30,12 @@ def get_tasks() -> List[GetTasksItem]:
             try:
                 celery_tasks.append(
                     GetTasksItem(
-                        taskId=task["id"], 
-                        taskName=task["name"], 
-                        startedAt=task["time_start"]
+                        taskId=task["id"],
+                        taskName=task["name"],
+                        startedAt=task["time_start"],
                     )
                 )
+
             except KeyError:
                 continue
 
