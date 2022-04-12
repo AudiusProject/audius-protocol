@@ -9,6 +9,7 @@ from src.solana.constants import (
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_transaction_types import TransactionInfoResult
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ class SolanaProgramIndexer(IndexerBase):
         program_id: str,
         label: str,
         redis: Any,
-        db: Any,
+        db: SessionManager,
         solana_client_manager: Any,
     ):
         """
@@ -88,6 +89,7 @@ class SolanaProgramIndexer(IndexerBase):
         self._program_id = program_id
         self._solana_client_manager = solana_client_manager
         self._redis_queue_cache_prefix = f"{self._label}-tx-cache-queue"
+        self.db = db
 
     @abstractmethod
     def is_tx_in_db(self, session: Any, tx_sig: str):
@@ -118,15 +120,15 @@ class SolanaProgramIndexer(IndexerBase):
         return {"tx_sig": tx_sig, "tx_metadata": {}, "result": result}
 
     @abstractmethod
-    def is_valid_instruction(self, tx):
+    def is_valid_instruction(self, instruction):
         """
         Returns a boolean value indicating whether an instruction is valid.
-        @param tx: transaction to be validated
+        @param instruction: transaction to be validated
         """
         raise Exception("Must be implemented in subclass")
 
     @abstractmethod
-    async def fetch_ipfs_metadata(self, parsed_transactions):
+    def fetch_cid_metadata(self, parsed_transactions):
         """
         Fetch all metadata objects in parallel (if required). Certain indexing tasks will not require this step and can skip appropriately
         @param parsed_transactions: Array of transactions containing deserialized information, ideally pointing to a metadata object
@@ -155,20 +157,18 @@ class SolanaProgramIndexer(IndexerBase):
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
         # Fetch metadata in parallel
-        metadata_dictionary = await self.fetch_ipfs_metadata(parsed_transactions)
-
-        self.validate_and_save_parsed_tx_records(
-            parsed_transactions, metadata_dictionary
+        cid_metadata, blacklisted_cids = await self.fetch_cid_metadata(
+            parsed_transactions
         )
 
+        self.validate_and_save_parsed_tx_records(parsed_transactions, cid_metadata)
+
     @abstractmethod
-    def validate_and_save_parsed_tx_records(
-        self, parsed_transactions, metadata_dictionary
-    ):
+    def validate_and_save_parsed_tx_records(self, parsed_transactions, cid_metadata):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
         @param parsed_transactions: Array of transaction signatures in order
-        @param metadata_dictionary: Dictionary of remote metadata
+        @param cid_metadata: Dictionary of remote metadata
         """
         raise Exception(BASE_ERROR)
 
