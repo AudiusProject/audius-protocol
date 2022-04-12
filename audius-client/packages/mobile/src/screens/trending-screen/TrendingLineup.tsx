@@ -74,7 +74,7 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
     if (!trendingLineup.isMetadataLoading) {
       setIsRefreshing(false)
     }
-  }, [trendingLineup.isMetadataLoading])
+  }, [trendingLineup])
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
@@ -99,6 +99,7 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
       refresh={handleRefresh}
       refreshing={isRefreshing}
       loadMore={handleLoadMore}
+      selfLoad
       {...other}
     />
   )
