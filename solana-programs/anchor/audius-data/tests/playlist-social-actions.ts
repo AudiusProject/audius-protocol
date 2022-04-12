@@ -108,11 +108,11 @@ describe("playlist-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    
+
     const txSignature = await provider.send(tx, [user.keypair])
 
     const info = await getTransaction(provider, txSignature);
@@ -121,11 +121,10 @@ describe("playlist-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteSave
     );
@@ -145,7 +144,7 @@ describe("playlist-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -157,11 +156,10 @@ describe("playlist-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addSave
     );
@@ -181,7 +179,7 @@ describe("playlist-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -193,11 +191,10 @@ describe("playlist-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
     );
@@ -217,7 +214,7 @@ describe("playlist-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -228,11 +225,10 @@ describe("playlist-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteRepost
     );
