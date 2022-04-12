@@ -7,13 +7,13 @@ from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 class GetTasksItem(TypedDict):
 
     # Id of the Celery Task
-    taskId: str
+    task_id: str
 
     # Name of the Celery Task
-    taskName: str
+    task_name: str
 
     # datetime the task was started at
-    startedAt: str
+    started_at: str
 
 
 def get_tasks() -> List[GetTasksItem]:
@@ -46,11 +46,15 @@ def celery_tasks_prometheus_exporter():
 
     tasks = get_tasks()
 
-    PrometheusMetric(
+    metric = PrometheusMetric(
         "celery_running_tasks",
         "The currently running celery tasks",
-        metric_type=PrometheusType.HISTOGRAM,
-    ).save(tasks)
+        labelnames=["task_name"],
+        metric_type=PrometheusType.GAUGE,
+    )
+
+    for task in tasks:
+        metric.save_time({"task_name": task["name"]}, start_time=task["time_start"])
 
 
 PrometheusMetric.register_collector(

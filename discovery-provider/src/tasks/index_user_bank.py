@@ -410,6 +410,13 @@ def index_user_bank(self):
     # Define redis lock object
     update_lock = redis.lock("user_bank_lock", timeout=10 * 60)
 
+    metric = PrometheusMetric(
+        "celery_runtimes",
+        "The celery tasks runtimes",
+        labelnames=["task_name", "failed"],
+        metric_type=PrometheusType.HISTOGRAM,
+    )
+
     try:
         # Cache latest tx outside of lock
         fetch_and_cache_latest_program_tx_redis(
@@ -424,7 +431,11 @@ def index_user_bank(self):
             process_user_bank_txs()
         else:
             logger.info("index_user_bank.py | Failed to acquire lock")
+
+        metric.save_time({"task_name": task["name"]})
     except Exception as e:
+
+        metric.save_time({"task_name": task["name"], "failed": True})
         logger.error("index_user_bank.py | Fatal error in main loop", exc_info=True)
         raise e
     finally:
