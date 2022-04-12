@@ -334,7 +334,6 @@ module.exports = function (app) {
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
       try {
-        req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId} - sending raw transaction`)
         let trackListenTransaction = await createTrackListenTransaction({
           validSigner: null,
           privateKey: config.get('solanaSignerPrivateKey'),
@@ -346,6 +345,7 @@ module.exports = function (app) {
         let feePayerAccount = getFeePayerKeypair(false)
         let solTxSignature
         if (sendRawTransaction) {
+          req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`)
           solTxSignature = await sendAndSignTransaction(
             connection,
             trackListenTransaction,
@@ -355,6 +355,7 @@ module.exports = function (app) {
           )
         } else {
           await retry(async () => {
+            req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId} - sendAndConfirmTransaction`)
             solTxSignature = await solanaWeb3.sendAndConfirmTransaction(
               connection,
               trackListenTransaction,
