@@ -119,11 +119,15 @@ class ServiceProvider extends Base {
    * Throws if unable to find a large enough list.
    * @param {number} quorumSize
    * @param {any[]} discoveryProviders the verbose list of discovery providers to select from
+   * @param {(node: { delegateOwnerWallet: string }) => boolean} filter an optional filter step to remove certain nodes
    */
-  async getUniquelyOwnedDiscoveryNodes (quorumSize, discoveryProviders = []) {
+  async getUniquelyOwnedDiscoveryNodes (quorumSize, discoveryProviders = [], filter = (node) => true) {
     if (!discoveryProviders || discoveryProviders.length === 0) {
       discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
     }
+
+    discoveryProviders.filter(filter)
+
     // Group nodes by owner
     const grouped = discoveryProviders.reduce((acc, curr) => {
       if (curr.owner in acc) {
