@@ -564,6 +564,7 @@ export class RewardsAttester {
     this.offset = 0
     this.recentlyDisbursedQueue = []
     this.undisbursedQueue = []
+    this.discoveryNodeBlocklist = []
   }
 
   /**
