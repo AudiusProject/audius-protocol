@@ -224,7 +224,6 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
     const elapsed = getUnixTs() - startTime
     // eslint-disable-next-line no-unmodified-loop-condition
     while (!done && elapsed < timeout) {
-      logger.info(`TrackListen | Sending tx retry ${txid}`)
       connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
       await delay(300)
     }
