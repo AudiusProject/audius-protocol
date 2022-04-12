@@ -31,6 +31,7 @@ import {
   randomCID,
   randomId,
   getContentNodeWalletAndAuthority,
+  convertBNToUserIdSeed
 } from "../lib/utils";
 
 import { Command } from "commander";
@@ -79,12 +80,6 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
     programID,
     program,
   };
-}
-
-function getHandleBytesArray(handle: string) {
-  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
-  return handleBytesArray;
 }
 
 type initAdminCLIParams = {
@@ -141,7 +136,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
 }
 
 type initUserCLIParams = {
-  handle: string;
+  userId: anchor.BN;
   metadata: string;
   adminStoragePublicKey: PublicKey;
   ethAddress: string;
@@ -157,7 +152,7 @@ type initUserCLIParams = {
 async function initUserCLI(args: initUserCLIParams) {
   const {
     adminKeypair,
-    handle,
+    userId,
     ethAddress,
     ownerKeypairPath,
     metadata,
@@ -169,13 +164,7 @@ async function initUserCLI(args: initUserCLIParams) {
     cn3,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  const handleBytesArray = getHandleBytesArray(handle);
-  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
-    await findDerivedPair(
-      cliVars.programID,
-      adminStoragePublicKey,
-      handleBytesArray
-    );
+  const { baseAuthorityAccount, bumpSeed, derivedAddress } = await findDerivedPair(cliVars.programID, adminStoragePublicKey, convertBNToUserIdSeed(userId));
 
   const userStorageAddress = derivedAddress;
   console.log("Initing user");
@@ -185,7 +174,7 @@ async function initUserCLI(args: initUserCLIParams) {
     ethAddress,
     replicaSet,
     replicaSetBumps,
-    handleBytesArray,
+    userId,
     bumpSeed,
     metadata,
     userStorageAccount: userStorageAddress,
@@ -201,7 +190,7 @@ async function initUserCLI(args: initUserCLIParams) {
   await cliVars.provider.connection.confirmTransaction(txHash);
 
   console.log(
-    `Initialized user=${handle}, tx=${txHash}, userAcct=${userStorageAddress}`
+    `Initialized user with id=${userId}, tx=${txHash}, userAcct=${userStorageAddress}`
   );
 }
 
@@ -220,8 +209,7 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
-          args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
         }`
       );
 
@@ -236,7 +224,7 @@ async function timeManageEntity(
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
           userStorageAccountPDA: args.userStorageAccountPDA,
           metadata: args.metadata,
-          handleBytesArray: args.handleBytesArray,
+          userId: args.userId,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
           userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
@@ -255,7 +243,7 @@ async function timeManageEntity(
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
           userStorageAccountPDA: args.userStorageAccountPDA,
           metadata: args.metadata,
-          handleBytesArray: args.handleBytesArray,
+          userId: args.userId,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
           userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
@@ -274,7 +262,7 @@ async function timeManageEntity(
           userAuthorityPublicKey: args.userAuthorityPublicKey,
           userStorageAccountPDA: args.userStorageAccountPDA,
           metadata: args.metadata,
-          handleBytesArray: args.handleBytesArray,
+          userId: args.userId,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
           userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
@@ -292,7 +280,7 @@ async function timeManageEntity(
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
           userStorageAccountPDA: args.userStorageAccountPDA,
-          handleBytesArray: args.handleBytesArray,
+          userId: args.userId,
           adminStorageAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
           userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
@@ -340,12 +328,12 @@ program
     "-ask, --admin-storage-keypair <keypair>",
     "admin storage keypair path"
   )
-  .option("-h, --handle <string>", "user handle string")
+  .option("-uid, --user-id <integer>", "user id number")
   .option("-e, --eth-address <string>", "user/cn eth address")
   .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
   .option(
     "-ustg, --user-storage-pubkey <string>",
-    "user sol handle-based PDA pubkey"
+    "user sol id-based PDA pubkey"
   )
   .option(
     "-eth-pk, --eth-private-key <string>",
@@ -394,8 +382,8 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-  ? AUDIUS_PROD_RPC_POOL
-  : LOCALHOST_RPC_POOL;
+    ? AUDIUS_PROD_RPC_POOL
+    : LOCALHOST_RPC_POOL;
 
 const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -403,7 +391,12 @@ const main = async () => {
     options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
   const authorityDelegationStatusAccountPDA =
     options.authorityDelegationStatusAccountPDA ?? SYSTEM_PROGRAM_ID;
-
+  let { userId } = options;
+  let userIdSeed;
+  if (userId) {
+    userId = new anchor.BN(userId);
+    userIdSeed = convertBNToUserIdSeed(userId);
+  }
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
@@ -471,7 +464,7 @@ const main = async () => {
       initUserCLI({
         ownerKeypairPath: options.ownerKeypair,
         ethAddress: options.ethAddress,
-        handle: options.handle,
+        userId: userId,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
         adminKeypair,
         metadata: "test",
@@ -523,16 +516,14 @@ const main = async () => {
       })();
       break;
     case functionTypes.createUser:
-      const { userId, handle } = options;
       console.log({ userId });
       const ethAccount = EthWeb3.eth.accounts.create();
 
-      const handleBytesArray = getHandleBytesArray(handle);
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
           adminStorageKeypair.publicKey,
-          handleBytesArray
+          userIdSeed
         );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -556,8 +547,7 @@ const main = async () => {
           payer: cliVars.provider.wallet.publicKey,
           ethAccount,
           message: userSolKeypair.publicKey.toBytes(),
-          userId: new anchor.BN(userId),
-          handleBytesArray,
+          userId: userId,
           bumpSeed,
           metadata: randomCID(),
           userSolPubkey: userSolKeypair.publicKey,
@@ -588,12 +578,11 @@ const main = async () => {
       (async () => {
         const promises = [];
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const handleBytesArray = getHandleBytesArray(options.handle);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
             adminStorageKeypair.publicKey,
-            handleBytesArray
+            userIdSeed
           );
 
         for (let i = 0; i < numTracks; i++) {
@@ -603,7 +592,7 @@ const main = async () => {
                 id: randomId(),
                 baseAuthorityAccount,
                 adminStorageAccount: adminStorageKeypair.publicKey,
-                handleBytesArray: handleBytesArray,
+                userId: userId,
                 program: cliVars.program,
                 bumpSeed: bumpSeed,
                 metadata: randomCID(),
@@ -635,12 +624,11 @@ const main = async () => {
       (async () => {
         const promises = [];
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const handleBytesArray = getHandleBytesArray(options.handle);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
             adminStorageKeypair.publicKey,
-            handleBytesArray
+            userIdSeed
           );
 
         for (let i = 0; i < numPlaylists; i++) {
@@ -650,7 +638,7 @@ const main = async () => {
                 id: randomId(),
                 baseAuthorityAccount,
                 adminStorageAccount: adminStorageKeypair.publicKey,
-                handleBytesArray: handleBytesArray,
+                userId: userId,
                 program: cliVars.program,
                 bumpSeed: bumpSeed,
                 metadata: randomCID(),
@@ -681,12 +669,11 @@ const main = async () => {
       );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const handleBytesArray = getHandleBytesArray(options.handle);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
             adminStorageKeypair.publicKey,
-            handleBytesArray
+            userIdSeed
           );
         const start = Date.now();
         await timeManageEntity(
@@ -694,7 +681,7 @@ const main = async () => {
             id: playlistId,
             baseAuthorityAccount,
             adminStorageAccount: adminStorageKeypair.publicKey,
-            handleBytesArray: handleBytesArray,
+            userId: userId,
             program: cliVars.program,
             bumpSeed: bumpSeed,
             metadata: randomCID(),
@@ -722,12 +709,11 @@ const main = async () => {
       );
       (async () => {
         const cliVars = initializeCLI(network, options.ownerKeypair);
-        const handleBytesArray = getHandleBytesArray(options.handle);
         const { baseAuthorityAccount, bumpSeed, derivedAddress } =
           await findDerivedPair(
             cliVars.programID,
             adminStorageKeypair.publicKey,
-            handleBytesArray
+            userIdSeed
           );
         const start = Date.now();
         await timeManageEntity(
@@ -735,7 +721,7 @@ const main = async () => {
             id: playlistId,
             baseAuthorityAccount,
             adminStorageAccount: adminStorageKeypair.publicKey,
-            handleBytesArray: handleBytesArray,
+            userId: userId,
             program: cliVars.program,
             bumpSeed: bumpSeed,
             metadata: randomCID(),

@@ -41,7 +41,7 @@ pub mod audius_data {
     pub fn update_is_verified(
         ctx: Context<UpdateIsVerified>,
         base: Pubkey,
-        _user_handle: UserHandle,
+        _user_id_seed_bump: UserIdSeedBump,
     ) -> Result<()> {
         // Validate that the audius admin verifier matches the verifier passed in
         if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
@@ -61,7 +61,7 @@ pub mod audius_data {
     }
 
     /// Initialize a user account from the admin account.
-    /// The user's account is derived from the admin base PDA + handle bytes.
+    /// The user's account is derived from the admin base PDA + user ID bytes.
     /// Populates the user account with their Ethereum address as bytes and an empty Pubkey for their Solana identity.
     /// Allows the user to later "claim" their account by submitting a signed object and setting their own identity.
     /// Important to note that the metadata object is simply logged out to be picked up by the Audius indexing layer.
@@ -71,7 +71,7 @@ pub mod audius_data {
         eth_address: [u8; 20],
         replica_set: [u16; 3],
         _replica_set_bumps: [u8; 3],
-        handle_seed: [u8; 32],
+        user_id: u32,
         _user_bump: u8,
         _metadata: String,
     ) -> Result<()> {
@@ -87,9 +87,10 @@ pub mod audius_data {
 
         // Confirm that the derived pda from base is the same as the user storage account
         let (derived_user_acct, _) = Pubkey::find_program_address(
-            &[&derived_base.to_bytes()[..32], &handle_seed],
+            &[&derived_base.to_bytes()[..32], &user_id.to_le_bytes()],
             ctx.program_id,
         );
+
         if derived_user_acct != ctx.accounts.user.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
@@ -245,7 +246,7 @@ pub mod audius_data {
     pub fn update_user_replica_set(
         ctx: Context<UpdateUserReplicaSet>,
         base: Pubkey,
-        _user_handle: UserHandle,
+        _user_id_seed_bump: UserIdSeedBump,
         replica_set: [u16;3],
         _replica_set_bumps: [u8; 3]
     ) -> Result<()> {
@@ -343,10 +344,9 @@ pub mod audius_data {
         eth_address: [u8; 20],
         replica_set: [u16; 3],
         _replica_set_bumps: [u8; 3],
-        _handle_seed: [u8; 32],
+        _user_id: u32,
         _user_bump: u8,
         _metadata: String,
-        _id: u64,
         user_authority: Pubkey,
     ) -> Result<()> {
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
@@ -418,7 +418,7 @@ pub mod audius_data {
     pub fn manage_entity(
         ctx: Context<ManageEntity>,
         base: Pubkey,
-        _user_handle: UserHandle,
+        _user_id_seed_bump: UserIdSeedBump,
         _entity_type: EntityTypes,
         _management_action: ManagementActions,
         _id: u64,
@@ -447,7 +447,7 @@ pub mod audius_data {
     pub fn write_entity_social_action(
         ctx: Context<WriteEntitySocialAction>,
         base: Pubkey,
-        _user_handle: UserHandle,
+        _user_id_seed_bump: UserIdSeedBump,
         _entity_social_action: EntitySocialActionValues,
         _entity_type: EntityTypes,
         _id: String,
@@ -477,7 +477,7 @@ pub mod audius_data {
         User social action functions
 
         Follow/subscribe a user, transaction sent from 1 known valid source user to another target user
-        Both User accounts are re-derived from the handle seed and validated
+        Both User accounts are re-derived from the user id seed and validated
         Only the follower must have already claimed their solana public key -
         in order to facilitate the scenario where an 'initialized' user follows an 'unitialized' user
         Note that both follow/subscribe and unfollow/unsubscribe are handled in this single function through an enum, with identical
@@ -487,8 +487,8 @@ pub mod audius_data {
         ctx: Context<WriteUserSocialAction>,
         base: Pubkey,
         _user_action: UserAction,
-        _source_user_handle: UserHandle,
-        _target_user_handle: UserHandle,
+        _source_user_id_seed_bump: UserIdSeedBump,
+        _target_user_id_seed_bump: UserIdSeedBump,
     ) -> Result<()> {
         let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
         let (base_pda, _bump) =
@@ -538,7 +538,7 @@ pub mod audius_data {
     pub fn add_user_authority_delegate(
         ctx: Context<AddUserAuthorityDelegate>,
         _base: Pubkey,
-        _user_handle: UserHandle,
+        _user_id_seed_bump: UserIdSeedBump,
         delegate_pubkey: Pubkey,
     ) -> Result<()> {
         // validate signer is the user or delegate
@@ -563,7 +563,7 @@ pub mod audius_data {
     pub fn remove_user_authority_delegate(
         ctx: Context<RemoveUserAuthorityDelegate>,
         _base: Pubkey,
-        _user_handle: UserHandle,
+        _user_id_seed_bump: UserIdSeedBump,
         _user_authority_delegate: Pubkey,
         _delegate_bump: u8,
     ) -> Result<()> {
@@ -599,19 +599,19 @@ pub struct Initialize<'info> {
 
 /// Instruction container to initialize a user account, must be invoked from an existing Audius
 /// `admin` account.
-/// `user` is a PDA derived from the Audius account and handle.
+/// `user` is a PDA derived from the Audius account and user ID.
 /// `authority` is a signer key matching the admin value stored in AudiusAdmin root. Only the
 ///  admin of this Audius root program may initialize users through this function
-/// `payer` is the account responsible for the lamports required to allocate this account.
+/// `payer` is the account responsible for the lamports required to allocate this account.le
 /// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
-#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], handle_seed: [u8;32])]
+#[instruction(base: Pubkey, eth_address: [u8;20], replica_set: [u16; 3], replica_set_bumps:[u8; 3], user_id: u32)]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
         init,
         payer = payer,
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        seeds = [&base.to_bytes()[..32], &user_id.to_le_bytes()],
         bump,
         space = USER_ACCOUNT_SIZE
     )]
@@ -710,10 +710,10 @@ pub struct PublicDeleteContentNode<'info> {
 
 /// Instruction container for updating a user's replica set signed by the user's authority or a content node
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle, replica_set: [u16; 3], replica_set_bumps: [u8; 3])]
+#[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump, replica_set: [u16; 3], replica_set_bumps: [u8; 3])]
 pub struct UpdateUserReplicaSet<'info> {
     pub admin: Account<'info, AudiusAdmin>,
-    #[account(mut, seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump=user_handle.bump)]
+    #[account(mut, seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump=user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     #[account(seeds = [&base.to_bytes()[..32], CONTENT_NODE_SEED_PREFIX, &replica_set[0].to_le_bytes()], bump = replica_set_bumps[0])]
     pub cn1: Account<'info, ContentNode>,
@@ -747,17 +747,16 @@ pub struct InitializeUserSolIdentity<'info> {
     eth_address: [u8;20],
     replica_set: [u16; 3],
     replica_set_bumps:[u8; 3],
-    handle_seed: [u8;32],
+    _user_id: u32,
     _user_bump: u8,
     _metadata: String,
-    _id: u64,
     _user_authority: Pubkey,
 )]
 pub struct CreateUser<'info> {
     #[account(
         init,
         payer = payer,
-        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
+        seeds = [&base.to_bytes()[..32], &_user_id.to_le_bytes()],
         bump,
         space = USER_ACCOUNT_SIZE
     )]
@@ -848,13 +847,13 @@ pub struct RevokeAuthorityDelegationStatus<'info> {
 /// Instruction container to allow user delegation
 /// Allocates a new account that will be used for fallback in auth scenarios
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle, delegate_pubkey: Pubkey)]
+#[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump, delegate_pubkey: Pubkey)]
 pub struct AddUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
-        bump = user_handle.bump
+        seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
+        bump = user_id_seed_bump.bump
     )]
     pub user: Account<'info, User>,
     #[account(
@@ -881,13 +880,13 @@ pub struct AddUserAuthorityDelegate<'info> {
 /// Instruction container to remove allocated user authority delegation
 /// Returns funds to payer
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle, delegate_pubkey: Pubkey, delegate_bump:u8)]
+#[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump, delegate_pubkey: Pubkey, delegate_bump:u8)]
 pub struct RemoveUserAuthorityDelegate<'info> {
     #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
-        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
-        bump = user_handle.bump
+        seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
+        bump = user_id_seed_bump.bump
     )]
     pub user: Account<'info, User>,
     #[account(
@@ -915,20 +914,20 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 #[derive(Accounts)]
 #[instruction(
     base: Pubkey,
-    user_handle: UserHandle,
+    user_id_seed_bump: UserIdSeedBump,
     _entity_type: EntityTypes,
     _management_action:ManagementActions,
     _id: u64,
     _metadata: String
 )]
-// Instruction base pda, handle
+// Instruction base pda, user id
 pub struct ManageEntity<'info> {
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
     // Audiusadmin
     #[account(
-        seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()],
-        bump = user_handle.bump
+        seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
+        bump = user_id_seed_bump.bump
     )]
     pub user: Account<'info, User>,
     #[account()]
@@ -944,12 +943,12 @@ pub struct ManageEntity<'info> {
 /// Instruction container for track social action event
 /// Confirm that the user authority matches signer authority field
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle)]
+#[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump)]
 pub struct WriteEntitySocialAction<'info> {
     // TODO - Verify removal here
     #[account()]
     pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    #[account(seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump = user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     #[account()]
     pub authority: Signer<'info>, 
@@ -963,15 +962,15 @@ pub struct WriteEntitySocialAction<'info> {
 
 /// Instruction container for user social actions
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_instr:UserAction, source_user_handle: UserHandle, target_user_handle: UserHandle)]
+#[instruction(base: Pubkey, user_instr:UserAction, source_user_id_seed_bump: UserIdSeedBump, target_user_id_seed_bump: UserIdSeedBump)]
 pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
     pub audius_admin: Account<'info, AudiusAdmin>,
-    // Confirm the source user PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], source_user_handle.seed.as_ref()], bump = source_user_handle.bump)]
+    // Confirm the source user PDA matches the expected value provided the target user id and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], &source_user_id_seed_bump.user_id.to_le_bytes()], bump = source_user_id_seed_bump.bump)]
     pub source_user_storage: Account<'info, User>,
-    // Confirm the target user PDA matches the expected value provided the target handle and base
-    #[account(mut, seeds = [&base.to_bytes()[..32], target_user_handle.seed.as_ref()], bump = target_user_handle.bump)]
+    // Confirm the target user PDA matches the expected value provided the target user id and base
+    #[account(mut, seeds = [&base.to_bytes()[..32], &target_user_id_seed_bump.user_id.to_le_bytes()], bump = target_user_id_seed_bump.bump)]
     pub target_user_storage: Account<'info, User>,
     /// CHECK: When signer is a delegate, validate UserAuthorityDelegate PDA  (default SystemProgram when signer is user)
     #[account()]
@@ -986,10 +985,10 @@ pub struct WriteUserSocialAction<'info> {
 
 /// Instruction container for verifying a user
 #[derive(Accounts)]
-#[instruction(base: Pubkey, user_handle: UserHandle)]
+#[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump)]
 pub struct UpdateIsVerified<'info> {
     pub audius_admin: Account<'info, AudiusAdmin>,
-    #[account(seeds = [&base.to_bytes()[..32], user_handle.seed.as_ref()], bump = user_handle.bump)]
+    #[account(seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump = user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     pub verifier: Signer<'info>,
 }
@@ -1066,10 +1065,10 @@ pub enum EntityTypes {
     Playlist,
 }
 
-// Seed & bump used to validate the user's handle with the account base
+// Seed & bump used to validate the user's ID with the account base
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
-pub struct UserHandle {
-    pub seed: [u8; 32],
+pub struct UserIdSeedBump {
+    pub user_id: u32,
     pub bump: u8,
 }
 
