@@ -315,7 +315,7 @@ module.exports = function (app) {
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
     const timeout = req.body.timeout || 60000
 
-    const sendRawTransaction = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_SEND_RAW_TRANSACTION)
+    const sendRawTransaction = req.body.sendRawTransaction || getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_SEND_RAW_TRANSACTION) || false
 
     const currentHour = trimToHour(new Date())
     // Dedicated listen flow
