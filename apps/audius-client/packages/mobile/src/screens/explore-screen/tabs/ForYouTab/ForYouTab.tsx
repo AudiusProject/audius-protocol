@@ -28,7 +28,7 @@ const messages = {
     'Content curated for you based on your likes, reposts, and follows. Refreshes often so if you like a track, favorite it.'
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   tabContainer: {
     flex: 1
   },

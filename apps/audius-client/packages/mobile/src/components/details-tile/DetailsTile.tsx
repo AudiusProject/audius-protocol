@@ -25,6 +25,12 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+  root: {
+    marginBottom: spacing(6)
+  },
+  tileContent: {
+    paddingBottom: spacing(1)
+  },
   topContent: {
     paddingHorizontal: spacing(6),
     paddingTop: spacing(4),
@@ -232,7 +238,7 @@ export const DetailsTile = ({
   )
 
   return (
-    <Tile>
+    <Tile styles={{ root: styles.root, content: styles.tileContent }}>
       <View style={styles.topContent}>
         {renderHeader ? (
           renderHeader()

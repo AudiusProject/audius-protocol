@@ -18,7 +18,13 @@ export type CardListProps<ItemT> = FlatListProps<ItemT> & {
 }
 
 export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
-  const { renderItem, emptyListText, disableTopTabScroll, ...other } = props
+  const {
+    renderItem,
+    emptyListText,
+    disableTopTabScroll,
+    data,
+    ...other
+  } = props
 
   const ref = useRef<RNFlatList>(null)
   useScrollToTop(() => {
@@ -32,21 +38,23 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
     info => {
       const { index } = info
       const isInLeftColumn = !(index % 2)
+      const isLastRow = index + 2 > (data?.length ?? 0)
       const style = {
-        paddingVertical: 12,
-        paddingBottom: 0,
+        paddingTop: 12,
+        paddingBottom: isLastRow ? 12 : 0,
         paddingHorizontal: 6,
         [`padding${isInLeftColumn ? 'Left' : 'Right'}`]: 12,
         width: '50%'
       }
       return <View style={style}>{renderItem?.(info)}</View>
     },
-    [renderItem]
+    [renderItem, data]
   )
 
   return (
     <FlatList
       ref={ref}
+      data={data}
       renderItem={handleRenderItem}
       numColumns={2}
       ListEmptyComponent={
