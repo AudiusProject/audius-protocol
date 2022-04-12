@@ -12,10 +12,9 @@ class GetTasksItem(TypedDict):
 
     # Name of the Celery Task
     taskName: str
-    
+ 
     # datetime the task was started at
     startedAt: str
-
 
 
 def get_tasks() -> List[GetTasksItem]:
