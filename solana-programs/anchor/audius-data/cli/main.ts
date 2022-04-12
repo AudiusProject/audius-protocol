@@ -467,7 +467,7 @@ const main = async () => {
         userId: userId,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
         adminKeypair,
-        metadata: "test",
+        metadata: randomCID(),
         replicaSet: userReplicaSet,
         replicaSetBumps,
         cn1: userContentNodeInfo[0].derivedAddress,
