@@ -433,10 +433,10 @@ def index_user_bank(self):
         else:
             logger.info("index_user_bank.py | Failed to acquire lock")
 
-        metric.save_time({"task_name": task["name"]})
+        metric.save_time({"task_name": "index_user_bank"})
     except Exception as e:
 
-        metric.save_time({"task_name": task["name"], "failed": True})
+        metric.save_time({"task_name": "index_user_bank", "failed": True})
         logger.error("index_user_bank.py | Fatal error in main loop", exc_info=True)
         raise e
     finally:
