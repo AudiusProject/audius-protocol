@@ -12,7 +12,7 @@ class GetTasksItem(TypedDict):
 
     # Name of the Celery Task
     taskName: str
- 
+
     # datetime the task was started at
     startedAt: str
 
@@ -27,18 +27,18 @@ def get_tasks() -> List[GetTasksItem]:
     # Show tasks that are currently active.
     active = i.active()
     for worker in active.keys():
-        activeItems = map(active[worker], lambda task: {
+        activeItems = map(lambda task: {
             "taskId": task["id"], 
             "taskName": task["name"], 
             "startedAt": task["time_start"],
-        })
+        }, active[worker])
     celery_tasks.append(activeItems)
 
     return celery_tasks
 
 
 def celery_tasks_prometheus_exporter():
-    
+ 
     tasks = get_tasks()
 
     PrometheusMetric(
