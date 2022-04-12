@@ -1,5 +1,3 @@
-
-
 from src.queries.get_celery_tasks import get_tasks
 
 

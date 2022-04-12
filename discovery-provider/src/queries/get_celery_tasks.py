@@ -30,9 +30,9 @@ def get_tasks() -> List[GetTasksItem]:
             try:
                 celery_tasks.append(
                     GetTasksItem(
-                        taskId=task["id"],
-                        taskName=task["name"],
-                        startedAt=task["time_start"],
+                        task_id=task["id"],
+                        task_name=task["name"],
+                        started_at=task["time_start"],
                     )
                 )
 
