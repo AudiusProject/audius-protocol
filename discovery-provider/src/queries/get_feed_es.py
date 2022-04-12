@@ -47,13 +47,21 @@ def get_feed_es(args, limit=10):
                             "must": [
                                 following_ids_terms_lookup("user_id"),
                                 {"term": {"is_delete": False}},
+                                {"range": {"created_at": {"gte": "now-30d"}}},
                             ]
                         }
                     },
                     # here doing some over-fetching to de-dupe later
                     # to approximate min_created_at + group by in SQL.
-                    "size": limit * 10,
-                    "sort": {"created_at": "desc"},
+                    "size": 0,
+                    "aggs": {
+                        "item_key": {
+                            "terms": {"field": "item_key", "size": 500},
+                            "aggs": {
+                                "min_created_at": {"min": {"field": "created_at"}}
+                            },
+                        }
+                    },
                 },
             ]
         )
@@ -92,14 +100,19 @@ def get_feed_es(args, limit=10):
             ]
         )
 
-    reposts = []
+    repost_agg = []
     tracks = []
     playlists = []
 
     founds = esclient.msearch(searches=mdsl)
 
     if load_reposts:
-        reposts = pluck_hits(founds["responses"].pop(0))
+        repost_agg = founds["responses"].pop(0)
+        repost_agg = repost_agg["aggregations"]["item_key"]["buckets"]
+        for bucket in repost_agg:
+            bucket["created_at"] = bucket["min_created_at"]["value_as_string"]
+            bucket["item_key"] = bucket["key"]
+        repost_agg.sort(key=lambda b: b["min_created_at"]["value"])
 
     if load_orig:
         tracks = pluck_hits(founds["responses"].pop(0))
@@ -124,9 +137,8 @@ def get_feed_es(args, limit=10):
         unsorted_feed.append(track)
 
     # remove duplicates from repost feed
-    reposts.reverse()
-    for r in reposts:
-        k = r["item_key"]
+    for r in repost_agg:
+        k = r["key"]
         if k in seen:
             continue
         seen.add(k)
@@ -145,11 +157,16 @@ def get_feed_es(args, limit=10):
     mget_reposts = []
     keyed_reposts = {}
 
+    # hydrate repost stubs (agg bucket results)
+    # min_created_at indicates a repost stub
     for r in sorted_with_reposts:
-        if r.get("repost_type") == "track":
-            mget_reposts.append({"_index": ES_TRACKS, "_id": r["repost_item_id"]})
-        elif r.get("repost_type") in ["playlist", "album"]:
-            mget_reposts.append({"_index": ES_PLAYLISTS, "_id": r["repost_item_id"]})
+        if "min_created_at" not in r:
+            continue
+        (kind, id) = r["key"].split(":")
+        if kind == "track":
+            mget_reposts.append({"_index": ES_TRACKS, "_id": id})
+        else:
+            mget_reposts.append({"_index": ES_PLAYLISTS, "_id": id})
 
     if mget_reposts:
         reposted_docs = esclient.mget(docs=mget_reposts)
@@ -166,16 +183,16 @@ def get_feed_es(args, limit=10):
     # replace repost with underlying items
     sorted_feed = []
     for x in sorted_with_reposts:
-        if "repost_type" not in x:
+        if "min_created_at" not in x:
             x["activity_timestamp"] = x["created_at"]
             sorted_feed.append(x)
         else:
-            k = x["item_key"]
+            k = x["key"]
             if k not in keyed_reposts:
                 # MISSING: see above
                 continue
             item = keyed_reposts[k]
-            item["activity_timestamp"] = x["created_at"]
+            item["activity_timestamp"] = x["min_created_at"]["value_as_string"]
             sorted_feed.append(item)
 
     # attach users
