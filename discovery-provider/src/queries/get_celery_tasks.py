@@ -19,16 +19,15 @@ class GetTasksItem(TypedDict):
 
 def get_tasks() -> List[GetTasksItem]:
 
-    celery_tasks: List[GetTasksItem] = []
-
     # Inspect all nodes.
     i = celery.control.inspect()
 
     # Show tasks that are currently active.
     active = i.active()
-    activeItems = []
-    for worker in active.keys():
-        for task in active[worker]:
+
+    celery_tasks = []
+    for _, tasks in active.items():
+        for task in tasks:
             activeItems.append(
                 GetTasksItem(
                     taskId=task["id"], 
@@ -36,8 +35,6 @@ def get_tasks() -> List[GetTasksItem]:
                     startedAt=task["time_start"]
                 )
             )
-
-    celery_tasks += activeItems
 
     return celery_tasks
 
