@@ -5,6 +5,7 @@ import {
 } from 'audius-client/src/common/store/pages/explore/exploreCollections/selectors'
 import { ExploreCollectionsVariant } from 'audius-client/src/common/store/pages/explore/types'
 import { isEqual } from 'lodash'
+import { View } from 'react-native'
 
 import { CollectionList } from 'app/components/collection-list'
 import { Screen } from 'app/components/core'
@@ -27,9 +28,11 @@ export const LetThemDJScreen = () => {
   return (
     <Screen>
       <Header text={LET_THEM_DJ.title} />
-      <WithLoader loading={status === Status.LOADING}>
-        <CollectionList collection={exploreData} />
-      </WithLoader>
+      <View style={{ flex: 1 }}>
+        <WithLoader loading={status === Status.LOADING}>
+          <CollectionList collection={exploreData} />
+        </WithLoader>
+      </View>
     </Screen>
   )
 }
