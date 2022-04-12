@@ -1,9 +1,10 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, List, TypedDict
 
 from redis import Redis
+from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.constants import (
     TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
@@ -19,6 +20,16 @@ BASE_ERROR = "Must be implemented in subclass"
 
 TX_SIGNATURES_PROCESSING_SIZE = 100
 PARSE_TX_TIMEOUT = 1000
+
+
+class ParsedTxMetadata(TypedDict):
+    instruction: List[ParsedTxInstr]
+
+
+class ParsedTx(TypedDict):
+    tx_sig: str
+    tx_metadata: List[ParsedTxMetadata]
+    result: TransactionInfoResult
 
 
 class IndexerBase(ABC):
@@ -140,7 +151,7 @@ class SolanaProgramIndexer(IndexerBase):
     async def process_txs_batch(self, tx_sig_batch_records: List[str]):
         self.msg(f"Parsing {tx_sig_batch_records}")
         futures = []
-        tx_sig_futures_map: Dict[str, Dict] = {}
+        tx_sig_futures_map: Dict[str, ParsedTx] = {}
         for tx_sig in tx_sig_batch_records:
             future: asyncio.Future = asyncio.ensure_future(self.parse_tx(tx_sig))
             futures.append(future)
@@ -154,7 +165,7 @@ class SolanaProgramIndexer(IndexerBase):
                 pass
 
         # Committing to DB
-        parsed_transactions = []
+        parsed_transactions: List[ParsedTx] = []
         for tx_sig in tx_sig_batch_records:
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 

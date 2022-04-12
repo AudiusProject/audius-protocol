@@ -1,11 +1,18 @@
 import json
 from collections import OrderedDict
 from pathlib import Path
-from typing import Container, Dict, List, Optional
+from typing import Any, Container, Dict, List, Optional, TypedDict
 
 import base58
 from anchorpy import Idl, InstructionCoder
 from solana.transaction import TransactionInstruction
+
+
+class ParsedTxInstr(TypedDict):
+    instruction_name: str
+    accounts: List[str]
+    account_names_map: Dict[str, str]
+    data: Any
 
 
 class AnchorParser:
@@ -20,7 +27,7 @@ class AnchorParser:
     def parse_instruction(
         self,
         instruction: TransactionInstruction,
-    ) -> Dict:
+    ) -> ParsedTxInstr:
         encoded_ix_data = base58.b58encode(instruction.data)
         idl_instruction_name = self._get_instruction_name(encoded_ix_data)
         account_addresses = self._get_instruction_context_accounts(instruction)

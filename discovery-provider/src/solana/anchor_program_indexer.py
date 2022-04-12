@@ -3,17 +3,15 @@ import base64
 import json
 import logging
 from collections import defaultdict
-from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
 
-from anchorpy import Idl, InstructionCoder
 from redis import Redis
 from solana.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.models import AudiusDataTx, User
 from src.solana.anchor_parser import AnchorParser
+from src.solana.audius_data_transaction_handlers import transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
@@ -126,103 +124,21 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         metadata_dictionary: Dict,
     ):
         id_dict: Dict[str, set] = defaultdict(lambda: set())
-        records = []
+        records: List[Any] = []
         for transaction in processed_transactions:
             instructions = transaction.get("tx_metadata").get("instructions")
             for instruction in instructions:
                 instruction_name = instruction.get("instruction_name")
-                if instruction_name == "init_admin":
-                    pass
-                elif instruction_name == "update_admin":
-                    pass
-                elif instruction_name == "init_user":
-                    # NOTE: Not sure if we should update the user's model until they claim account
-                    # user_id = instruction.get("data").get("id")
-                    # existing_user = db_models.get("users", {}).get(user_id)
-                    # user = User(**existing_user.asdict())
-                    # user.slot = transaction["result"]["slot"]
-
-                    # replica_set = list(instruction.get("data").get("replica_set"))
-                    # user.primary_id = replica_set[0]
-                    # user.secondary_ids = [replica_set[1], replica_set[2]]
-
-                    # metadata_cid = instruction.get('data').get('metadata')
-
-                    # No action to be taken here
-                    pass
-                elif instruction_name == "init_user_sol":
-                    pass
-
-                elif instruction_name == "create_user":
-                    # Validate that the user row doesn't already exist - error if it does
-                    user_id = instruction.get("data").get("id")
-                    # TODO: validate uniqueness on handle
-                    replica_set = list(instruction.get("data").get("replica_set"))
-
-                    eth_address = Web3.toChecksumAddress(
-                        f"0x{bytes(list(instruction.get('data').get('eth_address'))).hex()}"
+                if instruction_name in transaction_handlers:
+                    transaction_handlers[instruction_name](
+                        session,
+                        transaction,
+                        instruction,
+                        db_models,
+                        metadata_dictionary,
+                        records,
                     )
-                    metadata_multihash = instruction.get("data").get("metadata")
 
-                    user = User(
-                        blockhash=None,
-                        blocknumber=None,
-                        slot=transaction["result"]["slot"],
-                        user_storage_account=str(
-                            instruction.get("account_names_map").get("user")
-                        ),
-                        user_authority_account=str(
-                            instruction.get("data").get("user_authority")
-                        ),
-                        txhash=transaction["tx_sig"],
-                        user_id=user_id,
-                        is_current=True,
-                        wallet=eth_address,
-                        metadata_multihash=metadata_multihash,
-                        primary_id=replica_set[0],
-                        secondary_ids=[replica_set[1], replica_set[2]],
-                        created_at=datetime.utcfromtimestamp(
-                            transaction["result"]["blockTime"]
-                        ),
-                        updated_at=datetime.utcfromtimestamp(
-                            transaction["result"]["blockTime"]
-                        ),
-                    )
-                    records.append(user)
-                    db_models["users"][user_id] = user
-                    # ipfs_metadata = metadata_dictionary.get("metadata_multihash")
-                    # self.update_user_model_metadata(user, ipfs_metadata)
-                    pass
-
-                elif instruction_name == "update_user":
-                    # TODO: validate handle is still valid
-                    pass
-
-                elif instruction_name == "update_is_verified":
-                    pass
-                elif instruction_name == "manage_entity":
-                    pass
-                elif instruction_name == "create_content_node":
-                    pass
-                elif instruction_name == "public_create_or_update_content_node":
-                    pass
-                elif instruction_name == "public_delete_content_node":
-                    pass
-                elif instruction_name == "update_user_replica_set":
-                    pass
-                elif instruction_name == "write_entity_social_action":
-                    pass
-                elif instruction_name == "follow_user":
-                    pass
-                elif instruction_name == "init_authority_delegation_status":
-                    pass
-                elif instruction_name == "revoke_authority_delegation":
-                    pass
-                elif instruction_name == "add_user_authority_delegate":
-                    pass
-                elif instruction_name == "remove_user_authority_delegate":
-                    pass
-        #
         self.invalidate_old_records(session, id_dict)
         session.bulk_save_objects(records)
 
@@ -233,79 +149,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 User.user_id.in_(list(id_dict.get("users", set()))),
                 User.is_current == True,
             ).update({"is_current": False})
-
-    # Update a user orm model with the ipfs metadata
-    def update_user_model_metadata(self, user_record: User, ipfs_metadata: Dict):
-        # Fields also stored on chain
-        if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
-            user_record.profile_picture = ipfs_metadata["profile_picture"]
-
-        if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
-            user_record.cover_photo = ipfs_metadata["cover_photo"]
-
-        if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
-            user_record.bio = ipfs_metadata["bio"]
-
-        if "name" in ipfs_metadata and ipfs_metadata["name"]:
-            user_record.name = ipfs_metadata["name"]
-
-        if "location" in ipfs_metadata and ipfs_metadata["location"]:
-            user_record.location = ipfs_metadata["location"]
-
-        # Fields with no on-chain counterpart
-        if (
-            "profile_picture_sizes" in ipfs_metadata
-            and ipfs_metadata["profile_picture_sizes"]
-        ):
-            user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
-
-        if "cover_photo_sizes" in ipfs_metadata and ipfs_metadata["cover_photo_sizes"]:
-            user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
-
-        if (
-            "collectibles" in ipfs_metadata
-            and ipfs_metadata["collectibles"]
-            and isinstance(ipfs_metadata["collectibles"], dict)
-            and ipfs_metadata["collectibles"].items()
-        ):
-            user_record.has_collectibles = True
-        else:
-            user_record.has_collectibles = False
-
-        # TODO: implement
-        # if "associated_wallets" in ipfs_metadata:
-        #     update_user_associated_wallets(
-        #         session,
-        #         update_task,
-        #         user_record,
-        #         ipfs_metadata["associated_wallets"],
-        #         "eth",
-        #     )
-
-        # TODO: implement
-        # if "associated_sol_wallets" in ipfs_metadata:
-        #     update_user_associated_wallets(
-        #         session,
-        #         update_task,
-        #         user_record,
-        #         ipfs_metadata["associated_sol_wallets"],
-        #         "sol",
-        #     )
-
-        if "playlist_library" in ipfs_metadata and ipfs_metadata["playlist_library"]:
-            user_record.playlist_library = ipfs_metadata["playlist_library"]
-
-        if "is_deactivated" in ipfs_metadata:
-            user_record.is_deactivated = ipfs_metadata["is_deactivated"]
-
-        # TODO: implement
-        # if "events" in ipfs_metadata and ipfs_metadata["events"]:
-        #     update_user_events(
-        #         session,
-        #         user_record,
-        #         ipfs_metadata["events"],
-        #         update_task.challenge_event_bus,
-        #     )
 
     def extract_ids(self, processed_transactions: List[Any]):
         entites: Dict[str, Set[str]] = defaultdict(lambda: set())
@@ -373,7 +216,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 user_ids.add(user_id)
         return user_ids
 
-    async def parse_tx(self, tx_sig: str):
+    async def parse_tx(self, tx_sig: str) -> ParsedTx:
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
         self.msg(tx_receipt)
         encoded_data = tx_receipt["result"].get("transaction")[0]
