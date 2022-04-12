@@ -1,5 +1,6 @@
+import { useCallback } from 'react'
+
 import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
-import { SmartCollection } from 'audius-client/src/common/models/Collection'
 import { getPlaylistLibrary } from 'audius-client/src/common/store/account/selectors'
 import { getCollection } from 'audius-client/src/common/store/pages/smart-collection/selectors'
 import { findInPlaylistLibrary } from 'audius-client/src/common/store/playlist-library/helpers'
@@ -14,15 +15,13 @@ import { VirtualizedScrollView } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
-import { SmartCollection as SmartCollectionMetadata } from 'app/screens/explore-screen/smartCollections'
+import { SmartCollection as SmartCollectionsmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
+    flex: 1,
     padding: spacing(3)
-  },
-  headerContainer: {
-    marginBottom: 240
   },
   imageIcon: {
     opacity: 0.3,
@@ -32,7 +31,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type SmartCollectionScreenProps = {
-  smartCollection: SmartCollectionMetadata
+  smartCollection: SmartCollectionsmartCollection
 }
 
 /**
@@ -41,62 +40,46 @@ type SmartCollectionScreenProps = {
 export const SmartCollectionScreen = ({
   smartCollection
 }: SmartCollectionScreenProps) => {
+  const styles = useStyles()
+  const dispatchWeb = useDispatchWeb()
+
   const collection = useSelectorWeb(state =>
     getCollection(state, { variant: smartCollection.variant })
   )
 
-  if (!collection) {
-    console.warn(
-      'Collection missing for SmartCollectionScreen, preventing render'
-    )
-    return null
-  }
-
-  return (
-    <SmartCollectionScreenComponent
-      collection={collection as SmartCollection}
-      metadata={smartCollection}
-    />
-  )
-}
-
-type SmartCollectionScreenComponentProps = {
-  collection: SmartCollection
-  metadata: SmartCollectionMetadata
-}
-
-const SmartCollectionScreenComponent = ({
-  collection,
-  metadata
-}: SmartCollectionScreenComponentProps) => {
-  const styles = useStyles()
-  const dispatchWeb = useDispatchWeb()
-  const { description, has_current_user_saved, playlist_name } = collection
+  const playlistName = collection?.playlist_name ?? smartCollection.title
+  const description = collection?.description ?? smartCollection.description
 
   const playlistLibrary = useSelectorWeb(getPlaylistLibrary)
 
   const isSaved = playlistLibrary
-    ? !!findInPlaylistLibrary(playlistLibrary, metadata.variant)
+    ? !!findInPlaylistLibrary(playlistLibrary, smartCollection.variant)
     : false
 
-  const handlePressSave = () => {
-    if (has_current_user_saved) {
+  const handlePressSave = useCallback(() => {
+    if (collection?.has_current_user_saved) {
       dispatchWeb(
-        unsaveSmartCollection(metadata.variant, FavoriteSource.COLLECTION_PAGE)
+        unsaveSmartCollection(
+          smartCollection.variant,
+          FavoriteSource.COLLECTION_PAGE
+        )
       )
     } else {
       dispatchWeb(
-        saveSmartCollection(metadata.variant, FavoriteSource.COLLECTION_PAGE)
+        saveSmartCollection(
+          smartCollection.variant,
+          FavoriteSource.COLLECTION_PAGE
+        )
       )
     }
-  }
+  }, [collection, smartCollection, dispatchWeb])
 
   const renderImage = () => {
-    const Icon = metadata.icon
+    const Icon = smartCollection.icon
     return (
       <LinearGradient
-        colors={metadata.gradientColors}
-        angle={metadata.gradientAngle}
+        colors={smartCollection.gradientColors}
+        angle={smartCollection.gradientAngle}
       >
         {Icon ? (
           <View style={styles.imageIcon}>
@@ -109,23 +92,21 @@ const SmartCollectionScreenComponent = ({
 
   return (
     <VirtualizedScrollView
-      listKey={`${playlist_name}_Playlist_Screen`}
+      listKey={`${playlistName}_Playlist_Screen`}
       style={styles.root}
     >
-      <View style={styles.headerContainer}>
-        <CollectionScreenDetailsTile
-          description={description ?? ''}
-          hasSaved={isSaved}
-          hideFavoriteCount
-          hideOverflow
-          hideRepost
-          hideRepostCount
-          hideShare
-          onPressSave={handlePressSave}
-          renderImage={renderImage}
-          title={playlist_name}
-        />
-      </View>
+      <CollectionScreenDetailsTile
+        description={description}
+        hasSaved={isSaved}
+        hideFavoriteCount
+        hideOverflow
+        hideRepost
+        hideRepostCount
+        hideShare
+        onPressSave={handlePressSave}
+        renderImage={renderImage}
+        title={playlistName}
+      />
     </VirtualizedScrollView>
   )
 }
