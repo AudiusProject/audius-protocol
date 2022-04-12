@@ -264,7 +264,6 @@ async function awaitTransactionSignatureConfirmation (
         connection.onSignature(
           txid,
           (result) => {
-            logger.info('TrackListen | WS confirmed', txid, result)
             done = true
             if (result.err) {
               reject(result.err)
@@ -274,7 +273,6 @@ async function awaitTransactionSignatureConfirmation (
           },
           connection.commitment
         )
-        logger.info('TrackListen | Set up WS connection', txid)
       } catch (e) {
         done = true
         logger.error('TrackListen | WS error in setup', txid, e)
@@ -287,7 +285,6 @@ async function awaitTransactionSignatureConfirmation (
               txid
             ])
             const result = signatureStatuses && signatureStatuses.value[0]
-            logger.info(`TrackListen | ${txid} result ${JSON.stringify(signatureStatuses)}`)
             if (!done) {
               if (!result) {
               } else if (result.err) {
@@ -295,9 +292,7 @@ async function awaitTransactionSignatureConfirmation (
                 done = true
                 reject(result.err)
               } else if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) {
-                logger.info('TrackListen | REST not confirmed', txid, result)
               } else {
-                logger.info('TrackListen | REST confirmed', txid, result)
                 done = true
                 resolve(result)
               }

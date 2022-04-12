@@ -337,8 +337,8 @@ module.exports = function (app) {
         let trackListenTransaction = await createTrackListenTransaction({
           validSigner: null,
           privateKey: config.get('solanaSignerPrivateKey'),
-          userId,
-          trackId,
+          userId: userId.toString(),
+          trackId: trackId.toString(),
           source: 'relay',
           connection
         })
