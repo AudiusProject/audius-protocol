@@ -80,6 +80,8 @@
   GCKCastOptions* options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
   // Allow our app to control chromecast volume
   options.physicalVolumeButtonsWillControlDeviceVolume = YES;
+  // Prevent backgrounding from suspending sessions
+  options.suspendSessionsWhenBackgrounded = NO;
   [GCKCastContext setSharedInstanceWithOptions:options];
 
   return YES;

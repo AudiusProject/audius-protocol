@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { setIsCasting } from 'audius-client/src/common/store/cast/slice'
-import CastContext, {
+import {
   CastState,
   useCastState,
   useRemoteMediaClient,
@@ -26,7 +26,7 @@ export const useChromecast = () => {
   const streamPosition = useStreamPosition(0.5)
 
   const loadCast = useCallback(
-    (track, startTime = 0) => {
+    (track, startTime) => {
       if (client && track) {
         client.loadMedia({
           mediaInfo: {
@@ -73,7 +73,7 @@ export const useChromecast = () => {
   // Load media when the cast connects
   useEffect(() => {
     if (castState === CastState.CONNECTED) {
-      loadCast(track)
+      loadCast(track, global.progress.currentTime ?? 0)
     }
   }, [loadCast, track, castState])
 
@@ -103,9 +103,7 @@ export const useChromecast = () => {
     }
   }, [client, seek])
 
-  const openChromecastDialog = useCallback(() => {
-    CastContext.showCastDialog()
-  }, [])
-
-  return { isCasting: castState === CastState.CONNECTED, openChromecastDialog }
+  return {
+    isCasting: castState === CastState.CONNECTED
+  }
 }
