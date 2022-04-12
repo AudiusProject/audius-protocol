@@ -28,11 +28,14 @@ def get_tasks() -> List[GetTasksItem]:
     active = i.active()
     activeItems = []
     for worker in active.keys():
-        activeItems = list(map(lambda task: {
-            "taskId": task["id"], 
-            "taskName": task["name"], 
-            "startedAt": task["time_start"],
-        }, active[worker]))
+        for task in active[worker]:
+            activeItems.append(
+                GetTasksItem(
+                    taskId=task["id"], 
+                    taskName=task["name"], 
+                    startedAt=task["time_start"]
+                )
+            )
 
     celery_tasks += activeItems
 
@@ -40,7 +43,7 @@ def get_tasks() -> List[GetTasksItem]:
 
 
 def celery_tasks_prometheus_exporter():
- 
+
     tasks = get_tasks()
 
     PrometheusMetric(
