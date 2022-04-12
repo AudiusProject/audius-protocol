@@ -755,10 +755,10 @@ export class RewardsAttester {
     )
     const startTime = Date.now()
     let endpoints: string[] =
-      await this.libs.discoveryProvider.serviceSelector.findAll({
+      (await this.libs.discoveryProvider.serviceSelector.findAll({
         verbose: true,
         whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
-      })
+      })) ?? []
 
     // Filter out blocklisted nodes
     endpoints = endpoints.filter(
