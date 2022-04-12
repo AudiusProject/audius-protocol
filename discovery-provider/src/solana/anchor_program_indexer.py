@@ -148,7 +148,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     async def fetch_ipfs_metadata(self, parsed_transactions):
 
         cid_to_user_id: Dict[str, int] = {}
-        cids_txhash_set: Set[Tuple(str, Any)] = set()
+        cids_txhash_set: Set[Tuple(str, str)] = set()
         cid_type: Dict[str, str] = {}  # cid -> entity type track / user
         blacklisted_cids: Set[str] = set()
 

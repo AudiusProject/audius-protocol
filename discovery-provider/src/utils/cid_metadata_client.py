@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from typing import Any, Dict, KeysView, Tuple
+from typing import Any, Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -156,6 +156,7 @@ class CIDMetadataClient:
 
                     cid, metadata_json = future_result
 
+                    # TODO add playlist type
                     metadata_format = (
                         track_metadata_format
                         if cid_type[cid] == "track"
@@ -212,7 +213,7 @@ class CIDMetadataClient:
     # Used in SOL indexing
     async def async_fetch_metadata_from_gateway_endpoints(
         self,
-        cids_txhash_set: Tuple[str, Any],
+        cids_txhash_set: Set[Tuple[str, str]],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
