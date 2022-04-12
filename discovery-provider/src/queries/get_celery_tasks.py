@@ -26,13 +26,15 @@ def get_tasks() -> List[GetTasksItem]:
 
     # Show tasks that are currently active.
     active = i.active()
+    activeItems = []
     for worker in active.keys():
-        activeItems = map(lambda task: {
+        activeItems = list(map(lambda task: {
             "taskId": task["id"], 
             "taskName": task["name"], 
             "startedAt": task["time_start"],
-        }, active[worker])
-    celery_tasks.append(activeItems)
+        }, active[worker]))
+
+    celery_tasks += activeItems
 
     return celery_tasks
 
