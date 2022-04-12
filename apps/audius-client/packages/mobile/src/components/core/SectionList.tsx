@@ -72,20 +72,21 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
     props,
     ref: MutableRefObject<RNSectionList<any, DefaultSectionT> | null>
   ) {
-    const { refreshing, onRefresh, ...other } = props
+    const { refreshing, onRefresh, onScroll, ...other } = props
     const scrollResponder = ref.current?.getScrollResponder()
     const {
       isRefreshing,
       isRefreshDisabled,
       handleRefresh,
       scrollAnim,
-      onScroll,
+      handleScroll,
       onScrollBeginDrag,
       onScrollEndDrag
     } = useOverflowHandlers({
       isRefreshing: refreshing,
       scrollResponder,
-      onRefresh
+      onRefresh,
+      onScroll
     })
 
     return (
@@ -99,12 +100,12 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
           />
         ) : null}
         <Animated.SectionList
+          {...other}
           scrollToOverflowEnabled
           ref={ref}
-          onScroll={onScroll}
+          onScroll={handleScroll}
           onScrollBeginDrag={onScrollBeginDrag}
           onScrollEndDrag={onScrollEndDrag}
-          {...other}
         />
       </View>
     )

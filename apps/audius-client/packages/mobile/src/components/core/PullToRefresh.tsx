@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import LottieView from 'lottie-react-native'
-import { Animated, FlatList, ScrollView } from 'react-native'
+import {
+  Animated,
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView
+} from 'react-native'
 
 import IconRefreshPull from 'app/assets/animations/iconRefreshPull.json'
 import IconRefreshSpin from 'app/assets/animations/iconRefreshSpin.json'
@@ -41,6 +47,13 @@ const interpolateOpacity = (scrollAnim: Animated.Value) =>
     extrapolateRight: 'clamp'
   })
 
+type UseOverflowHandlersConfig = {
+  isRefreshing?: boolean | null
+  scrollResponder?: FlatList<any> | Animated.FlatList<any> | ScrollView | null
+  onRefresh?: (() => void) | null
+  onScroll?: (e: NativeSyntheticEvent<NativeScrollEvent>) => void
+}
+
 /**
  * A helper hook to get desired pull to refresh behavior.
  * 1. Momentum scrolling does not trigger pull to refresh
@@ -49,12 +62,9 @@ const interpolateOpacity = (scrollAnim: Animated.Value) =>
 export const useOverflowHandlers = ({
   isRefreshing,
   scrollResponder,
-  onRefresh
-}: {
-  isRefreshing?: boolean | null
-  scrollResponder?: FlatList<any> | Animated.FlatList<any> | ScrollView | null
-  onRefresh?: (() => void) | null
-}) => {
+  onRefresh,
+  onScroll
+}: UseOverflowHandlersConfig) => {
   const scrollAnim = useRef(new Animated.Value(0)).current
 
   const [isMomentumScroll, setIsMomentumScroll] = useState(false)
@@ -97,14 +107,14 @@ export const useOverflowHandlers = ({
     }
   }, [setIsMomentumScroll, scrollTo, isRefreshing])
 
-  const onScroll = attachToScroll(scrollAnim)
+  const handleScroll = attachToScroll(scrollAnim, { listener: onScroll })
 
   return {
     isRefreshing: onRefresh ? isRefreshing || isDebouncing : undefined,
     isRefreshDisabled: isMomentumScroll,
     handleRefresh: onRefresh ? handleRefresh : undefined,
     scrollAnim,
-    onScroll,
+    handleScroll,
     onScrollBeginDrag,
     onScrollEndDrag
   }
