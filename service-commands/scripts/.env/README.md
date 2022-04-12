@@ -1,34 +1,105 @@
 # Audius Env Migration Manager
 
-## Migration
+This directory houses a dotfiles manager that assists with migrations from one
+remote-dev box to another.
+
+The manager should be installed locally (on your MBP) and remotely
+(on your current remote-dev box) before its potential can be truly unlocked.
+
+This manager utilizes symlinks and git as a way to consolidate your dotfiles
+and track changes, respectively.
+
+## Goals
+
+* Ease environmental pain when migrating between remote-dev boxes.
+* Assist in standardizing your favorite aliases/envar settings.
+
+## Non-Goals
+
+* Centralization of Audius-centric opinionated dotfiles.
+* Assist in migration of anything other than dotfiles:
+  * Docker Images (Docker images should be rebuilt)
+  * Code (Git branches should be used)
+  * Caches (Caches should be recreated)
+
+**NOTE:** While customization of your local dev environment is encouraged
+and can lead to boosts in productivity, over-customization that follows
+from environment to environment can lead to issues always being seen in
+only your environment. Be cautious of your customizations.
+
+## Env Manager
+
+### Add/Track New Dotfile
 
 ```
-~/bin/migrate ${OLD} ${NEW}
+~/bin/.env.add ~/.yourdotfile
+```
+
+The above helper command essentially does this:
+
+```
+cp ~/.yourdotfile ./.yourdotfile
+```
+
+### Sync Dotfiles Across Machines
+
+Git is used to keep your environments in sync.
+
+```
+git push
+git pull
+```
+
+### Install All Tracked Dotfiles
+
+```
+~/bin/.env.install
+```
+
+The installation is a multi-step process:
+
+* Validate existing symlinks at `~/.system_file`.
+* If `$INIT` is set, `cp ~/.system_file .repo_file`.
+* Show `diff ~/.system_file .repo_file` output, if detected.
+* If no `diff` output:
+  * `rm ~/.system_file`
+  * `ln -s .repo_file ~/.system_file`
+
+## Migration Manager
+
+Run your personalized migration:
+
+```
+~/bin/migrate ${OLD_BOX} ${NEW_BOX}
 ```
 
 ## Setup
 
 ### Enable Aliases
 
-Add this to your `.zshenv` or `.bashrc`:
+Add this to your `~/.profile`, if missing:
 
 ```
-for f in ~/.aliases/*; do
-  source $f
-done
+echo '
+if [ -d ~/.aliases ]; then
+  for f in ~/.aliases/*; do
+    source $f
+  done
+fi' >> $HOME/.profile
 ```
 
-### Install Aliases Locally
+### Install Env Manager Locally (on your MBP)
 
 ```
 cp -r . ~/.env
-cd ~/.env
-./bin/.env.install
+rm ~/.env/.gitignore
+~/.env/bin/.env.install
 ```
 
 ### Track Personal Changes
 
 ```
+cd ~/.env
 git init
 git commit -am "first commit"
 ```
@@ -82,7 +153,8 @@ git push
 
 ### Setup Keyless SSH Access
 
-Migration requires keyless SSH access to remote dev boxes and github.com, for example:
+Migration requires keyless SSH access to remote dev boxes and github.com,
+for example:
 
 ```
 Host *

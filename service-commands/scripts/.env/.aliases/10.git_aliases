@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+alias g="git"
 alias gd="git diff"
 alias gds="git diff --staged"
 alias gdss="git diff --cached --stat"
@@ -11,8 +12,6 @@ alias gap="git add -p"
 alias gl="git log"
 alias gp="git push origin"
 alias gpt="git push origin --tags"
-# alias gfu="git fetch upstream"
-# alias gpum="git pull upstream main"
 alias gcb="git checkout -b"
 alias gss="git stash"
 alias gsp="git stash pop"
