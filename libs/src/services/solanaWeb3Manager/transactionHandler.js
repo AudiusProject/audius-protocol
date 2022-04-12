@@ -1,6 +1,7 @@
 const SolanaUtils = require('./utils')
 const {
   Transaction,
+  PublicKey,
   sendAndConfirmTransaction
 } = require('@solana/web3.js')
 
@@ -50,15 +51,16 @@ class TransactionHandler {
    *
    * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
    * @param {*} [errorMapping=null] an optional error mapping. Should expose a `fromErrorCode` method.
+   * @param {Array<{publicKey: string, signature: Buffer}>} [signature=null] optional signatures
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true }) {
+  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true, signatures = null }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash)
+      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash, signatures)
     } else {
-      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride)
+      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride, signatures)
     }
     if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
@@ -66,16 +68,17 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null, sendBlockhash) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null, sendBlockhash, signatures) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
 
     const transactionData = {
+      signatures,
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
     }
 
-    if (sendBlockhash) {
+    if (sendBlockhash || Array.isArray(signatures)) {
       transactionData.recentBlockhash = (recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash)
     }
 
@@ -89,7 +92,7 @@ class TransactionHandler {
     }
   }
 
-  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null) {
+  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null, signatures = null) {
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
         const stringFeePayer = feePayerOverride.toString()
@@ -112,7 +115,11 @@ class TransactionHandler {
     const tx = new Transaction({ recentBlockhash })
 
     instructions.forEach(i => tx.add(i))
-
+    if (Array.isArray(signatures)) {
+      signatures.forEach(({ publicKey, signature }) => {
+        tx.addSignature(PublicKey(publicKey), signature)
+      })
+    }
     tx.sign(feePayerAccount)
 
     try {
