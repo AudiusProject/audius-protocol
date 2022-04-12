@@ -6,7 +6,7 @@ repos:
         stages: [commit]
 
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 21.12b0
     hooks:
       - id: black
         exclude: ^discovery-provider/alembic/

@@ -57,7 +57,7 @@ class Attestation:
         return f"{self.challenge_id}:{self.challenge_specifier}"
 
     def _get_encoded_amount(self):
-        amt = int(self.amount) * 10**WAUDIO_DECIMALS
+        amt = int(self.amount) * 10 ** WAUDIO_DECIMALS
         return amt.to_bytes(8, byteorder="little")
 
     def get_attestation_bytes(self):
