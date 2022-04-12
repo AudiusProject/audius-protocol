@@ -1,3 +1,6 @@
+import { UID } from 'common/models/Identifiers'
+import { LineupState } from 'common/models/Lineup'
+import { Track } from 'common/models/Track'
 import { RESET_SUCCEEDED, stripPrefix } from 'common/store/lineup/actions'
 import { initialLineupState } from 'common/store/lineup/reducer'
 
@@ -8,27 +11,43 @@ import {
   TRENDING_ALL_TIME_PREFIX
 } from './actions'
 
-const initialState = {
+type TrendingLineupState = LineupState<Track>
+
+const initialState: TrendingLineupState = {
   ...initialLineupState,
   dedupe: true,
   prefix: PREFIX
 }
 
-const makeActionsMap = initialState => {
+type ResetSucceededAction = {
+  type: typeof RESET_SUCCEEDED
+}
+
+const makeActionsMap = (initialState: TrendingLineupState) => {
   return {
-    [RESET_SUCCEEDED](state, action) {
+    [RESET_SUCCEEDED](
+      state: TrendingLineupState,
+      action: ResetSucceededAction
+    ) {
       const newState = initialState
       return newState
     }
   }
 }
 
-const makeTrendingReducer = prefix => {
-  const newInitialState = { ...initialState, entryIds: new Set([]), prefix }
+const makeTrendingReducer = (prefix: string) => {
+  const newInitialState = {
+    ...initialState,
+    entryIds: new Set() as Set<UID>,
+    prefix
+  }
   const newActionsMap = makeActionsMap(newInitialState)
 
-  return (state = newInitialState, action) => {
-    const baseActionType = stripPrefix(prefix, action.type)
+  return (state = newInitialState, action: ResetSucceededAction) => {
+    const baseActionType = stripPrefix(
+      prefix,
+      action.type
+    ) as typeof RESET_SUCCEEDED
     const matchingReduceFunction = newActionsMap[baseActionType]
     if (!matchingReduceFunction) return state
     return matchingReduceFunction(state, action)
