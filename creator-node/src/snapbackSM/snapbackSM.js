@@ -284,7 +284,7 @@ class SnapbackSM {
     )
   }
 
-  wipeStateMachineQueueRedisState () {
+  wipeStateMachineQueueRedisState() {
     // Wipe all redis keys matching pattern `bull:state-machine*` (legacy and new)
     const stream = redis.scanStream({ match: 'bull:state-machine*' })
     let numDeletedKeys = 0
