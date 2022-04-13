@@ -30,25 +30,25 @@ pub mod audius_data {
         authority: Pubkey,
         verifier: Pubkey,
     ) -> Result<()> {
-        let audius_admin = &mut ctx.accounts.admin;
-        audius_admin.authority = authority;
-        audius_admin.verifier = verifier;
-        audius_admin.is_write_enabled = true;
+        let admin = &mut ctx.accounts.admin;
+        admin.authority = authority;
+        admin.verifier = verifier;
+        admin.is_write_enabled = true;
         Ok(())
     }
 
-    /// Verifies a user by asserting that the audius_admin's verifier matches the signed verifier account
+    /// Verifies a user by asserting that the admin's verifier matches the signed verifier account
     pub fn update_is_verified(
         ctx: Context<UpdateIsVerified>,
         base: Pubkey,
         _user_id_seed_bump: UserIdSeedBump,
     ) -> Result<()> {
         // Validate that the audius admin verifier matches the verifier passed in
-        if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
+        if ctx.accounts.admin.verifier != ctx.accounts.verifier.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
@@ -351,7 +351,7 @@ pub mod audius_data {
     ) -> Result<()> {
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
-            &[&ctx.accounts.audius_admin.key().to_bytes()[..32]],
+            &[&ctx.accounts.admin.key().to_bytes()[..32]],
             ctx.program_id,
         );
 
@@ -360,7 +360,7 @@ pub mod audius_data {
         }
 
         // Confirm admin is disabled
-        if ctx.accounts.audius_admin.is_write_enabled {
+        if ctx.accounts.admin.is_write_enabled {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -425,7 +425,7 @@ pub mod audius_data {
         _metadata: String,
     ) -> Result<()> {
         // Confirm the base PDA matches the expected value provided the target audius admin
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
         if base_pda != base {
@@ -452,7 +452,7 @@ pub mod audius_data {
         _entity_type: EntityTypes,
         _id: String,
     ) -> Result<()> {
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
@@ -490,7 +490,7 @@ pub mod audius_data {
         _source_user_id_seed_bump: UserIdSeedBump,
         _target_user_id_seed_bump: UserIdSeedBump,
     ) -> Result<()> {
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
@@ -770,7 +770,7 @@ pub struct CreateUser<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
     /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
@@ -923,7 +923,7 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 // Instruction base pda, user id
 pub struct ManageEntity<'info> {
     #[account()]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     // Audiusadmin
     #[account(
         seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
@@ -947,7 +947,7 @@ pub struct ManageEntity<'info> {
 pub struct WriteEntitySocialAction<'info> {
     // TODO - Verify removal here
     #[account()]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump = user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     #[account()]
@@ -965,7 +965,7 @@ pub struct WriteEntitySocialAction<'info> {
 #[instruction(base: Pubkey, user_instr:UserAction, source_user_id_seed_bump: UserIdSeedBump, target_user_id_seed_bump: UserIdSeedBump)]
 pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     // Confirm the source user PDA matches the expected value provided the target user id and base
     #[account(mut, seeds = [&base.to_bytes()[..32], &source_user_id_seed_bump.user_id.to_le_bytes()], bump = source_user_id_seed_bump.bump)]
     pub source_user_storage: Account<'info, User>,
@@ -987,7 +987,7 @@ pub struct WriteUserSocialAction<'info> {
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump)]
 pub struct UpdateIsVerified<'info> {
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump = user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     pub verifier: Signer<'info>,

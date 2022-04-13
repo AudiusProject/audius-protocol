@@ -122,7 +122,7 @@ class CIDMetadataClient:
             futures = []
             cid_futures_map: Dict[str, set] = {}
 
-            for cid, txhash in cids_txhash_set:
+            for cid, _ in cids_txhash_set:
                 if cid in fetched_cids:
                     continue  # already fetched
                 user_id = cid_to_user_id[cid]

@@ -1,12 +1,17 @@
 import asyncio
 import base64
 import logging
+from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
+from redis import Redis
 from solana.transaction import Transaction
 from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 from src.models.models import AudiusDataTx, User
 from src.solana.anchor_parser import AnchorParser
+from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
+from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils.cid_metadata_client import CIDMetadataClient
@@ -29,9 +34,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         program_id: str,
         admin_storage_public_key: str,
         label: str,
-        redis: Any,
+        redis: Redis,
         db: SessionManager,
-        solana_client_manager: Any,
+        solana_client_manager: SolanaClientManager,
         cid_metadata_client: CIDMetadataClient,
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
@@ -42,10 +47,11 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # TODO fill out the rest
         self.instruction_type = {
             "init_user": "user",
+            "create_user": "user",
             "create_track": "track",
         }
 
-    def is_tx_in_db(self, session: Any, tx_sig: str):
+    def is_tx_in_db(self, session: Session, tx_sig: str):
         exists = False
         tx_sig_db_count = (
             session.query(AudiusDataTx).filter(AudiusDataTx.signature == tx_sig)
@@ -74,23 +80,136 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         return latest_slot
 
     def validate_and_save_parsed_tx_records(
-        self, processed_transactions, metadata_dictionary
+        self, parsed_transactions: List[ParsedTx], metadata_dictionary: Dict
     ):
         self.msg(
-            f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
+            f"validate_and_save anchor {parsed_transactions} - {metadata_dictionary}"
         )
-        # TODO: Conditionally add database modifications here depending on transaction information
         with self._db.scoped_session() as session:
-            for transaction in processed_transactions:
-                session.add(
+            session.bulk_save_objects(
+                [
                     AudiusDataTx(
                         signature=transaction["tx_sig"],
                         slot=transaction["result"]["slot"],
                     )
-                )
+                    for transaction in parsed_transactions
+                ]
+            )
 
-    async def parse_tx(self, tx_sig):
+            # Find user ids in DB and create dictionary mapping
+            entity_ids = self.extract_ids(parsed_transactions)
+            db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
+            if entity_ids["users"]:
+                existing_users = (
+                    session.query(User)
+                    .filter(
+                        User.is_current,
+                        User.user_id.in_(list(entity_ids["users"])),
+                    )
+                    .all()
+                )
+                for user in existing_users:
+                    db_models["users"][user.user_id] = [user]
+
+            # TODO: Find all other track/playlist/etc. models
+
+            self.process_transactions(
+                session, parsed_transactions, db_models, metadata_dictionary
+            )
+
+    def process_transactions(
+        self,
+        session: Session,
+        processed_transactions: List[ParsedTx],
+        db_models: Dict,
+        metadata_dictionary: Dict,
+    ):
+        records: List[Any] = []
+        for transaction in processed_transactions:
+            instructions = transaction["tx_metadata"]["instructions"]
+            for instruction in instructions:
+                instruction_name = instruction.get("instruction_name")
+                if instruction_name in transaction_handlers:
+                    transaction_handlers[instruction_name](
+                        session,
+                        transaction,
+                        instruction,
+                        db_models,
+                        metadata_dictionary,
+                        records,
+                    )
+
+        self.invalidate_old_records(session, db_models)
+        session.bulk_save_objects(records)
+
+    def invalidate_old_records(self, session: Session, db_models: Dict[str, Dict]):
+        # Update existing record in db to is_current = False
+        if db_models.get("users"):
+            user_ids = list(db_models.get("users", {}).keys())
+            self.msg(f"{user_ids}")
+            session.query(User).filter(
+                User.is_current == True, User.user_id.in_(user_ids)
+            ).update({"is_current": False}, synchronize_session="fetch")
+
+    def extract_ids(self, processed_transactions: List[ParsedTx]):
+        entites: Dict[str, Set[str]] = defaultdict(lambda: set())
+
+        for transaction in processed_transactions:
+            instructions = transaction["tx_metadata"]["instructions"]
+            for instruction in instructions:
+                instruction_name = instruction.get("instruction_name")
+                if instruction_name == "init_admin":
+                    pass
+                elif instruction_name == "update_admin":
+                    pass
+                elif instruction_name == "init_user":
+                    # No action to be taken here
+                    pass
+
+                elif instruction_name == "init_user_sol":
+                    # TODO: parse the tx data for their user id and fetch
+                    # user_id = instruction.get("data").get("id")
+                    pass
+
+                elif instruction_name == "create_user":
+                    # TODO: parse the tx data for their user id and fetch
+                    # user_id = instruction.get("data").get("id")
+                    pass
+
+                elif instruction_name == "update_user":
+                    # TODO: parse the tx data for their user id and fetch
+                    # user_id = instruction.get("data").get("id")
+                    pass
+                elif instruction_name == "update_is_verified":
+                    pass
+                elif instruction_name == "manage_entity":
+                    pass
+                elif instruction_name == "create_content_node":
+                    pass
+                elif instruction_name == "public_create_or_update_content_node":
+                    pass
+                elif instruction_name == "public_delete_content_node":
+                    pass
+                elif instruction_name == "update_user_replica_set":
+                    pass
+                elif instruction_name == "write_entity_social_action":
+                    pass
+                elif instruction_name == "follow_user":
+                    pass
+                elif instruction_name == "init_authority_delegation_status":
+                    pass
+                elif instruction_name == "revoke_authority_delegation":
+                    pass
+                elif instruction_name == "add_user_authority_delegate":
+                    pass
+                elif instruction_name == "remove_user_authority_delegate":
+                    pass
+
+        return entites
+
+    async def parse_tx(self, tx_sig: str) -> ParsedTx:
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
+        self.msg(tx_receipt)
         encoded_data = tx_receipt["result"].get("transaction")[0]
         decoded_data = base64.b64decode(encoded_data)
         decoded_data_hex = decoded_data.hex()
@@ -100,9 +219,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # Append each parsed transaction to parsed metadata
         tx_instructions = []
         for instruction in tx.instructions:
-            parsed_instr = self.anchor_parser.parse_instruction(instruction)
-            if self.is_valid_instruction(parsed_instr):
-                tx_instructions.append(parsed_instr)
+            parsed_instruction = self.anchor_parser.parse_instruction(instruction)
+            if self.is_valid_instruction(parsed_instruction):
+                tx_instructions.append(parsed_instruction)
 
         tx_metadata["instructions"] = tx_instructions
 
@@ -110,23 +229,19 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         For example:
             Embed instruction specific information in tx_metadata
         """
-        return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
+        return {
+            "tx_sig": tx_sig,
+            "tx_metadata": tx_metadata,
+            "result": tx_receipt["result"],
+        }
 
-    def is_valid_instruction(self, parsed_instr: Dict):
-        # TODO find a better way to reconcile admin in mocks / default config
-        if parsed_instr["instruction_name"] == "init_user":
+    def is_valid_instruction(self, parsed_instruction: Dict):
+        if "admin" in parsed_instruction["account_names_map"]:
             if (
-                parsed_instr["account_names_map"]["admin"]
+                parsed_instruction["account_names_map"]["admin"]
                 != self.admin_storage_public_key
             ):
                 return False
-
-        # TODO implement remaining instruction validation
-        # consider creating classes for each instruction type
-        # then implementing instruction validation / updating user records for each.
-        # consider renaming admin accounts in program for consistency
-        # then dynamically validating.
-
         return True
 
     def process_index_task(self):
@@ -146,7 +261,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
     async def fetch_cid_metadata(
-        self, parsed_transactions: List[Dict]
+        self, parsed_transactions: List[ParsedTx]
     ) -> Tuple[Dict[str, Dict], Set[str]]:
 
         cid_to_user_id: Dict[str, int] = {}
@@ -159,7 +274,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             # any instructions with  metadata
             for transaction in parsed_transactions:
                 for instruction in transaction["tx_metadata"]["instructions"]:
-                    if "metadata" in instruction["data"]:
+                    if (
+                        instruction["instruction_name"] != ""
+                        and "data" in instruction
+                        and instruction["data"] is not None
+                        and "metadata" in instruction["data"]
+                    ):
                         cid = instruction["data"]["metadata"]
                         if is_blacklisted_ipld(session, cid):
                             blacklisted_cids.add(cid)
@@ -170,8 +290,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                             ]
 
                         # TODO update once user_id changes are merged in
+                        # NOTE: for update user, the user_id is not passes as an arg, so
+                        # the user's id should be queried for via their account
                         cid_to_user_id[cid] = 1
 
+            # NOTE: For new users, we will need to map the content nodes in the account params
+            # of the transaction to their endpoint
             user_replica_set = dict(
                 session.query(User.user_id, User.creator_node_endpoint)
                 .filter(
