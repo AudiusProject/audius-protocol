@@ -4,6 +4,7 @@ const IpldBlacklistTest = require('./test_ipldBlacklist')
 const { userReplicaSetBlockSaturationTest } = require('./test_ursmBlockSaturation.js')
 const { userReplicaSetManagerTest } = require('./test_userReplicaSetManager.js')
 const { trackListenCountsTest } = require('./test_plays.js')
+const poaSolMigrationTests = require('./test_poaSolMigration.js')
 
 const SnapbackReconfigTests = require('./test_userReplicaSetNodes')
 
@@ -14,5 +15,6 @@ module.exports = {
   userReplicaSetManagerTest,
   userReplicaSetBlockSaturationTest,
   trackListenCountsTest,
-  SnapbackReconfigTests
+  SnapbackReconfigTests,
+  poaSolMigrationTests
 }

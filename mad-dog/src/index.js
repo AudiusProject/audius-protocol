@@ -11,7 +11,8 @@ const {
   IpldBlacklistTest,
   userReplicaSetBlockSaturationTest,
   trackListenCountsTest,
-  SnapbackReconfigTests
+  SnapbackReconfigTests,
+  poaSolMigrationTests,
 } = require('./tests/')
 
 // Configuration.
@@ -276,6 +277,14 @@ async function main () {
           }
         )
         await testRunner([deregisterCNTest, forceCNUnavailabilityTest])
+        break
+      }
+      case 'test-sol-migration': {
+        const poaToSolTestsCreated = makeTest('poaSolMigration', poaSolMigrationTests,
+        {
+          numUsers: 1
+        })
+        await testRunner([poaToSolTestsCreated])
         break
       }
       case 'test-nightly': {

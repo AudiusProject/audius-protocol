@@ -53,7 +53,7 @@ const keypairFromFilePath = (path: string) => {
   return Keypair.fromSecretKey(Uint8Array.from(require(path)));
 };
 
-/// Initialize constants requird for any CLI functionality
+/// Initialize constants required for any CLI functionality
 function initializeCLI(network: string, ownerKeypairPath: string) {
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
