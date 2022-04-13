@@ -47,6 +47,9 @@ export const playlistEtl: Job = {
             mood: { type: 'keyword' },
             genre: { type: 'keyword' },
             tags: { type: 'keyword' },
+            play_count: { type: 'integer' },
+            repost_count: { type: 'integer' },
+            save_count: { type: 'integer' },
           },
         },
       },
@@ -65,7 +68,7 @@ export const playlistEtl: Job = {
         where
           is_current = true
           and is_delete = false
-          and repost_type = 'playlist' 
+          and repost_type = (case when is_album then 'album' else 'playlist' end)::reposttype
           and repost_item_id = playlist_id
           order by created_at desc
       ) as reposted_by,
@@ -76,7 +79,7 @@ export const playlistEtl: Job = {
         where
           is_current = true
           and is_delete = false
-          and save_type = 'playlist' 
+          and save_type = (case when is_album then 'album' else 'playlist' end)::savetype
           and save_item_id = playlist_id
           order by created_at desc
       ) as saved_by
@@ -90,13 +93,16 @@ export const playlistEtl: Job = {
       // but don't know how to do the sql for that... so the low tech solution would be to re-do playlists from scratch
       // which might actually be faster, since it's a very small collection
       // in which case we could just delete this function
+
+      // track play_count will also go stale (same problem as above)
+
       sql += `
       and playlist_id in (
         select playlist_id from playlists where is_current and blocknumber >= ${checkpoint.playlists}
         union
-        select save_item_id from saves where is_current and save_type = 'playlist' and blocknumber >= ${checkpoint.saves}
+        select save_item_id from saves where is_current and save_type in ('playlist', 'album') and blocknumber >= ${checkpoint.saves}
         union
-        select repost_item_id from reposts where is_current and repost_type = 'playlist' and blocknumber >= ${checkpoint.reposts}
+        select repost_item_id from reposts where is_current and repost_type in ('playlist', 'album') and blocknumber >= ${checkpoint.reposts}
       )`
     }
 
@@ -121,6 +127,11 @@ export const playlistEtl: Job = {
       playlist.tracks = playlist.playlist_contents.track_ids
         .map((t: any) => tracksById[t.track])
         .filter(Boolean)
+
+      playlist.total_play_count = playlist.tracks.reduce(
+        (acc, s) => acc + parseInt(s.play_count),
+        0
+      )
     }
   },
 
@@ -138,8 +149,18 @@ async function pgTracksById(trackIds: number[]) {
   // or save + repost counts from aggregate_track?
   const q = `
     select 
-      track_id, genre, mood, tags, title, length, created_at
-    from tracks 
+      track_id,
+      genre,
+      mood,
+      tags,
+      title,
+      length,
+      created_at,
+      aggregate_plays.count as play_count
+
+    from tracks
+    join aggregate_track using (track_id)
+    join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
     where 
       is_current and not is_delete 
       and track_id in (${idList})`

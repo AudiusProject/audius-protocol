@@ -59,10 +59,17 @@ omit_keys = [
 
 
 def omit_indexed_fields(doc):
+
+    # track
+    if "tags" in doc and isinstance(doc["tags"], list):
+        doc["tags"] = ",".join(doc["tags"])
+
+    if "following_count" in doc:
+        doc["followee_count"] = doc["following_count"]
+
     # return a copy??
     for key in omit_keys:
         if key in doc:
             del doc[key]
-    if "tags" in doc and isinstance(doc["tags"], list):
-        doc["tags"] = ",".join(doc["tags"])
+
     return doc

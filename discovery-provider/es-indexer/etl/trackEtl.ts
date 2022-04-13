@@ -30,6 +30,7 @@ export const trackEtl: Job = {
         blocknumber: { type: 'integer' },
         owner_id: { type: 'keyword' },
         created_at: { type: 'date' },
+        permalink: { type: 'keyword' },
         route_id: { type: 'keyword' },
         routes: { type: 'keyword' },
         title: { type: 'text' },
@@ -134,7 +135,7 @@ export const trackEtl: Job = {
         union
         select repost_item_id from reposts where is_current and repost_type = 'track' and blocknumber >= ${checkpoint.reposts}
         union
-        select play_item_id FROM plays WHERE created_at > NOW() - INTERVAL '5 minutes'
+        select play_item_id FROM plays WHERE created_at > NOW() - INTERVAL '10 minutes'
       )`
     }
 
@@ -150,10 +151,8 @@ export const trackEtl: Job = {
       row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
     )
 
-    // some alternate routes...
-    // unshift because last one is_current
-    let slug = row.route_id.substring(row.route_id.indexOf('/') + 1)
-    row.routes.unshift(slug)
-    row.routes.unshift(`${slug}-${row.track_id}`)
+    // permalink
+    const currentRoute = row.routes[row.routes.length - 1]
+    row.permalink = `/${row.artist.handle}/${currentRoute}`
   },
 }
