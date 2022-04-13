@@ -100,9 +100,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # Append each parsed transaction to parsed metadata
         tx_instructions = []
         for instruction in tx.instructions:
-            parsed_instr = self.anchor_parser.parse_instruction(instruction)
-            if self.is_valid_instruction(parsed_instr):
-                tx_instructions.append(parsed_instr)
+            parsed_instruction = self.anchor_parser.parse_instruction(instruction)
+            if self.is_valid_instruction(parsed_instruction):
+                tx_instructions.append(parsed_instruction)
 
         tx_metadata["instructions"] = tx_instructions
 
@@ -112,21 +112,13 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         """
         return {"tx_sig": tx_sig, "tx_metadata": tx_metadata, "result": None}
 
-    def is_valid_instruction(self, parsed_instr: Dict):
-        # TODO find a better way to reconcile admin in mocks / default config
-        if parsed_instr["instruction_name"] == "init_user":
+    def is_valid_instruction(self, parsed_instruction: Dict):
+        if "admin" in parsed_instruction["account_names_map"]:
             if (
-                parsed_instr["account_names_map"]["admin"]
+                parsed_instruction["account_names_map"]["admin"]
                 != self.admin_storage_public_key
             ):
                 return False
-
-        # TODO implement remaining instruction validation
-        # consider creating classes for each instruction type
-        # then implementing instruction validation / updating user records for each.
-        # consider renaming admin accounts in program for consistency
-        # then dynamically validating.
-
         return True
 
     def process_index_task(self):
