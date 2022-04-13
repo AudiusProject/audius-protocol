@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const Playlist = {}
 
 Playlist.createPlaylist = async (
@@ -16,6 +18,15 @@ Playlist.createPlaylist = async (
     trackIds
   )
   return createPlaylistTxReceipt
+}
+
+Playlist.uploadPlaylistCoverPhoto = async (
+  libs,
+  coverPhotoFilePath
+) => {
+  const coverPhotoFile = fs.createReadStream(coverPhotoFilePath)
+  const dirCid = await libs.uploadPlaylistCoverPhoto(coverPhotoFile)
+  return dirCid
 }
 
 Playlist.updatePlaylistCoverPhoto = async (
