@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from typing import Any, Dict, KeysView, Tuple
+from typing import Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -101,12 +101,12 @@ class CIDMetadataClient:
     async def _fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
-        cids_txhash_set: Tuple[str, Any],
+        cids_txhash_set: Set[Tuple[str, str]],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Dict]:
         """Fetch CID metadata from gateway endpoints and update cid_metadata dict.
 
         fetched_cids -- CIDs already successfully fetched
@@ -156,6 +156,7 @@ class CIDMetadataClient:
 
                     cid, metadata_json = future_result
 
+                    # TODO add playlist type
                     metadata_format = (
                         track_metadata_format
                         if cid_type[cid] == "track"
@@ -188,15 +189,16 @@ class CIDMetadataClient:
                 raise e
         return cid_metadata
 
+    # Used in POA indexing
     def fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
-        cids_txhash_set: Tuple[str, Any],
+        cids_txhash_set: Set[Tuple[str, str]],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
-    ) -> Dict[str, int]:
+    ):
         return asyncio.run(
             self._fetch_metadata_from_gateway_endpoints(
                 fetched_cids,
@@ -207,3 +209,49 @@ class CIDMetadataClient:
                 should_fetch_from_replica_set,
             )
         )
+
+    # Used in SOL indexing
+    async def async_fetch_metadata_from_gateway_endpoints(
+        self,
+        cids_txhash_set: Set[Tuple[str, str]],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, str],
+        cid_type: Dict[str, str],
+    ) -> Dict[str, Dict]:
+        cid_metadata: Dict[str, Dict] = {}
+
+        # first attempt - fetch all CIDs from replica set
+        try:
+
+            cid_metadata.update(
+                await self._fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=True,
+                )
+            )
+        except asyncio.TimeoutError:
+            # swallow exception on first attempt fetching from replica set
+            pass
+
+        # second attempt - fetch missing CIDs from other cnodes
+        if len(cid_metadata) != len(cids_txhash_set):
+            cid_metadata.update(
+                await self._fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=False,
+                )
+            )
+
+        if cid_type and len(cid_metadata) != len(cid_type.keys()):
+            missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+            raise Exception(missing_cids_msg)
+
+        return cid_metadata
