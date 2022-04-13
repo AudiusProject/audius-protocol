@@ -144,8 +144,15 @@ class SnapbackSM {
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
     this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
+  }
 
-    this.wipeStateMachineQueueRedisState()
+  /**
+   * Initialize StateMachine processing:
+   * - StateMachineQueue -> determines all system state changes required
+   * - SyncQueue -> triggers syncs on secondaries
+   */
+  async init() {
+    await this.wipeStateMachineQueueRedisState()
 
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
@@ -162,57 +169,48 @@ class SnapbackSM {
 
     // Add event handlers for state machine queue
     this.stateMachineQueue.on('global:error', (error) => {
-      this.logError(`stateMachineQueue Job Error - ${error}}`)
+      this.logError(`stateMachineQueue Job Error - ${error}`)
     })
     this.stateMachineQueue.on('global:waiting', (jobId) => {
-      this.log(`stateMachineQueue Job Waiting - ID ${jobId}}`)
+      this.log(`stateMachineQueue Job Waiting - ID ${jobId}`)
     })
     this.stateMachineQueue.on('global:active', (jobId, jobPromise) => {
-      this.log(`stateMachineQueue Job Active - ID ${jobId}}`)
+      this.log(`stateMachineQueue Job Active - ID ${jobId}`)
     })
     this.stateMachineQueue.on('global:lock-extension-failed', (jobId, err) => {
       this.logError(
-        `stateMachineQueue Job Lock Extension Failed - ID ${jobId}} - Error ${err}`
+        `stateMachineQueue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
       )
     })
     this.stateMachineQueue.on('global:completed', (jobId, result) => {
       this.log(
-        `stateMachineQueue Job Completed - ID ${jobId}} - Result ${result}`
+        `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}`
       )
     })
     this.stateMachineQueue.on('global:failed', (jobId, err) => {
-      this.logError(
-        `stateMachineQueue Job Failed - ID ${jobId}} - Error ${err}`
-      )
+      this.logError(`stateMachineQueue Job Failed - ID ${jobId} - Error ${err}`)
     })
 
     // Add stalled event handler for all queues
     this.stateMachineQueue.on('global:stalled', (jobId) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${jobId}}`)
+      this.logError(`stateMachineQueue Job Stalled - ID ${jobId}`)
     })
     this.manualSyncQueue.on('global:stalled', (jobId) => {
-      this.logError(`manualSyncQueue Job Stalled - ID ${jobId}}`)
+      this.logError(`manualSyncQueue Job Stalled - ID ${jobId}`)
     })
     this.recurringSyncQueue.on('global:stalled', (jobId) => {
-      this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}}`)
+      this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}`)
     })
 
     // PeerSetManager instance to determine the peer set and its health state
     this.peerSetManager = new PeerSetManager({
       discoveryProviderEndpoint:
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       creatorNodeEndpoint: this.endpoint
     })
 
     this.updateEnabledReconfigModesSet()
-  }
 
-  /**
-   * Initialize StateMachine processing:
-   * - StateMachineQueue -> determines all system state changes required
-   * - SyncQueue -> triggers syncs on secondaries
-   */
-  async init() {
     // Removes waiting/delayed jobs (does not remove active, failed, completed, or repeatable)
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
@@ -284,28 +282,32 @@ class SnapbackSM {
     )
   }
 
-  wipeStateMachineQueueRedisState() {
+  async wipeStateMachineQueueRedisState() {
     // Wipe all redis keys matching pattern `bull:state-machine*` (legacy and new)
     const stream = redis.scanStream({ match: 'bull:state-machine*' })
     let numDeletedKeys = 0
-    stream.on('data', (keys) => {
-      if (!keys.length) return
-      numDeletedKeys = keys.length
-      const pipeline = redis.pipeline()
-      keys.forEach(function (key) {
-        pipeline.del(key)
+    return new Promise((resolve, reject) => {
+      stream.on('data', (keys) => {
+        if (!keys.length) return
+        numDeletedKeys = keys.length
+        const pipeline = redis.pipeline()
+        keys.forEach(function (key) {
+          pipeline.del(key)
+        })
+        pipeline.exec()
       })
-      pipeline.exec()
-    })
-    stream.on('end', () => {
-      this.log(
-        `Deleted all previous redis keys (${numDeletedKeys}) for pattern 'bull:state-machine*'`
-      )
-    })
-    stream.on('error', (e) => {
-      this.logError(
-        `Failed to delete redis keys for pattern 'bull:state-machine*' - Error ${e.toString()}`
-      )
+      stream.on('end', () => {
+        this.log(
+          `Deleted all previous redis keys (${numDeletedKeys}) for pattern 'bull:state-machine*'`
+        )
+        resolve()
+      })
+      stream.on('error', (e) => {
+        this.logError(
+          `Failed to delete redis keys for pattern 'bull:state-machine*' - Error ${e.toString()}`
+        )
+        reject(e)
+      })
     })
   }
 
