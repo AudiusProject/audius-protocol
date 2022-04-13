@@ -1,6 +1,10 @@
+import logging  # pylint: disable=C0302
+
 import sqlalchemy
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
+
+logger = logging.getLogger(__name__)
 
 env = shared_config["discprov"]["env"]
 
@@ -17,6 +21,9 @@ def get_db_seed_restore_status():
     global seed_hash
 
     # early exit, no need to run this query multiple times since this won't change once the server has booted up
+    logger.info(
+        f"get_db_seed_restore_status before - has_restored {has_restored}, seed_hash {seed_hash}"
+    )
     if has_restored is not None:
         return has_restored, seed_hash
 
@@ -42,4 +49,7 @@ def get_db_seed_restore_status():
 
         seed_hash = db_hash
 
+        logger.info(
+            f"get_db_seed_restore_status after - has_restored {has_restored}, seed_hash {seed_hash}"
+        )
         return has_restored, seed_hash
