@@ -145,26 +145,7 @@ class SnapbackSM {
 
     this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
 
-    // Wipe all redis keys matching pattern `bull:state-machine*` (legacy and new)
-    const stream = redis.scanStream({ match: 'bull:state-machine*' })
-    stream.on('data', (keys) => {
-      if (!keys.length) return
-      const pipeline = redis.pipeline()
-      keys.forEach(function (key) {
-        pipeline.del(key)
-      })
-      pipeline.exec()
-    })
-    stream.on('end', () => {
-      this.log(
-        `Deleted all previous redis keys for pattern 'bull:state-machine*'`
-      )
-    })
-    stream.on('error', (e) => {
-      this.logError(
-        `Failed to delete redis keys for pattern 'bull:state-machine*' - Error ${e.toString()}`
-      )
-    })
+    this.wipeStateMachineQueueRedisState()
 
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
@@ -301,6 +282,31 @@ class SnapbackSM {
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; jobs will be enqueued every ${this.snapbackJobInterval}ms`
     )
+  }
+
+  wipeStateMachineQueueRedisState () {
+    // Wipe all redis keys matching pattern `bull:state-machine*` (legacy and new)
+    const stream = redis.scanStream({ match: 'bull:state-machine*' })
+    let numDeletedKeys = 0
+    stream.on('data', (keys) => {
+      if (!keys.length) return
+      numDeletedKeys = keys.length
+      const pipeline = redis.pipeline()
+      keys.forEach(function (key) {
+        pipeline.del(key)
+      })
+      pipeline.exec()
+    })
+    stream.on('end', () => {
+      this.log(
+        `Deleted all previous redis keys (${numDeletedKeys}) for pattern 'bull:state-machine*'`
+      )
+    })
+    stream.on('error', (e) => {
+      this.logError(
+        `Failed to delete redis keys for pattern 'bull:state-machine*' - Error ${e.toString()}`
+      )
+    })
   }
 
   logDebug(msg) {
