@@ -10,10 +10,12 @@ import {
   ViewStyle,
   TextStyle,
   View,
-  LayoutChangeEvent
+  LayoutChangeEvent,
+  GestureResponderEvent
 } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
+import { light, medium } from 'app/haptics'
 import { useColorAnimation } from 'app/hooks/usePressColorAnimation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { flexRowCentered, makeStyles, StylesProp } from 'app/styles'
@@ -183,6 +185,7 @@ export type ButtonProps = RNButtonProps &
       text: TextStyle
     }>
     variant?: 'primary' | 'secondary' | 'common' | 'commonAlt'
+    haptics?: boolean | 'light' | 'medium'
   }
 
 export const Button = (props: ButtonProps) => {
@@ -192,6 +195,7 @@ export const Button = (props: ButtonProps) => {
     IconProps,
     fullWidth,
     noText,
+    onPress,
     onPressIn,
     onPressOut,
     size = 'medium',
@@ -199,6 +203,7 @@ export const Button = (props: ButtonProps) => {
     styles: stylesProp,
     title,
     variant = 'primary',
+    haptics,
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
@@ -243,6 +248,20 @@ export const Button = (props: ButtonProps) => {
       handlePressOutColor()
     },
     [onPressOut, handlePressOutScale, handlePressOutColor]
+  )
+
+  const handleHaptics = useCallback(() => {
+    if (haptics === 'light') light()
+    else if (haptics === 'medium') medium()
+    else if (haptics) medium()
+  }, [haptics])
+
+  const handlePress = useCallback(
+    (e: GestureResponderEvent) => {
+      handleHaptics()
+      onPress?.(e)
+    },
+    [handleHaptics, onPress]
   )
 
   // Ensures button takes up a static height even when scaling
@@ -290,6 +309,7 @@ export const Button = (props: ButtonProps) => {
           ]}
           accessibilityRole='button'
           accessibilityLabel={noText ? title : undefined}
+          onPress={handlePress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           {...other}
