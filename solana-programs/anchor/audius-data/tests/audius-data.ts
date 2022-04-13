@@ -40,12 +40,12 @@ const { PublicKey, SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("audius-data", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -80,7 +80,7 @@ describe("audius-data", function () {
       verifierKeypair,
     });
 
-    const txSignature = await provider.send(tx, [adminStorageKeypair]);
+    const txSignature = await provider.sendAndConfirm(tx, [adminStorageKeypair]);
 
     const { decodedInstruction, decodedData, accountPubKeys } =
       await getTransactionWithData(program, provider, txSignature, 0);
@@ -316,7 +316,7 @@ describe("audius-data", function () {
       authorityDelegationStatusAccount: SystemProgram.programId,
     });
 
-    const txSignature = await provider.send(tx, [newUserKeypair]);
+    const txSignature = await provider.sendAndConfirm(tx, [newUserKeypair]);
 
     const { decodedInstruction, decodedData, accountPubKeys } =
       await getTransactionWithData(program, provider, txSignature, 0);
@@ -546,7 +546,7 @@ describe("audius-data", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair]);
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -623,7 +623,7 @@ describe("audius-data", function () {
       authorityDelegationStatusAccount:
         userDelegate.authorityDelegationStatusPDA,
     });
-    await provider.send(updateUserTx, [
+    await provider.sendAndConfirm(updateUserTx, [
       userDelegate.userAuthorityDelegateKeypair,
     ]);
     const removeUserAuthorityDelegateArgs = {
@@ -656,7 +656,7 @@ describe("audius-data", function () {
       payer: provider.wallet.publicKey,
     });
 
-    await provider.send(removeUserAuthorityDelegateTx, [userDelegate.userKeypair]);
+    await provider.sendAndConfirm(removeUserAuthorityDelegateTx, [userDelegate.userKeypair]);
 
     // Confirm account deallocated after removal
     await pollAccountBalance({
@@ -666,7 +666,7 @@ describe("audius-data", function () {
       maxRetries: 100,
     });
     await expect(
-      provider.send(
+      provider.sendAndConfirm(
         updateUser({
           program,
           metadata: randomCID(),
@@ -717,7 +717,7 @@ describe("audius-data", function () {
       authorityDelegationStatusAccount:
         userDelegate.authorityDelegationStatusPDA,
     });
-    await provider.send(updateUserTx, [
+    await provider.sendAndConfirm(updateUserTx, [
       userDelegate.userAuthorityDelegateKeypair,
     ]);
 
@@ -731,13 +731,13 @@ describe("audius-data", function () {
       payer: provider.wallet.publicKey,
     });
 
-    await provider.send(revokeAuthorityDelegationTx, [
+    await provider.sendAndConfirm(revokeAuthorityDelegationTx, [
       userDelegate.userAuthorityDelegateKeypair,
     ]);
 
     // Confirm revoked delegation cannot update user
     await expect(
-      provider.send(
+      provider.sendAndConfirm(
         updateUser({
           program,
           metadata: randomCID(),
@@ -801,7 +801,7 @@ describe("audius-data", function () {
       payer: provider.wallet.publicKey,
     });
 
-    await provider.send(addUserAuthorityDelegateTx, [firstUserDelegate.userAuthorityDelegateKeypair]);
+    await provider.sendAndConfirm(addUserAuthorityDelegateTx, [firstUserDelegate.userAuthorityDelegateKeypair]);
 
     const removeUserAuthorityDelegateTx = removeUserAuthorityDelegate({
       program,
@@ -819,7 +819,7 @@ describe("audius-data", function () {
       authorityPublicKey: firstUserDelegate.userAuthorityDelegateKeypair.publicKey,
       payer: provider.wallet.publicKey,
     });
-    await provider.send(removeUserAuthorityDelegateTx, [firstUserDelegate.userAuthorityDelegateKeypair]);
+    await provider.sendAndConfirm(removeUserAuthorityDelegateTx, [firstUserDelegate.userAuthorityDelegateKeypair]);
   });
 
   it("creating initialized user should fail", async function () {
@@ -970,7 +970,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
     });
-    const txSignature = await provider.send(tx, [verifierKeypair]);
+    const txSignature = await provider.sendAndConfirm(tx, [verifierKeypair]);
 
     await confirmLogInTransaction(provider, txSignature, "success");
   });
@@ -1166,7 +1166,7 @@ describe("audius-data", function () {
       authorityDelegationStatusPDA,
       payer: provider.wallet.publicKey,
     });
-    await provider.send(initAuthorityDelegationStatusTx, [
+    await provider.sendAndConfirm(initAuthorityDelegationStatusTx, [
       userAuthorityDelegateKeypair,
     ]);
 
@@ -1185,7 +1185,7 @@ describe("audius-data", function () {
       authorityPublicKey: newUserKeypair.publicKey,
       payer: provider.wallet.publicKey,
     });
-    await provider.send(addUserAuthorityDelegateTx, [
+    await provider.sendAndConfirm(addUserAuthorityDelegateTx, [
       newUserKeypair,
     ]);
 

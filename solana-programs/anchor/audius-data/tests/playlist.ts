@@ -21,13 +21,13 @@ const { SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("playlists", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -61,7 +61,7 @@ describe("playlists", function () {
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair])
+    await provider.sendAndConfirm(tx, [adminStorageKeypair])
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
     );
@@ -222,7 +222,7 @@ describe("playlists", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair])
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -302,7 +302,7 @@ describe("playlists", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair])
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();

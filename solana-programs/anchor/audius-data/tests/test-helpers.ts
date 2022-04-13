@@ -52,7 +52,7 @@ export const initTestConstants = (): InitTestConsts => {
   return {
     ethAccount,
     userId,
-    metadata
+    metadata,
   };
 };
 
@@ -90,8 +90,7 @@ export const testInitUser = async ({
     cn2,
     cn3,
   });
-  const txSignature = await provider.send(tx, [adminKeypair])
-
+  const txSignature = await provider.sendAndConfirm(tx, [adminKeypair]);
 
   const account = await program.account.user.fetch(userStorageAccount);
 
@@ -128,7 +127,7 @@ export const testInitUserSolPubkey = async ({
     userStorageAccount: newUserAcctPDA,
   });
 
-  const txSignature = await provider.send(tx)
+  const txSignature = await provider.sendAndConfirm(tx);
 
   const { decodedInstruction, decodedData } = await getTransactionWithData(
     program,
@@ -185,7 +184,7 @@ export const testCreateUser = async ({
     cn3,
     userId,
   });
-  const txSignature = await provider.send(tx)
+  const txSignature = await provider.sendAndConfirm(tx);
 
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 1);
@@ -240,7 +239,7 @@ export const testCreateTrack = async ({
     adminStorageAccount,
     bumpSeed,
   });
-  const txSignature = await provider.send(tx, [userAuthorityKeypair])
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
 
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 0);
@@ -283,7 +282,7 @@ export const testDeleteTrack = async ({
     bumpSeed,
     adminStorageAccount,
   });
-  const txSignature = await provider.send(tx, [userAuthorityKeypair])
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
 
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 0);
@@ -326,7 +325,7 @@ export const testUpdateTrack = async ({
     metadata,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
   });
-  const txSignature = await provider.send(tx, [userAuthorityKeypair])
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 0);
 
@@ -372,7 +371,7 @@ export const testCreatePlaylist = async ({
     bumpSeed,
   });
 
-  const txSignature = await provider.send(tx, [userAuthorityKeypair])
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
 
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 0);
@@ -415,7 +414,7 @@ export const testDeletePlaylist = async ({
     bumpSeed,
     adminStorageAccount,
   });
-  const txSignature = await provider.send(tx, [userAuthorityKeypair])
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 0);
   expect(decodedInstruction.name).to.equal("manageEntity");
@@ -457,7 +456,7 @@ export const testUpdatePlaylist = async ({
     metadata,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
   });
-  const txSignature = await provider.send(tx, [userAuthorityKeypair])
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
     await getTransactionWithData(program, provider, txSignature, 0);
 
@@ -488,7 +487,7 @@ export const testCreateUserDelegate = async ({
     adminStorageAccount: adminStorageKeypair.publicKey,
     adminAuthorityKeypair: adminKeypair,
   });
-  await provider.send(udpateAdminTx, [adminKeypair])
+  await provider.sendAndConfirm(udpateAdminTx, [adminKeypair]);
 
   const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
@@ -513,7 +512,10 @@ export const testCreateUserDelegate = async ({
     authorityDelegationStatusPDA,
     payer: provider.wallet.publicKey,
   });
-  const initAuthorityDelegationStatusTxSig = await provider.send(initAuthorityDelegationStatusTx, [userAuthorityDelegateKeypair])
+  const initAuthorityDelegationStatusTxSig = await provider.sendAndConfirm(
+    initAuthorityDelegationStatusTx,
+    [userAuthorityDelegateKeypair]
+  );
 
   const {
     decodedInstruction: authorityDelegationInstruction,
@@ -557,7 +559,10 @@ export const testCreateUserDelegate = async ({
     authorityPublicKey: user.keypair.publicKey,
     payer: provider.wallet.publicKey,
   });
-  const addUserAuthorityDelegateTxSig = await provider.send(addUserAuthorityDelegateTx, [user.keypair])
+  const addUserAuthorityDelegateTxSig = await provider.sendAndConfirm(
+    addUserAuthorityDelegateTx,
+    [user.keypair]
+  );
   const {
     decodedInstruction: addUserAuthorityDelegateInstruction,
     decodedData: addUserAuthorityDelegateData,
@@ -574,10 +579,12 @@ export const testCreateUserDelegate = async ({
   expect(addUserAuthorityDelegateData.base.toString()).to.equal(
     user.authority.toString()
   );
-  expect(addUserAuthorityDelegateData.userIdSeedBump.userId.toString()).to.equal(
-    user.userId.toString()
+  expect(
+    addUserAuthorityDelegateData.userIdSeedBump.userId.toString()
+  ).to.equal(user.userId.toString());
+  expect(addUserAuthorityDelegateData.userIdSeedBump.bump).to.equal(
+    user.bumpSeed
   );
-  expect(addUserAuthorityDelegateData.userIdSeedBump.bump).to.equal(user.bumpSeed);
   expect(addUserAuthorityDelegateData.delegatePubkey.toString()).to.equal(
     userAuthorityDelegateKeypair.publicKey.toString()
   );
@@ -687,7 +694,7 @@ export const createSolanaUser = async (
     userId: testConsts.userId,
   });
 
-  await provider.send(tx)
+  await provider.sendAndConfirm(tx);
 
   const account = await program.account.user.fetch(newUserAcctPDA);
 
@@ -730,7 +737,9 @@ export const createSolanaContentNode = async (props: {
     spID: props.spId,
     ownerEthAddress: ownerEth.address,
   });
-  const txSignature = await props.provider.send(tx, [props.adminKeypair])
+  const txSignature = await props.provider.sendAndConfirm(tx, [
+    props.adminKeypair,
+  ]);
 
   const contentNode = await props.program.account.contentNode.fetch(
     derivedAddress

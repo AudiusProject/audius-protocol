@@ -20,13 +20,13 @@ import {
 const { SystemProgram } = anchor.web3;
 
 describe("replicaSet", function () {
-    const provider = anchor.Provider.local("http://localhost:8899", {
+    const provider = anchor.AnchorProvider.local("http://localhost:8899", {
         preflightCommitment: "confirmed",
         commitment: "confirmed",
     });
 
     // Configure the client to use the local cluster.
-    anchor.setProvider(anchor.Provider.env());
+    anchor.setProvider(anchor.AnchorProvider.env());
 
     const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -44,7 +44,7 @@ describe("replicaSet", function () {
             verifierKeypair,
         });
 
-        await provider.send(tx, [adminStorageKeypair])
+        await provider.sendAndConfirm(tx, [adminStorageKeypair])
         // disable admin writes
         const updateAdminTx = updateAdmin({
             program,
@@ -53,7 +53,7 @@ describe("replicaSet", function () {
             adminAuthorityKeypair: adminKeypair,
         });
 
-        await provider.send(updateAdminTx, [adminKeypair])
+        await provider.sendAndConfirm(updateAdminTx, [adminKeypair])
     });
 
     it("Creates Content Node with the Admin account", async function () {
@@ -78,7 +78,7 @@ describe("replicaSet", function () {
             spID,
             ownerEthAddress: ownerEth.address,
         });
-        await provider.send(tx, [adminKeypair])
+        await provider.sendAndConfirm(tx, [adminKeypair])
 
         const account = await program.account.contentNode.fetch(derivedAddress);
 
@@ -152,7 +152,7 @@ describe("replicaSet", function () {
                 seedBump: cn3.seedBump,
             },
         });
-        await provider.send(tx, [cn2.authority, cn4.authority, cn3.authority])
+        await provider.sendAndConfirm(tx, [cn2.authority, cn4.authority, cn3.authority])
 
         const account = await program.account.contentNode.fetch(derivedAddress);
 
@@ -322,7 +322,7 @@ describe("replicaSet", function () {
                 seedBump: cn3.seedBump,
             },
         });
-        await provider.send(tx, [cn2.authority, cn4.authority, cn3.authority])
+        await provider.sendAndConfirm(tx, [cn2.authority, cn4.authority, cn3.authority])
 
         const account = await program.account.contentNode.fetch(cnToUpdate.pda);
         expect(
@@ -381,7 +381,7 @@ describe("replicaSet", function () {
                 seedBump: cn3.seedBump,
             },
         });
-        await provider.send(tx, [cn2.authority, cn4.authority, cn3.authority])
+        await provider.sendAndConfirm(tx, [cn2.authority, cn4.authority, cn3.authority])
 
         // Confirm that the account is zero'd out
         // Note that there appears to be a delay in the propagation, hence the retries
@@ -445,7 +445,7 @@ describe("replicaSet", function () {
             cn3: cn6.pda,
         });
 
-        await provider.send(tx, [cn2.authority])
+        await provider.sendAndConfirm(tx, [cn2.authority])
 
         const updatedUser = await program.account.user.fetch(user.pda);
         expect(
@@ -486,7 +486,7 @@ describe("replicaSet", function () {
             cn2: cn7.pda,
             cn3: cn8.pda,
         });
-        await provider.send(tx, [user.keypair])
+        await provider.sendAndConfirm(tx, [user.keypair])
         const updatedUser = await program.account.user.fetch(user.pda);
         expect(
             updatedUser.replicaSet,
@@ -510,7 +510,7 @@ describe("replicaSet", function () {
         const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
         await expect(
-            provider.send(updateUserReplicaSet({
+            provider.sendAndConfirm(updateUserReplicaSet({
                 payer: provider.wallet.publicKey,
                 program,
                 baseAuthorityAccount,
