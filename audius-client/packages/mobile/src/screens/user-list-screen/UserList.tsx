@@ -11,9 +11,9 @@ import {
 } from 'audius-client/src/common/store/user-list/actions'
 import { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
 import { isEqual } from 'lodash'
-import { FlatList } from 'react-native'
 import { Selector } from 'react-redux'
 
+import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'

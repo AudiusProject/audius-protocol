@@ -13,7 +13,7 @@ import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { formatWei } from 'audius-client/src/common/utils/wallet'
 import BN from 'bn.js'
 import { Image, Linking, View } from 'react-native'
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
@@ -25,7 +25,14 @@ import Gold from 'app/assets/images/tokenBadgeGold108.png'
 import Platinum from 'app/assets/images/tokenBadgePlatinum108.png'
 import Silver from 'app/assets/images/tokenBadgeSilver108.png'
 import TokenStill from 'app/assets/images/tokenSpinStill.png'
-import { Screen, Button, GradientText, Text, Tile } from 'app/components/core'
+import {
+  ScrollView,
+  Screen,
+  Button,
+  GradientText,
+  Text,
+  Tile
+} from 'app/components/core'
 import { Header } from 'app/components/header'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'

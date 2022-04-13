@@ -1,6 +1,7 @@
-import { StyleSheet, View, SectionList, Keyboard } from 'react-native'
+import { StyleSheet, View, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { SectionList } from 'app/components/core'
 import { getSearchResults } from 'app/store/search/selectors'
 import {
   SearchUser,

@@ -1,5 +1,7 @@
 import { ReactElement } from 'react'
 
+import { View } from 'react-native'
+
 import LoadingSpinner from '../loading-spinner'
 
 type WithLoaderProps = {
@@ -8,13 +10,9 @@ type WithLoaderProps = {
 }
 
 export const WithLoader = ({ children, loading }: WithLoaderProps) => {
-  return (
-    <>
-      {loading ? (
-        <LoadingSpinner style={{ alignSelf: 'center', marginVertical: 16 }} />
-      ) : (
-        children
-      )}
-    </>
+  return loading ? (
+    <LoadingSpinner style={{ alignSelf: 'center', marginVertical: 16 }} />
+  ) : (
+    <View style={{ flex: 1 }}>{children}</View>
   )
 }
