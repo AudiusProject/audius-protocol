@@ -144,6 +144,15 @@ class SnapbackSM {
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
     this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
+
+    this.updateEnabledReconfigModesSet()
+
+    // PeerSetManager instance to determine the peer set and its health state
+    this.peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint:
+        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      creatorNodeEndpoint: this.endpoint
+    })
   }
 
   /**
@@ -201,15 +210,6 @@ class SnapbackSM {
     this.recurringSyncQueue.on('global:stalled', (jobId) => {
       this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}`)
     })
-
-    // PeerSetManager instance to determine the peer set and its health state
-    this.peerSetManager = new PeerSetManager({
-      discoveryProviderEndpoint:
-        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      creatorNodeEndpoint: this.endpoint
-    })
-
-    this.updateEnabledReconfigModesSet()
 
     // Removes waiting/delayed jobs (does not remove active, failed, completed, or repeatable)
     await this.manualSyncQueue.empty()
