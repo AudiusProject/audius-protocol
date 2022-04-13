@@ -17,7 +17,7 @@ const messages = {
 
 type TrackScreenRemixesProps = {
   trackIds: ID[]
-  goToAllRemixes: () => void
+  onPressGoToRemixes: () => void
   count: number | null
 }
 
@@ -62,7 +62,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const TrackScreenRemixes = ({
   trackIds,
-  goToAllRemixes,
+  onPressGoToRemixes,
   count
 }: TrackScreenRemixesProps) => {
   const styles = useStyles()
@@ -83,7 +83,7 @@ export const TrackScreenRemixes = ({
         icon={IconArrow}
         variant='primary'
         size='medium'
-        onPress={goToAllRemixes}
+        onPress={onPressGoToRemixes}
         styles={{
           root: styles.button
         }}
