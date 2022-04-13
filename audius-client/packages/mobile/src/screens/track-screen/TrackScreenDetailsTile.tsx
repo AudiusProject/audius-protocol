@@ -68,6 +68,7 @@ type TrackScreenDetailsTileProps = {
   track: Track
   user: User
   uid: UID
+  isLineupLoading: boolean
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -121,7 +122,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 export const TrackScreenDetailsTile = ({
   track,
   user,
-  uid
+  uid,
+  isLineupLoading
 }: TrackScreenDetailsTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
@@ -196,6 +198,8 @@ export const TrackScreenDetailsTile = ({
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   const handlePressPlay = useCallback(() => {
+    if (isLineupLoading) return
+
     const trackPlay = () =>
       record(
         make({
@@ -225,7 +229,15 @@ export const TrackScreenDetailsTile = ({
       dispatchWeb(tracksActions.play(uid))
       trackPlay()
     }
-  }, [track_id, uid, dispatchWeb, isPlaying, playingUid, queueTrack])
+  }, [
+    track_id,
+    uid,
+    dispatchWeb,
+    isPlaying,
+    playingUid,
+    queueTrack,
+    isLineupLoading
+  ])
 
   const handlePressFavorites = useCallback(() => {
     dispatchWeb(setFavorite(track_id, FavoriteType.TRACK))
