@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
@@ -180,26 +180,8 @@ export const BottomTabBar = ({
   }, [navigation])
   const insets = useSafeAreaInsets()
 
-  const [shouldAddMarginTop, setShouldAddMarginTop] = useState(false)
-
-  // Use the translation animation of the drawer to understand whether or not
-  // the play bar is showing. If it is, we want to add custom margin to the
-  // bottom bar such that scroll views adjust height accordingly.
-  useEffect(() => {
-    translationAnim.addListener(({ value }) => {
-      const nowPlayingDrawerOpenedToInitialOffset =
-        FULL_DRAWER_HEIGHT - BOTTOM_BAR_HEIGHT - PLAY_BAR_HEIGHT
-      if (value < nowPlayingDrawerOpenedToInitialOffset) {
-        setShouldAddMarginTop(true)
-      } else {
-        setShouldAddMarginTop(false)
-      }
-    })
-  }, [translationAnim])
-
   const rootStyle = [
     styles.root,
-    shouldAddMarginTop && { marginTop: PLAY_BAR_HEIGHT },
     {
       transform: [
         {

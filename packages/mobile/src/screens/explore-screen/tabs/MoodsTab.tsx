@@ -1,6 +1,7 @@
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { ScrollView } from 'app/components/core'
+import { makeStyles } from 'app/styles'
 
 import {
   CHILL_PLAYLISTS,
@@ -17,18 +18,17 @@ const messages = {
   infoText: 'Playlists made by Audius users, sorted by mood and feel.'
 }
 
-const createStyles = () =>
-  StyleSheet.create({
-    tabContainer: {
-      flex: 1
-    },
-    contentContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      padding: 12,
-      paddingVertical: 24
-    }
-  })
+const useStyles = makeStyles(({ spacing }) => ({
+  tabContainer: {
+    flex: 1
+  },
+  contentContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: spacing(3),
+    paddingVertical: spacing(6)
+  }
+}))
 
 const tiles = [
   CHILL_PLAYLISTS,
@@ -39,7 +39,7 @@ const tiles = [
 ]
 
 export const MoodsTab = () => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
 
   return (
     <ScrollView style={styles.tabContainer}>
