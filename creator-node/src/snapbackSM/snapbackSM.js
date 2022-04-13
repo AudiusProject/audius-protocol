@@ -143,11 +143,34 @@ class SnapbackSM {
     // The interval when SnapbackSM is fired for state machine jobs
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
+    this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
+
+    // Wipe all redis keys matching pattern `bull:state-machine*` (legacy and new)
+    const stream = redis.scanStream({ match: 'bull:state-machine*' })
+    stream.on('data', (keys) => {
+      if (!keys.length) return
+      const pipeline = redis.pipeline()
+      keys.forEach(function (key) {
+        pipeline.del(key)
+      })
+      pipeline.exec()
+    })
+    stream.on('end', () => {
+      this.log(
+        `Deleted all previous redis keys for pattern 'bull:state-machine*'`
+      )
+    })
+    stream.on('error', (e) => {
+      this.logError(
+        `Failed to delete redis keys for pattern 'bull:state-machine*' - Error ${e.toString()}`
+      )
+    })
+
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
     this.stateMachineQueue = this.createBullQueue('state-machine', {
       // Should be sufficiently larger than expected job runtime
-      lockDuration: this.snapbackJobInterval * 2,
+      lockDuration: this.stateMachineQueueJobMaxDuration,
       // we never want to re-process stalled job
       maxStalledCount: 0
     })
@@ -156,15 +179,41 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
-    // Add stalled event handlers for all queues
-    this.stateMachineQueue.on('global:stalled', (job) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
+    // Add event handlers for state machine queue
+    this.stateMachineQueue.on('global:error', (error) => {
+      this.logError(`stateMachineQueue Job Error - ${error}}`)
     })
-    this.manualSyncQueue.on('global:stalled', (job) => {
-      this.logError(`manualSyncQueue Job Stalled - ID ${job.id}}`)
+    this.stateMachineQueue.on('global:waiting', (jobId) => {
+      this.log(`stateMachineQueue Job Waiting - ID ${jobId}}`)
     })
-    this.recurringSyncQueue.on('global:stalled', (job) => {
-      this.logError(`recurringSyncQueue Job Stalled - ID ${job.id}}`)
+    this.stateMachineQueue.on('global:active', (jobId, jobPromise) => {
+      this.log(`stateMachineQueue Job Active - ID ${jobId}}`)
+    })
+    this.stateMachineQueue.on('global:lock-extension-failed', (jobId, err) => {
+      this.logError(
+        `stateMachineQueue Job Lock Extension Failed - ID ${jobId}} - Error ${err}`
+      )
+    })
+    this.stateMachineQueue.on('global:completed', (jobId, result) => {
+      this.log(
+        `stateMachineQueue Job Completed - ID ${jobId}} - Result ${result}`
+      )
+    })
+    this.stateMachineQueue.on('global:failed', (jobId, err) => {
+      this.logError(
+        `stateMachineQueue Job Failed - ID ${jobId}} - Error ${err}`
+      )
+    })
+
+    // Add stalled event handler for all queues
+    this.stateMachineQueue.on('global:stalled', (jobId) => {
+      this.logError(`stateMachineQueue Job Stalled - ID ${jobId}}`)
+    })
+    this.manualSyncQueue.on('global:stalled', (jobId) => {
+      this.logError(`manualSyncQueue Job Stalled - ID ${jobId}}`)
+    })
+    this.recurringSyncQueue.on('global:stalled', (jobId) => {
+      this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}}`)
     })
 
     // PeerSetManager instance to determine the peer set and its health state
@@ -183,10 +232,11 @@ class SnapbackSM {
    * - SyncQueue -> triggers syncs on secondaries
    */
   async init() {
-    // Empty all queues to minimize memory consumption
-    await this.stateMachineQueue.empty()
+    // Removes waiting/delayed jobs (does not remove active, failed, completed, or repeatable)
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
+    // Wipes ALL queue state
+    await this.stateMachineQueue.obliterate({ force: true })
 
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
@@ -232,19 +282,24 @@ class SnapbackSM {
     )
 
     // Enqueue stateMachineQueue jobs on a cron, after an initial delay
+    // If a job does not finish within timeout, next job will run for same modulo slice
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
-      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+      /** opts */ {
+        delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS,
+        timeout: this.stateMachineQueueJobMaxDuration // ms
+      }
     )
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
       /** opts */ {
-        repeat: { every: this.snapbackJobInterval }
+        repeat: { every: this.snapbackJobInterval },
+        timeout: this.stateMachineQueueJobMaxDuration // ms
       }
     )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; jobs will be enqueued every ${this.snapbackJobInterval}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; jobs will be enqueued every ${this.snapbackJobInterval}ms`
     )
   }
 
@@ -1116,8 +1171,17 @@ class SnapbackSM {
     }
   }
 
-  _addToStateMachineQueueDecisionTree(decisionTree, stage, data = {}) {
+  _addToStateMachineQueueDecisionTree(
+    decisionTree,
+    stage,
+    data = {},
+    log = true
+  ) {
     const obj = { stage, data, time: Date.now() }
+
+    let logStr = `processStateMachineOperation() ${stage} - Data ${JSON.stringify(
+      data
+    )}`
 
     if (decisionTree.length > 0) {
       // Set duration if both objs have time field
@@ -1125,9 +1189,12 @@ class SnapbackSM {
       if (lastObj && lastObj.time) {
         const duration = obj.time - lastObj.time
         obj.duration = duration
+        logStr += ` - Duration ${duration}ms`
       }
     }
     decisionTree.push(obj)
+
+    this.log(logStr)
   }
 
   _printStateMachineQueueDecisionTree(decisionTree, msg = '') {

@@ -704,7 +704,7 @@ class BlacklistManager {
     })
     stream.on('error', function (e) {
       console.error(
-        `Could not delete ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries: ${e.toString}`
+        `Could not delete ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries: ${e.toString()}`
       )
     })
   }
