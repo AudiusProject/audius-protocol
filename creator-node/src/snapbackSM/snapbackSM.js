@@ -214,8 +214,7 @@ class SnapbackSM {
     // Removes waiting/delayed jobs (does not remove active, failed, completed, or repeatable)
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
-    // Wipes ALL queue state
-    await this.stateMachineQueue.obliterate({ force: true })
+    // Not necessary for this.stateMachineQueue because all associated redis state is manually wiped above
 
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
