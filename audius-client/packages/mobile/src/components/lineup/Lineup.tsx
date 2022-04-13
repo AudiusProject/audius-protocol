@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
 
 type Section = {
   delineate: boolean
+  hasLeadingElement?: boolean
   title?: string
   data: Array<LineupItem | LoadingLineupItem>
 }
@@ -114,11 +115,13 @@ export const Lineup = ({
   count,
   delineate,
   disableTopTabScroll,
+  fetchPayload,
+  header,
   isTrending,
   leadingElementId,
+  leadingElementDelineator,
   lineup,
   loadMore,
-  header,
   rankIconCount = 0,
   refresh,
   refreshing,
@@ -179,19 +182,22 @@ export const Lineup = ({
       if (loadMore) {
         loadMore(offset, limit, page === 0)
       } else {
-        dispatchWeb(actions.fetchLineupMetadatas(offset, limit, page === 0))
+        dispatchWeb(
+          actions.fetchLineupMetadatas(offset, limit, page === 0, fetchPayload)
+        )
       }
     }
   }, [
-    lineup,
     actions,
-    itemCounts,
     countOrDefault,
-    loadMore,
     dispatchWeb,
-    pageItemCount,
+    fetchPayload,
     includeLineupStatus,
-    limit
+    itemCounts,
+    limit,
+    lineup,
+    loadMore,
+    pageItemCount
   ])
 
   // When scrolled past the end threshold of the lineup and the lineup is not loading,
@@ -351,7 +357,7 @@ export const Lineup = ({
 
       return [
         { delineate: false, data: [artistPick] },
-        { delineate: true, data: restEntries }
+        { delineate: true, data: restEntries, hasLeadingElement: true }
       ]
     }
 
@@ -407,17 +413,20 @@ export const Lineup = ({
         ListFooterComponent={<View style={{ height: 16 }} />}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
-        // TODO: Either style the refreshing indicator or
-        // roll our own
         onRefresh={refresh}
         refreshing={refreshing}
         sections={sections}
         stickySectionHeadersEnabled={false}
-        // TODO: figure out why this is causing duplicate ids
-        // keyExtractor={(item, index) => String(item.id + index)}
+        keyExtractor={(item, index) => `${item.id}  ${index}`}
         renderItem={renderItem}
         renderSectionHeader={({ section }) => {
-          return section.delineate ? <Delineator text={section.title} /> : null
+          if (section.delineate) {
+            if (section.hasLeadingElement && leadingElementDelineator) {
+              return leadingElementDelineator
+            }
+            return <Delineator text={section.title} />
+          }
+          return null
         }}
         listKey={listKey}
         scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
