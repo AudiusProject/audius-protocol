@@ -32,7 +32,7 @@ class Account extends Base {
     this.searchTags = this.searchTags.bind(this)
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
-    this.checkAccountExistsOnSol = this.checkAccountExistsOnSol.bind(this)
+    this.userHasAccountOnSol = this.userHasAccountOnSol.bind(this)
   }
 
   /**
@@ -597,10 +597,10 @@ class Account extends Base {
   }
 
   /**
-   * Checks that the current account exists on libs
-   * @returns true or false
+   * Checks that the current user exists (i.e. has an account PDA) on SOL
+   * @returns {boolean} whether the user exists on SOL
    */
-  async checkAccountExistsOnSol ({ userId, wallet } = { userId: null, wallet: null }) {
+  async userHasAccountOnSol ({ userId, wallet } = { userId: null, wallet: null }) {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
     // If wallet or userId are not passed in, use the user loaded in libs
@@ -610,17 +610,18 @@ class Account extends Base {
       userId = user.userId
     }
 
-    const userIdSeed = userId.toBuffer("le", 4) 
+    // matches format for PDA derivation seed in SOL program
+    const userIdSeed = userId.toBuffer("le", 4)
 
     const {
-      derivedAddress: newUserAcctPDA
+      derivedAddress: userAccountPDA
     } = await this.solanaWeb3Manager.findDerivedPair(
-      this.solanaWeb3Manager.anchorProgramId,
-      this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
+      this.solanaWeb3Manager.audiusDataProgramId,
+      this.solanaWeb3Manager.audiusDataAdminStorageKeypairPublicKey,
       userIdSeed
     )
 
-    const account = await this.solanaWeb3Manager.fetchAccount(newUserAcctPDA)
+    const account = await this.solanaWeb3Manager.fetchAccount(userAccountPDA)
 
     if (!account) return false
 

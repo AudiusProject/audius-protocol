@@ -29,6 +29,7 @@ const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
 const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
+const { Idl } = require('@project-serum/anchor')
 
 class AudiusLibs {
   /**
@@ -247,6 +248,7 @@ class AudiusLibs {
    * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
    * @param {string} audiusDataAdminStorageKeypairPublicKey admin storage PK for audius-data program
    * @param {string} audiusDataProgramId program ID for the audius-data Anchor program
+   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -263,7 +265,7 @@ class AudiusLibs {
     confirmationTimeout,
     audiusDataAdminStorageKeypairPublicKey,
     audiusDataProgramId,
-    idl
+    audiusDataIdl
   }) {
     return {
       solanaClusterEndpoint,
@@ -280,7 +282,7 @@ class AudiusLibs {
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
-      idl
+      audiusDataIdl
     }
   }
 
