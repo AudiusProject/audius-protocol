@@ -10,6 +10,7 @@ import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
 import { CollapsibleTabNavigatorContext } from '../top-tab-bar'
 
+import { PlayBarChin } from './PlayBarChin'
 import { PullToRefresh, useOverflowHandlers } from './PullToRefresh'
 
 type FlatListProps = RNFlatListProps<any>
@@ -85,9 +86,24 @@ export const FlatList = forwardRef<RNFlatList, FlatListProps>(function FlatList(
   props: FlatListProps,
   ref
 ) {
+  const { ListFooterComponent, ...other } = props
   const { sceneName } = useContext(CollapsibleTabNavigatorContext)
-  if (sceneName) {
-    return <CollapsibleFlatList sceneName={sceneName} {...props} />
+  const FooterComponent = ListFooterComponent ? (
+    <>
+      {ListFooterComponent}
+      <PlayBarChin />
+    </>
+  ) : (
+    PlayBarChin
+  )
+
+  const flatListProps = {
+    ...other,
+    ListFooterComponent: FooterComponent
   }
-  return <AnimatedFlatList ref={ref} {...props} />
+
+  if (sceneName) {
+    return <CollapsibleFlatList sceneName={sceneName} {...flatListProps} />
+  }
+  return <AnimatedFlatList ref={ref} {...flatListProps} />
 })

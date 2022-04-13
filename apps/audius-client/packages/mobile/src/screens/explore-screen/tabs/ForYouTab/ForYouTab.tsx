@@ -1,7 +1,8 @@
 import { useRef } from 'react'
 
-import { ScrollView, View } from 'react-native'
+import { View } from 'react-native'
 
+import { ScrollView, ScrollViewElement } from 'app/components/core'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
@@ -68,7 +69,7 @@ const tiles = [
 export const ForYouTab = () => {
   const styles = useStyles()
 
-  const ref = useRef<ScrollView>(null)
+  const ref = useRef<ScrollViewElement>(null)
   useScrollToTop(() => {
     ref.current?.scrollTo({
       y: 0,

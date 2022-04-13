@@ -14,6 +14,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { CollapsibleTabNavigatorContext } from '../top-tab-bar'
 
+import { PlayBarChin } from './PlayBarChin'
 import { PullToRefresh, useOverflowHandlers } from './PullToRefresh'
 
 type SectionListProps = RNSectionListProps<any>
@@ -73,7 +74,7 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
     ref: MutableRefObject<RNSectionList<any, DefaultSectionT> | null>
   ) {
     const { refreshing, onRefresh, onScroll, ...other } = props
-    const scrollResponder = ref.current?.getScrollResponder()
+    const scrollResponder = ref?.current?.getScrollResponder()
     const {
       isRefreshing,
       isRefreshDisabled,
@@ -118,11 +119,26 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
  */
 export const SectionList = forwardRef<RNSectionList, SectionListProps>(
   function SectionList(props: SectionListProps, ref) {
+    const { ListFooterComponent, ...other } = props
     const { sceneName } = useContext(CollapsibleTabNavigatorContext)
 
-    if (sceneName) {
-      return <CollapsibleSectionList sceneName={sceneName} {...props} />
+    const FooterComponent = ListFooterComponent ? (
+      <>
+        {ListFooterComponent}
+        <PlayBarChin />
+      </>
+    ) : (
+      PlayBarChin
+    )
+
+    const flatListProps = {
+      ...other,
+      ListFooterComponent: FooterComponent
     }
-    return <AnimatedSectionList ref={ref} {...props} />
+
+    if (sceneName) {
+      return <CollapsibleSectionList sceneName={sceneName} {...flatListProps} />
+    }
+    return <AnimatedSectionList ref={ref} {...flatListProps} />
   }
 )

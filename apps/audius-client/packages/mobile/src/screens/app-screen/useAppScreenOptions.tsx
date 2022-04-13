@@ -176,7 +176,8 @@ export const useAppScreenOptions = () => {
       styles,
       neutralLight4,
       accentOrangeLight1,
-      notificationCount
+      notificationCount,
+      goBack
     ]
   )
 

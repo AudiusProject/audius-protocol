@@ -14,7 +14,7 @@ import { Notification } from 'audius-client/src/common/store/notifications/types
 import { isEqual } from 'lodash'
 import { StyleSheet, View } from 'react-native'
 
-import { FlatList } from 'app/components/core/FlatList'
+import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'

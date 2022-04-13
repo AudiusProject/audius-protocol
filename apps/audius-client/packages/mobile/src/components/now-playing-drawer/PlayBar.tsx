@@ -26,7 +26,7 @@ const SEEK_INTERVAL = 200
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
     width: '100%',
-    height: 46,
+    height: PLAY_BAR_HEIGHT,
     alignItems: 'center'
   },
   container: {
