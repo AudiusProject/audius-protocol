@@ -80,12 +80,11 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         return latest_slot
 
     def validate_and_save_parsed_tx_records(
-        self, processed_transactions: List[ParsedTx], metadata_dictionary: Dict
+        self, parsed_transactions: List[ParsedTx], metadata_dictionary: Dict
     ):
         self.msg(
-            f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
+            f"validate_and_save anchor {parsed_transactions} - {metadata_dictionary}"
         )
-        self.msg(f"{processed_transactions}")
         with self._db.scoped_session() as session:
             session.bulk_save_objects(
                 [
@@ -93,12 +92,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         signature=transaction["tx_sig"],
                         slot=transaction["result"]["slot"],
                     )
-                    for transaction in processed_transactions
+                    for transaction in parsed_transactions
                 ]
             )
 
             # Find user ids in DB and create dictionary mapping
-            entity_ids = self.extract_ids(processed_transactions)
+            entity_ids = self.extract_ids(parsed_transactions)
             db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
             if entity_ids["users"]:
                 existing_users = (
@@ -115,7 +114,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             # TODO: Find all other track/playlist/etc. models
 
             self.process_transactions(
-                session, processed_transactions, db_models, metadata_dictionary
+                session, parsed_transactions, db_models, metadata_dictionary
             )
 
     def process_transactions(
@@ -207,15 +206,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     pass
 
         return entites
-
-    def get_transaction_user_ids(self, processed_transactions: List[Any]) -> Set[str]:
-        user_ids: Set[str] = set()
-        for transaction in processed_transactions:
-            if hasattr(transaction["data"], "user_id"):
-                bump_seed = transaction["data"].get("user_id")
-                user_id = bump_seed.get("bump")
-                user_ids.add(user_id)
-        return user_ids
 
     async def parse_tx(self, tx_sig: str) -> ParsedTx:
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")

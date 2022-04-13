@@ -300,7 +300,6 @@ def handle_remove_user_authority_delegate(
 def update_user_model_metadata(
     session: Session, user_record: User, ipfs_metadata: Dict
 ):
-    # Fields also stored on chain
     if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
         user_record.profile_picture = ipfs_metadata["profile_picture"]
 
