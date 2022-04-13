@@ -66,8 +66,16 @@ def test_validate_and_save_parsed_tx_records(app):
         cid_metadata_client_mock,
     )
     processed_transactions = [
-        {"tx_sig": "test_sig1", "result": {"slot": 1}},
-        {"tx_sig": "test_sig2", "result": {"slot": 2}},
+        {
+            "tx_sig": "test_sig1",
+            "tx_metadata": {"instructions": []},
+            "result": {"slot": 1},
+        },
+        {
+            "tx_sig": "test_sig2",
+            "tx_metadata": {"instructions": []},
+            "result": {"slot": 2},
+        },
     ]
     anchor_program_indexer.validate_and_save_parsed_tx_records(
         processed_transactions, {}

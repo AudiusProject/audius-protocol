@@ -1,8 +1,7 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Set, TypedDict
+from typing import Any, Dict, List, TypedDict
 
-from solana.transaction import Transaction
 from sqlalchemy.orm.session import Session
 from src.models.models import User
 from src.solana.anchor_parser import ParsedTxInstr
@@ -298,7 +297,9 @@ def handle_remove_user_authority_delegate(
 
 
 # Metadata updater
-def update_user_model_metadata(session: Session, user_record: User, ipfs_metadata: Dict):
+def update_user_model_metadata(
+    session: Session, user_record: User, ipfs_metadata: Dict
+):
     # Fields also stored on chain
     if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
         user_record.profile_picture = ipfs_metadata["profile_picture"]

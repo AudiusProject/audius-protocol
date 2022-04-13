@@ -2,7 +2,7 @@ import asyncio
 import base64
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple, TypedDict
+from typing import Any, Dict, List, Set, Tuple
 
 from redis import Redis
 from solana.transaction import Transaction
