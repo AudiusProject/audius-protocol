@@ -214,7 +214,8 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   const txid = await connection.sendRawTransaction(
     rawTransaction,
     {
-      skipPreflight: true
+      skipPreflight: true,
+      maxRetries: 0
     }
   )
 
@@ -224,7 +225,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
     const elapsed = getUnixTs() - startTime
     // eslint-disable-next-line no-unmodified-loop-condition
     while (!done && elapsed < timeout) {
-      connection.sendRawTransaction(rawTransaction, { skipPreflight: true })
+      connection.sendRawTransaction(rawTransaction, { skipPreflight: true, maxRetries: 0 })
       await delay(300)
     }
     logger.info(`TrackListen | Exited retry send loop for ${txid}, elapsed=${elapsed}, done=${done}, timeout=${timeout}, startTime=${startTime}`)
