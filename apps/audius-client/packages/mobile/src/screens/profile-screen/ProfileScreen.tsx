@@ -49,7 +49,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   topBarIcons: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginLeft: spacing(-2)
   },
   iconCrownRoot: {
     marginLeft: spacing(1)

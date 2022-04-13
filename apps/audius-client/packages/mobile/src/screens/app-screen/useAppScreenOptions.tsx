@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext } from 'react'
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
@@ -23,7 +23,7 @@ import { AppScreenParamList } from './AppScreen'
 import { AppTabScreenParamList } from './AppTabScreen'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  headerLeft: { marginLeft: -1 * spacing(2), width: 40 },
+  headerLeft: { marginLeft: spacing(-2), width: 40 },
   headerRight: {},
   title: {
     fontSize: 18,
@@ -92,12 +92,10 @@ export const useAppScreenOptions = () => {
     })
   }, [navigation])
 
-  const goBack = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
-
-  const screenOptions: NativeStackNavigationOptions = useMemo(
-    () => ({
+  const screenOptions: (options: {
+    navigation: typeof navigation
+  }) => NativeStackNavigationOptions = useCallback(
+    ({ navigation }) => ({
       fullScreenGestureEnabled: true,
       detachPreviousScreen: false,
       cardOverlayEnabled: true,
@@ -113,7 +111,7 @@ export const useAppScreenOptions = () => {
                 fill={neutralLight4}
                 styles={{ icon: styles.iconArrowBack }}
                 {...other}
-                onPress={goBack}
+                onPress={navigation.goBack}
               />
             </View>
           )
