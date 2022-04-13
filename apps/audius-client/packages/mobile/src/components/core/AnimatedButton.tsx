@@ -18,10 +18,12 @@ import {
 } from 'react-native'
 import { usePrevious } from 'react-use'
 
-import { medium } from 'app/haptics'
+import { light, medium } from 'app/haptics'
 import { GestureResponderHandler } from 'app/types/gesture'
 
 type IconJSON = AnimatedLottieViewProps['source']
+
+export type Haptics = boolean | 'light' | 'medium'
 
 export type AnimatedButtonProps = {
   iconIndex?: number
@@ -33,7 +35,8 @@ export type AnimatedButtonProps = {
   renderUnderlay?: (state: PressableStateCallbackType) => ReactNode
   style?: PressableProps['style']
   wrapperStyle?: StyleProp<ViewStyle>
-  haptics?: boolean
+  haptics?: Haptics
+  hapticsConfig?: Haptics[]
   waitForAnimationFinish?: boolean
 } & PressableProps
 
@@ -48,6 +51,7 @@ export const AnimatedButton = ({
   style,
   wrapperStyle,
   haptics,
+  hapticsConfig,
   waitForAnimationFinish,
   ...pressableProps
 }: AnimatedButtonProps) => {
@@ -77,6 +81,13 @@ export const AnimatedButton = ({
     source = iconJSON
   }
 
+  const handleHaptics = useCallback(() => {
+    const haptic = haptics ?? hapticsConfig?.[iconIndex]
+    if (haptic === 'light') light()
+    else if (haptic === 'medium') medium()
+    else if (haptic) medium()
+  }, [haptics, hapticsConfig, iconIndex])
+
   const handleAnimationFinish = useCallback(() => {
     if (waitForAnimationFinish) {
       onPress?.()
@@ -104,9 +115,7 @@ export const AnimatedButton = ({
   ])
 
   const handlePress = useCallback(() => {
-    if (haptics) {
-      medium()
-    }
+    handleHaptics()
 
     if (hasMultipleStates || !isActive) {
       setIsPlaying(true)
@@ -116,7 +125,7 @@ export const AnimatedButton = ({
       onPress?.()
     }
   }, [
-    haptics,
+    handleHaptics,
     isActive,
     setIsPlaying,
     hasMultipleStates,
@@ -127,14 +136,12 @@ export const AnimatedButton = ({
 
   const handleLongPress = useCallback(() => {
     if (onLongPress) {
-      if (haptics) {
-        medium()
-      }
+      handleHaptics()
       onLongPress()
     } else {
       handlePress()
     }
-  }, [onLongPress, haptics, handlePress])
+  }, [onLongPress, handleHaptics, handlePress])
 
   // For multi state buttons, when `isActive` flips, trigger
   // the animation to run

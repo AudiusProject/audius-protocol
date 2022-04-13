@@ -28,34 +28,28 @@ export const RepostButton = ({ isActive, ...props }: RepostButtonProps) => {
     [props.isDisabled, props.wrapperStyle]
   )
 
-  const ColorizedOnIcon = useMemo(
-    () =>
-      colorize(IconRepostOnLight, {
-        // iconRepost Outlines Comp 1.iconRepost Outlines.Group 1.Fill 1
-        'assets.0.layers.0.shapes.0.it.3.c.k.0.s': neutralLight4,
-        // iconRepost Outlines Comp 1.iconRepost Outlines.Group 1.Fill 1
-        'assets.0.layers.0.shapes.0.it.3.c.k.1.s': primary
-      }),
-    [neutralLight4, primary]
-  )
+  const iconJSON = useMemo(() => {
+    const ColorizedOnIcon = colorize(IconRepostOnLight, {
+      // iconRepost Outlines Comp 1.iconRepost Outlines.Group 1.Fill 1
+      'assets.0.layers.0.shapes.0.it.3.c.k.0.s': neutralLight4,
+      // iconRepost Outlines Comp 1.iconRepost Outlines.Group 1.Fill 1
+      'assets.0.layers.0.shapes.0.it.3.c.k.1.s': primary
+    })
 
-  const ColorizedOffIcon = useMemo(
-    () =>
-      colorize(IconRepostOffLight, {
-        // iconRepost Outlines Comp 2.iconRepost Outlines.Group 1.Fill 1
-        'assets.0.layers.0.shapes.0.it.3.c.k.0.s': primary,
-        // iconRepost Outlines Comp 2.iconRepost Outlines.Group 1.Fill 1
-        'assets.0.layers.0.shapes.0.it.3.c.k.1.s': neutralLight4
-      }),
-    [neutralLight4, primary]
-  )
+    const ColorizedOffIcon = colorize(IconRepostOffLight, {
+      // iconRepost Outlines Comp 2.iconRepost Outlines.Group 1.Fill 1
+      'assets.0.layers.0.shapes.0.it.3.c.k.0.s': primary,
+      // iconRepost Outlines Comp 2.iconRepost Outlines.Group 1.Fill 1
+      'assets.0.layers.0.shapes.0.it.3.c.k.1.s': neutralLight4
+    })
 
-  const iconJSON = [ColorizedOnIcon, ColorizedOffIcon]
+    return [ColorizedOnIcon, ColorizedOffIcon]
+  }, [primary, neutralLight4])
 
   return (
     <AnimatedButton
       {...props}
-      haptics
+      haptics={!isActive}
       iconIndex={isActive ? 1 : 0}
       iconJSON={iconJSON}
       wrapperStyle={wrapperStyle}

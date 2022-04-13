@@ -44,6 +44,7 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
     <Button
       style={styles.root}
       title={isSubscribed ? messages.subscribed : messages.subscribe}
+      haptics={!isSubscribed}
       noText
       icon={IconNotification}
       variant={isSubscribed ? 'primary' : 'common'}
