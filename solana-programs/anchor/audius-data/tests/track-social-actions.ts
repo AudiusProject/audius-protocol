@@ -108,7 +108,7 @@ describe("track-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -119,11 +119,10 @@ describe("track-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteSave
     );
@@ -143,7 +142,7 @@ describe("track-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -155,11 +154,10 @@ describe("track-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addSave
     );
@@ -179,7 +177,7 @@ describe("track-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -191,11 +189,10 @@ describe("track-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
     );
@@ -221,7 +218,7 @@ describe("track-actions", function () {
       authorityDelegationStatusAccountPDA:
         userDelegate.authorityDelegationStatusPDA,
       userAuthorityPublicKey: userDelegate.userAuthorityDelegateKeypair.publicKey,
-      handleBytesArray: userDelegate.userHandleBytesArray,
+      userId: userDelegate.userId,
       bumpSeed: userDelegate.userBumpSeed,
       id: randomString(10),
     });
@@ -232,13 +229,10 @@ describe("track-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(
-      ...userDelegate.userHandleBytesArray
-    );
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = userDelegate.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
     );
@@ -258,7 +252,7 @@ describe("track-actions", function () {
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
-      handleBytesArray: user.handleBytesArray,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
@@ -270,11 +264,10 @@ describe("track-actions", function () {
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId =
+      decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteRepost
     );

@@ -23,7 +23,7 @@ def upgrade():
 
             ALTER TABLE playlists DROP CONSTRAINT IF EXISTS playlists_pkey;
             UPDATE playlists
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
 
             ALTER TABLE playlists ADD PRIMARY KEY (is_current, playlist_id, txhash);
@@ -54,6 +54,8 @@ def downgrade():
             DELETE FROM playlists where blockhash IS NULL or blocknumber IS NULL;
             ALTER TABLE playlists ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE playlists ALTER COLUMN blocknumber SET NOT NULL;
+
+            UPDATE playlists SET txhash = '' WHERE txhash LIKE 'unset_%%';
 
         commit;
     """

@@ -107,6 +107,25 @@ export const randomCID = () => {
   return cid;
 };
 
+// used to convert u16 to little endian bytes
+// so that our test PDA derivation 
+// can use the same seed format as
+// the rust program (u16.to_le_bytes())
+export const convertBNToSpIdSeed = (spId: anchor.BN) => {
+  return Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    spId.toBuffer("le", 2),
+  ]);
+};
+
+// used to convert u32 to little endian bytes
+// so that our test PDA derivation 
+// can use the same seed format as
+// the rust program (u32.to_le_bytes())
+export const convertBNToUserIdSeed = (userId: anchor.BN) => {
+  return userId.toBuffer("le", 4)
+};
+
 /// Derive a program address with pubkey as the seed
 export const findProgramAddress = (
   programId: anchor.web3.PublicKey,
@@ -157,10 +176,8 @@ export const getContentNode = async (
   adminStoragePublicKey: anchor.web3.PublicKey,
   spId: string
 ) => {
-  const seed = Buffer.concat([
-    Buffer.from("sp_id", "utf8"),
-    new anchor.BN(spId).toBuffer("le", 2),
-  ]);
+  const seed = convertBNToSpIdSeed(
+    new anchor.BN(spId));
 
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(program.programId, adminStoragePublicKey, seed);
