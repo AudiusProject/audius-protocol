@@ -600,24 +600,24 @@ class Account extends Base {
    * Checks that the current account exists on libs
    * @returns true or false
    */
-  async checkAccountExistsOnSol ({ handle, wallet } = { handle: null, wallet: null }) {
+  async checkAccountExistsOnSol ({ userId, wallet } = { userId: null, wallet: null }) {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
-    // If wallet or handle are not passed in, use the user loaded in libs
-    if (!wallet || !handle) {
+    // If wallet or userId are not passed in, use the user loaded in libs
+    if (!wallet || !userId) {
       const user = this.getCurrentUser()
       wallet = user.wallet
-      handle = user.handle
+      userId = user.userId
     }
 
-    const handleBytesArray = this.solanaWeb3Manager.getHandleBytesArray(handle)
+    const userIdSeed = userId.toBuffer("le", 4) 
 
     const {
       derivedAddress: newUserAcctPDA
     } = await this.solanaWeb3Manager.findDerivedPair(
       this.solanaWeb3Manager.anchorProgramId,
       this.solanaWeb3Manager.anchorAdminStorageKeypairPublicKey,
-      handleBytesArray
+      userIdSeed
     )
 
     const account = await this.solanaWeb3Manager.fetchAccount(newUserAcctPDA)

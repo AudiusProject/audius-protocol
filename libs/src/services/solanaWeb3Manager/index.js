@@ -15,7 +15,6 @@ const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
 const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSenderFromEthAddress } = require('./rewards')
 const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
-const idl = require('../../../idl/audius_data.json')
 
 const { PublicKey } = solanaWeb3
 
@@ -97,8 +96,9 @@ class SolanaWeb3Manager {
       useRelay,
       feePayerKeypairs,
       confirmationTimeout,
-      anchorProgramId,
-      anchorAdminStorageKeypairPublicKey
+      audiusDataProgramId,
+      audiusDataAdminStorageKeypairPublicKey,
+      pathToAudiusDataIdl
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
@@ -135,16 +135,16 @@ class SolanaWeb3Manager {
     this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
-    this.anchorProgramId = SolanaUtils.newPublicKeyNullable(anchorProgramId)
-    this.anchorAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(anchorAdminStorageKeypairPublicKey)
+    this.audiusDataProgramId = SolanaUtils.newPublicKeyNullable(audiusDataProgramId)
+    this.audiusDataAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(audiusDataAdminStorageKeypairPublicKey)
 
     const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
-    const provider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
-
+    const anchorProvider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
+    this.audiusDataIdl = require(pathToAudiusDataIdl)
     // Update this adddress since the file is static
-    idl.metadata.address = anchorProgramId
+    this.audiusDataIdl.metadata.address = audiusDataProgramId
 
-    this.anchorProgram = new anchor.Program(idl, anchorProgramId, provider)
+    this.anchorProgram = new anchor.Program(this.audiusDataIdl, audiusDataProgramId, anchorProvider)
   }
 
   /**
@@ -505,7 +505,6 @@ class SolanaWeb3Manager {
   }
 
   async findProgramAddress (programId, pubkey) {
-    console.log('findProgramAddress', programId, pubkey)
     return PublicKey.findProgramAddress(
       [pubkey.toBytes().slice(0, 32)],
       programId
@@ -553,17 +552,6 @@ class SolanaWeb3Manager {
     const bumpSeed = derivedAddressInfo[1]
 
     return { baseAuthorityAccount, derivedAddress, bumpSeed }
-  }
-
-  /**
-   * Given a handle, returns the byte array
-   * @param {string} handle user handle
-   * @returns handle converted to array of bytes
-   */
-  getHandleBytesArray (handle) {
-    const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
-    const handleBytesArray = Array.from({ ...handleBytes, length: 32 })
-    return handleBytesArray
   }
 
   /**
