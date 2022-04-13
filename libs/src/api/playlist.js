@@ -217,7 +217,7 @@ class Playlists extends Base {
 
     const updatedPlaylistImage = await this.creatorNode.uploadImage(
       coverPhotoFile,
-      'true' // square, this weirdly has to be a boolean string
+      true // square
     )
     return updatedPlaylistImage.dirCID
   }

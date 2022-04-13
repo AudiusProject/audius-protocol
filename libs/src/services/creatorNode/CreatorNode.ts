@@ -445,7 +445,7 @@ export class CreatorNode {
       file,
       '/image_upload',
       onProgress,
-      { square: square },
+      { 'square': square },
       /* retries */ undefined,
       timeoutMs
     )
@@ -873,7 +873,7 @@ export class CreatorNode {
     const formData = new FormData()
     formData.append('file', file)
     Object.keys(extraFormDataOptions).forEach((key) => {
-      formData.append(key, extraFormDataOptions[key])
+      formData.append(key, `${extraFormDataOptions[key]}`)
     })
 
     let headers: Record<string, string | null> = {}

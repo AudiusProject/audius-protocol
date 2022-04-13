@@ -255,7 +255,7 @@ function LibsWrapper (walletIndex = 0) {
     const coverArtFile = fs.createReadStream(coverArtFilePath)
     const resp = await this.libsInstance.File.uploadImage(
       coverArtFile,
-      'true' // square, this weirdly has to be a boolean string
+      true // square
     )
     const { dirCID } = resp
     return dirCID

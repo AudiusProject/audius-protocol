@@ -58,7 +58,7 @@ User.uploadPhotoAndUpdateMetadata = async (libsWrapper, {
 
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
-    'true' // square, this weirdly has to be a boolean string
+    true // square
   )
   if (updateProfilePicture) newMetadata.profile_picture_sizes = resp.dirCID
   if (updateCoverPhoto) newMetadata.cover_photo_sizes = resp.dirCID
@@ -74,7 +74,7 @@ User.uploadProfilePic = async (libsWrapper, picturePath) => {
 
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
-    'true' // square, this weirdly has to be a boolean string
+    true // square
   )
 
   return resp.dirCID
@@ -85,7 +85,7 @@ User.uploadCoverPhoto = async (libsWrapper, photoPath) => {
 
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     coverPhotoFile,
-    'false' // square, this weirdly has to be a boolean string
+    false // square
   )
 
   return resp.dirCID
