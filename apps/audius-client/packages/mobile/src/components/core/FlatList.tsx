@@ -19,16 +19,22 @@ type CollapsibleFlatListProps = {
   sceneName: string
 } & RNFlatListProps<any>
 
-const CollapsibleFlatList = ({
-  sceneName,
-  ...other
-}: CollapsibleFlatListProps) => {
+const CollapsibleFlatList = (props: CollapsibleFlatListProps) => {
+  const { sceneName, ...other } = props
   const { onRefresh } = other
   const scrollPropsAndRef = useCollapsibleScene(sceneName)
   return (
     <View>
       {onRefresh ? <PullToRefresh /> : null}
-      <Animated.FlatList {...other} {...scrollPropsAndRef} />
+      <Animated.FlatList
+        {...other}
+        {...scrollPropsAndRef}
+        // @ts-ignore `forkEvent` is not defined on the type but it exists
+        onScroll={Animated.forkEvent(
+          scrollPropsAndRef.onScroll,
+          props.onScroll
+        )}
+      />
     </View>
   )
 }
