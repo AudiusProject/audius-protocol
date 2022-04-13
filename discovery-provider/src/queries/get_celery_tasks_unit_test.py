@@ -2,12 +2,9 @@ import pytest
 from src.queries.get_celery_tasks import get_tasks
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def celery_config():
-    return {
-        'broker_url': 'memory://',
-        'result_backend': 'rpc'
-    }
+    return {"broker_url": "memory://", "result_backend": "rpc"}
 
 
 @pytest.mark.celery_app
