@@ -36,8 +36,6 @@ class AudiusLibsWrapper {
       rewardsManagerProgramId: config.get('solanaRewardsManagerProgramId'),
       rewardsManagerProgramPDA: config.get('solanaRewardsManagerProgramPDA'),
       rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
-      anchorProgramId: config.get('anchorProgramId'),
-      anchorAdminStorageKeypairPublicKey: config.get('anchorAdminStorageKeypairPublicKey'),
       // Never use the relay path in identity
       useRelay: false,
       feePayerSecretKeys,
