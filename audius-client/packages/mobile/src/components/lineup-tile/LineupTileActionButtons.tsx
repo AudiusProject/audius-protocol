@@ -99,12 +99,7 @@ export const LineupTileActionButtons = ({
   )
 
   return (
-    <View
-      style={styles.bottomButtons}
-      // Capture touches to prevent from triggering play
-      onStartShouldSetResponder={() => true}
-      onTouchEnd={e => e.stopPropagation()}
-    >
+    <View style={styles.bottomButtons}>
       <View style={styles.leftButtons}>
         {!isUnlisted && (
           <>
