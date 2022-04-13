@@ -6,7 +6,6 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
-const solanaProgramConfig = require('../solana-program-config.json')
 
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -297,15 +296,7 @@ class ServiceRegistry {
       'discoveryNodeUnhealthyBlockDiff'
     )
 
-    // This is not an exhaustive of all the solana configs, i.e. some Solana web3 api
-    // calls may not work. If necessary, update this config as need be
-    const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
-      anchorProgramId: solanaProgramConfig.anchorProgramId,
-      solanaClusterEndpoint: solanaProgramConfig.endpoint
-    })
-
     const audiusLibs = new AudiusLibs({
-      solanaWeb3Config,
       ethWeb3Config: AudiusLibs.configEthWeb3(
         config.get('ethTokenAddress'),
         config.get('ethRegistryAddress'),
