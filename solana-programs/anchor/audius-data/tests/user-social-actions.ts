@@ -219,7 +219,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const followTxSig = await provider.sendAndConfirm(followTx, [newUser1Key]);
+      const followTxSig = await provider.sendAndConfirm(followTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTxSig, 0);
@@ -312,7 +314,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const unfollowTxSig = await provider.sendAndConfirm(unfollowTx, [newUser1Key]);
+      const unfollowTxSig = await provider.sendAndConfirm(unfollowTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unfollowTxSig, 0);
@@ -450,7 +454,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const subscribeTxSig = await provider.sendAndConfirm(subscribeTx, [newUser1Key]);
+      const subscribeTxSig = await provider.sendAndConfirm(subscribeTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, subscribeTxSig, 0);

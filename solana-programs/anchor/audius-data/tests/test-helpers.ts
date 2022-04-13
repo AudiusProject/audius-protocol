@@ -2,7 +2,6 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import Web3 from "web3";
 import { Account } from "web3-core";
-import { randomBytes } from "crypto";
 import { expect } from "chai";
 import {
   findDerivedPair,

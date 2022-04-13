@@ -1,13 +1,7 @@
 import Web3 from "web3";
 import { AnchorProvider, Program, web3 } from "@project-serum/anchor";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import {
-  Account,
-  Connection,
-  PublicKey,
-  Keypair,
-  SystemProgram,
-} from "@solana/web3.js";
+import { Connection, PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
 import {
@@ -31,7 +25,7 @@ import {
   randomCID,
   randomId,
   getContentNodeWalletAndAuthority,
-  convertBNToUserIdSeed
+  convertBNToUserIdSeed,
 } from "../lib/utils";
 
 import { Command } from "commander";
