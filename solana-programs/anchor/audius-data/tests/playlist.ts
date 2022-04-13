@@ -3,7 +3,7 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, randomCID, randomId } from "../lib/utils";
+import { findDerivedPair, randomCID, randomId, convertBNToUserIdSeed } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
@@ -100,7 +100,7 @@ describe("playlists", function () {
   });
 
   it("Initializing + claiming user, creating + updating playlist", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+    const { ethAccount, userId, metadata } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -109,7 +109,7 @@ describe("playlists", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      Buffer.from(handleBytesArray)
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -117,7 +117,7 @@ describe("playlists", function () {
       program,
       baseAuthorityAccount,
       ethAddress: ethAccount.address,
-      handleBytesArray,
+      userId,
       bumpSeed,
       metadata,
       userStorageAccount: newUserAcctPDA,
@@ -149,7 +149,7 @@ describe("playlists", function () {
       provider,
       program,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       id: playlistID,
       playlistMetadata,
@@ -170,7 +170,7 @@ describe("playlists", function () {
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
         id: randomId(),
         playlistMetadata,
@@ -188,7 +188,7 @@ describe("playlists", function () {
       provider,
       program,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       adminStorageAccount: adminStorageKeypair.publicKey,
       id: playlistID,
@@ -201,7 +201,7 @@ describe("playlists", function () {
   });
 
   it("creating + deleting a playlist", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } =
+    const { ethAccount, metadata, userId } =
       initTestConstants();
 
     const {
@@ -211,7 +211,7 @@ describe("playlists", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      Buffer.from(handleBytesArray)
+      convertBNToUserIdSeed(userId)
     );
 
     // disable admin writes
@@ -237,7 +237,7 @@ describe("playlists", function () {
       message,
       baseAuthorityAccount,
       ethAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       metadata,
       newUserKeypair,
@@ -255,7 +255,7 @@ describe("playlists", function () {
       program,
       id: playlistID,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       adminStorageAccount: adminStorageKeypair.publicKey,
       bumpSeed,
       playlistMetadata,
@@ -274,14 +274,14 @@ describe("playlists", function () {
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       adminStorageAccount: adminStorageKeypair.publicKey,
     });
   });
 
   it("create multiple playlists in parallel", async function () {
-    const { ethAccount, handleBytesArray, metadata, userId } =
+    const { ethAccount, metadata, userId } =
       initTestConstants();
 
     const {
@@ -291,7 +291,7 @@ describe("playlists", function () {
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      Buffer.from(handleBytesArray)
+      convertBNToUserIdSeed(userId)
     );
 
     // Disable admin writes
@@ -317,7 +317,7 @@ describe("playlists", function () {
       message,
       baseAuthorityAccount,
       ethAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       metadata,
       newUserKeypair,
@@ -336,7 +336,7 @@ describe("playlists", function () {
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
         adminStorageAccount: adminStorageKeypair.publicKey,
         id: randomId(),
@@ -350,7 +350,7 @@ describe("playlists", function () {
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
         adminStorageAccount: adminStorageKeypair.publicKey,
         id: randomId(),
@@ -364,7 +364,7 @@ describe("playlists", function () {
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
         adminStorageAccount: adminStorageKeypair.publicKey,
         id: randomId(),
