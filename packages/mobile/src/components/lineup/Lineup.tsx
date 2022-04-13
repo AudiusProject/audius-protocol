@@ -91,6 +91,9 @@ const useItemCounts = (variant: LineupVariant) =>
   )
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1
+  },
   item: {
     padding: 12,
     paddingBottom: 0
@@ -395,28 +398,30 @@ export const Lineup = ({
   )
 
   return (
-    <SectionList
-      {...listProps}
-      ref={ref}
-      onScroll={handleScroll}
-      ListHeaderComponent={header}
-      ListFooterComponent={<View style={{ height: 16 }} />}
-      onEndReached={handleLoadMore}
-      onEndReachedThreshold={LOAD_MORE_THRESHOLD}
-      // TODO: Either style the refreshing indicator or
-      // roll our own
-      onRefresh={refresh}
-      refreshing={refreshing}
-      sections={sections}
-      stickySectionHeadersEnabled={false}
-      // TODO: figure out why this is causing duplicate ids
-      // keyExtractor={(item, index) => String(item.id + index)}
-      renderItem={renderItem}
-      renderSectionHeader={({ section }) => {
-        return section.delineate ? <Delineator text={section.title} /> : null
-      }}
-      listKey={listKey}
-      scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
-    />
+    <View style={styles.root}>
+      <SectionList
+        {...listProps}
+        ref={ref}
+        onScroll={handleScroll}
+        ListHeaderComponent={header}
+        ListFooterComponent={<View style={{ height: 16 }} />}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={LOAD_MORE_THRESHOLD}
+        // TODO: Either style the refreshing indicator or
+        // roll our own
+        onRefresh={refresh}
+        refreshing={refreshing}
+        sections={sections}
+        stickySectionHeadersEnabled={false}
+        // TODO: figure out why this is causing duplicate ids
+        // keyExtractor={(item, index) => String(item.id + index)}
+        renderItem={renderItem}
+        renderSectionHeader={({ section }) => {
+          return section.delineate ? <Delineator text={section.title} /> : null
+        }}
+        listKey={listKey}
+        scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
+      />
+    </View>
   )
 }
