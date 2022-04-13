@@ -177,7 +177,9 @@ class SolanaProgramIndexer(IndexerBase):
         self.validate_and_save_parsed_tx_records(parsed_transactions, cid_metadata)
 
     @abstractmethod
-    def validate_and_save_parsed_tx_records(self, parsed_transactions: List[Any], metadata_dictionary: Dict):
+    def validate_and_save_parsed_tx_records(
+        self, parsed_transactions: List[Any], metadata_dictionary: Dict
+    ):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
         @param parsed_transactions: Array of transaction signatures in order

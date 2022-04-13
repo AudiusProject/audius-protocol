@@ -147,7 +147,7 @@ def handle_create_user(
         updated_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
     )
 
-    ipfs_metadata = metadata_dictionary.get(instruction_data["metadata"])
+    ipfs_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
     update_user_model_metadata(session, user, ipfs_metadata)
     records.append(user)
     db_models["users"][user_id].append(user)
