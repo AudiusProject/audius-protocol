@@ -137,6 +137,4 @@ def ip_check():
 @bp.route("/celery_tasks_check", methods=["GET"])
 def celery_tasks_check():
     tasks = get_celery_tasks
-    return success_response({
-        "celery_tasks": tasks
-    }, sign_response=False)
+    return success_response({"celery_tasks": tasks}, sign_response=False)
