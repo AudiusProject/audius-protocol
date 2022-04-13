@@ -1,13 +1,16 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, List, TypedDict
 
+from redis import Redis
+from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.constants import (
     TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
+from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import TransactionInfoResult
 from src.utils.session_manager import SessionManager
 
@@ -19,6 +22,16 @@ TX_SIGNATURES_PROCESSING_SIZE = 100
 PARSE_TX_TIMEOUT = 1000
 
 
+class ParsedTxMetadata(TypedDict):
+    instruction: List[ParsedTxInstr]
+
+
+class ParsedTx(TypedDict):
+    tx_sig: str
+    tx_metadata: List[ParsedTxMetadata]
+    result: TransactionInfoResult
+
+
 class IndexerBase(ABC):
     """
     Base indexer class - handles lock acquisition to guarantee single entrypoint
@@ -26,11 +39,11 @@ class IndexerBase(ABC):
 
     _label: str
     _lock_name: str
-    _redis: Any
-    _db: Any
+    _redis: Redis
+    _db: SessionManager
 
     @abstractmethod
-    def __init__(self, label: str, redis: Any, db: Any):
+    def __init__(self, label: str, redis: Redis, db: SessionManager):
         self._label = label
         self._redis = redis
         self._db = db
@@ -68,15 +81,15 @@ class SolanaProgramIndexer(IndexerBase):
 
     _program_id: str
     _redis_queue_cache_prefix: str
-    _solana_client_manager: Any
+    _solana_client_manager: SolanaClientManager
 
     def __init__(
         self,
         program_id: str,
         label: str,
-        redis: Any,
+        redis: Redis,
         db: SessionManager,
-        solana_client_manager: Any,
+        solana_client_manager: SolanaClientManager,
     ):
         """
         Instantiate a SolanaProgramIndexer class
@@ -110,7 +123,7 @@ class SolanaProgramIndexer(IndexerBase):
         raise Exception(BASE_ERROR)
 
     @abstractmethod
-    async def parse_tx(self, tx_sig):
+    async def parse_tx(self, tx_sig: str):
         """
         Parse an individual transaction, this will vary based on the program being indexed
         @param tx_sig: transaction signature to be parsed
@@ -128,19 +141,19 @@ class SolanaProgramIndexer(IndexerBase):
         raise Exception("Must be implemented in subclass")
 
     @abstractmethod
-    def fetch_cid_metadata(self, parsed_transactions):
+    def fetch_cid_metadata(self, parsed_transactions: List[Any]):
         """
         Fetch all metadata objects in parallel (if required). Certain indexing tasks will not require this step and can skip appropriately
         @param parsed_transactions: Array of transactions containing deserialized information, ideally pointing to a metadata object
         """
         return {}
 
-    async def process_txs_batch(self, tx_sig_batch_records):
+    async def process_txs_batch(self, tx_sig_batch_records: List[str]):
         self.msg(f"Parsing {tx_sig_batch_records}")
         futures = []
-        tx_sig_futures_map: Dict[str, Dict] = {}
+        tx_sig_futures_map: Dict[str, ParsedTx] = {}
         for tx_sig in tx_sig_batch_records:
-            future = asyncio.ensure_future(self.parse_tx(tx_sig))
+            future: asyncio.Future = asyncio.ensure_future(self.parse_tx(tx_sig))
             futures.append(future)
         for future in asyncio.as_completed(futures, timeout=PARSE_TX_TIMEOUT):
             try:
@@ -152,7 +165,7 @@ class SolanaProgramIndexer(IndexerBase):
                 pass
 
         # Committing to DB
-        parsed_transactions = []
+        parsed_transactions: List[ParsedTx] = []
         for tx_sig in tx_sig_batch_records:
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
@@ -164,7 +177,9 @@ class SolanaProgramIndexer(IndexerBase):
         self.validate_and_save_parsed_tx_records(parsed_transactions, cid_metadata)
 
     @abstractmethod
-    def validate_and_save_parsed_tx_records(self, parsed_transactions, cid_metadata):
+    def validate_and_save_parsed_tx_records(
+        self, parsed_transactions: List[Any], metadata_dictionary: Dict
+    ):
         """
         Based parsed transaction information, generate and save appropriate database changes. This will vary based on the program being indexed
         @param parsed_transactions: Array of transaction signatures in order
@@ -172,7 +187,7 @@ class SolanaProgramIndexer(IndexerBase):
         """
         raise Exception(BASE_ERROR)
 
-    def get_transaction_batches_to_process(self):
+    def get_transaction_batches_to_process(self) -> List[List[str]]:
         """
         Calculate the delta between database and chain tail and return an array of arrays containing transaction batches
         """
