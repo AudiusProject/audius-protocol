@@ -1,4 +1,5 @@
 import { SubmitAndEvaluateError } from '../../api/rewards'
+import type { ServiceWithEndpoint } from '../../utils'
 import { Utils } from '../../utils/utils'
 
 const { decodeHashId } = Utils
@@ -616,11 +617,6 @@ export class RewardsAttester {
       )
 
       if (shouldReselect) {
-        // Add failing nodes to the blocklist, trimming out oldest nodes if necessary
-        this.discoveryNodeBlocklist = [
-          ...this.discoveryNodeBlocklist,
-          ...failingNodes
-        ].slice(-1 * MAX_DISCOVERY_NODE_BLOCKLIST_LEN)
         await this._selectDiscoveryNodes()
       }
 
@@ -640,6 +636,19 @@ export class RewardsAttester {
         results,
         retryCount === this.maxRetries - 1
       ))
+
+      // Add failing nodes to the blocklist, trimming out oldest nodes if necessary
+      if (failingNodes?.length) {
+        const existing = new Set(this.discoveryNodeBlocklist)
+        failingNodes.forEach((n) => {
+          if (!existing.has(n)) {
+            this.discoveryNodeBlocklist.push(n)
+          }
+        })
+        this.discoveryNodeBlocklist = this.discoveryNodeBlocklist.slice(
+          -1 * MAX_DISCOVERY_NODE_BLOCKLIST_LEN
+        )
+      }
 
       successCount += successful.length
       accumulatedErrors = [...accumulatedErrors, ...noRetry]
@@ -754,16 +763,14 @@ export class RewardsAttester {
       )}`
     )
     const startTime = Date.now()
-    let endpoints: string[] =
+    let endpoints: ServiceWithEndpoint[] =
       (await this.libs.discoveryProvider.serviceSelector.findAll({
         verbose: true,
         whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
       })) ?? []
-
     // Filter out blocklisted nodes
-    endpoints = endpoints.filter(
-      (e) => !this.discoveryNodeBlocklist.includes(e)
-    )
+    const blockSet = new Set(this.discoveryNodeBlocklist)
+    endpoints = endpoints.filter((e) => !blockSet.has(e.endpoint))
 
     this.endpoints =
       await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(
