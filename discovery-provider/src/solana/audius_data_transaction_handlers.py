@@ -1,28 +1,28 @@
-import asyncio
-import base64
-import json
 import logging
-from collections import defaultdict
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Dict, List, Set, TypedDict
 
-from anchorpy import Idl, InstructionCoder
-from redis import Redis
 from solana.transaction import Transaction
-from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models.models import AudiusDataTx, User
-from src.utils.helpers import split_list
-from src.utils.session_manager import SessionManager
+from src.models.models import User
+from src.solana.anchor_parser import ParsedTxInstr
+from src.solana.solana_transaction_types import TransactionInfoResult
 from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
-TX_SIGNATURES_PROCESSING_SIZE = 100
-AUDIUS_DATA_IDL_PATH = "./idl/audius_data.json"
-
+# Alias Types
 Pubkey = str
+
+
+class ParsedTxMetadata(TypedDict):
+    instructions: List[ParsedTxInstr]
+
+
+class ParsedTx(TypedDict):
+    tx_sig: str
+    tx_metadata: ParsedTxMetadata
+    result: TransactionInfoResult
 
 
 class InitAdminData(TypedDict):
@@ -32,8 +32,8 @@ class InitAdminData(TypedDict):
 
 def handle_init_admin(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -47,8 +47,8 @@ class UpdateAdminData(TypedDict):
 
 def handle_update_admin(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -61,15 +61,15 @@ class InitUserData(TypedDict):
     eth_address: List[int]
     replica_set: List[int]
     _replica_set_bumps: List[int]
-    handle_seed: List[int]
+    handle_seed: int
     _user_bump: int
     _metadata: str
 
 
 def handle_init_user(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -92,8 +92,8 @@ def handle_init_user(
 
 def handle_init_user_sol(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -105,25 +105,24 @@ class CreateUserData(TypedDict):
     base: Pubkey
     eth_address: List[int]
     replica_set: List[int]
-    _replica_set_bumps: List[int]
-    _handle_seed: List[int]
-    _user_bump: int
-    _metadata: str
-    _id: int
+    replica_set_bumps: List[int]
+    user_id: int
+    user_bump: int
+    metadata: str
     user_authority: Pubkey
 
 
 def handle_create_user(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
 ):
-    instruction_data: CreateUserData = instruction.get("data")
+    instruction_data: CreateUserData = instruction["data"]
     # Validate that the user row doesn't already exist - error if it does
-    user_id = instruction_data["id"]
+    user_id = instruction_data["user_id"]
     # TODO: validate uniqueness on handle
     replica_set = list(instruction_data["replica_set"])
 
@@ -148,16 +147,17 @@ def handle_create_user(
         created_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
         updated_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
     )
-    # ipfs_metadata = metadata_dictionary.get("metadata_multihash")
-    # update_user_model_metadata(session: Session, user, ipfs_metadata)
+
+    ipfs_metadata = metadata_dictionary.get(instruction_data["metadata"])
+    update_user_model_metadata(session, user, ipfs_metadata)
     records.append(user)
-    return user
+    db_models["users"][user_id].append(user)
 
 
 def handle_update_user(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -167,8 +167,8 @@ def handle_update_user(
 
 def handle_update_is_verified(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -178,8 +178,8 @@ def handle_update_is_verified(
 
 def handle_manage_entity(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -189,8 +189,8 @@ def handle_manage_entity(
 
 def handle_create_content_node(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -200,8 +200,8 @@ def handle_create_content_node(
 
 def handle_public_create_or_update_content_node(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -211,8 +211,8 @@ def handle_public_create_or_update_content_node(
 
 def handle_public_delete_content_node(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -222,8 +222,8 @@ def handle_public_delete_content_node(
 
 def handle_update_user_replica_set(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -233,8 +233,8 @@ def handle_update_user_replica_set(
 
 def handle_write_entity_social_action(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -244,8 +244,8 @@ def handle_write_entity_social_action(
 
 def handle_follow_user(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -255,8 +255,8 @@ def handle_follow_user(
 
 def handle_init_authority_delegation_status(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -266,8 +266,8 @@ def handle_init_authority_delegation_status(
 
 def handle_revoke_authority_delegation(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -277,8 +277,8 @@ def handle_revoke_authority_delegation(
 
 def handle_add_user_authority_delegate(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -288,8 +288,8 @@ def handle_add_user_authority_delegate(
 
 def handle_remove_user_authority_delegate(
     session: Session,
-    transaction: Transaction,
-    instruction,
+    transaction: ParsedTx,
+    instruction: ParsedTxInstr,
     db_models: Dict,
     metadata_dictionary: Dict,
     records: List[Any],
@@ -298,7 +298,7 @@ def handle_remove_user_authority_delegate(
 
 
 # Metadata updater
-def update_user_model_metadata(user_record: User, ipfs_metadata: Dict):
+def update_user_model_metadata(session: Session, user_record: User, ipfs_metadata: Dict):
     # Fields also stored on chain
     if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
         user_record.profile_picture = ipfs_metadata["profile_picture"]

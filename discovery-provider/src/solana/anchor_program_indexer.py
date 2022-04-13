@@ -1,9 +1,8 @@
 import asyncio
 import base64
-import json
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple, TypedDict
 
 from redis import Redis
 from solana.transaction import Transaction
@@ -11,14 +10,13 @@ from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.models import AudiusDataTx, User
 from src.solana.anchor_parser import AnchorParser
-from src.solana.audius_data_transaction_handlers import transaction_handlers
+from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_program_indexer import SolanaProgramIndexer
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.helpers import split_list
 from src.utils.session_manager import SessionManager
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +47,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # TODO fill out the rest
         self.instruction_type = {
             "init_user": "user",
+            "create_user": "user",
             "create_track": "track",
         }
 
@@ -81,7 +80,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         return latest_slot
 
     def validate_and_save_parsed_tx_records(
-        self, processed_transactions: List[Any], metadata_dictionary: Dict
+        self, processed_transactions: List[ParsedTx], metadata_dictionary: Dict
     ):
         self.msg(
             f"validate_and_save anchor {processed_transactions} - {metadata_dictionary}"
@@ -99,18 +98,21 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             )
 
             # Find user ids in DB and create dictionary mapping
-            db_models: Dict = defaultdict(lambda: {})
-            if metadata_dictionary["ids"]["users"]:
+            entity_ids = self.extract_ids(processed_transactions)
+            db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
+            if entity_ids["users"]:
                 existing_users = (
                     session.query(User)
                     .filter(
                         User.is_current,
-                        User.user_id.in_(metadata_dictionary["ids"]["users"]),
+                        User.user_id.in_(list(entity_ids["users"])),
                     )
                     .all()
                 )
                 for user in existing_users:
-                    db_models["users"][user.user_id] = user
+                    db_models["users"][user.user_id] = [user]
+
+            # TODO: Find all other track/playlist/etc. models
 
             self.process_transactions(
                 session, processed_transactions, db_models, metadata_dictionary
@@ -119,14 +121,13 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def process_transactions(
         self,
         session: Session,
-        processed_transactions: List[Any],
+        processed_transactions: List[ParsedTx],
         db_models: Dict,
         metadata_dictionary: Dict,
     ):
-        id_dict: Dict[str, set] = defaultdict(lambda: set())
         records: List[Any] = []
         for transaction in processed_transactions:
-            instructions = transaction.get("tx_metadata").get("instructions")
+            instructions = transaction["tx_metadata"]["instructions"]
             for instruction in instructions:
                 instruction_name = instruction.get("instruction_name")
                 if instruction_name in transaction_handlers:
@@ -139,23 +140,23 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         records,
                     )
 
-        self.invalidate_old_records(session, id_dict)
+        self.invalidate_old_records(session, db_models)
         session.bulk_save_objects(records)
 
-    def invalidate_old_records(self, session: Session, id_dict: Dict[str, set]):
+    def invalidate_old_records(self, session: Session, db_models: Dict[str, Dict]):
         # Update existing record in db to is_current = False
-        if id_dict.get("users"):
+        if db_models.get("users"):
+            user_ids = list(db_models.get("users", {}).keys())
+            self.msg(f"{user_ids}")
             session.query(User).filter(
-                User.user_id.in_(list(id_dict.get("users", set()))),
-                User.is_current == True,
-            ).update({"is_current": False})
+                User.is_current == True, User.user_id.in_(user_ids)
+            ).update({"is_current": False}, synchronize_session="fetch")
 
-    def extract_ids(self, processed_transactions: List[Any]):
+    def extract_ids(self, processed_transactions: List[ParsedTx]):
         entites: Dict[str, Set[str]] = defaultdict(lambda: set())
-        cids: Set = set()
 
         for transaction in processed_transactions:
-            instructions = transaction.get("tx_metadata").get("instructions")
+            instructions = transaction["tx_metadata"]["instructions"]
             for instruction in instructions:
                 instruction_name = instruction.get("instruction_name")
                 if instruction_name == "init_admin":
@@ -205,7 +206,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "remove_user_authority_delegate":
                     pass
 
-        return (entites, cids)
+        return entites
 
     def get_transaction_user_ids(self, processed_transactions: List[Any]) -> Set[str]:
         user_ids: Set[str] = set()
@@ -278,7 +279,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     # parsed_transactions will contain an array of txs w/instructions
     # each containing relevant metadata in container
     async def fetch_cid_metadata(
-        self, parsed_transactions: List[Dict]
+        self, parsed_transactions: List[ParsedTx]
     ) -> Tuple[Dict[str, Dict], Set[str]]:
 
         cid_to_user_id: Dict[str, int] = {}
@@ -291,7 +292,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             # any instructions with  metadata
             for transaction in parsed_transactions:
                 for instruction in transaction["tx_metadata"]["instructions"]:
-                    if "metadata" in instruction["data"]:
+                    if (
+                        instruction["instruction_name"] != ""
+                        and "data" in instruction
+                        and instruction["data"] is not None
+                        and "metadata" in instruction["data"]
+                    ):
                         cid = instruction["data"]["metadata"]
                         if is_blacklisted_ipld(session, cid):
                             blacklisted_cids.add(cid)
@@ -302,8 +308,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                             ]
 
                         # TODO update once user_id changes are merged in
+                        # NOTE: for update user, the user_id is not passes as an arg, so
+                        # the user's id should be queried for via their account
                         cid_to_user_id[cid] = 1
 
+            # NOTE: For new users, we will need to map the content nodes in the account params
+            # of the transaction to their endpoint
             user_replica_set = dict(
                 session.query(User.user_id, User.creator_node_endpoint)
                 .filter(
