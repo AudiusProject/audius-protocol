@@ -24,7 +24,7 @@ def upgrade():
 
             ALTER TABLE reposts DROP CONSTRAINT IF EXISTS reposts_pkey;
             UPDATE reposts
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE reposts ADD PRIMARY KEY (is_current, user_id, repost_item_id, repost_type, txhash);
 
@@ -36,7 +36,7 @@ def upgrade():
 
             ALTER TABLE saves DROP CONSTRAINT IF EXISTS saves_pkey;
             UPDATE saves
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE saves ADD PRIMARY KEY (is_current, user_id, save_item_id, save_type, txhash);
             
@@ -69,6 +69,8 @@ def downgrade():
             ALTER TABLE reposts ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE reposts ALTER COLUMN blocknumber SET NOT NULL;
 
+            UPDATE reposts SET txhash = '' WHERE txhash LIKE 'unset_%%';
+
             ALTER TABLE saves DROP CONSTRAINT IF EXISTS saves_pkey;
             ALTER TABLE saves ADD PRIMARY KEY (is_current, user_id, save_item_id, save_type, blockhash, txhash);
             
@@ -79,6 +81,7 @@ def downgrade():
             ALTER TABLE saves ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE saves ALTER COLUMN blocknumber SET NOT NULL;
 
+            UPDATE saves SET txhash = '' WHERE txhash LIKE 'unset_%%';
 
         commit;
     """
