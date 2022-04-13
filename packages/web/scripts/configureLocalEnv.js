@@ -15,6 +15,11 @@ if (process.argv[2] && process.argv[2] === '--remote-host') {
       'Misconfigured local env. Ensure AUDIUS_REMOTE_DEV_HOST envvar has been exported.'
     )
   }
+  if (HOST.trim() !== HOST) {
+    throw new Error(
+      `Invisible characters detected in $AUDIUS_REMOTE_DEV_HOST: '${HOST}'`
+    )
+  }
 }
 
 try {
