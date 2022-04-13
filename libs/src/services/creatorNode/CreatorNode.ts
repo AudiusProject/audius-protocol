@@ -445,7 +445,7 @@ export class CreatorNode {
       file,
       '/image_upload',
       onProgress,
-      { 'square': square },
+      { square },
       /* retries */ undefined,
       timeoutMs
     )
