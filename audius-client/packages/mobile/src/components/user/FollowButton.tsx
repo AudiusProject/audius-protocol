@@ -51,6 +51,7 @@ export const FollowButton = (props: FollowButtonsProps) => {
     <Button
       style={style}
       title={isFollowing ? messages.following : messages.follow}
+      haptics={!isFollowing}
       variant={variant}
       icon={noIcon ? undefined : Icon}
       iconPosition='left'
