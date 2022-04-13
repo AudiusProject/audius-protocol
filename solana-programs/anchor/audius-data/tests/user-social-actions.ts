@@ -9,7 +9,11 @@ import {
   unsubscribeUser,
   updateAdmin,
 } from "../lib/lib";
-import { findDerivedPair, getTransactionWithData, convertBNToUserIdSeed } from "../lib/utils";
+import {
+  findDerivedPair,
+  getTransactionWithData,
+  convertBNToUserIdSeed,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   createSolanaContentNode,
@@ -28,13 +32,13 @@ const UserActionEnumValues = {
   invalidEnumValue: { invalidEnum: {} },
 };
 describe("user social actions", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -61,7 +65,7 @@ describe("user social actions", function () {
   };
 
   it("User social actions - Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
@@ -69,7 +73,7 @@ describe("user social actions", function () {
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -166,7 +170,7 @@ describe("user social actions", function () {
         adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
-      await provider.send(updateAdminTx, [adminKeypair]);
+      await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
       await testCreateUser({
         provider,
@@ -215,7 +219,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const followTxSig = await provider.send(followTx, [newUser1Key])
+      const followTxSig = await provider.sendAndConfirm(followTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTxSig, 0);
@@ -256,14 +262,17 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
         authorityDelegationStatusAccountPDA:
           userDelegate.authorityDelegationStatusPDA,
-        userAuthorityPublicKey: userDelegate.userAuthorityDelegateKeypair.publicKey,
+        userAuthorityPublicKey:
+          userDelegate.userAuthorityDelegateKeypair.publicKey,
         sourceUserId: userDelegate.userId,
         sourceUserBumpSeed: userDelegate.userBumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const followTxSig = await provider.send(followTx, [userDelegate.userAuthorityDelegateKeypair])
+      const followTxSig = await provider.sendAndConfirm(followTx, [
+        userDelegate.userAuthorityDelegateKeypair,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTxSig, 0);
@@ -305,7 +314,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const unfollowTxSig = await provider.send(unfollowTx, [newUser1Key])
+      const unfollowTxSig = await provider.sendAndConfirm(unfollowTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unfollowTxSig, 0);
@@ -443,7 +454,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const subscribeTxSig = await provider.send(subscribeTx, [newUser1Key])
+      const subscribeTxSig = await provider.sendAndConfirm(subscribeTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, subscribeTxSig, 0);
@@ -483,7 +496,9 @@ describe("user social actions", function () {
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const unsubscribeTxSig = await provider.send(unsubscribeTx, [newUser1Key])
+      const unsubscribeTxSig = await provider.sendAndConfirm(unsubscribeTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unsubscribeTxSig, 0);

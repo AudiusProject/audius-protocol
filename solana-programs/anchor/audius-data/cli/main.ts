@@ -1,13 +1,7 @@
 import Web3 from "web3";
-import { Program, Provider, web3 } from "@project-serum/anchor";
+import { AnchorProvider, Program, web3 } from "@project-serum/anchor";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
-import {
-  Account,
-  Connection,
-  PublicKey,
-  Keypair,
-  SystemProgram,
-} from "@solana/web3.js";
+import { Connection, PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
 import { AudiusData } from "../target/types/audius_data";
 import * as anchor from "@project-serum/anchor";
 import {
@@ -31,7 +25,7 @@ import {
   randomCID,
   randomId,
   getContentNodeWalletAndAuthority,
-  convertBNToUserIdSeed
+  convertBNToUserIdSeed,
 } from "../lib/utils";
 
 import { Command } from "commander";
@@ -64,7 +58,7 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
   const connection = new Connection(network, opts.preflightCommitment);
   const ownerKeypair = keypairFromFilePath(ownerKeypairPath);
   const wallet = new NodeWallet(ownerKeypair);
-  const provider = new Provider(connection, wallet, opts);
+  const provider = new AnchorProvider(connection, wallet, opts);
   if (!idl.metadata) {
     throw new Error("Missing metadata in IDL!");
   }
@@ -129,7 +123,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     verifierKeypair,
   });
 
-  const txHash = await cliVars.provider.send(tx, [adminStorageKeypair]);
+  const txHash = await cliVars.provider.sendAndConfirm(tx, [adminStorageKeypair]);
 
   await cliVars.provider.connection.confirmTransaction(txHash);
   console.log(`Initialized admin with tx=${txHash}`);
@@ -185,7 +179,7 @@ async function initUserCLI(args: initUserCLIParams) {
     cn2,
     cn3,
   });
-  const txHash = await cliVars.provider.send(tx, [adminKeypair]);
+  const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
 
   await cliVars.provider.connection.confirmTransaction(txHash);
 
@@ -196,7 +190,7 @@ async function initUserCLI(args: initUserCLIParams) {
 
 async function timeManageEntity(
   args: CreateEntityParams,
-  provider: Provider,
+  provider: AnchorProvider,
   manageAction: any,
   entityType: any,
   userAuthorityKeypair: anchor.web3.Keypair
@@ -231,7 +225,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(transaction, [userAuthorityKeypair]);
+        tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
         manageAction == ManagementActions.create &&
         entityType == EntityTypesEnumValues.playlist
@@ -250,7 +244,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(transaction, [userAuthorityKeypair]);
+        tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
         manageAction == ManagementActions.update &&
         entityType == EntityTypesEnumValues.playlist
@@ -269,7 +263,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(transaction, [userAuthorityKeypair]);
+        tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
         manageAction == ManagementActions.delete &&
         entityType == EntityTypesEnumValues.playlist
@@ -287,7 +281,7 @@ async function timeManageEntity(
           authorityDelegationStatusAccountPDA:
             args.authorityDelegationStatusAccountPDA,
         });
-        tx = await provider.send(transaction, [userAuthorityKeypair]);
+        tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       }
 
       await provider.connection.confirmTransaction(tx);
@@ -434,7 +428,7 @@ const main = async () => {
           spID: cnInfo.spId,
           ownerEthAddress: delegateWallet,
         });
-        const txHash = await cliVars.provider.send(tx, [adminKeypair]);
+        const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
 
         console.log(`Initialized with ${txHash}`);
       })();
@@ -488,7 +482,7 @@ const main = async () => {
           userStorageAccount: options.userStoragePubkey,
           userSolPubkey,
         });
-        const txHash = await cliVars.provider.send(tx);
+        const txHash = await cliVars.provider.sendAndConfirm(tx);
 
         await cliVars.provider.connection.confirmTransaction(txHash);
         console.log(
@@ -509,7 +503,7 @@ const main = async () => {
           adminStorageAccount: adminStorageKeypair.publicKey,
           adminAuthorityKeypair: adminKeypair,
         });
-        const txHash = await cliVars.provider.send(tx, [adminKeypair]);
+        const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
 
         await cliVars.provider.connection.confirmTransaction(txHash);
         console.log(`updateAdmin = ${txHash}`);
@@ -560,7 +554,7 @@ const main = async () => {
           cn2: userContentNodeInfo[1].derivedAddress,
           cn3: userContentNodeInfo[2].derivedAddress,
         });
-        const txHash = await cliVars.provider.send(tx);
+        const txHash = await cliVars.provider.sendAndConfirm(tx);
         await cliVars.provider.connection.confirmTransaction(txHash);
         console.log(
           `createUserTx = ${txHash}, userStorageAccount = ${derivedAddress}`
