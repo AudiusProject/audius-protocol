@@ -81,6 +81,7 @@ export const TrackRemixesScreen = () => {
       <Header text={messages.header} />
       <Lineup
         lineup={lineup}
+        fetchPayload={{ trackId: track?.track_id }}
         header={
           track && user ? (
             <View style={styles.header}>

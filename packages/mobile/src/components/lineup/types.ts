@@ -1,3 +1,5 @@
+import { ReactElement } from 'react'
+
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import Kind from 'audius-client/src/common/models/Kind'
 import { Lineup as LineupData } from 'audius-client/src/common/models/Lineup'
@@ -41,6 +43,17 @@ export type LineupProps = {
    */
   disableTopTabScroll?: boolean
 
+  /**
+   * Optional payload to pass to the fetch action
+   */
+  fetchPayload?: any
+
+  /**
+   * A header to display at the top of the lineup,
+   * will scroll with the rest of the content
+   */
+  header?: SectionListProps<unknown>['ListHeaderComponent']
+
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
 
@@ -49,6 +62,11 @@ export type LineupProps = {
    * The leadingElementId is displayed at the top of the lineup
    */
   leadingElementId?: ID
+
+  /**
+   * A custom delineator to show after the leading element
+   */
+  leadingElementDelineator?: ReactElement
 
   /** The number of tracks to fetch in each request */
   limit?: number
@@ -62,12 +80,6 @@ export type LineupProps = {
    * Function called to load more entries
    */
   loadMore?: (offset: number, limit: number, overwrite: boolean) => void
-
-  /**
-   * A header to display at the top of the lineup,
-   * will scroll with the rest of the content
-   */
-  header?: SectionListProps<unknown>['ListHeaderComponent']
 
   /**
    * Function called on refresh

@@ -4,7 +4,8 @@ import { PREFIX } from 'common/store/pages/track/lineup/actions'
 
 const initialState = {
   ...initialLineupState,
-  prefix: PREFIX
+  prefix: PREFIX,
+  maxEntries: 6
 }
 
 const actionsMap = {
