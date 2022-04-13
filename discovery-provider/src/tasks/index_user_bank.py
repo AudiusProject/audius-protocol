@@ -189,8 +189,15 @@ def process_user_bank_tx_details(
     has_claim_instruction = any(
         log == "Program log: Instruction: Claim" for log in meta["logMessages"]
     )
+    has_transfer_instruction = any(
+        log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
+    )
 
-    if not has_create_token_instruction and not has_claim_instruction:
+    if (
+        not has_create_token_instruction
+        and not has_claim_instruction
+        and not has_transfer_instruction
+    ):
         return
 
     instruction = get_valid_instruction(tx_message, meta)
@@ -226,7 +233,7 @@ def process_user_bank_tx_details(
         except ValueError as e:
             logger.error(e)
 
-    elif has_claim_instruction:
+    elif has_claim_instruction or has_transfer_instruction:
         # Accounts to refresh balance
         acct_1 = account_keys[1]
         acct_2 = account_keys[2]
