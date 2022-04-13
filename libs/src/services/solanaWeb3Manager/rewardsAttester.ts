@@ -770,12 +770,12 @@ export class RewardsAttester {
       })) ?? []
     // Filter out blocklisted nodes
     const blockSet = new Set(this.discoveryNodeBlocklist)
-    endpoints = endpoints.filter((e) => !blockSet.has(e.endpoint))
+    endpoints = [...endpoints].filter((e) => !blockSet.has(e.endpoint))
 
     this.endpoints =
       await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(
         this.quorumSize,
-        Array.from(endpoints)
+        endpoints
       )
     this.logger.info(
       `Selected new discovery nodes in ${
