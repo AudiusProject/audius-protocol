@@ -96,7 +96,7 @@ export const TrackRemixesScreen = () => {
                 <Pressable onPress={handlePressTrack}>
                   <Text style={[styles.text, styles.link]}>{track.title}</Text>
                 </Pressable>
-                <Text style={styles.text}>{messages.of}&nbsp;</Text>
+                <Text style={styles.text}>&nbsp;{messages.by}&nbsp;</Text>
                 <Pressable style={styles.user} onPress={handlePressArtistName}>
                   <Text style={[styles.text, styles.link]}>{user.name}</Text>
                   {user ? (
