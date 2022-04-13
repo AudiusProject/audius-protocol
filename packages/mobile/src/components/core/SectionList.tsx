@@ -63,7 +63,15 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
           />
         </Portal>
       ) : null}
-      <Animated.SectionList {...other} {...scrollPropsAndRef} />
+      <Animated.SectionList
+        {...other}
+        {...scrollPropsAndRef}
+        // @ts-ignore `forkEvent` is not defined on the type but it exists
+        onScroll={Animated.forkEvent(
+          scrollPropsAndRef.onScroll,
+          props.onScroll
+        )}
+      />
     </View>
   )
 }
