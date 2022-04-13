@@ -334,7 +334,7 @@ describe("user social actions", function () {
       let expectedErrorFound = false;
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
+          admin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           sourceUserStorage: userStorageAccount1,
@@ -367,7 +367,7 @@ describe("user social actions", function () {
       const wrongUserKeypair = anchor.web3.Keypair.generate();
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
+          admin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           sourceUserStorage: userStorageAccount1,

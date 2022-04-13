@@ -438,7 +438,7 @@ export const createUser = ({
           cn3,
           systemProgram: SystemProgram.programId,
           sysvarProgram: SystemSysVarProgramKey,
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
         },
       }
     )
@@ -703,7 +703,7 @@ export const updateIsVerified = ({
       {
         accounts: {
           user: userStorageAccount,
-          audiusAdmin: adminPublicKey,
+          admin: adminPublicKey,
           verifier: verifierPublicKey,
         },
       }
@@ -763,7 +763,7 @@ export const createTrack = ({
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -857,7 +857,7 @@ export const updateTrack = ({
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -894,7 +894,7 @@ export const deleteTrack = ({
       "",
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -932,7 +932,7 @@ export const createPlaylist = ({
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -970,7 +970,7 @@ export const updatePlaylist = ({
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1006,7 +1006,7 @@ export const deletePlaylist = ({
       "",
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1074,7 +1074,7 @@ export const addTrackSave = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1108,7 +1108,7 @@ export const deleteTrackSave = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1142,7 +1142,7 @@ export const addTrackRepost = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1176,7 +1176,7 @@ export const deleteTrackRepost = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1210,7 +1210,7 @@ export const addPlaylistSave = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1244,7 +1244,7 @@ export const deletePlaylistSave = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1278,7 +1278,7 @@ export const addPlaylistRepost = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1312,7 +1312,7 @@ export const deletePlaylistRepost = ({
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1372,7 +1372,7 @@ export const followUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1408,7 +1408,7 @@ export const unfollowUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1444,7 +1444,7 @@ export const subscribeUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1480,7 +1480,7 @@ export const unsubscribeUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,

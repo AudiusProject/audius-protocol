@@ -79,10 +79,16 @@ def test_validate_and_save_parsed_tx_records(app):
             )
 
 
-def test_parse_tx(app):
+def test_parse_tx(app, mocker):
     with app.app_context():
         db = get_db()
         redis = get_redis()
+
+    mocker.patch(
+        "src.solana.anchor_program_indexer.AnchorProgramIndexer.is_valid_instruction",
+        return_value=True,  # return true because admin differs
+        autospec=True,
+    )
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
@@ -120,6 +126,29 @@ def test_parse_tx(app):
     assert str(base) == "DUvTEvu2WHLWstwgn38S5fCpE23L8yd36WDKxYoAHHax"
     assert str(authority) == "HEpbkzohyMFbc2cQ4KPRbXRUVbgFW3uVrHaKPdMD6pqJ"
     assert owner_eth_address_hex == "0x25A3Acd4758Ab107ea0Bd739382B8130cD1F204d"
+
+
+def test_is_valid_instruction(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+
+    parsed_instruction = {"account_names_map": {"admin": ADMIN_STORAGE_PUBLIC_KEY}}
+    resp = anchor_program_indexer.is_valid_instruction(parsed_instruction)
+
+    assert resp == True
 
 
 @pytest.mark.asyncio
