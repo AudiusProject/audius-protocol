@@ -5,7 +5,6 @@ import {
   Image,
   ImageSourcePropType,
   ImageStyle,
-  Pressable,
   StyleProp,
   StyleSheet,
   View,
@@ -15,6 +14,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import { SvgProps } from 'react-native-svg'
 
 import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
+import { Pressable } from 'app/components/core'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
