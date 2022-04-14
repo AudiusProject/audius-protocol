@@ -1,4 +1,5 @@
 import commonjs from '@rollup/plugin-commonjs'
+import babel from '@rollup/plugin-babel'
 import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
@@ -21,6 +22,7 @@ export default [{
         'eth-contracts/ABIs/*.json'
       ]
     }),
+    babel({ babelHelpers: 'bundled', extensions }),
     json(),
     resolve({ extensions, preferBuiltins: true }),
     typescript()
@@ -37,6 +39,6 @@ export default [{
 },
 {
   input: './src/types.ts',
-  output: [{file: pkg.types, format: 'cjs'}],
+  output: [{ file: pkg.types, format: 'cjs' }],
   plugins: [dts()]
 }]
