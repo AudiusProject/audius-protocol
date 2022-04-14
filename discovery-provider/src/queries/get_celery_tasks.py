@@ -1,7 +1,8 @@
 from typing import List, TypedDict
 
 from celery import Celery
-from src.tasks.celery_app import celery
+from celery.app.control import Inspect
+from src.tasks.celery_app import celery as celery_app
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 
 
@@ -19,13 +20,19 @@ class GetTasksItem(TypedDict):
 
 def get_tasks(injected_app: Celery = None) -> List[GetTasksItem]:
 
-    app = injected_app if injected_app is not None else celery
+    app = injected_app if injected_app is not None else celery_app
 
     # Inspect all nodes.
-    i = app.control.inspect()
+    i: Inspect = app.control.inspect()
+
+    print(i.__dict__)
+    print(i.active)
 
     # Show tasks that are currently active.
     active = i.active()
+
+    if active is None:
+        return []
 
     celery_tasks = []
     for _, tasks in active.items():
