@@ -146,4 +146,3 @@ def db_seed_restore_check():
     has_restored, seed_hash = get_db_seed_restore_status()
     response = {"has_restored": has_restored, "seed_hash": seed_hash}
     return success_response(response, sign_response=False)
-  
