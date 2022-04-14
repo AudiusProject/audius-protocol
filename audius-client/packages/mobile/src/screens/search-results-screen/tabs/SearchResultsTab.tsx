@@ -3,21 +3,11 @@ import { ReactNode, useContext, useEffect, useState } from 'react'
 import Status from 'audius-client/src/common/models/Status'
 import { getSearchStatus } from 'audius-client/src/common/store/pages/search-results/selectors'
 
-import LoadingSpinner from 'app/components/loading-spinner'
+import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { makeStyles } from 'app/styles'
 
 import { EmptyResults } from '../EmptyResults'
 import { SearchFocusContext } from '../SearchFocusContext'
-
-const useStyles = makeStyles(({ spacing }) => ({
-  spinner: {
-    marginTop: spacing(6),
-    alignSelf: 'center',
-    height: spacing(10),
-    width: spacing(10)
-  }
-}))
 
 type SearchResultsTabProps = {
   children: ReactNode
@@ -28,7 +18,6 @@ type SearchResultsTabProps = {
 export const SearchResultsTab = (props: SearchResultsTabProps) => {
   const { children, noResults, status } = props
   const { isFocused } = useContext(SearchFocusContext)
-  const styles = useStyles()
   const searchStatus = useSelectorWeb(getSearchStatus)
   const [isRefreshing, setIsRefreshing] = useState(true)
 
@@ -46,15 +35,15 @@ export const SearchResultsTab = (props: SearchResultsTabProps) => {
     }
   }, [isFocused, searchStatus])
 
-  if (
-    isRefreshing ||
-    searchStatus === Status.LOADING ||
-    (status === Status.LOADING && noResults)
-  ) {
-    return <LoadingSpinner style={styles.spinner} />
-  }
-
-  if (noResults) return <EmptyResults />
-
-  return <>{children}</>
+  return (
+    <WithLoader
+      loading={Boolean(
+        isRefreshing ||
+          searchStatus === Status.LOADING ||
+          (status === Status.LOADING && noResults)
+      )}
+    >
+      {noResults ? <EmptyResults /> : <>{children}</>}
+    </WithLoader>
+  )
 }
