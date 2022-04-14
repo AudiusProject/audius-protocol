@@ -28,6 +28,7 @@ const Web3 = require('./web3')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
+const { PublicKey } = require('@solana/web3.js')
 const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
 const { Idl } = require('@project-serum/anchor')
 
@@ -246,9 +247,10 @@ class AudiusLibs {
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
    * @param {Uint8Array} feePayerSecretKeys fee payer secret keys, if client wants to switch between different fee payers during relay
    * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
-   * @param {string} audiusDataAdminStorageKeypairPublicKey admin storage PK for audius-data program
-   * @param {string} audiusDataProgramId program ID for the audius-data Anchor program
-   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program
+   * @param {PublicKey|string} audiusDataAdminStorageKeypairPublicKey admin storage PK for audius-data program
+   * @param {PublicKey|string} audiusDataProgramId program ID for the audius-data Anchor program
+   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program. This OR pathToAudiusDataIdl required
+   * @param {string} pathToAudiusDataIdl path to IDL json file for the audius-data Anchor program. This OR audiusDataIdl required.
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -265,8 +267,19 @@ class AudiusLibs {
     confirmationTimeout,
     audiusDataAdminStorageKeypairPublicKey,
     audiusDataProgramId,
-    audiusDataIdl
+    audiusDataIdl,
+    pathToAudiusDataIdl
   }) {
+    let idl = audiusDataIdl
+    if (pathToAudiusDataIdl && !idl) {
+      idl = require(pathToAudiusDataIdl)
+    }
+    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
+      audiusDataAdminStorageKeypairPublicKey = new PublicKey(audiusDataAdminStorageKeypairPublicKey)
+    }
+    if (audiusDataProgramId instanceof String) {
+      audiusDataProgramId = new PublicKey(audiusDataProgramId)
+    }
     return {
       solanaClusterEndpoint,
       mintAddress,
@@ -282,7 +295,7 @@ class AudiusLibs {
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
-      audiusDataIdl
+      audiusDataIdl: idl
     }
   }
 

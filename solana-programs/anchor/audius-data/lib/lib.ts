@@ -1500,3 +1500,7 @@ export const unsubscribeUser = ({
 export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
   return Keypair.fromSecretKey(Uint8Array.from(secretKey));
 };
+
+export const idl: anchor.Idl = require('../target/idl/audius_data.json');
+
+export const programId = idl.metadata.programId

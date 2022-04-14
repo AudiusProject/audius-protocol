@@ -1,6 +1,10 @@
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const anchor = require('@project-serum/anchor')
+const {
+  idl,
+  programId
+ } = require('@audius/anchor-audius-data')
 
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
@@ -98,7 +102,7 @@ class SolanaWeb3Manager {
       confirmationTimeout,
       audiusDataProgramId,
       audiusDataAdminStorageKeypairPublicKey,
-      pathToAudiusDataIdl
+      audiusDataIdl
     } = this.solanaWeb3Config
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
@@ -135,15 +139,13 @@ class SolanaWeb3Manager {
     this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
-    this.audiusDataProgramId = SolanaUtils.newPublicKeyNullable(audiusDataProgramId)
-    this.audiusDataAdminStorageKeypairPublicKey = SolanaUtils.newPublicKeyNullable(audiusDataAdminStorageKeypairPublicKey)
+    this.audiusDataProgramId = audiusDataProgramId || programId || process.env.AUDIUS_DATA_PROGRAM_ID
+    this.audiusDataAdminStorageKeypairPublicKey = audiusDataAdminStorageKeypairPublicKey || process.env.AUDIUS_DATA_ADMIN_STORAGE_PUBLIC_KEY
 
     const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
     const anchorProvider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
-    this.audiusDataIdl = require(pathToAudiusDataIdl)
-    // Update this adddress since the file is static
-    this.audiusDataIdl.metadata.address = audiusDataProgramId
 
+    this.audiusDataIdl = audiusDataIdl || idl
     this.anchorProgram = new anchor.Program(this.audiusDataIdl, audiusDataProgramId, anchorProvider)
   }
 
