@@ -25,10 +25,6 @@ def get_tasks(injected_app: Celery = None) -> List[GetTasksItem]:
     # Inspect all nodes.
     i: Inspect = app.control.inspect()
 
-    print(i.__dict__)
-    print(i.active)
-
-    # Show tasks that are currently active.
     active = i.active()
 
     if active is None:
