@@ -228,7 +228,7 @@ class SnapbackSM {
       const jobId = job.id
       await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
-        await this.processStateMachineOperation()
+        await this.processStateMachineOperation(jobId)
         await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
         this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
@@ -263,17 +263,11 @@ class SnapbackSM {
     // If a job does not finish within timeout, next job will run for same modulo slice
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
-      /** opts */ {
-        delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS,
-        timeout: this.stateMachineQueueJobMaxDuration // ms
-      }
+      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
     )
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
-      /** opts */ {
-        repeat: { every: this.snapbackJobInterval },
-        timeout: this.stateMachineQueueJobMaxDuration // ms
-      }
+      /** opts */ { repeat: { every: this.snapbackJobInterval } }
     )
 
     this.log(
@@ -886,13 +880,14 @@ class SnapbackSM {
    * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
    * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
    */
-  async processStateMachineOperation() {
+  async processStateMachineOperation(jobId) {
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = []
     this._addToStateMachineQueueDecisionTree(
       decisionTree,
       'BEGIN processStateMachineOperation()',
       {
+        jobId,
         currentModuloSlice: this.currentModuloSlice,
         moduloBase: this.moduloBase
       }
