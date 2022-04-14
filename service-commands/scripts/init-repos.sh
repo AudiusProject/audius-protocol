@@ -45,7 +45,7 @@ npm install
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
-    npm install
+    npm run init
 fi
 
 cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
@@ -80,6 +80,5 @@ npm link @audius/libs
 
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
-    cd audius-client
-    npm link @audius/libs
+    cd audius-client/packages/web && npm link @audius/libs
 fi

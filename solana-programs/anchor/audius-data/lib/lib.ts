@@ -1489,4 +1489,4 @@ export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
 
 export const idl: anchor.Idl = require('../target/idl/audius_data.json');
 
-export const programId = idl.metadata.programId
+export const programId = idl.metadata.address;
