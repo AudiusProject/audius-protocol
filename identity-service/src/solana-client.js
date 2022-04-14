@@ -294,8 +294,9 @@ async function awaitTransactionSignatureConfirmation (
             const expiredSlot = contextSlot > expirySlot
             // Exit early if slot has expired
             if (expiredSlot) {
-              done = true
-              reject(new Error(`Failed slot timeout`))
+              // done = true
+              // reject(new Error(`Failed slot timeout - ${contextSlot} > ${expirySlot}`))
+              logger.error(`Failed slot timeout - ${contextSlot} > ${expirySlot}`)
             }
             if (!done) {
               if (!result) {
