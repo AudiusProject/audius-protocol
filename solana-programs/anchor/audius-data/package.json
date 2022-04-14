@@ -4,6 +4,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "anchor build",
     "build": "rollup -c",
     "build-dev": "./scripts/build-dev.sh",
     "deploy-dev": "anchor deploy",
