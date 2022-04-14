@@ -1,7 +1,8 @@
 import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
-import { fork, call, put, select, takeEvery } from 'redux-saga/effects'
+import { call, fork, put, select, takeEvery } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
 import { StringKeys } from 'common/services/remote-config'
 import * as trackCacheActions from 'common/store/cache/tracks/actions'
 import { getTrack as getCachedTrack } from 'common/store/cache/tracks/selectors'
@@ -11,11 +12,13 @@ import { getUsers } from 'common/store/cache/users/selectors'
 import * as trackPageActions from 'common/store/pages/track/actions'
 import { tracksActions } from 'common/store/pages/track/lineup/actions'
 import {
+  getSourceSelector,
   getTrack,
   getTrendingTrackRanks,
   getUser
 } from 'common/store/pages/track/selectors'
 import { getIsReachable } from 'common/store/reachability/selectors'
+import { makeUid } from 'common/utils/uid'
 import tracksSagas from 'pages/track-page/store/lineups/tracks/sagas'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -94,11 +97,23 @@ function* getTrackRanks(trackId) {
   yield put(trackPageActions.getTrackRanks(trackId))
 }
 
-function* getMoreByThisArtist(permalink, ownerHandle) {
+function* addTrackToLineup(track) {
+  const source = yield select(getSourceSelector)
+  const formattedTrack = {
+    kind: Kind.TRACKS,
+    id: track.track_id,
+    uid: makeUid(Kind.TRACKS, track.track_id, source)
+  }
+
+  yield put(tracksActions.add(formattedTrack, track.track_id))
+}
+
+/** Get "more by this artist" and put into the lineup + queue */
+function* getRestOfLineup(permalink, ownerHandle) {
   yield put(
-    tracksActions.fetchLineupMetadatas(0, 6, false, {
+    tracksActions.fetchLineupMetadatas(1, 5, false, {
       ownerHandle,
-      permalink
+      heroTrackPermalink: permalink
     })
   )
 }
@@ -107,7 +122,6 @@ function* watchFetchTrack() {
   yield takeEvery(trackPageActions.FETCH_TRACK, function* (action) {
     const { trackId, handle, slug, canBeUnlisted } = action
     const permalink = `/${handle}/${slug}`
-    yield fork(getMoreByThisArtist, permalink, handle)
     try {
       let track
       if (!trackId) {
@@ -138,6 +152,11 @@ function* watchFetchTrack() {
           return
         }
       } else {
+        yield put(trackPageActions.setTrackId(track.track_id))
+        // Add hero track to lineup early so that we can play it ASAP
+        // (instead of waiting for the entire lineup to load)
+        yield call(addTrackToLineup, track)
+        yield fork(getRestOfLineup, permalink, handle)
         yield fork(getTrackRanks, track.track_id)
         yield put(trackPageActions.fetchTrackSucceeded(track.track_id))
       }
@@ -169,7 +188,12 @@ function* watchRefetchLineup() {
     const { permalink } = yield select(getTrack)
     const { handle } = yield select(getUser)
     yield put(tracksActions.reset())
-    yield call(getMoreByThisArtist, permalink, handle)
+    yield put(
+      tracksActions.fetchLineupMetadatas(0, 6, false, {
+        ownerHandle: handle,
+        heroTrackPermalink: permalink
+      })
+    )
   })
 }
 
