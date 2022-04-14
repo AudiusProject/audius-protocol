@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { ReactElement, useCallback } from 'react'
 
 import { View } from 'react-native'
 
@@ -6,6 +6,7 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { IconButton, useLink } from 'app/components/core'
+import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles/makeStyles'
 import { EventNames } from 'app/types/analytics'
 import { make, track } from 'app/utils/analytics'
@@ -88,30 +89,42 @@ export const ProfileSocials = () => {
     onPressTikTok()
   }, [onPressTikTok, sanitizedHandle, tiktok_handle])
 
+  const renderSocial = (
+    handle: string | undefined | null,
+    socialElement: ReactElement
+  ) => {
+    if (handle === undefined) return <Skeleton style={styles.icon} />
+    if (handle === null) return null
+    return socialElement
+  }
+
   return (
     <View pointerEvents='box-none' style={styles.socials}>
       <ProfileBadge />
-      {twitter_handle ? (
+      {renderSocial(
+        twitter_handle,
         <IconButton
           icon={IconTwitterBird}
           styles={{ icon: styles.icon }}
           onPress={handlePressTwitter}
         />
-      ) : null}
-      {instagram_handle ? (
+      )}
+      {renderSocial(
+        instagram_handle,
         <IconButton
           icon={IconInstagram}
           styles={{ icon: styles.icon }}
           onPress={handlePressInstagram}
         />
-      ) : null}
-      {tiktok_handle ? (
+      )}
+      {renderSocial(
+        tiktok_handle,
         <IconButton
           icon={IconTikTok}
           styles={{ icon: styles.icon }}
           onPress={handlePressTikTok}
         />
-      ) : null}
+      )}
     </View>
   )
 }
