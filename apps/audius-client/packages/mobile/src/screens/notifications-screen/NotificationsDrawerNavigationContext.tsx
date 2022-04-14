@@ -2,15 +2,13 @@ import { createContext, ReactNode } from 'react'
 
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 
-type NotificationsDrawerNavigationContextProps = {
-  drawerNavigation: DrawerNavigationHelpers | undefined
-}
+type NotificationsDrawerNavigationContextValue =
+  | DrawerNavigationHelpers
+  | undefined
 
 export const NotificationsDrawerNavigationContext = createContext<
-  NotificationsDrawerNavigationContextProps
->({
-  drawerNavigation: undefined
-})
+  NotificationsDrawerNavigationContextValue
+>(undefined)
 
 export const NotificationsDrawerNavigationContextProvider = ({
   drawerNavigation,
@@ -20,11 +18,7 @@ export const NotificationsDrawerNavigationContextProvider = ({
   children: ReactNode
 }) => {
   return (
-    <NotificationsDrawerNavigationContext.Provider
-      value={{
-        drawerNavigation
-      }}
-    >
+    <NotificationsDrawerNavigationContext.Provider value={drawerNavigation}>
       {children}
     </NotificationsDrawerNavigationContext.Provider>
   )
