@@ -8,9 +8,9 @@ from src.utils.elasticdsl import (
     ES_TRACKS,
     ES_USERS,
     esclient,
-    omit_indexed_fields,
     pluck_hits,
     popuate_user_metadata_es,
+    populate_track_or_playlist_metadata_es,
 )
 
 
@@ -202,8 +202,6 @@ def get_feed_es(args, limit=10):
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
 
     # popuate_user_metadata_es:
-    #   does_current_user_follow
-    #   does_follow_current_user
     current_user = user_by_id.pop(str(current_user_id))
     for user in user_by_id.values():
         popuate_user_metadata_es(user, current_user)
@@ -214,6 +212,9 @@ def get_feed_es(args, limit=10):
         item["user"] = user_by_id[uid]
 
     # add context: followee_reposts, followee_saves
+    # currently this over-fetches because there is no per-item grouping
+    # really it should use an aggregation with top hits
+    # to bucket ~3 saves / reposts per item
     item_keys = [i["item_key"] for i in sorted_feed]
     save_repost_query = {
         "query": {
@@ -250,8 +251,8 @@ def get_feed_es(args, limit=10):
         item["followee_reposts"] = follow_reposts[item["item_key"]]
         item["followee_saves"] = follow_saves[item["item_key"]]
 
-    # remove extra fields from items
-    [omit_indexed_fields(item) for item in sorted_feed]
+    # populate metadata + remove extra fields from items
+    [populate_track_or_playlist_metadata_es(item, current_user) for item in sorted_feed]
 
     return sorted_feed[0:limit]
 

@@ -45,6 +45,13 @@ def popuate_user_metadata_es(user, current_user):
     return omit_indexed_fields(user)
 
 
+def populate_track_or_playlist_metadata_es(item, current_user):
+    my_id = current_user["user_id"]
+    item["has_current_user_reposted"] = my_id in item["reposted_by"]
+    item["has_current_user_saved"] = my_id in item["saved_by"]
+    return omit_indexed_fields(item)
+
+
 omit_keys = [
     # user index
     "following_ids",
