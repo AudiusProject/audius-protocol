@@ -214,7 +214,7 @@ class SnapbackSM {
     await this.recurringSyncQueue.empty()
 
     // Removes ALL previous state to ensure clean slate
-    await this.stateMachineQueue.obliterate()
+    await this.stateMachineQueue.obliterate({ force: true })
 
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
