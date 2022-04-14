@@ -348,10 +348,10 @@ program
   .option(
     "--deterministic, <boolean>",
     "set to false to seed content node wallet and pkey dynamically from local env (only when running ganache without --deterministic)",
-    true
+    "true"
   )
   .option("-uid, --user-id <integer>", "ID of incoming user")
-  .option("-we, --write-enabled <bool>", "If write is enabled for admin", false)
+  .option("-we, --write-enabled <bool>", "If write is enabled for admin", "false")
   .option(
     "--user-replica-set <string>",
     "Comma separated list of integers representing spIDs - ex. 2,3,1"
@@ -421,7 +421,7 @@ const main = async () => {
       const { delegateWallet, contentNodeAuthority } =
         await getContentNodeWalletAndAuthority({
           spId: options.cnSpId,
-          deterministic: options.deterministic,
+          deterministic: options.deterministic === "true",
         });
       console.log(
         `Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`
@@ -510,7 +510,7 @@ const main = async () => {
       break;
     }
     case functionTypes.updateAdmin: {
-      const { writeEnabled } = options;
+      const writeEnabled = (options.writeEnabled === 'true');
 
       console.log({ writeEnabled });
       const tx = updateAdmin({
