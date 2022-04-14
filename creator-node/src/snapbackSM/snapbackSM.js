@@ -1167,7 +1167,9 @@ class SnapbackSM {
     }
     decisionTree.push(obj)
 
-    this.log(logStr)
+    if (log) {
+      this.log(logStr)
+    }
   }
 
   _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
