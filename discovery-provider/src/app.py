@@ -550,10 +550,12 @@ def configure_celery(celery, test_config=None):
     # Initialize Anchor Indexer
     anchor_program_indexer = AnchorProgramIndexer(
         shared_config["solana"]["anchor_data_program_id"],
+        shared_config["solana"]["anchor_admin_storage_public_key"],
         "index_solana_user_data",
         redis_inst,
         db,
         solana_client_manager,
+        cid_metadata_client,
     )
 
     # Clear existing locks used in tasks if present

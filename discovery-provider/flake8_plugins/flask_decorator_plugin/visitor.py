@@ -8,6 +8,7 @@ from flake8_plugins.flask_decorator_plugin.visitor_helpers import (
     find_item_to_move_above,
     is_api_expect_decorator,
     is_route_decorator,
+    is_route_decorator_documented,
     parse_route_args,
 )
 
@@ -25,21 +26,22 @@ class Visitor(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef):
         route_args_dict: Dict[str, RouteArgEntry] = dict()
         can_check_route_args = False
-        has_documented_route = False
+        has_documented_route = False  # If there's at least one route that should be documented for this class
         has_class_level_expect = False
         methods_with_ids = []
         for decorator in node.decorator_list:
             if isinstance(decorator, ast.Call):
-                if is_route_decorator(decorator):
+                # @api.route() decorators
+                if is_route_decorator(decorator) and is_route_decorator_documented(
+                    decorator
+                ):
+                    has_documented_route = True
                     if parse_route_args(decorator, route_args_dict):
                         can_check_route_args = True
 
-                    (
-                        is_route_documented,
-                        methods_with_ids,
-                    ) = find_and_process_route_doc(decorator, route_args_dict)
-                    if is_route_documented:
-                        has_documented_route = True
+                    methods_with_ids.extend(
+                        find_and_process_route_doc(decorator, route_args_dict)
+                    )
                 elif is_api_expect_decorator(decorator):
                     has_class_level_expect = True
 

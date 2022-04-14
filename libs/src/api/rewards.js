@@ -112,6 +112,7 @@ class Rewards extends Base {
     challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, instructionsPerTransaction, maxAggregationAttempts = 20, endpoints = null, logger = console, feePayerOverride = null
   }) {
     let phase
+    let nodesToReselect = null
     try {
       phase = AttestationPhases.SANITY_CHECKS
 
@@ -124,10 +125,11 @@ class Rewards extends Base {
 
       logger.info(`submitAndEvaluate: aggregating attestations for userId [${decodeHashId(encodedUserId)}], challengeId [${challengeId}]`)
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
-      const { discoveryNodeAttestations, aaoAttestation, error: aggregateError } = await this.aggregateAttestations({
+      const { discoveryNodeAttestations, aaoAttestation, error: aggregateError, erroringNodes } = await this.aggregateAttestations({
         challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints, logger, maxAttempts: maxAggregationAttempts
       })
       if (aggregateError) {
+        nodesToReselect = erroringNodes
         throw new Error(aggregateError)
       }
 
@@ -197,12 +199,12 @@ class Rewards extends Base {
         throw new Error(evaluateErrorCode || evaluateError)
       }
 
-      return { success: true, error: null, phase: null }
+      return { success: true, error: null, phase: null, nodesToReselect: null }
     } catch (e) {
       const err = e.message
       const log = (err === GetAttestationError.COGNITO_FLOW || err === GetAttestationError.HCAPTCHA) ? logger.info : logger.error
       log(`submitAndEvaluate: failed for userId: [${decodeHashId(encodedUserId)}] challenge-id [${challengeId}] at phase [${phase}] with err: ${err}`)
-      return { success: false, error: err, phase }
+      return { success: false, error: err, phase, nodesToReselect }
     }
   }
 
@@ -259,7 +261,8 @@ class Rewards extends Base {
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
-        error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
+        error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT,
+        erroringNodes: null
       }
     }
 
@@ -281,7 +284,8 @@ class Rewards extends Base {
         return {
           discoveryNodeAttestations: null,
           aaoAttestation: null,
-          error: aaoAttestationError
+          error: aaoAttestationError,
+          erroringNodes: null
         }
       }
       aaoAttestation = success
@@ -291,7 +295,8 @@ class Rewards extends Base {
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
-        error: GetAttestationError.AAO_ATTESTATION_ERROR
+        error: GetAttestationError.AAO_ATTESTATION_ERROR,
+        erroringNodes: null
       }
     }
 
@@ -312,17 +317,21 @@ class Rewards extends Base {
       const discoveryNodeErrors = discoveryNodeAttestationResults.map(r => r.error)
       const error = discoveryNodeErrors.find(Boolean)
       if (error) {
+        // Propagate out the specific nodes that errored
+        const erroringNodes = discoveryNodeAttestationResults.filter(r => r.error).map(r => r.endpoint)
         return {
           discoveryNodeAttestations: null,
           aaoAttestation: null,
-          error
+          error,
+          erroringNodes
         }
       }
 
       return {
         discoveryNodeAttestations: discoveryNodeSuccesses,
         aaoAttestation,
-        error: null
+        error: null,
+        erroringNodes: null
       }
     } catch (e) {
       const err = e.message
@@ -330,7 +339,8 @@ class Rewards extends Base {
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
-        error: GetAttestationError.DISCOVERY_NODE_ATTESTATION_ERROR
+        error: GetAttestationError.DISCOVERY_NODE_ATTESTATION_ERROR,
+        erroringNodes: null
       }
     }
   }
@@ -532,10 +542,10 @@ class Rewards extends Base {
           logger.info(`Node ${a.endpoint} challenge still incomplete for challenge [${challengeId}], userId: ${encodedUserId}`)
           // If final attempt, make sure we return the result
           if (retryCount === maxAttempts) {
-            completedAttestations.push(a.res)
+            completedAttestations.push({ ...a.res, endpoint: a.endpoint })
           }
         } else {
-          completedAttestations.push(a.res)
+          completedAttestations.push({ ...a.res, endpoint: a.endpoint })
           if (a.res.error) {
             unrecoverableError = true
           }
@@ -592,7 +602,10 @@ class Rewards extends Base {
     if (endpoints) {
       attestEndpoints = sampleSize(endpoints, numAttestations)
     } else {
-      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(numAttestations)
+      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(numAttestations, [], async (node) => {
+        const isRegistered = await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
+        return isRegistered
+      })
     }
 
     if (attestEndpoints.length < numAttestations) {
