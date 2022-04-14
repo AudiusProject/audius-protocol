@@ -145,24 +145,6 @@ class SnapbackSM {
 
     this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
 
-    this.updateEnabledReconfigModesSet()
-
-    // PeerSetManager instance to determine the peer set and its health state
-    this.peerSetManager = new PeerSetManager({
-      discoveryProviderEndpoint:
-        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      creatorNodeEndpoint: this.endpoint
-    })
-  }
-
-  /**
-   * Initialize StateMachine processing:
-   * - StateMachineQueue -> determines all system state changes required
-   * - SyncQueue -> triggers syncs on secondaries
-   */
-  async init() {
-    await this.wipeStateMachineQueueRedisState()
-
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
     this.stateMachineQueue = this.createBullQueue('state-machine', {
@@ -211,10 +193,28 @@ class SnapbackSM {
       this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}`)
     })
 
+    // PeerSetManager instance to determine the peer set and its health state
+    this.peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint:
+        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      creatorNodeEndpoint: this.endpoint
+    })
+
+    this.updateEnabledReconfigModesSet()
+  }
+
+  /**
+   * Initialize StateMachine processing:
+   * - StateMachineQueue -> determines all system state changes required
+   * - SyncQueue -> triggers syncs on secondaries
+   */
+  async init() {
     // Removes waiting/delayed jobs (does not remove active, failed, completed, or repeatable)
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
-    // Not necessary for this.stateMachineQueue because all associated redis state is manually wiped above
+
+    // Removes ALL previous state to ensure clean slate
+    await this.stateMachineQueue.obliterate()
 
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
@@ -279,35 +279,6 @@ class SnapbackSM {
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; jobs will be enqueued every ${this.snapbackJobInterval}ms`
     )
-  }
-
-  async wipeStateMachineQueueRedisState() {
-    // Wipe all redis keys matching pattern `bull:state-machine*` (legacy and new)
-    const stream = redis.scanStream({ match: 'bull:state-machine*' })
-    let numDeletedKeys = 0
-    return new Promise((resolve, reject) => {
-      stream.on('data', (keys) => {
-        if (!keys.length) return
-        numDeletedKeys = keys.length
-        const pipeline = redis.pipeline()
-        keys.forEach(function (key) {
-          pipeline.del(key)
-        })
-        pipeline.exec()
-      })
-      stream.on('end', () => {
-        this.log(
-          `Deleted all previous redis keys (${numDeletedKeys}) for pattern 'bull:state-machine*'`
-        )
-        resolve()
-      })
-      stream.on('error', (e) => {
-        this.logError(
-          `Failed to delete redis keys for pattern 'bull:state-machine*' - Error ${e.toString()}`
-        )
-        reject(e)
-      })
-    })
   }
 
   logDebug(msg) {
