@@ -1,7 +1,6 @@
 import datetime
 
 from sqlalchemy import and_, desc, func, or_
-from src import api_helpers
 from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
@@ -80,9 +79,7 @@ def get_feed(args):
                     for track_entry in playlist.playlist_contents["track_ids"]:
                         track = playlist_tracks_dict.get(track_entry["track"])
                         if not track:
-                            return api_helpers.error_response(
-                                "Something caused the server to crash."
-                            )
+                            continue
                         max_timedelta = datetime.timedelta(
                             minutes=trackDedupeMaxMinutes
                         )
