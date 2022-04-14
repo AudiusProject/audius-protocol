@@ -337,9 +337,9 @@ program
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
   .option("-sp-id, --cn-sp-id <string>", "ID of incoming content node")
-  .option("--deterministic, <boolean>", "set to false to seed content node wallet and pkey dynamically from local env (only when running ganache without --deterministic)", true)
+  .option("--deterministic, <boolean>", "set to false to seed content node wallet and pkey dynamically from local env (only when running ganache without --deterministic)", "true")
   .option("-uid, --user-id <integer>", "ID of incoming user")
-  .option("-we, --write-enabled <bool>", "If write is enabled for admin", false)
+  .option("-we, --write-enabled <boolean>", "If write is enabled for admin", "false")
   .option("--user-replica-set <string>", "Comma separated list of integers representing spIDs - ex. 2,3,1")
   .option("-d, --delegate <string>", "user delegate account pda")
   .option(
@@ -403,7 +403,7 @@ const main = async () => {
       break;
     case functionTypes.initContentNode:
       console.log(`Initializing content node`)
-      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, deterministic: options.deterministic });
+      const { delegateWallet, contentNodeAuthority } = await getContentNodeWalletAndAuthority({ spId: options.cnSpId, deterministic: options.deterministic === 'true' });
       console.log(`Using spID=${options.cnSpId} ethAddress=${delegateWallet}, delegateOwnerWallet (aka authority) = ${contentNodeAuthority.publicKey}, secret=[${contentNodeAuthority.secretKey}]`);
 
       (async () => {
@@ -492,7 +492,7 @@ const main = async () => {
       break;
 
     case functionTypes.updateAdmin:
-      const { writeEnabled } = options;
+      const writeEnabled = (options.writeEnabled === 'true');
 
       (async () => {
         console.log({ writeEnabled });
