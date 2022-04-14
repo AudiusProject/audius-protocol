@@ -139,9 +139,11 @@
     anchor deploy --provider.cluster $SOLANA_HOST
 
     # Initialize Audius Admin account
-    yarn run ts-node cli/main.ts -f initAdmin -k $owner_wallet_path -n $SOLANA_HOST
+    yarn run ts-node cli/main.ts --function initAdmin --owner-keypair $owner_wallet_path --network $SOLANA_HOST
 
     # Propagate local variables
+    admin_keypair_path="$PWD/adminKeypair.json"
+    admin_storage_keypair_path="$PWD/adminStorageKeypair.json"
     admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
     admin_keypair_privatekey=$(cat adminKeypair.json)
     admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
@@ -150,22 +152,26 @@
     # initialize Content/URSM nodes - initContentNode uses deterministic 
     # addresses and pkeys from eth-contracts ganache chain.
     yarn run ts-node cli/main.ts -f initContentNode \
-        -k "$owner_wallet_path" \
-        --admin-keypair "$admin_keypair_privatekey" \
-        --admin-storage-keypair "$admin_storage_keypair_privatekey" \
-        --cn-sp-id 1
+        ---owner-keypair "$owner_wallet_path" \
+        --admin-keypair "$admin_keypair_path"\
+        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --cn-sp-id 1 \
+        --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts -f initContentNode \
-        -k "$owner_wallet_path" \
-        --admin-keypair "$admin_keypair_privatekey" \
-        --admin-storage-keypair "$admin_storage_keypair_privatekey" \
-        --cn-sp-id 2
+        --owner-keypair "$owner_wallet_path" \
+        --admin-keypair "$admin_keypair_path"\
+        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --cn-sp-id 2 \
+        --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts -f initContentNode \
-        -k "$owner_wallet_path" \
-        --admin-keypair "$admin_keypair_privatekey" \
-        --admin-storage-keypair "$admin_storage_keypair_privatekey" \
-        --cn-sp-id 3
+        --owner-keypair "$owner_wallet_path" \
+        --admin-keypair "$admin_keypair_path"\
+        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --cn-sp-id 3 \
+        --network "$SOLANA_HOST"
+
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
