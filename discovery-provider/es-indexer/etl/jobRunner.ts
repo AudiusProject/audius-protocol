@@ -1,4 +1,3 @@
-import { Client } from '@elastic/elasticsearch'
 import { dialEs, queryCursor } from './conn'
 import { BlocknumberCheckpoint, Job, JobOptions } from './job'
 import _ from 'lodash'
@@ -38,69 +37,67 @@ export async function runJob(
   const { client, cursor } = await queryCursor(sql)
   const batchSize = job.indexBatchSize || 2000
 
-  while (true) {
-    const rows = await cursor.read(batchSize)
-    if (rows.length == 0) break
+  try {
+    while (true) {
+      const rows = await cursor.read(batchSize)
+      if (rows.length == 0) break
 
-    if (job.withBatch) {
-      await job.withBatch(rows)
+      if (job.withBatch) {
+        await job.withBatch(rows)
+      }
+
+      if (job.forEach) {
+        rows.forEach(job.forEach)
+      }
+
+      const body = indexActions(job.indexSettings.index, job.idField, rows)
+      const got = await es.bulk({ body })
+
+      if (got.errors) {
+        // todo: do a better job picking out error items
+        logger.error(got.items[0], `bulk indexing errors`)
+      }
+
+      rowCounter += rows.length
+      logger.info({
+        updates: rows.length,
+        rowsProcessed: rowCounter,
+      })
     }
 
-    if (job.forEach) {
-      rows.forEach(job.forEach)
-    }
-
-    await indexDocs(es, job.indexSettings.index, job.idField, rows)
-
-    rowCounter += rows.length
-    logger.info({
-      updates: rows.length,
-      rowsProcessed: rowCounter,
-    })
+    logger.info(
+      {
+        rowsProcessed: rowCounter,
+        startedAt,
+        endedAt: new Date(),
+      },
+      'finished'
+    )
+  } catch (e) {
+    logger.error(e, `while doing job: ${job.tableName}`)
+  } finally {
+    await cursor.close()
+    client.release()
   }
-
-  logger.info(
-    {
-      rowsProcessed: rowCounter,
-      startedAt,
-      endedAt: new Date(),
-    },
-    'finished'
-  )
-  await cursor.close()
-  client.release()
 }
 
-export async function indexDocs(
-  es: Client,
-  indexName: string,
-  idField: string,
-  docs: any[]
-) {
-  const body = docs.flatMap((doc) => [
+function indexActions(indexName: string, idField: string, docs: any[]) {
+  return docs.flatMap((doc) => [
     { index: { _id: doc[idField], _index: indexName } },
     doc,
   ])
-
-  const got = await es.bulk({ body })
-
-  // check errors?
-  if (got.errors) {
-    console.log('bad news')
-    console.log(JSON.stringify(got.items[0]))
-  }
 }
 
-export async function waitForHealthyCluster(): Promise<void> {
-  const health = await dialEs().cluster.health(
+export async function waitForHealthyCluster() {
+  return dialEs().cluster.health(
     {
       wait_for_status: 'green',
+      timeout: '60s',
     },
     {
       requestTimeout: '60s',
     }
   )
-  console.log('ES helath', health)
 }
 
 /**

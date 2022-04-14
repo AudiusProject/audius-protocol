@@ -23,7 +23,6 @@ export const jobTable: Record<string, Job> = {
 }
 
 export async function runEtl(options: JobOptions = defaultOptions) {
-  console.log('etl', options)
   if (!options.jobs) throw new Error('no jobs')
   const jobs = options.jobs?.split(',').map((j: string) => {
     if (!jobTable[j]) {

@@ -1,4 +1,5 @@
 import { program } from 'commander'
+import pino from 'pino'
 import { dialPg } from './conn'
 import { runEtl } from './etlRunner'
 import { waitForHealthyCluster } from './jobRunner'
@@ -20,10 +21,17 @@ program
   )
   .option('--poll', 're-run etl polling style')
   .action(async function (options) {
-    await waitForHealthyCluster()
+    const logger = pino({ name: `es-indexer` })
+    const health = await waitForHealthyCluster()
+    logger.info(health, 'cluster health')
 
     while (true) {
-      await runEtl(options)
+      try {
+        await runEtl(options)
+      } catch (e) {
+        logger.error(e, `uncaught exception in polling loop`)
+      }
+
       if (!options.poll) {
         break
       }
