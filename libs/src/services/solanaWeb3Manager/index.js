@@ -70,6 +70,12 @@ class SolanaWeb3Manager {
    * @param {KeyPair} solanaWeb3Config.feePayerKepairs
    *  KeyPairs for feepayers
    * @param {number} [solanaWeb3Config.confirmationTimeout] optional default confirmation timeout
+   * @param {PublicKey} [solanaWeb3Config.audiusDataProgramId]
+   *  Program ID for audius-data anchor program
+   * @param {PublicKey} [solanaWeb3Config.audiusDataAdminStorageKeypairPublicKey]
+   *  PK for audius-data admin storage keypair
+   * @param {anchor.Idl} [solanaWeb3Config.audiusDataIdl]
+   *  IDL for audius-data program
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
