@@ -417,7 +417,7 @@ export const Lineup = ({
         refreshing={refreshing}
         sections={sections}
         stickySectionHeadersEnabled={false}
-        keyExtractor={(item, index) => `${item.id}  ${index}`}
+        keyExtractor={(item, index) => `${item?.id}  ${index}`}
         renderItem={renderItem}
         renderSectionHeader={({ section }) => {
           if (section.delineate) {
