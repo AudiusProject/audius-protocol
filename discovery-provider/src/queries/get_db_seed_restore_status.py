@@ -7,6 +7,7 @@ env = shared_config["discprov"]["env"]
 # environment to db file md5 hash lookup, these are constants and will not change
 env_to_hash_lookup = {"prod": "c785fc03cfc9cca3e8a48226b9cd424b"}
 
+
 def get_db_seed_restore_status():
     db = get_db_read_replica()
     with db.scoped_session() as session:
