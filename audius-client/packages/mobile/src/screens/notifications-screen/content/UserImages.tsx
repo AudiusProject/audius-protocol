@@ -50,7 +50,7 @@ const UserImage = ({
   allowPress?: boolean
 }) => {
   const dispatch = useDispatch()
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
   const navigation = useNavigation({ customNativeNavigation: drawerNavigation })
 
   const handlePress = useCallback(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { memo, useCallback, useContext, useEffect } from 'react'
 
 import { useDrawerStatus } from '@react-navigation/drawer'
 import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
@@ -25,9 +25,9 @@ const styles = StyleSheet.create({
 /**
  * A component that renders a user's notifications
  */
-export const NotificationsScreen = () => {
+export const NotificationsScreen = memo(() => {
   const dispatchWeb = useDispatchWeb()
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
   const isDrawerOpen = useDrawerStatus() === 'open'
   const wasDrawerOpen = usePrevious(isDrawerOpen)
   useEffect(() => {
@@ -50,4 +50,4 @@ export const NotificationsScreen = () => {
       <List />
     </View>
   )
-}
+})
