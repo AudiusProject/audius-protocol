@@ -22,7 +22,6 @@ import { makeStyles } from 'app/styles'
 import { UserChip } from './UserChip'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
-  root: { backgroundColor: palette.white },
   spinner: {
     alignSelf: 'center',
     height: spacing(8),
@@ -111,7 +110,6 @@ export const UserList = (props: UserListProps) => {
 
   return (
     <FlatList
-      style={styles.root}
       data={data}
       renderItem={({ item }) => (
         <UserChip user={item} currentUserId={currentUserId} />

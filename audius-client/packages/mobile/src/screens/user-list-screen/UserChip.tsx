@@ -10,6 +10,7 @@ import { ProfilePicture, FollowButton } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
+import { formatCount } from 'app/utils/format'
 
 const messages = {
   followers: (followerCount: number) =>
@@ -22,7 +23,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: spacing(3)
+    padding: spacing(3),
+    backgroundColor: palette.white
   },
   details: { flexDirection: 'row', flex: 1 },
   userInfo: { flex: 1, marginRight: spacing(4) },
@@ -63,7 +65,7 @@ export const UserChip = (props: UserChipProps) => {
             <UserBadges user={user} badgeSize={10} hideName />
           </View>
           <Text style={styles.followers}>
-            {follower_count} {messages.followers(follower_count)}
+            {formatCount(follower_count)} {messages.followers(follower_count)}
           </Text>
         </View>
       </Pressable>
