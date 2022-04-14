@@ -3,7 +3,12 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, randomCID, randomId, convertBNToUserIdSeed } from "../lib/utils";
+import {
+  findDerivedPair,
+  randomCID,
+  randomId,
+  convertBNToUserIdSeed,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
@@ -21,13 +26,13 @@ const { SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("playlists", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -53,7 +58,7 @@ describe("playlists", function () {
     };
   };
   it("Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
@@ -61,7 +66,7 @@ describe("playlists", function () {
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair])
+    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
     );
@@ -201,8 +206,7 @@ describe("playlists", function () {
   });
 
   it("creating + deleting a playlist", async function () {
-    const { ethAccount, metadata, userId } =
-      initTestConstants();
+    const { ethAccount, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -222,7 +226,7 @@ describe("playlists", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -241,7 +245,6 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userId,
       userStorageAccount: newUserAcctPDA,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       ...getURSMParams(),
@@ -281,8 +284,7 @@ describe("playlists", function () {
   });
 
   it("create multiple playlists in parallel", async function () {
-    const { ethAccount, metadata, userId } =
-      initTestConstants();
+    const { ethAccount, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
@@ -302,7 +304,7 @@ describe("playlists", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -321,7 +323,6 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userId,
       userStorageAccount: newUserAcctPDA,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       ...getURSMParams(),

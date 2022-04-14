@@ -21,13 +21,13 @@ const { SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("playlist-actions", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -37,7 +37,7 @@ describe("playlist-actions", function () {
   const contentNodes = {};
 
   it("playlist actions - Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
@@ -45,7 +45,7 @@ describe("playlist-actions", function () {
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair])
+    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -67,7 +67,7 @@ describe("playlist-actions", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
   });
 
   it("Initializing Content Node accounts!", async function () {
@@ -113,7 +113,7 @@ describe("playlist-actions", function () {
       id: randomString(10),
     });
 
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
 
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -122,8 +122,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteSave
@@ -148,7 +147,7 @@ describe("playlist-actions", function () {
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
 
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -157,8 +156,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addSave
@@ -183,7 +181,7 @@ describe("playlist-actions", function () {
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
 
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -192,8 +190,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
@@ -218,7 +215,7 @@ describe("playlist-actions", function () {
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -226,8 +223,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteRepost

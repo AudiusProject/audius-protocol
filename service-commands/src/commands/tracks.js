@@ -58,6 +58,15 @@ Track.addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {
   return trackTxReceipt
 }
 
+Track.updateTrackOnChainAndCnode = async (libs, metadata) => {
+  const { blockHash, blockNumber, trackId } = await libs.updateTrackOnChainAndCnode(metadata)
+  return { blockHash, blockNumber, trackId }
+}
+
+Track.uploadTrackCoverArt = async (libs, imageFilePath) => {
+  return libs.uploadTrackCoverArt(imageFilePath)
+}
+
 Track.updateTrackOnChain = async (
   libs,
   trackId,

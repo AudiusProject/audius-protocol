@@ -3,14 +3,13 @@
  * Intended for later integration with libs
  */
 import * as anchor from "@project-serum/anchor";
-import { Program, Provider } from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
 import { Keypair } from "@solana/web3.js";
 import { Account } from "web3-core";
 import * as secp256k1 from "secp256k1";
 import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
-import * as borsh from '@project-serum/borsh';
 
 /**
  * Audius Admin
@@ -165,6 +164,19 @@ export const initUserSolPubkey = ({
     })
   );
   return tx;
+};
+
+/// Create a content node with the audius admin authority
+export type CreateContentNode = {
+  payer: anchor.web3.PublicKey;
+  program: Program<AudiusData>;
+  adminPublicKey: anchor.web3.PublicKey;
+  adminStoragePublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN;
+  ownerEthAddress: string;
 };
 
 export const createContentNode = ({
@@ -807,19 +819,6 @@ export type UpdateEntityParams = {
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
 };
 
-/// Create a content node with the audius admin authority
-export type CreateContentNode = {
-  payer: anchor.web3.PublicKey;
-  program: Program<AudiusData>;
-  adminPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
-  contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN;
-  ownerEthAddress: string;
-};
-
 export type EntitySocialActionArgs = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
@@ -1414,7 +1413,7 @@ export const unfollowUser = ({
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }
+        },
       }
     )
   );
@@ -1450,7 +1449,7 @@ export const subscribeUser = ({
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }
+        },
       }
     )
   );
