@@ -64,7 +64,7 @@ npm link
 
 cd $PROTOCOL_DIR/libs
 npm link
-npm link @audius/audius-data
+npm link @audius/anchor-audius-data
 
 cd $PROTOCOL_DIR/mad-dog
 npm link @audius/service-commands
