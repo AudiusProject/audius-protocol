@@ -72,7 +72,7 @@ export const useAppScreenOptions = () => {
   const navigation = useNavigation<
     AppScreenParamList & AppTabScreenParamList['Search']
   >()
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
 
   const handlePressNotification = useCallback(() => {
     drawerNavigation?.openDrawer()

@@ -28,7 +28,7 @@ type EntityProps = {
 
 const Entity = ({ entity, entityType }: EntityProps) => {
   const dispatch = useDispatch()
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
   const navigation = useNavigation({ customNativeNavigation: drawerNavigation })
   const onPress = useCallback(() => {
     navigation.navigate({

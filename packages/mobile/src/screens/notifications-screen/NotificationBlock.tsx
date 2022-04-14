@@ -195,7 +195,7 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
     transitionSpec: onlyAnimateOut
   })
   const notificationRoute = getNotificationRoute(notification)
-  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
+  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
   const navigation = useNavigation<
     AppTabScreenParamList & ProfileTabScreenParamList
   >({ customNativeNavigation: drawerNavigation })
