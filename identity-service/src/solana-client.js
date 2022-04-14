@@ -205,8 +205,11 @@ async function delay (ms) {
 // THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
 async function sendAndSignTransaction (connection, transaction, signers, timeout, logger) {
   // Sign transaction
-  let recentBlockHash = (await connection.getRecentBlockhash('confirmed')).blockhash
-  transaction.recentBlockhash = recentBlockHash
+  const latestBlockhashInfo = await connection.getLatestBlockhash('confirmed')
+  const latestBlockhash = latestBlockhashInfo.blockhash
+  // Manually increment the last valid block height
+  const lastValidBlockHeight = latestBlockhashInfo.lastValidBlockHeight + 151
+  transaction.recentBlockhash = latestBlockhash
   transaction.sign(signers)
   // Serialize and grab raw transaction bytes
   let rawTransaction = transaction.serialize()
@@ -232,7 +235,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   })()
 
   try {
-    await awaitTransactionSignatureConfirmation(txid, timeout, connection, logger)
+    await awaitTransactionSignatureConfirmation(txid, timeout, connection, logger, lastValidBlockHeight)
   } catch (e) {
     throw new Error(e)
   } finally {
@@ -248,7 +251,8 @@ async function awaitTransactionSignatureConfirmation (
   txid,
   timeout,
   connection,
-  logger
+  logger,
+  expirySlot
 ) {
   let done = false
   const result = await new Promise((resolve, reject) => {
@@ -285,6 +289,13 @@ async function awaitTransactionSignatureConfirmation (
               txid
             ])
             const result = signatureStatuses && signatureStatuses.value[0]
+            const contextSlot = signatureStatuses.context.slot
+            const expiredSlot = contextSlot > expirySlot
+            // Exit early if slot has expired
+            if (expiredSlot) {
+              done = true
+              reject(new Error(`Failed slot timeout`))
+            }
             if (!done) {
               if (!result) {
               } else if (result.err) {
