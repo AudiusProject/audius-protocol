@@ -3,14 +3,13 @@
  * Intended for later integration with libs
  */
 import * as anchor from "@project-serum/anchor";
-import { Program, Provider } from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
 import { Keypair } from "@solana/web3.js";
 import { Account } from "web3-core";
 import * as secp256k1 from "secp256k1";
 import { AudiusData } from "../target/types/audius_data";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
-import * as borsh from '@project-serum/borsh';
 
 /**
  * Audius Admin
@@ -167,6 +166,19 @@ export const initUserSolPubkey = ({
   return tx;
 };
 
+/// Create a content node with the audius admin authority
+export type CreateContentNodeParams = {
+  payer: anchor.web3.PublicKey;
+  program: Program<AudiusData>;
+  adminPublicKey: anchor.web3.PublicKey;
+  adminStoragePublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN;
+  ownerEthAddress: string;
+};
+
 export const createContentNode = ({
   payer,
   program,
@@ -177,7 +189,7 @@ export const createContentNode = ({
   contentNodeAuthority,
   contentNodeAcct,
   ownerEthAddress,
-}: CreateContentNode) => {
+}: CreateContentNodeParams) => {
   const tx = new Transaction();
 
   tx.add(
@@ -201,7 +213,7 @@ export const createContentNode = ({
 };
 
 /// Verify user with authenticatorKeypair
-export type UpdateUserReplicaSet = {
+export type UpdateUserReplicaSetParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminStoragePublicKey: anchor.web3.PublicKey;
@@ -229,7 +241,7 @@ export const updateUserReplicaSet = ({
   cn1,
   cn2,
   cn3,
-}: UpdateUserReplicaSet) => {
+}: UpdateUserReplicaSetParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.updateUserReplicaSet(
@@ -255,7 +267,7 @@ export const updateUserReplicaSet = ({
 };
 
 /// Create or update a content node with proposers
-export type PublicCreateOrUpdateContentNode = {
+export type PublicCreateOrUpdateContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminStoragePublicKey: anchor.web3.PublicKey;
@@ -281,7 +293,7 @@ export const publicCreateOrUpdateContentNode = ({
   proposer1,
   proposer2,
   proposer3,
-}: PublicCreateOrUpdateContentNode) => {
+}: PublicCreateOrUpdateContentNodeParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.publicCreateOrUpdateContentNode(
@@ -312,7 +324,7 @@ export const publicCreateOrUpdateContentNode = ({
 };
 
 /// Create a content node with proposers
-export type PublicDeleteContentNode = {
+export type PublicDeleteContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminStoragePublicKey: anchor.web3.PublicKey;
@@ -334,7 +346,7 @@ export const publicDeleteContentNode = ({
   proposer1,
   proposer2,
   proposer3,
-}: PublicDeleteContentNode) => {
+}: PublicDeleteContentNodeParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.publicDeleteContentNode(
@@ -509,7 +521,7 @@ export const updateAdmin = ({
  * User delegation
  */
 
-type InitAuthorityDelegationStatusParams = {
+export type InitAuthorityDelegationStatusParams = {
   program: Program<AudiusData>;
   authorityName: string;
   userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
@@ -538,7 +550,7 @@ export const initAuthorityDelegationStatus = ({
   return tx;
 };
 
-type RevokeAuthorityDelegationParams = {
+export type RevokeAuthorityDelegationParams = {
   program: Program<AudiusData>;
   authorityDelegationBump: number;
   userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
@@ -567,7 +579,7 @@ export const revokeAuthorityDelegation = ({
   return tx;
 };
 
-type AddUserAuthorityDelegateParams = {
+export type AddUserAuthorityDelegateParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   delegatePublicKey: anchor.web3.PublicKey;
@@ -619,7 +631,7 @@ export const addUserAuthorityDelegate = ({
   return tx;
 };
 
-type RemoveUserAuthorityDelegateParams = {
+export type RemoveUserAuthorityDelegateParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   delegatePublicKey: anchor.web3.PublicKey;
@@ -805,32 +817,6 @@ export type UpdateEntityParams = {
   userStorageAccountPDA: anchor.web3.PublicKey;
   userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-};
-
-/// Create a content node with the audius admin authority
-export type CreateContentNode = {
-  payer: anchor.web3.PublicKey;
-  program: Program<AudiusData>;
-  adminPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
-  contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN;
-  ownerEthAddress: string;
-};
-
-export type EntitySocialActionArgs = {
-  program: Program<AudiusData>;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  userStorageAccountPDA: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-  userAuthorityPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
-  userId: anchor.BN;
-  bumpSeed: number;
-  id: string;
 };
 
 export const updateTrack = ({
@@ -1038,7 +1024,7 @@ export const EntitySocialActions = {
   deleteRepost: { deleteRepost: {} },
 };
 
-type EntitySocialActionParams = {
+export type EntitySocialActionParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   userStorageAccountPDA: anchor.web3.PublicKey;
@@ -1334,7 +1320,7 @@ export const UserSocialActions = {
   unsubscribeUser: { unsubscribeUser: {} },
 };
 
-type UserSocialActionParams = {
+export type UserSocialActionParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   sourceUserStorageAccountPDA: anchor.web3.PublicKey;
@@ -1414,7 +1400,7 @@ export const unfollowUser = ({
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }
+        },
       }
     )
   );
@@ -1450,7 +1436,7 @@ export const subscribeUser = ({
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }
+        },
       }
     )
   );

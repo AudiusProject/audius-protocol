@@ -10,10 +10,10 @@ cd $PROTOCOL_DIR/
 npm install
 
 # setup pre-commit hooks
-if command -v pre-commit &>/dev/null; then
-    pre-commit install -t pre-commit -t pre-push
-else
+if ! command -v pre-commit &>/dev/null; then
     echo "pre-commit not installed; not setting up pre-commit hooks"
+else
+    pre-commit install -t pre-commit -t pre-push
 fi
 
 cd $PROTOCOL_DIR/service-commands
