@@ -205,7 +205,8 @@ async function delay (ms) {
 // THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
 async function sendAndSignTransaction (connection, transaction, signers, timeout, logger) {
   // Sign transaction
-  const latestBlockhashInfo = await connection.getLatestBlockhash('confirmed')
+  // TODO: REVIEW CAREFULLY BEFORE MERGING 'processed'
+  const latestBlockhashInfo = await connection.getLatestBlockhash('processed')
   const latestBlockhash = latestBlockhashInfo.blockhash
   // Manually increment the last valid block height
   const lastValidBlockHeight = latestBlockhashInfo.lastValidBlockHeight + 151
