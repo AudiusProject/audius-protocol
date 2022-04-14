@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
+index b6de725..dfb9777 100644
+--- a/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
++++ b/node_modules/react-native/Libraries/Animated/AnimatedEvent.js
+@@ -227,7 +227,7 @@ class AnimatedEvent {
+   }
+ 
+   _callListeners(...args: any) {
+-    this._listeners.forEach(listener => listener(...args));
++    this._listeners.forEach(listener => listener?.(...args));
+   }
+ }
+ 
