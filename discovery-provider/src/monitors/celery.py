@@ -30,7 +30,7 @@ def get_celery_tasks(**kwargs) -> str:
     active = i.active()
 
     if active is None:
-        return json.dumps({"THE_TASKS": []})
+        return json.dumps([])
 
     celery_tasks = []
     for _, tasks in active.items():
