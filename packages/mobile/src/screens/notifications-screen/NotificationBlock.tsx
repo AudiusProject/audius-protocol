@@ -48,8 +48,6 @@ import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-
 import { close } from 'app/store/notifications/actions'
 import { useColor, useTheme } from 'app/utils/theme'
 
-import { onlyAnimateOut } from '../app-screen/transitionSpec'
-
 import NotificationContent from './content/NotificationContent'
 import { getNotificationRoute, getNotificationScreen } from './routeUtil'
 
@@ -192,7 +190,7 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
   notification.entities = entities
 
   const notificationScreen = getNotificationScreen(notification, {
-    transitionSpec: onlyAnimateOut
+    fromNotifications: true
   })
   const notificationRoute = getNotificationRoute(notification)
   const drawerNavigation = useContext(NotificationsDrawerNavigationContext)

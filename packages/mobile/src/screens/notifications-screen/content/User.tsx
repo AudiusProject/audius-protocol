@@ -29,7 +29,10 @@ const User = ({ user }: UserProps) => {
 
   const onPress = useCallback(() => {
     navigation.navigate({
-      native: { screen: 'Profile', params: { handle: user.handle } },
+      native: {
+        screen: 'Profile',
+        params: { handle: user.handle, fromNotifications: true }
+      },
       web: { route: getUserRoute(user), fromPage: NOTIFICATION_PAGE }
     })
     dispatch(close())

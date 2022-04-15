@@ -5,6 +5,7 @@ import IconUser from 'app/assets/images/iconUser.svg'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
+import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 
 import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
@@ -36,6 +37,8 @@ const exploreScreens = [
 ]
 
 const ExploreScreen = () => {
+  usePopToTopOnDrawerOpen()
+
   return (
     <Screen>
       <Header text='Explore' />
