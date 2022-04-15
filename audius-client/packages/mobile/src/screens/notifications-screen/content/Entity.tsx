@@ -5,7 +5,6 @@ import { StyleSheet, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
-import { onlyAnimateOut } from 'app/screens/app-screen/transitionSpec'
 import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { close } from 'app/store/notifications/actions'
 import { useTheme } from 'app/utils/theme'
@@ -33,7 +32,7 @@ const Entity = ({ entity, entityType }: EntityProps) => {
   const onPress = useCallback(() => {
     navigation.navigate({
       native: getEntityScreen(entity, entityType, {
-        transitionSpec: onlyAnimateOut
+        fromNotifications: true
       }),
       web: { route: getEntityRoute(entity, entityType) }
     })

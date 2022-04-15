@@ -15,6 +15,7 @@ import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 import { make, track } from 'app/utils/analytics'
@@ -28,6 +29,8 @@ const messages = {
 }
 
 export const FeedScreen = () => {
+  usePopToTopOnDrawerOpen()
+
   const dispatchWeb = useDispatchWeb()
   const feedLineup = useSelectorWeb(getFeedLineup, (a, b) => {
     const omitUneeded = o => omit(o, ['inView'])

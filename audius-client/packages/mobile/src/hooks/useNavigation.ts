@@ -6,11 +6,12 @@ import {
   useNavigation as useNavigationNative
 } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { StackNavigationOptions } from '@react-navigation/stack'
 
 import { AppTabScreenParamList } from 'app/screens/app-screen/AppTabScreen'
 
 import { usePushRouteWeb } from './usePushRouteWeb'
+
+export type ContextualParams = { fromNotifications?: boolean }
 
 type UseNavigationConfig<
   ParamList extends ParamListBase,
@@ -18,7 +19,7 @@ type UseNavigationConfig<
 > = {
   native: {
     screen: RouteName
-    params?: ParamList[RouteName] & StackNavigationOptions
+    params?: ParamList[RouteName] & ContextualParams
   }
   web?: {
     route: string

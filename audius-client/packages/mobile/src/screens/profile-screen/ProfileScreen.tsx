@@ -13,6 +13,7 @@ import IconSettings from 'app/assets/images/iconSettings.svg'
 import { Screen } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles/makeStyles'
@@ -62,6 +63,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 export const ProfileScreen = () => {
+  usePopToTopOnDrawerOpen()
   const styles = useStyles()
   const profile = useSelectProfileRoot(['user_id', 'does_current_user_follow'])
   const accountId = useSelectorWeb(getUserId)
