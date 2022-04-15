@@ -17,18 +17,18 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.15/main' >> /etc/apk/repositor
     apk add openssl-dev && \
     apk add redis && \
     apk add sudo && \
-    apk add libpq=14.2-r0 && \
-    apk add postgresql=14.2-r0 && \
-    apk add postgresql-client=14.2-r0 && \
-    apk add postgresql-contrib=14.2-r0 && \
-    apk add postgresql-libs=14.2-r0 && \
+    apk add libpq && \
+    apk add postgresql && \
+    apk add postgresql-client && \
+    apk add postgresql-contrib && \
+    apk add postgresql-libs && \
     apk add python3 && \
     apk add python3-dev && \
     apk add py3-pip && \
     apk add py3-wheel && \
     apk add rsyslog && \
     apk add docker && \
-    apk add --virtual .build-deps rust cargo gcc musl-dev postgresql-dev=14.2-r0
+    apk add rust cargo gcc musl-dev postgresql-dev
 
 COPY requirements.txt requirements.txt
 
