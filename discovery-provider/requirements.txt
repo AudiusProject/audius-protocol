@@ -61,3 +61,7 @@ anchorpy==0.8.0
 
 # Test
 pytest-mock==3.6.1
+
+
+# Dev reload
+watchdog==2.1.7
