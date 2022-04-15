@@ -127,6 +127,47 @@ create_token_account_instr: List[InstructionFormat] = [
 ]
 
 
+def index_tip(
+    session, sender_account, receiver_account, user_id_accounts, meta, tx_sig
+):
+    if user_id_accounts and len(user_id_accounts) == 2:
+        sender_id = None
+        receiver_id = None
+        for user_id_account in user_id_accounts:
+            if user_id_account[1] == sender_account:
+                sender_id = user_id_account[0]
+            elif user_id_account[1] == receiver_account:
+                receiver_id = user_id_account[0]
+        if sender_id and receiver_id:
+            pre_sender_balance = int(
+                meta["preTokenBalances"][0]["uiTokenAmount"]["amount"]
+            )
+            post_sender_balance = int(
+                meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
+            )
+            pre_receiver_balance = int(
+                meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
+            )
+            post_receiver_balance = int(
+                meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
+            )
+            sent_amount = pre_sender_balance - post_sender_balance
+            received_amount = post_receiver_balance - pre_receiver_balance
+            if sent_amount == received_amount:
+                user_tip = UserTip(
+                    signature=tx_sig,
+                    amount=sent_amount,
+                    sender_user_id=sender_id,
+                    receiver_user_id=receiver_id,
+                )
+                session.add(user_tip)
+            else:
+                # This should be impossible
+                logger.error(
+                    f"index_user_bank.py | Error: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
+                )
+
+
 class CreateTokenAccount(TypedDict):
     eth_address: str
 
@@ -238,42 +279,14 @@ def process_user_bank_tx_details(
         user_id_accounts = refresh_user_balances(
             session, redis, [sender_account, receiver_account]
         )
-        if user_id_accounts and len(user_id_accounts) == 2:
-            sender_id = None
-            receiver_id = None
-            for user_id_account in user_id_accounts:
-                if user_id_account[1] == sender_account:
-                    sender_id = user_id_account[0]
-                else:
-                    receiver_id = user_id_account[0]
-            if sender_id and receiver_id:
-                pre_sender_balance = int(
-                    meta["preTokenBalances"][0]["uiTokenAmount"]["amount"]
-                )
-                post_sender_balance = int(
-                    meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
-                )
-                pre_receiver_balance = int(
-                    meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
-                )
-                post_receiver_balance = int(
-                    meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
-                )
-                sent_amount = pre_sender_balance - post_sender_balance
-                received_amount = post_receiver_balance - pre_receiver_balance
-                if sent_amount == received_amount:
-                    user_tip = UserTip(
-                        signature=tx_sig,
-                        amount=sent_amount,
-                        sender_user_id=sender_id,
-                        receiver_user_id=receiver_id,
-                    )
-                    session.add(user_tip)
-                else:
-                    # This should be impossible
-                    logger.error(
-                        f"index_user_bank.py | Error: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
-                    )
+        index_tip(
+            session=session,
+            sender_account=sender_account,
+            receiver_account=receiver_account,
+            user_id_accounts=user_id_accounts,
+            meta=meta,
+            tx_sig=tx_sig,
+        )
 
 
 def parse_user_bank_transaction(
