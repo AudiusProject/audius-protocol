@@ -197,7 +197,7 @@ export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
   return uint8SecretKey;
 };
 
-type ContentNodeWalletAuthority {
+type ContentNodeWalletAuthority = {
   contentNodeAuthority: anchor.web3.Keypair,
   delegateWallet: string,
 }

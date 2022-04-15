@@ -8,9 +8,12 @@ import { Keypair } from "@solana/web3.js";
 import { Account } from "web3-core";
 import * as secp256k1 from "secp256k1";
 import { AudiusData } from "../target/types/audius_data";
+import idll from '../target/idl/audius_data.json';
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
+// import idl2 from '../target/idl/a.json';
+// export { idl2 };
 /**
  * Audius Admin
  */
@@ -1487,6 +1490,6 @@ export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
   return Keypair.fromSecretKey(Uint8Array.from(secretKey));
 };
 
-export const idl: anchor.Idl = require('../target/idl/audius_data.json');
+export const idl = idll;
 
-export const programId = idl.metadata.address;
+export const programId = idll.metadata.address;
