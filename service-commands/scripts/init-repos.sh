@@ -35,6 +35,10 @@ npm install
 cd $PROTOCOL_DIR/creator-node
 npm install
 
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+yarn install
+npm run build
+
 cd $PROTOCOL_DIR/libs
 npm install
 npm run build
@@ -47,10 +51,6 @@ if [ -d "audius-client" ]; then
     cd audius-client
     npm run init
 fi
-
-cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
-yarn install
-npm run build
 
 ####################################
 ######## LINK DEPENDENCIES #########

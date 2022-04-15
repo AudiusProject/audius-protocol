@@ -114540,17 +114540,13 @@ var errors = [
 		msg: "Invalid Id."
 	}
 ];
-var metadata = {
-	address: "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
-};
 var require$$4 = {
 	version: version,
 	name: name,
 	instructions: instructions,
 	accounts: accounts,
 	types: types,
-	errors: errors,
-	metadata: metadata
+	errors: errors
 };
 
 var utils = {};
@@ -118234,7 +118230,7 @@ exports.getContentNodeWalletAndAuthority = getContentNodeWalletAndAuthority;
 
 (function (exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.programId = exports.idl = exports.getKeypairFromSecretKey = exports.unsubscribeUser = exports.subscribeUser = exports.unfollowUser = exports.followUser = exports.UserSocialActions = exports.deletePlaylistRepost = exports.addPlaylistRepost = exports.deletePlaylistSave = exports.addPlaylistSave = exports.deleteTrackRepost = exports.addTrackRepost = exports.deleteTrackSave = exports.addTrackSave = exports.EntitySocialActions = exports.EntitySocialActionEnumValues = exports.deletePlaylist = exports.updatePlaylist = exports.createPlaylist = exports.deleteTrack = exports.updateTrack = exports.ManagementActions = exports.EntityTypesEnumValues = exports.createTrack = exports.updateIsVerified = exports.removeUserAuthorityDelegate = exports.addUserAuthorityDelegate = exports.revokeAuthorityDelegation = exports.initAuthorityDelegationStatus = exports.updateAdmin = exports.updateUser = exports.createUser = exports.publicDeleteContentNode = exports.publicCreateOrUpdateContentNode = exports.updateUserReplicaSet = exports.createContentNode = exports.initUserSolPubkey = exports.initUser = exports.initAdmin = void 0;
+exports.idl = exports.getKeypairFromSecretKey = exports.unsubscribeUser = exports.subscribeUser = exports.unfollowUser = exports.followUser = exports.UserSocialActions = exports.deletePlaylistRepost = exports.addPlaylistRepost = exports.deletePlaylistSave = exports.addPlaylistSave = exports.deleteTrackRepost = exports.addTrackRepost = exports.deleteTrackSave = exports.addTrackSave = exports.EntitySocialActions = exports.EntitySocialActionEnumValues = exports.deletePlaylist = exports.updatePlaylist = exports.createPlaylist = exports.deleteTrack = exports.updateTrack = exports.ManagementActions = exports.EntityTypesEnumValues = exports.createTrack = exports.updateIsVerified = exports.removeUserAuthorityDelegate = exports.addUserAuthorityDelegate = exports.revokeAuthorityDelegation = exports.initAuthorityDelegationStatus = exports.updateAdmin = exports.updateUser = exports.createUser = exports.publicDeleteContentNode = exports.publicCreateOrUpdateContentNode = exports.updateUserReplicaSet = exports.createContentNode = exports.initUserSolPubkey = exports.initUser = exports.initAdmin = void 0;
 const tslib_1 = require$$0$2;
 /**
  * Library of typescript functions used in tests/CLI
@@ -118808,7 +118804,6 @@ const getKeypairFromSecretKey = async (secretKey) => {
 };
 exports.getKeypairFromSecretKey = getKeypairFromSecretKey;
 exports.idl = audius_data_json_1.default;
-exports.programId = audius_data_json_1.default.metadata.address;
 
 }(lib$4));
 

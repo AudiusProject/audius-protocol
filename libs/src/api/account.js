@@ -611,7 +611,7 @@ class Account extends Base {
     }
 
     // matches format for PDA derivation seed in SOL program
-    const userIdSeed = userId.toBuffer("le", 4)
+    const userIdSeed = userId.toBuffer('le', 4)
 
     const {
       derivedAddress: userAccountPDA
