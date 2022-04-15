@@ -424,6 +424,7 @@ def index_user_bank(self):
             process_user_bank_txs()
         else:
             logger.info("index_user_bank.py | Failed to acquire lock")
+
     except Exception as e:
         logger.error("index_user_bank.py | Fatal error in main loop", exc_info=True)
         raise e
