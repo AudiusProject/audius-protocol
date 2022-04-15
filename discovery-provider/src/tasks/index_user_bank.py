@@ -3,7 +3,8 @@ import datetime
 import logging
 import re
 import time
-from typing import List, Optional, Tuple, TypedDict
+from decimal import Decimal
+from typing import List, Optional, TypedDict
 
 import base58
 from redis import Redis
@@ -11,6 +12,7 @@ from solana.publickey import PublicKey
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.models import User, UserBankAccount, UserBankTransaction
+from src.models.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     TX_SIGNATURES_BATCH_SIZE,
@@ -99,25 +101,25 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
-    user_id: Optional[Tuple[int, None]] = (
-        session.query(User.user_id)
+def refresh_user_balances(session: Session, redis: Redis, accts=List[str]):
+    results = (
+        session.query(User.user_id, UserBankAccount.bank_account)
         .join(
             UserBankAccount,
             and_(
-                UserBankAccount.bank_account == user_bank_acct,
+                UserBankAccount.bank_account.in_(accts),
                 UserBankAccount.ethereum_address == User.wallet,
             ),
         )
         .filter(User.is_current == True)
-        .one_or_none()
+        .all()
     )
     # Only refresh if this is a known account within audius
-    if user_id:
-        logger.info(
-            f"index_user_bank.py | Refresh user_id = {user_id}, {user_bank_acct}"
-        )
-        enqueue_immediate_balance_refresh(redis, [user_id[0]])
+    if results:
+        user_ids = [user_id[0] for user_id in results]
+        logger.info(f"index_user_bank.py | Refresh user_ids = {user_ids}")
+        enqueue_immediate_balance_refresh(redis, user_ids)
+    return results
 
 
 create_token_account_instr: List[InstructionFormat] = [
@@ -228,13 +230,50 @@ def process_user_bank_tx_details(
 
     elif has_transfer_instruction:
         # Accounts to refresh balance
-        acct_1 = account_keys[1]
-        acct_2 = account_keys[2]
+        sender_account = account_keys[1]
+        receiver_account = account_keys[2]
         logger.info(
-            f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
+            f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
         )
-        refresh_user_balance(session, redis, acct_1)
-        refresh_user_balance(session, redis, acct_2)
+        user_id_accounts = refresh_user_balances(
+            session, redis, [sender_account, receiver_account]
+        )
+        if user_id_accounts and len(user_id_accounts) == 2:
+            sender_id = None
+            receiver_id = None
+            for user_id_account in user_id_accounts:
+                if user_id_account[1] == sender_account:
+                    sender_id = user_id_account[0]
+                else:
+                    receiver_id = user_id_account[0]
+            if sender_id and receiver_id:
+                pre_sender_balance = int(
+                    meta["preTokenBalances"][0]["uiTokenAmount"]["amount"]
+                )
+                post_sender_balance = int(
+                    meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
+                )
+                pre_receiver_balance = int(
+                    meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
+                )
+                post_receiver_balance = int(
+                    meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
+                )
+                sent_amount = pre_sender_balance - post_sender_balance
+                received_amount = post_receiver_balance - pre_receiver_balance
+                if sent_amount == received_amount:
+                    user_tip = UserTip(
+                        signature=tx_sig,
+                        amount=sent_amount,
+                        sender_user_id=sender_id,
+                        receiver_user_id=receiver_id,
+                    )
+                    session.add(user_tip)
+                else:
+                    # This should be impossible
+                    logger.error(
+                        f"index_user_bank.py | Error: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
+                    )
 
 
 def parse_user_bank_transaction(
