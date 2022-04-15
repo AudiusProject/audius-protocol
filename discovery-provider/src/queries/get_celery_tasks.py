@@ -17,7 +17,7 @@ def get_celery_tasks():
 
 def celery_tasks_prometheus_exporter():
 
-    tasks = get_celery_tasks()
+    tasks = get_celery_tasks()["celery_tasks"]
 
     metric = PrometheusMetric(
         "celery_running_tasks",
