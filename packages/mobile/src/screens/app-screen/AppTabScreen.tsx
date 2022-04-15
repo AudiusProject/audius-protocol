@@ -62,6 +62,12 @@ const forFade = ({ current }) => ({
   }
 })
 
+type NavigationStateEvent = EventArg<
+  'state',
+  false,
+  { state: NavigationState<AppTabScreenParamList> }
+>
+
 type AppTabScreenProps = {
   baseScreen: (
     Stack: ReturnType<typeof createNativeStackNavigator>
@@ -88,19 +94,13 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
     <Stack.Navigator
       screenOptions={screenOptions}
       screenListeners={{
-        state: (
-          e: EventArg<
-            'state',
-            false,
-            { state: NavigationState<AppTabScreenParamList> }
-          >
-        ) => {
-          const isStackOpen = e?.data?.state?.routes.length > 1
+        state: (e: NavigationStateEvent) => {
+          const stackRoutes = e?.data?.state?.routes
+          const isStackOpen = stackRoutes.length > 1
           if (isStackOpen) {
             const isFromNotifs =
-              e?.data?.state?.routes.length === 2 &&
-              (e?.data?.state?.routes[1].params as ContextualParams)
-                ?.fromNotifications
+              stackRoutes.length === 2 &&
+              (stackRoutes[1].params as ContextualParams)?.fromNotifications
 
             // If coming from notifs allow swipe to open notifs drawer
             drawerNavigation?.setOptions({ swipeEnabled: !!isFromNotifs })
