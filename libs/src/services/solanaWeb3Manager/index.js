@@ -1,7 +1,7 @@
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const anchor = require('@project-serum/anchor')
-const { idl, programId } = require('@audius/anchor-audius-data')
+const { idl } = require('@audius/anchor-audius-data')
 
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
@@ -163,7 +163,7 @@ class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(
       rewardsManagerTokenPDA
     )
-    this.audiusDataProgramId = audiusDataProgramId || programId
+    this.audiusDataProgramId = audiusDataProgramId
     this.audiusDataAdminStorageKeypairPublicKey =
       audiusDataAdminStorageKeypairPublicKey
 

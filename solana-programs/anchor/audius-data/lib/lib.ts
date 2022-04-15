@@ -1489,5 +1489,3 @@ export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
 };
 
 export const idl = idll;
-
-export const programId = idll.metadata.address;
