@@ -23,7 +23,7 @@ type Web3Config = {
 }
 
 /** Singleton state-manager for Audius Eth Contracts */
-export default class EthWeb3Manager {
+export class EthWeb3Manager {
   web3Config: Web3Config
   web3: Web3Type
   identityService: IdentityService
