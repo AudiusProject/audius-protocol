@@ -163,11 +163,9 @@ class SolanaWeb3Manager {
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(
       rewardsManagerTokenPDA
     )
-    this.audiusDataProgramId =
-      audiusDataProgramId || programId || process.env.AUDIUS_DATA_PROGRAM_ID
+    this.audiusDataProgramId = audiusDataProgramId || programId
     this.audiusDataAdminStorageKeypairPublicKey =
-      audiusDataAdminStorageKeypairPublicKey ||
-      process.env.AUDIUS_DATA_ADMIN_STORAGE_PUBLIC_KEY
+      audiusDataAdminStorageKeypairPublicKey
 
     this.audiusDataIdl = audiusDataIdl || idl
 
@@ -190,7 +188,6 @@ class SolanaWeb3Manager {
         audiusDataProgramId,
         anchorProvider
       )
-      console.log('AAAAAAAAAa==============================', this)
     }
   }
 
