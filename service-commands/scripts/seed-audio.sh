@@ -1,11 +1,14 @@
+# Gets the spl-token wallet from the discovery node api
 get-user-bank () {
     curl "http://dn1_web-server_1:5000/users?id=$1" &> /dev/null | jq .data\[0\].spl_wallet | sed 's/"//g'
 }
 
+# Gets the private key for a wallet out of the seed cache
 get-eth-private-key () {
     jq "map(select(.userId==$1).wallet.privKey)[0]" < ~/.audius/seed-cache.json | sed 's/"//g'
 }
 
+# Mints $AUDIO and transfers it to a user bank
 seed-audio () {
     user_id=$1
     amount=$2
@@ -22,6 +25,7 @@ seed-audio () {
     spl-token transfer $mint $amount $userBank | grep "Signature"
 }
 
+# Transfer audio from user bank to user bank
 tip-audio () {
     sender_id=$1
     receiver_id=$2
