@@ -1,3 +1,4 @@
+const fs = require('fs')
 const untildify = require('untildify')
 const Web3 = require('web3')
 const axios = require('axios')
@@ -210,6 +211,17 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
+   * Exposes the function used by libs to clean the metadata object passed
+   * when updating or creating a user since it could have extra fields.
+   * - Add what user props might be missing to normalize
+   * - Only keep core fields in USER_PROPS and 'user_id'.
+   */
+  this.cleanUserMetadata = (metadata) => {
+    assertLibsDidInit()
+    return this.libsInstance.User.cleanUserMetadata(metadata)
+  }
+
+  /**
    * Upload a track.
    *
    * @param {*} args trackFile and metadata
@@ -227,6 +239,26 @@ function LibsWrapper (walletIndex = 0) {
     )
     if (error) throw error
     return trackId
+  }
+
+  /**
+   * Updates an existing track given metadata. This function expects that all associated files
+   * such as track content, cover art are already on creator node.
+   * @param {Object} metadata json of the track metadata with all fields, missing fields will error
+   */
+  this.updateTrackOnChainAndCnode = async (metadata) => {
+    const { blockHash, blockNumber, trackId } = await this.libsInstance.Track.updateTrack(metadata)
+    return { blockHash, blockNumber, trackId }
+  }
+
+  this.uploadTrackCoverArt = async (coverArtFilePath) => {
+    const coverArtFile = fs.createReadStream(coverArtFilePath)
+    const resp = await this.libsInstance.File.uploadImage(
+      coverArtFile,
+      true // square
+    )
+    const { dirCID } = resp
+    return dirCID
   }
 
   /**
@@ -450,7 +482,9 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
-   * Add an update track txn to chain
+   * Add an update track txn to chain.
+   * WARNING: This will break indexing if the tx contains CIDs that don't exist on any CN.
+   * Make sure you call uploadTrackMetadata first!
    * @param {int} trackId
    * @param {int} userId
    * @param {object} param3 track data
@@ -554,6 +588,14 @@ function LibsWrapper (walletIndex = 0) {
       trackId
     )
     return addPlaylistTrackTxReceipt
+  }
+
+  this.uploadPlaylistCoverPhoto = async (coverPhotoFile) => {
+    assertLibsDidInit()
+    const dirCid = await this.libsInstance.Playlist.uploadPlaylistCoverPhoto(
+      coverPhotoFile
+    )
+    return dirCid
   }
 
   /**

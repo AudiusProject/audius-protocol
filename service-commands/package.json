@@ -7,8 +7,8 @@
     "preinstall": "mkdir -p ~/.local/bin && ln -sf $PWD/scripts/A ~/.local/bin/A"
   },
   "dependencies": {
-    "@audius/libs": "1.2.97",
-    "@solana/web3.js": "1.20.0",
+    "@audius/libs": "1.2.108",
+    "@solana/web3.js": "1.37.1",
     "axios": "0.19.2",
     "borsh": "0.4.0",
     "colors": "1.4.0",

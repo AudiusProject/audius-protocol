@@ -18,7 +18,7 @@ markupsafe==1.1.1
 psycopg2==2.8.5
 SQLAlchemy==1.3.0
 alembic==1.4.3
-celery[redis]==4.2.0
+celery[redis]==4.3.0
 redis==3.2.0
 pytest==6.2.5
 SQLAlchemy-Utils==0.37.6
@@ -61,3 +61,7 @@ anchorpy==0.8.0
 
 # Test
 pytest-mock==3.6.1
+
+
+# Dev reload
+watchdog==2.1.7
