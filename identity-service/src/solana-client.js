@@ -205,11 +205,8 @@ async function delay (ms) {
 // THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
 async function sendAndSignTransaction (connection, transaction, signers, timeout, logger) {
   // Sign transaction
-  // TODO: REVIEW CAREFULLY BEFORE MERGING 'processed'
-  const latestBlockhashInfo = await connection.getLatestBlockhash('processed')
+  const latestBlockhashInfo = await connection.getLatestBlockhash('confirmed')
   const latestBlockhash = latestBlockhashInfo.blockhash
-  // Manually increment the last valid block height
-  const lastValidBlockHeight = latestBlockhashInfo.lastValidBlockHeight + 151
   transaction.recentBlockhash = latestBlockhash
   transaction.sign(signers)
   // Serialize and grab raw transaction bytes
@@ -236,7 +233,7 @@ async function sendAndSignTransaction (connection, transaction, signers, timeout
   })()
 
   try {
-    await awaitTransactionSignatureConfirmation(txid, timeout, connection, logger, lastValidBlockHeight)
+    await awaitTransactionSignatureConfirmation(txid, timeout, connection, logger)
   } catch (e) {
     throw new Error(e)
   } finally {
@@ -252,8 +249,7 @@ async function awaitTransactionSignatureConfirmation (
   txid,
   timeout,
   connection,
-  logger,
-  expirySlot
+  logger
 ) {
   let done = false
   const result = await new Promise((resolve, reject) => {
@@ -290,14 +286,6 @@ async function awaitTransactionSignatureConfirmation (
               txid
             ])
             const result = signatureStatuses && signatureStatuses.value[0]
-            const contextSlot = signatureStatuses.context.slot
-            const expiredSlot = contextSlot > expirySlot
-            // Exit early if slot has expired
-            if (expiredSlot) {
-              // done = true
-              // reject(new Error(`Failed slot timeout - ${contextSlot} > ${expirySlot}`))
-              logger.error(`Failed slot timeout - ${contextSlot} > ${expirySlot}`)
-            }
             if (!done) {
               if (!result) {
               } else if (result.err) {
