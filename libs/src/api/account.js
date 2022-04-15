@@ -602,7 +602,7 @@ class Account extends Base {
    * Get current user account PDA from SOL given an ID and ETH wallet address
    * @returns {object} with boolean keys userExistsOnChain, userHasClaimedAccount
    */
-   async getUserAccountOnSolana (
+  async getUserAccountOnSolana (
     { userId, wallet } = { userId: null, wallet: null }
   ) {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
