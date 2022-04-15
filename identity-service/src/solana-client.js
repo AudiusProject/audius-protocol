@@ -205,8 +205,9 @@ async function delay (ms) {
 // THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
 async function sendAndSignTransaction (connection, transaction, signers, timeout, logger) {
   // Sign transaction
-  let recentBlockHash = (await connection.getRecentBlockhash('confirmed')).blockhash
-  transaction.recentBlockhash = recentBlockHash
+  const latestBlockhashInfo = await connection.getLatestBlockhash('confirmed')
+  const latestBlockhash = latestBlockhashInfo.blockhash
+  transaction.recentBlockhash = latestBlockhash
   transaction.sign(signers)
   // Serialize and grab raw transaction bytes
   let rawTransaction = transaction.serialize()
