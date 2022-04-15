@@ -107,32 +107,6 @@ program
     }
   })
 
-program
-  .command('get-wallet')
-  .description(
-    'Gets the wallet of the current active user, or sets the active user and gets their wallet'
-  )
-  .option('-p, --private-key', 'get the private key instead of the public key')
-  .option('-a, --user-alias <alias>', 'alias of user to set as active', null)
-  .option('-u, --user-id <number>', 'ID of user to set as active', null)
-  .action(async opts => {
-    const { privateKey, userAlias: alias, userId } = opts
-    let result
-    const seed = new SeedSession()
-    if (alias || userId) {
-      await seed.setUser({ alias, userId })
-    } else {
-      await seed.init()
-    }
-    if (privateKey) {
-      result = seed.libs.hedgehog.wallet._privKey
-    } else {
-      result = seed.libs.hedgehog.wallet._pubKey
-    }
-    console.log('Wallet:', result.toString('hex'))
-    process.exit(0)
-  })
-
 const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
   Object.entries(CLI_TO_COMMAND_MAP).forEach(
     ([cliCommand, { api, description, method, params, onSuccess }]) => {

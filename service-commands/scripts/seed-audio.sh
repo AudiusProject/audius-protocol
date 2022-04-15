@@ -3,12 +3,7 @@ get-user-bank () {
 }
 
 get-eth-private-key () {
-    user_id=$1
-    if [[ -z $ETH_PRIVATE_KEY ||  $CUR_USER_ID != $user_id ]]; then
-        export ETH_PRIVATE_KEY=$(A seed get-wallet -p --user-id $user_id | grep "Wallet" | awk '{ print $2 }')
-        export CUR_USER_ID=$user_id
-    fi
-    echo $ETH_PRIVATE_KEY
+    jq "map(select(.userId==$1).wallet.privKey)[0]" < ~/.audius/seed-cache.json | sed 's/"//g'
 }
 
 seed-audio () {
