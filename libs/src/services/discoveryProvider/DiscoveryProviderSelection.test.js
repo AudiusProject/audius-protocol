@@ -1,7 +1,7 @@
 const nock = require('nock')
 const assert = require('assert')
 const semver = require('semver')
-const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
+const { DiscoveryProviderSelection } = require('./DiscoveryProviderSelection')
 const DiscoveryProvider = require('.')
 // const helpers = require('../../../tests/helpers')
 const { DISCOVERY_PROVIDER_TIMESTAMP } = require('./constants')

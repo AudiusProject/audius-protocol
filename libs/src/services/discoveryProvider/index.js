@@ -11,7 +11,7 @@ const Requests = require('./requests')
 
 // TODO - webpack workaround. find a way to do this without checkout for .default property
 let urlJoin = require('proper-url-join')
-const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
+const { DiscoveryProviderSelection } = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
