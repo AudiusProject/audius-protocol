@@ -81,7 +81,7 @@ npm i
 # Ensure ~/.local/bin is in your PATH
 
 # Install all dependencies
-A run init-repos up
+A init
 
 # Run the Audius stack
 A up

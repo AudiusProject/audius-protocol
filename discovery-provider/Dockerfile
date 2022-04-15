@@ -8,27 +8,27 @@ ENV INSTALL_PATH /audius-discovery-provider
 RUN mkdir -p $INSTALL_PATH
 WORKDIR $INSTALL_PATH
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.15/main' >> /etc/apk/repositories && \
     apk update && \
     apk add alpine-sdk && \
     apk add linux-headers && \
     apk add bash && \
     apk add libffi-dev && \
+    apk add openssl-dev && \
     apk add redis && \
     apk add sudo && \
-    apk add go-ipfs && \
-    apk add libpq=11.12-r0 && \
-    apk add postgresql=11.12-r0 && \
-    apk add postgresql-client=11.12-r0 && \
-    apk add postgresql-contrib=11.12-r0 && \
-    apk add postgresql-libs=11.12-r0 && \
+    apk add libpq=14.2-r0 && \
+    apk add postgresql=14.2-r0 && \
+    apk add postgresql-client=14.2-r0 && \
+    apk add postgresql-contrib=14.2-r0 && \
+    apk add postgresql-libs=14.2-r0 && \
     apk add python3 && \
     apk add python3-dev && \
     apk add py3-pip && \
     apk add py3-wheel && \
     apk add rsyslog && \
     apk add docker && \
-    apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
+    apk add --virtual .build-deps rust cargo gcc musl-dev postgresql-dev=14.2-r0
 
 COPY requirements.txt requirements.txt
 
@@ -38,7 +38,7 @@ RUN apk add libseccomp-dev && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 
-RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.15/community' >> /etc/apk/repositories && \
     apk add wget && \
     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
@@ -60,17 +60,16 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
 # libffi-dev 3.3-r2
 # redis 6.0.14-r0
 # sudo 1.9.5p2-r0
-# go-ipfs 0.8.0-r0
 # python3 3.8.10-r0
 # python3-dev 3.8.10-r0
 # py3-pip 20.3.4-r0
 # py3-wheel 0.36.2-r0
 
-# libpq 11.12-r0
-# postgresql 11.12-r0
-# postgresql-client 11.12-r0
-# postgresql-contrib 11.12-r0
-# postgresql-libs 11.12-r0
+# libpq 14.2-r0
+# postgresql 14.2-r0
+# postgresql-client 14.2-r0
+# postgresql-contrib 14.2-r0
+# postgresql-libs 14.2-r0
 
 # openresty 1.19.9.1-r0
 

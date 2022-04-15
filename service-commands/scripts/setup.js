@@ -53,6 +53,13 @@ const findCommand = command => {
 }
 
 program
+  .command('init')
+  .description('Initialize repositories')
+  .action(async opts => {
+    await runSetupCommand(Service.INIT_REPOS, SetupCommand.UP, opts)
+  })
+
+program
   .command('up')
   .description('Bring up all services')
   .option(
