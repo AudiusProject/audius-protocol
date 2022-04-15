@@ -37,6 +37,7 @@ npm install
 
 cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 yarn install
+chown -R $(whoami) . # needed for some weird cargo perm err
 npm run build
 
 cd $PROTOCOL_DIR/libs
