@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, TypedDict
+from typing import TypedDict
 
 from celery.app.control import Inspect
 from src.tasks.celery_app import celery
