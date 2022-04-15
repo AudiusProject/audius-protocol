@@ -1,56 +1,23 @@
-from typing import List, TypedDict
-
-from celery import Celery
-from celery.app.control import Inspect
-from src.tasks.celery_app import celery as celery_app
+from src.monitors import monitor_names, monitors
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 
-
-class GetTasksItem(TypedDict):
-
-    # Id of the Celery Task
-    task_id: str
-
-    # Name of the Celery Task
-    task_name: str
-
-    # datetime the task was started at
-    started_at: str
+MONITORS = monitors.MONITORS
 
 
-def get_tasks(injected_app: Celery = None) -> List[GetTasksItem]:
-
-    app = injected_app if injected_app is not None else celery_app
-
-    # Inspect all nodes.
-    i: Inspect = app.control.inspect()
-
-    active = i.active()
-
-    if active is None:
-        return []
-
-    celery_tasks = []
-    for _, tasks in active.items():
-        for task in tasks:
-            try:
-                celery_tasks.append(
-                    GetTasksItem(
-                        task_id=task["id"],
-                        task_name=task["name"],
-                        started_at=task["time_start"],
-                    )
-                )
-
-            except KeyError:
-                continue
+# Returns active celery tasks
+def get_celery_tasks():
+    celery_tasks = monitors.get_monitors(
+        [
+            MONITORS[monitor_names.celery_tasks],
+        ]
+    )
 
     return celery_tasks
 
 
 def celery_tasks_prometheus_exporter():
 
-    tasks = get_tasks()
+    tasks = get_celery_tasks()
 
     metric = PrometheusMetric(
         "celery_running_tasks",
