@@ -6,6 +6,7 @@ const {
   getPermitDigest, sign
 } = require('../utils/signatures')
 const { PublicKey } = require('@solana/web3.js')
+const { BN } = require('@project-serum/anchor')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -32,7 +33,8 @@ class Account extends Base {
     this.searchTags = this.searchTags.bind(this)
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
-    this.userHasAccountOnSol = this.userHasAccountOnSol.bind(this)
+    this.getUserAccountOnSolana = this.getUserAccountOnSolana.bind(this)
+    this.userHasClaimedSolAccount = this.userHasClaimedSolAccount.bind(this)
   }
 
   /**
@@ -597,10 +599,12 @@ class Account extends Base {
   }
 
   /**
-   * Checks that the current user exists (i.e. has an account PDA) on SOL
-   * @returns {boolean} whether the user exists on SOL
+   * Get current user account PDA from SOL given an ID and ETH wallet address
+   * @returns {object} with boolean keys userExistsOnChain, userHasClaimedAccount
    */
-  async userHasAccountOnSol ({ userId, wallet } = { userId: null, wallet: null }) {
+   async getUserAccountOnSolana (
+    { userId, wallet } = { userId: null, wallet: null }
+  ) {
     this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
 
     // If wallet or userId are not passed in, use the user loaded in libs
@@ -610,27 +614,42 @@ class Account extends Base {
       userId = user.userId
     }
 
+    if (!(userId instanceof BN)) {
+      userId = new BN(userId)
+    }
     // matches format for PDA derivation seed in SOL program
-    const userIdSeed = userId.toBuffer('le', 4)
+    // use BN.toArrayLike instead of .toBuffer for browser compat reasons
+    const userIdSeed = userId.toArrayLike(Buffer, 'le', 4)
 
-    const {
-      derivedAddress: userAccountPDA
-    } = await this.solanaWeb3Manager.findDerivedPair(
-      this.solanaWeb3Manager.audiusDataProgramId,
-      this.solanaWeb3Manager.audiusDataAdminStorageKeypairPublicKey,
-      userIdSeed
-    )
+    const { derivedAddress: userAccountPDA } =
+      await this.solanaWeb3Manager.findDerivedPair(
+        this.solanaWeb3Manager.audiusDataProgramId,
+        this.solanaWeb3Manager.audiusDataAdminStorageKeypairPublicKey,
+        userIdSeed
+      )
 
     const account = await this.solanaWeb3Manager.fetchAccount(userAccountPDA)
+    return account || {}
+  }
 
-    if (!account) return false
+  /**
+   * Checks that the current user has claimed account PDA on SOL
+   * @returns {boolean} userHasClaimedAccount
+   */
+  async userHasClaimedSolAccount (
+    { account = null, wallet = null, userId = null } = {
+      account: null,
+      wallet: null,
+      userId: null
+    }
+  ) {
+    if (!account && wallet && userId) {
+      account = await this.getUserAccountOnSolana({ wallet, userId })
+    }
+    const userHasClaimedAccount =
+      PublicKey.default.toString() !== account.authority.toString()
 
-    const derivedEthWallet = await this.solanaWeb3Manager.deriveEthWalletFromAddress(account.ethAddress)
-
-    const userExistsOnChain = derivedEthWallet.toLowerCase() === wallet.toLowerCase()
-    const userUpgradedToSol = PublicKey.default.toString() !== account.authority.toString()
-
-    return userExistsOnChain && userUpgradedToSol
+    return userHasClaimedAccount
   }
 }
 
