@@ -600,7 +600,8 @@ class Account extends Base {
 
   /**
    * Get current user account PDA from SOL given an ID and ETH wallet address
-   * @returns {object} with boolean keys userExistsOnChain, userHasClaimedAccount
+   * @returns {object} with keys ethAddress, authority, replicaSet or
+   * null when account not found
    */
   async getUserAccountOnSolana (
     { userId, wallet } = { userId: null, wallet: null }
@@ -629,7 +630,7 @@ class Account extends Base {
       )
 
     const account = await this.solanaWeb3Manager.fetchAccount(userAccountPDA)
-    return account || {}
+    return account
   }
 
   /**
@@ -643,6 +644,9 @@ class Account extends Base {
       userId: null
     }
   ) {
+    if (!account && !wallet && !userId) {
+      throw new Error('Must supply EITHER an `account` OR `wallet` and `userId` to look up whether userHasClaimedSolAccount')
+    }
     if (!account && wallet && userId) {
       account = await this.getUserAccountOnSolana({ wallet, userId })
     }
