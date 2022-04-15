@@ -152,7 +152,7 @@
     # initialize Content/URSM nodes - initContentNode uses deterministic 
     # addresses and pkeys from eth-contracts ganache chain.
     yarn run ts-node cli/main.ts -f initContentNode \
-        ---owner-keypair "$owner_wallet_path" \
+        --owner-keypair "$owner_wallet_path" \
         --admin-keypair "$admin_keypair_path"\
         --admin-storage-keypair "$admin_storage_keypair_path" \
         --cn-sp-id 1 \
