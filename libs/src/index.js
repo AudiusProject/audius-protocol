@@ -30,8 +30,6 @@ const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 const { Keypair } = require('@solana/web3.js')
 const { PublicKey } = require('@solana/web3.js')
 const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
-const { Idl } = require('@project-serum/anchor')
-
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
@@ -249,8 +247,7 @@ class AudiusLibs {
    * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
    * @param {PublicKey|string} audiusDataAdminStorageKeypairPublicKey admin storage PK for audius-data program
    * @param {PublicKey|string} audiusDataProgramId program ID for the audius-data Anchor program
-   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program. This OR pathToAudiusDataIdl required
-   * @param {string} pathToAudiusDataIdl path to IDL json file for the audius-data Anchor program. This OR audiusDataIdl required.
+   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program.
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -267,13 +264,8 @@ class AudiusLibs {
     confirmationTimeout,
     audiusDataAdminStorageKeypairPublicKey,
     audiusDataProgramId,
-    audiusDataIdl,
-    pathToAudiusDataIdl
+    audiusDataIdl
   }) {
-    let idl = audiusDataIdl
-    if (pathToAudiusDataIdl && !idl) {
-      idl = require(pathToAudiusDataIdl)
-    }
     if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
       audiusDataAdminStorageKeypairPublicKey = new PublicKey(audiusDataAdminStorageKeypairPublicKey)
     }
@@ -295,7 +287,7 @@ class AudiusLibs {
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
-      audiusDataIdl: idl
+      audiusDataIdl
     }
   }
 
