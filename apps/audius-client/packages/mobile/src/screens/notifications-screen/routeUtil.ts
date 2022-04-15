@@ -1,4 +1,3 @@
-import { StackNavigationOptions } from '@react-navigation/stack'
 import { Track } from 'audius-client/src/common/models/Track'
 import {
   Achievement,
@@ -8,6 +7,7 @@ import {
 } from 'audius-client/src/common/store/notifications/types'
 import Config from 'react-native-config'
 
+import { ContextualParams } from 'app/hooks/useNavigation'
 import {
   getTrackRoute,
   getUserRoute,
@@ -44,24 +44,24 @@ export const getEntityRoute = (
 export const getEntityScreen = (
   entity: any,
   entityType: Entity,
-  screenOptions: StackNavigationOptions
+  contextualParams: ContextualParams
 ) => {
   switch (entityType) {
     case Entity.Track:
       return {
         screen: 'Track' as const,
-        params: { id: entity.track_id, ...screenOptions }
+        params: { id: entity.track_id, ...contextualParams }
       }
     case Entity.User:
       return {
         screen: 'Profile' as const,
-        params: { handle: entity.handle, ...screenOptions }
+        params: { handle: entity.handle, ...contextualParams }
       }
     case Entity.Album:
     case Entity.Playlist:
       return {
         screen: 'Collection' as const,
-        params: { id: entity.playlist_id, ...screenOptions }
+        params: { id: entity.playlist_id, ...contextualParams }
       }
   }
 }
@@ -115,7 +115,7 @@ export const getNotificationRoute = (notification: Notification) => {
 
 export const getNotificationScreen = (
   notification: Notification,
-  screenOptions: StackNavigationOptions
+  contextualParams: ContextualParams
 ) => {
   switch (notification.type) {
     case NotificationType.Announcement:
@@ -127,7 +127,7 @@ export const getNotificationScreen = (
         return {
           screen: 'NotificationUsers' as const,
           params: {
-            ...screenOptions,
+            ...contextualParams,
             notificationType: notification.type,
             count: users.length,
             id: notification.id
@@ -139,7 +139,7 @@ export const getNotificationScreen = (
       return {
         screen: 'Profile' as const,
         params: {
-          ...screenOptions,
+          ...contextualParams,
           handle: firstUser.handle
         }
       }
@@ -149,19 +149,19 @@ export const getNotificationScreen = (
       return getEntityScreen(
         notification.entities[0],
         notification.entityType,
-        screenOptions
+        contextualParams
       )
     case NotificationType.Favorite:
       return getEntityScreen(
         notification.entity,
         notification.entityType,
-        screenOptions
+        contextualParams
       )
     case NotificationType.Repost:
       return getEntityScreen(
         notification.entity,
         notification.entityType,
-        screenOptions
+        contextualParams
       )
     case NotificationType.Milestone:
       if (notification.achievement === Achievement.Followers) {
@@ -169,37 +169,37 @@ export const getNotificationScreen = (
         const { handle } = notification.user
         return {
           screen: 'Profile' as const,
-          params: { ...screenOptions, handle }
+          params: { ...contextualParams, handle }
         }
       }
       return getEntityScreen(
         notification.entity,
         notification.entityType,
-        screenOptions
+        contextualParams
       )
     case NotificationType.RemixCosign: {
       const original = notification.entities.find(
         (track: Track) => track.owner_id === notification.parentTrackUserId
       )
-      return getEntityScreen(original, Entity.Track, screenOptions)
+      return getEntityScreen(original, Entity.Track, contextualParams)
     }
     case NotificationType.RemixCreate: {
       const remix = notification.entities.find(
         (track: Track) => track.track_id === notification.childTrackId
       )
-      return getEntityScreen(remix, Entity.Track, screenOptions)
+      return getEntityScreen(remix, Entity.Track, contextualParams)
     }
     case NotificationType.TrendingTrack:
       return getEntityScreen(
         notification.entity,
         notification.entityType,
-        screenOptions
+        contextualParams
       )
     case NotificationType.ChallengeReward:
     case NotificationType.TierChange:
       return {
         screen: 'AudioScreen' as const,
-        params: screenOptions
+        params: contextualParams
       }
   }
 }

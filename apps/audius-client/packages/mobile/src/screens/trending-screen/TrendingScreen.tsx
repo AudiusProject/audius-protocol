@@ -8,6 +8,7 @@ import { RewardsBanner } from 'app/components/audio-rewards'
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
+import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { TrendingFilterButton } from './TrendingFilterButton'
@@ -53,6 +54,8 @@ const trendingScreens = [
 ]
 
 export const TrendingScreen = () => {
+  usePopToTopOnDrawerOpen()
+
   return (
     <Screen>
       <Header text='Trending'>
