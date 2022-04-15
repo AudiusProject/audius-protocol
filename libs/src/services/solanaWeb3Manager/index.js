@@ -1,10 +1,7 @@
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const anchor = require('@project-serum/anchor')
-const {
-  idl,
-  programId
- } = require('@audius/anchor-audius-data')
+const { idl, programId } = require('@audius/anchor-audius-data')
 
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
@@ -17,7 +14,12 @@ const { wAudioFromWeiAudio } = require('./wAudio')
 const { Utils } = require('../../utils')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
-const { submitAttestations, evaluateAttestations, createSender, deriveSolanaSenderFromEthAddress } = require('./rewards')
+const {
+  submitAttestations,
+  evaluateAttestations,
+  createSender,
+  deriveSolanaSenderFromEthAddress
+} = require('./rewards')
 const { AUDIO_DECMIALS, WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
@@ -79,11 +81,7 @@ class SolanaWeb3Manager {
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
-  constructor (
-    solanaWeb3Config,
-    identityService,
-    web3Manager
-  ) {
+  constructor(solanaWeb3Config, identityService, web3Manager) {
     this.solanaWeb3Config = solanaWeb3Config
     this.identityService = identityService
     this.web3Manager = web3Manager
@@ -92,7 +90,7 @@ class SolanaWeb3Manager {
     this.splToken = splToken
   }
 
-  async init () {
+  async init() {
     const {
       solanaClusterEndpoint,
       mintAddress,
@@ -113,7 +111,8 @@ class SolanaWeb3Manager {
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, {
-      confirmTransactionInitialTimeout: confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
+      confirmTransactionInitialTimeout:
+        confirmationTimeout || DEFAULT_CONNECTION_CONFIRMATION_TIMEOUT_MS
     })
 
     this.transactionHandler = new TransactionHandler({
@@ -134,41 +133,83 @@ class SolanaWeb3Manager {
       this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerAddress)
     } else if (feePayerKeypairs && feePayerKeypairs.length) {
       this.feePayerAddress = feePayerKeypairs[0].publicKey
-      this.feePayerKey = SolanaUtils.newPublicKeyNullable(feePayerKeypairs[0].publicKey)
+      this.feePayerKey = SolanaUtils.newPublicKeyNullable(
+        feePayerKeypairs[0].publicKey
+      )
     }
 
-    this.claimableTokenProgramKey = SolanaUtils.newPublicKeyNullable(claimableTokenProgramAddress)
-    this.claimableTokenPDA = claimableTokenPDA || (
-      this.claimableTokenProgramKey ? ((await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()) : null
+    this.claimableTokenProgramKey = SolanaUtils.newPublicKeyNullable(
+      claimableTokenProgramAddress
     )
-    this.claimableTokenPDAKey = SolanaUtils.newPublicKeyNullable(this.claimableTokenPDA)
-    this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramId)
-    this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerProgramPDA)
-    this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(rewardsManagerTokenPDA)
-    this.audiusDataProgramId = audiusDataProgramId || programId || process.env.AUDIUS_DATA_PROGRAM_ID
-    this.audiusDataAdminStorageKeypairPublicKey = audiusDataAdminStorageKeypairPublicKey || process.env.AUDIUS_DATA_ADMIN_STORAGE_PUBLIC_KEY
-    
-    const connection = new solanaWeb3.Connection(this.solanaClusterEndpoint, anchor.Provider.defaultOptions())
-    const anchorProvider = new anchor.Provider(connection, solanaWeb3.Keypair.generate(), anchor.Provider.defaultOptions())
-    
+    this.claimableTokenPDA =
+      claimableTokenPDA ||
+      (this.claimableTokenProgramKey
+        ? (
+            await SolanaUtils.findProgramAddressFromPubkey(
+              this.claimableTokenProgramKey,
+              this.mintKey
+            )
+          )[0].toString()
+        : null)
+    this.claimableTokenPDAKey = SolanaUtils.newPublicKeyNullable(
+      this.claimableTokenPDA
+    )
+    this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(
+      rewardsManagerProgramId
+    )
+    this.rewardManagerProgramPDA = SolanaUtils.newPublicKeyNullable(
+      rewardsManagerProgramPDA
+    )
+    this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(
+      rewardsManagerTokenPDA
+    )
+    this.audiusDataProgramId =
+      audiusDataProgramId || programId || process.env.AUDIUS_DATA_PROGRAM_ID
+    this.audiusDataAdminStorageKeypairPublicKey =
+      audiusDataAdminStorageKeypairPublicKey ||
+      process.env.AUDIUS_DATA_ADMIN_STORAGE_PUBLIC_KEY
+
     this.audiusDataIdl = audiusDataIdl || idl
-    this.anchorProgram = new anchor.Program(this.audiusDataIdl, audiusDataProgramId, anchorProvider)
-    console.log('AAAAAAAAAa==============================', this)
+
+    if (
+      this.audiusDataProgramId &&
+      this.audiusDataAdminStorageKeypairPublicKey &&
+      this.audiusDataIdl
+    ) {
+      const connection = new solanaWeb3.Connection(
+        this.solanaClusterEndpoint,
+        anchor.Provider.defaultOptions()
+      )
+      const anchorProvider = new anchor.Provider(
+        connection,
+        solanaWeb3.Keypair.generate(),
+        anchor.Provider.defaultOptions()
+      )
+      this.anchorProgram = new anchor.Program(
+        this.audiusDataIdl,
+        audiusDataProgramId,
+        anchorProvider
+      )
+      console.log('AAAAAAAAAa==============================', this)
+    }
   }
 
   /**
    * Creates a solana bank account from the web3 provider's eth address
    */
-  async createUserBank (feePayerOverride) {
+  async createUserBank(feePayerOverride) {
     if (!this.web3Manager) {
-      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
     }
 
     const ethAddress = this.web3Manager.getWalletAddress()
     return createUserBankFrom({
       ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
-      feePayerKey: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+      feePayerKey:
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       mintKey: this.mintKey,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
@@ -182,7 +223,7 @@ class SolanaWeb3Manager {
    * See https://spl.solana.com/associated-token-account
    * @param {string} solanaAddress
    */
-  async createAssociatedTokenAccount (solanaAddress) {
+  async createAssociatedTokenAccount(solanaAddress) {
     await createAssociatedTokenAccount({
       feePayerKey: this.feePayerKey,
       solanaWalletKey: new PublicKey(solanaAddress),
@@ -198,7 +239,7 @@ class SolanaWeb3Manager {
    * See https://spl.solana.com/associated-token-account
    * @param {string} solanaAddress
    */
-  async findAssociatedTokenAddress (solanaAddress) {
+  async findAssociatedTokenAddress(solanaAddress) {
     return findAssociatedTokenAddress({
       solanaWalletKey: new PublicKey(solanaAddress),
       mintKey: this.mintKey,
@@ -210,9 +251,11 @@ class SolanaWeb3Manager {
    * Gets a solana bank account from the current we3 provider's eth address
    * @returns {PublicKey} UserBank
    */
-  async getUserBank () {
+  async getUserBank() {
     if (!this.web3Manager) {
-      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
     }
     const ethAddress = this.web3Manager.getWalletAddress()
     const bank = await getBankAccountAddress(
@@ -228,7 +271,7 @@ class SolanaWeb3Manager {
    * If the solanaAddress is not a valid token account, returns `null`
    * @returns {AccountInfo | null}
    */
-  async getAssociatedTokenAccountInfo (solanaAddress) {
+  async getAssociatedTokenAccountInfo(solanaAddress) {
     try {
       const res = await getAssociatedTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
@@ -246,15 +289,19 @@ class SolanaWeb3Manager {
    * Gets the SPL waudio balance for a solana address in wei with 18 decimals
    * @returns {BN | null}
    */
-  async getWAudioBalance (solanaAddress) {
+  async getWAudioBalance(solanaAddress) {
     try {
       let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
 
       // If the token account doesn't exist, check if solanaAddress is a root account
       // if so, derive the associated token account & check that balance
       if (!tokenAccount) {
-        const associatedTokenAccount = await this.findAssociatedTokenAddress(solanaAddress)
-        tokenAccount = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+        const associatedTokenAccount = await this.findAssociatedTokenAddress(
+          solanaAddress
+        )
+        tokenAccount = await this.getAssociatedTokenAccountInfo(
+          associatedTokenAccount.toString()
+        )
         if (!tokenAccount) {
           return null
         }
@@ -283,28 +330,40 @@ class SolanaWeb3Manager {
    * Generally speaking, callers into the solanaWeb3Manager should use BN.js representation
    * of wei $AUDIO for all method calls
    */
-  async transferWAudio (recipientSolanaAddress, amount) {
+  async transferWAudio(recipientSolanaAddress, amount) {
     if (!this.web3Manager) {
-      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
     }
 
     // Check if the solana address is a token account
-    let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(recipientSolanaAddress)
+    let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(
+      recipientSolanaAddress
+    )
     if (!tokenAccountInfo) {
       console.info('Provided recipient solana address was not a token account')
       // If not, check to see if it already has an associated token account.
-      const associatedTokenAccount = await this.findAssociatedTokenAddress(recipientSolanaAddress)
-      tokenAccountInfo = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+      const associatedTokenAccount = await this.findAssociatedTokenAddress(
+        recipientSolanaAddress
+      )
+      tokenAccountInfo = await this.getAssociatedTokenAccountInfo(
+        associatedTokenAccount.toString()
+      )
 
       // If it's not a valid token account, we need to make one first
       if (!tokenAccountInfo) {
-        console.info('Provided recipient solana address has no associated token account, creating')
+        console.info(
+          'Provided recipient solana address has no associated token account, creating'
+        )
         await this.createAssociatedTokenAccount(recipientSolanaAddress)
       }
       recipientSolanaAddress = associatedTokenAccount.toString()
     }
 
-    console.info(`Transfering ${amount.toString()} wei $AUDIO to ${recipientSolanaAddress}`)
+    console.info(
+      `Transfering ${amount.toString()} wei $AUDIO to ${recipientSolanaAddress}`
+    )
 
     const wAudioAmount = wAudioFromWeiAudio(amount)
 
@@ -356,7 +415,7 @@ class SolanaWeb3Manager {
    *    }
    * @memberof SolanaWeb3Manager
    */
-  async submitChallengeAttestations ({
+  async submitChallengeAttestations({
     attestations,
     oracleAttestation,
     challengeId,
@@ -374,7 +433,8 @@ class SolanaWeb3Manager {
       oracleAttestation,
       challengeId,
       specifier,
-      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+      feePayer:
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
       transactionHandler: this.transactionHandler,
@@ -404,7 +464,7 @@ class SolanaWeb3Manager {
    *   }
    * @memberof SolanaWeb3Manager
    */
-  async evaluateChallengeAttestations ({
+  async evaluateChallengeAttestations({
     challengeId,
     specifier,
     recipientEthAddress,
@@ -422,7 +482,8 @@ class SolanaWeb3Manager {
       recipientEthAddress,
       userBankProgramAccount: this.claimableTokenPDAKey,
       oracleEthAddress,
-      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+      feePayer:
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       tokenAmount,
       transactionHandler: this.transactionHandler,
       logger
@@ -439,7 +500,7 @@ class SolanaWeb3Manager {
    * }} {
    * @memberof SolanaWeb3Manager
    */
-  async createSender ({
+  async createSender({
     senderEthAddress,
     operatorEthAddress,
     attestations,
@@ -449,7 +510,8 @@ class SolanaWeb3Manager {
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
       senderEthAddress,
-      feePayer: SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
+      feePayer:
+        SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
       operatorEthAddress,
       attestations,
       identityService: this.identityService,
@@ -467,7 +529,7 @@ class SolanaWeb3Manager {
    * @return {Promise<number>}
    * @memberof SolanaWeb3Manager
    */
-  async getBalance ({ publicKey }) {
+  async getBalance({ publicKey }) {
     const lamports = await this.connection.getBalance(publicKey)
     return lamports * SOL_PER_LAMPORT
   }
@@ -482,16 +544,16 @@ class SolanaWeb3Manager {
    * @return {Promise<boolean>}
    * @memberof SolanaWeb3Manager
    */
-  async hasBalance ({ publicKey, epsilon = ZERO_SOL_EPSILON }) {
+  async hasBalance({ publicKey, epsilon = ZERO_SOL_EPSILON }) {
     const balance = await this.getBalance({ publicKey })
     return balance > epsilon
   }
 
-  async getSlot () {
+  async getSlot() {
     return this.connection.getSlot('processed')
   }
 
-  async getRandomFeePayer () {
+  async getRandomFeePayer() {
     return this.identityService.getRandomFeePayer()
   }
 
@@ -502,7 +564,7 @@ class SolanaWeb3Manager {
    * @return {Promise<boolean>}
    * @memberof SolanaWeb3Manager
    */
-  async getIsDiscoveryNodeRegistered (senderEthAddress) {
+  async getIsDiscoveryNodeRegistered(senderEthAddress) {
     const derivedSenderSolanaAddress = await deriveSolanaSenderFromEthAddress(
       senderEthAddress,
       this.rewardManagerProgramId,
@@ -513,7 +575,7 @@ class SolanaWeb3Manager {
     return !!res
   }
 
-  async findProgramAddress (programId, pubkey) {
+  async findProgramAddress(programId, pubkey) {
     return PublicKey.findProgramAddress(
       [pubkey.toBytes().slice(0, 32)],
       programId
@@ -529,7 +591,7 @@ class SolanaWeb3Manager {
    * @param {string} seed
    * @returns the program address
    */
-  async findDerivedAddress (programId, base, seed) {
+  async findDerivedAddress(programId, base, seed) {
     return PublicKey.findProgramAddress(
       [base.toBytes().slice(0, 32), seed],
       programId
@@ -543,7 +605,7 @@ class SolanaWeb3Manager {
    * @param {PublicKey} adminAccount
    * @param {string} seed
    */
-  async findDerivedPair (programId, adminAccount, seed) {
+  async findDerivedPair(programId, adminAccount, seed) {
     programId = SolanaUtils.newPublicKeyNullable(programId)
     adminAccount = SolanaUtils.newPublicKeyNullable(adminAccount)
 
@@ -567,7 +629,7 @@ class SolanaWeb3Manager {
    * Fetch account on Solana given the program derived address
    * @param {PublicKey} pda the program derived address from findDerivedPair()
    */
-  async fetchAccount (pda) {
+  async fetchAccount(pda) {
     let account
     try {
       account = await this.anchorProgram.account.user.fetch(pda)
@@ -582,7 +644,7 @@ class SolanaWeb3Manager {
    * @param {Buffer} accountEthAddress
    * @returns hex string of input bytes
    */
-  async deriveEthWalletFromAddress (accountEthAddress) {
+  async deriveEthWalletFromAddress(accountEthAddress) {
     let encodedEthAddress = Buffer.from(accountEthAddress).toString('hex')
 
     if (!encodedEthAddress.startsWith('0x')) {

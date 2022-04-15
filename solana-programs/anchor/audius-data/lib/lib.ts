@@ -12,8 +12,6 @@ import idll from '../target/idl/audius_data.json';
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
-// import idl2 from '../target/idl/a.json';
-// export { idl2 };
 /**
  * Audius Admin
  */
