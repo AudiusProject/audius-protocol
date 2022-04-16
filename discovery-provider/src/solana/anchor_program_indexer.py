@@ -8,7 +8,7 @@ from redis import Redis
 from solana.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models.models import AudiusDataTx, User
+from src.models.models import AudiusDataTx, URSMContentNode, User
 from src.solana.anchor_parser import AnchorParser
 from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
@@ -152,7 +152,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             ).update({"is_current": False}, synchronize_session="fetch")
 
     def extract_ids(self, processed_transactions: List[ParsedTx]):
-        entites: Dict[str, Set[str]] = defaultdict(lambda: set())
+        entities: Dict[str, Set[str]] = defaultdict(lambda: set())
 
         for transaction in processed_transactions:
             instructions = transaction["tx_metadata"]["instructions"]
@@ -205,7 +205,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "remove_user_authority_delegate":
                     pass
 
-        return entites
+        return entities
 
     async def parse_tx(self, tx_sig: str) -> ParsedTx:
         tx_receipt = self._solana_client_manager.get_sol_tx_info(tx_sig, 5, "base64")
@@ -257,19 +257,24 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 asyncio.run(self.process_txs_batch(tx_sig_batch_records))
         self.msg("Finished processing indexing task")
 
-    # TODO - Override with actual remote fetch operation
-    # parsed_transactions will contain an array of txs w/instructions
-    # each containing relevant metadata in container
+    # TODO existing user records will be passed in
     async def fetch_cid_metadata(
         self, parsed_transactions: List[ParsedTx]
     ) -> Tuple[Dict[str, Dict], Set[str]]:
-
         cid_to_user_id: Dict[str, int] = {}
         cids_txhash_set: Set[Tuple[str, str]] = set()
         cid_to_entity_type: Dict[str, str] = {}  # cid -> entity type track / user
         blacklisted_cids: Set[str] = set()
+        user_replica_set: Dict[int, str] = {}
 
         with self.db.scoped_session() as session:
+            cnode_endpoint_dict = dict(
+                session.query(URSMContentNode.cnode_sp_id, URSMContentNode.endpoint)
+                .filter(
+                    URSMContentNode.is_current == True,
+                )
+                .all()
+            )
 
             # any instructions with  metadata
             for transaction in parsed_transactions:
@@ -288,25 +293,29 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                             cid_to_entity_type[cid] = self.instruction_type[
                                 instruction["instruction_name"]
                             ]
+                            # TODO add logic to use existing user records: account -> endpoint
+                            if "user_id" in instruction["data"]:
+                                user_id = instruction["data"]["user_id"]
+                                endpoints = []
+                                for sp_id in instruction["data"]["replica_set"]:
+                                    endpoints.append(cnode_endpoint_dict[sp_id])
+                                user_replica_set[user_id] = ",".join(endpoints)
+                                cid_to_user_id[cid] = user_id
 
-                        # TODO update once user_id changes are merged in
-                        # NOTE: for update user, the user_id is not passes as an arg, so
-                        # the user's id should be queried for via their account
-                        cid_to_user_id[cid] = 1
-
-            # NOTE: For new users, we will need to map the content nodes in the account params
-            # of the transaction to their endpoint
-            user_replica_set = dict(
-                session.query(User.user_id, User.creator_node_endpoint)
-                .filter(
-                    User.is_current == True,
-                    User.user_id.in_(cid_to_user_id.values()),
+            # TODO use existing user records instead of querying here
+            user_replica_set.update(
+                dict(
+                    session.query(User.user_id, User.creator_node_endpoint)
+                    .filter(
+                        User.is_current == True,
+                        User.user_id.in_(cid_to_user_id.values()),
+                    )
+                    .group_by(User.user_id, User.creator_node_endpoint)
+                    .all()
                 )
-                .group_by(User.user_id, User.creator_node_endpoint)
-                .all()
             )
 
-        cid_metadata = (
+        metadata_dict = (
             await self.cid_metadata_client.async_fetch_metadata_from_gateway_endpoints(
                 cids_txhash_set,
                 cid_to_user_id,
@@ -314,4 +323,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 cid_to_entity_type,
             )
         )
-        return cid_metadata, blacklisted_cids
+
+        for cid in metadata_dict:
+            user_id = cid_to_user_id[cid]
+            metadata_dict[cid]["creator_node_endpoint"] = user_replica_set[user_id]
+
+        return metadata_dict, blacklisted_cids

@@ -53,3 +53,6 @@ server.log
 compose/env/tmp*/
 
 .python-version
+
+# anchor idl
+idl/
