@@ -73,7 +73,7 @@ class Users extends Base {
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
-    this._cleanUserMetadata = this._cleanUserMetadata.bind(this)
+    this.cleanUserMetadata = this.cleanUserMetadata.bind(this)
 
     // For adding a creator_node_endpoint for a user if null
     this.assignReplicaSetIfNecessary = this.assignReplicaSetIfNecessary.bind(this)
@@ -289,9 +289,9 @@ class Users extends Base {
    * Util to upload profile picture and cover photo images and update
    * a metadata object. This method inherently calls triggerSecondarySyncs().
    * @param {?File} profilePictureFile an optional file to upload as the profile picture
-   * @param {?File} coverPhotoFile an optional file to upload as the cover phtoo
+   * @param {?File} coverPhotoFile an optional file to upload as the cover photo
    * @param {Object} metadata to update
-   * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
+   * @returns {Object} the passed in metadata object with profile_picture_sizes and cover_photo_sizes fields added
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
     let didMetadataUpdate = false
@@ -323,7 +323,7 @@ class Users extends Base {
    */
   async addUser (metadata) {
     this.IS_OBJECT(metadata)
-    const newMetadata = this._cleanUserMetadata(metadata)
+    const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
     let userId
@@ -343,7 +343,7 @@ class Users extends Base {
     this.userStateManager.setCurrentUser({
       ...newMetadata,
       // Initialize counts to be 0. We don't want to write this data to backends ever really
-      // (hence the _cleanUserMetadata above), but we do want to make sure clients
+      // (hence the cleanUserMetadata above), but we do want to make sure clients
       // can properly "do math" on these numbers.
       followee_count: 0,
       follower_count: 0,
@@ -360,7 +360,7 @@ class Users extends Base {
   async updateUser (userId, metadata) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
-    const newMetadata = this._cleanUserMetadata(metadata)
+    const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
     // Retrieve the current user metadata
@@ -383,7 +383,7 @@ class Users extends Base {
   async updateCreator (userId, metadata) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
-    const newMetadata = this._cleanUserMetadata(metadata)
+    const newMetadata = this.cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
     const logPrefix = `[User:updateCreator()] [userId: ${userId}]`
@@ -473,7 +473,7 @@ class Users extends Base {
     let startMs = fnStartMs
 
     // Clean and validate metadata
-    const newMetadata = this._cleanUserMetadata({ ...user })
+    const newMetadata = this.cleanUserMetadata({ ...user })
     this._validateUserMetadata(newMetadata)
 
     // Populate metadata with required fields - wallet, is_creator, creator_node_endpoint
@@ -602,7 +602,7 @@ class Users extends Base {
     const oldMetadata = this.userStateManager.getCurrentUser()
     if (!oldMetadata) { throw new Error('No current user.') }
 
-    newMetadata = this._cleanUserMetadata(newMetadata)
+    newMetadata = this.cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
 
     const logPrefix = `[User:updateAndUploadMetadata()] [userId: ${userId}]`
@@ -821,7 +821,7 @@ Object.prototype.hasOwnProperty.call(replicaSet, 'secondaryIds') &&
    * - Add what user props might be missing to normalize
    * - Only keep core fields in USER_PROPS and 'user_id'.
    */
-  _cleanUserMetadata (metadata) {
+  cleanUserMetadata (metadata) {
     USER_PROPS.forEach(prop => {
       if (!(prop in metadata)) { metadata[prop] = null }
     })

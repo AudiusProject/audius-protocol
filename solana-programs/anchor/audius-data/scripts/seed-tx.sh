@@ -46,7 +46,7 @@ yarn run ts-node cli/main.ts -f initUser \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --user-replica-set 1,2,3 \
-    --handle handlebcdef \
+    --user-id 1 \
     -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 | tee /tmp/initUserOutput.txt
 
 USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
@@ -70,7 +70,7 @@ yarn run ts-node cli/main.ts -f createTrack \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --handle handlebcdef # metadata CID that would point off-chain is randomly generated here
+    --user-id 1 # metadata CID that would point off-chain is randomly generated here
 
 echo "Creating playlist"
 
@@ -79,7 +79,7 @@ yarn run ts-node cli/main.ts -f createPlaylist \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --handle handlebcdef | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
+    --user-id 1 | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
 
 PLAYLIST_ID=$(cut -d '=' -f 3 <<< $(cat /tmp/createPlaylistOutput.txt | grep "Transacting on entity"))
 
@@ -91,7 +91,7 @@ yarn run ts-node cli/main.ts -f updatePlaylist \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
-    --handle handlebcdef # metadata CID that would point off-chain is randomly generated here 
+    --user-id 1 # metadata CID that would point off-chain is randomly generated here 
 
 echo "Deleting playlist"
 
@@ -101,7 +101,7 @@ yarn run ts-node cli/main.ts -f deletePlaylist \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
-    --handle handlebcdef
+    --user-id 1
 
 echo "Successfully seeded tx:"
 

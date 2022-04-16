@@ -1,4 +1,5 @@
 import { SubmitAndEvaluateError } from '../../api/rewards'
+import type { ServiceWithEndpoint } from '../../utils'
 import { Utils } from '../../utils/utils'
 
 const { decodeHashId } = Utils
@@ -41,6 +42,7 @@ class BaseRewardsReporter {
 const MAX_DISBURSED_CACHE_SIZE = 100
 const SOLANA_EST_SEC_PER_SLOT = 0.5
 const POA_SEC_PER_BLOCK = 5
+const MAX_DISCOVERY_NODE_BLOCKLIST_LEN = 10
 
 type ATTESTER_PHASE =
   | 'HALTED'
@@ -197,6 +199,7 @@ type Challenge = {
 type AttestationResult = Challenge & {
   error?: string
   phase?: string
+  nodesToReselect?: string[] | null
 }
 
 type DiscoveryNodeChallenge = {
@@ -213,6 +216,7 @@ type AttesterState = {
   phase: ATTESTER_PHASE
   lastSuccessChallengeTime: number | null
   lastChallengeTime: number | null
+  lastActionTime: number
 }
 
 /**
@@ -253,6 +257,7 @@ export class RewardsAttester {
   private aaoAddress: string
   private endpointPool: Set<string>
   private challengeIdsDenyList: Set<string>
+  private discoveryNodeBlocklist: string[]
 
   private readonly libs: any
   private readonly logger: Console
@@ -338,7 +343,8 @@ export class RewardsAttester {
     this.attesterState = {
       phase: 'HALTED',
       lastSuccessChallengeTime: null,
-      lastChallengeTime: null
+      lastChallengeTime: null,
+      lastActionTime: Date.now()
     }
 
     // Calculate delay
@@ -354,6 +360,7 @@ export class RewardsAttester {
     this._disbursementToKey = this._disbursementToKey.bind(this)
     this._shouldStop = false
     this._updateStateCallback = updateStateCallback
+    this.discoveryNodeBlocklist = []
   }
 
   /**
@@ -558,6 +565,7 @@ export class RewardsAttester {
     this.offset = 0
     this.recentlyDisbursedQueue = []
     this.undisbursedQueue = []
+    this.discoveryNodeBlocklist = []
   }
 
   /**
@@ -595,6 +603,7 @@ export class RewardsAttester {
     let accumulatedErrors: AttestationResult[] = []
     let successCount = 0
     let offset = 0
+    let failingNodes: string[] = []
 
     do {
       // Attempt to attest in a single sweep
@@ -621,11 +630,25 @@ export class RewardsAttester {
         successful,
         noRetry,
         needsRetry: needsAttestation,
-        shouldReselect
+        shouldReselect,
+        failingNodes
       } = await this._processResponses(
         results,
         retryCount === this.maxRetries - 1
       ))
+
+      // Add failing nodes to the blocklist, trimming out oldest nodes if necessary
+      if (failingNodes?.length) {
+        const existing = new Set(this.discoveryNodeBlocklist)
+        failingNodes.forEach((n) => {
+          if (!existing.has(n)) {
+            this.discoveryNodeBlocklist.push(n)
+          }
+        })
+        this.discoveryNodeBlocklist = this.discoveryNodeBlocklist.slice(
+          -1 * MAX_DISCOVERY_NODE_BLOCKLIST_LEN
+        )
+      }
 
       successCount += successful.length
       accumulatedErrors = [...accumulatedErrors, ...noRetry]
@@ -674,8 +697,8 @@ export class RewardsAttester {
       )}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`
     )
 
-    const { success, error, phase } = await this.libs.Rewards.submitAndEvaluate(
-      {
+    const { success, error, phase, nodesToReselect } =
+      await this.libs.Rewards.submitAndEvaluate({
         challengeId,
         encodedUserId: userId,
         handle,
@@ -689,8 +712,7 @@ export class RewardsAttester {
         logger: this.logger,
         feePayerOverride: this._getFeePayer(),
         maxAggregationAttempts: this.maxAggregationAttempts
-      }
-    )
+      })
 
     if (success) {
       this.logger.info(
@@ -705,7 +727,8 @@ export class RewardsAttester {
         amount,
         handle,
         wallet,
-        completedBlocknumber
+        completedBlocknumber,
+        nodesToReselect: null
       }
     }
 
@@ -727,24 +750,32 @@ export class RewardsAttester {
       wallet,
       completedBlocknumber,
       error,
-      phase
+      phase,
+      nodesToReselect
     }
   }
 
   async _selectDiscoveryNodes() {
     await this._updatePhase('SELECTING_NODES')
-    this.logger.info('Selecting discovery nodes...')
+    this.logger.info(
+      `Selecting discovery nodes with blocklist ${JSON.stringify(
+        this.discoveryNodeBlocklist
+      )}`
+    )
     const startTime = Date.now()
-    const endpoints = await this.libs.discoveryProvider.serviceSelector.findAll(
-      {
+    let endpoints: ServiceWithEndpoint[] =
+      (await this.libs.discoveryProvider.serviceSelector.findAll({
         verbose: true,
         whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
-      }
-    )
+      })) ?? []
+    // Filter out blocklisted nodes
+    const blockSet = new Set(this.discoveryNodeBlocklist)
+    endpoints = [...endpoints].filter((e) => !blockSet.has(e.endpoint))
+
     this.endpoints =
       await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(
         this.quorumSize,
-        Array.from(endpoints)
+        endpoints
       )
     this.logger.info(
       `Selected new discovery nodes in ${
@@ -855,6 +886,7 @@ export class RewardsAttester {
     noRetry: AttestationResult[]
     needsRetry: AttestationResult[]
     shouldReselect: boolean
+    failingNodes: string[]
   }> {
     const errors = SubmitAndEvaluateError
     const AAO_ERRORS = new Set([
@@ -954,6 +986,19 @@ export class RewardsAttester {
       NEEDS_RESELECT_ERRORS.has(error)
     )
 
+    let failingNodes: string[] = []
+    if (shouldReselect) {
+      failingNodes = [
+        ...needsRetry.reduce((acc, cur) => {
+          if (cur.nodesToReselect) {
+            cur.nodesToReselect?.forEach((n) => acc.add(n))
+          }
+          return acc
+        }, new Set<string>())
+      ]
+      this.logger.info(`Failing nodes: ${JSON.stringify(failingNodes)}`)
+    }
+
     // Update state
     const now = Date.now()
     let update: {
@@ -973,7 +1018,8 @@ export class RewardsAttester {
       successful,
       noRetry,
       needsRetry,
-      shouldReselect
+      shouldReselect,
+      failingNodes
     }
   }
 
@@ -1032,7 +1078,8 @@ export class RewardsAttester {
     try {
       this.attesterState = {
         ...this.attesterState,
-        ...newState
+        ...newState,
+        lastActionTime: Date.now()
       }
       await this._updateStateCallback(this.attesterState)
     } catch (e) {

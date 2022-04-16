@@ -4,10 +4,10 @@ const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 
 const models = require('../models')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
-const solClient = require('../solana-client.js')
+const { createTrackListenTransaction, getFeePayerKeypair, sendAndSignTransaction } = require('../solana-client.js')
 const config = require('../config.js')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
@@ -302,6 +302,7 @@ module.exports = function (app) {
   app.post('/tracks/:id/listen', handleResponse(async (req, res) => {
     const libs = req.app.get('audiusLibs')
     const connection = libs.solanaWeb3Manager.connection
+    const solanaWeb3 = libs.solanaWeb3Manager.solanaWeb3
     const redis = req.app.get('redis')
     const trackId = parseInt(req.params.id)
     const userId = req.body.userId
@@ -312,6 +313,9 @@ module.exports = function (app) {
     const optimizelyClient = app.get('optimizelyClient')
     const isSolanaListenEnabled = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_LISTEN_ENABLED_SERVER)
     const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
+    const timeout = req.body.timeout || 60000
+
+    const sendRawTransaction = req.body.sendRawTransaction || getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_SEND_RAW_TRANSACTION) || false
 
     const currentHour = trimToHour(new Date())
     // Dedicated listen flow
@@ -329,38 +333,65 @@ module.exports = function (app) {
       await redis.incr(trackingRedisKeys.submission)
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
 
-      const response = await retry(async () => {
-        let solTxSignature = await solClient.createAndVerifyMessage(
-          connection,
-          null,
-          config.get('solanaSignerPrivateKey'),
-          userId.toString(),
-          trackId.toString(),
-          'relay' // Static source value to indicate relayed listens
-        )
-        req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+      try {
+        let trackListenTransaction = await createTrackListenTransaction({
+          validSigner: null,
+          privateKey: config.get('solanaSignerPrivateKey'),
+          userId: userId.toString(),
+          trackId: trackId.toString(),
+          source: 'relay',
+          connection
+        })
+        let feePayerAccount = getFeePayerKeypair(false)
+        let solTxSignature
+        if (sendRawTransaction) {
+          req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`)
+          solTxSignature = await sendAndSignTransaction(
+            connection,
+            trackListenTransaction,
+            feePayerAccount,
+            timeout,
+            logger
+          )
+        } else {
+          await retry(async () => {
+            req.logger.info(`TrackListen tx submission, trackId=${trackId} userId=${userId} - sendAndConfirmTransaction`)
+            solTxSignature = await solanaWeb3.sendAndConfirmTransaction(
+              connection,
+              trackListenTransaction,
+              [feePayerAccount],
+              {
+                skipPreflight: false,
+                commitment: config.get('solanaTxCommitmentLevel'),
+                preflightCommitment: config.get('solanaTxCommitmentLevel')
+              }
+            )
+          }, {
+            // Retry function 3x by default
+            // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
+            minTimeout: 500,
+            maxTimeout: 8000,
+            factor: 3,
+            retries: 3,
+            onRetry: (err, i) => {
+              if (err) {
+                req.logger.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
+              }
+            }
+          })
+        }
+
+        req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}, sendRawTransaction=${sendRawTransaction}`)
 
         // Increment success tracker
         await redis.incr(trackingRedisKeys.success)
         await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, Date.now(), Date.now() + entropy)
-
         return successResponse({
           solTxSignature
         })
-      }, {
-        // Retry function 3x by default
-        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
-        minTimeout: 500,
-        maxTimeout: 8000,
-        factor: 3,
-        retries: 3,
-        onRetry: (err, i) => {
-          if (err) {
-            req.logger.error(`TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`)
-          }
-        }
-      })
-      return response
+      } catch (e) {
+        return errorResponseServerError(`TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`)
+      }
     }
 
     // TODO: Make all of this conditional based on request parameters
