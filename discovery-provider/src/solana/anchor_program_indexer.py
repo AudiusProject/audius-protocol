@@ -296,11 +296,14 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                             # TODO add logic to use existing user records: account -> endpoint
                             if "user_id" in instruction["data"]:
                                 user_id = instruction["data"]["user_id"]
-                                endpoints = []
-                                for sp_id in instruction["data"]["replica_set"]:
-                                    endpoints.append(cnode_endpoint_dict[sp_id])
-                                user_replica_set[user_id] = ",".join(endpoints)
                                 cid_to_user_id[cid] = user_id
+
+                                # new user case
+                                if "replica_set" in instruction["data"]:
+                                    endpoints = []
+                                    for sp_id in instruction["data"]["replica_set"]:
+                                        endpoints.append(cnode_endpoint_dict[sp_id])
+                                    user_replica_set[user_id] = ",".join(endpoints)
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
