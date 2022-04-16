@@ -1,4 +1,4 @@
-// eslint-disable @typescript-eslint/restrict-plus-operands
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
 
 export const getUsers = (
   limit = 100,
