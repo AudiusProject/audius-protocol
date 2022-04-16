@@ -15,6 +15,7 @@ class Web3Manager {
   getWeb3(): Web3
   setWeb3(web3: Web3)
   web3Config: Web3Config
+  web3: Web3
 }
 
 export default Web3Manager

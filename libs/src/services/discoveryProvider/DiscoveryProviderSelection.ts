@@ -26,26 +26,33 @@ if (typeof window === 'undefined' || window === null) {
   localStorage = window.localStorage
 }
 
-type DiscoveryProviderSelectionConfig = Omit<
+export type DiscoveryProviderSelectionConfig = Omit<
   ServiceSelectionConfig,
   'getServices'
 > & {
-  reselectTimeout: number
-  selectionCallback: (endpoint: string, decisionTree: Decision[]) => void
-  monitoringCallbacks: {
+  reselectTimeout?: number
+  selectionCallback?: (endpoint: string, decisionTree: Decision[]) => void
+  monitoringCallbacks?: {
     healthCheck: (config: Record<string, unknown>) => void
+    request: (config: Record<string, unknown>) => void
   }
-  unhealthySlotDiffPlays: number
-  unhealthyBlockDiff: number
+  unhealthySlotDiffPlays?: number
+  unhealthyBlockDiff?: number
 }
 
 export class DiscoveryProviderSelection extends ServiceSelection {
   currentVersion: string
   ethContracts: EthContracts
-  reselectTimeout: number
-  selectionCallback: DiscoveryProviderSelectionConfig['selectionCallback']
-  monitoringCallbacks: DiscoveryProviderSelectionConfig['monitoringCallbacks']
-  unhealthySlotDiffPlays: number
+  reselectTimeout: number | undefined
+  selectionCallback:
+    | DiscoveryProviderSelectionConfig['selectionCallback']
+    | undefined
+
+  monitoringCallbacks:
+    | NonNullable<DiscoveryProviderSelectionConfig['monitoringCallbacks']>
+    | {}
+
+  unhealthySlotDiffPlays: number | null
   unhealthyBlockDiff: number
   _regressedMode: boolean
   validVersions: string[] | null
@@ -74,10 +81,10 @@ export class DiscoveryProviderSelection extends ServiceSelection {
     this.currentVersion = ''
     this.reselectTimeout = config.reselectTimeout
     this.selectionCallback = config.selectionCallback
-    this.monitoringCallbacks = config.monitoringCallbacks || {}
-    this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays
+    this.monitoringCallbacks = config.monitoringCallbacks ?? {}
+    this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays ?? null
     this.unhealthyBlockDiff =
-      config.unhealthyBlockDiff || DEFAULT_UNHEALTHY_BLOCK_DIFF
+      config.unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -175,7 +182,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
       slotDiffPlays = plays.tx_info.slot_diff
     }
 
-    if (this.monitoringCallbacks.healthCheck) {
+    if ('healthCheck' in this.monitoringCallbacks) {
       const url = new URL(response.config.url as string)
       try {
         this.monitoringCallbacks.healthCheck({
