@@ -10,33 +10,41 @@ WORKDIR $INSTALL_PATH
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.15/main' >> /etc/apk/repositories && \
     apk update && \
-    apk add alpine-sdk && \
-    apk add linux-headers && \
-    apk add bash && \
-    apk add libffi-dev && \
-    apk add openssl-dev && \
-    apk add redis && \
-    apk add sudo && \
-    apk add libpq && \
-    apk add postgresql && \
-    apk add postgresql-client && \
-    apk add postgresql-contrib && \
-    apk add postgresql-libs && \
-    apk add python3 && \
-    apk add python3-dev && \
-    apk add py3-pip && \
-    apk add py3-wheel && \
-    apk add rsyslog && \
-    apk add docker && \
-    apk add rust cargo gcc musl-dev postgresql-dev
+    apk add \
+        alpine-sdk \
+        bash \
+        cargo \
+        docker \
+        gcc \
+        libffi-dev \
+        libpq \
+        libseccomp-dev \
+        linux-headers \
+        musl-dev \
+        openssl-dev \
+        postgresql \
+        postgresql-client \
+        postgresql-contrib \
+        postgresql-dev \
+        postgresql-libs \
+        py3-pip \
+        py3-wheel \
+        python3 \
+        python3-dev \
+        redis \
+        rsyslog \
+        rust \
+        sudo
 
-COPY requirements.txt requirements.txt
+# Add is important to ensure requirements are cached between runs
+# https://stackoverflow.com/a/25307587
+ADD requirements.txt requirements.txt
 
-RUN apk add libseccomp-dev && \
+RUN \
     # Upgrade pip to accomodate anchor.py installation
+    # https://github.com/kevinheavey/anchorpy/issues/63
     python3 -m pip install --upgrade pip && \
-    python3 -m pip install -r requirements.txt --no-cache-dir && \
-    apk --purge del .build-deps
+    python3 -m pip install -r requirements.txt --no-cache-dir
 
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.15/community' >> /etc/apk/repositories && \
     apk add wget && \
@@ -52,26 +60,6 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.15/community' >> /etc/apk/reposit
     opm get ledgetech/lua-resty-http && \
     mkdir /usr/local/openresty/conf && \
     mkdir /usr/local/openresty/logs
-
-# versions
-# alpine-sdk 1.0-r0
-# linux-headers 5.7.8-r0
-# bash 5.1.0-r0
-# libffi-dev 3.3-r2
-# redis 6.0.14-r0
-# sudo 1.9.5p2-r0
-# python3 3.8.10-r0
-# python3-dev 3.8.10-r0
-# py3-pip 20.3.4-r0
-# py3-wheel 0.36.2-r0
-
-# libpq 14.2-r0
-# postgresql 14.2-r0
-# postgresql-client 14.2-r0
-# postgresql-contrib 14.2-r0
-# postgresql-libs 14.2-r0
-
-# openresty 1.19.9.1-r0
 
 COPY . .
 
