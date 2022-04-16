@@ -9,11 +9,7 @@ import pkg from './package.json'
 
 const extensions = ['.js', '.ts']
 
-export default [{
-  input: 'src/index.js',
-  output: [
-    { file: pkg.main, format: 'cjs', exports: 'auto', sourcemap: true }
-  ],
+const commonConfig = {
   plugins: [
     commonjs({
       extensions,
@@ -36,9 +32,34 @@ export default [{
     'ethers/lib/index',
     'hashids/cjs',
   ]
+}
+
+const commonTypeConfig = {
+  plugins: [dts()]
+}
+
+export default [{
+  input: 'src/index.js',
+  output: [
+    { file: pkg.main, format: 'cjs', exports: 'auto', sourcemap: true }
+  ],
+  ...commonConfig
 },
 {
   input: './src/types.ts',
   output: [{ file: pkg.types, format: 'cjs' }],
-  plugins: [dts()]
-}]
+  ...commonTypeConfig
+},
+{
+  input: 'src/core.ts',
+  output: [
+    { file: pkg.core, format: 'cjs', exports: 'auto', sourcemap: true }
+  ],
+  ...commonConfig
+},
+{
+  input: './src/core.ts',
+  output: [{ file: pkg.coreTypes, format: 'cjs' }],
+  ...commonTypeConfig
+},
+]

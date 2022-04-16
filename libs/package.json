@@ -4,6 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "core": "dist/core.js",
+  "coreTypes": "dist/core.d.ts",
   "browser": {
     "fs": false,
     "node-localstorage": false,
