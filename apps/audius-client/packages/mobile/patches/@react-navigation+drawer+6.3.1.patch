@@ -1,8 +1,15 @@
 diff --git a/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx b/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx
-index bebfcbf..0211168 100644
+index bebfcbf..1fbd6f4 100644
 --- a/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx
 +++ b/node_modules/@react-navigation/drawer/src/views/legacy/Drawer.tsx
-@@ -530,7 +530,13 @@ export default class DrawerView extends React.Component<DrawerProps> {
+@@ -527,10 +527,25 @@ export default class DrawerView extends React.Component<DrawerProps> {
+ 
+     const progress = drawerType === 'permanent' ? ANIMATED_ONE : this.progress;
+ 
++    const failOffsetXWhenClosed = swipeEnabled
++      ? [-1, Number.MAX_SAFE_INTEGER]
++      : [-1, 1]
++
      return (
        <DrawerProgressContext.Provider value={progress}>
          <PanGestureHandler
@@ -13,6 +20,11 @@ index bebfcbf..0211168 100644
 +            isOpen
 +              ? [-SWIPE_DISTANCE_MINIMUM, Number.MAX_SAFE_INTEGER]
 +              : [-1 * Number.MAX_SAFE_INTEGER, SWIPE_DISTANCE_MINIMUM]
++          }
++          failOffsetX={
++            isOpen
++              ? [-1 * Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]
++              : failOffsetXWhenClosed
 +          }
            failOffsetY={[-SWIPE_DISTANCE_MINIMUM, SWIPE_DISTANCE_MINIMUM]}
            onGestureEvent={this.handleGestureEvent}
