@@ -1015,7 +1015,7 @@ export class CreatorNode {
     requestUrl?: string,
     requestId: string | null = null
   ) {
-    if ('response' in e && e.response.data && e.response.data.error) {
+    if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
       const errMessage = `Server returned error: [${e.response.status.toString()}] [${

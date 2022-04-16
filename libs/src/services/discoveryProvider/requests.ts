@@ -1,3 +1,5 @@
+// eslint-disable @typescript-eslint/restrict-plus-operands
+
 export const getUsers = (
   limit = 100,
   offset = 0,
@@ -124,7 +126,7 @@ export const getTracksIncludingUnlisted = (
 export const getRandomTracks = (
   genre: string,
   limit: number,
-  exclusionList: string[],
+  exclusionList: number[],
   time: string
 ) => {
   const req = {
@@ -139,7 +141,7 @@ export const getRandomTracks = (
   return req
 }
 
-export const getStemsForTrack = (trackId: string) => {
+export const getStemsForTrack = (trackId: number) => {
   const req = {
     endpoint: `stems/${trackId}`,
     queryParams: {
@@ -150,9 +152,9 @@ export const getStemsForTrack = (trackId: string) => {
 }
 
 export const getRemixesOfTrack = (
-  trackId: string,
-  limit = null,
-  offset = null
+  trackId: number,
+  limit: number | null = null,
+  offset: number | null = null
 ) => {
   const req = {
     endpoint: `remixes/${trackId}/children`,
@@ -166,9 +168,9 @@ export const getRemixesOfTrack = (
 }
 
 export const getRemixTrackParents = (
-  trackId: string,
-  limit = null,
-  offset = null
+  trackId: number,
+  limit: number | null = null,
+  offset: number | null = null
 ) => {
   const req = {
     endpoint: `remixes/${trackId}/parents`,
@@ -182,11 +184,11 @@ export const getRemixTrackParents = (
 }
 
 export const getTrendingTracks = (
-  genre = null,
-  timeFrame = null,
-  idsArray = null,
-  limit = null,
-  offset = null,
+  genre: string | null = null,
+  timeFrame: string | null = null,
+  idsArray: number[] | null = null,
+  limit: number | null = null,
+  offset: number | null = null,
   withUsers = false
 ) => {
   let endpoint = '/trending/'
@@ -262,7 +264,7 @@ export const getSocialFeed = (
 }
 
 export const getUserRepostFeed = (
-  userId: string,
+  userId: number,
   limit = 100,
   offset = 0,
   withUsers = false
@@ -277,8 +279,8 @@ export const getUserRepostFeed = (
 export const getFollowIntersectionUsers = (
   limit = 100,
   offset = 0,
-  followeeUserId: string,
-  followerUserId: string
+  followeeUserId: number,
+  followerUserId: number
 ) => {
   return {
     endpoint: 'users',
@@ -290,8 +292,8 @@ export const getFollowIntersectionUsers = (
 export const getTrackRepostIntersectionUsers = (
   limit = 100,
   offset = 0,
-  repostTrackId: string,
-  followerUserId: string
+  repostTrackId: number,
+  followerUserId: number
 ) => {
   return {
     endpoint: 'users',
@@ -304,8 +306,8 @@ export const getTrackRepostIntersectionUsers = (
 export const getPlaylistRepostIntersectionUsers = (
   limit = 100,
   offset = 0,
-  repostPlaylistId: string,
-  followerUserId: string
+  repostPlaylistId: number,
+  followerUserId: number
 ) => {
   return {
     endpoint: 'users',
@@ -321,7 +323,7 @@ export const getPlaylistRepostIntersectionUsers = (
 export const getFollowersForUser = (
   limit = 100,
   offset = 0,
-  followeeUserId: string
+  followeeUserId: number
 ) => {
   return {
     endpoint: 'users',
@@ -333,7 +335,7 @@ export const getFollowersForUser = (
 export const getFolloweesForUser = (
   limit = 100,
   offset = 0,
-  followerUserId: string
+  followerUserId: number
 ) => {
   return {
     endpoint: 'users',
@@ -345,7 +347,7 @@ export const getFolloweesForUser = (
 export const getRepostersForTrack = (
   limit = 100,
   offset = 0,
-  repostTrackId: string
+  repostTrackId: number
 ) => {
   return {
     endpoint: 'users',
@@ -357,7 +359,7 @@ export const getRepostersForTrack = (
 export const getRepostersForPlaylist = (
   limit = 100,
   offset = 0,
-  repostPlaylistId: string
+  repostPlaylistId: number
 ) => {
   return {
     endpoint: 'users',
@@ -369,7 +371,7 @@ export const getRepostersForPlaylist = (
 export const getSaversForTrack = (
   limit = 100,
   offset = 0,
-  saveTrackId: string
+  saveTrackId: number
 ) => {
   return {
     endpoint: 'users',
@@ -381,7 +383,7 @@ export const getSaversForTrack = (
 export const getSaversForPlaylist = (
   limit = 100,
   offset = 0,
-  savePlaylistId: string
+  savePlaylistId: number
 ) => {
   return {
     endpoint: 'users',
@@ -531,7 +533,7 @@ export const getTopCreatorsByGenres = (
   }
 }
 
-export const getURSMContentNodes = (ownerWallet: string) => {
+export const getURSMContentNodes = (ownerWallet: string | null) => {
   return {
     endpoint: 'ursm_content_nodes',
     queryParams: {
@@ -601,10 +603,10 @@ export const getCreateSenderAttestation = (senderEthAddress: string) => {
 }
 
 export const getUndisbursedChallenges = (
-  limit: number,
-  offset: number,
-  completedBlockNumber: string,
-  encodedUserId: string
+  limit: number | null,
+  offset: number | null,
+  completedBlockNumber: string | null,
+  encodedUserId: number | null
 ) => {
   return {
     endpoint: '/v1/challenges/undisbursed',

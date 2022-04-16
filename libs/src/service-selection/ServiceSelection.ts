@@ -51,7 +51,7 @@ export interface ServiceSelectionConfig {
    */
   maxConcurrentRequests?: number
   // the timeout at which to give up on a service
-  requestTimeout?: number
+  requestTimeout?: number | undefined
   /*
    *the point at which the unhealthy services are freed so they
    * may be tried again (re-requested)

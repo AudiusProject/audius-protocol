@@ -30,7 +30,7 @@ export type DiscoveryProviderSelectionConfig = Omit<
   ServiceSelectionConfig,
   'getServices'
 > & {
-  reselectTimeout?: number
+  reselectTimeout?: number | undefined
   selectionCallback?: (endpoint: string, decisionTree: Decision[]) => void
   monitoringCallbacks?: {
     healthCheck: (config: Record<string, unknown>) => void
