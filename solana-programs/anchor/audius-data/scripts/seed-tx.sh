@@ -10,100 +10,42 @@ ADMIN_KEYPAIR_PATH="$PWD/adminKeypair.json"
 ADMIN_STORAGE_KEYPAIR_PATH="$PWD/adminStorageKeypair.json"
 USER_KEYPAIR_PATH="$PWD/userKeypair.json"
 AUDIUS_DATA_PROGRAM_ID=$(solana-keygen pubkey $PWD/target/deploy/audius_data-keypair.json)
+SOLANA_HOST="http://solana:8899"
 
 cd "$ANCHOR_PROGRAM_DIR"
 
 echo "Seeding transactions..."
 
-echo "Init admin"
 
-yarn run ts-node cli/main.ts -f initAdmin \
-    -k "$OWNER_KEYPAIR_PATH" | tee /tmp/initAdminOutput.txt
+# yarn run ts-node cli/main.ts -f updateAdmin \
+#     -k "$OWNER_KEYPAIR_PATH" \
+#     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
+#     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
+#     --write-enabled false \
+#     --network http://solana:8899
 
-echo "Registering content nodes!"
-# Register content nodes
-yarn run ts-node cli/main.ts -f initContentNode \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 1
 
-yarn run ts-node cli/main.ts -f initContentNode \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 2
+# echo "create user"
+# yarn run ts-node cli/main.ts -f createUser \
+#     -k "$OWNER_KEYPAIR_PATH" \
+#     --user-id 2 \
+#     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
+#     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
+#     --user-replica-set 1,2,3 \
+#     --user-solana-keypair "$USER_KEYPAIR_PATH" \
+#     --eth-address 0x835EF8f4D938161A03a55534165f2368fBE67B56 \
+#     --eth-private-key 7fc1324a1be2dcd8a9841f3a7b1ae830c0a42de215fb8da6884c4541de882b90 \
+#     --network http://solana:8899 \
+#     --metadata "QmQNV2YWbA4jfmJie5eEBD1FAAtsZER56aRDNWFB2kU87P"
 
-yarn run ts-node cli/main.ts -f initContentNode \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 3
-
-echo "Init user"
-
-yarn run ts-node cli/main.ts -f initUser \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --user-replica-set 1,2,3 \
-    --user-id 1 \
-    -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 | tee /tmp/initUserOutput.txt
-
-USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
-
-echo "Generating new solana pubkey for user"
-
-solana-keygen new --no-bip39-passphrase --force -o "$USER_KEYPAIR_PATH"
-
-# creates 2 inner instructions - look into this?
-yarn run ts-node cli/main.ts -f initUserSolPubkey \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
-    --eth-private-key d540ca11a0d12345f512e65e00bf8bf87435aa40b3731cbf0322971709eba60f
-
-echo "Creating track"
+# echo "Creating track"
 
 yarn run ts-node cli/main.ts -f createTrack \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --user-id 1 # metadata CID that would point off-chain is randomly generated here
+    --metadata "QmeVZehmcR5TTJWUrVvp52J67qpSAwqSKNxMCJuLKJnMwm" \
+    --user-id 1 
 
-echo "Creating playlist"
 
-yarn run ts-node cli/main.ts -f createPlaylist \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --user-id 1 | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
-
-PLAYLIST_ID=$(cut -d '=' -f 3 <<< $(cat /tmp/createPlaylistOutput.txt | grep "Transacting on entity"))
-
-echo "Updating playlist"
-
-yarn run ts-node cli/main.ts -f updatePlaylist \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --id "$PLAYLIST_ID" \
-    --user-id 1 # metadata CID that would point off-chain is randomly generated here 
-
-echo "Deleting playlist"
-
-yarn run ts-node cli/main.ts -f deletePlaylist \
-    -k "$OWNER_KEYPAIR_PATH" \
-    --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
-    --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --id "$PLAYLIST_ID" \
-    --user-id 1
-
-echo "Successfully seeded tx:"
-
-solana transaction-history "$AUDIUS_DATA_PROGRAM_ID"
+# solana transaction-history "$AUDIUS_DATA_PROGRAM_ID"

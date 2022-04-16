@@ -183,6 +183,8 @@ def handle_manage_entity(
     metadata_dictionary: Dict,
     records: List[Any],
 ):
+    # create track
+
     pass
 
 

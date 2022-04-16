@@ -340,6 +340,7 @@ program
     "-eth-pk, --eth-private-key <string>",
     "private key for message signing"
   )
+  .option("--metadata <string>", "metadata CID")
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
@@ -559,7 +560,7 @@ const main = async () => {
         message: userSolKeypair.publicKey.toBytes(),
         userId: userId,
         bumpSeed,
-        metadata: randomCID(),
+        metadata: options.metadata,
         userSolPubkey: userSolKeypair.publicKey,
         userStorageAccount: derivedAddress,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -593,6 +594,8 @@ const main = async () => {
           adminStorageKeypair.publicKey,
           userIdSeed
         );
+      console.log(`derivedAddress ${derivedAddress}`)
+      console.log(`options.userStoragePubkey ${options.userStoragePubkey}`)
 
       for (let i = 0; i < numTracks; i++) {
         promises.push(
@@ -604,9 +607,9 @@ const main = async () => {
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
-              metadata: randomCID(),
+              metadata: options.metadata,
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userStorageAccountPDA: options.userStoragePubkey,
+              userStorageAccountPDA: derivedAddress,
               userAuthorityDelegateAccountPDA,
               authorityDelegationStatusAccountPDA,
             },

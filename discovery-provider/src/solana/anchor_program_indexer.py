@@ -8,7 +8,7 @@ from redis import Redis
 from solana.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models.models import AudiusDataTx, URSMContentNode, User
+from src.models.models import AudiusDataTx, Track, URSMContentNode, User
 from src.solana.anchor_parser import AnchorParser
 from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
@@ -48,7 +48,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         self.instruction_type = {
             "init_user": "user",
             "create_user": "user",
-            "create_track": "track",
+            "manage_entity": "track",
         }
 
     def is_tx_in_db(self, session: Session, tx_sig: str):
@@ -110,6 +110,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 )
                 for user in existing_users:
                     db_models["users"][user.user_id] = [user]
+
+                # TODO pass in existing tracks upstream
 
             # TODO: Find all other track/playlist/etc. models
 
@@ -236,12 +238,34 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         }
 
     def is_valid_instruction(self, parsed_instruction: Dict):
+        self.msg(f"is_valid_instruction: {parsed_instruction}")
+
+        # admin check
         if "admin" in parsed_instruction["account_names_map"]:
             if (
                 parsed_instruction["account_names_map"]["admin"]
                 != self.admin_storage_public_key
             ):
                 return False
+
+        # create entity
+        # check if track already exists
+        if "_entity" in "track" == parsed_instruction["data"]:
+            track_id = parsed_instruction["data"]["_id"]
+            with self.db.scoped_session() as session:
+                track_exists = (
+                    session.query(Track.track_id)
+                    .filter(Track.track_id == track_id)
+                    .first()
+                    is not None
+                )
+                if track_exists:
+                    return False
+                self.msg(f"isaac {track_exists}")
+
+        # TODO update entity
+        # check if user owns track
+
         return True
 
     def process_index_task(self):
@@ -294,7 +318,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                                 instruction["instruction_name"]
                             ]
                             # TODO add logic to use existing user records: account -> endpoint
-                            if "user_id" in instruction["data"]:
+                            if (
+                                "user_id" in instruction["data"]
+                            ):  # or get from seed bump
                                 user_id = instruction["data"]["user_id"]
                                 cid_to_user_id[cid] = user_id
 
