@@ -1,5 +1,5 @@
 import { ProviderSelection } from './ProviderSelection'
-import Web3Manager from '../web3Manager'
+import { Web3Manager } from '../web3Manager'
 import retry from 'async-retry'
 import type { ContractABI } from '../../utils'
 import type { Contract } from 'web3-eth-contract'

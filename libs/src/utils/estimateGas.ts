@@ -1,22 +1,25 @@
 // Default multiplier on top of gas estimate to be extra safe that txns
+
+import type Wallet from 'ethereumjs-wallet'
+
 // will go through
 const GAS_LIMIT_MULTIPLIER = 1.05
 
 export interface ContractMethod {
   estimateGas: (config: {
-    from: string | undefined
+    from: Wallet | undefined
     gas: number | undefined
   }) => Promise<number>
   _method: {
     name: string
   }
   encodeABI: () => string
-  send: (config: { from: string; gas: number; gasPrice: number }) => unknown
+  send: (config: { from: Wallet | undefined; gas: number; gasPrice?: number }) => unknown
 }
 
 interface EstimateGasConfig {
   method: ContractMethod
-  from?: string
+  from?: Wallet
   gasLimitMaximum: number
   multiplier?: number
 }

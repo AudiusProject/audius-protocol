@@ -4,9 +4,15 @@ import { uuid } from '../../utils/uuid'
 import type { Captcha } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
-import type Web3Manager from '../web3Manager'
+import type { Web3Manager } from '../web3Manager'
+import type { Log } from 'web3-core'
 
 type Data = Record<string, unknown>
+
+export type Receipt = {
+  logs: Log[]
+  events: Record<string, { returnValues: Record<string, string> }>
+}
 
 export type RelayTransaction = {
   resp: {
@@ -342,8 +348,8 @@ export class IdentityService {
     contractAddress: string,
     senderAddress: string,
     encodedABI: string,
-    gasLimit: string
-  ) {
+    gasLimit: number
+  ): Promise<{ receipt: Receipt }> {
     const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
     let token
     if (this.captcha && shouldCaptcha) {

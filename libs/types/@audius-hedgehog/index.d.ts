@@ -1,12 +1,11 @@
 declare module '@audius/hedgehog' {
   import { IdentityService } from "../../src/services/identity"
+  import Wallet from 'ethereumjs-wallet'
 
   type RecoveryInfo = {
     login: string
     host: string
   }
-
-  type Wallet = Record<string, unknown>
 
   export class Hedgehog {
     wallet: Wallet
@@ -17,7 +16,8 @@ declare module '@audius/hedgehog' {
     constructor(getFn: IdentityService["getFn"], setAuthFn: IdentityService["setAuthFn"], setUserFn: IdentityService["setUserFn"], useLocalStorage: boolean): void
     async login(email: string, password: string): Promise<Wallet>
     async generateRecoveryInfo(): Promise<RecoveryInfo>
-    getWallet(): string
+    getWallet(): Wallet
+    createWalletObj(passwordEntropy: string): Promise<Wallet>
   }
 
   export class WalletManager {
