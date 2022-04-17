@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 declare module '@audius/hedgehog' {
-  import { IdentityService } from '../../src/services/identity'
+  import type { IdentityService } from '../../src/services/identity'
   import type Wallet from 'ethereumjs-wallet'
 
   type RecoveryInfo = {

@@ -1,12 +1,6 @@
 import Web3 from '../../web3'
 import type Web3Type from 'web3'
-import {
-  MultiProvider,
-  estimateGas,
-  Providers,
-  ContractMethod,
-  Maybe
-} from '../../utils'
+import { MultiProvider, estimateGas, ContractMethod, Maybe } from '../../utils'
 import { Transaction as EthereumTx } from 'ethereumjs-tx'
 import retry from 'async-retry'
 import type { IdentityService, RelayTransaction } from '../identity'
@@ -27,7 +21,7 @@ export class EthWeb3Manager {
   web3: Web3Type
   identityService: IdentityService
   hedgehog: Hedgehog
-  ownerWallet: Maybe<string>
+  ownerWallet: Maybe<Wallet>
 
   constructor(
     web3Config: Web3Config,
@@ -62,6 +56,7 @@ export class EthWeb3Manager {
 
   getWalletAddress() {
     if (this.ownerWallet) {
+      // @ts-expect-error TODO extend ethereum-js-wallet to include toLowerCase
       return this.ownerWallet.toLowerCase()
     }
     throw new Error('Owner wallet not set')
@@ -89,7 +84,7 @@ export class EthWeb3Manager {
       txGasLimit ??
       (await estimateGas({
         method: contractMethod,
-        from: this.ownerWallet as string,
+        from: this.ownerWallet,
         gasLimitMaximum: MAX_GAS_LIMIT
       }))
     if (contractAddress && privateKey) {
@@ -218,7 +213,7 @@ export class EthWeb3Manager {
   async getRelayMethodParams(
     contractAddress: string,
     contractMethod: ContractMethod,
-    relayerWallet: string
+    relayerWallet: Wallet
   ) {
     const encodedABI = contractMethod.encodeABI()
     const gasLimit = await estimateGas({

@@ -278,7 +278,7 @@ export class EthContracts {
       return version
     } catch (e) {
       console.log(`Error retrieving version for ${serviceType}`)
-      return null
+      return ''
     }
   }
 

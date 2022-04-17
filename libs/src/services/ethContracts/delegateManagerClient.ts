@@ -45,7 +45,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod('delegateStake', targetSP, amount)
     const tx = await this.web3Manager.sendTransaction(method)
 
-    const returnValues = tx.events?.IncreaseDelegatedStake?.returnValues
+    const returnValues = tx.events?.['IncreaseDelegatedStake']?.returnValues
 
     return {
       txReceipt: tx,
@@ -255,7 +255,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     const tx = await this.web3Manager.sendTransaction(method)
 
     const returnValues =
-      tx.events?.UndelegateStakeRequestEvaluated?.returnValues
+      tx.events?.['UndelegateStakeRequestEvaluated']?.returnValues
 
     return {
       txReceipt: tx,
@@ -299,7 +299,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     )
     const tx = await this.web3Manager.sendTransaction(method)
     const returnValues =
-      tx.events?.RemoveDelegatorRequestEvaluated?.returnValues
+      tx.events?.['RemoveDelegatorRequestEvaluated']?.returnValues
     return {
       txReceipt: tx,
       delegator: returnValues._delegator,

@@ -258,8 +258,8 @@ export class Web3Manager {
           evt.events.forEach((arg) => {
             returnValues[arg.name] = arg.value
           })
-          const eventLog = { returnValues }
-          events[evt.name] = eventLog as EventLog
+          const eventLog = { returnValues } as EventLog
+          events[evt.name] = eventLog
         })
         receipt.events = events
       }

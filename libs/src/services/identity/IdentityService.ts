@@ -5,7 +5,7 @@ import type { Captcha } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
-import type { Log, TransactionReceipt } from 'web3-core'
+import type { TransactionReceipt } from 'web3-core'
 import type Wallet from 'ethereumjs-wallet'
 
 type Data = Record<string, unknown>
