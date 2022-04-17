@@ -1,5 +1,5 @@
 const { Utils } = require('../../utils')
-const Web3Manager = require('../web3Manager/index')
+const { Web3Manager } = require('../web3Manager')
 const { ProviderSelection } = require('../contracts/ProviderSelection')
 
 class RegistryClient {

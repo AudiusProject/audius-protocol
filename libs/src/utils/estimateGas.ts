@@ -14,7 +14,11 @@ export interface ContractMethod {
     name: string
   }
   encodeABI: () => string
-  send: (config: { from: Wallet | undefined; gas: number; gasPrice?: number }) => unknown
+  send: (config: {
+    from: Wallet | undefined
+    gas: number
+    gasPrice?: number
+  }) => unknown
 }
 
 interface EstimateGasConfig {

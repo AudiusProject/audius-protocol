@@ -195,7 +195,7 @@ export class Web3Manager {
     txGasLimit?: number
   ) {
     const gasLimit =
-      txGasLimit ||
+      txGasLimit ??
       (await estimateGas({
         method: contractMethod,
         gasLimitMaximum: DEFAULT_GAS_LIMIT
@@ -225,6 +225,7 @@ export class Web3Manager {
           onRetry: (err) => {
             if (err) {
               console.log(
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 `libs web3Manager transaction send retry error : ${err}`
               )
             }

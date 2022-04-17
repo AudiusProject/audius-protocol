@@ -14,7 +14,7 @@ import {
 } from './DiscoveryProviderSelection'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type EthContracts from '../ethContracts'
-import type { Web3Manager }from '../web3Manager'
+import type { Web3Manager } from '../web3Manager'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
