@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set -x
 
 # TODO - MOVE OUT OF SHELL SCRIPT ASAP
 

@@ -109,6 +109,10 @@ class SeedSession {
         email,
         password
       })
+      this.cache.addWalletDetails({
+        entropy: hedgehogEntropyKey,
+        privKey: this.libs.hedgehog.wallet._privKey.toString('hex')
+      })
       this.cache.setActiveUser(userAlias)
       console.log(
         `Successfully seeded user with id: ${userId} and alias: ${userAlias}`

@@ -210,8 +210,7 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
-          args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
         }`
       );
 
@@ -391,8 +390,8 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-  ? AUDIUS_PROD_RPC_POOL
-  : LOCALHOST_RPC_POOL;
+    ? AUDIUS_PROD_RPC_POOL
+    : LOCALHOST_RPC_POOL;
 
 const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -419,7 +418,7 @@ const main = async () => {
     case functionTypes.initContentNode: {
       console.log(`Initializing content node`);
       const { delegateWallet, contentNodeAuthority } =
-        await getContentNodeWalletAndAuthority({
+        getContentNodeWalletAndAuthority({
           spId: options.cnSpId,
           deterministic: options.deterministic === "true",
         });

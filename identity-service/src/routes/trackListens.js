@@ -381,7 +381,7 @@ module.exports = function (app) {
           })
         }
 
-        req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+        req.logger.info(`TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}, sendRawTransaction=${sendRawTransaction}`)
 
         // Increment success tracker
         await redis.incr(trackingRedisKeys.success)

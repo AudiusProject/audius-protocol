@@ -182,7 +182,7 @@ const createSenderLocal = async ethAddress => {
     data: serializedInstructionEnum
   })
 
-  const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
+  const { blockhash: recentBlockhash } = await connection.getLatestBlockhash()
   const transaction = new Transaction({
     feepayerWalletPubkey,
     recentBlockhash
