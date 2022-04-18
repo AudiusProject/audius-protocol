@@ -1,9 +1,9 @@
-FROM node:10.16 as builder
+FROM node:14.16 as builder
 RUN apt-get install make
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --loglevel verbose
+RUN npm ci --loglevel verbose
 
 FROM node:10.16-alpine
 
