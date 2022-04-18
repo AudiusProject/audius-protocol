@@ -17,22 +17,22 @@ import {
   ImageStyle,
   Linking,
   ScrollView,
-  StyleSheet,
   TouchableWithoutFeedback,
   View
 } from 'react-native'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
-import ButtonWithArrow from 'app/components/button-with-arrow'
-import { SegmentedControl, GradientText } from 'app/components/core'
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import { SegmentedControl, GradientText, Button } from 'app/components/core'
 import Text from 'app/components/text'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors, useThemeVariant } from 'app/utils/theme'
+import { AppScreenParamList } from 'app/screens/app-screen'
+import { makeStyles } from 'app/styles'
+import { useThemeVariant } from 'app/utils/theme'
 
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
@@ -57,11 +57,25 @@ const messages = {
   buttonTextUnderground: 'Underground Trending Tracks'
 }
 
-// TODO: Update these when RN pages are built
 const TRENDING_PAGES = {
-  tracks: TRENDING_PAGE,
-  playlists: TRENDING_PLAYLISTS_PAGE,
-  underground: TRENDING_UNDERGROUND_PAGE
+  tracks: {
+    native: { screen: 'trending' as const },
+    web: { route: TRENDING_PAGE }
+  },
+  playlists: {
+    native: {
+      screen: 'explore' as const,
+      params: { screen: 'TrendingPlaylists' as const }
+    },
+    web: { route: TRENDING_PLAYLISTS_PAGE }
+  },
+  underground: {
+    native: {
+      screen: 'explore' as const,
+      params: { screen: 'TrendingUnderground' as const }
+    },
+    web: { route: TRENDING_UNDERGROUND_PAGE }
+  }
 }
 
 const textMap = {
@@ -82,64 +96,68 @@ const textMap = {
   }
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    content: {
-      height: '100%',
-      width: '100%',
-      paddingBottom: 32
-    },
-    modalTitleContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      paddingHorizontal: 32,
-      marginTop: 8,
-      marginBottom: 16
-    },
-    modalTitle: {
-      textAlign: 'center',
-      fontSize: 24
-    },
-    chartEmoji: {
-      height: 24,
-      width: 24,
-      marginTop: 4,
-      marginRight: 12
-    },
-    titles: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: 32,
-      marginTop: 32
-    },
-    title: {
-      color: themeColors.secondary,
-      fontSize: 14,
-      marginBottom: 8
-    },
-    subtitle: {
-      color: themeColors.neutralLight4,
-      fontSize: 13
-    },
-    trendingControl: {
-      marginHorizontal: 28
-    },
-    lastWeek: {
-      textAlign: 'center',
-      marginBottom: 16,
-      fontSize: 24
-    },
-    button: { marginTop: 16, marginHorizontal: 16, marginBottom: 8 },
-    terms: {
-      marginBottom: 16,
-      fontSize: 12,
-      textAlign: 'center',
-      width: '100%',
-      textDecorationLine: 'underline'
-    }
-  })
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+  content: {
+    height: '100%',
+    width: '100%',
+    paddingBottom: spacing(8)
+  },
+  modalTitleContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingHorizontal: spacing(8),
+    marginTop: spacing(2),
+    marginBottom: spacing(4)
+  },
+  modalTitle: {
+    textAlign: 'center',
+    fontSize: typography.fontSize.xxl
+  },
+  chartEmoji: {
+    height: 24,
+    width: 24,
+    marginTop: spacing(1),
+    marginRight: spacing(3)
+  },
+  titles: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: spacing(8),
+    marginTop: spacing(8)
+  },
+  title: {
+    color: palette.secondary,
+    fontSize: typography.fontSize.small,
+    marginBottom: spacing(2)
+  },
+  subtitle: {
+    color: palette.neutralLight4,
+    fontSize: 13
+  },
+  trendingControl: {
+    marginHorizontal: 28
+  },
+  lastWeek: {
+    textAlign: 'center',
+    marginBottom: spacing(4),
+    fontSize: spacing(6)
+  },
+  buttonContainer: {
+    marginTop: spacing(4),
+    marginHorizontal: spacing(4),
+    marginBottom: spacing(2)
+  },
+  button: { paddingHorizontal: 0 },
+  terms: {
+    marginBottom: spacing(4),
+    fontSize: typography.fontSize.xs,
+    textAlign: 'center',
+    width: '100%',
+    textDecorationLine: 'underline'
+  }
+}))
 
 // Getters and setters for whether we're looking at
 // trending playlists or trending tracks
@@ -175,9 +193,9 @@ const useIsDark = () => {
 }
 
 export const TrendingRewardsDrawer = () => {
-  const pushRouteWeb = usePushRouteWeb()
+  const navigation = useNavigation<AppScreenParamList>()
   const { onClose } = useDrawerState(TRENDING_REWARDS_DRAWER_NAME)
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const [modalType, setModalType] = useRewardsType()
   const isDark = useIsDark()
 
@@ -198,11 +216,11 @@ export const TrendingRewardsDrawer = () => {
     }
   ]
 
-  const onButtonPress = useCallback(() => {
-    const page = TRENDING_PAGES[modalType]
-    pushRouteWeb(page)
+  const handleGoToTrending = useCallback(() => {
+    const navConfig = TRENDING_PAGES[modalType]
+    navigation.navigate(navConfig)
     onClose()
-  }, [pushRouteWeb, modalType, onClose])
+  }, [modalType, navigation, onClose])
 
   const onPressToS = useCallback(() => {
     Linking.openURL(TOS_URL)
@@ -261,10 +279,16 @@ export const TrendingRewardsDrawer = () => {
             }}
           />
 
-          <View style={styles.button}>
-            <ButtonWithArrow
+          <View style={styles.buttonContainer}>
+            <Button
+              variant='primary'
+              size='large'
+              icon={IconArrow}
+              iconPosition='right'
+              fullWidth
               title={textMap[modalType].button}
-              onPress={onButtonPress}
+              onPress={handleGoToTrending}
+              styles={{ button: styles.button }}
             />
           </View>
           <TouchableWithoutFeedback onPress={onPressToS}>

@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
-import { Image, ImageStyle, Linking, StyleSheet, View } from 'react-native'
+import { Image, ImageStyle, Linking, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
-import ButtonWithArrow from 'app/components/button-with-arrow'
-import { GradientText } from 'app/components/core'
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import { Button, GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 const messages = {
   modalTitle: 'Audius API',
@@ -20,40 +19,42 @@ const messages = {
 const API_LINK = 'https://audius.org/api'
 const MODAL_NAME = 'APIRewardsExplainer'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    content: {
-      padding: 32,
-      display: 'flex',
-      alignItems: 'center'
-    },
-    drawerTitle: {
-      marginTop: 8,
-      marginBottom: 32,
-      fontSize: 28
-    },
-    image: {
-      height: 100,
-      width: 120,
-      marginBottom: 32
-    },
-    title: {
-      marginBottom: 24,
-      color: themeColors.secondary,
-      fontSize: 24,
-      textAlign: 'center'
-    },
-    subtitle: {
-      color: themeColors.neutralLight4,
-      marginBottom: 24
-    },
-    buttonText: {
-      fontSize: 16
-    }
-  })
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+  content: {
+    padding: spacing(6),
+    display: 'flex',
+    alignItems: 'center'
+  },
+  drawerTitle: {
+    marginTop: spacing(2),
+    marginBottom: spacing(8),
+    fontSize: typography.fontSize.xxxl
+  },
+  image: {
+    height: 100,
+    width: 120,
+    marginBottom: spacing(8)
+  },
+  title: {
+    marginBottom: spacing(6),
+    color: palette.secondary,
+    fontSize: typography.fontSize.xxl,
+    textAlign: 'center'
+  },
+  subtitle: {
+    color: palette.neutralLight4,
+    marginBottom: spacing(6)
+  },
+  button: {
+    paddingHorizontal: spacing(2)
+  },
+  buttonText: {
+    fontSize: typography.fontSize.medium
+  }
+}))
 
 export const ApiRewardsDrawer = () => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
 
   const onClickAudiusAPI = useCallback(() => {
     Linking.openURL(API_LINK)
@@ -72,10 +73,14 @@ export const ApiRewardsDrawer = () => {
         <Text style={styles.subtitle} weight='bold'>
           {messages.description}
         </Text>
-        <ButtonWithArrow
+        <Button
+          variant='primary'
+          size='large'
+          icon={IconArrow}
           title={messages.button}
-          textStyle={styles.buttonText}
           onPress={onClickAudiusAPI}
+          styles={{ button: styles.button, text: styles.buttonText }}
+          fullWidth
         />
       </View>
     </AppDrawer>
