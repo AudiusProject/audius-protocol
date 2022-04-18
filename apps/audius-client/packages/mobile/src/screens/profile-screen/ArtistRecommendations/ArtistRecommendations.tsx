@@ -129,6 +129,10 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
 
   const suggestedArtistNames = suggestedArtists.slice(0, 3)
 
+  if (suggestedArtists.length === 0) {
+    return null
+  }
+
   return (
     <View pointerEvents='box-none' style={styles.root}>
       <View style={styles.header} pointerEvents='box-none'>
