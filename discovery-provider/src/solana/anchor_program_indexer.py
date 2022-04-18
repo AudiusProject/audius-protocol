@@ -300,36 +300,34 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 .all()
             )
 
-            # any instructions with  metadata
-            for transaction in parsed_transactions:
-                for instruction in transaction["tx_metadata"]["instructions"]:
-                    if (
-                        instruction["instruction_name"] != ""
-                        and "data" in instruction
-                        and instruction["data"] is not None
-                        and "metadata" in instruction["data"]
-                    ):
-                        cid = instruction["data"]["metadata"]
-                        if is_blacklisted_ipld(session, cid):
-                            blacklisted_cids.add(cid)
-                        else:
-                            cids_txhash_set.add((cid, transaction["tx_sig"]))
-                            cid_to_entity_type[cid] = self.instruction_type[
-                                instruction["instruction_name"]
-                            ]
-                            # TODO add logic to use existing user records: account -> endpoint
-                            if (
-                                "user_id" in instruction["data"]
-                            ):  # or get from seed bump
-                                user_id = instruction["data"]["user_id"]
-                                cid_to_user_id[cid] = user_id
+        # any instructions with  metadata
+        for transaction in parsed_transactions:
+            for instruction in transaction["tx_metadata"]["instructions"]:
+                if (
+                    instruction["instruction_name"] != ""
+                    and "data" in instruction
+                    and instruction["data"] is not None
+                    and "metadata" in instruction["data"]
+                ):
+                    cid = instruction["data"]["metadata"]
+                    if is_blacklisted_ipld(session, cid):
+                        blacklisted_cids.add(cid)
+                    else:
+                        cids_txhash_set.add((cid, transaction["tx_sig"]))
+                        cid_to_entity_type[cid] = self.instruction_type[
+                            instruction["instruction_name"]
+                        ]
+                        # TODO add logic to use existing user records: account -> endpoint
+                        if "user_id" in instruction["data"]:
+                            user_id = instruction["data"]["user_id"]
+                            cid_to_user_id[cid] = user_id
 
-                                # new user case
-                                if "replica_set" in instruction["data"]:
-                                    endpoints = []
-                                    for sp_id in instruction["data"]["replica_set"]:
-                                        endpoints.append(cnode_endpoint_dict[sp_id])
-                                    user_replica_set[user_id] = ",".join(endpoints)
+                            # new user case
+                            if "replica_set" in instruction["data"]:
+                                endpoints = []
+                                for sp_id in instruction["data"]["replica_set"]:
+                                    endpoints.append(cnode_endpoint_dict[sp_id])
+                                user_replica_set[user_id] = ",".join(endpoints)
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
