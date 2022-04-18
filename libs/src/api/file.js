@@ -75,15 +75,15 @@ class File extends Base {
           responseType
         }, /* timeout */ null)
 
-        const allUnauthorized =
-          response === undefined &&
-          errored.every(error => error.response.status === 403)
-        if (allUnauthorized) {
-          // In the case for a 403, do not retry fetching
-          bail(new Error('Unauthorized'))
-          return
+        if (!response) {
+          const allUnauthorized = errored.every(error => error.response.status === 403)
+          if (allUnauthorized) {
+            // In the case for a 403, do not retry fetching
+            bail(new Error('Unauthorized'))
+            return
+          }
+          throw new Error(`Could not fetch ${cid}`)
         }
-        if (!response) throw new Error(`Could not fetch ${cid}`)
         return response
       } catch (e) {
         // TODO: Remove this fallback logic when no more users/tracks/playlists
