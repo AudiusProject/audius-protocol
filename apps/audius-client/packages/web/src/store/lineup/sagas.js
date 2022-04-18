@@ -120,7 +120,7 @@ function* fetchLineupMetadatasAsync(
       // Let page animations on mobile have time to breathe
       // TODO: Get rid of this once we figure out how to make loading better
       if (isMobile()) {
-        yield delay(20)
+        yield delay(100)
       }
 
       const lineupMetadatasResponse = yield call(lineupMetadatasCall, {
