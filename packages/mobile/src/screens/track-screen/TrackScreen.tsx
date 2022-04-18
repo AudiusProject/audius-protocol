@@ -95,7 +95,7 @@ const TrackScreenMainContent = ({
           track={track}
           user={user}
           uid={lineup?.entries?.[0]?.uid}
-          isLineupLoading={!lineup?.entries?.[0]}
+          isLineupLoading={lineup.isMetadataLoading}
         />
       </View>
 
