@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PortalHost } from '@gorhom/portal'
+import { ShareSource } from 'audius-client/src/common/models/Analytics'
 import Status from 'audius-client/src/common/models/Status'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
+import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
 import { Animated, LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
-import { Screen } from 'app/components/core'
+import IconShare from 'app/assets/images/iconShare.svg'
+import { IconButton, Screen } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
@@ -71,7 +74,7 @@ export const ProfileScreen = () => {
   const status = useSelectorWeb(getProfileStatus)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
-  const { accentOrange } = useThemeColors()
+  const { neutralLight4, accentOrange } = useThemeColors()
 
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
@@ -88,6 +91,18 @@ export const ProfileScreen = () => {
       web: { route: '/audio ' }
     })
   }, [navigation])
+
+  const handlePressShare = useCallback(() => {
+    if (profile) {
+      dispatchWeb(
+        requestOpenShareModal({
+          type: 'profile',
+          profileId: profile.user_id,
+          source: ShareSource.PAGE
+        })
+      )
+    }
+  }, [profile, dispatchWeb])
 
   const handleFollow = useCallback(() => {
     if (!profile?.does_current_user_follow) {
@@ -129,6 +144,14 @@ export const ProfileScreen = () => {
     </View>
   ) : undefined
 
+  const topbarRight = (
+    <IconButton
+      fill={neutralLight4}
+      icon={IconShare}
+      onPress={handlePressShare}
+    />
+  )
+
   const scrollY = useRef(new Animated.Value(0)).current
 
   const renderHeader = () => {
@@ -156,7 +179,7 @@ export const ProfileScreen = () => {
   }
 
   return (
-    <Screen topbarLeft={topbarLeft}>
+    <Screen topbarLeft={topbarLeft} topbarRight={topbarRight}>
       {!profile ? null : (
         <>
           <View style={styles.navigator}>
