@@ -435,6 +435,26 @@ class DelegateManagerClient extends GovernedContractClient {
     return info
   }
 
+  async getSPMinDelegationAmount ({ serviceProvider }) {
+    const method = await this.getMethod(
+      'getSPMinDelegationAmount',
+      serviceProvider
+    )
+    const info = await method.call()
+    return Utils.toBN(info)
+  }
+
+  async updateSPMinDelegationAmount ({ serviceProvider, amount }) {
+    const method = await this.getMethod(
+      'updateSPMinDelegationAmount',
+      serviceProvider,
+      amount
+    )
+    return this.web3Manager.sendTransaction(
+      method
+    )
+  }
+
   async updateRemoveDelegatorLockupDuration (duration) {
     const method = await this.getGovernedMethod(
       'updateRemoveDelegatorLockupDuration',
