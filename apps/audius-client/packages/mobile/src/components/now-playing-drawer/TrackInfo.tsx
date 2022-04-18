@@ -20,6 +20,7 @@ const useStyles = makeStyles(({ typography, spacing }) => ({
     paddingHorizontal: spacing(3)
   },
   artist: {
+    marginBottom: 0,
     fontFamily: typography.fontByWeight.medium
   }
 }))
