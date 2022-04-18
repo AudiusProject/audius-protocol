@@ -49,7 +49,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
-import { getPlaying, getPlayingUid, getTrack } from 'app/store/audio/selectors'
+import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { make, track as record } from 'app/utils/analytics'
 import { moodMap } from 'app/utils/moods'
@@ -69,6 +69,16 @@ type TrackScreenDetailsTileProps = {
   user: User
   uid: UID
   isLineupLoading: boolean
+}
+
+const recordPlay = (id, play = true) => {
+  record(
+    make({
+      eventName: play ? Name.PLAYBACK_PLAY : Name.PLAYBACK_PAUSE,
+      id: String(id),
+      source: PlaybackSource.TRACK_PAGE
+    })
+  )
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -132,8 +142,8 @@ export const TrackScreenDetailsTile = ({
   const currentUserId = useSelectorWeb(getUserId)
   const dispatchWeb = useDispatchWeb()
   const playingUid = useSelector(getPlayingUid)
-  const queueTrack = useSelector(getTrack)
   const isPlaying = useSelector(getPlaying)
+  const isPlayingUid = playingUid === uid
 
   const {
     _co_sign,
@@ -200,44 +210,17 @@ export const TrackScreenDetailsTile = ({
   const handlePressPlay = useCallback(() => {
     if (isLineupLoading) return
 
-    const trackPlay = () =>
-      record(
-        make({
-          eventName: Name.PLAYBACK_PLAY,
-          id: String(track_id),
-          source: PlaybackSource.TRACK_PAGE
-        })
-      )
-
-    if (isPlaying) {
+    if (isPlaying && isPlayingUid) {
       dispatchWeb(tracksActions.pause())
-      record(
-        make({
-          eventName: Name.PLAYBACK_PAUSE,
-          id: String(track_id),
-          source: PlaybackSource.TRACK_PAGE
-        })
-      )
-    } else if (
-      playingUid !== uid &&
-      queueTrack &&
-      queueTrack?.trackId === track_id
-    ) {
-      dispatchWeb(tracksActions.play())
-      trackPlay()
-    } else {
+      recordPlay(track_id, false)
+    } else if (!isPlayingUid) {
       dispatchWeb(tracksActions.play(uid))
-      trackPlay()
+      recordPlay(track_id)
+    } else {
+      dispatchWeb(tracksActions.play())
+      recordPlay(track_id)
     }
-  }, [
-    track_id,
-    uid,
-    dispatchWeb,
-    isPlaying,
-    playingUid,
-    queueTrack,
-    isLineupLoading
-  ])
+  }, [track_id, uid, isPlayingUid, dispatchWeb, isPlaying, isLineupLoading])
 
   const handlePressFavorites = useCallback(() => {
     dispatchWeb(setFavorite(track_id, FavoriteType.TRACK))
@@ -398,7 +381,7 @@ export const TrackScreenDetailsTile = ({
       hideFavoriteCount={is_unlisted}
       hideListenCount={is_unlisted && !field_visibility?.play_count}
       hideRepostCount={is_unlisted}
-      isPlaying={isPlaying && queueTrack?.trackId === track_id}
+      isPlaying={isPlaying && isPlayingUid}
       onPressFavorites={handlePressFavorites}
       onPressOverflow={handlePressOverflow}
       onPressPlay={handlePressPlay}
