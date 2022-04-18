@@ -28,7 +28,7 @@ const ThisMonthTab = () => {
   return <TrendingLineup timeRange={TimeRange.MONTH} />
 }
 
-const ThisYearTab = () => {
+const AllTimeTab = () => {
   return <TrendingLineup timeRange={TimeRange.ALL_TIME} />
 }
 
@@ -46,10 +46,10 @@ const trendingScreens = [
     component: ThisMonthTab
   },
   {
-    name: 'ThisYear',
-    label: 'This Year',
+    name: 'AllTime',
+    label: 'All Time',
     Icon: IconAllTime,
-    component: ThisYearTab
+    component: AllTimeTab
   }
 ]
 
