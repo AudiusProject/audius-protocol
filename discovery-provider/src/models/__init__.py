@@ -58,6 +58,7 @@ from .models import (
     UserListeningHistory,
     WalletChain,
 )
+from .persistent_store_entry import PersistentStoreEntry
 from .related_artist import RelatedArtist
 from .reward_manager import RewardManagerTransaction
 from .spl_token_transaction import SPLTokenTransaction
@@ -101,6 +102,7 @@ __all__ = [
     "IndexingCheckpoints",
     "ListenStreakChallenge",
     "Milestone",
+    "PersistentStoreEntry",
     "Play",
     "PlaysArchive",
     "Playlist",
