@@ -47,7 +47,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
   const image = useTrackCoverArt({
     id: track.track_id,
     sizes: track._cover_art_sizes,
-    size: SquareSizes.SIZE_480_BY_480
+    size: SquareSizes.SIZE_1000_BY_1000
   })
 
   const dominantColors = useSelectorWeb(state =>
