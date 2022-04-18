@@ -3,7 +3,7 @@ RUN apt-get install make
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --loglevel verbose
+RUN npm install --loglevel verbose
 
 FROM node:10.16-alpine
 
