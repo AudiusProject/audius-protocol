@@ -32,12 +32,6 @@ export default class Identity {
     }
   }
 
-  // Sets the minimum delegation in identity for a service provider
-  async updateMinimumDelegationAmount(amount: BN): Promise<boolean> {
-    await this.aud.libs.Account.updateMinimumDelegationAmount(amount.toString())
-    return true
-  }
-
   async signData() {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with identity service: ${unixTs}`

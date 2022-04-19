@@ -27,7 +27,7 @@ function updateMinimumDelegationAmount(
       }
 
       // Set the min delegation amount for the user
-      await aud.Identity.updateMinimumDelegationAmount(amount)
+      await aud.Delegate.updateSPMinDelegationAmount(wallet, amount)
 
       // Re-fetch user to refresh
       await dispatch(fetchUser(wallet))
