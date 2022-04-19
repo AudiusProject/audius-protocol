@@ -5,7 +5,8 @@ import type { Captcha } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
-import type { Log } from 'web3-core'
+import type { Log, TransactionReceipt } from 'web3-core'
+import type Wallet from 'ethereumjs-wallet'
 
 type Data = Record<string, unknown>
 
@@ -344,12 +345,12 @@ export class IdentityService {
   }
 
   async relay(
-    contractRegistryKey: string,
-    contractAddress: string,
+    contractRegistryKey: string | null | undefined,
+    contractAddress: string | null | undefined,
     senderAddress: string,
     encodedABI: string,
     gasLimit: number
-  ): Promise<{ receipt: Receipt }> {
+  ): Promise<{ receipt: TransactionReceipt }> {
     const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
     let token
     if (this.captcha && shouldCaptcha) {
@@ -376,7 +377,7 @@ export class IdentityService {
 
   async ethRelay(
     contractAddress: string,
-    senderAddress: string,
+    senderAddress: Wallet,
     encodedABI: string,
     gasLimit: string
   ): Promise<RelayTransaction> {

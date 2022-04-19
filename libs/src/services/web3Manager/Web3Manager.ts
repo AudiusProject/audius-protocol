@@ -6,10 +6,10 @@ import { AudiusABIDecoder } from '../ABIDecoder'
 import EthereumWallet from 'ethereumjs-wallet'
 import { XMLHttpRequest } from './XMLHttpRequest'
 import type { Web3Config } from './Web3Config'
-import type { IdentityService, Receipt } from '../identity'
+import type { IdentityService } from '../identity'
 import type { Hedgehog } from '@audius/hedgehog'
 import type Web3Type from 'web3'
-import type { HttpProvider } from 'web3-core'
+import type { HttpProvider, TransactionReceipt, EventLog } from 'web3-core'
 import type { EIP712TypedData } from 'eth-sig-util'
 import type { DecodedLog } from 'abi-decoder'
 
@@ -189,11 +189,11 @@ export class Web3Manager {
 
   async sendTransaction(
     contractMethod: ContractMethod,
-    contractRegistryKey: string,
-    contractAddress: string,
+    contractRegistryKey?: string | null,
+    contractAddress?: string | null,
     txRetries = 5,
     txGasLimit?: number
-  ) {
+  ): Promise<TransactionReceipt> {
     const gasLimit =
       txGasLimit ??
       (await estimateGas({
@@ -201,7 +201,10 @@ export class Web3Manager {
         gasLimitMaximum: DEFAULT_GAS_LIMIT
       }))
     if (this.useExternalWeb3) {
-      return contractMethod.send({ from: this.ownerWallet, gas: gasLimit })
+      return await contractMethod.send({
+        from: this.ownerWallet,
+        gas: gasLimit
+      })
     } else {
       const encodedABI = contractMethod.encodeABI()
 
@@ -244,7 +247,7 @@ export class Web3Manager {
       // More on Metamask's / Web3.js' behavior here:
       // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
       if (receipt.logs) {
-        const events: Receipt['events'] = {}
+        const events: TransactionReceipt['events'] = {}
         // TODO: decodeLogs appears to return DecodedLog, not DecodedLog[] so maybe a type/version issue
         const decoded = this.AudiusABIDecoder.decodeLogs(
           contractRegistryKey,
@@ -255,7 +258,8 @@ export class Web3Manager {
           evt.events.forEach((arg) => {
             returnValues[arg.name] = arg.value
           })
-          events[evt.name] = { returnValues }
+          const eventLog = { returnValues }
+          events[evt.name] = eventLog as EventLog
         })
         receipt.events = events
       }

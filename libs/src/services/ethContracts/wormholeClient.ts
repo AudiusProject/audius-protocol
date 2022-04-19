@@ -1,16 +1,39 @@
-class WormholeClient {
-  constructor (ethWeb3Manager, contractABI, contractAddress, audiusTokenClient) {
+import type Web3 from 'web3'
+import type { ContractABI } from '../../utils'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+import type { AudiusTokenClient } from './audiusTokenClient'
+import type { Contract } from 'web3-eth-contract'
+import type Wallet from 'ethereumjs-wallet'
+import type BN from 'bn.js'
+
+export class WormholeClient {
+  ethWeb3Manager: EthWeb3Manager
+  contractABI: ContractABI['abi']
+  contractAddress: string
+  web3: Web3
+  audiusTokenClient: AudiusTokenClient
+  WormholeContract: Contract
+
+  constructor(
+    ethWeb3Manager: EthWeb3Manager,
+    contractABI: ContractABI['abi'],
+    contractAddress: string,
+    audiusTokenClient: AudiusTokenClient
+  ) {
     this.ethWeb3Manager = ethWeb3Manager
     this.contractABI = contractABI
     this.contractAddress = contractAddress
 
     this.web3 = this.ethWeb3Manager.getWeb3()
     this.audiusTokenClient = audiusTokenClient
-    this.WormholeContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
+    this.WormholeContract = new this.web3.eth.Contract(
+      this.contractABI,
+      this.contractAddress
+    )
   }
 
   // Get the name of the contract
-  async nonces (wallet) {
+  async nonces(wallet: string) {
     // Pass along a unique param so the nonce value is always not cached
     const nonce = await this.WormholeContract.methods.nonces(wallet).call({
       _audiusBustCache: Date.now()
@@ -21,11 +44,7 @@ class WormholeClient {
 
   /* ------- SETTERS ------- */
 
-  async initialize (
-    fromAcct,
-    wormholeAddress,
-    relayer
-  ) {
+  async initialize(fromAcct: Wallet, wormholeAddress: string, relayer: Wallet) {
     const method = this.WormholeContract.methods.initialize(
       this.audiusTokenClient.contractAddress,
       wormholeAddress
@@ -44,36 +63,16 @@ class WormholeClient {
   /**
    * Transfers in eth from the user's wallet to the wormhole contract and
    * specifies a solana wallet to realized the tokens in SOL
-   *
-   * @param {string} fromAcct
-   * @param {BN} amount
-   * @param {number} chainId
-   * @param {*} solanaAccount
-   * @param {*} arbiterFee
-   * @param {*} deadline
-   * @param {string} signedDigest
-   * @param {string} relayer
-   * @returns {
-   *   txHash: string,
-   *   txParams: {
-   *      data: string
-   *      gasLimit: string
-   *      gasPrice: number
-   *      nonce: string
-   *      to: string
-   *      value: string
-   *   }
-   * }
    */
-  async transferTokens (
-    fromAcct,
-    amount,
-    chainId,
-    solanaAccount,
-    arbiterFee,
-    deadline,
-    signedDigest,
-    relayer
+  async transferTokens(
+    fromAcct: Wallet,
+    amount: BN,
+    chainId: number,
+    solanaAccount: string,
+    arbiterFee: string,
+    deadline: string,
+    signedDigest: { v: string; r: string; s: string },
+    relayer: Wallet
   ) {
     const method = this.WormholeContract.methods.transferTokens(
       fromAcct,
@@ -97,5 +96,3 @@ class WormholeClient {
     return tx
   }
 }
-
-module.exports = WormholeClient

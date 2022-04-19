@@ -6,19 +6,21 @@ import type Wallet from 'ethereumjs-wallet'
 const GAS_LIMIT_MULTIPLIER = 1.05
 
 export interface ContractMethod {
+  arguments: string[]
   estimateGas: (config: {
     from: Wallet | undefined
     gas: number | undefined
   }) => Promise<number>
   _method: {
     name: string
+    inputs: Array<{ type: string }>
   }
   encodeABI: () => string
-  send: (config: {
+  send: <Tx>(config: {
     from: Wallet | undefined
     gas: number
     gasPrice?: number
-  }) => unknown
+  }) => Tx
 }
 
 interface EstimateGasConfig {

@@ -65,7 +65,7 @@ export class AudiusABIDecoder {
     return decoded
   }
 
-  static decodeLogs(_: string, logs: Log[]) {
+  static decodeLogs(_: string | unknown, logs: Log[]) {
     return abiDecoder.decodeLogs(logs)
   }
 }
