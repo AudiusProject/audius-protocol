@@ -175,6 +175,9 @@ export const fetchCID = async (
     }
     return res?.data ?? null
   } catch (e) {
+    if (e?.message === 'Unauthorized') {
+      return e.message
+    }
     console.error(e)
     return asUrl ? '' : null
   }

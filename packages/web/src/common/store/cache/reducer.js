@@ -71,6 +71,11 @@ export const mergeCustomizer = (objValue, srcValue, key) => {
     return srcValue
   }
 
+  // Delete is unidirectional (after marked deleted, future updates are not reflected)
+  if (key === 'is_delete' && objValue === true && srcValue === false) {
+    return objValue
+  }
+
   // For playlist_contents, this is trickier.
   // We want to never merge because playlists can have
   // tracks be deleted since last time, but
