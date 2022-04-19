@@ -62,19 +62,35 @@ function* fetchSegment(metadata) {
   return yield call(fetchCID, cid, gateways, /* cache */ false)
 }
 
+// TODO(AUD-1837) -- we should not rely on this logic anymore of fetching first
+// segments, particularly to flag unauthorized content, but it should probably
+// just be removed altogether since first segment fetch is usually fast.
 function* fetchFirstSegments(entries) {
   // Segments aren't part of the critical path so let them resolve later.
   try {
     const firstSegments = yield all(
       entries.map(e => call(fetchSegment, e.metadata))
     )
+
     yield put(
       cacheActions.update(
         Kind.TRACKS,
-        firstSegments.map((s, i) => ({
-          id: entries[i].id,
-          metadata: { _first_segment: s }
-        }))
+        firstSegments.map((s, i) => {
+          if (s === 'Unauthorized') {
+            return {
+              id: entries[i].id,
+              metadata: {
+                is_delete: true,
+                _blocked: true,
+                _marked_deleted: true
+              }
+            }
+          }
+          return {
+            id: entries[i].id,
+            metadata: { _first_segment: s }
+          }
+        })
       )
     )
   } catch (err) {
