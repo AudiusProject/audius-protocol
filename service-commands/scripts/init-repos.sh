@@ -35,6 +35,10 @@ npm install
 cd $PROTOCOL_DIR/creator-node
 npm install
 
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+yarn install
+npm run build
+
 cd $PROTOCOL_DIR/libs
 npm install
 npm run build
@@ -45,7 +49,7 @@ npm install
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
-    npm install
+    npm run init
 fi
 
 ####################################
@@ -55,8 +59,12 @@ fi
 cd $PROTOCOL_DIR/service-commands
 npm link
 
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+npm link
+
 cd $PROTOCOL_DIR/libs
 npm link
+npm link @audius/anchor-audius-data
 
 cd $PROTOCOL_DIR/mad-dog
 npm link @audius/service-commands
@@ -72,6 +80,5 @@ npm link @audius/libs
 
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
-    cd audius-client
-    npm link @audius/libs
+    cd audius-client/packages/web && npm link @audius/libs
 fi

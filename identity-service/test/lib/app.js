@@ -18,7 +18,10 @@ async function getApp () {
     }
   }
   const solanaWeb3Manager = {
-    connection: null
+    connection: null,
+    solanaWeb3: {
+      sendAndConfirmTransaction: () => {}
+    }
   }
   const audiusLibs = { captcha, solanaWeb3Manager }
 
