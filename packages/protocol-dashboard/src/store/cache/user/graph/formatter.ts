@@ -49,11 +49,24 @@ export const formatUser = async (
   let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(
     userWallet
   )
-  if (
-    minDelegationAmount === null ||
-    protocolMinDelegationAmount.gt(minDelegationAmount)
-  ) {
-    minDelegationAmount = protocolMinDelegationAmount
+  const spMinDelegationAmount = await aud.Delegate.getSPMinDelegationAmount(
+    userWallet
+  )
+  // Prefer min delegation amount if provided and greater than protocol wide amount
+  if (spMinDelegationAmount) {
+    if (
+      minDelegationAmount === null ||
+      spMinDelegationAmount.gt(minDelegationAmount)
+    ) {
+      minDelegationAmount = spMinDelegationAmount
+    }
+  } else {
+    if (
+      minDelegationAmount === null ||
+      protocolMinDelegationAmount.gt(minDelegationAmount)
+    ) {
+      minDelegationAmount = protocolMinDelegationAmount
+    }
   }
 
   return {

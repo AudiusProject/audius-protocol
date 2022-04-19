@@ -304,6 +304,14 @@ export default class Delegate {
     }))
   }
 
+  async getSPMinDelegationAmount(serviceProvider: Address): Promise<BN> {
+    await this.aud.hasPermissions()
+    const minDelegationAmount = await this.getContract().getSPMinDelegationAmount(
+      { serviceProvider }
+    )
+    return minDelegationAmount
+  }
+
   /* -------------------- Delegate Manager Client Write -------------------- */
 
   async delegateStake(
@@ -378,6 +386,18 @@ export default class Delegate {
       serviceProvider,
       delegator
     )
+    return info
+  }
+
+  async updateSPMinDelegationAmount(
+    serviceProvider: Address,
+    amount: Amount
+  ): Promise<TxReceipt> {
+    await this.aud.hasPermissions(Permission.WRITE)
+    const info = await this.getContract().updateSPMinDelegationAmount({
+      serviceProvider,
+      amount
+    })
     return info
   }
 }
