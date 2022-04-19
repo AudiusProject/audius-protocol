@@ -4,11 +4,14 @@ import retry from 'async-retry'
 import type { ContractABI, Nullable, Logger } from '../../utils'
 import type { Contract } from 'web3-eth-contract'
 import type { HttpProvider } from 'web3-core'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
 const CONTRACT_INIT_MAX_ATTEMPTS = 5
 const METHOD_CALL_MAX_RETRIES = 5
+
+export type GetRegistryAddress = (key: string) => Promise<string>
 
 /*
  * Base class for instantiating contracts.
@@ -16,10 +19,10 @@ const METHOD_CALL_MAX_RETRIES = 5
  * time a method on the contract is invoked.
  */
 export class ContractClient {
-  web3Manager: Web3Manager
+  web3Manager: Web3Manager | EthWeb3Manager
   contractABI: ContractABI['abi']
   contractRegistryKey: string
-  getRegistryAddress: (key: string) => Promise<string>
+  getRegistryAddress: GetRegistryAddress
   _contractAddress: Nullable<string>
   _contract: Nullable<Contract>
   _isInitialized: boolean
@@ -29,10 +32,10 @@ export class ContractClient {
   logger: Logger
 
   constructor(
-    web3Manager: Web3Manager,
+    web3Manager: Web3Manager | EthWeb3Manager,
     contractABI: ContractABI['abi'],
     contractRegistryKey: string,
-    getRegistryAddress: (key: string) => Promise<string>,
+    getRegistryAddress: GetRegistryAddress,
     logger: Logger = console,
     contractAddress: Nullable<string> = null
   ) {
@@ -162,7 +165,8 @@ export class ContractClient {
   /** Gets the contract address and ensures that the contract has initted. */
   async getAddress() {
     await this.init()
-    return this._contractAddress
+    // calling init first ensures _contactAddress is present
+    return this._contractAddress as string
   }
 
   /**
@@ -170,7 +174,7 @@ export class ContractClient {
    * The contract can then be invoked with .call() or be passed to a sendTransaction.
    * @param methodName the name of the contract method
    */
-  async getMethod(methodName: string, ...args: unknown[]) {
+  async getMethod(methodName: string, ...args: any[]) {
     await this.init()
     if (!(methodName in this._contract?.methods)) {
       throw new Error(
@@ -217,6 +221,7 @@ export class ContractClient {
 
   async getContract() {
     await this.init()
-    return this._contract
+    // init ensures _contract is set
+    return this._contract as Contract
   }
 }
