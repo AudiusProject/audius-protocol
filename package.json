@@ -6,7 +6,7 @@
   "dependencies": {
     "3box": "1.19.1",
     "@apollo/client": "3.3.7",
-    "@audius/libs": "1.2.90",
+    "@audius/libs": "1.2.111",
     "@audius/stems": "0.3.10",
     "@craco/craco": "6.4.3",
     "@reduxjs/toolkit": "1.4.0",
@@ -20,6 +20,7 @@
     "numeral": "2.0.6",
     "react": "16.13.1",
     "react-chartjs-2": "2.10.0",
+    "babel-plugin-lodash": "3.3.4",
     "react-country-flag": "3.0.2",
     "react-custom-scrollbars": "4.2.1",
     "react-dom": "16.13.1",
@@ -37,7 +38,8 @@
     "remark-gfm": "1.0.0",
     "semver": "6.3.0",
     "simplebar-react": "3.0.0-beta.5",
-    "url-join": "4.0.1"
+    "url-join": "4.0.1",
+    "webpack-bundle-analyzer": "4.5.0"
   },
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -103,7 +105,9 @@
     "node-fetch": "2.6.1",
     "prettier": "1.19.1",
     "redux-devtools-extension": "2.13.8",
-    "typescript": "4.0.2"
+    "typescript": "4.0.2",
+    "@types/craco__craco": "6.4.0",
+    "@types/webpack-bundle-analyzer": "4.4.1"
   },
   "resolutions": {
     "bn.js": "5.0.0"
