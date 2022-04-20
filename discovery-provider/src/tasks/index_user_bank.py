@@ -8,7 +8,7 @@ from typing import List, Optional, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, desc, text
 from sqlalchemy.orm.session import Session
 from src.models import User, UserBankAccount, UserBankTransaction
 from src.models.user_tip import UserTip
@@ -52,6 +52,18 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
+
+UPDATE_AGGREGATE_USER_TIPS_QUERY = """
+INSERT INTO aggregate_user_tips (
+        sender_user_id
+        , receiver_user_id
+        , amount
+    )
+    VALUES (:sender_user_id, :receiver_user_id, :amount)
+    ON CONFLICT (sender_user_id, receiver_user_id)
+    DO UPDATE
+        SET amount = EXCLUDED.amount + aggregate_user_tips.amount
+"""
 
 
 # Recover ethereum public key from bytes array
@@ -160,6 +172,15 @@ def index_tip(
                     receiver_user_id=receiver_id,
                 )
                 session.add(user_tip)
+                session.execute(
+                    text(UPDATE_AGGREGATE_USER_TIPS_QUERY),
+                    {
+                        "sender_user_id": sender_id,
+                        "receiver_user_id": receiver_id,
+                        "amount": sent_amount,
+                    },
+                )
+
             else:
                 # This should be impossible
                 logger.error(
