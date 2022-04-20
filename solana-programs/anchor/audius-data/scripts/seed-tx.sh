@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set -x
 
 # TODO - MOVE OUT OF SHELL SCRIPT ASAP
 
@@ -21,27 +22,23 @@ yarn run ts-node cli/main.ts -f initAdmin \
 
 echo "Registering content nodes!"
 # Register content nodes
-# DUMMY ETH ADDRESSES
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 1 \
-    --eth-address 0x25A3Acd4758Ab107ea0Bd739382B8130cD1F204d
+    --cn-sp-id 1
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 2 \
-    --eth-address 0x71B55d7bDe40D751087A27e2072F0fF8cacA400a
+    --cn-sp-id 2
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --cn-sp-id 3 \
-    --eth-address 0xb4bD6911d3F633A1F7B14D955E68061F6f845027
+    --cn-sp-id 3
 
 echo "Init user"
 
@@ -50,7 +47,7 @@ yarn run ts-node cli/main.ts -f initUser \
     --admin-keypair "$ADMIN_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --user-replica-set 1,2,3 \
-    --handle handlebcdef \
+    --user-id 1 \
     -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 | tee /tmp/initUserOutput.txt
 
 USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
@@ -74,7 +71,7 @@ yarn run ts-node cli/main.ts -f createTrack \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --handle handlebcdef # metadata CID that would point off-chain is randomly generated here
+    --user-id 1 # metadata CID that would point off-chain is randomly generated here
 
 echo "Creating playlist"
 
@@ -83,7 +80,7 @@ yarn run ts-node cli/main.ts -f createPlaylist \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --handle handlebcdef | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
+    --user-id 1 | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
 
 PLAYLIST_ID=$(cut -d '=' -f 3 <<< $(cat /tmp/createPlaylistOutput.txt | grep "Transacting on entity"))
 
@@ -95,7 +92,7 @@ yarn run ts-node cli/main.ts -f updatePlaylist \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
-    --handle handlebcdef # metadata CID that would point off-chain is randomly generated here 
+    --user-id 1 # metadata CID that would point off-chain is randomly generated here 
 
 echo "Deleting playlist"
 
@@ -105,7 +102,7 @@ yarn run ts-node cli/main.ts -f deletePlaylist \
     --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
-    --handle handlebcdef
+    --user-id 1
 
 echo "Successfully seeded tx:"
 

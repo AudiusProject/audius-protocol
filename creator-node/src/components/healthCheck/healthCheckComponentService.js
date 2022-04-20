@@ -1,5 +1,7 @@
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
+const { Keypair } = require('@solana/web3.js')
+
 const config = require('../../config')
 const utils = require('../../utils.js')
 const { MONITORS } = require('../../monitors/monitors')
@@ -63,7 +65,9 @@ const healthCheck = async (
     dailySyncSuccessCount,
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
-    latestSyncFailTimestamp
+    latestSyncFailTimestamp,
+    stateMachineQueueLatestJobSuccess,
+    stateMachineQueueLatestJobStart
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -81,7 +85,9 @@ const healthCheck = async (
     MONITORS.DAILY_SYNC_SUCCESS_COUNT,
     MONITORS.DAILY_SYNC_FAIL_COUNT,
     MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP,
-    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
+    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP,
+    MONITORS.LATEST_STATE_MACHINE_QUEUE_SUCCESS,
+    MONITORS.LATEST_STATE_MACHINE_QUEUE_START
   ])
 
   let currentSnapbackReconfigMode
@@ -93,6 +99,18 @@ const healthCheck = async (
     await getTranscodeQueueJobs()
 
   const asyncProcessingQueueJobs = await getAsyncProcessingQueueJobs()
+
+  let solDelegatePublicKeyBase58 = ''
+  try {
+    const solDelegatePrivateKey = config.get('solDelegatePrivateKeyBase64')
+    const solDelegatePrivateKeyBuffer = new Uint8Array(
+      Buffer.from(solDelegatePrivateKey, 'base64')
+    )
+    const solDelegateKeyPair = Keypair.fromSecretKey(
+      solDelegatePrivateKeyBuffer
+    )
+    solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
+  } catch (_) {}
 
   const response = {
     ...versionInfo,
@@ -133,7 +151,14 @@ const healthCheck = async (
     snapbackJobInterval,
     transcodeActive,
     transcodeWaiting,
-    asyncProcessingQueue: asyncProcessingQueueJobs
+    asyncProcessingQueue: asyncProcessingQueueJobs,
+    solDelegatePublicKeyBase58,
+    stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
+      ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
+      : null,
+    stateMachineQueueLatestJobStart: stateMachineQueueLatestJobStart
+      ? new Date(parseInt(stateMachineQueueLatestJobStart)).toISOString()
+      : null
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object

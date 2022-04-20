@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import logging
-from typing import Any, Dict, KeysView, Tuple
+from typing import Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -14,8 +14,8 @@ GET_METADATA_TIMEOUT_SECONDS = 2
 GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 5
 
 
-class IPFSClient:
-    """Helper class for Audius Discovery Provider + IPFS interaction"""
+class CIDMetadataClient:
+    """Helper class for Audius Discovery Provider + CID Metadata interaction"""
 
     def __init__(
         self,
@@ -24,10 +24,8 @@ class IPFSClient:
         redis=None,
         eth_abi_values=None,
     ):
-        # logger.warning("IPFSCLIENT | initializing")
-
         # Fetch list of registered content nodes to use during init.
-        # During indexing, if ipfs fetch fails, _cnode_endpoints and user_replica_set are empty
+        # During indexing, if cid metadata fetch fails, _cnode_endpoints and user_replica_set are empty
         # it might fail to find content and throw an error. To prevent race conditions between
         # indexing starting and this getting populated, run this on init in the instance
         # in the celery worker
@@ -38,16 +36,18 @@ class IPFSClient:
                 )
             )
             logger.warning(
-                f"IPFSCLIENT | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
+                f"CIDMetadataClient | fetch _cnode_endpoints on init got {self._cnode_endpoints}"
             )
         else:
             self._cnode_endpoints = []
-            logger.warning("IPFSCLIENT | couldn't fetch _cnode_endpoints on init")
+            logger.warning(
+                "CIDMetadataClient | couldn't fetch _cnode_endpoints on init"
+            )
 
     def update_cnode_urls(self, cnode_endpoints):
         if len(cnode_endpoints):
             logger.info(
-                f"IPFSCLIENT | update_cnode_urls with endpoints {cnode_endpoints}"
+                f"CIDMetadataClient | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
 
@@ -66,7 +66,7 @@ class IPFSClient:
             validate_url = urlparse(url)
             if not validate_url.scheme:
                 raise Exception(
-                    f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}"
+                    f"CIDMetadataClient | Invalid URL from provided gateway addr - {url}"
                 )
 
             async with async_session.get(
@@ -77,11 +77,11 @@ class IPFSClient:
                     return (multihash, json_resp)
         except asyncio.TimeoutError:
             logger.info(
-                f"IPFSCLIENT | _get_metadata_async TimeoutError fetching gateway address - {url}"
+                f"CIDMetadataClient | _get_metadata_async TimeoutError fetching gateway address - {url}"
             )
             return None
         except Exception as e:
-            logger.info(f"IPFSCLIENT | _get_metadata_async Exception - {str(e)}")
+            logger.info(f"CIDMetadataClient | _get_metadata_async Exception - {str(e)}")
             return None
 
     def _get_gateway_endpoints(
@@ -98,15 +98,15 @@ class IPFSClient:
 
         return self._cnode_endpoints
 
-    async def fetch_metadata_from_gateway_endpoints(
+    async def _fetch_metadata_from_gateway_endpoints(
         self,
         fetched_cids: KeysView[str],
-        cids_txhash_set: Tuple[str, Any],
+        cids_txhash_set: Set[Tuple[str, str]],
         cid_to_user_id: Dict[str, int],
         user_to_replica_set: Dict[int, str],
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Dict]:
         """Fetch CID metadata from gateway endpoints and update cid_metadata dict.
 
         fetched_cids -- CIDs already successfully fetched
@@ -122,7 +122,7 @@ class IPFSClient:
             futures = []
             cid_futures_map: Dict[str, set] = {}
 
-            for cid, txhash in cids_txhash_set:
+            for cid, _ in cids_txhash_set:
                 if cid in fetched_cids:
                     continue  # already fetched
                 user_id = cid_to_user_id[cid]
@@ -156,6 +156,7 @@ class IPFSClient:
 
                     cid, metadata_json = future_result
 
+                    # TODO add playlist type
                     metadata_format = (
                         track_metadata_format
                         if cid_type[cid] == "track"
@@ -181,9 +182,76 @@ class IPFSClient:
 
             except asyncio.TimeoutError:
                 logger.info(
-                    "IPFSCLIENT | fetch_metadata_from_gateway_endpoints TimeoutError"
+                    "CIDMetadataClient | fetch_metadata_from_gateway_endpoints TimeoutError"
                 )
             except Exception as e:
-                logger.info("IPFSCLIENT | Error in fetch cid metadata")
+                logger.info("CIDMetadataClient | Error in fetch cid metadata")
                 raise e
+        return cid_metadata
+
+    # Used in POA indexing
+    def fetch_metadata_from_gateway_endpoints(
+        self,
+        fetched_cids: KeysView[str],
+        cids_txhash_set: Set[Tuple[str, str]],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, str],
+        cid_type: Dict[str, str],
+        should_fetch_from_replica_set: bool = True,
+    ):
+        return asyncio.run(
+            self._fetch_metadata_from_gateway_endpoints(
+                fetched_cids,
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set,
+            )
+        )
+
+    # Used in SOL indexing
+    async def async_fetch_metadata_from_gateway_endpoints(
+        self,
+        cids_txhash_set: Set[Tuple[str, str]],
+        cid_to_user_id: Dict[str, int],
+        user_to_replica_set: Dict[int, str],
+        cid_type: Dict[str, str],
+    ) -> Dict[str, Dict]:
+        cid_metadata: Dict[str, Dict] = {}
+
+        # first attempt - fetch all CIDs from replica set
+        try:
+
+            cid_metadata.update(
+                await self._fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=True,
+                )
+            )
+        except asyncio.TimeoutError:
+            # swallow exception on first attempt fetching from replica set
+            pass
+
+        # second attempt - fetch missing CIDs from other cnodes
+        if len(cid_metadata) != len(cids_txhash_set):
+            cid_metadata.update(
+                await self._fetch_metadata_from_gateway_endpoints(
+                    cid_metadata.keys(),
+                    cids_txhash_set,
+                    cid_to_user_id,
+                    user_to_replica_set,
+                    cid_type,
+                    should_fetch_from_replica_set=False,
+                )
+            )
+
+        if cid_type and len(cid_metadata) != len(cid_type.keys()):
+            missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
+            raise Exception(missing_cids_msg)
+
         return cid_metadata

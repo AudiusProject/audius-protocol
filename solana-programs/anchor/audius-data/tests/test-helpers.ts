@@ -2,7 +2,6 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import Web3 from "web3";
 import { Account } from "web3-core";
-import { randomBytes } from "crypto";
 import { expect } from "chai";
 import {
   findDerivedPair,
@@ -11,6 +10,8 @@ import {
   getTransactionWithData,
   getContentNode,
   randomId,
+  convertBNToSpIdSeed,
+  convertBNToUserIdSeed,
 } from "../lib/utils";
 import {
   createContentNode,
@@ -26,6 +27,8 @@ import {
   deletePlaylist,
   updatePlaylist,
   updateAdmin,
+  initAuthorityDelegationStatus,
+  addUserAuthorityDelegate,
 } from "../lib/lib";
 import { AudiusData } from "../target/types/audius_data";
 
@@ -36,28 +39,19 @@ const DefaultPubkey = new PublicKey("11111111111111111111111111111111");
 
 type InitTestConsts = {
   ethAccount: Account;
-  handle: string;
-  handleBytes: Buffer;
-  handleBytesArray: number[];
   metadata: string;
   userId: anchor.BN;
 };
 
 export const initTestConstants = (): InitTestConsts => {
   const ethAccount = EthWeb3.eth.accounts.create();
-  const handle = randomBytes(40).toString("hex");
-  const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle));
-  const handleBytesArray = Array.from({ ...handleBytes, length: 32 });
   const metadata = randomCID();
   const userId = randomId();
 
   return {
     ethAccount,
-    handle,
-    handleBytes,
-    handleBytesArray,
-    metadata,
     userId,
+    metadata,
   };
 };
 
@@ -66,7 +60,7 @@ export const testInitUser = async ({
   program,
   baseAuthorityAccount,
   ethAddress,
-  handleBytesArray,
+  userId,
   bumpSeed,
   metadata,
   userStorageAccount,
@@ -78,23 +72,24 @@ export const testInitUser = async ({
   cn2,
   cn3,
 }) => {
-  const tx = await initUser({
-    provider,
+  const tx = initUser({
+    payer: provider.wallet.publicKey,
     program,
     ethAddress,
     replicaSet,
     replicaSetBumps,
-    handleBytesArray,
+    userId,
     bumpSeed,
     metadata,
     userStorageAccount,
     baseAuthorityAccount,
     adminStorageAccount: adminStorageKeypair.publicKey,
-    adminKeypair,
+    adminAuthorityPublicKey: adminKeypair.publicKey,
     cn1,
     cn2,
     cn3,
   });
+  const txSignature = await provider.sendAndConfirm(tx, [adminKeypair]);
 
   const account = await program.account.user.fetch(userStorageAccount);
 
@@ -107,7 +102,7 @@ export const testInitUser = async ({
   const { decodedInstruction, decodedData } = await getTransactionWithData(
     program,
     provider,
-    tx,
+    txSignature,
     0
   );
 
@@ -123,8 +118,7 @@ export const testInitUserSolPubkey = async ({
   newUserPublicKey,
   newUserAcctPDA,
 }) => {
-  const tx = await initUserSolPubkey({
-    provider,
+  const tx = initUserSolPubkey({
     program,
     ethPrivateKey,
     message,
@@ -132,10 +126,12 @@ export const testInitUserSolPubkey = async ({
     userStorageAccount: newUserAcctPDA,
   });
 
+  const txSignature = await provider.sendAndConfirm(tx);
+
   const { decodedInstruction, decodedData } = await getTransactionWithData(
     program,
     provider,
-    tx,
+    txSignature,
     1
   );
 
@@ -157,7 +153,6 @@ export const testCreateUser = async ({
   message,
   baseAuthorityAccount,
   ethAccount,
-  handleBytesArray,
   bumpSeed,
   metadata,
   newUserKeypair,
@@ -170,12 +165,11 @@ export const testCreateUser = async ({
   cn3,
   userId,
 }) => {
-  const tx = await createUser({
-    provider,
+  const tx = createUser({
+    payer: provider.wallet.publicKey,
     program,
     ethAccount,
     message,
-    handleBytesArray,
     bumpSeed,
     replicaSet,
     replicaSetBumps,
@@ -189,16 +183,17 @@ export const testCreateUser = async ({
     cn3,
     userId,
   });
+  const txSignature = await provider.sendAndConfirm(tx);
 
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 1);
+    await getTransactionWithData(program, provider, txSignature, 1);
 
   expect(decodedInstruction.name).to.equal("createUser");
   expect(decodedData.base.toString()).to.equal(baseAuthorityAccount.toString());
   expect(decodedData.ethAddress).to.deep.equal([
     ...anchor.utils.bytes.hex.decode(ethAccount.address),
   ]);
-  expect(decodedData.handleSeed).to.deep.equal(handleBytesArray);
+  expect(decodedData.userId).to.deep.equal(userId.toNumber());
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
   expect(accountPubKeys[0]).to.equal(userStorageAccount.toString());
@@ -221,7 +216,7 @@ export const testCreateTrack = async ({
   program,
   id,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStorageAccount,
   trackMetadata,
@@ -233,18 +228,20 @@ export const testCreateTrack = async ({
   const tx = await createTrack({
     id,
     program,
-    userAuthorityKeypair,
+    userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     userStorageAccountPDA: trackOwnerPDA,
     userAuthorityDelegateAccountPDA,
     authorityDelegationStatusAccountPDA,
     metadata: trackMetadata,
     baseAuthorityAccount,
-    handleBytesArray,
+    userId,
     adminStorageAccount,
     bumpSeed,
   });
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
+
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, txSignature, 0);
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
   expect(decodedData.id.toString()).to.deep.equal(id.toString());
@@ -268,25 +265,26 @@ export const testDeleteTrack = async ({
   authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStorageAccount,
 }) => {
-  const tx = await deleteTrack({
+  const tx = deleteTrack({
     id,
-    provider,
     program,
     userStorageAccountPDA: trackOwnerPDA,
     userAuthorityDelegateAccountPDA,
     authorityDelegationStatusAccountPDA,
-    userAuthorityKeypair: userAuthorityKeypair,
+    userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     baseAuthorityAccount,
-    handleBytesArray,
+    userId,
     bumpSeed,
     adminStorageAccount,
   });
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
+
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, txSignature, 0);
   expect(decodedInstruction.name).to.equal("manageEntity");
   expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.track);
@@ -309,14 +307,14 @@ export const testUpdateTrack = async ({
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStorageAccount,
 }) => {
   const tx = await updateTrack({
     program,
     baseAuthorityAccount,
-    handleBytesArray,
+    userId,
     bumpSeed,
     adminStorageAccount,
     id,
@@ -324,10 +322,11 @@ export const testUpdateTrack = async ({
     userAuthorityDelegateAccountPDA,
     authorityDelegationStatusAccountPDA,
     metadata,
-    userAuthorityKeypair,
+    userAuthorityPublicKey: userAuthorityKeypair.publicKey,
   });
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, txSignature, 0);
 
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
@@ -348,7 +347,7 @@ export const testCreatePlaylist = async ({
   program,
   id,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStorageAccount,
   playlistMetadata,
@@ -360,18 +359,21 @@ export const testCreatePlaylist = async ({
   const tx = await createPlaylist({
     id,
     program,
-    userAuthorityKeypair,
+    userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     userStorageAccountPDA: playlistOwnerPDA,
     userAuthorityDelegateAccountPDA,
     authorityDelegationStatusAccountPDA,
     metadata: playlistMetadata,
     baseAuthorityAccount,
-    handleBytesArray,
+    userId,
     adminStorageAccount,
     bumpSeed,
   });
+
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
+
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, txSignature, 0);
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
   expect(decodedData.id.toString()).to.equal(id.toString());
@@ -395,25 +397,25 @@ export const testDeletePlaylist = async ({
   authorityDelegationStatusAccountPDA,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStorageAccount,
 }) => {
   const tx = await deletePlaylist({
     id,
-    provider,
     program,
     userStorageAccountPDA: playlistOwnerPDA,
     userAuthorityDelegateAccountPDA,
     authorityDelegationStatusAccountPDA,
-    userAuthorityKeypair: userAuthorityKeypair,
+    userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     baseAuthorityAccount,
-    handleBytesArray,
+    userId,
     bumpSeed,
     adminStorageAccount,
   });
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, txSignature, 0);
   expect(decodedInstruction.name).to.equal("manageEntity");
   expect(decodedData.id.toString()).to.equal(id.toString());
   expect(decodedData.entityType).to.deep.equal(EntityTypesEnumValues.playlist);
@@ -436,14 +438,14 @@ export const testUpdatePlaylist = async ({
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStorageAccount,
 }) => {
   const tx = await updatePlaylist({
     program,
     baseAuthorityAccount,
-    handleBytesArray,
+    userId,
     bumpSeed,
     adminStorageAccount,
     id,
@@ -451,10 +453,11 @@ export const testUpdatePlaylist = async ({
     userAuthorityDelegateAccountPDA,
     authorityDelegationStatusAccountPDA,
     metadata,
-    userAuthorityKeypair,
+    userAuthorityPublicKey: userAuthorityKeypair.publicKey,
   });
+  const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
-    await getTransactionWithData(program, provider, tx, 0);
+    await getTransactionWithData(program, provider, txSignature, 0);
 
   // Validate instruction data
   expect(decodedInstruction.name).to.equal("manageEntity");
@@ -477,12 +480,13 @@ export const testCreateUserDelegate = async ({
   provider,
 }) => {
   // disable admin writes
-  await updateAdmin({
+  const udpateAdminTx = updateAdmin({
     program,
     isWriteEnabled: false,
     adminStorageAccount: adminStorageKeypair.publicKey,
     adminAuthorityKeypair: adminKeypair,
   });
+  await provider.sendAndConfirm(udpateAdminTx, [adminKeypair]);
 
   const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
@@ -500,21 +504,17 @@ export const testCreateUserDelegate = async ({
   const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
   const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
 
-  const initAuthorityDelegationStatusArgs = {
-    accounts: {
-      delegateAuthority: userAuthorityDelegateKeypair.publicKey,
-      authorityDelegationStatusPda: authorityDelegationStatusPDA,
-      payer: provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [userAuthorityDelegateKeypair],
-  };
-
-  const initAuthorityDelegationStatusTx =
-    await program.rpc.initAuthorityDelegationStatus(
-      "authority_name",
-      initAuthorityDelegationStatusArgs
-    );
+  const initAuthorityDelegationStatusTx = initAuthorityDelegationStatus({
+    program,
+    authorityName: "authority_name",
+    userAuthorityDelegatePublicKey: userAuthorityDelegateKeypair.publicKey,
+    authorityDelegationStatusPDA,
+    payer: provider.wallet.publicKey,
+  });
+  const initAuthorityDelegationStatusTxSig = await provider.sendAndConfirm(
+    initAuthorityDelegationStatusTx,
+    [userAuthorityDelegateKeypair]
+  );
 
   const {
     decodedInstruction: authorityDelegationInstruction,
@@ -522,7 +522,7 @@ export const testCreateUserDelegate = async ({
   } = await getTransactionWithData(
     program,
     provider,
-    initAuthorityDelegationStatusTx,
+    initAuthorityDelegationStatusTxSig,
     0
   );
   expect(authorityDelegationInstruction.name).to.equal(
@@ -544,35 +544,31 @@ export const testCreateUserDelegate = async ({
   const userAuthorityDelegatePDA = res[0];
   const userAuthorityDelegateBump = res[1];
 
-  const addUserAuthorityDelegateArgs = {
-    accounts: {
-      admin: adminStorageKeypair.publicKey,
-      user: user.pda,
-      currentUserAuthorityDelegate: userAuthorityDelegatePDA,
-      signerUserAuthorityDelegate: SystemProgram.programId,
-      authorityDelegationStatus: SystemProgram.programId,
-      authority: user.keypair.publicKey,
-      payer: provider.wallet.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [user.keypair],
-  };
-
-  const addUserAuthorityDelegateTx = await program.rpc.addUserAuthorityDelegate(
-    user.authority,
-    user.handleBytesArray,
-    user.bumpSeed,
-    userAuthorityDelegateKeypair.publicKey,
-    addUserAuthorityDelegateArgs
+  const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
+    program,
+    adminStoragePublicKey: adminStorageKeypair.publicKey,
+    baseAuthorityAccount: user.authority,
+    userId: user.userId,
+    userBumpSeed: user.bumpSeed,
+    user: user.pda,
+    currentUserAuthorityDelegate: userAuthorityDelegatePDA,
+    signerUserAuthorityDelegate: SystemProgram.programId,
+    authorityDelegationStatus: SystemProgram.programId,
+    delegatePublicKey: userAuthorityDelegateKeypair.publicKey,
+    authorityPublicKey: user.keypair.publicKey,
+    payer: provider.wallet.publicKey,
+  });
+  const addUserAuthorityDelegateTxSig = await provider.sendAndConfirm(
+    addUserAuthorityDelegateTx,
+    [user.keypair]
   );
-
   const {
     decodedInstruction: addUserAuthorityDelegateInstruction,
     decodedData: addUserAuthorityDelegateData,
   } = await getTransactionWithData(
     program,
     provider,
-    addUserAuthorityDelegateTx,
+    addUserAuthorityDelegateTxSig,
     0
   );
   expect(addUserAuthorityDelegateInstruction.name).to.equal(
@@ -582,17 +578,19 @@ export const testCreateUserDelegate = async ({
   expect(addUserAuthorityDelegateData.base.toString()).to.equal(
     user.authority.toString()
   );
-  expect(addUserAuthorityDelegateData.handleSeed.toString()).to.equal(
-    user.handleBytesArray.toString()
-  );
-  expect(addUserAuthorityDelegateData.userBump).to.equal(user.bumpSeed);
   expect(
-    addUserAuthorityDelegateData.userAuthorityDelegate.toString()
-  ).to.equal(userAuthorityDelegateKeypair.publicKey.toString());
+    addUserAuthorityDelegateData.userIdSeedBump.userId.toString()
+  ).to.equal(user.userId.toString());
+  expect(addUserAuthorityDelegateData.userIdSeedBump.bump).to.equal(
+    user.bumpSeed
+  );
+  expect(addUserAuthorityDelegateData.delegatePubkey.toString()).to.equal(
+    userAuthorityDelegateKeypair.publicKey.toString()
+  );
 
   return {
     baseAuthorityAccount: user.authority,
-    userHandleBytesArray: user.handleBytesArray,
+    userId: user.userId,
     userBumpSeed: user.bumpSeed,
     userAccountPDA: user.pda,
     userAuthorityDelegatePDA,
@@ -662,7 +660,7 @@ export const createSolanaUser = async (
   } = await findDerivedPair(
     program.programId,
     adminStorageKeypair.publicKey,
-    Buffer.from(testConsts.handleBytesArray)
+    convertBNToUserIdSeed(testConsts.userId)
   );
 
   // New sol key that will be used to permission user updates
@@ -676,11 +674,10 @@ export const createSolanaUser = async (
   const cn2 = await getContentNode(program, adminStorageKeypair.publicKey, "2");
   const cn3 = await getContentNode(program, adminStorageKeypair.publicKey, "3");
 
-  await createUser({
-    provider,
+  const tx = createUser({
+    payer: provider.wallet.publicKey,
     program,
     ethAccount: testConsts.ethAccount,
-    handleBytesArray: testConsts.handleBytesArray,
     message,
     bumpSeed,
     metadata: testConsts.metadata,
@@ -696,12 +693,14 @@ export const createSolanaUser = async (
     userId: testConsts.userId,
   });
 
+  await provider.sendAndConfirm(tx);
+
   const account = await program.account.user.fetch(newUserAcctPDA);
 
   return {
     account,
     pda: newUserAcctPDA,
-    handleBytesArray: testConsts.handleBytesArray,
+    userId: testConsts.userId,
     bumpSeed,
     keypair: newUserKeypair,
     authority: baseAuthorityAccount,
@@ -717,10 +716,7 @@ export const createSolanaContentNode = async (props: {
 }) => {
   const ownerEth = EthWeb3.eth.accounts.create();
   const authority = anchor.web3.Keypair.generate();
-  const seed = Buffer.concat([
-    Buffer.from("sp_id", "utf8"),
-    props.spId.toBuffer("le", 2),
-  ]);
+  const seed = convertBNToSpIdSeed(props.spId);
 
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
@@ -729,10 +725,10 @@ export const createSolanaContentNode = async (props: {
       seed
     );
 
-  const tx = await createContentNode({
-    provider: props.provider,
+  const tx = createContentNode({
+    payer: props.provider.wallet.publicKey,
     program: props.program,
-    adminKeypair: props.adminKeypair,
+    adminPublicKey: props.adminKeypair.publicKey,
     baseAuthorityAccount,
     adminStoragePublicKey: props.adminStorageKeypair.publicKey,
     contentNodeAuthority: authority.publicKey,
@@ -740,6 +736,9 @@ export const createSolanaContentNode = async (props: {
     spID: props.spId,
     ownerEthAddress: ownerEth.address,
   });
+  const txSignature = await props.provider.sendAndConfirm(tx, [
+    props.adminKeypair,
+  ]);
 
   const contentNode = await props.program.account.contentNode.fetch(
     derivedAddress
@@ -756,6 +755,6 @@ export const createSolanaContentNode = async (props: {
     pda: derivedAddress,
     authority,
     seedBump: { seed, bump: bumpSeed },
-    tx,
+    tx: txSignature,
   };
 };

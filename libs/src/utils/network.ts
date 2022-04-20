@@ -11,11 +11,12 @@ import { promiseFight } from './promiseFight'
 export type ServiceName = string
 export interface ServiceWithEndpoint {
   endpoint: string
+  spID?: string
 }
 export type Service = ServiceName | ServiceWithEndpoint
 
 interface Request {
-  id?: number
+  id?: string
   url: string
 }
 
@@ -23,7 +24,7 @@ interface TimingConfig {
   timeout?: number
 }
 
-interface Timing {
+export interface Timing {
   request: Request
   response: AxiosResponse | null
   millis: number | null
@@ -245,7 +246,7 @@ async function raceRequests(
     return { response: response.blob, errored }
   }
 
-  return { respone: null, errored }
+  return { response: null, errored }
 }
 
 interface AllRequestsConfig {

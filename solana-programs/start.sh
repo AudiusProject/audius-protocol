@@ -4,10 +4,11 @@
     eth_account=$(python -c "from web3.auto import w3; a = w3.eth.account.create(); print(a.address[2:], a.privateKey.hex()[2:])")
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
+    owner_wallet_path=~/.config/solana/id.json
 
     solana config set -u $SOLANA_HOST
 
-    solana-keygen new -s --no-bip39-passphrase
+    solana-keygen new -s --no-bip39-passphrase -o $owner_wallet_path --force
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json --force
     feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
@@ -21,6 +22,7 @@
 
     cd audius_eth_registry
     cargo build-bpf
+    
     solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius_eth_registry-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
     audius_eth_registry_address=$(solana program deploy target/deploy/audius_eth_registry.so --output json | jq -r '.programId')
@@ -52,7 +54,7 @@
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
 
     # Export owner wallet information
-    owner_wallet=$(cat ~/.config/solana/id.json)
+    owner_wallet=$(cat $owner_wallet_path)
     owner_wallet_pubkey=$(solana-keygen pubkey)
 
     # Deploy wAUDIO token
@@ -137,13 +139,39 @@
     anchor deploy --provider.cluster $SOLANA_HOST
 
     # Initialize Audius Admin account
-    yarn run ts-node cli/main.ts -f initAdmin -k ~/.config/solana/id.json -n $SOLANA_HOST
+    yarn run ts-node cli/main.ts --function initAdmin --owner-keypair $owner_wallet_path --network $SOLANA_HOST
 
     # Propagate local variables
+    admin_keypair_path="$PWD/adminKeypair.json"
+    admin_storage_keypair_path="$PWD/adminStorageKeypair.json"
     admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
     admin_keypair_privatekey=$(cat adminKeypair.json)
     admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
     admin_storage_keypair_privatekey=$(cat adminStorageKeypair.json)
+
+    # initialize Content/URSM nodes - initContentNode uses deterministic 
+    # addresses and pkeys from eth-contracts ganache chain.
+    yarn run ts-node cli/main.ts --function initContentNode \
+        --owner-keypair "$owner_wallet_path" \
+        --admin-keypair "$admin_keypair_path"\
+        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --cn-sp-id 1 \
+        --network "$SOLANA_HOST"
+
+    yarn run ts-node cli/main.ts --function initContentNode \
+        --owner-keypair "$owner_wallet_path" \
+        --admin-keypair "$admin_keypair_path"\
+        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --cn-sp-id 2 \
+        --network "$SOLANA_HOST"
+
+    yarn run ts-node cli/main.ts --function initContentNode \
+        --owner-keypair "$owner_wallet_path" \
+        --admin-keypair "$admin_keypair_path"\
+        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --cn-sp-id 3 \
+        --network "$SOLANA_HOST"
+
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
@@ -152,10 +180,10 @@ cd ../../
 cat <<EOF
 {
     "anchorProgramId": "$anchor_program_id",
-    "anchorAdminKeypairPublicKey": "$admin_keypair_publickey",
-    "anchorAdminKeypairPrivateKey": "$admin_keypair_privatekey",
-    "anchorAdminStorageKeypairPublicKey": "$admin_storage_keypair_publickey",
-    "anchorAdminStorageKeypairPrivateKey": "$admin_storage_keypair_privatekey",
+    "anchorAdminPublicKey": "$admin_keypair_publickey",
+    "anchorAdminPrivateKey": "$admin_keypair_privatekey",
+    "anchorAdminStoragePublicKey": "$admin_storage_keypair_publickey",
+    "anchorAdminStoragePrivateKey": "$admin_storage_keypair_privatekey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",

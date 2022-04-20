@@ -12,7 +12,7 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
-const fileHasher = require('../src/fileHasher')
+const { Utils } = require('@audius/libs')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -654,7 +654,6 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     server = appInfo.server
     app = appInfo.app
-    mockServiceRegistry = appInfo.mockServiceRegistry
   })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
@@ -698,20 +697,21 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
 
     const uploadTrackState = async () => {
-      // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
-      const mockMultihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
+      const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
-          '../../fileHasher': {
-            generateNonImageMultihash: sinon
-              .stub(fileHasher, 'generateNonImageMultihash')
-              .returns(
-                new Promise((resolve, reject) => {
-                  const multihash = mockMultihash
-                  return resolve(multihash)
-                })
-              ),
+          '@audius/libs': {
+            Utils: {
+              fileHasher: {
+                generateNonImageCid: sinon.stub().returns(
+                  new Promise((resolve) => {
+                    return resolve(mockCid)
+                  })
+                )
+              }
+            },
             '@global': true
           },
           '../../fileManager': {
@@ -719,7 +719,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
-                  const dstPath = DiskManager.computeFilePath(mockMultihash)
+                  const dstPath = DiskManager.computeFilePath(mockCid)
                   return resolve(dstPath)
                 })
               ),

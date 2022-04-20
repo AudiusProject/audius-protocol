@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DEFAULT_AUDIUS_CLIENT_GIT_REF=master
+DEFAULT_AUDIUS_CLIENT_GIT_REF=main
 DEFAULT_AUDIUS_PROTOCOL_GIT_REF=master
 DEFAULT_AZURE_IMAGE="UbuntuLTS"
 DEFAULT_AZURE_MACHINE_TYPE="Standard_F8s_v2"
@@ -74,14 +74,14 @@ gcp_image_to_flags() {
 }
 
 gcp_set_defaults() {
-	if [[ "$(gcloud config get-value 'compute/region')" == "" ]]; then
+	if [[ "$(gcloud config get 'compute/region')" == "" ]]; then
 		echo 'setting compute/region in gcloud'
-		gcloud config set-value 'compute/region' $DEFAULT_GCP_COMPUTE_REGION
+		gcloud config set 'compute/region' $DEFAULT_GCP_COMPUTE_REGION
 	fi
 
-	if [[ "$(gcloud config get-value 'compute/zone')" == "" ]]; then
+	if [[ "$(gcloud config get 'compute/zone')" == "" ]]; then
 		echo 'setting compute/zone in gcloud'
-		gcloud config set-value 'compute/zone' $DEFAULT_GCP_COMPUTE_ZONE
+		gcloud config set 'compute/zone' $DEFAULT_GCP_COMPUTE_ZONE
 	fi
 }
 

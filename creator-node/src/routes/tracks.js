@@ -33,6 +33,7 @@ const {
 } = require('../middlewares')
 const { decode } = require('../hashids.js')
 const { getCID, streamFromFileSystem } = require('./files')
+const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const DBManager = require('../dbManager')
 const BlacklistManager = require('../blacklistManager')

@@ -4,7 +4,8 @@ const Services = Object.freeze({
   DISCOVERY_PROVIDER: 'Discovery Provider',
   CREATOR_NODE: 'Creator Node',
   IPFS_GATEWAY: 'IPFS Gateway',
-  COMSTOCK: 'Comstock'
+  COMSTOCK: 'Comstock',
+  SOLANA_WEB3_MANAGER: 'Solana Web3 Manager'
 })
 
 class Base {
@@ -44,7 +45,8 @@ class Base {
       [Services.HEDGEHOG]: this.hedgehog,
       [Services.DISCOVERY_PROVIDER]: this.discoveryProvider,
       [Services.CREATOR_NODE]: this.creatorNode,
-      [Services.COMSTOCK]: this.comstock
+      [Services.COMSTOCK]: this.comstock,
+      [Services.SOLANA_WEB3_MANAGER]: this.solanaWeb3Manager
     }
   }
 

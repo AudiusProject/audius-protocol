@@ -1,10 +1,11 @@
 const { Base, Services } = require('./base')
-const CreatorNodeService = require('../services/creatorNode/index')
+const { CreatorNode } = require('../services/creatorNode')
 const { Utils } = require('../utils')
 const { AuthHeaders } = require('../constants')
 const {
   getPermitDigest, sign
 } = require('../utils/signatures')
+const { PublicKey } = require('@solana/web3.js')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -31,6 +32,7 @@ class Account extends Base {
     this.searchTags = this.searchTags.bind(this)
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
+    this.userHasAccountOnSol = this.userHasAccountOnSol.bind(this)
   }
 
   /**
@@ -71,7 +73,7 @@ class Account extends Base {
       this.userStateManager.setCurrentUser(userAccount)
       const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
+        this.creatorNode.setEndpoint(CreatorNode.getPrimary(creatorNodeEndpoint))
       }
       return { user: userAccount, error: false, phase }
     }
@@ -115,7 +117,6 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false,
     handleUserBankOutcomes = () => {},
     userBankOutcomes = {},
     feePayerOverride = null,
@@ -154,7 +155,7 @@ class Account extends Base {
       // Create a wAudio user bank address.
       // If userbank creation fails, we still proceed
       // through signup
-      if (createWAudioUserBank && this.solanaWeb3Manager) {
+      if (this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION;
         // Fire and forget createUserBank. In the case of failure, we will
         // retry to create user banks in a later session before usage
@@ -593,6 +594,43 @@ class Account extends Base {
       [AuthHeaders.MESSAGE]: message,
       [AuthHeaders.SIGNATURE]: signature
     })
+  }
+
+  /**
+   * Checks that the current user exists (i.e. has an account PDA) on SOL
+   * @returns {boolean} whether the user exists on SOL
+   */
+  async userHasAccountOnSol ({ userId, wallet } = { userId: null, wallet: null }) {
+    this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
+
+    // If wallet or userId are not passed in, use the user loaded in libs
+    if (!wallet || !userId) {
+      const user = this.getCurrentUser()
+      wallet = user.wallet
+      userId = user.userId
+    }
+
+    // matches format for PDA derivation seed in SOL program
+    const userIdSeed = userId.toBuffer('le', 4)
+
+    const {
+      derivedAddress: userAccountPDA
+    } = await this.solanaWeb3Manager.findDerivedPair(
+      this.solanaWeb3Manager.audiusDataProgramId,
+      this.solanaWeb3Manager.audiusDataAdminStorageKeypairPublicKey,
+      userIdSeed
+    )
+
+    const account = await this.solanaWeb3Manager.fetchAccount(userAccountPDA)
+
+    if (!account) return false
+
+    const derivedEthWallet = await this.solanaWeb3Manager.deriveEthWalletFromAddress(account.ethAddress)
+
+    const userExistsOnChain = derivedEthWallet.toLowerCase() === wallet.toLowerCase()
+    const userUpgradedToSol = PublicKey.default.toString() !== account.authority.toString()
+
+    return userExistsOnChain && userUpgradedToSol
   }
 }
 

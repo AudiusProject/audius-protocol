@@ -1,10 +1,12 @@
 import * as anchor from "@project-serum/anchor";
-import { BorshInstructionCoder, Provider } from "@project-serum/anchor";
+import { AnchorProvider, BorshInstructionCoder } from "@project-serum/anchor";
 import BN from "bn.js";
 import { randomBytes } from "crypto";
 import * as secp256k1 from "secp256k1";
 import keccak256 from "keccak256";
 import { AudiusData } from "../target/types/audius_data";
+import web3 from "web3";
+import { LOCAL_DEV_SP_WALLETS, LOCAL_DEV_SP_PRIVATE_KEYS } from "./constants";
 const { PublicKey } = anchor.web3;
 
 export const SystemSysVarProgramKey = new PublicKey(
@@ -18,7 +20,10 @@ export const ethAddressToArray = (ethAddress: string) => {
 };
 
 /// Retrieve a transaction with retries
-export const getTransaction = async (provider: Provider, txHash: string) => {
+export const getTransaction = async (
+  provider: AnchorProvider,
+  txHash: string
+) => {
   let info = await provider.connection.getTransaction(txHash);
   while (info == null) {
     info = await provider.connection.getTransaction(txHash);
@@ -34,7 +39,7 @@ export const decodeInstruction = (program: anchor.Program, data: string) => {
 
 export const getTransactionWithData = async (
   program: anchor.Program,
-  provider: Provider,
+  provider: AnchorProvider,
   tx: string,
   instruction: number
 ) => {
@@ -103,6 +108,22 @@ export const randomCID = () => {
   return cid;
 };
 
+// used to convert u16 to little endian bytes
+// so that our test PDA derivation
+// can use the same seed format as
+// the rust program (u16.to_le_bytes())
+export const convertBNToSpIdSeed = (spId: anchor.BN) => {
+  return Buffer.concat([Buffer.from("sp_id", "utf8"), spId.toBuffer("le", 2)]);
+};
+
+// used to convert u32 to little endian bytes
+// so that our test PDA derivation
+// can use the same seed format as
+// the rust program (u32.to_le_bytes())
+export const convertBNToUserIdSeed = (userId: anchor.BN) => {
+  return userId.toBuffer("le", 4);
+};
+
 /// Derive a program address with pubkey as the seed
 export const findProgramAddress = (
   programId: anchor.web3.PublicKey,
@@ -136,14 +157,14 @@ export const findDerivedPair = async (programId, adminAccount, seed) => {
     programId,
     adminAccount
   );
-  const derivedAddresInfo = await findDerivedAddress(
+  const derivedAddressInfo = await findDerivedAddress(
     programId,
     baseAuthorityAccount,
     seed
   );
 
-  const derivedAddress = derivedAddresInfo.result[0];
-  const bumpSeed = derivedAddresInfo.result[1];
+  const derivedAddress = derivedAddressInfo.result[0];
+  const bumpSeed = derivedAddressInfo.result[1];
 
   return { baseAuthorityAccount, derivedAddress, bumpSeed };
 };
@@ -153,10 +174,7 @@ export const getContentNode = async (
   adminStoragePublicKey: anchor.web3.PublicKey,
   spId: string
 ) => {
-  const seed = Buffer.concat([
-    Buffer.from("sp_id", "utf8"),
-    new anchor.BN(spId).toBuffer("le", 2),
-  ]);
+  const seed = convertBNToSpIdSeed(new anchor.BN(spId));
 
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(program.programId, adminStoragePublicKey, seed);
@@ -166,5 +184,59 @@ export const getContentNode = async (
     baseAuthorityAccount,
     bumpSeed,
     derivedAddress,
+  };
+};
+
+/**
+ * converts hex eth pk value (eg 358edb5f358b697c32d3dd3c0107da5686353etcetc)
+ * Uint8Array(32) to create web3 Keypair.
+ */
+export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
+  const fullHexAddress = `0x${hexPrivateKey}`;
+  const uint8SecretKey = Uint8Array.from(web3.utils.hexToBytes(fullHexAddress));
+  return uint8SecretKey;
+};
+
+type ContentNodeWalletAuthority = {
+  contentNodeAuthority: anchor.web3.Keypair,
+  delegateWallet: string,
+}
+
+/**
+ * Returns object containing
+ * content node delegate wallet address and
+ * authority KeyPair based on spId; when deterministic=false
+ * returns wallet address and keypair from local env
+ */
+export const getContentNodeWalletAndAuthority = ({
+  spId,
+  deterministic = true,
+}: {
+  spId: string;
+  deterministic: boolean;
+}): ContentNodeWalletAuthority => {
+  const cnSpId = parseInt(spId);
+  let delegatePrivateKey: string;
+  let delegateWallet: string;
+  let contentNodeAuthority: anchor.web3.Keypair;
+  if (deterministic) {
+    delegateWallet = LOCAL_DEV_SP_WALLETS[cnSpId];
+    delegatePrivateKey = LOCAL_DEV_SP_PRIVATE_KEYS[cnSpId];
+  } else {
+    // fetch from env vars
+    delegateWallet = process.env[`DELEGATE_WALLET_CN_${cnSpId}`];
+    delegatePrivateKey = process.env[`DELEGATE_PRIVATE_KEY_CN_${cnSpId}`];
+  }
+  try {
+    const seed = hexPrivateKeyToUint8(delegatePrivateKey);
+    contentNodeAuthority = anchor.web3.Keypair.fromSeed(seed);
+  } catch (error) {
+    throw new Error(
+      `Error getting keypair from delegate private key ${delegatePrivateKey}: ${error}`
+    );
+  }
+  return {
+    contentNodeAuthority,
+    delegateWallet,
   };
 };

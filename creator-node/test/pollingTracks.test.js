@@ -10,7 +10,7 @@ const crypto = require('crypto')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const fileHasher = require('../src/fileHasher')
+const { Utils } = require('@audius/libs')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -89,19 +89,21 @@ describe('test Polling Tracks with mocks', function () {
     server = appInfo.server
     session = await createStarterCNodeUser(userId, userWallet)
 
-    // Mock `generateNonImageMultihash()` in `handleTrackContentRoute()` to succeed
-    const DUMMY_MULTIHASH = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+    // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
+    const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
-        '../../fileHasher': {
-          generateNonImageMultihash: sinon
-            .stub(fileHasher, 'generateNonImageMultihash')
-            .returns(
-              new Promise((resolve) => {
-                return resolve(DUMMY_MULTIHASH)
-              })
-            ),
+        '@audius/libs': {
+          Utils: {
+            fileHasher: {
+              generateNonImageCid: sinon.stub().returns(
+                new Promise((resolve) => {
+                  return resolve(mockCid)
+                })
+              )
+            }
+          },
           '@global': true
         },
         '../../fileManager': {
@@ -109,7 +111,7 @@ describe('test Polling Tracks with mocks', function () {
             .stub(FileManager, 'copyMultihashToFs')
             .returns(
               new Promise((resolve) => {
-                const dstPath = DiskManager.computeFilePath(DUMMY_MULTIHASH)
+                const dstPath = DiskManager.computeFilePath(mockCid)
                 return resolve(dstPath)
               })
             ),
@@ -828,7 +830,6 @@ describe('test Polling Tracks with real files', function () {
 
     app2 = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId)
 
     handleTrackContentRoute =
@@ -1040,8 +1041,7 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(trackMetadata)
       .expect(200)
-    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
     // Complete track creation
     await request(app2)
@@ -1094,8 +1094,7 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(trackMetadata)
       .expect(200)
-    trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
-    trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
+    const trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
     // Upload track 2 metadata
     const track2Metadata = {
@@ -1111,8 +1110,7 @@ describe('test Polling Tracks with real files', function () {
       .set('User-Id', userId)
       .send(track2Metadata)
       .expect(200)
-    track2MetadataMultihash = track2MetadataResp.body.data.metadataMultihash
-    track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
+    const track2MetadataFileUUID = track2MetadataResp.body.data.metadataFileUUID
 
     // Complete track1 creation
     await request(app2)
@@ -1140,8 +1138,4 @@ describe('test Polling Tracks with real files', function () {
       })
       .expect(200)
   })
-
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /transcode_and_segment TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  it('')
 })

@@ -275,8 +275,7 @@ def fetch_cid_metadata(
 
     # cid -> user_id lookup to make fetching replica set more efficient
     cid_to_user_id: Dict[str, int] = {}
-
-    cid_metadata: Dict[str, str] = {}  # cid -> metadata
+    cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
     # fetch transactions
     with db.scoped_session() as session:
@@ -335,15 +334,13 @@ def fetch_cid_metadata(
     # first attempt - fetch all CIDs from replica set
     try:
         cid_metadata.update(
-            asyncio.run(
-                update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
-                    cid_metadata.keys(),
-                    cids_txhash_set,
-                    cid_to_user_id,
-                    user_to_replica_set,
-                    cid_type,
-                    should_fetch_from_replica_set=True,
-                )
+            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                cid_metadata.keys(),
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set=True,
             )
         )
     except asyncio.TimeoutError:
@@ -353,15 +350,13 @@ def fetch_cid_metadata(
     # second attempt - fetch missing CIDs from other cnodes
     if len(cid_metadata) != len(cids_txhash_set):
         cid_metadata.update(
-            asyncio.run(
-                update_task.ipfs_client.fetch_metadata_from_gateway_endpoints(
-                    cid_metadata.keys(),
-                    cids_txhash_set,
-                    cid_to_user_id,
-                    user_to_replica_set,
-                    cid_type,
-                    should_fetch_from_replica_set=False,
-                )
+            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
+                cid_metadata.keys(),
+                cids_txhash_set,
+                cid_to_user_id,
+                user_to_replica_set,
+                cid_type,
+                should_fetch_from_replica_set=False,
             )
         )
 

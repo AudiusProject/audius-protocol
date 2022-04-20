@@ -21,13 +21,13 @@ const { SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("playlist-actions", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -37,13 +37,15 @@ describe("playlist-actions", function () {
   const contentNodes = {};
 
   it("playlist actions - Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    const tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
       adminStorageKeypair,
       verifierKeypair,
     });
+
+    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -58,12 +60,14 @@ describe("playlist-actions", function () {
     }
 
     // disable admin writes
-    await updateAdmin({
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
       adminStorageAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
   });
 
   it("Initializing Content Node accounts!", async function () {
@@ -96,29 +100,30 @@ describe("playlist-actions", function () {
   it("Delete save for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await deletePlaylistSave({
+    const tx = deletePlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
+      userAuthorityPublicKey: user.keypair.publicKey,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
+
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteSave
     );
@@ -130,29 +135,29 @@ describe("playlist-actions", function () {
   it("Save a newly created playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await addPlaylistSave({
+    const tx = addPlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
+      userAuthorityPublicKey: user.keypair.publicKey,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
+
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addSave
     );
@@ -164,29 +169,29 @@ describe("playlist-actions", function () {
   it("Repost a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await addPlaylistRepost({
+    const tx = addPlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
+      userAuthorityPublicKey: user.keypair.publicKey,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
+
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
     );
@@ -198,29 +203,28 @@ describe("playlist-actions", function () {
   it("Delete repost for a playlist", async function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
-    const tx = await deletePlaylistRepost({
+    const tx = deletePlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       userStorageAccountPDA: user.pda,
       userAuthorityDelegateAccountPDA: SystemProgram.programId,
       authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      userAuthorityKeypair: user.keypair,
-      handleBytesArray: user.handleBytesArray,
+      userAuthorityPublicKey: user.keypair.publicKey,
+      userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const info = await getTransaction(provider, tx);
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
+    const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
       info.transaction.message.instructions[0].data,
       "base58"
     );
-    const userHandle = String.fromCharCode(...user.handleBytesArray);
-    const instructionHandle = String.fromCharCode(
-      ...decodedInstruction.data.userHandle.seed
-    );
-    assert.equal(instructionHandle, userHandle);
+    const userIdSeed = user.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
+    assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteRepost
     );
