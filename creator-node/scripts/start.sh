@@ -63,7 +63,11 @@ fi
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]
     then
-        cd ../audius-libs
+        # link solana @audius/audius-data
+        cd ../solana-programs/anchor/audius-data
+        npm link
+        cd ../../../audius-libs
+        npm link @audius/anchor-audius-data
         npm run dev &
         npm link
         cd ../app
