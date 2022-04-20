@@ -147,8 +147,8 @@ def handle_create_user(
         updated_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
     )
 
-    ipfs_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
-    update_user_model_metadata(session, user, ipfs_metadata)
+    metadata_dict = metadata_dictionary.get(instruction_data["metadata"], {})
+    update_user_model_metadata(session, user, metadata_dict)
     records.append(user)
     db_models["users"][user_id].append(user)
 
@@ -298,77 +298,87 @@ def handle_remove_user_authority_delegate(
 
 # Metadata updater
 def update_user_model_metadata(
-    session: Session, user_record: User, ipfs_metadata: Dict
+    session: Session, user_record: User, metadata_dict: Dict
 ):
-    if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
-        user_record.profile_picture = ipfs_metadata["profile_picture"]
+    if "profile_picture" in metadata_dict and metadata_dict["profile_picture"]:
+        user_record.profile_picture = metadata_dict["profile_picture"]
 
-    if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
-        user_record.cover_photo = ipfs_metadata["cover_photo"]
+    if (
+        "profile_picture_sizes" in metadata_dict
+        and metadata_dict["profile_picture_sizes"]
+    ):
+        user_record.profile_picture = metadata_dict["profile_picture_sizes"]
 
-    if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
-        user_record.bio = ipfs_metadata["bio"]
+    if "cover_photo" in metadata_dict and metadata_dict["cover_photo"]:
+        user_record.cover_photo = metadata_dict["cover_photo"]
 
-    if "name" in ipfs_metadata and ipfs_metadata["name"]:
-        user_record.name = ipfs_metadata["name"]
+    if "cover_photo_sizes" in metadata_dict:
+        user_record.cover_photo = metadata_dict["cover_photo_sizes"]
 
-    if "location" in ipfs_metadata and ipfs_metadata["location"]:
-        user_record.location = ipfs_metadata["location"]
+    if "bio" in metadata_dict and metadata_dict["bio"]:
+        user_record.bio = metadata_dict["bio"]
+
+    if "name" in metadata_dict and metadata_dict["name"]:
+        user_record.name = metadata_dict["name"]
+
+    if "location" in metadata_dict and metadata_dict["location"]:
+        user_record.location = metadata_dict["location"]
 
     # Fields with no on-chain counterpart
     if (
-        "profile_picture_sizes" in ipfs_metadata
-        and ipfs_metadata["profile_picture_sizes"]
+        "profile_picture_sizes" in metadata_dict
+        and metadata_dict["profile_picture_sizes"]
     ):
-        user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
-
-    if "cover_photo_sizes" in ipfs_metadata and ipfs_metadata["cover_photo_sizes"]:
-        user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+        user_record.profile_picture = metadata_dict["profile_picture_sizes"]
 
     if (
-        "collectibles" in ipfs_metadata
-        and ipfs_metadata["collectibles"]
-        and isinstance(ipfs_metadata["collectibles"], dict)
-        and ipfs_metadata["collectibles"].items()
+        "collectibles" in metadata_dict
+        and metadata_dict["collectibles"]
+        and isinstance(metadata_dict["collectibles"], dict)
+        and metadata_dict["collectibles"].items()
     ):
         user_record.has_collectibles = True
     else:
         user_record.has_collectibles = False
 
     # TODO: implement
-    # if "associated_wallets" in ipfs_metadata:
+    # if "associated_wallets" in metadata_dict:
     #     update_user_associated_wallets(
     #         session: Session,
     #         update_task,
     #         user_record,
-    #         ipfs_metadata["associated_wallets"],
+    #         metadata_dict["associated_wallets"],
     #         "eth",
     #     )
 
     # TODO: implement
-    # if "associated_sol_wallets" in ipfs_metadata:
+    # if "associated_sol_wallets" in metadata_dict:
     #     update_user_associated_wallets(
     #         session: Session,
     #         update_task,
     #         user_record,
-    #         ipfs_metadata["associated_sol_wallets"],
+    #         metadata_dict["associated_sol_wallets"],
     #         "sol",
     #     )
 
-    if "playlist_library" in ipfs_metadata and ipfs_metadata["playlist_library"]:
-        user_record.playlist_library = ipfs_metadata["playlist_library"]
+    if "playlist_library" in metadata_dict and metadata_dict["playlist_library"]:
+        user_record.playlist_library = metadata_dict["playlist_library"]
 
-    if "is_deactivated" in ipfs_metadata:
-        user_record.is_deactivated = ipfs_metadata["is_deactivated"]
+    if "is_deactivated" in metadata_dict:
+        user_record.is_deactivated = metadata_dict["is_deactivated"]
 
     # TODO: implement
-    # if "events" in ipfs_metadata and ipfs_metadata["events"]:
+    # if "events" in metadata_dict and metadata_dict["events"]:
     #     update_user_events(
     #         session: Session,
     #         user_record,
-    #         ipfs_metadata["events"],
+    #         metadata_dict["events"],
     #         update_task.challenge_event_bus,
     #     )
+
+    # reconstructed endpoints from sp IDs in tx not /ipfs response
+    if "creator_node_endpoint" in metadata_dict:
+        user_record.creator_node_endpoint = metadata_dict["creator_node_endpoint"]
 
 
 transaction_handlers = {
