@@ -111,8 +111,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 for user in existing_users:
                     db_models["users"][user.user_id] = [user]
 
-                # TODO pass in existing tracks upstream
-
             # TODO: Find all other track/playlist/etc. models
 
             self.process_transactions(
@@ -238,9 +236,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         }
 
     def is_valid_instruction(self, parsed_instruction: Dict):
-        self.msg(f"is_valid_instruction: {parsed_instruction}")
-
-        # admin check
+        # check if admin matches
         if "admin" in parsed_instruction["account_names_map"]:
             if (
                 parsed_instruction["account_names_map"]["admin"]
@@ -248,20 +244,22 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             ):
                 return False
 
-        # create entity
-        # check if track already exists
-        if "_entity" in "track" == parsed_instruction["data"]:
-            track_id = parsed_instruction["data"]["_id"]
-            with self.db.scoped_session() as session:
-                track_exists = (
-                    session.query(Track.track_id)
-                    .filter(Track.track_id == track_id)
-                    .first()
-                    is not None
-                )
-                if track_exists:
-                    return False
-                self.msg(f"isaac {track_exists}")
+        # check create track
+        self.msg(f"isaac parsed_instruction {parsed_instruction}")
+        if parsed_instruction["instruction_name"] == "manage_entity":
+            entity_type = parsed_instruction["data"]["entity_type"]
+            if entity_type.Track == type(entity_type):
+                track_id = parsed_instruction["data"]["id"]
+                with self.db.scoped_session() as session:
+                    track_exists = (
+                        session.query(Track.track_id)
+                        .filter(Track.track_id == track_id)
+                        .first()
+                        is not None
+                    )
+                    if track_exists:
+                        self.msg("isaac track already exists")
+                        return False
 
         # TODO update entity
         # check if user owns track
@@ -314,13 +312,10 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         blacklisted_cids.add(cid)
                     else:
                         cids_txhash_set.add((cid, transaction["tx_sig"]))
-                        cid_to_entity_type[cid] = self.instruction_type[
-                            instruction["instruction_name"]
-                        ]
-                        # TODO add logic to use existing user records: account -> endpoint
-                        if "user_id" in instruction["data"]:
+                        if instruction["instruction_name"] == "create_user":
+                            cid_to_entity_type[cid] = "user"
+                            # TODO add logic to use existing user records: account -> endpoint
                             user_id = instruction["data"]["user_id"]
-                            cid_to_user_id[cid] = user_id
 
                             # new user case
                             if "replica_set" in instruction["data"]:
@@ -328,6 +323,15 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                                 for sp_id in instruction["data"]["replica_set"]:
                                     endpoints.append(cnode_endpoint_dict[sp_id])
                                 user_replica_set[user_id] = ",".join(endpoints)
+                        elif instruction["instruction_name"] == "manage_entity":
+                            entity_type = instruction["data"]["entity_type"]
+                            if entity_type.Track == type(entity_type):
+                                cid_to_entity_type[cid] = "track"
+                                user_id = instruction["data"][
+                                    "user_id_seed_bump"
+                                ].user_id
+                                cid_to_user_id[cid] = user_id
+                        cid_to_user_id[cid] = user_id
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
@@ -355,4 +359,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             user_id = cid_to_user_id[cid]
             metadata_dict[cid]["creator_node_endpoint"] = user_replica_set[user_id]
 
+        # TODO maybe add some more validation
+        # check if track metadata's owner and instruction's user ID matches up?
         return metadata_dict, blacklisted_cids

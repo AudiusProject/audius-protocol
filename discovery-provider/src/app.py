@@ -517,10 +517,10 @@ def configure_celery(celery, test_config=None):
                 "schedule": timedelta(seconds=5),
             },
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
-            "index_solana_user_data": {
-                "task": "index_solana_user_data",
-                "schedule": timedelta(seconds=5),
-            },
+            # "index_solana_user_data": {
+            #     "task": "index_solana_user_data",
+            #     "schedule": timedelta(seconds=5),
+            # },
         },
         task_serializer="json",
         accept_content=["json"],
