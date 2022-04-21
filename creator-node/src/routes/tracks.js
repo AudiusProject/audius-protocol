@@ -3,7 +3,7 @@ const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
 
-const config = require('../config.js')
+const config = require('../config')
 const models = require('../models')
 const {
   saveFileFromBufferToDisk,
@@ -31,10 +31,10 @@ const {
   ensureStorageMiddleware,
   ensureValidSPMiddleware
 } = require('../middlewares')
-const { decode } = require('../hashids.js')
+const { decode } = require('../hashids')
 const { getCID, streamFromFileSystem } = require('./files')
 const DBManager = require('../dbManager')
-const { generateListenTimestampAndSignature } = require('../apiSigning.js')
+const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
 
