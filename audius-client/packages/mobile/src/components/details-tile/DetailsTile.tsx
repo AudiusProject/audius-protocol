@@ -11,6 +11,7 @@ import { Size } from 'app/components/co-sign/types'
 import { Button, DynamicImage, Hyperlink, Tile } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
+import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -204,6 +205,11 @@ export const DetailsTile = ({
     ({ isHidden, value }) => !isHidden && !!value
   )
 
+  const handlePressPlay = useCallback(() => {
+    light()
+    onPressPlay()
+  }, [onPressPlay])
+
   const renderDetailLabels = () => {
     return detailLabels.map(infoFact => {
       return (
@@ -273,7 +279,7 @@ export const DetailsTile = ({
             size='large'
             iconPosition='left'
             icon={isPlaying ? IconPause : IconPlay}
-            onPress={onPressPlay}
+            onPress={handlePressPlay}
             fullWidth
           />
           <DetailsTileActionButtons
