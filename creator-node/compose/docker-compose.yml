@@ -43,6 +43,7 @@ services:
       - /usr/src/app/node_modules
       # Mount audius libs as a directory
       - ../../libs:/usr/src/audius-libs
+      - /usr/src/audius-libs/node_modules
       # Mount solana-programs
       - ../../solana-programs:/usr/src/solana-programs
     networks:
