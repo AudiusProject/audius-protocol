@@ -1,4 +1,11 @@
-import { PlaylistRow, TrackRow, UserRow } from './db'
+import {
+  FollowRow,
+  PlaylistRow,
+  RepostRow,
+  SaveRow,
+  TrackRow,
+  UserRow,
+} from './db'
 
 export type PlaylistDoc = PlaylistRow & {
   tracks: TrackDoc[]
@@ -32,4 +39,18 @@ export type TrackDoc = TrackRow & {
     location: string
     follower_count: number
   }
+}
+
+export type RepostDoc = RepostRow & {
+  item_key: string
+  repost_id: string
+}
+
+export type SaveDoc = SaveRow & {
+  item_key: string
+  save_id: string
+}
+
+export type FollowDoc = FollowRow & {
+  follow_id: string
 }
