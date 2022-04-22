@@ -38,7 +38,7 @@ const Follow = ({ notification }: FollowProps) => {
       ) : null}
       <Text style={textWrapperStyle}>
         <User user={firstUser} />
-        {`${otherUsers} Followed you`}
+        {`${otherUsers} followed you`}
       </Text>
     </View>
   )
