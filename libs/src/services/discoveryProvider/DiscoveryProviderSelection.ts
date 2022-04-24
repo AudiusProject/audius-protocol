@@ -12,7 +12,7 @@ import {
   REGRESSED_MODE_TIMEOUT
 } from './constants'
 import semver from 'semver'
-import type EthContracts from '../ethContracts'
+import type { EthContracts } from '../ethContracts'
 import type { AxiosResponse } from 'axios'
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5

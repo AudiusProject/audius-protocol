@@ -3,7 +3,7 @@ import assert from 'assert'
 import semver from 'semver'
 import { DiscoveryProviderSelection } from './DiscoveryProviderSelection'
 import { DISCOVERY_PROVIDER_TIMESTAMP } from './constants'
-import type EthContracts from '../ethContracts'
+import type { EthContracts } from '../ethContracts'
 import { LocalStorage } from 'node-localstorage'
 
 const mockEthContracts = (
