@@ -1,5 +1,5 @@
 import { ContractClient, GetRegistryAddress } from '../contracts/ContractClient'
-import { ContractABI, ContractMethod, Utils } from '../../utils'
+import { ContractABI, ContractMethod, Logger, Utils } from '../../utils'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { AudiusTokenClient } from './audiusTokenClient'
 import type { StakingProxyClient } from './stakingProxyClient'
@@ -50,7 +50,7 @@ export class GovernanceClient extends ContractClient {
     getRegistryAddress: GetRegistryAddress,
     audiusTokenClient: AudiusTokenClient,
     stakingProxyClient: StakingProxyClient,
-    logger = console,
+    logger: Logger = console,
     isDebug = false
   ) {
     super(

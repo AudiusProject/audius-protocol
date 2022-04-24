@@ -1,4 +1,4 @@
-import { ContractABI, Utils } from '../../utils'
+import { ContractABI, Logger, Utils } from '../../utils'
 import type { GetRegistryAddress } from '../contracts/ContractClient'
 import { GovernedContractClient } from '../contracts/GovernedContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
@@ -24,7 +24,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     audiusTokenClient: AudiusTokenClient,
     stakingProxyClient: StakingProxyClient,
     governanceClient: GovernanceClient,
-    logger = console
+    logger: Logger = console
   ) {
     super(
       ethWeb3Manager,

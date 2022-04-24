@@ -1,6 +1,6 @@
 // TODO: a lot of extra parseInt's that result in incorrect (as unknown as string) typecasting
 
-import { ContractABI, Utils } from '../../utils'
+import { ContractABI, Logger, Utils } from '../../utils'
 import { GovernedContractClient } from '../contracts/GovernedContractClient'
 import axios, { AxiosRequestConfig } from 'axios'
 import { range } from 'lodash'
@@ -32,7 +32,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     audiusTokenClient: AudiusTokenClient,
     stakingProxyClient: StakingProxyClient,
     governanceClient: GovernanceClient,
-    logger = console,
+    logger: Logger = console,
     isDebug = false
   ) {
     super(

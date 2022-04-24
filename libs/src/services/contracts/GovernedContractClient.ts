@@ -1,4 +1,4 @@
-import type { ContractABI } from '../../utils'
+import type { ContractABI, Logger } from '../../utils'
 import type { GovernanceClient } from '../ethContracts/governanceClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { Web3Manager } from '../web3Manager'
@@ -19,7 +19,7 @@ export class GovernedContractClient extends ContractClient {
     contractRegistryKey: string,
     getRegistryAddress: GetRegistryAddress,
     governanceClient: GovernanceClient,
-    logger = console
+    logger: Logger = console
   ) {
     super(
       web3Manager,

@@ -1,4 +1,4 @@
-import type { ContractABI } from '../../utils'
+import type { ContractABI, Logger } from '../../utils'
 import { ContractClient, GetRegistryAddress } from '../contracts/ContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { AudiusTokenClient } from './audiusTokenClient'
@@ -14,7 +14,7 @@ export class StakingProxyClient extends ContractClient {
     contractRegistryKey: string,
     getRegistryAddress: GetRegistryAddress,
     audiusTokenClient: AudiusTokenClient,
-    logger = console
+    logger: Logger = console
   ) {
     super(
       ethWeb3Manager,

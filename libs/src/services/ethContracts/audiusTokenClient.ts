@@ -6,7 +6,7 @@ import type Wallet from 'ethereumjs-wallet'
 
 export class AudiusTokenClient {
   ethWeb3Manager: EthWeb3Manager
-  contractABI: AbiItem
+  contractABI: AbiItem[]
   contractAddress: string
   web3: Web3
   AudiusTokenContract: Contract
@@ -14,7 +14,7 @@ export class AudiusTokenClient {
 
   constructor(
     ethWeb3Manager: EthWeb3Manager,
-    contractABI: AbiItem,
+    contractABI: AbiItem[],
     contractAddress: string
   ) {
     this.ethWeb3Manager = ethWeb3Manager
