@@ -52,13 +52,13 @@ const TrustedNotifierManagerProxyKey = 'TrustedNotifierManagerProxy'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
-const serviceType = Object.freeze({
+export const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-node',
   CREATOR_NODE: 'content-node'
 })
 const serviceTypeList = Object.values(serviceType)
 
-class EthContracts {
+export class EthContracts {
   ethWeb3Manager: EthWeb3Manager
   tokenContractAddress: string
   claimDistributionContractAddress: string
@@ -233,7 +233,9 @@ class EthContracts {
       throw new Error('Failed to initialize EthContracts')
 
     if (this.isServer) {
-      await Promise.all(this.contractClients.map((client) => client.init()))
+      await Promise.all(
+        this.contractClients.map(async (client) => await client.init())
+      )
     }
   }
 
@@ -255,8 +257,8 @@ class EthContracts {
 
   async getRegistryAddressForContract(contractName: string) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
-    this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
-    this.contractAddresses = this.contractAddresses || {
+    this.contracts = this.contracts ?? { [this.registryAddress]: 'registry' }
+    this.contractAddresses = this.contractAddresses ?? {
       registry: this.registryAddress
     }
     if (!this.contractAddresses[contractName]) {
@@ -327,21 +329,20 @@ class EthContracts {
   }
 
   async getServiceProviderList(spType: string) {
-    return this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    return await this.ServiceProviderFactoryClient.getServiceProviderList(
+      spType
+    )
   }
 
   async getNumberOfVersions(spType: string) {
-    return this.ServiceTypeManagerClient.getNumberOfVersions(spType)
+    return await this.ServiceTypeManagerClient.getNumberOfVersions(spType)
   }
 
   async getVersion(spType: string, queryIndex: number) {
-    return this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
+    return await this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
   }
 
   async getServiceTypeInfo(spType: string) {
-    return this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
+    return await this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
   }
 }
-
-module.exports = EthContracts
-module.exports.serviceType = serviceType

@@ -96,7 +96,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     )
     // @ts-expect-error TODO: this seems incorrect
     const tx = await this.web3Manager.sendTransaction(method, 1000000)
-    const returnValues = tx.events?.['RegisteredServiceProvider']?.returnValues
+    const returnValues = tx.events?.RegisteredServiceProvider?.returnValues
     return {
       txReceipt: tx,
       spID: parseInt(returnValues._spID),
@@ -457,8 +457,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
       endpoint
     )
     const tx = await this.web3Manager.sendTransaction(method)
-    const returnValues =
-      tx.events?.['DeregisteredServiceProvider']?.returnValues
+    const returnValues = tx.events?.DeregisteredServiceProvider?.returnValues
 
     return {
       txReceipt: tx,

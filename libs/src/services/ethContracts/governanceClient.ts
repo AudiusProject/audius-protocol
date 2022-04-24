@@ -236,7 +236,7 @@ export class GovernanceClient extends ContractClient {
       description
     )
     const tx = await this.web3Manager.sendTransaction(method)
-    const id = tx.events?.['ProposalSubmitted']?.returnValues?._proposalId
+    const id = tx.events?.ProposalSubmitted?.returnValues?._proposalId
     if (id) {
       return id
     }

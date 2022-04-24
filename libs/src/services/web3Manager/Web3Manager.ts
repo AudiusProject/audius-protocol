@@ -250,7 +250,7 @@ export class Web3Manager {
         const events: TransactionReceipt['events'] = {}
         // TODO: decodeLogs appears to return DecodedLog, not DecodedLog[] so maybe a type/version issue
         const decoded = this.AudiusABIDecoder.decodeLogs(
-          contractRegistryKey,
+          contractRegistryKey as string,
           receipt.logs
         ) as unknown as DecodedLog[]
         decoded.forEach((evt) => {

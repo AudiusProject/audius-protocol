@@ -1,6 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import _ from 'lodash'
-import type EthContracts from '../ethContracts'
+import type { EthContracts } from '../ethContracts'
 
 import {
   ServiceSelection,
