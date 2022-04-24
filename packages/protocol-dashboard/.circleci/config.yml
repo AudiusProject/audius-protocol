@@ -51,7 +51,7 @@ jobs:
           at: ./
       - run:
           name: build
-          command: npm run build:stage
+          command: CI=false npm run build:stage
       - run:
           name: zip build
           command: zip -r build.zip ./build
@@ -134,7 +134,7 @@ jobs:
           at: ./
       - run:
           name: build
-          command: npm run build:prod
+          command: CI=false npm run build:prod
       - run:
           name: zip build
           command: zip -r build.zip ./build
