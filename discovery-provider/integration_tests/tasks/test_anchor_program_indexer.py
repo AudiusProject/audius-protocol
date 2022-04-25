@@ -153,7 +153,10 @@ def test_is_valid_instruction(app):
         cid_metadata_client_mock,
     )
 
-    parsed_instruction = {"account_names_map": {"admin": ADMIN_STORAGE_PUBLIC_KEY}}
+    parsed_instruction = {
+        "account_names_map": {"admin": ADMIN_STORAGE_PUBLIC_KEY},
+        "instruction_name": "init_admin",
+    }
     resp = anchor_program_indexer.is_valid_instruction(parsed_instruction)
 
     assert resp == True

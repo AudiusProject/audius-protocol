@@ -48,7 +48,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         self.instruction_type = {
             "init_user": "user",
             "create_user": "user",
-            "manage_entity": "track",
         }
 
     def is_tx_in_db(self, session: Session, tx_sig: str):
@@ -312,11 +311,14 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         blacklisted_cids.add(cid)
                     else:
                         cids_txhash_set.add((cid, transaction["tx_sig"]))
-                        if instruction["instruction_name"] == "create_user":
+                        if (
+                            "user"
+                            in self.instruction_type[instruction["instruction_name"]]
+                        ):
                             cid_to_entity_type[cid] = "user"
                             # TODO add logic to use existing user records: account -> endpoint
                             user_id = instruction["data"]["user_id"]
-
+                            cid_to_user_id[cid] = user_id
                             # new user case
                             if "replica_set" in instruction["data"]:
                                 endpoints = []
@@ -331,7 +333,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                                     "user_id_seed_bump"
                                 ].user_id
                                 cid_to_user_id[cid] = user_id
-                        cid_to_user_id[cid] = user_id
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
