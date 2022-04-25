@@ -205,7 +205,7 @@ def handle_manage_entity(
         track = Track(
             slot=transaction["result"]["slot"],
             txhash=transaction["tx_sig"],
-            track_id=instruction_data.get("id"),
+            track_id=instruction_data["id"],
             owner_id=instruction_data["user_id_seed_bump"].user_id,
             metadata_multihash=instruction_data.get("metadata"),
             is_current=True,

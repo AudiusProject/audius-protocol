@@ -594,8 +594,6 @@ const main = async () => {
           adminStorageKeypair.publicKey,
           userIdSeed
         );
-      console.log(`derivedAddress ${derivedAddress}`)
-      console.log(`options.userStoragePubkey ${options.userStoragePubkey}`)
 
       for (let i = 0; i < numTracks; i++) {
         promises.push(
