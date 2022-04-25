@@ -4,10 +4,8 @@
 #
 version: 2.1
 orbs:
-  aws-eks: circleci/aws-eks@0.1.0
-  helm: circleci/helm@0.1.2
-  kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
+  gcp-cli: circleci/gcp-cli@2.4.0
 commands:
   diff-if-necessary:
     parameters:
@@ -764,6 +762,10 @@ jobs:
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
 workflows:
+  install_and_configure_gcp_cli:
+    jobs:
+      - gcp-cli/install_and_initialize_cli:
+          executor: gcp-cli/default
   # test, build and push all commits
   test-build-and-push:
     jobs:
