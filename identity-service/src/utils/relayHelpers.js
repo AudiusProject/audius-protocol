@@ -7,8 +7,10 @@ const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
 const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
 const solanaMintAddress = config.get('solanaMintAddress')
+const solanaAudiusAnchorDataProgramAddress = config.get('solanaAudiusAnchorDataProgramAddress')
 
 const allowedProgramIds = new Set([
+  solanaAudiusAnchorDataProgramAddress,
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
   /* secp */ 'KeccakSecp256k11111111111111111111111111111'

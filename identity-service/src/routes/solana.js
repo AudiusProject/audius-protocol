@@ -39,7 +39,7 @@ solanaRouter.post(
     }
 
     // Unpack instructions
-    let { instructions = [], skipPreflight, feePayerOverride } = req.body
+    let { instructions = [], skipPreflight, feePayerOverride, signatures = [], recentBlockhash } = req.body
 
     // Allowed relay checks
     const isRelayAllowed = await areRelayAllowedInstructions(instructions)
@@ -85,7 +85,10 @@ solanaRouter.post(
     })
 
     const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+
     const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
+      recentBlockhash,
+      signatures: (signatures || []).map(s => ({ ...s, signature: Buffer.from(s.signature.data)})),
       instructions,
       skipPreflight,
       feePayerOverride
