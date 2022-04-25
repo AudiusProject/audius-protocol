@@ -244,7 +244,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 return False
 
         # check create track
-        self.msg(f"isaac parsed_instruction {parsed_instruction}")
         if parsed_instruction["instruction_name"] == "manage_entity":
             entity_type = parsed_instruction["data"]["entity_type"]
             if entity_type.Track == type(entity_type):
@@ -257,7 +256,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         is not None
                     )
                     if track_exists:
-                        self.msg("isaac track already exists")
                         return False
 
         # TODO update entity

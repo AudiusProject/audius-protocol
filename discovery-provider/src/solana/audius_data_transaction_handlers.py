@@ -418,7 +418,6 @@ def update_user_model_metadata(
 def update_track_model_metadata(
     session: Session, track_record: Track, track_metadata: Dict
 ):
-    logger.info(f"isaac track_metadata {track_metadata}")
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"] or 0
     track_record.cover_art_sizes = track_metadata["cover_art_sizes"]
