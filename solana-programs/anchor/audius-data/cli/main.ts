@@ -526,7 +526,9 @@ const main = async () => {
       break;
     }
     case functionTypes.createUser: {
-      console.log({ userId });
+      if (!options.metadata) {
+        throw new Error("Missing metadata in createUser!");
+      }
       const ethAccount = EthWeb3.eth.accounts.create();
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
@@ -582,6 +584,10 @@ const main = async () => {
      * Track-related functions
      */
     case functionTypes.createTrack: {
+      if (!options.metadata) {
+        throw new Error("Missing metadata in createTrack!");
+      }
+
       const numTracks = options.numTracks ?? 1;
       console.log(
         `Number of tracks = ${numTracks}, Target User = ${options.userStoragePubkey}`

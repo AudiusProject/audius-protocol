@@ -176,7 +176,7 @@ def handle_update_is_verified(
     pass
 
 
-class CreateTrackData(TypedDict):
+class ManageEntityData(TypedDict):
     management_action: Any
     entity_type: Any
     id: int
@@ -193,7 +193,7 @@ def handle_manage_entity(
     records: List[Any],
 ):
     # create track
-    instruction_data: CreateTrackData = instruction["data"]
+    instruction_data: ManageEntityData = instruction["data"]
     management_action = instruction_data["management_action"]
     entity_type = instruction_data["entity_type"]
 
