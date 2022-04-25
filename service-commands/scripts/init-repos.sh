@@ -59,12 +59,8 @@ fi
 cd $PROTOCOL_DIR/service-commands
 npm link
 
-cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
-npm link
-
 cd $PROTOCOL_DIR/libs
 npm link
-npm link @audius/anchor-audius-data
 
 cd $PROTOCOL_DIR/mad-dog
 npm link @audius/service-commands
