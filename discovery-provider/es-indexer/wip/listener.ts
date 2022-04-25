@@ -1,4 +1,6 @@
 import {
+  AggregatePlayRow,
+  AggregateUserRow,
   FollowRow,
   PlaylistRow,
   RepostRow,
@@ -7,6 +9,8 @@ import {
   UserRow,
 } from '../types/db'
 import { Client } from 'pg'
+import { logger } from './logger'
+import { LISTEN_TABLES } from './setup'
 
 export class PendingUpdates {
   userIds: Set<number> = new Set()
@@ -40,6 +44,14 @@ export function takePending() {
 }
 
 const handlers = {
+  aggregate_user: (row: AggregateUserRow) => {
+    pending.userIds.add(row.user_id)
+  },
+  aggregate_plays: (row: AggregatePlayRow) => {
+    if (!row.play_item_id) return // when could this happen?
+    pending.trackIds.add(row.play_item_id)
+  },
+  // TODO: can we do trigger on agg playlist matview?
   saves: (save: SaveRow) => {
     pending.saves.push(save)
     if (save.save_type == 'track') {
@@ -58,7 +70,12 @@ const handlers = {
   },
   follows: (follow: FollowRow) => {
     pending.follows.push(follow)
-    pending.userIds.add(follow.followee_user_id)
+    // followee follower_count comes from aggregate_user
+    // which is update async...
+    // marking followee_user_id stale here is likely to result in a noop
+    // as aggregate_user hasn't been updated yet...
+    // so instead we listen for update on that table to ensure follower_count gets updated.
+    // pending.userIds.add(follow.followee_user_id)
     pending.userIds.add(follow.follower_user_id)
   },
   users: (user: UserRow) => {
@@ -77,10 +94,10 @@ export async function startListener() {
   const client = new Client({ connectionString, application_name: 'es-listen' })
   await client.connect()
 
-  const tables = ['follows', 'reposts', 'saves', 'tracks', 'users', 'playlists']
+  const tables = LISTEN_TABLES
   const sql = tables.map((t) => `LISTEN ${t}; `).join(' ')
   await client.query(sql)
-  console.log(sql)
+  logger.info({ tables }, 'LISTEN')
 
   client.on('notification', (msg) => {
     const body = JSON.parse(msg.payload)
@@ -88,12 +105,7 @@ export async function startListener() {
     if (handler) {
       handler(body)
     } else {
-      console.log(
-        new Date().toLocaleTimeString(),
-        'no handler for',
-        msg.channel,
-        body
-      )
+      logger.warn(`no handler for ${msg.channel}`)
     }
   })
 

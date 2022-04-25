@@ -6,6 +6,7 @@ import { SaveIndexer } from './indexers/SaveIndexer'
 import { TrackIndexer } from './indexers/TrackIndexer'
 import { UserIndexer } from './indexers/UserIndexer'
 import { PendingUpdates, startListener, takePending } from './listener'
+import { logger } from './logger'
 import { setupTriggers } from './setup'
 
 export const indexer = {
@@ -27,7 +28,7 @@ export async function processPending(pending: PendingUpdates) {
   ])
 }
 
-async function main() {
+async function start() {
   const indexers = Object.values(indexer)
 
   await setupTriggers()
@@ -36,19 +37,31 @@ async function main() {
   startListener()
   const checkpoints = await getBlocknumberCheckpoints()
 
-  console.log('catchup from blocknumbers', checkpoints)
+  logger.info(checkpoints, 'catchup from blocknumbers')
   await Promise.all(Object.values(indexer).map((i) => i.catchup(checkpoints)))
 
-  console.log('catchup done... cutting over aliases')
+  logger.info('catchup done... cutting over aliases')
   await Promise.all(indexers.map((ix) => ix.cutoverAlias()))
 
-  console.log('processing events...')
+  logger.info('processing events')
   while (true) {
     const pending = takePending()
     if (pending) {
       await processPending(pending)
     }
     await new Promise((r) => setTimeout(r, 500))
+  }
+}
+
+async function main() {
+  let errorCount = 0
+  while (true) {
+    try {
+      await start()
+    } catch (e) {
+      logger.error(e, `es-indexer exception #${errorCount}`)
+      await new Promise((r) => setTimeout(r, 1000))
+    }
   }
 }
 

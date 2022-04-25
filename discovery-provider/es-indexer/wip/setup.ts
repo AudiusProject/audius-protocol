@@ -1,4 +1,16 @@
 import { dialPg } from '../etl/conn'
+import { logger } from './logger'
+
+export const LISTEN_TABLES = [
+  'aggregate_plays',
+  'aggregate_user',
+  'follows',
+  'playlists',
+  'reposts',
+  'saves',
+  'tracks',
+  'users',
+]
 
 const functionName = `on_new_row`
 
@@ -27,20 +39,17 @@ export async function setupTriggers() {
     SELECT count(*)
     FROM information_schema.routines
     WHERE routine_name = '${functionName}';`)
+  let skip = count.rows[0].count == 1
 
-  if (count.rows[0].count == 1) {
-    console.log(`function ${functionName} already exists... skipping`)
+  skip = false
+
+  if (skip) {
+    logger.info(`function ${functionName} already exists... skipping`)
   } else {
-    const tables = [
-      'follows',
-      'reposts',
-      'saves',
-      'tracks',
-      'users',
-      'playlists',
-    ]
+    const tables = LISTEN_TABLES
 
     // drop existing triggers
+    logger.info({ tables }, `dropping any existing triggers`)
     await Promise.all(
       tables.map((t) =>
         client.query(`drop trigger if exists trg_${t} on ${t};`)
@@ -48,15 +57,17 @@ export async function setupTriggers() {
     )
 
     // create function
+    logger.info(`creating plpgsql function`)
     await client.query(trigger)
 
     // create triggers
+    logger.info({ tables }, `creating triggers`)
     if (process.argv[2] !== 'drop') {
       await Promise.all(
         tables.map((t) =>
           client.query(`
           create trigger trg_${t}
-            after insert on ${t}
+            after insert or update on ${t}
             for each row execute procedure ${functionName}();`)
         )
       )

@@ -121,7 +121,7 @@ export abstract class BaseIndexer<RowType> {
 
   async indexRows(rows: Array<RowType>) {
     if (!rows.length) return
-    this.logger.info({ rowCount: rows.length }, 'indexing rows')
+
     // with batch
     await this.withBatch(rows)
 
@@ -140,7 +140,7 @@ export abstract class BaseIndexer<RowType> {
     this.rowCounter += rows.length
     this.logger.info({
       updates: rows.length,
-      rowsProcessed: this.rowCounter,
+      lifetime: this.rowCounter,
     })
   }
 
