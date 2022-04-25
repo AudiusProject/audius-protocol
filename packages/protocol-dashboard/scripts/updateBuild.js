@@ -66,7 +66,6 @@ const updateContentNodePeers = async () => {
   }
   if (Object.values(connections).every((isConnected) => !isConnected)) {
     console.error('unable to update peer with a single ipfs content node')
-    process.exit(1)
   }
   console.log('Added ipfs peers')
   console.log(JSON.stringify(connections, null, ' '))
