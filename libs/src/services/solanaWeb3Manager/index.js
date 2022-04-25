@@ -176,12 +176,12 @@ class SolanaWeb3Manager {
     ) {
       const connection = new solanaWeb3.Connection(
         this.solanaClusterEndpoint,
-        anchor.Provider.defaultOptions()
+        anchor.AnchorProvider.defaultOptions()
       )
-      const anchorProvider = new anchor.Provider(
+      const anchorProvider = new anchor.AnchorProvider(
         connection,
         solanaWeb3.Keypair.generate(),
-        anchor.Provider.defaultOptions()
+        anchor.AnchorProvider.defaultOptions()
       )
       this.anchorProgram = new anchor.Program(
         this.audiusDataIdl,
@@ -597,7 +597,7 @@ class SolanaWeb3Manager {
 
   /**
    * Finds the target PDA with the base audius admin as the initial seed
-   * In conjunction with the secondary seed as the users handle in bytes
+   * In conjunction with the secondary seed as the users id in bytes
    * @param {PublicKey} programId
    * @param {PublicKey} adminAccount
    * @param {string} seed
