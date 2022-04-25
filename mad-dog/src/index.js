@@ -53,18 +53,6 @@ const services = [
   ...contentNodeHealthChecks
 ]
 
-async function setupAllServices () {
-  logger.info('Setting up all services!')
-  await allUp({ numCreatorNodes: DEFAULT_NUM_CREATOR_NODES, verbose: true })
-  logger.info('All services set up!')
-}
-
-async function tearDownAllServices () {
-  logger.info('Downing services.')
-  await runSetupCommand(Service.ALL, SetupCommand.DOWN, { verbose: true })
-  logger.info('All services downed.')
-}
-
 // Writing IPLD txns to chain require the 0th indexed wallet.
 // This flag is set to 'true' to run the test with the 0th indexed wallet.
 // The default will be 'undefined' for the other tests that do not require
@@ -158,12 +146,7 @@ const isVerbose = () => {
   return verbose && verbose.toLowerCase() === 'verbose'
 }
 
-// This should go away when we have multiple tests.
-//
-// Currently there's a bug where standing up services
-// in the same run as running the tests
-// causes libs init failures, so we stand up services
-// with a separate command.
+// TODO: This should go away when we have multiple tests.
 async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
 
@@ -182,14 +165,6 @@ async function main () {
 
   try {
     switch (cmd) {
-      case 'up': {
-        await setupAllServices()
-        break
-      }
-      case 'down': {
-        await tearDownAllServices()
-        break
-      }
       case 'test': {
         const test = makeTest('consistency', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -241,20 +216,6 @@ async function main () {
         await testRunner([test])
         break
       }
-      // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
-      case 'test-blacklist': {
-        // dynamically create ipld tests
-        const blacklistTests = Object.entries(IpldBlacklistTest).map(
-          ([testName, testLogic]) =>
-            makeTest(testName, testLogic, {
-              numCreatorNodes: 1,
-              numUsers: DEFAULT_NUM_USERS,
-              useZeroIndexedWallet: true
-            })
-        )
-        await testRunner(blacklistTests)
-        break
-      }
       case 'test-ursm-nodes': {
         const deregisterCNTest = makeTest(
           'snapbackReconfigTestDeregisterCN',
@@ -276,6 +237,20 @@ async function main () {
           }
         )
         await testRunner([deregisterCNTest, forceCNUnavailabilityTest])
+        break
+      }
+      // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
+      case 'test-blacklist': {
+        // dynamically create ipld tests
+        const blacklistTests = Object.entries(IpldBlacklistTest).map(
+          ([testName, testLogic]) =>
+            makeTest(testName, testLogic, {
+              numCreatorNodes: 1,
+              numUsers: DEFAULT_NUM_USERS,
+              useZeroIndexedWallet: true
+            })
+        )
+        await testRunner(blacklistTests)
         break
       }
       case 'test-nightly': {
@@ -358,7 +333,7 @@ async function main () {
         break
       }
       default:
-        logger.error('Usage: one of either `up`, `down`, `test`, `test-ci`, `test-ursm`, `test-snapback`.')
+        logger.error('Usage: one of either: `test`, `test-snapback`, `test-ursm`, `test-ursm-sat`, `test-ursm-nodes`, `test-blacklist`, `test-nightly`.')
     }
     process.exit()
   } catch (e) {
