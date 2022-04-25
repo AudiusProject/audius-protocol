@@ -30,6 +30,7 @@ npm i -g "@project-serum/anchor-cli@$ANCHOR_CLI_VERSION"
 anchor --version
 # install dependencies
 yarn install
+chown -R $(whoami) . # needed to resolve some weirdness...
 
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$HOME/.config/solana/id.json"

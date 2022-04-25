@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.108",
+  "version": "1.2.111",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@audius/hedgehog": "1.0.12",
-    "@audius/anchor-audius-data": "file:../solana-programs/anchor/audius-data",
+    "@audius/anchor-audius-data": "0.0.1",
     "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
