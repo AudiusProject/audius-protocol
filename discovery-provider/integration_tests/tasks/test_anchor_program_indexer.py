@@ -188,7 +188,7 @@ async def test_fetch_metadata(app, mocker):
             "instructions": [
                 {
                     "instruction_name": "init_user",
-                    "data": Container([("metadata", mock_cid)]),
+                    "data": Container([("metadata", mock_cid), ("user_id", 1)]),
                 }
             ]
         },

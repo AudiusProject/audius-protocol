@@ -68,13 +68,22 @@ class File extends Base {
 
     const gateways = creatorNodeGateways.concat(publicGateways)
 
-    return retry(async () => {
+    return retry(async (bail) => {
       try {
-        const { response } = await raceRequests(urls, callback, {
+        const { response, errored } = await raceRequests(urls, callback, {
           method: 'get',
           responseType
         }, /* timeout */ null)
-        if (!response) throw new Error(`Could not fetch ${cid}`)
+
+        if (!response) {
+          const allUnauthorized = errored.every(error => error.response.status === 403)
+          if (allUnauthorized) {
+            // In the case for a 403, do not retry fetching
+            bail(new Error('Unauthorized'))
+            return
+          }
+          throw new Error(`Could not fetch ${cid}`)
+        }
         return response
       } catch (e) {
         // TODO: Remove this fallback logic when no more users/tracks/playlists

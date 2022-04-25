@@ -21,6 +21,7 @@ npm install
 
 cd $PROTOCOL_DIR/mad-dog
 npm install
+mkdir -p local-storage/tmp-imgs
 
 cd $PROTOCOL_DIR/contracts
 npm install
@@ -35,6 +36,11 @@ npm install
 cd $PROTOCOL_DIR/creator-node
 npm install
 
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+yarn install
+chown -R $(whoami) . # needed for some weird cargo perm err
+npm run build
+
 cd $PROTOCOL_DIR/libs
 npm install
 npm run build
@@ -45,7 +51,7 @@ npm install
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
-    npm install
+    npm run init
 fi
 
 ####################################
@@ -72,6 +78,5 @@ npm link @audius/libs
 
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
-    cd audius-client
-    npm link @audius/libs
+    cd audius-client/packages/web && npm link @audius/libs
 fi
