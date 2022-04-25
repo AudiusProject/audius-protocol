@@ -205,17 +205,6 @@ async function main () {
         await testRunner([test])
         break
       }
-      case 'test-listencount': {
-        const test = makeTest(
-          'trackListenCountsTest',
-          trackListenCountsTest,
-          {
-            numUsers: 1
-          }
-        )
-        await testRunner([test])
-        break
-      }
       case 'test-ursm-nodes': {
         const deregisterCNTest = makeTest(
           'snapbackReconfigTestDeregisterCN',
@@ -237,6 +226,17 @@ async function main () {
           }
         )
         await testRunner([deregisterCNTest, forceCNUnavailabilityTest])
+        break
+      }
+      case 'test-listencount': {
+        const test = makeTest(
+          'trackListenCountsTest',
+          trackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
+        await testRunner([test])
         break
       }
       // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
@@ -333,7 +333,7 @@ async function main () {
         break
       }
       default:
-        logger.error('Usage: one of either: `test`, `test-snapback`, `test-ursm`, `test-ursm-sat`, `test-ursm-nodes`, `test-blacklist`, `test-nightly`.')
+        logger.error('Usage: one of either: `test`, `test-snapback`, `test-ursm`, `test-ursm-sat`, `test-ursm-nodes`, `test-listencount`, `test-blacklist`, `test-nightly`.')
     }
     process.exit()
   } catch (e) {

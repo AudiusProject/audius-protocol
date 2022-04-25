@@ -8,12 +8,12 @@
 3. cd to `/service-commands` and run `npm i && npm link && npm link @audius/libs`
 4. cd to `/mad-dog` and run `npm i && npm link @audius/libs @audius/service-commands`
 
-Several tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chaos testing tool for Docker
-**Pumba Installation**  
+**Pumba Installation**
+
+Several tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chaos testing tool for Docker.
+
 `sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`  
 `chmod +x /usr/local/bin/pumba`
-
-**Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
 
 ### Running Tests
 **Run all the tests in test suite**: 
@@ -28,6 +28,7 @@ Several tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chao
 
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
+- If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
 
 ## Code Structure
 - The single test in mad-dog is based on the class `EmitterBasedTest`. This class
