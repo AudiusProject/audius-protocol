@@ -24,6 +24,8 @@
 
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
+- In the event that mad-dog fails due to libs errors, try running `npm i` in `/libs` and relinking packages.
+- If mad-dog fails for other random reasons, it could be a state issue -- try bringing up a fresh set of services.
 
 ## Code Structure
 - The single test in mad-dog is based on the class `EmitterBasedTest`. This class
