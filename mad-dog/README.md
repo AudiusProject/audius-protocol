@@ -3,17 +3,17 @@
 
 ## Usage
 ### Setup/Installation -- Linking Local Packages:
-1. cd to `/libs` and run `npm i && npm run build && npm link`
-2. cd to `/service-commands` and run `npm i && npm link && npm link @audius/libs`
-3. cd to `/mad-dog` and run `npm i && npm link @audius/libs @audius/service-commands`
+1. Make sure your services are up (`A run init-repos up && A up`). Mad dog runs against local services to provide e2e test coverage.
+2. cd to `/libs` and run `npm i && npm run build && npm link`
+3. cd to `/service-commands` and run `npm i && npm link && npm link @audius/libs`
+4. cd to `/mad-dog` and run `npm i && npm link @audius/libs @audius/service-commands`
 
-**Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
-
-Serveral tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chaos testing tool for Docker  
+Several tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chaos testing tool for Docker
 **Pumba Installation**  
 `sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`  
 `chmod +x /usr/local/bin/pumba`
 
+**Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
 
 ### Running Tests
 **Run all the tests in test suite**: 
