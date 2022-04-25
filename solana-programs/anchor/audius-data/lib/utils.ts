@@ -112,16 +112,18 @@ export const randomCID = () => {
 // so that our test PDA derivation
 // can use the same seed format as
 // the rust program (u16.to_le_bytes())
+// use anchor.BN.toArrayLike instead of .toBuffer for browser compat reasons
 export const convertBNToSpIdSeed = (spId: anchor.BN) => {
-  return Buffer.concat([Buffer.from("sp_id", "utf8"), spId.toBuffer("le", 2)]);
+  return Buffer.concat([Buffer.from("sp_id", "utf8"), spId.toArrayLike(Buffer, "le", 2)]);
 };
 
 // used to convert u32 to little endian bytes
 // so that our test PDA derivation
 // can use the same seed format as
 // the rust program (u32.to_le_bytes())
+// use anchor.BN.toArrayLike instead of .toBuffer for browser compat reasons
 export const convertBNToUserIdSeed = (userId: anchor.BN) => {
-  return userId.toBuffer("le", 4);
+  return userId.toArrayLike(Buffer, "le", 4);
 };
 
 /// Derive a program address with pubkey as the seed
