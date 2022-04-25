@@ -21,6 +21,7 @@ npm install
 
 cd $PROTOCOL_DIR/mad-dog
 npm install
+mkdir -p local-storage/tmp-imgs
 
 cd $PROTOCOL_DIR/contracts
 npm install
@@ -37,6 +38,7 @@ npm install
 
 cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 yarn install
+chown -R $(whoami) . # needed for some weird cargo perm err
 npm run build
 
 cd $PROTOCOL_DIR/libs
