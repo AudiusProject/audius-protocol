@@ -23,7 +23,7 @@ export const RepostsScreen = () => {
   }, [dispatchWeb, id, repostType])
 
   return (
-    <Screen title={messages.title} variant='secondary'>
+    <Screen title={messages.title} variant='white'>
       <UserList
         userSelector={getUserList}
         tag='REPOSTS'
