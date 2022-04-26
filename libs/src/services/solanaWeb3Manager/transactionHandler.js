@@ -206,7 +206,7 @@ class TransactionHandler {
           })
           sendCount++
           if (sendCount % 10 === 0) {
-            this.logger.info(`Send count ${sendCount}`)
+            logger.info(`Send count ${sendCount}`)
           }
           await delay(this.this.sendingFrequencyMs)
           elapsed = Date.now() - startTime
@@ -214,7 +214,7 @@ class TransactionHandler {
       })()
     }
     try {
-      await this._awaitTransactionSignatureConfirmation(txid)
+      await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
       return {
         res: txid,
@@ -260,7 +260,7 @@ class TransactionHandler {
     // }
   }
 
-  async _awaitTransactionSignatureConfirmation (txid) {
+  async _awaitTransactionSignatureConfirmation (txid, logger) {
     let done = false
 
     const result = await new Promise((resolve, reject) => {
@@ -271,7 +271,7 @@ class TransactionHandler {
             return
           }
           done = true
-          this.logger.warning('Timed out in await!')
+          logger.warning('Timed out in await!')
           reject(new Error(`Timed out for txid ${txid}`))
         }, this.retryTimeoutMs)
 
@@ -282,10 +282,10 @@ class TransactionHandler {
             (result) => {
               done = true
               if (result.err) {
-                this.logger.warning('Error in onSignature')
+                logger.warning('Error in onSignature')
                 reject(result.err)
               } else {
-                this.logger.warning('Success in onSignature!')
+                logger.warning('Success in onSignature!')
                 resolve(result)
               }
             },
@@ -293,7 +293,7 @@ class TransactionHandler {
           )
         } catch (e) {
           done = true
-          this.logger.error('transactionHandler | WS error in setup', txid, e)
+          logger.error('transactionHandler | WS error in setup', txid, e)
         }
 
         // Setup polling
@@ -302,7 +302,7 @@ class TransactionHandler {
           ;(async () => {
             try {
               if (pollCount % 10 === 0) {
-                this.logger.info(`Poll count: ${pollCount}`)
+                logger.info(`Poll count: ${pollCount}`)
               }
               pollCount++
 
@@ -311,7 +311,7 @@ class TransactionHandler {
               const result = signatureStatuses?.value[0]
               // Early return this iteration if done or no result
               if (done || !result) {
-                this.logger.warning(
+                logger.warning(
                   'Early return in polling from done or no result'
                 )
                 return
@@ -319,7 +319,7 @@ class TransactionHandler {
 
               // End loop if error
               if (result.err) {
-                this.logger.error(
+                logger.error(
                   `transactionHandler | polling error: ${result.err}, tx: ${txid}`
                 )
                 done = true
@@ -334,7 +334,7 @@ class TransactionHandler {
                   result.confirmationStatus === 'finalized'
                 )
               ) {
-                this.logger.warning(
+                logger.warning(
                   'Early return in polling from missing confirmations'
                 )
                 return
@@ -342,11 +342,11 @@ class TransactionHandler {
 
               // Otherwise, we made it
               done = true
-              this.logger.info('Success in polling route!')
+              logger.info('Success in polling route!')
               resolve(result)
             } catch (e) {
               if (!done) {
-                this.logger.error(
+                logger.error(
                   `REST polling connection error: ${e}, tx: ${txid}`
                 )
               }
