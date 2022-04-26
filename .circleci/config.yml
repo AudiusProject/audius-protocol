@@ -45,7 +45,6 @@ jobs:
       - run:
           name: gcloud service account auth
           command: |
-            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
             gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
