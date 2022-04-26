@@ -5,7 +5,6 @@
 version: 2.1
 orbs:
   coveralls: coveralls/coveralls@1.0.6
-  gcp-cli: circleci/gcp-cli@2.4.0
 commands:
   diff-if-necessary:
     parameters:
@@ -23,6 +22,31 @@ commands:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
 
 jobs:
+  create-gcp-box:
+    docker:
+      - image: gcr.io/google.com/cloudsdktool/cloud-sdk:357.0.0
+        auth:
+          username: _json_key
+          password: $GCLOUD_SERVICE_KEY
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - 3c:b3:45:12:28:12:4a:d6:a4:54:de:4a:b2:ca:06:a5
+      - run:
+          name: what is the name of the ssh key file lol
+          command: |
+            ls -la $HOME/.ssh/
+      - run:
+          name: gcloud service account auth
+          command: |
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+      - run:
+          name: gcloud service account auth
+          command: |
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account --key-file=-
+            gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
@@ -762,11 +786,11 @@ jobs:
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
 workflows:
-  install_and_configure_gcp_cli:
-    jobs:
-      - gcp-cli/install_and_initialize_cli:
-          executor: gcp-cli/default
   # test, build and push all commits
+  test-gcp:
+    jobs:
+      - create-gcp-box:
+          name: create-gcp-box
   test-build-and-push:
     jobs:
       - test-libs:
