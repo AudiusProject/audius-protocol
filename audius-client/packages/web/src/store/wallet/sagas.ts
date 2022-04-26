@@ -63,9 +63,8 @@ function* sendAsync({
     yield put(sendFailed({ error: 'Not enough $AUDIO' }))
     return
   } else if (chain === Chain.Sol) {
-    const totalBalance = waudioWeiAmount.add(weiBNBalance)
-    if (weiBNAmount.gt(totalBalance)) {
-      yield put(sendFailed({ error: 'Missing social proof' }))
+    if (weiBNAmount.gt(weiBNBalance)) {
+      yield put(sendFailed({ error: 'Not enough $AUDIO' }))
       return
     }
   }
