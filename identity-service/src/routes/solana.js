@@ -39,7 +39,7 @@ solanaRouter.post(
     }
 
     // Unpack instructions
-    let { instructions = [], skipPreflight, feePayerOverride } = req.body
+    let { instructions = [], skipPreflight, feePayerOverride, retry = false } = req.body
 
     // Allowed relay checks
     const isRelayAllowed = await areRelayAllowedInstructions(instructions)
@@ -88,7 +88,8 @@ solanaRouter.post(
     const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
       instructions,
       skipPreflight,
-      feePayerOverride
+      feePayerOverride,
+      retry
     })
 
     if (error) {

@@ -1,8 +1,12 @@
 const SolanaUtils = require('./utils')
 const {
   Transaction,
-  sendAndConfirmTransaction
 } = require('@solana/web3.js')
+
+// TODO: move this into a util
+async function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 /**
  * Handles sending Solana transactions, either directly via `sendAndConfirmTransaction`,
@@ -27,12 +31,15 @@ class TransactionHandler {
    * }
    * @memberof TransactionHandler
    */
-  constructor ({ connection, useRelay, identityService = null, feePayerKeypairs = null, skipPreflight = true }) {
+  constructor ({ connection, useRelay, identityService = null, feePayerKeypairs = null, skipPreflight = true, retryTimeoutMs = 60000, pollingFrequencyMs = 300, sendingFrequencyMs = 300 }) {
     this.connection = connection
     this.useRelay = useRelay
     this.identityService = identityService
     this.feePayerKeypairs = feePayerKeypairs
     this.skipPreflight = skipPreflight
+    this.retryTimeoutMs = retryTimeoutMs
+    this.pollingFrequencyMs = pollingFrequencyMs
+    this.sendingFrequencyMs = sendingFrequencyMs
   }
 
   /**
@@ -53,12 +60,12 @@ class TransactionHandler {
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true }) {
+  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true, retry = false }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash)
+      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash, retry)
     } else {
-      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride)
+      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride, retry)
     }
     if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
@@ -66,13 +73,14 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null, sendBlockhash) {
+  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null, sendBlockhash, retry) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
 
     const transactionData = {
       instructions: relayable,
       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
-      feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null
+      feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null,
+      retry
     }
 
     if (sendBlockhash) {
@@ -89,7 +97,7 @@ class TransactionHandler {
     }
   }
 
-  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null) {
+  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null, retry) {
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
         const stringFeePayer = feePayerOverride.toString()
@@ -108,31 +116,52 @@ class TransactionHandler {
       }
     }
 
+    // Get blockhash
     recentBlockhash = recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash
+
+    // Construct the txn
     const tx = new Transaction({ recentBlockhash })
-
     instructions.forEach(i => tx.add(i))
-
     tx.sign(feePayerAccount)
+    const rawTransaction = tx.serialize()
 
-    try {
-      const transactionSignature = await sendAndConfirmTransaction(
-        this.connection,
-        tx,
-        [feePayerAccount],
-        {
-          skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
-          commitment: 'processed',
-          preflightCommitment: 'processed'
+    // Send the txn
+    const txid = await this.connection.sendRawTransaction(rawTransaction, {
+      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+      commitment: 'processed',
+      preflightCommitment: 'processed', // TODO: do we want this?
+      maxRetries: retry ? 0 : undefined
+    })
+
+    let done = false
+
+    const startTime = Date.now()
+    if (retry) {
+      (async () => {
+        let elapsed = Date.now() - startTime
+        // eslint-disable-next-line no-unmodified-loop-condition
+        while (!done && elapsed < this.retryTimeoutMs) {
+          this.connection.sendAndConfirmTransaction(rawTransaction, {
+            skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+            commitment: 'processed',
+            preflightCommitment: 'processed', // TODO: do we want this?
+            maxRetries: retry ? 0 : undefined
+          })
+          await delay(this.this.sendingFrequencyMs)
+          elapsed = Date.now() - startTime
         }
-      )
-      logger.info(`transactionHandler: signature: ${transactionSignature}`)
+      })()
+    }
+    try {
+      await this._awaitTransactionSignatureConfirmation(txid)
+      done = true
       return {
-        res: transactionSignature,
+        res: txid,
         error: null,
         errorCode: null
       }
     } catch (e) {
+      done = true
       const { message: error } = e
       const errorCode = this._parseSolanaErrorCode(error)
       return {
@@ -141,6 +170,103 @@ class TransactionHandler {
         errorCode
       }
     }
+
+    // try {
+    //   const transactionSignature = await sendAndConfirmTransaction(
+    //     this.connection,
+    //     tx,
+    //     [feePayerAccount],
+    //     {
+    //       skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+    //       commitment: 'processed',
+    //       preflightCommitment: 'processed'
+    //     }
+    //   )
+    //   logger.info(`transactionHandler: signature: ${transactionSignature}`)
+    //   return {
+    //     res: transactionSignature,
+    //     error: null,
+    //     errorCode: null
+    //   }
+    // } catch (e) {
+    //   const { message: error } = e
+    //   const errorCode = this._parseSolanaErrorCode(error)
+    //   return {
+    //     res: null,
+    //     error,
+    //     errorCode
+    //   }
+    // }
+  }
+
+  async _awaitTransactionSignatureConfirmation (txid) {
+    let done = false
+
+    const result = await new Promise((resolve, reject) => {
+      (async () => {
+        // Setup timeout if nothing else finishes
+        setTimeout(() => {
+          if (done) {
+            return
+          }
+          done = true
+          reject(new Error(`Timed out for txid ${txid}`))
+        }, this.retryTimeoutMs)
+
+        // Setup WS listener
+        try {
+          this.connection.onSignature(
+            txid,
+            (result) => {
+              done = true
+              if (result.err) {
+                reject(result.err)
+              } else {
+                resolve(result)
+              }
+            },
+            this.connection.commitment // TODO: is this right?
+          )
+        } catch (e) {
+          done = true
+          this.logger.error('transactionHandler | WS error in setup', txid, e)
+        }
+
+        // Setup polling
+        while (!done) {
+          (async () => {
+            try {
+              const signatureStatuses = await this.connection.getSignatureStatuses([txid])
+              const result = signatureStatuses?.value[0]
+              // Early return this iteration if done or no result
+              if (done || !result) return
+
+              // End loop if error
+              if (result.err) {
+                this.logger.error(`transactionHandler | polling error: ${result.err}, tx: ${txid}`)
+                done = true
+                reject(result.err)
+              }
+
+              // Early return if response without confirmation
+              if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) return
+
+              // Otherwise, we made it
+              done = true
+              resolve(result)
+            } catch (e) {
+              if (!done) {
+                this.logger.error(`REST polling connection error: ${e}, tx: ${txid}`)
+              }
+            }
+          })()
+
+          await delay(this.pollingFrequencyMs)
+        }
+      })()
+    })
+    done = true
+    return result
   }
 
   /**
