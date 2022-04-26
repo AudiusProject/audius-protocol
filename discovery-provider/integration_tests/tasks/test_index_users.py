@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, Dict
 from unittest import mock
 
 from integration_tests.challenges.index_helpers import AttrDict, CIDMetadataClient
@@ -611,7 +612,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         blocknumber=test_block_number,
         txhash=cursed_tx_hash,
         user_id=91238,
-        name="birb",
+        name="birbs",
         is_current=None,
         is_creator=None,
         updated_at=test_timestamp,
@@ -667,8 +668,8 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         ],
         autospec=True,
     )
-    test_ipfs_metadata = {}
-    test_blacklisted_cids = {}
+    test_ipfs_metadata: Dict[str, Any] = {}
+    test_blacklisted_cids: Dict[str, Any] = {}
 
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         try:
