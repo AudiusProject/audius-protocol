@@ -4,7 +4,19 @@ if [[ -z "$audius_loggly_disable" ]]; then
     if [[ -n "$audius_loggly_token" ]]; then
         # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
         audius_discprov_hostname=$(echo $audius_discprov_url | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
-        audius_loggly_tags=$(echo $audius_loggly_tags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+
+        # add hostname to loggly tags
+        if [[ "$audius_discprov_hostname" != "" ]]; then
+            if [[ "$audius_loggly_tags" != "" ]]; then
+                audius_loggly_tags="$audius_loggly_tags,$audius_discprov_hostname"
+            else
+                audius_loggly_tags="$audius_discprov_hostname"
+            fi
+        fi
+
+        if [[ "$audius_loggly_tags" != "" ]]; then
+            audius_loggly_tags="tag=\\\"${audius_loggly_tags//,/\\\" tag=\\\"}\\\""
+        fi
 
         mkdir -p /var/spool/rsyslog
         mkdir -p /etc/rsyslog.d
@@ -17,7 +29,7 @@ if [[ -z "$audius_loggly_disable" ]]; then
 \$ActionResumeRetryCount -1    # infinite retries if host is down
 
 template(name="LogglyFormat" type="string"
- string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags \\"$audius_discprov_hostname\\"] %msg%\n")
+ string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags] %msg%\n")
 
 # Send messages to Loggly over TCP using the template.
 action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
