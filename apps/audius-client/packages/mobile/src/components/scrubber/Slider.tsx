@@ -209,19 +209,23 @@ export const Slider = memo(
       ]
     )
 
-    const onPressHandle = useCallback(() => {
-      onPressIn()
-      handlePressHandleIn()
-      pause()
-    }, [onPressIn, handlePressHandleIn, pause])
+    const onPressHandle = useCallback(
+      (event: GestureResponderEvent) => {
+        const newPosition = event.nativeEvent.pageX - railPageX
+        setHandlePosition(newPosition)
+        onPressIn()
+        handlePressHandleIn()
+        pause()
+      },
+      [onPressIn, handlePressHandleIn, pause, railPageX]
+    )
 
     const onReleaseHandle = useCallback(
       percentComplete => {
         onPressOut(percentComplete)
-        handlePressHandleOut()
         animateFromNowToEnd(percentComplete)
       },
-      [onPressOut, handlePressHandleOut, animateFromNowToEnd]
+      [onPressOut, animateFromNowToEnd]
     )
 
     const panResponder = PanResponder.create({
@@ -250,6 +254,7 @@ export const Slider = memo(
     // When the media key changes, reset the scrubber
     useEffect(() => {
       translationAnim.setValue(0)
+      setHandlePosition(0)
     }, [mediaKey, translationAnim])
 
     // When playing starts, start the scrubber animation.
@@ -340,6 +345,7 @@ export const Slider = memo(
         >
           <Animated.View
             onTouchStart={onPressHandle}
+            onTouchEnd={handlePressHandleOut}
             hitSlop={{ top: 16, bottom: 16, right: 16, left: 16 }}
             style={[styles.handle, { transform: [{ scale: handleScale }] }]}
           />
