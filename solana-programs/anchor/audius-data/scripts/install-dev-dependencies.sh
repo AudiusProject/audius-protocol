@@ -35,8 +35,8 @@ chown -R $(whoami) . # needed to resolve some weirdness...
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$HOME/.config/solana/id.json"
 
-if [[ "${CI:-false}" == false ]]; then
-    # reload shell 
-    exec $SHELL
-fi
+# if [[ "${CI:-false}" == false ]]; then
+#     # reload shell 
+#     exec $SHELL
+# fi
 echo "Installed deps for anchor development."
