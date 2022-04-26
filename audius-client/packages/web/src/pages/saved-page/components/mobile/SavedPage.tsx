@@ -1,7 +1,6 @@
 import React, { ReactNode, useCallback, useEffect, useContext } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
@@ -23,6 +22,7 @@ import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
 import TrackList from 'components/track/mobile/TrackList'
@@ -495,7 +495,7 @@ const SavedPage = ({
       containerClassName={styles.mobilePageContainer}
     >
       {tracks.status === Status.LOADING ? (
-        <Spin size='large' className={styles.spin} />
+        <LoadingSpinner className={styles.spinner} />
       ) : (
         <div className={styles.tabContainer}>
           <div className={styles.pageContainer}>{body}</div>

@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 
-import Spin from 'antd/lib/spin'
 import { Redirect } from 'react-router'
 
 import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
@@ -12,6 +11,7 @@ import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import Toast from 'components/toast/Toast'
 import {
@@ -479,7 +479,7 @@ class SearchPageContent extends Component {
         {status === Status.ERROR ? (
           <p>Oh no! Something went wrong!</p>
         ) : status === Status.LOADING ? (
-          <Spin size='large' className={styles.spin} />
+          <LoadingSpinner className={styles.spinner} />
         ) : (
           content
         )}

@@ -6,12 +6,14 @@
   border-bottom: 1px solid var(--neutral-light-8);
 }
 
-.spin {
-  padding-top: 50%;
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 200px auto 0;
 }
 
-.spin :global(.ant-spin-dot i) {
-  background-color: var(--secondary) !important;
+.spinner g path {
+  stroke: var(--secondary) !important;
 }
 
 .tabContainer {

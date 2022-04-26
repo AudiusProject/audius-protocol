@@ -1,10 +1,10 @@
 import React from 'react'
 
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 
 import tileBackground from 'assets/img/notFoundTiledBackround.png'
 import Theme from 'common/models/Theme'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './RequiresUpdate.module.css'
@@ -42,7 +42,7 @@ const SomethingWrong = ({
         <Button
           type={ButtonType.PRIMARY_ALT}
           rightIcon={
-            isUpdating ? <Spin className={styles.spinner} /> : undefined
+            isUpdating ? <LoadingSpinner className={styles.spinner} /> : null
           }
           text={isUpdating ? messages.buttonIsUpdating : messages.buttonUpdate}
           size={ButtonSize.MEDIUM}

@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react'
 
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './LoadingPage.module.css'
 
@@ -15,7 +16,7 @@ export class LoadingPage extends PureComponent {
     return (
       <div className={styles.container}>
         <div className={cn(styles.header)}>
-          <Spin className={styles.spinner} size='large' />
+          <LoadingSpinner className={styles.spinner} />
           <h2 className={styles.title}>
             {messages.title} <i className='emoji xl sign-of-the-horns' />
           </h2>

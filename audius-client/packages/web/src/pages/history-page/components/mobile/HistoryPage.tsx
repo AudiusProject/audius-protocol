@@ -1,10 +1,10 @@
 import React, { memo, useEffect, useCallback, useContext } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 
 import { ID, UID } from 'common/models/Identifiers'
 import { LineupTrack } from 'common/models/Track'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import TrackList from 'components/track/mobile/TrackList'
@@ -98,7 +98,7 @@ const HistoryPage = ({
       ) : (
         <div className={styles.trackListContainer}>
           {loading ? (
-            <Spin size='large' className={styles.spin} />
+            <LoadingSpinner className={styles.spinner} />
           ) : (
             <TrackList
               containerClassName={styles.containerClassName}
