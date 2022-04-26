@@ -37,12 +37,6 @@
   height: 72px;
   width: 72px;
 }
-.spinner :global(.ant-spin-dot) {
-  height: 72px;
-  width: 72px;
-}
-.spinner :global(.ant-spin-dot i) {
-  width: 36px;
-  height: 36px;
-  background-color: var(--secondary) !important;
+.spinner g path {
+  stroke: var(--secondary) !important;
 }

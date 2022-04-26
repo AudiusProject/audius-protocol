@@ -6,7 +6,6 @@ import React, {
   useCallback
 } from 'react'
 
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -31,6 +30,7 @@ import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -262,7 +262,7 @@ const ExplorePage = ({
       </TabBodyHeader>,
       <TabBodyHeader key='featuredPlaylists' title={messages.featuredPlaylists}>
         {status === Status.LOADING ? (
-          <Spin size='large' className={styles.spin} />
+          <LoadingSpinner className={styles.spinner} />
         ) : (
           <CardLineup
             containerClassName={styles.lineupContainer}
@@ -273,7 +273,7 @@ const ExplorePage = ({
       </TabBodyHeader>,
       <TabBodyHeader key='featuredArtists' title={messages.featuredArtists}>
         {status === Status.LOADING ? (
-          <Spin size='large' className={styles.spin} />
+          <LoadingSpinner className={styles.spinner} />
         ) : (
           <CardLineup
             containerClassName={styles.lineupContainer}

@@ -13,7 +13,6 @@ import {
   IconRocket
 } from '@audius/stems'
 import Input from 'antd/lib/input'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
@@ -25,6 +24,7 @@ import { squashNewLines } from 'common/utils/formatUtil'
 import { formatSecondsAsText, formatDate } from 'common/utils/timeUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -278,7 +278,7 @@ const OwnerNotPublishedButtons = props => {
           }
           leftIcon={
             props.isPublishing ? (
-              <Spin className={styles.spinner} />
+              <LoadingSpinner className={styles.spinner} />
             ) : (
               <IconRocket />
             )

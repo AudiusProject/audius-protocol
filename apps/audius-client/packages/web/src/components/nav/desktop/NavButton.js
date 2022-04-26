@@ -7,9 +7,10 @@ import {
   IconFollow,
   IconUpload
 } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './NavButton.module.css'
 
@@ -56,7 +57,7 @@ class NavButton extends Component {
             type={ButtonType.COMMON_ALT}
             size={ButtonSize.SMALL}
             text='Uploading...'
-            leftIcon={<Spin className={styles.spinner} />}
+            leftIcon={<LoadingSpinner className={styles.spinner} />}
             onClick={onUpload}
           />
         )

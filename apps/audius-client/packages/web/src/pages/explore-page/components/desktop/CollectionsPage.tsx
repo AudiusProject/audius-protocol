@@ -1,7 +1,5 @@
 import React, { useCallback, MouseEvent } from 'react'
 
-import Spin from 'antd/lib/spin'
-
 import { UserCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
@@ -9,6 +7,7 @@ import ArtistPopover from 'components/artist/ArtistPopover'
 import Card from 'components/card/desktop/Card'
 import Header from 'components/header/desktop/Header'
 import CardLineup from 'components/lineup/CardLineup'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import {
@@ -144,7 +143,7 @@ const CollectionsPage = ({
       header={header}
     >
       {status === Status.LOADING ? (
-        <Spin size='large' className={styles.spin} />
+        <LoadingSpinner className={styles.spinner} />
       ) : (
         <CardLineup cards={cards} cardsClassName={styles.cardsContainer} />
       )}

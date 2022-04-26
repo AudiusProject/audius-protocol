@@ -1,6 +1,5 @@
 import React, { Suspense, Component, useMemo } from 'react'
 
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { each } from 'lodash'
@@ -17,6 +16,7 @@ import { User } from 'common/models/User'
 import { getTheme } from 'common/store/ui/theme/selectors'
 import { formatCount } from 'common/utils/formatUtil'
 import Header from 'components/header/desktop/Header'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import TracksTable, { alphaSortFn } from 'components/tracks-table/TracksTable'
@@ -393,7 +393,7 @@ export class ArtistDashboardPage extends Component<
         header={header}
       >
         {!account || status === Status.LOADING ? (
-          <Spin size='large' className={styles.spin} />
+          <LoadingSpinner className={styles.spinner} />
         ) : (
           <>
             {this.renderProfileSection()}

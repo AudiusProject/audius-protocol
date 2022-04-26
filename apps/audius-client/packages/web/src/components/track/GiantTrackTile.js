@@ -11,7 +11,6 @@ import {
   IconPlay,
   IconKebabHorizontal
 } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
@@ -21,6 +20,7 @@ import { getCanonicalName } from 'common/utils/genres'
 import { formatDate, formatSeconds } from 'common/utils/timeUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -124,7 +124,11 @@ class GiantTrackTile extends PureComponent {
           type={isPublishing ? ButtonType.DISABLED : ButtonType.COMMON}
           text={isPublishing ? messages.isPublishing : messages.makePublic}
           leftIcon={
-            isPublishing ? <Spin className={styles.spinner} /> : <IconRocket />
+            isPublishing ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : (
+              <IconRocket />
+            )
           }
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
           onClick={isPublishing ? () => {} : () => makePublic(trackId)}
