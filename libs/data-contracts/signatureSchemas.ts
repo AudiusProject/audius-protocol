@@ -7,22 +7,19 @@
  * modeled off: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md
  */
 
+import type { EIP712Domain, EIP712Message, EIP712TypedData, EIP712TypeProperty, EIP712Types } from "eth-sig-util"
+
 type DomainFn = (
   chainId: number,
   contactAddress: string
-) => {
-  name: string
-  version: string
-  chainId: number
-  verifyingContract: string
-}
+) => EIP712Domain 
 
 function getDomainData(
   contractName: string,
   signatureVersion: string,
   chainId: number,
   contractAddress: string
-) {
+): EIP712Domain {
   return {
     name: contractName,
     version: signatureVersion,
@@ -292,7 +289,7 @@ export const schemas = {
   updateReplicaSet
 }
 
-type MessageSchema = Array<{ name: string; type: string }>
+type MessageSchema = ReadonlyArray<EIP712TypeProperty>
 
 function getRequestData(
   domainDataFn: DomainFn,
@@ -300,10 +297,10 @@ function getRequestData(
   contractAddress: string,
   messageTypeName: string,
   messageSchema: MessageSchema,
-  message: Record<string, unknown>
-) {
+  message: EIP712Message
+): EIP712TypedData {
   const domainData = domainDataFn(chainId, contractAddress)
-  const types: Record<string, MessageSchema> = {
+  const types: EIP712Types = {
     EIP712Domain: schemas.domain
   }
   types[messageTypeName] = messageSchema
@@ -360,13 +357,13 @@ function _getUpdateUserRequestData(
   )
 }
 
-type UserUpdateRequestFn = (
+export type UserUpdateRequestFn = (
   chainId: number,
   contactAddress: string,
   userId: number,
   newValue: unknown,
   nonce: string
-) => ReturnType<typeof _getUpdateUserRequestData>
+) => EIP712TypedData
 
 const getUpdateUserMultihashRequestData: UserUpdateRequestFn = (
   chainId,
@@ -536,7 +533,7 @@ const getAddTrackRequestData = (
   contractAddress: string,
   trackOwnerId: number,
   multihashDigest: string,
-  multihashHashFn: string,
+  multihashHashFn: number,
   multihashSize: number,
   nonce: string
 ) => {
@@ -563,7 +560,7 @@ const getUpdateTrackRequestData = (
   trackId: number,
   trackOwnerId: number,
   multihashDigest: string,
-  multihashHashFn: string,
+  multihashHashFn: number,
   multihashSize: number,
   nonce: string
 ) => {
@@ -842,7 +839,7 @@ const getCreatePlaylistRequestData = (
   playlistName: string,
   isPrivate: boolean,
   isAlbum: boolean,
-  trackIdsHash: string,
+  trackIdsHash: string | null,
   nonce: string
 ) => {
   const message = {
@@ -936,7 +933,7 @@ const getOrderPlaylistTracksRequestData = (
   chainId: number,
   contractAddress: string,
   playlistId: number,
-  trackIdsHash: string,
+  trackIdsHash: string | null,
   nonce: string
 ) => {
   const message = {
@@ -1122,7 +1119,7 @@ const getUpdateReplicaSetRequestData = (
   contractAddress: string,
   userId: number,
   primaryId: number,
-  secondaryIdsHash: number,
+  secondaryIdsHash: string | null,
   oldPrimaryId: number,
   oldSecondaryIdsHash: string,
   nonce: string
