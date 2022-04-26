@@ -75,8 +75,14 @@
   text-align: right !important;
 }
 
-.spin span i {
-  background-color: var(--secondary);
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
 }
 
 .tabBorderProvider {

@@ -19,7 +19,6 @@ import {
   PopupMenuItem,
   PopupPosition
 } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import {
   DragDropContext,
@@ -43,6 +42,7 @@ import {
 } from 'components/collectibles/components/CollectibleRow'
 import Drawer from 'components/drawer/Drawer'
 import EmbedFrame from 'components/embed-modal/components/EmbedFrame'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
@@ -571,7 +571,7 @@ const CollectiblesPage: React.FC<{
         <div className={styles.content}>
           {isLoading ? (
             <div className={styles.spinnerContainer}>
-              <Spin className={styles.spinner} size='large' />
+              <LoadingSpinner className={styles.spinner} />
             </div>
           ) : !getVisibleCollectibles().length && isUserOnTheirProfile ? (
             <div className={styles.noVisibleCollectible}>

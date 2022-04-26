@@ -36,17 +36,14 @@
   top: 92px;
 }
 
-.centeringContainer {
-  height: calc(100vh - 40px - var(--tab-height));
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-  padding-top: 20%;
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
 }
 
-.spin :global(.ant-spin-dot i) {
-  background-color: var(--secondary) !important;
+.spinner g path {
+  stroke: var(--secondary) !important;
 }
 
 .noResults {

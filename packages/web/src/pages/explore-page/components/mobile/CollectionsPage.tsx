@@ -1,7 +1,5 @@
 import React, { useContext, useEffect } from 'react'
 
-import Spin from 'antd/lib/spin'
-
 import { UserCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
@@ -9,6 +7,7 @@ import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/store/context'
 import { playlistPage, albumPage, BASE_URL, EXPLORE_PAGE } from 'utils/route'
@@ -98,7 +97,7 @@ const ExplorePage = ({
       hasDefaultHeader
     >
       {status === Status.LOADING ? (
-        <Spin size='large' className={styles.spin} />
+        <LoadingSpinner className={styles.spinner} />
       ) : (
         cards
       )}

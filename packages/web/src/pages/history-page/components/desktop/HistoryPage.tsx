@@ -1,11 +1,11 @@
 import React, { memo } from 'react'
 
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 
 import { ID } from 'common/models/Identifiers'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
@@ -106,7 +106,7 @@ const HistoryPage = ({
     >
       <div className={styles.bodyWrapper}>
         {loading ? (
-          <Spin size='large' className={styles.spin} />
+          <LoadingSpinner className={styles.spinner} />
         ) : isEmpty && !loading && !tableLoading ? (
           <EmptyTable
             primaryText='You haven’t listened to any tracks yet.'

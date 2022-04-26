@@ -37,11 +37,6 @@
   width: 16px;
 }
 
-.spinner :global(.ant-spin-dot) {
-  height: 16px;
-  width: 16px;
-}
-
-.spinner :global(.ant-spin-dot i) {
-  background-color: var(--neutral-light-4);
+.spinner g path {
+  stroke: var(--neutral-light-4) !important;
 }

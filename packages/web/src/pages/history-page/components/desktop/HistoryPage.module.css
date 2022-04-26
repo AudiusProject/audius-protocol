@@ -67,6 +67,12 @@
   overflow: hidden;
 }
 
-.spin :global(.ant-spin-dot i) {
-  background-color: var(--secondary) !important;
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
 }

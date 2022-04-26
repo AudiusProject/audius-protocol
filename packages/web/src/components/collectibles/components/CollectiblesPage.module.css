@@ -686,19 +686,13 @@
 }
 
 .spinner {
-  height: 72px;
-  width: 72px;
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
 }
 
-.spinner :global(.ant-spin-dot) {
-  height: 72px;
-  width: 72px;
-}
-
-.spinner :global(.ant-spin-dot i) {
-  width: 36px;
-  height: 36px;
-  background-color: var(--secondary) !important;
+.spinner g path {
+  stroke: var(--secondary) !important;
 }
 
 .chainIcon {

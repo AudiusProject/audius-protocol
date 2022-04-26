@@ -6,10 +6,12 @@
   padding: 16px 11px 12px;
 }
 
-.spin {
-  padding-top: 40%;
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
 }
 
-.spin :global(.ant-spin-dot i) {
-  background-color: var(--secondary) !important;
+.spinner g path {
+  stroke: var(--secondary) !important;
 }

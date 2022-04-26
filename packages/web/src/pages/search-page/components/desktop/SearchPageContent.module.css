@@ -70,8 +70,14 @@
   margin-bottom: 64px;
 }
 
-.spin :global(.ant-spin-dot i) {
-  background-color: var(--secondary) !important;
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
 }
 
 .noResults {

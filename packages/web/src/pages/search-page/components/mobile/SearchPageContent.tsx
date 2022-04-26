@@ -1,6 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import { matchPath } from 'react-router'
 import { Dispatch } from 'redux'
@@ -22,6 +21,7 @@ import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
   LeftPreset,
@@ -80,14 +80,6 @@ const TrackSearchPageMessages = {
   title2: 'Please check your spelling or try broadening your search.'
 }
 
-const Loading = () => {
-  return (
-    <div className={styles.centeringContainer}>
-      <Spin size='large' className={styles.spin} />
-    </div>
-  )
-}
-
 const NoResults = ({
   isTagSearch,
   searchText
@@ -120,7 +112,7 @@ const SearchStatusWrapper = React.memo(
       case Status.IDLE:
       case Status.LOADING:
       case Status.ERROR: // TODO
-        return <Loading />
+        return <LoadingSpinner className={styles.spinner} />
       case Status.SUCCESS:
         return children
     }

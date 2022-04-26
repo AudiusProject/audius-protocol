@@ -49,11 +49,12 @@
   font-weight: var(--font-bold);
 }
 
-.spin {
-  padding: 40% 0;
+.spinner {
+  width: 40px;
+  height: 40px;
   margin: 0 auto;
 }
 
-.spin :global(.ant-spin-dot i) {
-  background-color: var(--secondary) !important;
+.spinner g path {
+  stroke: var(--secondary) !important;
 }
