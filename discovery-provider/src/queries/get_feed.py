@@ -16,22 +16,22 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.utils.elasticdsl import es_url
 
 trackDedupeMaxMinutes = 10
 
 
 def get_feed(args):
     skip_es = request.args.get("es") == "0"
-    (limit, _) = get_pagination_vars()
-    if skip_es:
-        return get_feed_sql(args)
+    use_es = es_url and not skip_es
+    if use_es:
+        try:
+            (limit, _) = get_pagination_vars()
+            return get_feed_es(args, limit)
+        except:
+            return get_feed_sql(args)
     else:
-        return get_feed_es(args, limit)
-
-    # try:
-    #     return _es_get_feed(args, limit)
-    # except:
-    #     return _get_feed(args)
+        return get_feed_sql(args)
 
 
 def get_feed_sql(args):

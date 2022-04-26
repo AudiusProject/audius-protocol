@@ -1,34 +1,59 @@
-Run it (outside of docker)
+# es-indexer
+
+Indexes data from postgres to elasticsearch.
+
+To run in the discovery container, set env variables:
 
 ```
-export audius_elasticsearch_url=http://localhost:9200
-export audius_db_url=...
-npm i
-time ./node_modules/.bin/ts-node etl/etl.ts --drop
+audius_elasticsearch_url=http://elasticsearch:9200
+audius_elasticsearch_run_indexer=true
 ```
 
-Mapping change:
+## Rolling a new index
+
+If adding a new field, or changing an existing field mapping, the safest thing is to roll a new index:
 
 - Increment version suffix in `indexNames.ts`
-- In python code: update index name to match in `elasticdsl.py`
 - You may want to also adjust `omit_keys` in `elasticdsl.py` if adding new fields for indexing which should be removed.
 
+## How it works
 
+Program attempts to avoid any gaps by doing a "catchup" on boot... when complete it swithces to processing "batches" which are events collected from postgres LISTEN / NOTIFY.
 
-## WIP: low latency indexing
+Any error or exception will cause the program to crash and be restarted by pm2. This is inspired by the erlang "let it crash" mantra, since the startup behavior is designed to get everything into a good state.
 
-`wip` folder has new version of indexer that does low latency indexing.
+When program boots it does the following:
+
+- creates elasticsearch indexes (as described in `indexNames.ts`) if they don't exist
+- creates postgres function + triggers if they don't exist (see `setup.ts`)
+- indexer starts listening for update events + collecting in a buffer (see `listener.ts`)
+- meanwhile it does a "catchup" to backfill the index based on previous high blocknumber (`main.ts`)
+- when catchup is complete it cuts over read alias to complete index
+- after this it processes buffered events (during catchup) and processes subsequent events on a 500ms interval.
+
+## Debugging
+
+Need to add some "blocknumber" info to the health endpoint, but in the meantime:
+
+(instructions for sandbox3... subject to change):
+
+List indices:
 
 ```
-ts-node wip/main
+curl http://localhost:9200/_cat/indices?v
 ```
 
-main does the following on boot:
+Use the sql cli:
 
-* creates elasticsearch indexes if they don't exist
-* creates postgres function + triggers if they don't exist
-* indexer starts listening for update events + collecting in a buffer
-* meanwhile it does a "catchup" to backfill the index based on previous high blocknumber
-* when catchup is complete it cuts over read alias to complete index
-* after this it processes buffered events (during catchup) and processes subsequent events on a 500ms interval.
+```
+docker-compose exec elasticsearch elasticsearch-sql-cli
 
+select max(blocknumber) from users;
+select max(created_at) from users;
+```
+
+Tail the es-indexer logs:
+
+```
+docker-compose logs -f discovery | grep es-indexer
+```

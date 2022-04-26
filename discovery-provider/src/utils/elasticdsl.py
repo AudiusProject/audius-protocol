@@ -2,8 +2,11 @@ import os
 
 from elasticsearch import Elasticsearch
 
-es_url = os.getenv("audius_elasticsearch_url", "http://elasticsearch:9200")
-esclient = Elasticsearch(es_url)
+es_url = os.getenv("audius_elasticsearch_url")
+esclient = RuntimeError("no esclient because es_url is not set")
+if es_url:
+    esclient = Elasticsearch(es_url)
+
 
 # uses aliases
 ES_PLAYLISTS = "playlists"
