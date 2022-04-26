@@ -1,19 +1,18 @@
-/// <reference types="node" />
-declare module "abi-decoder" {
-  import { Log } from "web3-core"
-  import { AbiItem } from "web3-utils"
+declare module 'abi-decoder' {
+  import { Log } from 'web3-core'
+  import { AbiItem } from 'web3-utils'
 
   export interface Input {
     [index: string]: any
-    name: string;
-    type: string;
-    indexed?: boolean;
+    name: string
+    type: string
+    indexed?: boolean
   }
 
   export interface Output {
     [index: string]: any
-    name: string;
-    type: string;
+    name: string
+    type: string
   }
 
   export interface Param {
@@ -21,21 +20,20 @@ declare module "abi-decoder" {
     type: string
     value: string
   }
-  
-  export interface DecodedLog {
-    address: string,
-    name: string,
-    events: Param[],
 
+  export interface DecodedLog {
+    address: string
+    name: string
+    events: Param[]
   }
 
   export interface DecodedMethod {
-      name: string;
-      params: Param[];
+    name: string
+    params: Param[]
   }
 
   export function getABIs(): AbiItem[]
-  export function addABI (abi: AbiItem[]): void
+  export function addABI(abi: AbiItem[]): void
   export function getMethodIDs(): { [index: string]: AbiItem }
   export function decodeMethod(input: string): DecodedMethod
   export function decodeLogs(input: Log[]): DecodedLog

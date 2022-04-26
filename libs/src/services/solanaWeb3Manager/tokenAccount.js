@@ -121,7 +121,7 @@ async function createAssociatedTokenAccount ({
     }
   ]
 
-  const { blockhash } = await connection.getRecentBlockhash()
+  const { blockhash } = await connection.getLatestBlockhash()
 
   const transactionData = {
     recentBlockhash: blockhash,

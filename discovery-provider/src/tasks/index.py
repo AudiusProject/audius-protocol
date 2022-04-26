@@ -275,8 +275,7 @@ def fetch_cid_metadata(
 
     # cid -> user_id lookup to make fetching replica set more efficient
     cid_to_user_id: Dict[str, int] = {}
-
-    cid_metadata: Dict[str, str] = {}  # cid -> metadata
+    cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
     # fetch transactions
     with db.scoped_session() as session:

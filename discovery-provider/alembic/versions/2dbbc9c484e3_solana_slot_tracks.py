@@ -23,7 +23,7 @@ def upgrade():
 
             ALTER TABLE tracks DROP CONSTRAINT IF EXISTS tracks_pkey;
             UPDATE tracks
-                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10))
+                SET txhash = ('unset_' || substr(md5(random()::text), 0, 10) || substr(blockhash, 3, 13))
                 WHERE txhash='';
             ALTER TABLE tracks ADD PRIMARY KEY (is_current, track_id, txhash);
 
@@ -52,6 +52,8 @@ def downgrade():
             DELETE FROM tracks where blockhash IS NULL or blocknumber IS NULL;
             ALTER TABLE tracks ALTER COLUMN blockhash SET NOT NULL;
             ALTER TABLE tracks ALTER COLUMN blocknumber SET NOT NULL;
+
+            UPDATE tracks SET txhash = '' WHERE txhash LIKE 'unset_%%';
 
         commit;
     """
