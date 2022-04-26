@@ -19,6 +19,7 @@ sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_CLI_VERSION/install)"
 # add solana to PATH
 SET_SOL_PATH='export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"'
 if ! grep -q "$SET_SOL_PATH" "$HOME/.profile"; then
+  echo "DM HERE-setting a bunch of stuff" $SET_SOL_PATH
   TMP_SOURCE_FILE="$HOME/.tmp-anchor"
   echo "$SET_SOL_PATH" | tee -a "$HOME/.profile"
   echo "$SET_SOL_PATH" | tee -a "$TMP_SOURCE_FILE"
