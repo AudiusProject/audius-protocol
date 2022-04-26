@@ -575,6 +575,9 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         )
 
     class TestUserTransaction:
+        def __init__(self):
+            self.transactionHash = None
+
         pass
 
     blessed_tx_hash = (
