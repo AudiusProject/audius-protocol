@@ -54,15 +54,15 @@ function setup_vscode() {
     cat /proc/sys/fs/inotify/max_user_watches
 }
 
-function setup_postgres() {
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-    RELEASE=$(lsb_release -cs)
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/postgresql-pgdg.list > /dev/null
-    sudo apt-get update
-    sudo apt -y install postgresql-11
-    dpkg -l | grep postgresql
-    sudo systemctl disable postgresql # disable auto-start on boot
-}
+# function setup_postgres() {
+#     wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+#     RELEASE=$(lsb_release -cs)
+#     echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/postgresql-pgdg.list > /dev/null
+#     sudo apt-get update
+#     sudo apt -y install postgresql-11
+#     dpkg -l | grep postgresql
+#     sudo systemctl disable postgresql # disable auto-start on boot
+# }
 
 function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
@@ -88,6 +88,7 @@ function setup_docker() {
     sudo usermod -aG docker $USER
     sudo curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
+    sudo chmod 666 /var/run/docker.sock
     # prevent docker logs from eating all memory
     sudo sh -c "cat >/etc/docker/daemon.json" <<EOF
 {
@@ -168,7 +169,7 @@ function setup() {
         install_zsh_tooling
         setup_ssh_timeouts
         setup_vscode
-        setup_postgres
+        # setup_postgres
         setup_python
         setup_docker
         setup_mad_dog
