@@ -15,14 +15,11 @@ export function dialPg(): PG {
   return pool
 }
 
-
 export async function queryCursor(sql: string) {
   const client = await dialPg().connect()
   const cursor = client.query(new Cursor(sql))
   return { client, cursor }
 }
-
-
 
 let esc: ES | undefined = undefined
 export function dialEs() {
@@ -32,7 +29,6 @@ export function dialEs() {
   }
   return esc
 }
-
 
 export async function waitForHealthyCluster() {
   return dialEs().cluster.health(
@@ -86,5 +82,3 @@ function checkpointField(tableName: string) {
       return 'blocknumber'
   }
 }
-
-

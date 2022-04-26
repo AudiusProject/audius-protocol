@@ -24,11 +24,11 @@ export class PendingUpdates {
   isEmpty(): boolean {
     return (
       this.reposts.length +
-      this.saves.length +
-      this.follows.length +
-      this.userIds.size +
-      this.trackIds.size +
-      this.playlistIds.size ==
+        this.saves.length +
+        this.follows.length +
+        this.userIds.size +
+        this.trackIds.size +
+        this.playlistIds.size ==
       0
     )
   }
@@ -106,6 +106,7 @@ export async function startListener() {
     }
   })
 
+  // let process uncaughtException print and exit...
   // client.on('notice', (msg) => logger.warn(msg, 'pg_notice'))
   // client.on('error', (err) => logger.error(err, 'pg_error'))
   // client.on('end', () => logger.warn('pg end'))

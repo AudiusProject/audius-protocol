@@ -11,7 +11,7 @@ export abstract class BaseIndexer<RowType> {
   indexName: string
   logger: Logger
   rowCounter = 0
-  batchSize = 2000
+  batchSize = 1000
   mapping: IndicesCreateRequest
 
   private es: Client
@@ -123,6 +123,8 @@ export abstract class BaseIndexer<RowType> {
   async indexRows(rows: Array<RowType>) {
     if (!rows.length) return
 
+    const { es, logger } = this
+
     // with batch
     await this.withBatch(rows)
 
@@ -134,15 +136,15 @@ export abstract class BaseIndexer<RowType> {
     for (let chunk of chunks) {
       // index to es
       const body = this.buildIndexOps(chunk)
-      const got = await dialEs().bulk({ body })
+      const got = await es.bulk({ body })
 
       if (got.errors) {
         // todo: do a better job picking out error items
-        this.logger.error(got.items[0], `bulk indexing errors`)
+        logger.error(got.items[0], `bulk indexing errors`)
       }
 
       this.rowCounter += chunk.length
-      this.logger.info({
+      logger.info({
         updates: chunk.length,
         lifetime: this.rowCounter,
       })
@@ -156,7 +158,7 @@ export abstract class BaseIndexer<RowType> {
     ])
   }
 
-  async withBatch(rows: Array<RowType>) { }
+  async withBatch(rows: Array<RowType>) {}
 
-  withRow(row: RowType) { }
+  withRow(row: RowType) {}
 }

@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "ts-node src/main.ts",
-    "start": "tsc && pm2-runtime build/src/main.js",
+    "start": "tsc && pm2-runtime build/src/main.js --restart-delay=3000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

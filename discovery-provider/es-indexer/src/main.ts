@@ -7,7 +7,7 @@ import { UserIndexer } from './indexers/UserIndexer'
 import { PendingUpdates, startListener, takePending } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
-import { getBlocknumberCheckpoints } from './conn'
+import { getBlocknumberCheckpoints, waitForHealthyCluster } from './conn'
 
 export const indexer = {
   playlists: new PlaylistIndexer(),
@@ -28,21 +28,28 @@ async function processPending(pending: PendingUpdates) {
   ])
 }
 
-async function main() {
-  const indexers = Object.values(indexer)
+async function start() {
+  const health = await waitForHealthyCluster()
+  logger.info(health, 'booting')
 
-  await setupTriggers()
+  // create indexes
+  const indexers = Object.values(indexer)
   await Promise.all(indexers.map((ix) => ix.createIndex({ drop: false })))
 
+  // setup postgres trigger + listeners
+  await setupTriggers()
   await startListener()
-  const checkpoints = await getBlocknumberCheckpoints()
 
+  // backfill since last run
+  const checkpoints = await getBlocknumberCheckpoints()
   logger.info(checkpoints, 'catchup from blocknumbers')
   await Promise.all(Object.values(indexer).map((i) => i.catchup(checkpoints)))
 
+  // cutover aliases
   logger.info('catchup done... cutting over aliases')
   await Promise.all(indexers.map((ix) => ix.cutoverAlias()))
 
+  // process events
   logger.info('processing events')
   while (true) {
     const pending = takePending()
@@ -53,4 +60,22 @@ async function main() {
   }
 }
 
+async function main() {
+  try {
+    await start()
+  } catch (e) {
+    logger.fatal(e, 'save me pm2')
+    process.exit(1)
+  }
+}
+
 main()
+
+process
+  .on('unhandledRejection', (reason, promise) => {
+    logger.error({ reason, promise }, 'unhandledRejection')
+  })
+  .on('uncaughtException', (err) => {
+    logger.fatal(err, 'uncaughtException')
+    process.exit(1)
+  })
