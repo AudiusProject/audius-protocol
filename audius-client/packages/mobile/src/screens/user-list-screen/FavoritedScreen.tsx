@@ -23,7 +23,7 @@ export const FavoritedScreen = () => {
   }, [dispatchWeb, id, favoriteType])
 
   return (
-    <Screen title={messages.title} variant='secondary'>
+    <Screen title={messages.title} variant='white'>
       <UserList
         userSelector={getUserList}
         tag='FAVORITES'

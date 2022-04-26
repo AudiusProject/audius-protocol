@@ -11,6 +11,7 @@ import {
 } from 'audius-client/src/common/store/user-list/actions'
 import { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
 import { isEqual } from 'lodash'
+import { View } from 'react-native'
 import { Selector } from 'react-redux'
 
 import { FlatList } from 'app/components/core'
@@ -21,14 +22,19 @@ import { makeStyles } from 'app/styles'
 
 import { UserChip } from './UserChip'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   spinner: {
     alignSelf: 'center',
     height: spacing(8),
-    width: spacing(8)
+    width: spacing(8),
+    marginBottom: spacing(4)
   },
   emptySpinner: {
-    marginTop: spacing(6)
+    marginTop: spacing(4)
+  },
+  footer: {
+    height: spacing(8),
+    marginBottom: spacing(4)
   }
 }))
 
@@ -100,13 +106,21 @@ export const UserList = (props: UserListProps) => {
   }, [hasMore, isFocused, dispatchWeb, tag])
 
   const data =
-    isRefreshing || loading || !isFocused ? cachedUsers.current : users
+    isRefreshing || loading || !isFocused || users.length === 0
+      ? cachedUsers.current
+      : users
 
   const loadingSpinner = (
     <LoadingSpinner
       style={[styles.spinner, data.length === 0 && styles.emptySpinner]}
     />
   )
+
+  if ((loading || isRefreshing) && data.length === 0) {
+    return loadingSpinner
+  }
+
+  const footer = <View style={styles.footer} />
 
   return (
     <FlatList
@@ -116,7 +130,7 @@ export const UserList = (props: UserListProps) => {
       )}
       keyExtractor={item => item.user_id.toString()}
       onEndReached={handleEndReached}
-      ListFooterComponent={loading || isRefreshing ? loadingSpinner : null}
+      ListFooterComponent={loading || isRefreshing ? loadingSpinner : footer}
     />
   )
 }
