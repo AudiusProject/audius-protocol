@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.111",
+  "version": "1.2.112-beta.1",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,8 +33,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@audius/hedgehog": "1.0.12",
     "@audius/anchor-audius-data": "0.0.1",
+    "@audius/hedgehog": "1.0.12",
     "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
