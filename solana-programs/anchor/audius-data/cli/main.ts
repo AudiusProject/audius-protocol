@@ -340,6 +340,7 @@ program
     "-eth-pk, --eth-private-key <string>",
     "private key for message signing"
   )
+  .option("--metadata <string>", "metadata CID")
   .option("--num-tracks <integer>", "number of tracks to generate")
   .option("--num-playlists <integer>", "number of playlists to generate")
   .option("--id <integer>", "ID of entity targeted by transaction")
@@ -525,7 +526,9 @@ const main = async () => {
       break;
     }
     case functionTypes.createUser: {
-      console.log({ userId });
+      if (!options.metadata) {
+        throw new Error("Missing metadata in createUser!");
+      }
       const ethAccount = EthWeb3.eth.accounts.create();
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
@@ -559,7 +562,7 @@ const main = async () => {
         message: userSolKeypair.publicKey.toBytes(),
         userId: userId,
         bumpSeed,
-        metadata: randomCID(),
+        metadata: options.metadata,
         userSolPubkey: userSolKeypair.publicKey,
         userStorageAccount: derivedAddress,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
@@ -581,6 +584,10 @@ const main = async () => {
      * Track-related functions
      */
     case functionTypes.createTrack: {
+      if (!options.metadata) {
+        throw new Error("Missing metadata in createTrack!");
+      }
+
       const numTracks = options.numTracks ?? 1;
       console.log(
         `Number of tracks = ${numTracks}, Target User = ${options.userStoragePubkey}`
@@ -604,9 +611,9 @@ const main = async () => {
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
-              metadata: randomCID(),
+              metadata: options.metadata,
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userStorageAccountPDA: options.userStoragePubkey,
+              userStorageAccountPDA: derivedAddress,
               userAuthorityDelegateAccountPDA,
               authorityDelegationStatusAccountPDA,
             },
