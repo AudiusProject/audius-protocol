@@ -7,9 +7,22 @@
  * modeled off: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md
  */
 
-const domains = {}
+type DomainFn = (
+  chainId: number,
+  contactAddress: string
+) => {
+  name: string
+  version: string
+  chainId: number
+  verifyingContract: string
+}
 
-function getDomainData (contractName, signatureVersion, chainId, contractAddress) {
+function getDomainData(
+  contractName: string,
+  signatureVersion: string,
+  chainId: number,
+  contractAddress: string
+) {
   return {
     name: contractName,
     version: signatureVersion,
@@ -18,38 +31,51 @@ function getDomainData (contractName, signatureVersion, chainId, contractAddress
   }
 }
 
-domains.getSocialFeatureFactoryDomain = function (chainId, contractAddress) {
+const getSocialFeatureFactoryDomain: DomainFn = (chainId, contractAddress) => {
   return getDomainData('Social Feature Factory', '1', chainId, contractAddress)
 }
 
-domains.getUserFactoryDomain = function (chainId, contractAddress) {
+const getUserFactoryDomain: DomainFn = (chainId, contractAddress) => {
   return getDomainData('User Factory', '1', chainId, contractAddress)
 }
 
-domains.getTrackFactoryDomain = function (chainId, contractAddress) {
+const getTrackFactoryDomain: DomainFn = (chainId, contractAddress) => {
   return getDomainData('Track Factory', '1', chainId, contractAddress)
 }
 
-domains.getPlaylistFactoryDomain = function (chainId, contractAddress) {
+const getPlaylistFactoryDomain: DomainFn = (chainId, contractAddress) => {
   return getDomainData('Playlist Factory', '1', chainId, contractAddress)
 }
 
-domains.getUserLibraryFactoryDomain = function (chainId, contractAddress) {
+const getUserLibraryFactoryDomain: DomainFn = (chainId, contractAddress) => {
   return getDomainData('User Library Factory', '1', chainId, contractAddress)
 }
 
-domains.getIPLDBlacklistFactoryDomain = function (chainId, contractAddress) {
+const getIPLDBlacklistFactoryDomain: DomainFn = (chainId, contractAddress) => {
   return getDomainData('IPLD Blacklist Factory', '1', chainId, contractAddress)
 }
 
-domains.getUserReplicaSetManagerDomain = function (chainId, contractAddress) {
-  return getDomainData('User Replica Set Manager', '1', chainId, contractAddress)
+const getUserReplicaSetManagerDomain: DomainFn = (chainId, contractAddress) => {
+  return getDomainData(
+    'User Replica Set Manager',
+    '1',
+    chainId,
+    contractAddress
+  )
 }
 
-const schemas = {}
+export const domains = {
+  getSocialFeatureFactoryDomain,
+  getUserFactoryDomain,
+  getTrackFactoryDomain,
+  getPlaylistFactoryDomain,
+  getUserLibraryFactoryDomain,
+  getIPLDBlacklistFactoryDomain,
+  getUserReplicaSetManagerDomain
+}
 
 /* contract signing domain */
-schemas.domain = [
+const domain = [
   { name: 'name', type: 'string' },
   { name: 'version', type: 'string' },
   { name: 'chainId', type: 'uint256' },
@@ -57,33 +83,33 @@ schemas.domain = [
 ]
 
 /* user factory requests */
-schemas.addUserRequest = [
+const addUserRequest = [
   { name: 'handle', type: 'bytes16' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
 /* rather than having a schema type for every update op, we have a type for each unique
  * structure */
-schemas.updateUserBytes32 = [
+const updateUserBytes32 = [
   { name: 'userId', type: 'uint' },
   { name: 'newValue', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updateUserString = [
+const updateUserString = [
   { name: 'userId', type: 'uint' },
   { name: 'newValue', type: 'string' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updateUserBool = [
+const updateUserBool = [
   { name: 'userId', type: 'uint' },
   { name: 'newValue', type: 'bool' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
 /* track factory requests */
-schemas.addTrackRequest = [
+const addTrackRequest = [
   { name: 'trackOwnerId', type: 'uint' },
   { name: 'multihashDigest', type: 'bytes32' },
   { name: 'multihashHashFn', type: 'uint8' },
@@ -91,7 +117,7 @@ schemas.addTrackRequest = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updateTrackRequest = [
+const updateTrackRequest = [
   { name: 'trackId', type: 'uint' },
   { name: 'trackOwnerId', type: 'uint' },
   { name: 'multihashDigest', type: 'bytes32' },
@@ -100,37 +126,37 @@ schemas.updateTrackRequest = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deleteTrackRequest = [
+const deleteTrackRequest = [
   { name: 'trackId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
 /* social features */
-schemas.addTrackRepostRequest = [
+const addTrackRepostRequest = [
   { name: 'userId', type: 'uint' },
   { name: 'trackId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deleteTrackRepostRequest = schemas.addTrackRepostRequest
+const deleteTrackRepostRequest = addTrackRepostRequest
 
-schemas.addPlaylistRepostRequest = [
+const addPlaylistRepostRequest = [
   { name: 'userId', type: 'uint' },
   { name: 'playlistId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deletePlaylistRepostRequest = schemas.addPlaylistRepostRequest
+const deletePlaylistRepostRequest = addPlaylistRepostRequest
 
-schemas.userFollowRequest = [
+const userFollowRequest = [
   { name: 'followerUserId', type: 'uint' },
   { name: 'followeeUserId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deleteUserFollowRequest = schemas.userFollowRequest
+const deleteUserFollowRequest = userFollowRequest
 
-schemas.createPlaylistRequest = [
+const createPlaylistRequest = [
   { name: 'playlistOwnerId', type: 'uint' },
   { name: 'playlistName', type: 'string' },
   { name: 'isPrivate', type: 'bool' },
@@ -139,83 +165,83 @@ schemas.createPlaylistRequest = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deletePlaylistRequest = [
+const deletePlaylistRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.addPlaylistTrackRequest = [
+const addPlaylistTrackRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'addedTrackId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deletePlaylistTrackRequest = [
+const deletePlaylistTrackRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'deletedTrackId', type: 'uint' },
   { name: 'deletedTrackTimestamp', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.orderPlaylistTracksRequest = [
+const orderPlaylistTracksRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'trackIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updatePlaylistPrivacyRequest = [
+const updatePlaylistPrivacyRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'updatedPlaylistPrivacy', type: 'bool' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updatePlaylistNameRequest = [
+const updatePlaylistNameRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'updatedPlaylistName', type: 'string' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updatePlaylistCoverPhotoRequest = [
+const updatePlaylistCoverPhotoRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'playlistImageMultihashDigest', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updatePlaylistDescriptionRequest = [
+const updatePlaylistDescriptionRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'playlistDescription', type: 'string' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updatePlaylistUPCRequest = [
+const updatePlaylistUPCRequest = [
   { name: 'playlistId', type: 'uint' },
   { name: 'playlistUPC', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.trackSaveRequest = [
+const trackSaveRequest = [
   { name: 'userId', type: 'uint' },
   { name: 'trackId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deleteTrackSaveRequest = schemas.trackSaveRequest
+const deleteTrackSaveRequest = trackSaveRequest
 
-schemas.playlistSaveRequest = [
+const playlistSaveRequest = [
   { name: 'userId', type: 'uint' },
   { name: 'playlistId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.deletePlaylistSaveRequest = schemas.playlistSaveRequest
+const deletePlaylistSaveRequest = playlistSaveRequest
 
-schemas.addIPLDBlacklist = [
+const addIPLDBlacklist = [
   { name: 'multihashDigest', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
 // User replica set manager schemas
-schemas.proposeAddOrUpdateContentNode = [
+const proposeAddOrUpdateContentNode = [
   { name: 'cnodeSpId', type: 'uint' },
   { name: 'cnodeDelegateOwnerWallet', type: 'address' },
   { name: 'cnodeOwnerWallet', type: 'address' },
@@ -223,7 +249,7 @@ schemas.proposeAddOrUpdateContentNode = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
-schemas.updateReplicaSet = [
+const updateReplicaSet = [
   { name: 'userId', type: 'uint' },
   { name: 'primaryId', type: 'uint' },
   { name: 'secondaryIdsHash', type: 'bytes32' },
@@ -232,11 +258,52 @@ schemas.updateReplicaSet = [
   { name: 'nonce', type: 'bytes32' }
 ]
 
-const generators = {}
+export const schemas = {
+  domain,
+  addUserRequest,
+  updateUserBytes32,
+  updateUserString,
+  updateUserBool,
+  addTrackRequest,
+  updateTrackRequest,
+  deleteTrackRequest,
+  addTrackRepostRequest,
+  deleteTrackRepostRequest,
+  addPlaylistRepostRequest,
+  deletePlaylistRepostRequest,
+  userFollowRequest,
+  deleteUserFollowRequest,
+  createPlaylistRequest,
+  deletePlaylistRequest,
+  addPlaylistTrackRequest,
+  deletePlaylistTrackRequest,
+  orderPlaylistTracksRequest,
+  updatePlaylistPrivacyRequest,
+  updatePlaylistNameRequest,
+  updatePlaylistCoverPhotoRequest,
+  updatePlaylistDescriptionRequest,
+  updatePlaylistUPCRequest,
+  trackSaveRequest,
+  deleteTrackSaveRequest,
+  playlistSaveRequest,
+  deletePlaylistSaveRequest,
+  addIPLDBlacklist,
+  proposeAddOrUpdateContentNode,
+  updateReplicaSet
+}
 
-function getRequestData (domainDataFn, chainId, contractAddress, messageTypeName, messageSchema, message) {
+type MessageSchema = Array<{ name: string; type: string }>
+
+function getRequestData(
+  domainDataFn: DomainFn,
+  chainId: number,
+  contractAddress: string,
+  messageTypeName: string,
+  messageSchema: MessageSchema,
+  message: Record<string, unknown>
+) {
   const domainData = domainDataFn(chainId, contractAddress)
-  const types = {
+  const types: Record<string, MessageSchema> = {
     EIP712Domain: schemas.domain
   }
   types[messageTypeName] = messageSchema
@@ -249,7 +316,12 @@ function getRequestData (domainDataFn, chainId, contractAddress, messageTypeName
 }
 
 /* User Factory Generators */
-generators.getAddUserRequestData = function (chainId, contractAddress, handle, nonce) {
+const getAddUserRequestData = (
+  chainId: number,
+  contractAddress: string,
+  handle: string,
+  nonce: string
+) => {
   const message = {
     handle: handle,
     nonce: nonce
@@ -264,7 +336,15 @@ generators.getAddUserRequestData = function (chainId, contractAddress, handle, n
   )
 }
 
-function _getUpdateUserRequestData (chainId, contractAddress, messageTypeName, schema, userId, newValue, nonce) {
+function _getUpdateUserRequestData(
+  chainId: number,
+  contractAddress: string,
+  messageTypeName: string,
+  schema: MessageSchema,
+  userId: number,
+  newValue: unknown,
+  nonce: string
+) {
   const message = {
     userId: userId,
     newValue: newValue,
@@ -280,7 +360,21 @@ function _getUpdateUserRequestData (chainId, contractAddress, messageTypeName, s
   )
 }
 
-generators.getUpdateUserMultihashRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+type UserUpdateRequestFn = (
+  chainId: number,
+  contactAddress: string,
+  userId: number,
+  newValue: unknown,
+  nonce: string
+) => ReturnType<typeof _getUpdateUserRequestData>
+
+const getUpdateUserMultihashRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -292,7 +386,13 @@ generators.getUpdateUserMultihashRequestData = function (chainId, contractAddres
   )
 }
 
-generators.getUpdateUserNameRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserNameRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -304,7 +404,13 @@ generators.getUpdateUserNameRequestData = function (chainId, contractAddress, us
   )
 }
 
-generators.getUpdateUserLocationRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserLocationRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -316,7 +422,13 @@ generators.getUpdateUserLocationRequestData = function (chainId, contractAddress
   )
 }
 
-generators.getUpdateUserProfilePhotoRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserProfilePhotoRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -328,7 +440,13 @@ generators.getUpdateUserProfilePhotoRequestData = function (chainId, contractAdd
   )
 }
 
-generators.getUpdateUserCoverPhotoRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserCoverPhotoRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -340,7 +458,13 @@ generators.getUpdateUserCoverPhotoRequestData = function (chainId, contractAddre
   )
 }
 
-generators.getUpdateUserBioRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserBioRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -352,7 +476,13 @@ generators.getUpdateUserBioRequestData = function (chainId, contractAddress, use
   )
 }
 
-generators.getUpdateUserCreatorNodeRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserCreatorNodeRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -364,7 +494,13 @@ generators.getUpdateUserCreatorNodeRequestData = function (chainId, contractAddr
   )
 }
 
-generators.getUpdateUserCreatorRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserCreatorRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -376,7 +512,13 @@ generators.getUpdateUserCreatorRequestData = function (chainId, contractAddress,
   )
 }
 
-generators.getUpdateUserVerifiedRequestData = function (chainId, contractAddress, userId, newValue, nonce) {
+const getUpdateUserVerifiedRequestData: UserUpdateRequestFn = (
+  chainId,
+  contractAddress,
+  userId,
+  newValue,
+  nonce
+) => {
   return _getUpdateUserRequestData(
     chainId,
     contractAddress,
@@ -389,7 +531,15 @@ generators.getUpdateUserVerifiedRequestData = function (chainId, contractAddress
 }
 
 /* Track Factory Generators */
-generators.getAddTrackRequestData = function (chainId, contractAddress, trackOwnerId, multihashDigest, multihashHashFn, multihashSize, nonce) {
+const getAddTrackRequestData = (
+  chainId: number,
+  contractAddress: string,
+  trackOwnerId: number,
+  multihashDigest: string,
+  multihashHashFn: string,
+  multihashSize: number,
+  nonce: string
+) => {
   const message = {
     trackOwnerId: trackOwnerId,
     multihashDigest: multihashDigest,
@@ -407,7 +557,16 @@ generators.getAddTrackRequestData = function (chainId, contractAddress, trackOwn
   )
 }
 
-generators.getUpdateTrackRequestData = function (chainId, contractAddress, trackId, trackOwnerId, multihashDigest, multihashHashFn, multihashSize, nonce) {
+const getUpdateTrackRequestData = (
+  chainId: number,
+  contractAddress: string,
+  trackId: number,
+  trackOwnerId: number,
+  multihashDigest: string,
+  multihashHashFn: string,
+  multihashSize: number,
+  nonce: string
+) => {
   const message = {
     trackId: trackId,
     trackOwnerId: trackOwnerId,
@@ -426,7 +585,12 @@ generators.getUpdateTrackRequestData = function (chainId, contractAddress, track
   )
 }
 
-generators.getDeleteTrackRequestData = function (chainId, contractAddress, trackId, nonce) {
+const getDeleteTrackRequestData = (
+  chainId: number,
+  contractAddress: string,
+  trackId: number,
+  nonce: string
+) => {
   const message = {
     trackId: trackId,
     nonce: nonce
@@ -442,7 +606,13 @@ generators.getDeleteTrackRequestData = function (chainId, contractAddress, track
 }
 
 /* Social Feature Factory Generators */
-generators.getAddTrackRepostRequestData = function (chainId, contractAddress, userId, trackId, nonce) {
+const getAddTrackRepostRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  trackId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     trackId: trackId,
@@ -458,7 +628,13 @@ generators.getAddTrackRepostRequestData = function (chainId, contractAddress, us
   )
 }
 
-generators.getDeleteTrackRepostRequestData = function (chainId, contractAddress, userId, trackId, nonce) {
+const getDeleteTrackRepostRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  trackId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     trackId: trackId,
@@ -474,7 +650,13 @@ generators.getDeleteTrackRepostRequestData = function (chainId, contractAddress,
   )
 }
 
-generators.getAddPlaylistRepostRequestData = function (chainId, contractAddress, userId, playlistId, nonce) {
+const getAddPlaylistRepostRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  playlistId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     playlistId: playlistId,
@@ -490,7 +672,13 @@ generators.getAddPlaylistRepostRequestData = function (chainId, contractAddress,
   )
 }
 
-generators.getDeletePlaylistRepostRequestData = function (chainId, contractAddress, userId, playlistId, nonce) {
+const getDeletePlaylistRepostRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  playlistId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     playlistId: playlistId,
@@ -506,7 +694,13 @@ generators.getDeletePlaylistRepostRequestData = function (chainId, contractAddre
   )
 }
 
-generators.getUserFollowRequestData = function (chainId, contractAddress, followerUserId, followeeUserId, nonce) {
+const getUserFollowRequestData = (
+  chainId: number,
+  contractAddress: string,
+  followerUserId: number,
+  followeeUserId: number,
+  nonce: string
+) => {
   const message = {
     followerUserId: followerUserId,
     followeeUserId: followeeUserId,
@@ -522,7 +716,13 @@ generators.getUserFollowRequestData = function (chainId, contractAddress, follow
   )
 }
 
-generators.getDeleteUserFollowRequestData = function (chainId, contractAddress, followerUserId, followeeUserId, nonce) {
+const getDeleteUserFollowRequestData = (
+  chainId: number,
+  contractAddress: string,
+  followerUserId: number,
+  followeeUserId: number,
+  nonce: string
+) => {
   const message = {
     followerUserId: followerUserId,
     followeeUserId: followeeUserId,
@@ -538,7 +738,13 @@ generators.getDeleteUserFollowRequestData = function (chainId, contractAddress, 
   )
 }
 
-generators.getTrackSaveRequestData = function (chainId, contractAddress, userId, trackId, nonce) {
+const getTrackSaveRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  trackId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     trackId: trackId,
@@ -555,7 +761,13 @@ generators.getTrackSaveRequestData = function (chainId, contractAddress, userId,
   )
 }
 
-generators.getDeleteTrackSaveRequestData = function (chainId, contractAddress, userId, trackId, nonce) {
+const getDeleteTrackSaveRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  trackId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     trackId: trackId,
@@ -572,7 +784,13 @@ generators.getDeleteTrackSaveRequestData = function (chainId, contractAddress, u
   )
 }
 
-generators.getPlaylistSaveRequestData = function (chainId, contractAddress, userId, playlistId, nonce) {
+const getPlaylistSaveRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  playlistId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     playlistId: playlistId,
@@ -589,7 +807,13 @@ generators.getPlaylistSaveRequestData = function (chainId, contractAddress, user
   )
 }
 
-generators.getDeletePlaylistSaveRequestData = function (chainId, contractAddress, userId, playlistId, nonce) {
+const getDeletePlaylistSaveRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  playlistId: number,
+  nonce: string
+) => {
   const message = {
     userId: userId,
     playlistId: playlistId,
@@ -611,7 +835,16 @@ generators.getDeletePlaylistSaveRequestData = function (chainId, contractAddress
 /* NOTE: Ensure the value for trackIds hash is generated using the following snippet prior to calling this generator function:
  * web3New.utils.soliditySha3(web3New.eth.abi.encodeParameter('uint[]', trackIds))
  */
-generators.getCreatePlaylistRequestData = function (chainId, contractAddress, playlistOwnerId, playlistName, isPrivate, isAlbum, trackIdsHash, nonce) {
+const getCreatePlaylistRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistOwnerId: number,
+  playlistName: string,
+  isPrivate: boolean,
+  isAlbum: boolean,
+  trackIdsHash: string,
+  nonce: string
+) => {
   const message = {
     playlistOwnerId: playlistOwnerId,
     playlistName: playlistName,
@@ -631,7 +864,12 @@ generators.getCreatePlaylistRequestData = function (chainId, contractAddress, pl
   )
 }
 
-generators.getDeletePlaylistRequestData = function (chainId, contractAddress, playlistId, nonce) {
+const getDeletePlaylistRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     nonce: nonce
@@ -646,7 +884,13 @@ generators.getDeletePlaylistRequestData = function (chainId, contractAddress, pl
   )
 }
 
-generators.getAddPlaylistTrackRequestData = function (chainId, contractAddress, playlistId, addedTrackId, nonce) {
+const getAddPlaylistTrackRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  addedTrackId: number,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     addedTrackId: addedTrackId,
@@ -663,7 +907,14 @@ generators.getAddPlaylistTrackRequestData = function (chainId, contractAddress, 
   )
 }
 
-generators.getDeletePlaylistTrackRequestData = function (chainId, contractAddress, playlistId, deletedTrackId, deletedTrackTimestamp, nonce) {
+const getDeletePlaylistTrackRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  deletedTrackId: number,
+  deletedTrackTimestamp: number,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     deletedTrackId: deletedTrackId,
@@ -681,7 +932,13 @@ generators.getDeletePlaylistTrackRequestData = function (chainId, contractAddres
   )
 }
 
-generators.getOrderPlaylistTracksRequestData = function (chainId, contractAddress, playlistId, trackIdsHash, nonce) {
+const getOrderPlaylistTracksRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  trackIdsHash: string,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     trackIdsHash: trackIdsHash,
@@ -698,7 +955,13 @@ generators.getOrderPlaylistTracksRequestData = function (chainId, contractAddres
   )
 }
 
-generators.getUpdatePlaylistNameRequestData = function (chainId, contractAddress, playlistId, updatedPlaylistName, nonce) {
+const getUpdatePlaylistNameRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  updatedPlaylistName: string,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     updatedPlaylistName: updatedPlaylistName,
@@ -715,7 +978,13 @@ generators.getUpdatePlaylistNameRequestData = function (chainId, contractAddress
   )
 }
 
-generators.getUpdatePlaylistPrivacyRequestData = function (chainId, contractAddress, playlistId, updatedPlaylistPrivacy, nonce) {
+const getUpdatePlaylistPrivacyRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  updatedPlaylistPrivacy: string,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     updatedPlaylistPrivacy: updatedPlaylistPrivacy,
@@ -732,7 +1001,13 @@ generators.getUpdatePlaylistPrivacyRequestData = function (chainId, contractAddr
   )
 }
 
-generators.getUpdatePlaylistCoverPhotoRequestData = function (chainId, contractAddress, playlistId, playlistImageMultihashDigest, nonce) {
+const getUpdatePlaylistCoverPhotoRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  playlistImageMultihashDigest: string,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     playlistImageMultihashDigest: playlistImageMultihashDigest,
@@ -745,10 +1020,17 @@ generators.getUpdatePlaylistCoverPhotoRequestData = function (chainId, contractA
     contractAddress,
     'UpdatePlaylistCoverPhotoRequest',
     schemas.updatePlaylistCoverPhotoRequest,
-    message)
+    message
+  )
 }
 
-generators.getUpdatePlaylistUPCRequestData = function (chainId, contractAddress, playlistId, playlistUPC, nonce) {
+const getUpdatePlaylistUPCRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  playlistUPC: string,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     playlistUPC: playlistUPC,
@@ -761,10 +1043,17 @@ generators.getUpdatePlaylistUPCRequestData = function (chainId, contractAddress,
     contractAddress,
     'UpdatePlaylistUPCRequest',
     schemas.updatePlaylistUPCRequest,
-    message)
+    message
+  )
 }
 
-generators.getUpdatePlaylistDescriptionRequestData = function (chainId, contractAddress, playlistId, playlistDescription, nonce) {
+const getUpdatePlaylistDescriptionRequestData = (
+  chainId: number,
+  contractAddress: string,
+  playlistId: number,
+  playlistDescription: string,
+  nonce: string
+) => {
   const message = {
     playlistId: playlistId,
     playlistDescription: playlistDescription,
@@ -777,10 +1066,16 @@ generators.getUpdatePlaylistDescriptionRequestData = function (chainId, contract
     contractAddress,
     'UpdatePlaylistDescriptionRequest',
     schemas.updatePlaylistDescriptionRequest,
-    message)
+    message
+  )
 }
 
-generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, multihashDigest, nonce) {
+const addIPLDToBlacklistRequestData = (
+  chainId: number,
+  contractAddress: string,
+  multihashDigest: string,
+  nonce: string
+) => {
   const message = {
     multihashDigest: multihashDigest,
     nonce: nonce
@@ -796,15 +1091,15 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
 }
 
 /* User Replica Set Manager Generators */
-generators.getProposeAddOrUpdateContentNodeRequestData = function (
-  chainId,
-  contractAddress,
-  cnodeSpId,
-  cnodeDelegateOwnerWallet,
-  cnodeOwnerWallet,
-  proposerSpId,
-  nonce
-) {
+const getProposeAddOrUpdateContentNodeRequestData = (
+  chainId: number,
+  contractAddress: string,
+  cnodeSpId: number,
+  cnodeDelegateOwnerWallet: string,
+  cnodeOwnerWallet: string,
+  proposerSpId: number,
+  nonce: string
+) => {
   const message = {
     cnodeSpId,
     cnodeDelegateOwnerWallet,
@@ -822,16 +1117,16 @@ generators.getProposeAddOrUpdateContentNodeRequestData = function (
   )
 }
 
-generators.getUpdateReplicaSetRequestData = function (
-  chainId,
-  contractAddress,
-  userId,
-  primaryId,
-  secondaryIdsHash,
-  oldPrimaryId,
-  oldSecondaryIdsHash,
-  nonce
-) {
+const getUpdateReplicaSetRequestData = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  primaryId: number,
+  secondaryIdsHash: number,
+  oldPrimaryId: number,
+  oldSecondaryIdsHash: string,
+  nonce: string
+) => {
   const message = {
     userId,
     primaryId,
@@ -850,12 +1145,53 @@ generators.getUpdateReplicaSetRequestData = function (
   )
 }
 
+export const generators = {
+  getUpdateUserMultihashRequestData,
+  getAddUserRequestData,
+  getUpdateUserNameRequestData,
+  getUpdateUserLocationRequestData,
+  getUpdateUserProfilePhotoRequestData,
+  getUpdateUserCoverPhotoRequestData,
+  getUpdateUserBioRequestData,
+  getUpdateUserCreatorNodeRequestData,
+  getUpdateUserCreatorRequestData,
+  getUpdateUserVerifiedRequestData,
+  getAddTrackRequestData,
+  getUpdateTrackRequestData,
+  getDeleteTrackRequestData,
+  getAddTrackRepostRequestData,
+  getDeleteTrackRepostRequestData,
+  getAddPlaylistRepostRequestData,
+  getDeletePlaylistRepostRequestData,
+  getUserFollowRequestData,
+  getDeleteUserFollowRequestData,
+  getTrackSaveRequestData,
+  getDeleteTrackSaveRequestData,
+  getPlaylistSaveRequestData,
+  getDeletePlaylistSaveRequestData,
+  getCreatePlaylistRequestData,
+  getDeletePlaylistRequestData,
+  getAddPlaylistTrackRequestData,
+  getDeletePlaylistTrackRequestData,
+  getOrderPlaylistTracksRequestData,
+  getUpdatePlaylistNameRequestData,
+  getUpdatePlaylistPrivacyRequestData,
+  getUpdatePlaylistCoverPhotoRequestData,
+  getUpdatePlaylistUPCRequestData,
+  getUpdatePlaylistDescriptionRequestData,
+  addIPLDToBlacklistRequestData,
+  getProposeAddOrUpdateContentNodeRequestData,
+  getUpdateReplicaSetRequestData
+}
+
+type NodeCrypto = { randomBytes: (size: number) => Buffer }
+
 /** Return a secure random hex string of nChar length in a browser-compatible way
  *  Taken from https://stackoverflow.com/questions/37378237/how-to-generate-a-random-token-of-32-bit-in-javascript
  */
-function browserRandomHash (nChar) {
+function browserRandomHash(nChar: number) {
   // convert number of characters to number of bytes
-  const nBytes = Math.ceil(nChar = (+nChar || 8) / 2)
+  const nBytes = Math.ceil((nChar = (+nChar || 8) / 2))
 
   // create a typed array of that many bytes
   const u = new Uint8Array(nBytes)
@@ -864,7 +1200,7 @@ function browserRandomHash (nChar) {
   window.crypto.getRandomValues(u)
 
   // convert it to an Array of Strings (e.g. '01', 'AF', ..)
-  const zpad = function (str) {
+  const zpad = function (str: string) {
     return '00'.slice(str.length) + str
   }
   const a = Array.prototype.map.call(u, function (x) {
@@ -882,20 +1218,19 @@ function browserRandomHash (nChar) {
 
 // We need to detect whether the nodejs crypto module is available to determine how to
 // generate secure random numbers below
-let nodeCrypto
+let nodeCrypto: NodeCrypto | null
+
 try {
   nodeCrypto = require('crypto')
 } catch (e) {
   nodeCrypto = null
 }
 
-function getNonce () {
+export function getNonce() {
   // detect whether we are in browser or in nodejs, and use the correct csprng
   if (typeof window === 'undefined' || window === null) {
-    return '0x' + nodeCrypto.randomBytes(32).toString('hex')
+    return '0x' + (nodeCrypto as NodeCrypto).randomBytes(32).toString('hex')
   } else {
     return '0x' + browserRandomHash(64)
   }
 }
-
-module.exports = { domains, schemas, generators, getNonce }
