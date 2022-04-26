@@ -366,8 +366,8 @@ export class CreatorNode {
     if (coverArtResp) {
       metadata.cover_art_sizes = coverArtResp.dirCID
     }
-    // Creates new track entity on creator node, making track's metadata available on IPFS
-    // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
+    // Creates new track entity on creator node, making track's metadata available
+    // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
     const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
     return { ...metadataResp, ...trackContentResp }
   }
