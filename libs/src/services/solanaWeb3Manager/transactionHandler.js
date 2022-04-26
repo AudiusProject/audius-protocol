@@ -1,11 +1,9 @@
 const SolanaUtils = require('./utils')
-const {
-  Transaction,
-} = require('@solana/web3.js')
+const { Transaction } = require('@solana/web3.js')
 
 // TODO: move this into a util
 async function delay (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -31,7 +29,16 @@ class TransactionHandler {
    * }
    * @memberof TransactionHandler
    */
-  constructor ({ connection, useRelay, identityService = null, feePayerKeypairs = null, skipPreflight = true, retryTimeoutMs = 60000, pollingFrequencyMs = 300, sendingFrequencyMs = 300 }) {
+  constructor ({
+    connection,
+    useRelay,
+    identityService = null,
+    feePayerKeypairs = null,
+    skipPreflight = true,
+    retryTimeoutMs = 60000,
+    pollingFrequencyMs = 300,
+    sendingFrequencyMs = 300
+  }) {
     this.connection = connection
     this.useRelay = useRelay
     this.identityService = identityService
@@ -60,12 +67,35 @@ class TransactionHandler {
    * @returns {Promise<HandleTransactionReturn>}
    * @memberof TransactionHandler
    */
-  async handleTransaction ({ instructions, errorMapping = null, recentBlockhash = null, logger = console, skipPreflight = null, feePayerOverride = null, sendBlockhash = true, retry = false }) {
+  async handleTransaction ({
+    instructions,
+    errorMapping = null,
+    recentBlockhash = null,
+    logger = console,
+    skipPreflight = null,
+    feePayerOverride = null,
+    sendBlockhash = true,
+    retry = false
+  }) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, recentBlockhash, skipPreflight, feePayerOverride, sendBlockhash, retry)
+      result = await this._relayTransaction(
+        instructions,
+        recentBlockhash,
+        skipPreflight,
+        feePayerOverride,
+        sendBlockhash,
+        retry
+      )
     } else {
-      result = await this._locallyConfirmTransaction(instructions, recentBlockhash, logger, skipPreflight, feePayerOverride, retry)
+      result = await this._locallyConfirmTransaction(
+        instructions,
+        recentBlockhash,
+        logger,
+        skipPreflight,
+        feePayerOverride,
+        retry
+      )
     }
     if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
@@ -73,40 +103,62 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction (instructions, recentBlockhash, skipPreflight, feePayerOverride = null, sendBlockhash, retry) {
+  async _relayTransaction (
+    instructions,
+    recentBlockhash,
+    skipPreflight,
+    feePayerOverride = null,
+    sendBlockhash,
+    retry
+  ) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
 
     const transactionData = {
       instructions: relayable,
-      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+      skipPreflight:
+        skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null,
       retry
     }
 
     if (sendBlockhash) {
-      transactionData.recentBlockhash = (recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash)
+      transactionData.recentBlockhash =
+        recentBlockhash ||
+        (await this.connection.getLatestBlockhash('confirmed')).blockhash
     }
 
     try {
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
     } catch (e) {
-      const error = (e.response && e.response.data && e.response.data.error) || e.message
+      const error =
+        (e.response && e.response.data && e.response.data.error) || e.message
       const errorCode = this._parseSolanaErrorCode(error)
       return { res: null, error, errorCode }
     }
   }
 
-  async _locallyConfirmTransaction (instructions, recentBlockhash, logger, skipPreflight, feePayerOverride = null, retry) {
+  async _locallyConfirmTransaction (
+    instructions,
+    recentBlockhash,
+    logger,
+    skipPreflight,
+    feePayerOverride = null,
+    retry
+  ) {
     const feePayerKeypairOverride = (() => {
       if (feePayerOverride && this.feePayerKeypairs) {
         const stringFeePayer = feePayerOverride.toString()
-        return this.feePayerKeypairs.find(keypair => keypair.publicKey.toString() === stringFeePayer)
+        return this.feePayerKeypairs.find(
+          (keypair) => keypair.publicKey.toString() === stringFeePayer
+        )
       }
       return null
     })()
 
-    const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
+    const feePayerAccount =
+      feePayerKeypairOverride ||
+      (this.feePayerKeypairs && this.feePayerKeypairs[0])
     if (!feePayerAccount) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
@@ -117,17 +169,20 @@ class TransactionHandler {
     }
 
     // Get blockhash
-    recentBlockhash = recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash
+    recentBlockhash =
+      recentBlockhash ||
+      (await this.connection.getLatestBlockhash('confirmed')).blockhash
 
     // Construct the txn
     const tx = new Transaction({ recentBlockhash })
-    instructions.forEach(i => tx.add(i))
+    instructions.forEach((i) => tx.add(i))
     tx.sign(feePayerAccount)
     const rawTransaction = tx.serialize()
 
     // Send the txn
     const txid = await this.connection.sendRawTransaction(rawTransaction, {
-      skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+      skipPreflight:
+        skipPreflight === null ? this.skipPreflight : skipPreflight,
       commitment: 'processed',
       preflightCommitment: 'processed', // TODO: do we want this?
       maxRetries: retry ? 0 : undefined
@@ -137,16 +192,22 @@ class TransactionHandler {
 
     const startTime = Date.now()
     if (retry) {
-      (async () => {
+      ;(async () => {
         let elapsed = Date.now() - startTime
+        let sendCount = 0
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
           this.connection.sendAndConfirmTransaction(rawTransaction, {
-            skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
+            skipPreflight:
+              skipPreflight === null ? this.skipPreflight : skipPreflight,
             commitment: 'processed',
             preflightCommitment: 'processed', // TODO: do we want this?
             maxRetries: retry ? 0 : undefined
           })
+          sendCount++
+          if (sendCount % 10 === 0) {
+            this.logger.info(`Send count ${sendCount}`)
+          }
           await delay(this.this.sendingFrequencyMs)
           elapsed = Date.now() - startTime
         }
@@ -203,13 +264,14 @@ class TransactionHandler {
     let done = false
 
     const result = await new Promise((resolve, reject) => {
-      (async () => {
+      ;(async () => {
         // Setup timeout if nothing else finishes
         setTimeout(() => {
           if (done) {
             return
           }
           done = true
+          this.logger.warning('Timed out in await!')
           reject(new Error(`Timed out for txid ${txid}`))
         }, this.retryTimeoutMs)
 
@@ -220,8 +282,10 @@ class TransactionHandler {
             (result) => {
               done = true
               if (result.err) {
+                this.logger.warning('Error in onSignature')
                 reject(result.err)
               } else {
+                this.logger.warning('Success in onSignature!')
                 resolve(result)
               }
             },
@@ -233,30 +297,58 @@ class TransactionHandler {
         }
 
         // Setup polling
+        let pollCount = 0
         while (!done) {
-          (async () => {
+          ;(async () => {
             try {
-              const signatureStatuses = await this.connection.getSignatureStatuses([txid])
+              if (pollCount % 10 === 0) {
+                this.logger.info(`Poll count: ${pollCount}`)
+              }
+              pollCount++
+
+              const signatureStatuses =
+                await this.connection.getSignatureStatuses([txid])
               const result = signatureStatuses?.value[0]
               // Early return this iteration if done or no result
-              if (done || !result) return
+              if (done || !result) {
+                this.logger.warning(
+                  'Early return in polling from done or no result'
+                )
+                return
+              }
 
               // End loop if error
               if (result.err) {
-                this.logger.error(`transactionHandler | polling error: ${result.err}, tx: ${txid}`)
+                this.logger.error(
+                  `transactionHandler | polling error: ${result.err}, tx: ${txid}`
+                )
                 done = true
                 reject(result.err)
               }
 
               // Early return if response without confirmation
-              if (!(result.confirmations || result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized')) return
+              if (
+                !(
+                  result.confirmations ||
+                  result.confirmationStatus === 'confirmed' ||
+                  result.confirmationStatus === 'finalized'
+                )
+              ) {
+                this.logger.warning(
+                  'Early return in polling from missing confirmations'
+                )
+                return
+              }
 
               // Otherwise, we made it
               done = true
+              this.logger.info('Success in polling route!')
               resolve(result)
             } catch (e) {
               if (!done) {
-                this.logger.error(`REST polling connection error: ${e}, tx: ${txid}`)
+                this.logger.error(
+                  `REST polling connection error: ${e}, tx: ${txid}`
+                )
               }
             }
           })()
