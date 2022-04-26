@@ -1,8 +1,9 @@
 import { Client } from '@elastic/elasticsearch'
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
+import { chunk } from 'lodash'
 import pino, { Logger } from 'pino'
-import { dialPg, queryCursor, dialEs } from '../../etl/conn'
-import { BlocknumberCheckpoint } from '../../etl/job'
+import { dialPg, queryCursor, dialEs } from '../conn'
+import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 
 export abstract class BaseIndexer<RowType> {
   tableName: string
@@ -128,20 +129,24 @@ export abstract class BaseIndexer<RowType> {
     // with row
     rows.forEach((r) => this.withRow(r))
 
-    // index to es
-    const body = this.buildIndexOps(rows)
-    const got = await dialEs().bulk({ body })
+    const chunks = chunk(rows, this.batchSize)
 
-    if (got.errors) {
-      // todo: do a better job picking out error items
-      this.logger.error(got.items[0], `bulk indexing errors`)
+    for (let chunk of chunks) {
+      // index to es
+      const body = this.buildIndexOps(chunk)
+      const got = await dialEs().bulk({ body })
+
+      if (got.errors) {
+        // todo: do a better job picking out error items
+        this.logger.error(got.items[0], `bulk indexing errors`)
+      }
+
+      this.rowCounter += chunk.length
+      this.logger.info({
+        updates: chunk.length,
+        lifetime: this.rowCounter,
+      })
     }
-
-    this.rowCounter += rows.length
-    this.logger.info({
-      updates: rows.length,
-      lifetime: this.rowCounter,
-    })
   }
 
   buildIndexOps(rows: RowType[]) {
@@ -151,7 +156,7 @@ export abstract class BaseIndexer<RowType> {
     ])
   }
 
-  async withBatch(rows: Array<RowType>) {}
+  async withBatch(rows: Array<RowType>) { }
 
-  withRow(row: RowType) {}
+  withRow(row: RowType) { }
 }

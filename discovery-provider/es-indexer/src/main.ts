@@ -1,5 +1,4 @@
-import { getBlocknumberCheckpoints } from '../etl/jobRunner'
-import { RepostDoc, SaveDoc } from '../types/docs'
+import { RepostDoc, SaveDoc } from './types/docs'
 import { PlaylistIndexer } from './indexers/PlaylistIndexer'
 import { RepostIndexer } from './indexers/RepostIndexer'
 import { SaveIndexer } from './indexers/SaveIndexer'
@@ -8,6 +7,7 @@ import { UserIndexer } from './indexers/UserIndexer'
 import { PendingUpdates, startListener, takePending } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
+import { getBlocknumberCheckpoints } from './conn'
 
 export const indexer = {
   playlists: new PlaylistIndexer(),
@@ -17,8 +17,8 @@ export const indexer = {
   users: new UserIndexer(),
 }
 
-export async function processPending(pending: PendingUpdates) {
-  Promise.all([
+async function processPending(pending: PendingUpdates) {
+  return Promise.all([
     indexer.playlists.indexIds(Array.from(pending.playlistIds)),
     indexer.tracks.indexIds(Array.from(pending.trackIds)),
     indexer.users.indexIds(Array.from(pending.userIds)),
@@ -28,13 +28,13 @@ export async function processPending(pending: PendingUpdates) {
   ])
 }
 
-async function start() {
+async function main() {
   const indexers = Object.values(indexer)
 
   await setupTriggers()
   await Promise.all(indexers.map((ix) => ix.createIndex({ drop: false })))
 
-  startListener()
+  await startListener()
   const checkpoints = await getBlocknumberCheckpoints()
 
   logger.info(checkpoints, 'catchup from blocknumbers')
@@ -50,18 +50,6 @@ async function start() {
       await processPending(pending)
     }
     await new Promise((r) => setTimeout(r, 500))
-  }
-}
-
-async function main() {
-  let errorCount = 0
-  while (true) {
-    try {
-      await start()
-    } catch (e) {
-      logger.error(e, `es-indexer exception #${errorCount}`)
-      await new Promise((r) => setTimeout(r, 1000))
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { dialPg } from '../etl/conn'
+import { dialPg } from './conn'
 import { logger } from './logger'
 
 export const LISTEN_TABLES = [
@@ -34,6 +34,7 @@ $$ language plpgsql;
 
 export async function setupTriggers() {
   const client = await dialPg().connect()
+  const tables = LISTEN_TABLES
 
   const count = await client.query(`
     SELECT count(*)
@@ -41,13 +42,11 @@ export async function setupTriggers() {
     WHERE routine_name = '${functionName}';`)
   let skip = count.rows[0].count == 1
 
-  skip = false
+  // skip = false
 
   if (skip) {
     logger.info(`function ${functionName} already exists... skipping`)
   } else {
-    const tables = LISTEN_TABLES
-
     // drop existing triggers
     logger.info({ tables }, `dropping any existing triggers`)
     await Promise.all(
@@ -66,9 +65,9 @@ export async function setupTriggers() {
       await Promise.all(
         tables.map((t) =>
           client.query(`
-          create trigger trg_${t}
-            after insert or update on ${t}
-            for each row execute procedure ${functionName}();`)
+        create trigger trg_${t}
+          after insert or update on ${t}
+          for each row execute procedure ${functionName}();`)
         )
       )
     }

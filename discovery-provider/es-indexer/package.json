@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "ts-node wip/main.ts",
+    "dev": "ts-node src/main.ts",
+    "start": "tsc && pm2-runtime build/src/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -22,6 +23,7 @@
     "lodash": "^4.17.21",
     "pg": "^8.7.3",
     "pg-cursor": "^2.7.3",
-    "pino": "^7.10.0"
+    "pino": "^7.10.0",
+    "pm2": "^5.2.0"
   }
 }

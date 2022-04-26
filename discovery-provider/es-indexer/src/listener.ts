@@ -7,7 +7,7 @@ import {
   SaveRow,
   TrackRow,
   UserRow,
-} from '../types/db'
+} from './types/db'
 import { Client } from 'pg'
 import { logger } from './logger'
 import { LISTEN_TABLES } from './setup'
@@ -24,11 +24,11 @@ export class PendingUpdates {
   isEmpty(): boolean {
     return (
       this.reposts.length +
-        this.saves.length +
-        this.follows.length +
-        this.userIds.size +
-        this.trackIds.size +
-        this.playlistIds.size ==
+      this.saves.length +
+      this.follows.length +
+      this.userIds.size +
+      this.trackIds.size +
+      this.playlistIds.size ==
       0
     )
   }
@@ -93,11 +93,8 @@ export async function startListener() {
   let connectionString = process.env.audius_db_url
   const client = new Client({ connectionString, application_name: 'es-listen' })
   await client.connect()
-
   const tables = LISTEN_TABLES
   const sql = tables.map((t) => `LISTEN ${t}; `).join(' ')
-  await client.query(sql)
-  logger.info({ tables }, 'LISTEN')
 
   client.on('notification', (msg) => {
     const body = JSON.parse(msg.payload)
@@ -109,9 +106,12 @@ export async function startListener() {
     }
   })
 
-  client.on('notice', (msg) => console.warn('notice:', msg))
-  client.on('error', (err) => console.error('error:', err.stack))
-  client.on('end', () => console.warn('pg end'))
+  // client.on('notice', (msg) => logger.warn(msg, 'pg_notice'))
+  // client.on('error', (err) => logger.error(err, 'pg_error'))
+  // client.on('end', () => logger.warn('pg end'))
+
+  await client.query(sql)
+  logger.info({ tables }, 'LISTEN')
 
   // process.on('SIGINT', async function () {
   //   console.log('Caught interrupt signal')

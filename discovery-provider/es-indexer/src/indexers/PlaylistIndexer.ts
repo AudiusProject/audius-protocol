@@ -1,9 +1,9 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
 import { keyBy } from 'lodash'
-import { dialPg } from '../../etl/conn'
-import { indexNames } from '../../etl/indexNames'
-import { BlocknumberCheckpoint } from '../../etl/job'
-import { PlaylistDoc } from '../../types/docs'
+import { dialPg } from '../conn'
+import { indexNames } from '../indexNames'
+import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
+import { PlaylistDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {

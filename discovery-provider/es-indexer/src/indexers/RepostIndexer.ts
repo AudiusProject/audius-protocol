@@ -1,7 +1,7 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { indexNames } from '../../etl/indexNames'
-import { BlocknumberCheckpoint } from '../../etl/job'
-import { RepostDoc } from '../../types/docs'
+import { indexNames } from '../indexNames'
+import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
+import { RepostDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class RepostIndexer extends BaseIndexer<RepostDoc> {
