@@ -233,6 +233,8 @@ class AsyncProcessingQueue {
 
       throw e
     }
+
+    return response
   }
 
   /**
