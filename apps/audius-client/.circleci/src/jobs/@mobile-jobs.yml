@@ -48,7 +48,7 @@ mobile-build-production-web-app:
   working_directory: ~/audius-client
   docker:
     - image: circleci/node:14.18
-  resource_class: large
+  resource_class: xlarge
   steps:
     - mobile-build-web-app:
         build-type: "mobile-prod"
@@ -57,7 +57,7 @@ mobile-build-staging-web-app:
   working_directory: ~/audius-client
   docker:
     - image: circleci/node:14.18
-  resource_class: large
+  resource_class: xlarge
   steps:
     - mobile-build-web-app:
         build-type: "mobile-stage"
