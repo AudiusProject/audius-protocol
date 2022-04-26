@@ -77,7 +77,8 @@ def get_feed_es(args, limit=10):
                                 following_ids_terms_lookup("owner_id"),
                                 {"term": {"is_unlisted": False}},
                                 {"term": {"is_delete": False}},
-                            ]
+                            ],
+                            "must_not": [{"exists": {"field": "stem_of"}}],
                         }
                     },
                     "size": limit,
@@ -152,7 +153,10 @@ def get_feed_es(args, limit=10):
         key=lambda entry: entry["created_at"],
         reverse=True,
     )
-    sorted_with_reposts = sorted_with_reposts[0:limit]
+
+    # take a "soft limit" here.  Some tracks / reposts might get filtered out below
+    # if is_delete
+    sorted_with_reposts = sorted_with_reposts[0 : limit * 2]
 
     mget_reposts = []
     keyed_reposts = {}
@@ -178,6 +182,15 @@ def get_feed_es(args, limit=10):
                 continue
             s = doc["_source"]
             s["item_key"] = item_key(s)
+            if (
+                s.get("is_delete")
+                or s.get("is_private")
+                or s.get("is_unlisted")
+                or s.get("stem_of")
+            ):
+                # MISSING: skip reposts for delete, private, unlisted, stem_of
+                # this is why we took soft limit above
+                continue
             keyed_reposts[s["item_key"]] = s
 
     # replace repost with underlying items

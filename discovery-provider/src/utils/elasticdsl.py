@@ -5,11 +5,12 @@ from elasticsearch import Elasticsearch
 es_url = os.getenv("audius_elasticsearch_url", "http://elasticsearch:9200")
 esclient = Elasticsearch(es_url)
 
-ES_PLAYLISTS = "playlists1"
-ES_REPOSTS = "reposts1"
-ES_SAVES = "saves1"
-ES_TRACKS = "tracks1"
-ES_USERS = "users1"
+# uses aliases
+ES_PLAYLISTS = "playlists"
+ES_REPOSTS = "reposts"
+ES_SAVES = "saves"
+ES_TRACKS = "tracks"
+ES_USERS = "users"
 
 
 def listify(things):
