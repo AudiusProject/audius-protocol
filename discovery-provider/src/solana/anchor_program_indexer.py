@@ -97,6 +97,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
 
             # Find user ids in DB and create dictionary mapping
             entity_ids = self.extract_ids(parsed_transactions)
+            self.msg(f"entity_ids {entity_ids}")
             db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
             if entity_ids["users"]:
                 existing_users = (
@@ -128,6 +129,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             instructions = transaction["tx_metadata"]["instructions"]
             for instruction in instructions:
                 instruction_name = instruction.get("instruction_name")
+                self.msg(f"Processing instruction {instruction_name}")
                 if instruction_name in transaction_handlers:
                     transaction_handlers[instruction_name](
                         session,
@@ -139,6 +141,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     )
 
         self.invalidate_old_records(session, db_models)
+        self.msg(f"Saving {records}")
         session.bulk_save_objects(records)
 
     def invalidate_old_records(self, session: Session, db_models: Dict[str, Dict]):
@@ -162,8 +165,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "update_admin":
                     pass
                 elif instruction_name == "init_user":
-                    # No action to be taken here
-                    pass
+                    user_id = instruction.get("data").get("user_id")
+                    entities["users"].add(user_id)
 
                 elif instruction_name == "init_user_sol":
                     # TODO: parse the tx data for their user id and fetch

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
-from sqlalchemy.orm.session import Session
+from sqlalchemy.orm.session import Session, make_transient
 from src.models.models import Track, User
 from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.solana_transaction_types import TransactionInfoResult
@@ -75,7 +75,6 @@ def handle_init_user(
     records: List[Any],
 ):
     # NOTE: Not sure if we should update the user's model until they claim account
-    # user_id = instruction.get("data").get("id")
     # existing_user = db_models.get("users", {}).get(user_id)
     # user = User(**existing_user.asdict())
     # user.slot = transaction["result"]["slot"]
@@ -87,6 +86,34 @@ def handle_init_user(
     # metadata_cid = instruction.get('data').get('metadata')
 
     # No action to be taken here
+    instruction_data = instruction.get("data")
+    user_id = instruction_data.get("user_id")
+    slot=transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
+    user_storage_account = str(instruction.get("account_names_map").get("user"))
+
+    user_record = db_models["users"].get(user_id)[0]
+
+    # Expunge the record so it can be re-added
+    session.expunge(user_record)
+    make_transient(user_record)
+
+    user_record.user_storage_account = user_storage_account
+    user_record.txhash = txhash
+    user_record.slot = slot
+    user_record.is_current = True
+
+    # Append record to save
+    records.append(user_record)
+
+    # TODO: Resolve why uncommenting below results in is_current=False
+    # Invalidate prior records in this batch
+    # for prior_record in db_models["users"][user_id]:
+    #     prior_record.is_current = False
+
+    # Append most recent record
+    db_models["users"][user_id].append(user_record)
+
     pass
 
 
