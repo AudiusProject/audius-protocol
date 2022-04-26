@@ -17,16 +17,13 @@ rustup component add rustfmt
 # install solana
 sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_CLI_VERSION/install)"
 # add solana to PATH
-export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
-echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' | tee -a "$HOME/.profile"
 SET_SOL_PATH='export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"'
+TMP_SOURCE_FILE="$HOME/.tmp-anchor"
+echo "$SET_SOL_PATH" | tee -a "$TMP_SOURCE_FILE"
+source "$TMP_SOURCE_FILE"
+rm "$TMP_SOURCE_FILE"
 if ! grep -q "$SET_SOL_PATH" "$HOME/.profile"; then
-  echo "DM HERE-setting a bunch of stuff" $SET_SOL_PATH
-  TMP_SOURCE_FILE="$HOME/.tmp-anchor"
   echo "$SET_SOL_PATH" | tee -a "$HOME/.profile"
-  echo "$SET_SOL_PATH" | tee -a "$TMP_SOURCE_FILE"
-  source "$TMP_SOURCE_FILE"
-  rm "$TMP_SOURCE_FILE"
 fi
 # set local validator
 solana config set --url localhost
