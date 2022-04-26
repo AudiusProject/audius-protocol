@@ -149,7 +149,7 @@ const getServiceProviderMetadata = async (
     wallet
   )
   // Prefer min delegation amount if provided and greater than protocol wide amount
-  if (spMinDelegationAmount) {
+  if (!spMinDelegationAmount.isZero()) {
     if (
       minDelegationAmount === null ||
       spMinDelegationAmount.gt(minDelegationAmount)
