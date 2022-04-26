@@ -310,7 +310,7 @@ export class CreatorNode {
    * @param trackFile the audio content
    * @param coverArtFile the image content
    * @param metadata the metadata for the track
-   * @param onProgress an optional on progerss callback
+   * @param onProgress an optional on progress callback
    */
   async uploadTrackContent(
     trackFile: File,
@@ -366,8 +366,8 @@ export class CreatorNode {
     if (coverArtResp) {
       metadata.cover_art_sizes = coverArtResp.dirCID
     }
-    // Creates new track entity on creator node, making track's metadata available on IPFS
-    // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
+    // Creates new track entity on creator node, making track's metadata available
+    // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
     const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
     return { ...metadataResp, ...trackContentResp }
   }
@@ -445,7 +445,7 @@ export class CreatorNode {
       file,
       '/image_upload',
       onProgress,
-      { square: square },
+      { square },
       /* retries */ undefined,
       timeoutMs
     )
@@ -873,7 +873,7 @@ export class CreatorNode {
     const formData = new FormData()
     formData.append('file', file)
     Object.keys(extraFormDataOptions).forEach((key) => {
-      formData.append(key, extraFormDataOptions[key])
+      formData.append(key, `${extraFormDataOptions[key]}`)
     })
 
     let headers: Record<string, string | null> = {}

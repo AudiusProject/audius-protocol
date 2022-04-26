@@ -1,6 +1,7 @@
 import json
 
 from src.monitors import monitor_names
+from src.monitors.celery import get_celery_tasks
 from src.monitors.database import (
     get_database_connection_info,
     get_database_connections,
@@ -153,6 +154,13 @@ REDIS_TOTAL_MEMORY = {
     monitor_names.type: "int",
 }
 
+CELERY_TASKS = {
+    monitor_names.name: monitor_names.celery_tasks,
+    monitor_names.func: get_celery_tasks,
+    monitor_names.ttl: 60,
+    monitor_names.type: "json",
+}
+
 MONITORS = {
     monitor_names.database_liveness: DATABASE_LIVENESS,
     monitor_names.database_size: DATABASE_SIZE,
@@ -172,6 +180,7 @@ MONITORS = {
     monitor_names.redis_num_keys: REDIS_NUM_KEYS,
     monitor_names.redis_used_memory: REDIS_USED_MEMORY,
     monitor_names.redis_total_memory: REDIS_TOTAL_MEMORY,
+    monitor_names.celery_tasks: CELERY_TASKS,
 }
 
 

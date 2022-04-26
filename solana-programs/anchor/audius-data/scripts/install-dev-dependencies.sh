@@ -2,8 +2,8 @@
 set -euxo pipefail
 
 RUST_VERSION=1.59.0 # rustc version 1.59.0 (9d1b2106e 2022-02-23)
-SOLANA_CLI_VERSION=v1.9.1
-ANCHOR_CLI_VERSION=v0.22.1
+SOLANA_CLI_VERSION=v1.9.13
+ANCHOR_CLI_VERSION=v0.24.1
 
 cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
 echo "Installing dev deps for anchor audius-data development..."
@@ -30,6 +30,7 @@ npm i -g "@project-serum/anchor-cli@$ANCHOR_CLI_VERSION"
 anchor --version
 # install dependencies
 yarn install
+chown -R $(whoami) . # needed to resolve some weirdness...
 
 # init solana keypair
 solana-keygen new --no-bip39-passphrase --force -o "$HOME/.config/solana/id.json"

@@ -2,6 +2,7 @@
 
 const ON_DEATH = require('death')
 const EthereumWallet = require('ethereumjs-wallet')
+const { Keypair } = require('@solana/web3.js')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -88,6 +89,19 @@ const startApp = async () => {
   if (!trustedNotifierEnabled && !nodeOperatorEmailAddress) {
     exitWithError(
       'Cannot startup without a trustedNotifierID or nodeOperatorEmailAddress'
+    )
+  }
+
+  try {
+    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
+    const solDelegatePrivateKey = solDelegateKeypair.secretKey
+    config.set(
+      'solDelegatePrivateKeyBase64',
+      Buffer.from(solDelegatePrivateKey).toString('base64')
+    )
+  } catch (e: any) {
+    logger.error(
+      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
     )
   }
 

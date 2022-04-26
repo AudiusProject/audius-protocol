@@ -362,6 +362,27 @@ class BlacklistManager {
   }
 
   /**
+   * Helper function to chunk redis sadd calls. There's a max limit of 1024 * 1024 items
+   * so break this up into multiple redis add calls
+   * https://github.com/StackExchange/StackExchange.Redis/issues/201
+   * @param {string} redisKey key
+   * @param {number[] | string[] | Object} data either array of userIds, trackIds, CIDs, or <trackId: [CIDs]>
+   */
+  static async _addToRedisChunkHelper(redisKey, data) {
+    const redisAddMaxItemsSize = 100000
+    try {
+      logger.error(
+        `About to call _addToRedisChunkHelper for ${redisKey} with data of length ${data.length}`
+      )
+      for (let i = 0; i < data.length; i += redisAddMaxItemsSize) {
+        await redis.sadd(redisKey, data.slice(i, i + redisAddMaxItemsSize))
+      }
+    } catch (e) {
+      logger.error(`Unable to call _addToRedisChunkHelper for ${redisKey}`)
+    }
+  }
+
+  /**
    * Adds key with value to redis.
    * @param {string} redisKey type of value
    * @param {number[] | string[] | Object} data either array of userIds, trackIds, CIDs, or <trackId: [CIDs]>
@@ -376,7 +397,7 @@ class BlacklistManager {
           trackId = parseInt(trackId)
           const redisTrackIdToCIDsKey = this.getRedisTrackIdToCIDsKey(trackId)
           try {
-            await redis.sadd(redisTrackIdToCIDsKey, cids)
+            await this._addToRedisChunkHelper(redisTrackIdToCIDsKey, cids)
             if (expirationSec) {
               await redis.expire(redisTrackIdToCIDsKey, expirationSec)
             }
@@ -400,7 +421,7 @@ class BlacklistManager {
           for (const cid of cids) {
             const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
             try {
-              await redis.sadd(redisCIDKey, trackId)
+              await this._addToRedisChunkHelper(redisCIDKey, trackId)
             } catch (e) {
               errors.push(
                 `Unable to add ${redisCIDKey}:${trackId}: ${e.toString()}`
@@ -421,7 +442,7 @@ class BlacklistManager {
       default: {
         if (!data || data.length === 0) return
         try {
-          const resp = await redis.sadd(redisKey, data)
+          const resp = await this._addToRedisChunkHelper(redisKey, data)
           this.logDebug(`redis set add ${redisKey} response ${resp}`)
         } catch (e) {
           throw new Error(`Unable to add ${redisKey}:${data}: ${e.toString()}`)

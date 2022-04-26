@@ -4,6 +4,8 @@ from datetime import datetime
 from flask import Blueprint, request
 from src.api_helpers import success_response
 from src.queries.get_alembic_version import get_alembic_version
+from src.queries.get_celery_tasks import get_celery_tasks
+from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
@@ -138,3 +140,16 @@ def ip_check():
 def es_health():
     ok = esclient.cat.indices(v=True)
     return str(ok)
+
+
+@bp.route("/celery_tasks_check", methods=["GET"])
+def celery_tasks_check():
+    tasks = get_celery_tasks()
+    return success_response(tasks, sign_response=False)
+
+
+@bp.route("/db_seed_restore_check", methods=["GET"])
+def db_seed_restore_check():
+    has_restored, seed_hash = get_db_seed_restore_status()
+    response = {"has_restored": has_restored, "seed_hash": seed_hash}
+    return success_response(response, sign_response=False)

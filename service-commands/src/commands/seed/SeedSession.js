@@ -81,7 +81,6 @@ class SeedSession {
     const hasWallet = false
     const host =
       (typeof window !== 'undefined' && window.location.origin) || null
-    const createWAudioUserBank = true
     try {
       signUpResponse = await this.libs.Account.signUp(
         email,
@@ -91,7 +90,6 @@ class SeedSession {
         coverPhotoFile,
         hasWallet,
         host,
-        createWAudioUserBank
       )
     } catch (error) {
       console.error(error, signUpResponse)
@@ -110,6 +108,10 @@ class SeedSession {
         entropy: hedgehogEntropyKey,
         email,
         password
+      })
+      this.cache.addWalletDetails({
+        entropy: hedgehogEntropyKey,
+        privKey: this.libs.hedgehog.wallet._privKey.toString('hex')
       })
       this.cache.setActiveUser(userAlias)
       console.log(

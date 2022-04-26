@@ -10,7 +10,7 @@ import {
   updateUserReplicaSet,
   updateAdmin,
 } from "../lib/lib";
-import { findDerivedPair } from "../lib/utils";
+import { findDerivedPair, convertBNToSpIdSeed } from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   createSolanaContentNode,
@@ -20,13 +20,13 @@ import {
 const { SystemProgram } = anchor.web3;
 
 describe("replicaSet", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -36,7 +36,7 @@ describe("replicaSet", function () {
   const contentNodes = {};
 
   it("Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
@@ -44,7 +44,7 @@ describe("replicaSet", function () {
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair])
+    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
     // disable admin writes
     const updateAdminTx = updateAdmin({
       program,
@@ -53,7 +53,7 @@ describe("replicaSet", function () {
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
   });
 
   it("Creates Content Node with the Admin account", async function () {
@@ -63,7 +63,7 @@ describe("replicaSet", function () {
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
+      convertBNToSpIdSeed(spID)
     );
 
     const tx = createContentNode({
@@ -77,7 +77,7 @@ describe("replicaSet", function () {
       spID,
       ownerEthAddress: ownerEth.address,
     });
-    await provider.send(tx, [adminKeypair])
+    await provider.sendAndConfirm(tx, [adminKeypair]);
 
     const account = await program.account.contentNode.fetch(derivedAddress);
 
@@ -123,7 +123,7 @@ describe("replicaSet", function () {
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
+      convertBNToSpIdSeed(spID)
     );
     const authority = anchor.web3.Keypair.generate();
     const tx = await publicCreateOrUpdateContentNode({
@@ -151,7 +151,11 @@ describe("replicaSet", function () {
         seedBump: cn3.seedBump,
       },
     });
-    await provider.send(tx, [cn2.authority, cn4.authority, cn3.authority])
+    await provider.sendAndConfirm(tx, [
+      cn2.authority,
+      cn4.authority,
+      cn3.authority,
+    ]);
 
     const account = await program.account.contentNode.fetch(derivedAddress);
 
@@ -197,7 +201,7 @@ describe("replicaSet", function () {
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
-      Buffer.concat([Buffer.from("sp_id", "utf8"), spID.toBuffer("le", 2)])
+      convertBNToSpIdSeed(spID)
     );
     const authority = anchor.web3.Keypair.generate();
     const createTransaction = (recentBlockhash) => {
@@ -287,10 +291,8 @@ describe("replicaSet", function () {
     const cnToUpdate = contentNodes["6"];
 
     const spID = new anchor.BN(4);
-    const seed = Buffer.concat([
-      Buffer.from("sp_id", "utf8"),
-      spID.toBuffer("le", 2),
-    ]);
+    const seed = convertBNToSpIdSeed(spID);
+
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -323,7 +325,11 @@ describe("replicaSet", function () {
         seedBump: cn3.seedBump,
       },
     });
-    await provider.send(tx, [cn2.authority, cn4.authority, cn3.authority])
+    await provider.sendAndConfirm(tx, [
+      cn2.authority,
+      cn4.authority,
+      cn3.authority,
+    ]);
 
     const account = await program.account.contentNode.fetch(cnToUpdate.pda);
     expect(
@@ -340,10 +346,7 @@ describe("replicaSet", function () {
     const cnToDelete = contentNodes["6"];
 
     const spID = new anchor.BN(4);
-    const seed = Buffer.concat([
-      Buffer.from("sp_id", "utf8"),
-      spID.toBuffer("le", 2),
-    ]);
+    const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
       await findDerivedPair(
         program.programId,
@@ -385,7 +388,11 @@ describe("replicaSet", function () {
         seedBump: cn3.seedBump,
       },
     });
-    await provider.send(tx, [cn2.authority, cn4.authority, cn3.authority])
+    await provider.sendAndConfirm(tx, [
+      cn2.authority,
+      cn4.authority,
+      cn3.authority,
+    ]);
 
     // Confirm that the account is zero'd out
     // Note that there appears to be a delay in the propagation, hence the retries
@@ -422,10 +429,7 @@ describe("replicaSet", function () {
     const cn6 = contentNodes["6"];
 
     const spID = new anchor.BN(4);
-    const seed = Buffer.concat([
-      Buffer.from("sp_id", "utf8"),
-      spID.toBuffer("le", 2),
-    ]);
+    const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -438,7 +442,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       userAcct: user.pda,
-      userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+      userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       replicaSet: [2, 3, 6],
       replicaSetBumps: [
@@ -452,7 +456,7 @@ describe("replicaSet", function () {
       cn3: cn6.pda,
     });
 
-    await provider.send(tx, [cn2.authority])
+    await provider.sendAndConfirm(tx, [cn2.authority]);
 
     const updatedUser = await program.account.user.fetch(user.pda);
     expect(
@@ -467,10 +471,7 @@ describe("replicaSet", function () {
     const cn8 = contentNodes["8"];
 
     const spID = new anchor.BN(4);
-    const seed = Buffer.concat([
-      Buffer.from("sp_id", "utf8"),
-      spID.toBuffer("le", 2),
-    ]);
+    const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -483,7 +484,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       userAcct: user.pda,
-      userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
+      userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
       adminStoragePublicKey: adminStorageKeypair.publicKey,
       replicaSet: [6, 7, 8],
       replicaSetBumps: [
@@ -496,7 +497,7 @@ describe("replicaSet", function () {
       cn2: cn7.pda,
       cn3: cn8.pda,
     });
-    await provider.send(tx, [user.keypair])
+    await provider.sendAndConfirm(tx, [user.keypair]);
     const updatedUser = await program.account.user.fetch(user.pda);
     expect(
       updatedUser.replicaSet,
@@ -510,10 +511,7 @@ describe("replicaSet", function () {
     const cn8 = contentNodes["8"];
 
     const spID = new anchor.BN(4);
-    const seed = Buffer.concat([
-      Buffer.from("sp_id", "utf8"),
-      spID.toBuffer("le", 2),
-    ]);
+    const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -523,26 +521,31 @@ describe("replicaSet", function () {
     const user = await createSolanaUser(program, provider, adminStorageKeypair);
 
     await expect(
-      provider.send(updateUserReplicaSet({
-        payer: provider.wallet.publicKey,
-        program,
-        baseAuthorityAccount,
-        userAcct: user.pda,
-        userHandle: { seed: [...user.handleBytesArray], bump: user.bumpSeed },
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
-        replicaSet: [2, 7, 8],
-        replicaSetBumps: [
-          cn2.seedBump.bump,
-          cn7.seedBump.bump,
-          cn8.seedBump.bump,
-        ],
-        contentNodeAuthorityPublicKey: cn7.authority.publicKey,
-        cn1: cn2.pda,
-        cn2: cn7.pda,
-        cn3: cn8.pda,
-      }), [cn7.authority])
+      provider.sendAndConfirm(
+        updateUserReplicaSet({
+          payer: provider.wallet.publicKey,
+          program,
+          baseAuthorityAccount,
+          userAcct: user.pda,
+          userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
+          adminStoragePublicKey: adminStorageKeypair.publicKey,
+          replicaSet: [2, 7, 8],
+          replicaSetBumps: [
+            cn2.seedBump.bump,
+            cn7.seedBump.bump,
+            cn8.seedBump.bump,
+          ],
+          contentNodeAuthorityPublicKey: cn7.authority.publicKey,
+          cn1: cn2.pda,
+          cn2: cn7.pda,
+          cn3: cn8.pda,
+        }),
+        [cn7.authority]
+      )
     )
       .to.eventually.be.rejected.and.property("logs")
-      .to.include(`Program log: AnchorError occurred. Error Code: Unauthorized. Error Number: 6000. Error Message: You are not authorized to perform this action..`);
+      .to.include(
+        `Program log: AnchorError occurred. Error Code: Unauthorized. Error Number: 6000. Error Message: You are not authorized to perform this action..`
+      );
   });
 });

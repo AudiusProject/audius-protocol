@@ -3,11 +3,12 @@
  * Intended for later integration with libs
  */
 import * as anchor from "@project-serum/anchor";
-import { Program, Provider } from "@project-serum/anchor";
+import { Program } from "@project-serum/anchor";
 import { Keypair } from "@solana/web3.js";
 import { Account } from "web3-core";
 import * as secp256k1 from "secp256k1";
 import { AudiusData } from "../target/types/audius_data";
+import idll from '../target/idl/audius_data.json';
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -61,7 +62,7 @@ export type InitUserParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   ethAddress: string;
-  handleBytesArray: number[];
+  userId: anchor.BN;
   bumpSeed: number;
   metadata: string;
   userStorageAccount: anchor.web3.PublicKey;
@@ -81,7 +82,7 @@ export const initUser = ({
   payer,
   program,
   ethAddress,
-  handleBytesArray,
+  userId,
   bumpSeed,
   replicaSet,
   replicaSetBumps,
@@ -101,18 +102,18 @@ export const initUser = ({
       [...anchor.utils.bytes.hex.decode(ethAddress)],
       replicaSet,
       replicaSetBumps,
-      handleBytesArray,
+      userId.toNumber(),
       bumpSeed,
       metadata,
       {
         accounts: {
           admin: adminStorageAccount,
-          payer,
           user: userStorageAccount,
           cn1,
           cn2,
           cn3,
           authority: adminAuthorityPublicKey,
+          payer,
           systemProgram: SystemProgram.programId,
         },
       }
@@ -166,6 +167,19 @@ export const initUserSolPubkey = ({
   return tx;
 };
 
+/// Create a content node with the audius admin authority
+export type CreateContentNodeParams = {
+  payer: anchor.web3.PublicKey;
+  program: Program<AudiusData>;
+  adminPublicKey: anchor.web3.PublicKey;
+  adminStoragePublicKey: anchor.web3.PublicKey;
+  baseAuthorityAccount: anchor.web3.PublicKey;
+  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAuthority: anchor.web3.PublicKey;
+  spID: anchor.BN;
+  ownerEthAddress: string;
+};
+
 export const createContentNode = ({
   payer,
   program,
@@ -176,7 +190,7 @@ export const createContentNode = ({
   contentNodeAuthority,
   contentNodeAcct,
   ownerEthAddress,
-}: CreateContentNode) => {
+}: CreateContentNodeParams) => {
   const tx = new Transaction();
 
   tx.add(
@@ -200,7 +214,7 @@ export const createContentNode = ({
 };
 
 /// Verify user with authenticatorKeypair
-export type UpdateUserReplicaSet = {
+export type UpdateUserReplicaSetParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminStoragePublicKey: anchor.web3.PublicKey;
@@ -212,7 +226,7 @@ export type UpdateUserReplicaSet = {
   cn2: anchor.web3.PublicKey;
   cn3: anchor.web3.PublicKey;
   userAcct: anchor.web3.PublicKey;
-  userHandle: { seed: number[]; bump: number };
+  userIdSeedBump: { userId: number; bump: number };
 };
 
 export const updateUserReplicaSet = ({
@@ -223,17 +237,17 @@ export const updateUserReplicaSet = ({
   replicaSet,
   userAcct,
   replicaSetBumps,
-  userHandle,
+  userIdSeedBump,
   contentNodeAuthorityPublicKey,
   cn1,
   cn2,
   cn3,
-}: UpdateUserReplicaSet) => {
+}: UpdateUserReplicaSetParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.updateUserReplicaSet(
       baseAuthorityAccount,
-      userHandle,
+      userIdSeedBump,
       replicaSet,
       replicaSetBumps,
       {
@@ -254,7 +268,7 @@ export const updateUserReplicaSet = ({
 };
 
 /// Create or update a content node with proposers
-export type PublicCreateOrUpdateContentNode = {
+export type PublicCreateOrUpdateContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminStoragePublicKey: anchor.web3.PublicKey;
@@ -280,7 +294,7 @@ export const publicCreateOrUpdateContentNode = ({
   proposer1,
   proposer2,
   proposer3,
-}: PublicCreateOrUpdateContentNode) => {
+}: PublicCreateOrUpdateContentNodeParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.publicCreateOrUpdateContentNode(
@@ -311,7 +325,7 @@ export const publicCreateOrUpdateContentNode = ({
 };
 
 /// Create a content node with proposers
-export type PublicDeleteContentNode = {
+export type PublicDeleteContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminStoragePublicKey: anchor.web3.PublicKey;
@@ -333,7 +347,7 @@ export const publicDeleteContentNode = ({
   proposer1,
   proposer2,
   proposer3,
-}: PublicDeleteContentNode) => {
+}: PublicDeleteContentNodeParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.publicDeleteContentNode(
@@ -368,7 +382,6 @@ export type CreateUserParams = {
   ethAccount: Account;
   message: Uint8Array;
   userId: anchor.BN;
-  handleBytesArray: number[];
   bumpSeed: number;
   metadata: string;
   userSolPubkey: anchor.web3.PublicKey;
@@ -389,7 +402,6 @@ export const createUser = ({
   message,
   replicaSet,
   replicaSetBumps,
-  handleBytesArray,
   cn1,
   cn2,
   cn3,
@@ -426,10 +438,9 @@ export const createUser = ({
       [...anchor.utils.bytes.hex.decode(ethAccount.address)],
       replicaSet,
       replicaSetBumps,
-      handleBytesArray,
+      userId.toNumber(),
       bumpSeed,
       metadata,
-      userId,
       userSolPubkey,
       {
         accounts: {
@@ -440,7 +451,7 @@ export const createUser = ({
           cn3,
           systemProgram: SystemProgram.programId,
           sysvarProgram: SystemSysVarProgramKey,
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
         },
       }
     )
@@ -511,7 +522,7 @@ export const updateAdmin = ({
  * User delegation
  */
 
-type InitAuthorityDelegationStatusParams = {
+export type InitAuthorityDelegationStatusParams = {
   program: Program<AudiusData>;
   authorityName: string;
   userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
@@ -540,7 +551,7 @@ export const initAuthorityDelegationStatus = ({
   return tx;
 };
 
-type RevokeAuthorityDelegationParams = {
+export type RevokeAuthorityDelegationParams = {
   program: Program<AudiusData>;
   authorityDelegationBump: number;
   userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
@@ -569,14 +580,14 @@ export const revokeAuthorityDelegation = ({
   return tx;
 };
 
-type AddUserAuthorityDelegateParams = {
+export type AddUserAuthorityDelegateParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   delegatePublicKey: anchor.web3.PublicKey;
   user: anchor.web3.PublicKey;
   currentUserAuthorityDelegate: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
-  userHandleBytesArray: number[];
+  userId: anchor.BN;
   userBumpSeed: number;
   signerUserAuthorityDelegate: anchor.web3.PublicKey;
   authorityDelegationStatus: anchor.web3.PublicKey;
@@ -591,7 +602,7 @@ export const addUserAuthorityDelegate = ({
   user,
   authorityDelegationStatus,
   currentUserAuthorityDelegate,
-  userHandleBytesArray,
+  userId,
   userBumpSeed,
   adminStoragePublicKey,
   signerUserAuthorityDelegate,
@@ -602,7 +613,7 @@ export const addUserAuthorityDelegate = ({
   tx.add(
     program.instruction.addUserAuthorityDelegate(
       baseAuthorityAccount,
-      { seed: userHandleBytesArray, bump: userBumpSeed },
+      { userId: userId.toNumber(), bump: userBumpSeed },
       delegatePublicKey,
       {
         accounts: {
@@ -621,7 +632,7 @@ export const addUserAuthorityDelegate = ({
   return tx;
 };
 
-type RemoveUserAuthorityDelegateParams = {
+export type RemoveUserAuthorityDelegateParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   delegatePublicKey: anchor.web3.PublicKey;
@@ -629,7 +640,7 @@ type RemoveUserAuthorityDelegateParams = {
   user: anchor.web3.PublicKey;
   currentUserAuthorityDelegate: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
-  userHandleBytesArray: number[];
+  userId: anchor.BN;
   userBumpSeed: number;
   signerUserAuthorityDelegate: anchor.web3.PublicKey;
   authorityDelegationStatus: anchor.web3.PublicKey;
@@ -645,7 +656,7 @@ export const removeUserAuthorityDelegate = ({
   user,
   authorityDelegationStatus,
   currentUserAuthorityDelegate,
-  userHandleBytesArray,
+  userId,
   userBumpSeed,
   adminStoragePublicKey,
   signerUserAuthorityDelegate,
@@ -656,7 +667,7 @@ export const removeUserAuthorityDelegate = ({
   tx.add(
     program.instruction.removeUserAuthorityDelegate(
       baseAuthorityAccount,
-      { seed: userHandleBytesArray, bump: userBumpSeed },
+      { userId: userId.toNumber(), bump: userBumpSeed },
       delegatePublicKey,
       delegateBump,
       {
@@ -683,7 +694,7 @@ export type UpdateIsVerifiedParams = {
   verifierPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminPublicKey: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userId: anchor.BN;
   bumpSeed: number;
 };
 
@@ -694,18 +705,18 @@ export const updateIsVerified = ({
   userStorageAccount,
   verifierPublicKey,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   bumpSeed,
 }: UpdateIsVerifiedParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.updateIsVerified(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       {
         accounts: {
           user: userStorageAccount,
-          audiusAdmin: adminPublicKey,
+          admin: adminPublicKey,
           verifier: verifierPublicKey,
         },
       }
@@ -718,7 +729,7 @@ export type CreateEntityParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userId: anchor.BN;
   bumpSeed: number;
   userAuthorityPublicKey: anchor.web3.PublicKey;
   userStorageAccountPDA: anchor.web3.PublicKey;
@@ -737,7 +748,7 @@ export type DeleteEntityParams = {
   userStorageAccountPDA: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userId: anchor.BN;
   bumpSeed: number;
 };
 
@@ -750,7 +761,7 @@ export const createTrack = ({
   authorityDelegationStatusAccountPDA,
   userStorageAccountPDA,
   metadata,
-  handleBytesArray,
+  userId,
   adminStorageAccount,
   bumpSeed,
 }: CreateEntityParams) => {
@@ -758,14 +769,14 @@ export const createTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.create,
       id,
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -799,7 +810,7 @@ export type UpdateEntityParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   adminStorageAccount: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userId: anchor.BN;
   bumpSeed: number;
   metadata: string;
   id: anchor.BN;
@@ -807,32 +818,6 @@ export type UpdateEntityParams = {
   userStorageAccountPDA: anchor.web3.PublicKey;
   userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-};
-
-/// Create a content node with the audius admin authority
-export type CreateContentNode = {
-  payer: anchor.web3.PublicKey;
-  program: Program<AudiusData>;
-  adminPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
-  contentNodeAuthority: anchor.web3.PublicKey;
-  spID: anchor.BN;
-  ownerEthAddress: string;
-};
-
-export type EntitySocialActionArgs = {
-  program: Program<AudiusData>;
-  baseAuthorityAccount: anchor.web3.PublicKey;
-  userStorageAccountPDA: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-  userAuthorityPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
-  handleBytesArray: number[];
-  bumpSeed: number;
-  id: string;
 };
 
 export const updateTrack = ({
@@ -844,7 +829,7 @@ export const updateTrack = ({
   userStorageAccountPDA,
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
-  handleBytesArray,
+  userId,
   adminStorageAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
@@ -852,14 +837,14 @@ export const updateTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.update,
       id,
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -881,7 +866,7 @@ export const deleteTrack = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   adminStorageAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
@@ -889,14 +874,14 @@ export const deleteTrack = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.track,
       ManagementActions.delete,
       id,
       "",
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -919,7 +904,7 @@ export const createPlaylist = ({
   authorityDelegationStatusAccountPDA,
   userStorageAccountPDA,
   metadata,
-  handleBytesArray,
+  userId,
   adminStorageAccount,
   bumpSeed,
 }: CreateEntityParams) => {
@@ -927,14 +912,14 @@ export const createPlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.create,
       id,
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -957,7 +942,7 @@ export const updatePlaylist = ({
   authorityDelegationStatusAccountPDA,
   userStorageAccountPDA,
   metadata,
-  handleBytesArray,
+  userId,
   adminStorageAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
@@ -965,14 +950,14 @@ export const updatePlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.update,
       id,
       metadata,
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -993,7 +978,7 @@ export const deletePlaylist = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   baseAuthorityAccount,
-  handleBytesArray,
+  userId,
   adminStorageAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
@@ -1001,14 +986,14 @@ export const deletePlaylist = ({
   tx.add(
     program.instruction.manageEntity(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntityTypesEnumValues.playlist,
       ManagementActions.delete,
       id,
       "",
       {
         accounts: {
-          audiusAdmin: adminStorageAccount,
+          admin: adminStorageAccount,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1040,7 +1025,7 @@ export const EntitySocialActions = {
   deleteRepost: { deleteRepost: {} },
 };
 
-type EntitySocialActionParams = {
+export type EntitySocialActionParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   userStorageAccountPDA: anchor.web3.PublicKey;
@@ -1048,7 +1033,7 @@ type EntitySocialActionParams = {
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
-  handleBytesArray: number[];
+  userId: anchor.BN;
   bumpSeed: number;
   id: string;
 };
@@ -1061,7 +1046,7 @@ export const addTrackSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1070,13 +1055,13 @@ export const addTrackSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addSave,
       EntityTypesEnumValues.track,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           authority: userAuthorityPublicKey,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1095,7 +1080,7 @@ export const deleteTrackSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1104,13 +1089,13 @@ export const deleteTrackSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteSave,
       EntityTypesEnumValues.track,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1129,7 +1114,7 @@ export const addTrackRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1138,13 +1123,13 @@ export const addTrackRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addRepost,
       EntityTypesEnumValues.track,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1163,7 +1148,7 @@ export const deleteTrackRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1172,13 +1157,13 @@ export const deleteTrackRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteRepost,
       EntityTypesEnumValues.track,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1197,7 +1182,7 @@ export const addPlaylistSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1206,13 +1191,13 @@ export const addPlaylistSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addSave,
       EntityTypesEnumValues.playlist,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1231,7 +1216,7 @@ export const deletePlaylistSave = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1240,13 +1225,13 @@ export const deletePlaylistSave = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteSave,
       EntityTypesEnumValues.playlist,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1265,7 +1250,7 @@ export const addPlaylistRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1274,13 +1259,13 @@ export const addPlaylistRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.addRepost,
       EntityTypesEnumValues.playlist,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1299,7 +1284,7 @@ export const deletePlaylistRepost = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  handleBytesArray,
+  userId,
   bumpSeed,
   adminStoragePublicKey,
   id,
@@ -1308,13 +1293,13 @@ export const deletePlaylistRepost = ({
   tx.add(
     program.instruction.writeEntitySocialAction(
       baseAuthorityAccount,
-      { seed: handleBytesArray, bump: bumpSeed },
+      { userId: userId.toNumber(), bump: bumpSeed },
       EntitySocialActions.deleteRepost,
       EntityTypesEnumValues.playlist,
       id,
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           user: userStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
@@ -1336,7 +1321,7 @@ export const UserSocialActions = {
   unsubscribeUser: { unsubscribeUser: {} },
 };
 
-type UserSocialActionParams = {
+export type UserSocialActionParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
   sourceUserStorageAccountPDA: anchor.web3.PublicKey;
@@ -1345,9 +1330,9 @@ type UserSocialActionParams = {
   authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
   adminStoragePublicKey: anchor.web3.PublicKey;
-  sourceUserHandleBytesArray: number[];
+  sourceUserId: anchor.BN;
   sourceUserBumpSeed: number;
-  targetUserHandleBytesArray: number[];
+  targetUserId: anchor.BN;
   targetUserBumpSeed: number;
 };
 
@@ -1359,9 +1344,9 @@ export const followUser = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  sourceUserHandleBytesArray,
+  sourceUserId,
   sourceUserBumpSeed,
-  targetUserHandleBytesArray,
+  targetUserId,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
@@ -1370,11 +1355,11 @@ export const followUser = ({
     program.instruction.writeUserSocialAction(
       baseAuthorityAccount,
       UserSocialActions.followUser,
-      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      { userId: sourceUserId, bump: sourceUserBumpSeed },
+      { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1395,9 +1380,9 @@ export const unfollowUser = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  sourceUserHandleBytesArray,
+  sourceUserId,
   sourceUserBumpSeed,
-  targetUserHandleBytesArray,
+  targetUserId,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
@@ -1406,17 +1391,18 @@ export const unfollowUser = ({
     program.instruction.writeUserSocialAction(
       baseAuthorityAccount,
       UserSocialActions.unfollowUser,
-      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      { userId: sourceUserId, bump: sourceUserBumpSeed },
+      { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }      }
+        },
+      }
     )
   );
   return tx;
@@ -1430,9 +1416,9 @@ export const subscribeUser = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  sourceUserHandleBytesArray,
+  sourceUserId,
   sourceUserBumpSeed,
-  targetUserHandleBytesArray,
+  targetUserId,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
@@ -1441,17 +1427,17 @@ export const subscribeUser = ({
     program.instruction.writeUserSocialAction(
       baseAuthorityAccount,
       UserSocialActions.subscribeUser,
-      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      { userId: sourceUserId, bump: sourceUserBumpSeed },
+      { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
           authorityDelegationStatus: authorityDelegationStatusAccountPDA,
           authority: userAuthorityPublicKey,
-        }
+        },
       }
     )
   );
@@ -1466,9 +1452,9 @@ export const unsubscribeUser = ({
   userAuthorityDelegateAccountPDA,
   authorityDelegationStatusAccountPDA,
   userAuthorityPublicKey,
-  sourceUserHandleBytesArray,
+  sourceUserId,
   sourceUserBumpSeed,
-  targetUserHandleBytesArray,
+  targetUserId,
   targetUserBumpSeed,
   adminStoragePublicKey,
 }: UserSocialActionParams) => {
@@ -1477,11 +1463,11 @@ export const unsubscribeUser = ({
     program.instruction.writeUserSocialAction(
       baseAuthorityAccount,
       UserSocialActions.unsubscribeUser,
-      { seed: sourceUserHandleBytesArray, bump: sourceUserBumpSeed },
-      { seed: targetUserHandleBytesArray, bump: targetUserBumpSeed },
+      { userId: sourceUserId, bump: sourceUserBumpSeed },
+      { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          audiusAdmin: adminStoragePublicKey,
+          admin: adminStoragePublicKey,
           sourceUserStorage: sourceUserStorageAccountPDA,
           targetUserStorage: targetUserStorageAccountPDA,
           userAuthorityDelegate: userAuthorityDelegateAccountPDA,
@@ -1501,3 +1487,5 @@ export const unsubscribeUser = ({
 export const getKeypairFromSecretKey = async (secretKey: Uint8Array) => {
   return Keypair.fromSecretKey(Uint8Array.from(secretKey));
 };
+
+export const idl = idll;

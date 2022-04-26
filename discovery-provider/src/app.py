@@ -555,6 +555,7 @@ def configure_celery(celery, test_config=None):
         redis_inst,
         db,
         solana_client_manager,
+        cid_metadata_client,
     )
 
     # Clear existing locks used in tasks if present
