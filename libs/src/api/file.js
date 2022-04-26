@@ -6,14 +6,6 @@ const { Base, Services } = require('./base')
 const { raceRequests } = require('../utils/network')
 const retry = require('async-retry')
 
-// Public gateways to send requests to, ordered by precidence.
-const publicGateways = [
-  // Users may elect to use public gateways to fetch content, by re-enabling
-  // the following options, or adding their own.
-  // 'https://ipfs.io/ipfs/',
-  // 'https://cloudflare-ipfs.com/ipfs/'
-]
-
 /**
  * Downloads a file using an element in the DOM
  * @param {*} url
@@ -39,10 +31,9 @@ class File extends Base {
   }
 
   /**
-   * Fetches a file from IPFS with a given CID. Public gateways are tried first, then
-   * fallback to a specified gateway and then to the default gateway.
+   * Fetches a file from Content Node with a given CID.
    * @param {string} cid IPFS content identifier
-   * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * @param {Array<string>} creatorNodeGateways Content Node gateways to fetch content from
    * @param {?function} callback callback called on each successful/failed fetch with
    *  [String, Bool](gateway, succeeded)
    *  Can be used for tracking metrics on which gateways were used.
@@ -61,12 +52,6 @@ class File extends Base {
       if (trackId) gatewayWithCid = urlJoin(gatewayWithCid, { query: { trackId } })
       urls.push(gatewayWithCid)
     })
-
-    publicGateways.forEach(gateway => {
-      urls.push(urlJoin(gateway, cid))
-    })
-
-    const gateways = creatorNodeGateways.concat(publicGateways)
 
     return retry(async (bail) => {
       try {
@@ -92,7 +77,7 @@ class File extends Base {
           console.debug(`Attempted to fetch image ${cid} via legacy method`)
           // Try legacy image format
           // Lop off anything like /480x480.jpg in the CID
-          const legacyUrls = gateways.map(gateway => urlJoin(gateway, cid.split('/')[0]))
+          const legacyUrls = creatorNodeGateways.map(gateway => urlJoin(gateway, cid.split('/')[0]))
           try {
             const { response } = await raceRequests(legacyUrls, callback, {
               method: 'get',
@@ -121,17 +106,15 @@ class File extends Base {
   }
 
   /**
-   * Fetches a file from IPFS with a given CID. Follows the same pattern
+   * Fetches a file from Content Node with a given CID. Follows the same pattern
    * as fetchCID, but resolves with a download of the file rather than
    * returning the response content.
    * @param {string} cid IPFS content identifier
-   * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * @param {Array<string>} creatorNodeGateways Content Node gateways to fetch content from
    * @param {string?} filename optional filename for the download
-   * @param {boolean?} usePublicGateways
    */
-  async downloadCID (cid, creatorNodeGateways, filename, usePublicGateways = false) {
-    const gateways = usePublicGateways ? publicGateways.concat(creatorNodeGateways) : creatorNodeGateways
-    const urls = gateways.map(gateway => urlJoin(gateway, cid, { query: { filename } }))
+  async downloadCID (cid, creatorNodeGateways, filename) {
+    const urls = creatorNodeGateways.map(gateway => urlJoin(gateway, cid, { query: { filename } }))
 
     try {
       // Races requests and fires the download callback for the first endpoint to
@@ -146,17 +129,15 @@ class File extends Base {
   }
 
   /**
-   * Checks if a cid exists in an IPFS node. Public gateways are tried first, then
-   * fallback to a specified gateway and then to the default gateway.
+   * Checks if a CID exists on a Content Node.
    * @param {string} cid IPFS content identifier
-   * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * @param {Array<string>} creatorNodeGateways Content Node gateways to fetch content from
    * Eg. creatorNodeGateways = ["https://creatornode.audius.co/ipfs/", "https://creatornode2.audius.co/ipfs/"]
    */
   async checkIfCidAvailable (cid, creatorNodeGateways) {
-    const gateways = creatorNodeGateways.concat(publicGateways)
     const exists = {}
 
-    await Promise.all(gateways.map(async (gateway) => {
+    await Promise.all(creatorNodeGateways.map(async (gateway) => {
       try {
         const { status } = await axios({ url: urlJoin(gateway, cid), method: 'head' })
         exists[gateway] = status === 200
@@ -169,7 +150,7 @@ class File extends Base {
   }
 
   /**
-   * Uploads an image to the connected creator node.
+   * Uploads an image to the connected Content Node.
    * @param {File} file
    */
   async uploadImage (file, square, timeoutMs = null) {
