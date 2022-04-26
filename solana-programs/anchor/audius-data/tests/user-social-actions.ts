@@ -9,7 +9,11 @@ import {
   unsubscribeUser,
   updateAdmin,
 } from "../lib/lib";
-import { findDerivedPair, getTransactionWithData } from "../lib/utils";
+import {
+  findDerivedPair,
+  getTransactionWithData,
+  convertBNToUserIdSeed,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   createSolanaContentNode,
@@ -28,13 +32,13 @@ const UserActionEnumValues = {
   invalidEnumValue: { invalidEnum: {} },
 };
 describe("user social actions", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
@@ -61,7 +65,7 @@ describe("user social actions", function () {
   };
 
   it("User social actions - Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
@@ -69,7 +73,7 @@ describe("user social actions", function () {
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminStorageKeypair.publicKey
@@ -114,41 +118,41 @@ describe("user social actions", function () {
   describe("user social action tests", function () {
     let constants1;
     let constants2;
-    let handleBytesArray1;
-    let handleBytesArray2;
+    let userId1;
+    let userId2;
     // New sol keys that will be used to permission user updates
     let newUser1Key;
     let newUser2Key;
     let userStorageAccount1;
     let userStorageAccount2;
     let baseAuthorityAccount;
-    let handle1DerivedInfo;
-    let handle2DerivedInfo;
+    let userId1DerivedInfo;
+    let userId2DerivedInfo;
 
     // Initialize user for each test
     beforeEach(async function () {
       // Initialize 2 users
       constants1 = initTestConstants();
       constants2 = initTestConstants();
-      handleBytesArray1 = constants1.handleBytesArray;
-      handleBytesArray2 = constants2.handleBytesArray;
+      userId1 = constants1.userId;
+      userId2 = constants2.userId;
 
-      handle1DerivedInfo = await findDerivedPair(
+      userId1DerivedInfo = await findDerivedPair(
         program.programId,
         adminStorageKeypair.publicKey,
-        Buffer.from(handleBytesArray1)
+        convertBNToUserIdSeed(userId1)
       );
 
-      handle2DerivedInfo = await findDerivedPair(
+      userId2DerivedInfo = await findDerivedPair(
         program.programId,
         adminStorageKeypair.publicKey,
-        Buffer.from(handleBytesArray2)
+        convertBNToUserIdSeed(userId2)
       );
 
-      baseAuthorityAccount = handle1DerivedInfo.baseAuthorityAccount;
+      baseAuthorityAccount = userId1DerivedInfo.baseAuthorityAccount;
 
-      userStorageAccount1 = handle1DerivedInfo.derivedAddress;
-      userStorageAccount2 = handle2DerivedInfo.derivedAddress;
+      userStorageAccount1 = userId1DerivedInfo.derivedAddress;
+      userStorageAccount2 = userId2DerivedInfo.derivedAddress;
 
       // New sol keys that will be used to permission user updates
       newUser1Key = anchor.web3.Keypair.generate();
@@ -166,7 +170,7 @@ describe("user social actions", function () {
         adminStorageAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
-      await provider.send(updateAdminTx, [adminKeypair]);
+      await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
       await testCreateUser({
         provider,
@@ -174,13 +178,12 @@ describe("user social actions", function () {
         message: message1,
         baseAuthorityAccount,
         ethAccount: constants1.ethAccount,
-        handleBytesArray: handleBytesArray1,
-        bumpSeed: handle1DerivedInfo.bumpSeed,
+        userId: userId1,
+        bumpSeed: userId1DerivedInfo.bumpSeed,
         metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
         userStorageAccount: userStorageAccount1,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
-        userId: constants1.userId,
         ...getURSMParams(),
       });
 
@@ -190,13 +193,12 @@ describe("user social actions", function () {
         message: message2,
         baseAuthorityAccount,
         ethAccount: constants2.ethAccount,
-        handleBytesArray: handleBytesArray2,
-        bumpSeed: handle2DerivedInfo.bumpSeed,
+        userId: userId2,
+        bumpSeed: userId2DerivedInfo.bumpSeed,
         metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
         userStorageAccount: userStorageAccount2,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
-        userId: constants2.userId,
         ...getURSMParams(),
       });
     });
@@ -211,13 +213,15 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
-        sourceUserHandleBytesArray: handleBytesArray1,
-        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
-        targetUserHandleBytesArray: handleBytesArray2,
-        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        sourceUserId: userId1,
+        sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
+        targetUserId: userId2,
+        targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const followTxSig = await provider.send(followTx, [newUser1Key])
+      const followTxSig = await provider.sendAndConfirm(followTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTxSig, 0);
@@ -229,11 +233,11 @@ describe("user social actions", function () {
       expect(decodedData.userAction).to.deep.equal(
         UserActionEnumValues.followUser
       );
-      expect(decodedData.sourceUserHandle.seed).to.deep.equal(
-        constants1.handleBytesArray
+      expect(decodedData.sourceUserIdSeedBump.userId).to.equal(
+        constants1.userId.toNumber()
       );
-      expect(decodedData.targetUserHandle.seed).to.deep.equal(
-        constants2.handleBytesArray
+      expect(decodedData.targetUserIdSeedBump.userId).to.equal(
+        constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
         adminStorageKeypair.publicKey.toString()
@@ -258,14 +262,17 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
         authorityDelegationStatusAccountPDA:
           userDelegate.authorityDelegationStatusPDA,
-        userAuthorityPublicKey: userDelegate.userAuthorityDelegateKeypair.publicKey,
-        sourceUserHandleBytesArray: userDelegate.userHandleBytesArray,
+        userAuthorityPublicKey:
+          userDelegate.userAuthorityDelegateKeypair.publicKey,
+        sourceUserId: userDelegate.userId,
         sourceUserBumpSeed: userDelegate.userBumpSeed,
-        targetUserHandleBytesArray: handleBytesArray2,
-        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        targetUserId: userId2,
+        targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const followTxSig = await provider.send(followTx, [userDelegate.userAuthorityDelegateKeypair])
+      const followTxSig = await provider.sendAndConfirm(followTx, [
+        userDelegate.userAuthorityDelegateKeypair,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, followTxSig, 0);
@@ -277,11 +284,11 @@ describe("user social actions", function () {
       expect(decodedData.userAction).to.deep.equal(
         UserActionEnumValues.followUser
       );
-      expect(decodedData.sourceUserHandle.seed).to.deep.equal(
-        userDelegate.userHandleBytesArray
+      expect(decodedData.sourceUserIdSeedBump.userId).to.equal(
+        userDelegate.userId.toNumber()
       );
-      expect(decodedData.targetUserHandle.seed).to.deep.equal(
-        constants2.handleBytesArray
+      expect(decodedData.targetUserIdSeedBump.userId).to.equal(
+        constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
         adminStorageKeypair.publicKey.toString()
@@ -301,13 +308,15 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
-        sourceUserHandleBytesArray: handleBytesArray1,
-        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
-        targetUserHandleBytesArray: handleBytesArray2,
-        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        sourceUserId: userId1,
+        sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
+        targetUserId: userId2,
+        targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const unfollowTxSig = await provider.send(unfollowTx, [newUser1Key])
+      const unfollowTxSig = await provider.sendAndConfirm(unfollowTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unfollowTxSig, 0);
@@ -319,11 +328,11 @@ describe("user social actions", function () {
       expect(decodedData.userAction).to.deep.equal(
         UserActionEnumValues.unfollowUser
       );
-      expect(decodedData.sourceUserHandle.seed).to.deep.equal(
-        constants1.handleBytesArray
+      expect(decodedData.sourceUserIdSeedBump.userId).to.equal(
+        constants1.userId.toNumber()
       );
-      expect(decodedData.targetUserHandle.seed).to.deep.equal(
-        constants2.handleBytesArray
+      expect(decodedData.targetUserIdSeedBump.userId).to.equal(
+        constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
         adminStorageKeypair.publicKey.toString()
@@ -336,7 +345,7 @@ describe("user social actions", function () {
       let expectedErrorFound = false;
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
+          admin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           sourceUserStorage: userStorageAccount1,
@@ -351,8 +360,8 @@ describe("user social actions", function () {
         const txHash = await program.rpc.writeUserSocialAction(
           baseAuthorityAccount,
           UserActionEnumValues.invalidEnumValue,
-          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-          { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
+          { userId: userId1, bump: userId1DerivedInfo.bumpSeed },
+          { userId: userId2, bump: userId2DerivedInfo.bumpSeed },
           followArgs
         );
         console.log(`invalid follow txHash=${txHash}`);
@@ -369,7 +378,7 @@ describe("user social actions", function () {
       const wrongUserKeypair = anchor.web3.Keypair.generate();
       const followArgs = {
         accounts: {
-          audiusAdmin: adminStorageKeypair.publicKey,
+          admin: adminStorageKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           sourceUserStorage: userStorageAccount1,
@@ -386,8 +395,8 @@ describe("user social actions", function () {
         await program.rpc.writeUserSocialAction(
           baseAuthorityAccount,
           UserActionEnumValues.followUser,
-          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-          { seed: handleBytesArray2, bump: handle2DerivedInfo.bumpSeed },
+          { userId: userId1, bump: userId1DerivedInfo.bumpSeed },
+          { userId: userId2, bump: userId2DerivedInfo.bumpSeed },
           followArgs
         );
       } catch (e) {
@@ -411,9 +420,9 @@ describe("user social actions", function () {
         await program.rpc.writeUserSocialAction(
           baseAuthorityAccount,
           UserActionEnumValues.followUser,
-          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
-          // Note the intentionally incorrect handle bytes below for followee target PDA
-          { seed: handleBytesArray1, bump: handle1DerivedInfo.bumpSeed },
+          { userId: userId1, bump: userId1DerivedInfo.bumpSeed },
+          // Note the intentionally incorrect user ID below for followee target PDA
+          { userId: userId1, bump: userId1DerivedInfo.bumpSeed },
           followArgs
         );
       } catch (e) {
@@ -439,13 +448,15 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
-        sourceUserHandleBytesArray: handleBytesArray1,
-        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
-        targetUserHandleBytesArray: handleBytesArray2,
-        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        sourceUserId: userId1,
+        sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
+        targetUserId: userId2,
+        targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const subscribeTxSig = await provider.send(subscribeTx, [newUser1Key])
+      const subscribeTxSig = await provider.sendAndConfirm(subscribeTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, subscribeTxSig, 0);
@@ -457,11 +468,11 @@ describe("user social actions", function () {
       expect(decodedData.userAction).to.deep.equal(
         UserActionEnumValues.subscribeUser
       );
-      expect(decodedData.sourceUserHandle.seed).to.deep.equal(
-        constants1.handleBytesArray
+      expect(decodedData.sourceUserIdSeedBump.userId).to.equal(
+        constants1.userId.toNumber()
       );
-      expect(decodedData.targetUserHandle.seed).to.deep.equal(
-        constants2.handleBytesArray
+      expect(decodedData.targetUserIdSeedBump.userId).to.equal(
+        constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
         adminStorageKeypair.publicKey.toString()
@@ -479,13 +490,15 @@ describe("user social actions", function () {
         userAuthorityDelegateAccountPDA: SystemProgram.programId,
         authorityDelegationStatusAccountPDA: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
-        sourceUserHandleBytesArray: handleBytesArray1,
-        sourceUserBumpSeed: handle1DerivedInfo.bumpSeed,
-        targetUserHandleBytesArray: handleBytesArray2,
-        targetUserBumpSeed: handle2DerivedInfo.bumpSeed,
+        sourceUserId: userId1,
+        sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
+        targetUserId: userId2,
+        targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
         adminStoragePublicKey: adminStorageKeypair.publicKey,
       });
-      const unsubscribeTxSig = await provider.send(unsubscribeTx, [newUser1Key])
+      const unsubscribeTxSig = await provider.sendAndConfirm(unsubscribeTx, [
+        newUser1Key,
+      ]);
 
       const { decodedInstruction, decodedData, accountPubKeys } =
         await getTransactionWithData(program, provider, unsubscribeTxSig, 0);
@@ -497,11 +510,11 @@ describe("user social actions", function () {
       expect(decodedData.userAction).to.deep.equal(
         UserActionEnumValues.unsubscribeUser
       );
-      expect(decodedData.sourceUserHandle.seed).to.deep.equal(
-        constants1.handleBytesArray
+      expect(decodedData.sourceUserIdSeedBump.userId).to.equal(
+        constants1.userId.toNumber()
       );
-      expect(decodedData.targetUserHandle.seed).to.deep.equal(
-        constants2.handleBytesArray
+      expect(decodedData.targetUserIdSeedBump.userId).to.equal(
+        constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
         adminStorageKeypair.publicKey.toString()

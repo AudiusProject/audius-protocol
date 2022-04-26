@@ -76,7 +76,7 @@ class TransactionHandler {
     }
 
     if (sendBlockhash) {
-      transactionData.recentBlockhash = (recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash)
+      transactionData.recentBlockhash = (recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash)
     }
 
     try {
@@ -108,7 +108,7 @@ class TransactionHandler {
       }
     }
 
-    recentBlockhash = recentBlockhash || (await this.connection.getRecentBlockhash('confirmed')).blockhash
+    recentBlockhash = recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash
     const tx = new Transaction({ recentBlockhash })
 
     instructions.forEach(i => tx.add(i))

@@ -1,5 +1,7 @@
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
+const { Keypair } = require('@solana/web3.js')
+
 const config = require('../../config')
 const utils = require('../../utils.js')
 const { MONITORS } = require('../../monitors/monitors')
@@ -98,6 +100,18 @@ const healthCheck = async (
   const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
     await getAsyncProcessingQueueJobs()
 
+  let solDelegatePublicKeyBase58 = ''
+  try {
+    const solDelegatePrivateKey = config.get('solDelegatePrivateKeyBase64')
+    const solDelegatePrivateKeyBuffer = new Uint8Array(
+      Buffer.from(solDelegatePrivateKey, 'base64')
+    )
+    const solDelegateKeyPair = Keypair.fromSecretKey(
+      solDelegatePrivateKeyBuffer
+    )
+    solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
+  } catch (_) {}
+
   const response = {
     ...versionInfo,
     healthy: true,
@@ -139,6 +153,7 @@ const healthCheck = async (
     transcodeWaiting,
     fileProcessingActive,
     fileProcessingWaiting,
+    solDelegatePublicKeyBase58,
     stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
       ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
       : null,

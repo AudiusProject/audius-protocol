@@ -10,10 +10,10 @@ cd $PROTOCOL_DIR/
 npm install
 
 # setup pre-commit hooks
-if command -v pre-commit &>/dev/null; then
-    pre-commit install -t pre-commit -t pre-push
-else
+if ! command -v pre-commit &>/dev/null; then
     echo "pre-commit not installed; not setting up pre-commit hooks"
+else
+    pre-commit install -t pre-commit -t pre-push
 fi
 
 cd $PROTOCOL_DIR/service-commands
@@ -21,6 +21,7 @@ npm install
 
 cd $PROTOCOL_DIR/mad-dog
 npm install
+mkdir -p local-storage/tmp-imgs
 
 cd $PROTOCOL_DIR/contracts
 npm install
@@ -35,6 +36,10 @@ npm install
 cd $PROTOCOL_DIR/creator-node
 npm install
 
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+npm run install-dev
+npm run build
+
 cd $PROTOCOL_DIR/libs
 npm install
 npm run build
@@ -45,7 +50,8 @@ npm install
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
-    npm install
+    git checkout main
+    npm run init
 fi
 
 ####################################
@@ -72,6 +78,5 @@ npm link @audius/libs
 
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
-    cd audius-client
-    npm link @audius/libs
+    cd audius-client/packages/web && npm link @audius/libs
 fi

@@ -17,7 +17,7 @@ RUN apt-get update && \
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN rustup install 1.55.0 && \
-    sh -c "$(curl -sSfL https://release.solana.com/v1.8.14/install)"
+    sh -c "$(curl -sSfL https://release.solana.com/v1.9.13/install)"
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
@@ -31,7 +31,7 @@ RUN . $NVM_DIR/nvm.sh && \
     npm install -g yarn
 
 # Install anchor.
-RUN cargo install --git https://github.com/project-serum/anchor --tag v0.22.1 anchor-cli --locked
+RUN cargo install --git https://github.com/project-serum/anchor --tag v0.24.1 anchor-cli --locked
 
 COPY audius_eth_registry audius_eth_registry
 COPY track_listen_count track_listen_count

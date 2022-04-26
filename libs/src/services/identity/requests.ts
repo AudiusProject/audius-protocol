@@ -1,4 +1,23 @@
-const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, endTime = null, limit = null, offset = null) => {
+import type { AxiosRequestConfig } from 'axios'
+
+export type TimeFrame = 'day' | 'week' | 'month' | 'year' | 'millennium'
+
+type QueryParams = {
+  id?: number[]
+  limit?: number
+  offset?: number
+  start?: string
+  end?: string
+}
+
+export const getTrackListens = (
+  timeFrame: TimeFrame | null = null,
+  idsArray: number[] | null = null,
+  startTime: string | null = null,
+  endTime: string | null = null,
+  limit: number | null = null,
+  offset: number | null = null
+) => {
   let queryUrl = 'tracks/listens/'
 
   if (timeFrame != null) {
@@ -15,7 +34,8 @@ const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, en
     queryUrl += timeFrame
   }
 
-  const queryParams = {}
+  const queryParams: QueryParams = {}
+
   if (idsArray !== null) {
     queryParams.id = idsArray
   }
@@ -36,16 +56,10 @@ const getTrackListens = (timeFrame = null, idsArray = null, startTime = null, en
     queryParams.end = endTime
   }
 
-  const req = {
+  const req: AxiosRequestConfig = {
     url: queryUrl,
-    endpoint: queryUrl,
     method: 'get',
-    params: queryParams,
-    queryParams: queryParams
+    params: queryParams
   }
   return req
-}
-
-module.exports = {
-  getTrackListens
 }
