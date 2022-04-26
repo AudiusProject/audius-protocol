@@ -271,7 +271,7 @@ class TransactionHandler {
             return
           }
           done = true
-          logger.warning('Timed out in await!')
+          logger.warn('transactionHandler: Timed out in await!')
           reject(new Error(`Timed out for txid ${txid}`))
         }, this.retryTimeoutMs)
 
@@ -282,10 +282,10 @@ class TransactionHandler {
             (result) => {
               done = true
               if (result.err) {
-                logger.warning('Error in onSignature')
+                logger.warn('transactionHandler: Error in onSignature')
                 reject(result.err)
               } else {
-                logger.warning('Success in onSignature!')
+                logger.warn('transactionHandler: Success in onSignature!')
                 resolve(result)
               }
             },
@@ -293,7 +293,7 @@ class TransactionHandler {
           )
         } catch (e) {
           done = true
-          logger.error('transactionHandler | WS error in setup', txid, e)
+          logger.error('transactionHandler: WS error in setup', txid, e)
         }
 
         // Setup polling
@@ -311,8 +311,8 @@ class TransactionHandler {
               const result = signatureStatuses?.value[0]
               // Early return this iteration if done or no result
               if (done || !result) {
-                logger.warning(
-                  'Early return in polling from done or no result'
+                logger.warn(
+                  'transactionHandler: early return in polling from done or no result'
                 )
                 return
               }
@@ -320,7 +320,7 @@ class TransactionHandler {
               // End loop if error
               if (result.err) {
                 logger.error(
-                  `transactionHandler | polling error: ${result.err}, tx: ${txid}`
+                  `transactionHandler: polling error: ${result.err}, tx: ${txid}`
                 )
                 done = true
                 reject(result.err)
@@ -334,8 +334,8 @@ class TransactionHandler {
                   result.confirmationStatus === 'finalized'
                 )
               ) {
-                logger.warning(
-                  'Early return in polling from missing confirmations'
+                logger.warn(
+                  'transactionHandler: early return in polling from missing confirmations'
                 )
                 return
               }
@@ -347,7 +347,7 @@ class TransactionHandler {
             } catch (e) {
               if (!done) {
                 logger.error(
-                  `REST polling connection error: ${e}, tx: ${txid}`
+                  `transactionHandler: REST polling connection error: ${e}, tx: ${txid}`
                 )
               }
             }
