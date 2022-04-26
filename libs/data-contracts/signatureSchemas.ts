@@ -7,12 +7,15 @@
  * modeled off: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md
  */
 
-import type { EIP712Domain, EIP712Message, EIP712TypedData, EIP712TypeProperty, EIP712Types } from "eth-sig-util"
+import type {
+  EIP712Domain,
+  EIP712Message,
+  EIP712TypedData,
+  EIP712TypeProperty,
+  EIP712Types
+} from 'eth-sig-util'
 
-type DomainFn = (
-  chainId: number,
-  contactAddress: string
-) => EIP712Domain 
+type DomainFn = (chainId: number, contactAddress: string) => EIP712Domain
 
 function getDomainData(
   contractName: string,
@@ -289,7 +292,7 @@ export const schemas = {
   updateReplicaSet
 }
 
-type MessageSchema = ReadonlyArray<EIP712TypeProperty>
+type MessageSchema = readonly EIP712TypeProperty[]
 
 function getRequestData(
   domainDataFn: DomainFn,
@@ -1121,7 +1124,7 @@ const getUpdateReplicaSetRequestData = (
   primaryId: number,
   secondaryIdsHash: string | null,
   oldPrimaryId: number,
-  oldSecondaryIdsHash: string,
+  oldSecondaryIdsHash: string | null,
   nonce: string
 ) => {
   const message = {

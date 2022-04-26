@@ -19,6 +19,7 @@ const mockEthContracts = (
     }
     return ['1.2.2', '1.2.3'][queryIndex] as string
   },
+  // @ts-expect-error not the full Provider type
   getServiceProviderList: async () => urls.map((u) => ({ endpoint: u })),
   hasSameMajorAndMinorVersion: (version1: string, version2: string) => {
     return (

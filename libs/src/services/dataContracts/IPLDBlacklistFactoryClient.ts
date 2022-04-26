@@ -1,14 +1,14 @@
 import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import sigUtil, { EIP712TypedData } from 'eth-sig-util'
-import { Buffer } from 'safe-buffer'
+import { Buffer as SafeBuffer } from 'safe-buffer'
 import type { Web3Manager } from '../web3Manager'
 
 type GeneratorFn = (
   chainId: number,
   contractAddress: string,
   multihashDigest: string,
-  nonce: () => void
+  nonce: string
 ) => EIP712TypedData
 
 export class IPLDBlacklistFactoryClient extends ContractClient {
@@ -59,9 +59,12 @@ export class IPLDBlacklistFactoryClient extends ContractClient {
     )
     let sig
     if (privateKey) {
-      sig = sigUtil.signTypedData(Buffer.from(privateKey, 'hex'), {
-        data: signatureData
-      })
+      sig = sigUtil.signTypedData(
+        SafeBuffer.from(privateKey, 'hex') as unknown as Buffer,
+        {
+          data: signatureData
+        }
+      )
     } else {
       sig = await (this.web3Manager as Web3Manager).signTypedData(signatureData)
     }

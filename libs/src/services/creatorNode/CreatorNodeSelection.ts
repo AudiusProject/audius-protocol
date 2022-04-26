@@ -21,13 +21,13 @@ type Timeout = number | null
  * In memory dictionary used to query spID from endpoint
  * Eliminates duplicate web3 calls within same session
  */
-const contentNodeEndpointToSpID: Record<string, string | undefined> = {}
+const contentNodeEndpointToSpID: Record<string, number | undefined> = {}
 
 export function getSpIDForEndpoint(endpoint: string) {
   return contentNodeEndpointToSpID[endpoint]
 }
 
-export function setSpIDForEndpoint(endpoint: string, spID?: string) {
+export function setSpIDForEndpoint(endpoint: string, spID?: number) {
   contentNodeEndpointToSpID[endpoint] = spID
 }
 
@@ -63,7 +63,7 @@ interface Decision {
 
 export class CreatorNodeSelection extends ServiceSelection {
   override decisionTree: Decision[]
-  currentVersion: string = ''
+  currentVersion: string | null = ''
   ethContracts: EthContracts
   creatorNode: CreatorNode
   numberOfNodes: number
@@ -376,7 +376,7 @@ export class CreatorNodeSelection extends ServiceSelection {
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
-          this.currentVersion,
+          this.currentVersion as string,
           resp.response.data.data.version
         )
         const { storagePathSize, storagePathUsed, maxStorageUsedPercent } =
