@@ -3,7 +3,6 @@ const Services = Object.freeze({
   HEDGEHOG: 'Hedgehog',
   DISCOVERY_PROVIDER: 'Discovery Provider',
   CREATOR_NODE: 'Creator Node',
-  IPFS_GATEWAY: 'IPFS Gateway',
   COMSTOCK: 'Comstock',
   SOLANA_WEB3_MANAGER: 'Solana Web3 Manager'
 })
