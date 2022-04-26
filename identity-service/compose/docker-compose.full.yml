@@ -31,6 +31,7 @@ services:
       # From https://github.com/barrysteyn/node-scrypt/issues/148
       - /usr/src/app/node_modules
       - ../../libs:/usr/src/audius-libs
+      - ../../solana-programs:/usr/src/solana-programs
     ports:
       - '7000:7000'
       - '9229:9229'

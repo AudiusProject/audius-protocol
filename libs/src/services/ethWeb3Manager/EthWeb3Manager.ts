@@ -4,7 +4,8 @@ import {
   MultiProvider,
   estimateGas,
   Providers,
-  ContractMethod
+  ContractMethod,
+  Maybe
 } from '../../utils'
 import { Transaction as EthereumTx } from 'ethereumjs-tx'
 import retry from 'async-retry'
@@ -28,7 +29,7 @@ export class EthWeb3Manager {
   web3: Web3Type
   identityService: IdentityService
   hedgehog: Hedgehog
-  ownerWallet: string | undefined
+  ownerWallet: Maybe<string>
 
   constructor(
     web3Config: Web3Config,
@@ -70,7 +71,6 @@ export class EthWeb3Manager {
 
   /**
    * Signs provided string data (should be timestamped).
-   * @param data
    */
   async sign(data: string) {
     // @ts-expect-error TODO: sign expected to take a password as 3rd argument
@@ -158,13 +158,6 @@ export class EthWeb3Manager {
    * Relays an eth transaction via the identity service with retries
    * The relay pays for the transaction fee on behalf of the user
    * The gas Limit is estimated if not provided
-   *
-   * @param contractMethod
-   * @param contractAddress
-   * @param ownerWallet
-   * @param relayerWallet
-   * @param txRetries
-   * @param txGasLimit
    */
   async relayTransaction(
     contractMethod: ContractMethod,
@@ -173,7 +166,7 @@ export class EthWeb3Manager {
     relayerWallet: string,
     txRetries = 5,
     txGasLimit: number | null = null
-  ): Promise<RelayTransaction['resp'] | undefined> {
+  ): Promise<Maybe<RelayTransaction['resp']>> {
     const encodedABI = contractMethod.encodeABI()
     const gasLimit =
       txGasLimit ??
@@ -183,7 +176,7 @@ export class EthWeb3Manager {
         gasLimitMaximum: MAX_GAS_LIMIT
       }))
 
-    const response = await retry<RelayTransaction | undefined>(
+    const response = await retry<Maybe<RelayTransaction>>(
       async (bail) => {
         try {
           const attempt = await this.identityService.ethRelay(

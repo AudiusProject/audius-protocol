@@ -28,8 +28,8 @@ const Web3 = require('./web3')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
+const { PublicKey } = require('@solana/web3.js')
 const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
-
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
@@ -245,6 +245,9 @@ class AudiusLibs {
    * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
    * @param {Uint8Array} feePayerSecretKeys fee payer secret keys, if client wants to switch between different fee payers during relay
    * @param {number} confirmationTimeout solana web3 connection confirmationTimeout in ms
+   * @param {PublicKey|string} audiusDataAdminStorageKeypairPublicKey admin storage PK for audius-data program
+   * @param {PublicKey|string} audiusDataProgramId program ID for the audius-data Anchor program
+   * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program.
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -258,8 +261,17 @@ class AudiusLibs {
     rewardsManagerTokenPDA,
     useRelay,
     feePayerSecretKeys,
-    confirmationTimeout
+    confirmationTimeout,
+    audiusDataAdminStorageKeypairPublicKey,
+    audiusDataProgramId,
+    audiusDataIdl
   }) {
+    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
+      audiusDataAdminStorageKeypairPublicKey = new PublicKey(audiusDataAdminStorageKeypairPublicKey)
+    }
+    if (audiusDataProgramId instanceof String) {
+      audiusDataProgramId = new PublicKey(audiusDataProgramId)
+    }
     return {
       solanaClusterEndpoint,
       mintAddress,
@@ -272,7 +284,10 @@ class AudiusLibs {
       rewardsManagerTokenPDA,
       useRelay,
       feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
-      confirmationTimeout
+      confirmationTimeout,
+      audiusDataAdminStorageKeypairPublicKey,
+      audiusDataProgramId,
+      audiusDataIdl
     }
   }
 
