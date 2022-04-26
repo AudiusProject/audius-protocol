@@ -1,10 +1,12 @@
-const { ContractClient } = require('../contracts/ContractClient')
-const signatureSchemas = require('../../../data-contracts/signatureSchemas')
+import { ContractClient } from '../contracts/ContractClient'
+import signatureSchemas from '../../../data-contracts/signatureSchemas'
+import type { Web3Manager } from '../web3Manager'
 
-class TrackFactoryClient extends ContractClient {
+export class TrackFactoryClient extends ContractClient {
+  override web3Manager!: Web3Manager
   /* -------  GETTERS ------- */
 
-  async getTrack (trackId) {
+  async getTrack(trackId: string) {
     const method = await this.getMethod('getTrack', trackId)
     return method.call()
   }
@@ -12,7 +14,12 @@ class TrackFactoryClient extends ContractClient {
   /* -------  SETTERS ------- */
 
   /** uint _userId, bytes32 _multihashDigest, uint8 _multihashHashFn, uint8 _multihashSize */
-  async addTrack (userId, multihashDigest, multihashHashFn, multihashSize) {
+  async addTrack(
+    userId: number,
+    multihashDigest: string,
+    multihashHashFn: number,
+    multihashSize: number
+  ) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -27,7 +34,8 @@ class TrackFactoryClient extends ContractClient {
     )
 
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const method = await this.getMethod('addTrack',
+    const method = await this.getMethod(
+      'addTrack',
       userId,
       multihashDigest,
       multihashHashFn,
@@ -42,13 +50,19 @@ class TrackFactoryClient extends ContractClient {
       contractAddress
     )
     return {
-      trackId: parseInt(tx.events.NewTrack.returnValues._id, 10),
+      trackId: parseInt(tx.events?.['NewTrack']?.returnValues._id, 10),
       txReceipt: tx
     }
   }
 
   /** uint _trackId, uint _trackOwnerId, bytes32 _multihashDigest, uint8 _multihashHashFn, uint8 _multihashSize */
-  async updateTrack (trackId, trackOwnerId, multihashDigest, multihashHashFn, multihashSize) {
+  async updateTrack(
+    trackId: number,
+    trackOwnerId: number,
+    multihashDigest: string,
+    multihashHashFn: number,
+    multihashSize: number
+  ) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -64,7 +78,8 @@ class TrackFactoryClient extends ContractClient {
     )
 
     const sig = await this.web3Manager.signTypedData(signatureData)
-    const method = await this.getMethod('updateTrack',
+    const method = await this.getMethod(
+      'updateTrack',
       trackId,
       trackOwnerId,
       multihashDigest,
@@ -81,16 +96,15 @@ class TrackFactoryClient extends ContractClient {
     )
 
     return {
-      trackId: parseInt(tx.events.UpdateTrack.returnValues._trackId, 10),
+      trackId: parseInt(tx.events?.['UpdateTrack']?.returnValues._trackId, 10),
       txReceipt: tx
     }
   }
 
   /**
-   * @param {uint} trackId
-   * @return {uint} deleted trackId from on-chain event log
+   * @return deleted trackId from on-chain event log
    */
-  async deleteTrack (trackId) {
+  async deleteTrack(trackId: number) {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -110,10 +124,8 @@ class TrackFactoryClient extends ContractClient {
       contractAddress
     )
     return {
-      trackId: parseInt(tx.events.TrackDeleted.returnValues._trackId, 10),
+      trackId: parseInt(tx.events?.['TrackDeleted']?.returnValues._trackId, 10),
       txReceipt: tx
     }
   }
 }
-
-module.exports = TrackFactoryClient

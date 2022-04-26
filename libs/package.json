@@ -57,6 +57,7 @@
     "keccak256": "1.0.2",
     "lodash": "4.17.21",
     "proper-url-join": "1.2.0",
+    "safe-buffer": "^5.2.1",
     "secp256k1": "4.0.2",
     "semver": "6.3.0",
     "web3": "1.7.1"
