@@ -11,7 +11,8 @@ import {
   ServiceWithEndpoint,
   Service,
   ServiceName,
-  Timing
+  Timing,
+  Logger
 } from '../../utils'
 import { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } from './constants'
 
@@ -66,7 +67,7 @@ type CreatorNodeSelectionConfig = Omit<
   equivalencyDelta?: number | null
   preferHigherPatchForPrimary?: boolean
   preferHigherPatchForSecondaries?: boolean
-  logger?: any
+  logger?: Logger
 }
 
 interface Decision {
@@ -88,7 +89,7 @@ export class CreatorNodeSelection extends ServiceSelection {
   backupsList: string[]
   backupTimings: Timing[]
   maxStorageUsedPercent: number
-  logger: any
+  logger: Logger
 
   constructor({
     creatorNode,
