@@ -1,9 +1,9 @@
+import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/libs/dist/core'
+
 import { User } from 'common/models/User'
 
-// TODO: the following should come from @audius/libs/constants when we build
-// it with esm. Importing with common-js breaks the app since it tries
-// to import all of libs, which we try to do async later on.
-const CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY = '@audius/libs:found-user'
+// TODO: the following should come from @audius/libs/dist/core when
+// discoveryProvider/constants is migrated to typescript.
 const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-node-timestamp'
 
 const AUDIUS_ACCOUNT_KEY = '@audius/account'
