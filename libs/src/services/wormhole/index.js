@@ -129,7 +129,7 @@ class Wormhole {
         signTransaction = customSignTransaction
       } else {
         signTransaction = async (transaction) => {
-          const { blockhash } = await connection.getRecentBlockhash()
+          const { blockhash } = await connection.getLatestBlockhash()
           // Must call serialize message to set the correct signatures on the transaction
           transaction.serializeMessage()
           const transactionData = {
@@ -180,7 +180,7 @@ class Wormhole {
       } else {
         transaction.serializeMessage()
 
-        const { blockhash } = await connection.getRecentBlockhash()
+        const { blockhash } = await connection.getLatestBlockhash()
         const transactionData = {
           recentBlockhash: blockhash,
           instructions: transaction.instructions.map(SolanaUtils.prepareInstructionForRelay),
@@ -277,7 +277,7 @@ class Wormhole {
       tx.serializeMessage()
       tx.partialSign(rootSolanaAccount)
 
-      const { blockhash } = await connection.getRecentBlockhash()
+      const { blockhash } = await connection.getLatestBlockhash()
       const transactionData = {
         recentBlockhash: blockhash,
         instructions: tx.instructions.map(SolanaUtils.prepareInstructionForRelay),

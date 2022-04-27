@@ -18,7 +18,7 @@ handle_provisioning_error () {
 USE_AZURE=0 # GCP by default
 SOURCE_DISK="cj-remote-zsh-bake" # name of remote box to bake as AMI
 PROTOCOL_GIT_REF="master"
-CLIENT_GIT_REF="master"
+CLIENT_GIT_REF="main"
 USERNAME="ubuntu"
 d=`date +%m-%d-%Y`
 echo $d
