@@ -4,6 +4,7 @@ const {
   getStartTime
 } = require('../../logging')
 
+const TrackTranscodeHandoffManager = require('./TrackTranscodeHandoffManager')
 const TrackContentUploadManager = require('./trackContentUploadManager')
 
 /**
@@ -21,12 +22,7 @@ const TrackContentUploadManager = require('./trackContentUploadManager')
  */
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
-  const {
-    fileName,
-    fileDir,
-    fileDestination,
-    session: { cnodeUserUUID }
-  } = requestProps
+  const { fileName, fileDir, fileDestination, cnodeUserUUID } = requestProps
 
   const routeTimeStart = getStartTime()
 
@@ -61,6 +57,44 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   return resp
 }
 
+async function handleTranscodeAndSegment(
+  { logContext },
+  { fileName, fileDir }
+) {
+  return TrackContentUploadManager.transcodeAndSegment(
+    { logContext },
+    { fileName, fileDir }
+  )
+}
+
+async function handleTranscodeHandOff(
+  { logContext },
+  {
+    libs,
+    fileName,
+    fileDir,
+    fileNameNoExtension,
+    fileDestination,
+    session,
+    headers
+  }
+) {
+  return TrackTranscodeHandoffManager.handOff(
+    { logContext },
+    {
+      libs,
+      fileName,
+      fileDir,
+      fileNameNoExtension,
+      fileDestination,
+      session,
+      headers
+    }
+  )
+}
+
 module.exports = {
-  handleTrackContentRoute
+  handleTrackContentRoute,
+  handleTranscodeAndSegment,
+  handleTranscodeHandOff
 }
