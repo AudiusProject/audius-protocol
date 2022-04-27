@@ -79,12 +79,12 @@ function* getTracks({ offset, limit, payload }) {
       return pinnedTrack.concat(processed)
     } else {
       // If we're paginating w/ offset > 0
-      // just slice out the pinned track because
-      // we already have it.
+      // set the pinned track as null.
+      // This will be handled by `filterDeletes` via `nullCount`
       if (pinnedTrackIndex !== -1) {
-        return processed
-          .slice(0, pinnedTrackIndex)
-          .concat(processed.slice(pinnedTrackIndex + 1))
+        return processed.map((track, i) =>
+          i === pinnedTrackIndex ? null : track
+        )
       }
       return processed
     }
