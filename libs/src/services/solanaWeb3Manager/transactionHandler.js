@@ -75,7 +75,7 @@ class TransactionHandler {
     skipPreflight = null,
     feePayerOverride = null,
     sendBlockhash = true,
-    retry = false
+    retry = true
   }) {
     let result = null
     if (this.useRelay) {
