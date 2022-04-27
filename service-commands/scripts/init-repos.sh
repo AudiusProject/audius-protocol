@@ -8,8 +8,6 @@ set -ex
 # setup root
 cd $PROTOCOL_DIR/
 npm install
-# necessary because we use ts-node globally to call scripts but this can never be installed
-# via package.json https://github.com/npm/npm/issues/2949#issuecomment-11408461
 
 # setup pre-commit hooks
 if ! command -v pre-commit &>/dev/null; then
