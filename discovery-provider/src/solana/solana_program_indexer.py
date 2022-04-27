@@ -102,7 +102,6 @@ class SolanaProgramIndexer(IndexerBase):
         self._program_id = program_id
         self._solana_client_manager = solana_client_manager
         self._redis_queue_cache_prefix = f"{self._label}-tx-cache-queue"
-        self._latest_chain_slot = 0
         self.db = db
 
     @abstractmethod
@@ -168,10 +167,7 @@ class SolanaProgramIndexer(IndexerBase):
         # Committing to DB
         parsed_transactions: List[ParsedTx] = []
         for tx_sig in tx_sig_batch_records:
-            parsed_tx = tx_sig_futures_map[tx_sig]
-            slot = parsed_tx["result"]["slot"]
-            if slot < self._latest_chain_slot:
-                parsed_transactions.append(parsed_tx)
+            parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
         # Fetch metadata in parallel
         cid_metadata, blacklisted_cids = await self.fetch_cid_metadata(
@@ -196,8 +192,6 @@ class SolanaProgramIndexer(IndexerBase):
         Calculate the delta between database and chain tail and return an array of arrays containing transaction batches
         """
         latest_processed_slot = self.get_latest_slot()
-        self._latest_chain_slot = self._solana_client_manager.get_block_height()
-
         # The 'before' value from where we start querying transactions
         # TODO: Add cache
         last_tx_signature = None
@@ -232,6 +226,19 @@ class SolanaProgramIndexer(IndexerBase):
                 intersection_found = True
                 self.msg(f"No transactions found before {last_tx_signature}")
             else:
+                # truncate repeated trailing slots that could be incomplete [4, 3, 2, 2, 2...] -> [4, 3], [2, 2, 2..]
+                if (
+                    len(transactions_array) > 1
+                    and transactions_array[-1] == transactions_array[-2]
+                ):
+                    for i in range(len(transactions_array) - 1, 0, -1):
+                        if (
+                            transactions_array[i - 1]["slot"]
+                            != transactions_array[i]["slot"]
+                        ):
+                            transactions_array = transactions_array[:i]
+                            break
+
                 with self._db.scoped_session() as read_session:
                     for tx in transactions_array:
                         tx_sig = tx["signature"]
