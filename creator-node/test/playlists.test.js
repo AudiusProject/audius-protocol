@@ -1,6 +1,5 @@
 const request = require('supertest')
 const assert = require('assert')
-const sinon = require('sinon')
 const fs = require('fs')
 
 const models = require('../src/models')
@@ -32,7 +31,6 @@ describe('Test Playlists', function () {
   })
 
   afterEach(async () => {
-    sinon.restore()
     await server.close()
   })
 
@@ -122,7 +120,6 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
-      .expect(console.log)
       .expect(200)
   })
 
@@ -136,7 +133,6 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
-      .expect(console.log)
       .expect(200)
 
     if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
@@ -148,22 +144,13 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
-      .expect(console.log)
-      .expect(200)
-
-    await request(app)
-      .post('/playlists')
-      .set('X-Session-ID', session.sessionToken)
-      .set('User-Id', session.userId)
-      .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
-      .expect(console.log)
       .expect(200)
   })
 
   it('successfully completes Audius playlist creation when retrying an existing block number and new metadata', async function () {
     const metadata1 = { test: 'field1' }
 
-    libsMock.User.getUsers.exactly(2)
+    libsMock.Playlist.getPlaylists.exactly(2)
 
     const resp1 = await request(app)
       .post('/playlists/metadata')
@@ -178,7 +165,7 @@ describe('Test Playlists', function () {
 
     const metadata2 = { test2: 'field2' }
 
-    libsMock.User.getUsers.exactly(2)
+    libsMock.Playlist.getPlaylists.exactly(2)
 
     const resp2 = await request(app)
       .post('/playlists/metadata')
@@ -199,10 +186,10 @@ describe('Test Playlists', function () {
       .expect(200)
   })
 
-  it('fails Audius user creation when too low of a block number is supplied', async function () {
+  it('fails Audius playlist creation when too low of a block number is supplied', async function () {
     const metadata = { test: 'field1' }
 
-    libsMock.User.getUsers.exactly(2)
+    libsMock.Playlist.getPlaylists.exactly(2)
 
     const resp = await request(app)
       .post('/playlists/metadata')

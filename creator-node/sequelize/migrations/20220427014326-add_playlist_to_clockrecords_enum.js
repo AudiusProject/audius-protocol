@@ -26,13 +26,12 @@ module.exports = {
 }
 
 async function addPlaylistToClockRecordSourceTables(queryInterface, Sequelize, transaction) {
-  await queryInterface.sequelize.query(`ALTER TYPE "enum_ClockRecords_sourceTable" ADD VALUE 'Playlist'`);
-
+  await queryInterface.sequelize.query(`ALTER TYPE "enum_ClockRecords_sourceTable" ADD VALUE 'Playlist'`)
 }
 
 async function addCompositeUniqueConstraints (queryInterface, Sequelize, transaction) {
   await queryInterface.addConstraint(
-    'Playlist',
+    'Playlists',
     {
       type: 'UNIQUE',
       fields: ['playlistId', 'clock'],
@@ -43,7 +42,7 @@ async function addCompositeUniqueConstraints (queryInterface, Sequelize, transac
 }
 
 async function createPlaylistTable (queryInterface, Sequelize, transaction) {
-  await queryInterface.createTable('Playlist', {
+  await queryInterface.createTable('Playlists', {
     cnodeUserUUID: {
       type: Sequelize.UUID,
       primaryKey: false,
