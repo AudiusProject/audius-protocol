@@ -102,6 +102,7 @@ class SolanaProgramIndexer(IndexerBase):
         self._program_id = program_id
         self._solana_client_manager = solana_client_manager
         self._redis_queue_cache_prefix = f"{self._label}-tx-cache-queue"
+        self._latest_chain_slot = 0
         self.db = db
 
     @abstractmethod
@@ -149,7 +150,6 @@ class SolanaProgramIndexer(IndexerBase):
         return {}
 
     async def process_txs_batch(self, tx_sig_batch_records: List[str]):
-        latest_chain_slot = self._solana_client_manager.get_block_height()
         self.msg(f"Parsing {tx_sig_batch_records}")
         futures = []
         tx_sig_futures_map: Dict[str, ParsedTx] = {}
@@ -170,7 +170,7 @@ class SolanaProgramIndexer(IndexerBase):
         for tx_sig in tx_sig_batch_records:
             parsed_tx = tx_sig_futures_map[tx_sig]
             slot = parsed_tx["result"]["slot"]
-            if slot < latest_chain_slot:
+            if slot < self._latest_chain_slot:
                 parsed_transactions.append(parsed_tx)
 
         # Fetch metadata in parallel
@@ -196,6 +196,8 @@ class SolanaProgramIndexer(IndexerBase):
         Calculate the delta between database and chain tail and return an array of arrays containing transaction batches
         """
         latest_processed_slot = self.get_latest_slot()
+        self._latest_chain_slot = self._solana_client_manager.get_block_height()
+
         # The 'before' value from where we start querying transactions
         # TODO: Add cache
         last_tx_signature = None

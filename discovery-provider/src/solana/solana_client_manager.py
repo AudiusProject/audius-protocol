@@ -47,9 +47,7 @@ class SolanaClientManager:
                     logger.info(
                         f"solana_client_manager.py | get_block_height"
                     )
-                    tx_info: ConfirmedTransaction = client.get_transaction(
-                        encoding
-                    )
+                    tx_info: ConfirmedTransaction = client.get_block_height()
                     if tx_info["result"] is not None:
                         return tx_info["result"]
                 except Exception as e:
