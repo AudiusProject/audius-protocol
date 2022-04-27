@@ -789,6 +789,8 @@ workflows:
   test-gcp:
     jobs:
       - create-gcp-box:
+          context:
+            - GCP
           name: create-gcp-box
   test-build-and-push:
     jobs:
