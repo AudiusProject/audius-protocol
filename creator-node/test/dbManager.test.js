@@ -773,6 +773,12 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
           transcodedTrackUUID
         })
         .expect(200)
+
+      // Ensure Prometheus metrics continue reporting
+      const prometheusResp = await request(app)
+        .get('/prometheus_metrics')
+        .expect(200)
+      assert.ok(prometheusResp.text.includes('audius_cn_routes_tracks_runtime_seconds_count{scope="full"} 1'))
     }
 
     const getAllDBRecordsForUser = async (cnodeUserUUID) => {
