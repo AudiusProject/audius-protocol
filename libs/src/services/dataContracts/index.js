@@ -126,6 +126,7 @@ class AudiusContracts {
         UserReplicaSetManagerABI,
         UserReplicaSetManagerRegistryKey,
         this.getRegistryAddressForContract,
+        null,
         this.logger
       )
       await this.UserReplicaSetManagerClient.init(selectNewEndpointOnRetry)
