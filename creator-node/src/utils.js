@@ -4,6 +4,7 @@ const path = require('path')
 const axios = require('axios')
 const spawn = require('child_process').spawn
 const stream = require('stream')
+const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
 
@@ -25,6 +26,10 @@ class Utils {
       console.log(`starting timeout of ${ms}`)
     }
     return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
+  static getRandomInt(max) {
+    return Math.floor(Math.random() * max)
   }
 }
 
@@ -255,7 +260,7 @@ async function createDirForFile(fileStoragePath) {
  * Given an input stream and a destination file path, this function writes the contents
  * of the stream to disk at expectedStoragePath
  * @param {stream} inputStream Stream to persist to disk
- * @param {String} expectedStoragePath path in local file system to store
+ * @param {String} expectedStoragePath path in local file system to store. includes the file name
  * @param {Boolean?} createDir if true, will ensure the expectedStoragePath path exists so we don't have errors from folders missing
  */
 async function writeStreamToFileSystem(
@@ -314,6 +319,74 @@ async function runShellCommand(command, args, logger) {
   })
 }
 
+/**
+ * A current node should handle a track transcode if there is enough room in the TranscodingQueue to accept more jobs
+ *
+ * If there is not enough room, if the spID is not set after app init, then the current node should still accept the transcode task
+ * @param {Object} param
+ * @param {boolean} param.transcodingQueueCanAcceptMoreJobs flag to determine if TranscodingQueue can accept more jobs
+ * @param {number} param.spID the spID of the current node
+ * @returns whether or not the current node can handle the transcode
+ */
+function currentNodeShouldHandleTranscode({
+  transcodingQueueCanAcceptMoreJobs,
+  spID
+}) {
+  // If the TranscodingQueue is available, let current node handle transcode
+  if (transcodingQueueCanAcceptMoreJobs) return true
+
+  // Else, if spID is not initialized, the track cannot be handed off to another node to transcode.
+  // Continue with the upload on the current node.
+  const currentNodeShouldHandleTranscode = !Number.isInteger(spID)
+
+  return currentNodeShouldHandleTranscode
+}
+
+/**
+ * Wrapper around async-retry API.
+ *
+ * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
+ * @param {Object} param
+ * @param {func} param.asyncFn the fn to asynchronously retry
+ * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
+ * @param {string} param.asyncFnTask the task label used to print on retry. used for debugging purposes
+ * @param {number} param.factor the exponential factor
+ * @param {number} [retries=5] the max number of retries. defaulted to 5
+ * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
+ * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
+ * @returns the fn response if success, or throws an error
+ */
+function asyncRetry({
+  asyncFn,
+  asyncFnParams,
+  asyncFnTask,
+  retries = 5,
+  factor = 2, // default for async-retry
+  minTimeout = 1000, // default for async-retry
+  maxTimeout = 5000
+}) {
+  return retry(
+    async () => {
+      if (asyncFnParams) {
+        return asyncFn(asyncFnParams)
+      }
+
+      return asyncFn()
+    },
+    {
+      retries,
+      factor,
+      minTimeout,
+      maxTimeout,
+      onRetry: (err, i) => {
+        if (err) {
+          console.log(`${asyncFnTask} ${i} retry error: `, err)
+        }
+      }
+    }
+  )
+}
+
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
@@ -321,3 +394,6 @@ module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
+module.exports.currentNodeShouldHandleTranscode =
+  currentNodeShouldHandleTranscode
+module.exports.asyncRetry = asyncRetry
