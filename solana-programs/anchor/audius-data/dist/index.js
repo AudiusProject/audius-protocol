@@ -113798,7 +113798,7 @@ var instructions = [
 			},
 			{
 				name: "admin",
-				isMut: true,
+				isMut: false,
 				isSigner: false
 			},
 			{
@@ -114108,7 +114108,7 @@ var instructions = [
 				isSigner: true
 			},
 			{
-				name: "authorityDelegationStatusPda",
+				name: "authorityDelegationStatus",
 				isMut: true,
 				isSigner: false
 			},
@@ -114140,7 +114140,7 @@ var instructions = [
 				isSigner: true
 			},
 			{
-				name: "authorityDelegationStatusPda",
+				name: "authorityDelegationStatus",
 				isMut: true,
 				isSigner: false
 			},
@@ -118133,16 +118133,18 @@ exports.randomCID = randomCID;
 // so that our test PDA derivation
 // can use the same seed format as
 // the rust program (u16.to_le_bytes())
+// use anchor.BN.toArrayLike instead of .toBuffer for browser compat reasons
 const convertBNToSpIdSeed = (spId) => {
-    return Buffer.concat([Buffer.from("sp_id", "utf8"), spId.toBuffer("le", 2)]);
+    return Buffer.concat([Buffer.from("sp_id", "utf8"), spId.toArrayLike(Buffer, "le", 2)]);
 };
 exports.convertBNToSpIdSeed = convertBNToSpIdSeed;
 // used to convert u32 to little endian bytes
 // so that our test PDA derivation
 // can use the same seed format as
 // the rust program (u32.to_le_bytes())
+// use anchor.BN.toArrayLike instead of .toBuffer for browser compat reasons
 const convertBNToUserIdSeed = (userId) => {
-    return userId.toBuffer("le", 4);
+    return userId.toArrayLike(Buffer, "le", 4);
 };
 exports.convertBNToUserIdSeed = convertBNToUserIdSeed;
 /// Derive a program address with pubkey as the seed
@@ -118257,12 +118259,12 @@ const initAdmin = ({ payer, program, adminKeypair, adminStorageKeypair, verifier
 exports.initAdmin = initAdmin;
 /// Initialize a user from the Audius Admin account
 /// No ID param because every user being 'initialized' from Admin already has an ID
-const initUser = ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, replicaSetBumps, metadata, userStorageAccount, baseAuthorityAccount, adminStorageAccount, adminAuthorityPublicKey, cn1, cn2, cn3, }) => {
+const initUser = ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, replicaSetBumps, metadata, userAccount, baseAuthorityAccount, adminStorageAccount, adminAuthorityPublicKey, cn1, cn2, cn3, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.initUser(baseAuthorityAccount, [...anchor.utils.bytes.hex.decode(ethAddress)], replicaSet, replicaSetBumps, userId.toNumber(), bumpSeed, metadata, {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccount,
+            user: userAccount,
             cn1,
             cn2,
             cn3,
@@ -118275,7 +118277,7 @@ const initUser = ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, re
 };
 exports.initUser = initUser;
 /// Claim a user's account using given an eth private key
-const initUserSolPubkey = ({ program, ethPrivateKey, message, userSolPubkey, userStorageAccount, }) => {
+const initUserSolPubkey = ({ program, ethPrivateKey, message, userSolPubkey, userAccount, }) => {
     const { signature, recoveryId } = (0, utils_1.signBytes)(message, ethPrivateKey);
     // Get the public key in a compressed format
     const ethPubkey = secp256k1
@@ -118290,18 +118292,18 @@ const initUserSolPubkey = ({ program, ethPrivateKey, message, userSolPubkey, use
     }));
     tx.add(program.instruction.initUserSol(userSolPubkey, {
         accounts: {
-            user: userStorageAccount,
+            user: userAccount,
             sysvarProgram: utils_1.SystemSysVarProgramKey,
         },
     }));
     return tx;
 };
 exports.initUserSolPubkey = initUserSolPubkey;
-const createContentNode = ({ payer, program, adminStoragePublicKey, adminPublicKey, baseAuthorityAccount, spID, contentNodeAuthority, contentNodeAcct, ownerEthAddress, }) => {
+const createContentNode = ({ payer, program, adminStorageAccount, adminPublicKey, baseAuthorityAccount, spID, contentNodeAuthority, contentNodeAcct, ownerEthAddress, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.createContentNode(baseAuthorityAccount, spID.toNumber(), contentNodeAuthority, [...anchor.utils.bytes.hex.decode(ownerEthAddress)], {
         accounts: {
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
             payer,
             contentNode: contentNodeAcct,
             authority: adminPublicKey,
@@ -118311,11 +118313,11 @@ const createContentNode = ({ payer, program, adminStoragePublicKey, adminPublicK
     return tx;
 };
 exports.createContentNode = createContentNode;
-const updateUserReplicaSet = ({ payer, program, adminStoragePublicKey, baseAuthorityAccount, replicaSet, userAcct, replicaSetBumps, userIdSeedBump, contentNodeAuthorityPublicKey, cn1, cn2, cn3, }) => {
+const updateUserReplicaSet = ({ payer, program, adminStorageAccount, baseAuthorityAccount, replicaSet, userAcct, replicaSetBumps, userIdSeedBump, contentNodeAuthorityPublicKey, cn1, cn2, cn3, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.updateUserReplicaSet(baseAuthorityAccount, userIdSeedBump, replicaSet, replicaSetBumps, {
         accounts: {
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
             user: userAcct,
             cnAuthority: contentNodeAuthorityPublicKey,
             cn1,
@@ -118328,11 +118330,11 @@ const updateUserReplicaSet = ({ payer, program, adminStoragePublicKey, baseAutho
     return tx;
 };
 exports.updateUserReplicaSet = updateUserReplicaSet;
-const publicCreateOrUpdateContentNode = ({ payer, program, adminStoragePublicKey, baseAuthorityAccount, spID, contentNodeAcct, ownerEthAddress, contentNodeAuthority, proposer1, proposer2, proposer3, }) => {
+const publicCreateOrUpdateContentNode = ({ payer, program, adminStorageAccount, baseAuthorityAccount, spID, contentNodeAcct, ownerEthAddress, contentNodeAuthority, proposer1, proposer2, proposer3, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.publicCreateOrUpdateContentNode(baseAuthorityAccount, { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump }, { seed: [...proposer2.seedBump.seed], bump: proposer2.seedBump.bump }, { seed: [...proposer3.seedBump.seed], bump: proposer3.seedBump.bump }, spID.toNumber(), contentNodeAuthority, [...anchor.utils.bytes.hex.decode(ownerEthAddress)], {
         accounts: {
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
             payer,
             contentNode: contentNodeAcct,
             systemProgram: SystemProgram.programId,
@@ -118347,11 +118349,11 @@ const publicCreateOrUpdateContentNode = ({ payer, program, adminStoragePublicKey
     return tx;
 };
 exports.publicCreateOrUpdateContentNode = publicCreateOrUpdateContentNode;
-const publicDeleteContentNode = ({ payer, program, adminStoragePublicKey, adminAuthorityPublicKey, baseAuthorityAccount, cnDelete, proposer1, proposer2, proposer3, }) => {
+const publicDeleteContentNode = ({ payer, program, adminStorageAccount, adminAuthorityPublicKey, baseAuthorityAccount, cnDelete, proposer1, proposer2, proposer3, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.publicDeleteContentNode(baseAuthorityAccount, { seed: [...cnDelete.seedBump.seed], bump: cnDelete.seedBump.bump }, { seed: [...proposer1.seedBump.seed], bump: proposer1.seedBump.bump }, { seed: [...proposer2.seedBump.seed], bump: proposer2.seedBump.bump }, { seed: [...proposer3.seedBump.seed], bump: proposer3.seedBump.bump }, {
         accounts: {
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
             adminAuthority: adminAuthorityPublicKey,
             payer,
             contentNode: cnDelete.pda,
@@ -118368,7 +118370,7 @@ const publicDeleteContentNode = ({ payer, program, adminStoragePublicKey, adminA
 };
 exports.publicDeleteContentNode = publicDeleteContentNode;
 /// Create a user without Audius Admin account
-const createUser = ({ baseAuthorityAccount, program, ethAccount, message, replicaSet, replicaSetBumps, cn1, cn2, cn3, userId, bumpSeed, metadata, payer, userSolPubkey, userStorageAccount, adminStoragePublicKey, }) => {
+const createUser = ({ baseAuthorityAccount, program, ethAccount, message, replicaSet, replicaSetBumps, cn1, cn2, cn3, userId, bumpSeed, metadata, payer, userAuthorityPublicKey, userAccount, adminStorageAccount, }) => {
     const { signature, recoveryId } = (0, utils_1.signBytes)(message, ethAccount.privateKey);
     // Get the public key in a compressed format
     const ethPubkey = secp256k1
@@ -118381,26 +118383,26 @@ const createUser = ({ baseAuthorityAccount, program, ethAccount, message, replic
         signature,
         recoveryId,
     }));
-    tx.add(program.instruction.createUser(baseAuthorityAccount, [...anchor.utils.bytes.hex.decode(ethAccount.address)], replicaSet, replicaSetBumps, userId.toNumber(), bumpSeed, metadata, userSolPubkey, {
+    tx.add(program.instruction.createUser(baseAuthorityAccount, [...anchor.utils.bytes.hex.decode(ethAccount.address)], replicaSet, replicaSetBumps, userId.toNumber(), bumpSeed, metadata, userAuthorityPublicKey, {
         accounts: {
             payer,
-            user: userStorageAccount,
+            user: userAccount,
             cn1,
             cn2,
             cn3,
             systemProgram: SystemProgram.programId,
             sysvarProgram: utils_1.SystemSysVarProgramKey,
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
         },
     }));
     return tx;
 };
 exports.createUser = createUser;
-const updateUser = ({ program, metadata, userStorageAccount, userAuthorityPublicKey, userAuthorityDelegate, authorityDelegationStatusAccount, }) => {
+const updateUser = ({ program, metadata, userAccount, userAuthorityPublicKey, userAuthorityDelegate, authorityDelegationStatusAccount, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.updateUser(metadata, {
         accounts: {
-            user: userStorageAccount,
+            user: userAccount,
             userAuthority: userAuthorityPublicKey,
             userAuthorityDelegate,
             authorityDelegationStatus: authorityDelegationStatusAccount,
@@ -118421,12 +118423,12 @@ const updateAdmin = ({ program, isWriteEnabled, adminStorageAccount, adminAuthor
     return tx;
 };
 exports.updateAdmin = updateAdmin;
-const initAuthorityDelegationStatus = ({ program, authorityName, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, }) => {
+const initAuthorityDelegationStatus = ({ program, authorityName, userAuthorityDelegatePublicKey, authorityDelegationStatusAccount, payer, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.initAuthorityDelegationStatus(authorityName, {
         accounts: {
             delegateAuthority: userAuthorityDelegatePublicKey,
-            authorityDelegationStatusPda: authorityDelegationStatusPDA,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             payer,
             systemProgram: SystemProgram.programId,
         },
@@ -118434,12 +118436,12 @@ const initAuthorityDelegationStatus = ({ program, authorityName, userAuthorityDe
     return tx;
 };
 exports.initAuthorityDelegationStatus = initAuthorityDelegationStatus;
-const revokeAuthorityDelegation = ({ program, authorityDelegationBump, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, }) => {
+const revokeAuthorityDelegation = ({ program, authorityDelegationBump, userAuthorityDelegatePublicKey, authorityDelegationStatusAccount, payer, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.revokeAuthorityDelegation(authorityDelegationBump, {
         accounts: {
             delegateAuthority: userAuthorityDelegatePublicKey,
-            authorityDelegationStatusPda: authorityDelegationStatusPDA,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             payer,
             systemProgram: SystemProgram.programId,
         },
@@ -118447,15 +118449,15 @@ const revokeAuthorityDelegation = ({ program, authorityDelegationBump, userAutho
     return tx;
 };
 exports.revokeAuthorityDelegation = revokeAuthorityDelegation;
-const addUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, }) => {
+const addUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, user, authorityDelegationStatusAccount, currentUserAuthorityDelegate, userId, userBumpSeed, adminStorageAccount, signerUserAuthorityDelegate, authorityPublicKey, payer, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.addUserAuthorityDelegate(baseAuthorityAccount, { userId: userId.toNumber(), bump: userBumpSeed }, delegatePublicKey, {
         accounts: {
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
             user,
             currentUserAuthorityDelegate,
             signerUserAuthorityDelegate,
-            authorityDelegationStatus,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: authorityPublicKey,
             payer,
             systemProgram: SystemProgram.programId,
@@ -118464,15 +118466,15 @@ const addUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePubli
     return tx;
 };
 exports.addUserAuthorityDelegate = addUserAuthorityDelegate;
-const removeUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, delegateBump, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, }) => {
+const removeUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, delegateBump, user, authorityDelegationStatusAccount, currentUserAuthorityDelegate, userId, userBumpSeed, adminStorageAccount, signerUserAuthorityDelegate, authorityPublicKey, payer, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.removeUserAuthorityDelegate(baseAuthorityAccount, { userId: userId.toNumber(), bump: userBumpSeed }, delegatePublicKey, delegateBump, {
         accounts: {
-            admin: adminStoragePublicKey,
+            admin: adminStorageAccount,
             user,
             currentUserAuthorityDelegate,
             signerUserAuthorityDelegate,
-            authorityDelegationStatus,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: authorityPublicKey,
             payer,
             systemProgram: SystemProgram.programId,
@@ -118482,11 +118484,11 @@ const removeUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePu
 };
 exports.removeUserAuthorityDelegate = removeUserAuthorityDelegate;
 /// Verify user with verifier Keypair
-const updateIsVerified = ({ program, adminPublicKey, userStorageAccount, verifierPublicKey, baseAuthorityAccount, userId, bumpSeed, }) => {
+const updateIsVerified = ({ program, adminPublicKey, userAccount, verifierPublicKey, baseAuthorityAccount, userId, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.updateIsVerified(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, {
         accounts: {
-            user: userStorageAccount,
+            user: userAccount,
             admin: adminPublicKey,
             verifier: verifierPublicKey,
         },
@@ -118494,15 +118496,15 @@ const updateIsVerified = ({ program, adminPublicKey, userStorageAccount, verifie
     return tx;
 };
 exports.updateIsVerified = updateIsVerified;
-const createTrack = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, }) => {
+const createTrack = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAccount, metadata, userId, adminStorageAccount, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.manageEntity(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntityTypesEnumValues.track, exports.ManagementActions.create, id, metadata, {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccountPDA,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
@@ -118523,75 +118525,75 @@ exports.ManagementActions = {
     update: { update: {} },
     delete: { delete: {} },
 };
-const updateTrack = ({ program, baseAuthorityAccount, id, metadata, userAuthorityPublicKey, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userId, adminStorageAccount, bumpSeed, }) => {
+const updateTrack = ({ program, baseAuthorityAccount, id, metadata, userAuthorityPublicKey, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userId, adminStorageAccount, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.manageEntity(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntityTypesEnumValues.track, exports.ManagementActions.update, id, metadata, {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccountPDA,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
 };
 exports.updateTrack = updateTrack;
 /// Initialize a user from the Audius Admin account
-const deleteTrack = ({ program, id, userStorageAccountPDA, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }) => {
+const deleteTrack = ({ program, id, userAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.manageEntity(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntityTypesEnumValues.track, exports.ManagementActions.delete, id, "", {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccountPDA,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
 };
 exports.deleteTrack = deleteTrack;
 /// Create a playlist
-const createPlaylist = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, }) => {
+const createPlaylist = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAccount, metadata, userId, adminStorageAccount, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.manageEntity(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntityTypesEnumValues.playlist, exports.ManagementActions.create, id, metadata, {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccountPDA,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
 };
 exports.createPlaylist = createPlaylist;
 /// Update a playlist
-const updatePlaylist = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, }) => {
+const updatePlaylist = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAccount, metadata, userId, adminStorageAccount, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.manageEntity(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntityTypesEnumValues.playlist, exports.ManagementActions.update, id, metadata, {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccountPDA,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
 };
 exports.updatePlaylist = updatePlaylist;
 /// Delete a playlist
-const deletePlaylist = ({ program, id, userStorageAccountPDA, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }) => {
+const deletePlaylist = ({ program, id, userAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.manageEntity(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntityTypesEnumValues.playlist, exports.ManagementActions.delete, id, "", {
         accounts: {
             admin: adminStorageAccount,
-            user: userStorageAccountPDA,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
@@ -118615,112 +118617,112 @@ exports.EntitySocialActions = {
     deleteRepost: { deleteRepost: {} },
 };
 /// Social actions
-const addTrackSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const addTrackSave = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.addSave, exports.EntityTypesEnumValues.track, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
             authority: userAuthorityPublicKey,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
         },
     }));
     return tx;
 };
 exports.addTrackSave = addTrackSave;
-const deleteTrackSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const deleteTrackSave = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.deleteSave, exports.EntityTypesEnumValues.track, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.deleteTrackSave = deleteTrackSave;
-const addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const addTrackRepost = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.addRepost, exports.EntityTypesEnumValues.track, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.addTrackRepost = addTrackRepost;
-const deleteTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const deleteTrackRepost = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.deleteRepost, exports.EntityTypesEnumValues.track, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.deleteTrackRepost = deleteTrackRepost;
-const addPlaylistSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const addPlaylistSave = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.addSave, exports.EntityTypesEnumValues.playlist, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.addPlaylistSave = addPlaylistSave;
-const deletePlaylistSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const deletePlaylistSave = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.deleteSave, exports.EntityTypesEnumValues.playlist, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.deletePlaylistSave = deletePlaylistSave;
-const addPlaylistRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const addPlaylistRepost = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.addRepost, exports.EntityTypesEnumValues.playlist, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.addPlaylistRepost = addPlaylistRepost;
-const deletePlaylistRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }) => {
+const deletePlaylistRepost = ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeEntitySocialAction(baseAuthorityAccount, { userId: userId.toNumber(), bump: bumpSeed }, exports.EntitySocialActions.deleteRepost, exports.EntityTypesEnumValues.playlist, id, {
         accounts: {
-            admin: adminStoragePublicKey,
-            user: userStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            user: userAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
@@ -118736,60 +118738,60 @@ exports.UserSocialActions = {
     subscribeUser: { subscribeUser: {} },
     unsubscribeUser: { unsubscribeUser: {} },
 };
-const followUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {
+const followUser = ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeUserSocialAction(baseAuthorityAccount, exports.UserSocialActions.followUser, { userId: sourceUserId, bump: sourceUserBumpSeed }, { userId: targetUserId, bump: targetUserBumpSeed }, {
         accounts: {
-            admin: adminStoragePublicKey,
-            sourceUserStorage: sourceUserStorageAccountPDA,
-            targetUserStorage: targetUserStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            sourceUserStorage: sourceUserAccount,
+            targetUserStorage: targetUserAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.followUser = followUser;
-const unfollowUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {
+const unfollowUser = ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeUserSocialAction(baseAuthorityAccount, exports.UserSocialActions.unfollowUser, { userId: sourceUserId, bump: sourceUserBumpSeed }, { userId: targetUserId, bump: targetUserBumpSeed }, {
         accounts: {
-            admin: adminStoragePublicKey,
-            sourceUserStorage: sourceUserStorageAccountPDA,
-            targetUserStorage: targetUserStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            sourceUserStorage: sourceUserAccount,
+            targetUserStorage: targetUserAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.unfollowUser = unfollowUser;
-const subscribeUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {
+const subscribeUser = ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeUserSocialAction(baseAuthorityAccount, exports.UserSocialActions.subscribeUser, { userId: sourceUserId, bump: sourceUserBumpSeed }, { userId: targetUserId, bump: targetUserBumpSeed }, {
         accounts: {
-            admin: adminStoragePublicKey,
-            sourceUserStorage: sourceUserStorageAccountPDA,
-            targetUserStorage: targetUserStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            sourceUserStorage: sourceUserAccount,
+            targetUserStorage: targetUserAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));
     return tx;
 };
 exports.subscribeUser = subscribeUser;
-const unsubscribeUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {
+const unsubscribeUser = ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }) => {
     const tx = new Transaction();
     tx.add(program.instruction.writeUserSocialAction(baseAuthorityAccount, exports.UserSocialActions.unsubscribeUser, { userId: sourceUserId, bump: sourceUserBumpSeed }, { userId: targetUserId, bump: targetUserBumpSeed }, {
         accounts: {
-            admin: adminStoragePublicKey,
-            sourceUserStorage: sourceUserStorageAccountPDA,
-            targetUserStorage: targetUserStorageAccountPDA,
-            userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-            authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+            admin: adminStorageAccount,
+            sourceUserStorage: sourceUserAccount,
+            targetUserStorage: targetUserAccount,
+            userAuthorityDelegate: userAuthorityDelegateAccount,
+            authorityDelegationStatus: authorityDelegationStatusAccount,
             authority: userAuthorityPublicKey,
         },
     }));

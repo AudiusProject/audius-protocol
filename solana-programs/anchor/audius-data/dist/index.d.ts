@@ -532,7 +532,7 @@ declare type AudiusData = {
                 },
                 {
                     "name": "admin";
-                    "isMut": true;
+                    "isMut": false;
                     "isSigner": false;
                 },
                 {
@@ -842,7 +842,7 @@ declare type AudiusData = {
                     "isSigner": true;
                 },
                 {
-                    "name": "authorityDelegationStatusPda";
+                    "name": "authorityDelegationStatus";
                     "isMut": true;
                     "isSigner": false;
                 },
@@ -874,7 +874,7 @@ declare type AudiusData = {
                     "isSigner": true;
                 },
                 {
-                    "name": "authorityDelegationStatusPda";
+                    "name": "authorityDelegationStatus";
                     "isMut": true;
                     "isSigner": false;
                 },
@@ -1291,6 +1291,8 @@ declare type InitAdminParams = {
     adminStorageKeypair: Keypair;
     verifierKeypair: Keypair;
 };
+declare type AudiusDataIdl = AudiusData;
+declare type AudiusDataProgram = Program<AudiusData>;
 declare const initAdmin: ({ payer, program, adminKeypair, adminStorageKeypair, verifierKeypair, }: InitAdminParams) => anchor.web3.Transaction;
 declare type Proposer = {
     pda: anchor.web3.PublicKey;
@@ -1307,7 +1309,7 @@ declare type InitUserParams = {
     userId: anchor.BN;
     bumpSeed: number;
     metadata: string;
-    userStorageAccount: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     adminStorageAccount: anchor.web3.PublicKey;
     adminAuthorityPublicKey: anchor.web3.PublicKey;
@@ -1317,31 +1319,31 @@ declare type InitUserParams = {
     cn2: anchor.web3.PublicKey;
     cn3: anchor.web3.PublicKey;
 };
-declare const initUser: ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, replicaSetBumps, metadata, userStorageAccount, baseAuthorityAccount, adminStorageAccount, adminAuthorityPublicKey, cn1, cn2, cn3, }: InitUserParams) => anchor.web3.Transaction;
+declare const initUser: ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, replicaSetBumps, metadata, userAccount, baseAuthorityAccount, adminStorageAccount, adminAuthorityPublicKey, cn1, cn2, cn3, }: InitUserParams) => anchor.web3.Transaction;
 declare type InitUserSolPubkeyParams = {
     program: Program<AudiusData>;
     ethPrivateKey: string;
     message: Uint8Array;
     userSolPubkey: anchor.web3.PublicKey;
-    userStorageAccount: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
 };
-declare const initUserSolPubkey: ({ program, ethPrivateKey, message, userSolPubkey, userStorageAccount, }: InitUserSolPubkeyParams) => anchor.web3.Transaction;
+declare const initUserSolPubkey: ({ program, ethPrivateKey, message, userSolPubkey, userAccount, }: InitUserSolPubkeyParams) => anchor.web3.Transaction;
 declare type CreateContentNodeParams = {
     payer: anchor.web3.PublicKey;
     program: Program<AudiusData>;
     adminPublicKey: anchor.web3.PublicKey;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     contentNodeAcct: anchor.web3.PublicKey;
     contentNodeAuthority: anchor.web3.PublicKey;
     spID: anchor.BN;
     ownerEthAddress: string;
 };
-declare const createContentNode: ({ payer, program, adminStoragePublicKey, adminPublicKey, baseAuthorityAccount, spID, contentNodeAuthority, contentNodeAcct, ownerEthAddress, }: CreateContentNodeParams) => anchor.web3.Transaction;
+declare const createContentNode: ({ payer, program, adminStorageAccount, adminPublicKey, baseAuthorityAccount, spID, contentNodeAuthority, contentNodeAcct, ownerEthAddress, }: CreateContentNodeParams) => anchor.web3.Transaction;
 declare type UpdateUserReplicaSetParams = {
     payer: anchor.web3.PublicKey;
     program: Program<AudiusData>;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     replicaSet: number[];
     replicaSetBumps: number[];
@@ -1355,11 +1357,11 @@ declare type UpdateUserReplicaSetParams = {
         bump: number;
     };
 };
-declare const updateUserReplicaSet: ({ payer, program, adminStoragePublicKey, baseAuthorityAccount, replicaSet, userAcct, replicaSetBumps, userIdSeedBump, contentNodeAuthorityPublicKey, cn1, cn2, cn3, }: UpdateUserReplicaSetParams) => anchor.web3.Transaction;
+declare const updateUserReplicaSet: ({ payer, program, adminStorageAccount, baseAuthorityAccount, replicaSet, userAcct, replicaSetBumps, userIdSeedBump, contentNodeAuthorityPublicKey, cn1, cn2, cn3, }: UpdateUserReplicaSetParams) => anchor.web3.Transaction;
 declare type PublicCreateOrUpdateContentNodeParams = {
     payer: anchor.web3.PublicKey;
     program: Program<AudiusData>;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     contentNodeAcct: anchor.web3.PublicKey;
     contentNodeAuthority: anchor.web3.PublicKey;
@@ -1369,11 +1371,11 @@ declare type PublicCreateOrUpdateContentNodeParams = {
     proposer2: Proposer;
     proposer3: Proposer;
 };
-declare const publicCreateOrUpdateContentNode: ({ payer, program, adminStoragePublicKey, baseAuthorityAccount, spID, contentNodeAcct, ownerEthAddress, contentNodeAuthority, proposer1, proposer2, proposer3, }: PublicCreateOrUpdateContentNodeParams) => anchor.web3.Transaction;
+declare const publicCreateOrUpdateContentNode: ({ payer, program, adminStorageAccount, baseAuthorityAccount, spID, contentNodeAcct, ownerEthAddress, contentNodeAuthority, proposer1, proposer2, proposer3, }: PublicCreateOrUpdateContentNodeParams) => anchor.web3.Transaction;
 declare type PublicDeleteContentNodeParams = {
     payer: anchor.web3.PublicKey;
     program: Program<AudiusData>;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     adminAuthorityPublicKey: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     cnDelete: Proposer;
@@ -1381,7 +1383,7 @@ declare type PublicDeleteContentNodeParams = {
     proposer2: Proposer;
     proposer3: Proposer;
 };
-declare const publicDeleteContentNode: ({ payer, program, adminStoragePublicKey, adminAuthorityPublicKey, baseAuthorityAccount, cnDelete, proposer1, proposer2, proposer3, }: PublicDeleteContentNodeParams) => anchor.web3.Transaction;
+declare const publicDeleteContentNode: ({ payer, program, adminStorageAccount, adminAuthorityPublicKey, baseAuthorityAccount, cnDelete, proposer1, proposer2, proposer3, }: PublicDeleteContentNodeParams) => anchor.web3.Transaction;
 declare type CreateUserParams = {
     payer: anchor.web3.PublicKey;
     program: Program<AudiusData>;
@@ -1390,9 +1392,9 @@ declare type CreateUserParams = {
     userId: anchor.BN;
     bumpSeed: number;
     metadata: string;
-    userSolPubkey: anchor.web3.PublicKey;
-    userStorageAccount: anchor.web3.PublicKey;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    userAuthorityPublicKey: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     replicaSet: number[];
     replicaSetBumps: number[];
@@ -1400,16 +1402,16 @@ declare type CreateUserParams = {
     cn2: anchor.web3.PublicKey;
     cn3: anchor.web3.PublicKey;
 };
-declare const createUser: ({ baseAuthorityAccount, program, ethAccount, message, replicaSet, replicaSetBumps, cn1, cn2, cn3, userId, bumpSeed, metadata, payer, userSolPubkey, userStorageAccount, adminStoragePublicKey, }: CreateUserParams) => anchor.web3.Transaction;
+declare const createUser: ({ baseAuthorityAccount, program, ethAccount, message, replicaSet, replicaSetBumps, cn1, cn2, cn3, userId, bumpSeed, metadata, payer, userAuthorityPublicKey, userAccount, adminStorageAccount, }: CreateUserParams) => anchor.web3.Transaction;
 declare type UpdateUserParams = {
     program: Program<AudiusData>;
     metadata: string;
-    userStorageAccount: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
     userAuthorityDelegate: anchor.web3.PublicKey;
     authorityDelegationStatusAccount: anchor.web3.PublicKey;
     userAuthorityPublicKey: anchor.web3.PublicKey;
 };
-declare const updateUser: ({ program, metadata, userStorageAccount, userAuthorityPublicKey, userAuthorityDelegate, authorityDelegationStatusAccount, }: UpdateUserParams) => anchor.web3.Transaction;
+declare const updateUser: ({ program, metadata, userAccount, userAuthorityPublicKey, userAuthorityDelegate, authorityDelegationStatusAccount, }: UpdateUserParams) => anchor.web3.Transaction;
 declare type UpdateAdminParams = {
     program: Program<AudiusData>;
     isWriteEnabled: boolean;
@@ -1424,33 +1426,33 @@ declare type InitAuthorityDelegationStatusParams = {
     program: Program<AudiusData>;
     authorityName: string;
     userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
-    authorityDelegationStatusPDA: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     payer: anchor.web3.PublicKey;
 };
-declare const initAuthorityDelegationStatus: ({ program, authorityName, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, }: InitAuthorityDelegationStatusParams) => anchor.web3.Transaction;
+declare const initAuthorityDelegationStatus: ({ program, authorityName, userAuthorityDelegatePublicKey, authorityDelegationStatusAccount, payer, }: InitAuthorityDelegationStatusParams) => anchor.web3.Transaction;
 declare type RevokeAuthorityDelegationParams = {
     program: Program<AudiusData>;
     authorityDelegationBump: number;
     userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
-    authorityDelegationStatusPDA: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     payer: anchor.web3.PublicKey;
 };
-declare const revokeAuthorityDelegation: ({ program, authorityDelegationBump, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, }: RevokeAuthorityDelegationParams) => anchor.web3.Transaction;
+declare const revokeAuthorityDelegation: ({ program, authorityDelegationBump, userAuthorityDelegatePublicKey, authorityDelegationStatusAccount, payer, }: RevokeAuthorityDelegationParams) => anchor.web3.Transaction;
 declare type AddUserAuthorityDelegateParams = {
     program: Program<AudiusData>;
     baseAuthorityAccount: anchor.web3.PublicKey;
     delegatePublicKey: anchor.web3.PublicKey;
     user: anchor.web3.PublicKey;
     currentUserAuthorityDelegate: anchor.web3.PublicKey;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     userId: anchor.BN;
     userBumpSeed: number;
     signerUserAuthorityDelegate: anchor.web3.PublicKey;
-    authorityDelegationStatus: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     authorityPublicKey: anchor.web3.PublicKey;
     payer: anchor.web3.PublicKey;
 };
-declare const addUserAuthorityDelegate: ({ program, baseAuthorityAccount, delegatePublicKey, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, }: AddUserAuthorityDelegateParams) => anchor.web3.Transaction;
+declare const addUserAuthorityDelegate: ({ program, baseAuthorityAccount, delegatePublicKey, user, authorityDelegationStatusAccount, currentUserAuthorityDelegate, userId, userBumpSeed, adminStorageAccount, signerUserAuthorityDelegate, authorityPublicKey, payer, }: AddUserAuthorityDelegateParams) => anchor.web3.Transaction;
 declare type RemoveUserAuthorityDelegateParams = {
     program: Program<AudiusData>;
     baseAuthorityAccount: anchor.web3.PublicKey;
@@ -1458,25 +1460,25 @@ declare type RemoveUserAuthorityDelegateParams = {
     delegateBump: number;
     user: anchor.web3.PublicKey;
     currentUserAuthorityDelegate: anchor.web3.PublicKey;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     userId: anchor.BN;
     userBumpSeed: number;
     signerUserAuthorityDelegate: anchor.web3.PublicKey;
-    authorityDelegationStatus: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     authorityPublicKey: anchor.web3.PublicKey;
     payer: anchor.web3.PublicKey;
 };
-declare const removeUserAuthorityDelegate: ({ program, baseAuthorityAccount, delegatePublicKey, delegateBump, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, }: RemoveUserAuthorityDelegateParams) => anchor.web3.Transaction;
+declare const removeUserAuthorityDelegate: ({ program, baseAuthorityAccount, delegatePublicKey, delegateBump, user, authorityDelegationStatusAccount, currentUserAuthorityDelegate, userId, userBumpSeed, adminStorageAccount, signerUserAuthorityDelegate, authorityPublicKey, payer, }: RemoveUserAuthorityDelegateParams) => anchor.web3.Transaction;
 declare type UpdateIsVerifiedParams = {
     program: Program<AudiusData>;
-    userStorageAccount: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
     verifierPublicKey: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     adminPublicKey: anchor.web3.PublicKey;
     userId: anchor.BN;
     bumpSeed: number;
 };
-declare const updateIsVerified: ({ program, adminPublicKey, userStorageAccount, verifierPublicKey, baseAuthorityAccount, userId, bumpSeed, }: UpdateIsVerifiedParams) => anchor.web3.Transaction;
+declare const updateIsVerified: ({ program, adminPublicKey, userAccount, verifierPublicKey, baseAuthorityAccount, userId, bumpSeed, }: UpdateIsVerifiedParams) => anchor.web3.Transaction;
 declare type CreateEntityParams = {
     program: Program<AudiusData>;
     baseAuthorityAccount: anchor.web3.PublicKey;
@@ -1484,9 +1486,9 @@ declare type CreateEntityParams = {
     userId: anchor.BN;
     bumpSeed: number;
     userAuthorityPublicKey: anchor.web3.PublicKey;
-    userStorageAccountPDA: anchor.web3.PublicKey;
-    userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-    authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
+    userAuthorityDelegateAccount: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     metadata: string;
     id: anchor.BN;
 };
@@ -1494,15 +1496,15 @@ declare type DeleteEntityParams = {
     program: Program<AudiusData>;
     id: anchor.BN;
     userAuthorityPublicKey: anchor.web3.PublicKey;
-    userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-    authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-    userStorageAccountPDA: anchor.web3.PublicKey;
+    userAuthorityDelegateAccount: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
     baseAuthorityAccount: anchor.web3.PublicKey;
     adminStorageAccount: anchor.web3.PublicKey;
     userId: anchor.BN;
     bumpSeed: number;
 };
-declare const createTrack: ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, }: CreateEntityParams) => anchor.web3.Transaction;
+declare const createTrack: ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAccount, metadata, userId, adminStorageAccount, bumpSeed, }: CreateEntityParams) => anchor.web3.Transaction;
 /**
  * Manage entity
  * actions: create, update, delete
@@ -1536,15 +1538,15 @@ declare type UpdateEntityParams = {
     metadata: string;
     id: anchor.BN;
     userAuthorityPublicKey: anchor.web3.PublicKey;
-    userStorageAccountPDA: anchor.web3.PublicKey;
-    userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-    authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
+    userAuthorityDelegateAccount: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
 };
-declare const updateTrack: ({ program, baseAuthorityAccount, id, metadata, userAuthorityPublicKey, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userId, adminStorageAccount, bumpSeed, }: UpdateEntityParams) => anchor.web3.Transaction;
-declare const deleteTrack: ({ program, id, userStorageAccountPDA, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }: DeleteEntityParams) => anchor.web3.Transaction;
-declare const createPlaylist: ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, }: CreateEntityParams) => anchor.web3.Transaction;
-declare const updatePlaylist: ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, }: UpdateEntityParams) => anchor.web3.Transaction;
-declare const deletePlaylist: ({ program, id, userStorageAccountPDA, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }: DeleteEntityParams) => anchor.web3.Transaction;
+declare const updateTrack: ({ program, baseAuthorityAccount, id, metadata, userAuthorityPublicKey, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userId, adminStorageAccount, bumpSeed, }: UpdateEntityParams) => anchor.web3.Transaction;
+declare const deleteTrack: ({ program, id, userAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }: DeleteEntityParams) => anchor.web3.Transaction;
+declare const createPlaylist: ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAccount, metadata, userId, adminStorageAccount, bumpSeed, }: CreateEntityParams) => anchor.web3.Transaction;
+declare const updatePlaylist: ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAccount, metadata, userId, adminStorageAccount, bumpSeed, }: UpdateEntityParams) => anchor.web3.Transaction;
+declare const deletePlaylist: ({ program, id, userAccount, userAuthorityPublicKey, userAuthorityDelegateAccount, authorityDelegationStatusAccount, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, }: DeleteEntityParams) => anchor.web3.Transaction;
 /**
  * Write entity social actions
  * actions: save, repost
@@ -1581,23 +1583,23 @@ declare const EntitySocialActions: {
 declare type EntitySocialActionParams = {
     program: Program<AudiusData>;
     baseAuthorityAccount: anchor.web3.PublicKey;
-    userStorageAccountPDA: anchor.web3.PublicKey;
-    userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-    authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+    userAccount: anchor.web3.PublicKey;
+    userAuthorityDelegateAccount: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     userAuthorityPublicKey: anchor.web3.PublicKey;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     userId: anchor.BN;
     bumpSeed: number;
     id: string;
 };
-declare const addTrackSave: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const deleteTrackSave: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const addTrackRepost: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const deleteTrackRepost: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const addPlaylistSave: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const deletePlaylistSave: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const addPlaylistRepost: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
-declare const deletePlaylistRepost: ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const addTrackSave: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const deleteTrackSave: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const addTrackRepost: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const deleteTrackRepost: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const addPlaylistSave: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const deletePlaylistSave: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const addPlaylistRepost: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
+declare const deletePlaylistRepost: ({ program, baseAuthorityAccount, userAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, userId, bumpSeed, adminStorageAccount, id, }: EntitySocialActionParams) => anchor.web3.Transaction;
 /**
  * User social actions
  */
@@ -1618,21 +1620,21 @@ declare const UserSocialActions: {
 declare type UserSocialActionParams = {
     program: Program<AudiusData>;
     baseAuthorityAccount: anchor.web3.PublicKey;
-    sourceUserStorageAccountPDA: anchor.web3.PublicKey;
-    targetUserStorageAccountPDA: anchor.web3.PublicKey;
-    userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-    authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+    sourceUserAccount: anchor.web3.PublicKey;
+    targetUserAccount: anchor.web3.PublicKey;
+    userAuthorityDelegateAccount: anchor.web3.PublicKey;
+    authorityDelegationStatusAccount: anchor.web3.PublicKey;
     userAuthorityPublicKey: anchor.web3.PublicKey;
-    adminStoragePublicKey: anchor.web3.PublicKey;
+    adminStorageAccount: anchor.web3.PublicKey;
     sourceUserId: anchor.BN;
     sourceUserBumpSeed: number;
     targetUserId: anchor.BN;
     targetUserBumpSeed: number;
 };
-declare const followUser: ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }: UserSocialActionParams) => anchor.web3.Transaction;
-declare const unfollowUser: ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }: UserSocialActionParams) => anchor.web3.Transaction;
-declare const subscribeUser: ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }: UserSocialActionParams) => anchor.web3.Transaction;
-declare const unsubscribeUser: ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }: UserSocialActionParams) => anchor.web3.Transaction;
+declare const followUser: ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }: UserSocialActionParams) => anchor.web3.Transaction;
+declare const unfollowUser: ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }: UserSocialActionParams) => anchor.web3.Transaction;
+declare const subscribeUser: ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }: UserSocialActionParams) => anchor.web3.Transaction;
+declare const unsubscribeUser: ({ program, baseAuthorityAccount, sourceUserAccount, targetUserAccount, userAuthorityDelegateAccount, authorityDelegationStatusAccount, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStorageAccount, }: UserSocialActionParams) => anchor.web3.Transaction;
 /**
  * Helper functions
  */
@@ -1712,4 +1714,4 @@ declare const idl: {
     }[];
 };
 
-export { AddUserAuthorityDelegateParams, CreateContentNodeParams, CreateEntityParams, CreateUserParams, DeleteEntityParams, EntitySocialActionEnumValues, EntitySocialActionParams, EntitySocialActions, EntityTypesEnumValues, InitAdminParams, InitAuthorityDelegationStatusParams, InitUserParams, InitUserSolPubkeyParams, ManagementActions, Proposer, PublicCreateOrUpdateContentNodeParams, PublicDeleteContentNodeParams, RemoveUserAuthorityDelegateParams, RevokeAuthorityDelegationParams, UpdateAdminParams, UpdateEntityParams, UpdateIsVerifiedParams, UpdateUserParams, UpdateUserReplicaSetParams, UserSocialActionParams, UserSocialActions, addPlaylistRepost, addPlaylistSave, addTrackRepost, addTrackSave, addUserAuthorityDelegate, createContentNode, createPlaylist, createTrack, createUser, deletePlaylist, deletePlaylistRepost, deletePlaylistSave, deleteTrack, deleteTrackRepost, deleteTrackSave, followUser, getKeypairFromSecretKey, idl, initAdmin, initAuthorityDelegationStatus, initUser, initUserSolPubkey, publicCreateOrUpdateContentNode, publicDeleteContentNode, removeUserAuthorityDelegate, revokeAuthorityDelegation, subscribeUser, unfollowUser, unsubscribeUser, updateAdmin, updateIsVerified, updatePlaylist, updateTrack, updateUser, updateUserReplicaSet };
+export { AddUserAuthorityDelegateParams, AudiusDataIdl, AudiusDataProgram, CreateContentNodeParams, CreateEntityParams, CreateUserParams, DeleteEntityParams, EntitySocialActionEnumValues, EntitySocialActionParams, EntitySocialActions, EntityTypesEnumValues, InitAdminParams, InitAuthorityDelegationStatusParams, InitUserParams, InitUserSolPubkeyParams, ManagementActions, Proposer, PublicCreateOrUpdateContentNodeParams, PublicDeleteContentNodeParams, RemoveUserAuthorityDelegateParams, RevokeAuthorityDelegationParams, UpdateAdminParams, UpdateEntityParams, UpdateIsVerifiedParams, UpdateUserParams, UpdateUserReplicaSetParams, UserSocialActionParams, UserSocialActions, addPlaylistRepost, addPlaylistSave, addTrackRepost, addTrackSave, addUserAuthorityDelegate, createContentNode, createPlaylist, createTrack, createUser, deletePlaylist, deletePlaylistRepost, deletePlaylistSave, deleteTrack, deleteTrackRepost, deleteTrackSave, followUser, getKeypairFromSecretKey, idl, initAdmin, initAuthorityDelegationStatus, initUser, initUserSolPubkey, publicCreateOrUpdateContentNode, publicDeleteContentNode, removeUserAuthorityDelegate, revokeAuthorityDelegation, subscribeUser, unfollowUser, unsubscribeUser, updateAdmin, updateIsVerified, updatePlaylist, updateTrack, updateUser, updateUserReplicaSet };
