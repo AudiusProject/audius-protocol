@@ -23,9 +23,7 @@ const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
       fileName: `${fileUUID}.mp3`,
       fileDir,
       fileDestination: fileDir,
-      session: {
-        cnodeUserUUID
-      }
+      cnodeUserUUID
     }
   )
 
@@ -34,16 +32,16 @@ const uploadTrack = async (filePath, cnodeUserUUID, blacklistManager) => {
 
 const saveFileToStorage = (filePath) => {
   const file = fs.readFileSync(filePath)
-  const fileUUID = uuid()
+  const fileName = uuid()
   const fileDir = path.join(
     DiskManager.getTmpTrackUploadArtifactsPath(),
-    fileUUID
+    fileName
   )
   fs.mkdirSync(fileDir)
   fs.mkdirSync(fileDir + '/segments')
-  fs.writeFileSync(path.join(fileDir, `${fileUUID}.mp3`), file)
+  fs.writeFileSync(path.join(fileDir, `${fileName}.mp3`), file)
 
-  return { fileUUID, fileDir }
+  return { fileUUID: fileName, fileDir }
 }
 
 module.exports = {
