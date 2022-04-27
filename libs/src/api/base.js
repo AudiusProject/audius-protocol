@@ -24,7 +24,7 @@ class Base {
     comstock,
     captcha,
     isServer,
-    logger
+    logger = console
   ) {
     this.userStateManager = userStateManager
     this.identityService = identityService
@@ -40,7 +40,7 @@ class Base {
     this.comstock = comstock
     this.captcha = captcha
     this.isServer = isServer
-    this.logger = logger || console
+    this.logger = logger
 
     this._serviceMapping = {
       [Services.IDENTITY_SERVICE]: this.identityService,

@@ -312,7 +312,7 @@ class AudiusLibs {
     wormholeConfig,
     captchaConfig,
     isServer,
-    logger,
+    logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
@@ -332,7 +332,7 @@ class AudiusLibs {
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
-    this.logger = logger || console
+    this.logger = logger 
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils
