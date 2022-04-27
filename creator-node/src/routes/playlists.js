@@ -1,4 +1,3 @@
-const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
 const { promisify } = require('util')
 
