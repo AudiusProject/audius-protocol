@@ -35,6 +35,11 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
   const users = yield select(getUsers)
   return tracksMetadata
     .map(metadata => {
+      // If the incoming metadata is null, return null
+      // This will be accounted for in `nullCount`
+      if (metadata === null) {
+        return null
+      }
       // If we said to remove deleted tracks and it is deleted, remove it
       if (removeDeleted && metadata.is_delete) return null
       // If we said to remove deleted and the track/playlist owner is deactivated, remove it
@@ -157,6 +162,12 @@ function* fetchLineupMetadatasAsync(
         lineupMetadatasResponse,
         removeDeleted
       )
+
+      const nullCount = lineupMetadatasResponse.reduce(
+        (result, current) => (current === null ? result + 1 : result),
+        0
+      )
+
       const allMetadatas = responseFilteredDeletes.map(item => {
         const id = item.track_id
         if (id && uidForSource[id] && uidForSource[id].length > 0) {
@@ -240,13 +251,14 @@ function* fetchLineupMetadatasAsync(
           return true
         })
 
-      const deletedCount = action.limit - lineupEntries.length
+      const deletedCount = action.limit - lineupEntries.length - nullCount
       yield put(
         lineupActions.fetchLineupMetadatasSucceeded(
           lineupEntries,
           action.offset,
           action.limit,
-          deletedCount
+          deletedCount,
+          nullCount
         )
       )
 

@@ -42,6 +42,7 @@ Lineup.defaultProps = {
     order: {},
     total: 0,
     deleted: 0,
+    nullCount: 0,
     status: Status.LOADING,
     hasMore: true,
     inView: true,

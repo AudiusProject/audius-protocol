@@ -113,14 +113,16 @@ export class LineupActions {
     entries: unknown,
     offset: number,
     limit: number,
-    deleted: boolean
+    deleted: boolean,
+    nullCount: boolean
   ) {
     return {
       type: addPrefix(this.prefix, FETCH_LINEUP_METADATAS_SUCCEEDED),
       entries,
       offset,
       limit,
-      deleted
+      deleted,
+      nullCount
     }
   }
 

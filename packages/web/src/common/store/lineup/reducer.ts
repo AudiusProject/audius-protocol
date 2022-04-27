@@ -29,6 +29,7 @@ export const initialLineupState = {
   isMetadataLoading: false,
   total: 0,
   deleted: 0,
+  nullCount: 0,
   status: Status.LOADING,
   hasMore: true,
   inView: false,
@@ -58,6 +59,7 @@ type FetchLineupMetadatasSucceededAction<T> = {
   type: typeof FETCH_LINEUP_METADATAS_SUCCEEDED
   entries: LineupStateTrack<T>[]
   deleted: number
+  nullCount: number
   limit: number
   offset: number
 }
@@ -158,7 +160,8 @@ export const actionsMap = {
     } else {
       newState.entries = newState.entries.concat(action.entries)
     }
-    newState.deleted += action.deleted || 0
+    newState.deleted += Math.max(action.deleted || 0, 0)
+    newState.nullCount += Math.max(action.nullCount || 0, 0)
     newState.entries.forEach((entry, i) => {
       if (!entry.uid) entry.uid = `${entry.id.toString()}-${i.toString()}`
     })
