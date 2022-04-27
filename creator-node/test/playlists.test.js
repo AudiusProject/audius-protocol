@@ -122,6 +122,7 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(console.log)
       .expect(200)
   })
 
@@ -135,6 +136,7 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
+      .expect(console.log)
       .expect(200)
 
     if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
@@ -146,6 +148,7 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(console.log)
       .expect(200)
 
     await request(app)
@@ -153,6 +156,7 @@ describe('Test Playlists', function () {
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(console.log)
       .expect(200)
   })
 

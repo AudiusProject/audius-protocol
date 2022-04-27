@@ -52,6 +52,9 @@ function getLibsMock () {
     User: {
       getUsers: sinon.mock().atLeast(1)
     },
+    Playlist: {
+      getPlaylists: sinon.mock().atLeast(1)
+    },
     discoveryProvider: {
       discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
     }

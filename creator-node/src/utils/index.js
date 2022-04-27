@@ -1,4 +1,4 @@
-const validateMetadata = require('./validateMetadata')
+const validateMetadata = require('./validateAudiusUserMetadata')
 const { validateAssociatedWallets } = validateMetadata
 
 module.exports = {

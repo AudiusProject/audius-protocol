@@ -6,11 +6,17 @@ module.exports = (sequelize, DataTypes) => {
     {
       cnodeUserUUID: {
         type: DataTypes.UUID,
+        primaryKey: false,
+        allowNull: false
+      },
+      clock: {
+        type: DataTypes.INTEGER,
         primaryKey: true, // composite primary key (cnodeUserUUID, clock)
         allowNull: false
       },
       playlistId: {
         type: DataTypes.BIGINT,
+        primaryKey: true, // composite primary key (playlistId, clock)
         allowNull: false
       },
       metadataFileUUID: {
@@ -30,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ['playlistId']
+          fields: ['playlistId', 'clock']
         }
       ]
     }
@@ -52,6 +58,8 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'fileUUID',
       onDelete: 'RESTRICT'
     })
+    // Playlist also has a composite foreign key on ClockRecords (cnodeUserUUID, clock)
+    // sequelize does not support composite foreign keys
   }
 
   return Playlist
