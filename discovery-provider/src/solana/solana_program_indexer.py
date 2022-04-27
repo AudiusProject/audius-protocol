@@ -149,6 +149,7 @@ class SolanaProgramIndexer(IndexerBase):
         return {}
 
     async def process_txs_batch(self, tx_sig_batch_records: List[str]):
+        latest_chain_slot = solana_client.get_latest_slot()
         self.msg(f"Parsing {tx_sig_batch_records}")
         futures = []
         tx_sig_futures_map: Dict[str, ParsedTx] = {}
@@ -167,7 +168,8 @@ class SolanaProgramIndexer(IndexerBase):
         # Committing to DB
         parsed_transactions: List[ParsedTx] = []
         for tx_sig in tx_sig_batch_records:
-            parsed_transactions.append(tx_sig_futures_map[tx_sig])
+            if tx_sig_batch_records.slot < latest_chain_slot:
+                parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
         # Fetch metadata in parallel
         cid_metadata, blacklisted_cids = await self.fetch_cid_metadata(
