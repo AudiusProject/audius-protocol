@@ -191,24 +191,21 @@
 
 /* Loading */
 
-.loadingSkeleton,
-.loadingSkeleton :global(.ant-skeleton-content) {
+.loadingSkeleton {
   padding: 0 !important;
-}
-.loadingSkeleton :global(.ant-skeleton-paragraph) li {
   border-radius: 4px;
 }
 
-.loadingSkeleton.loadingArtwork :global(.ant-skeleton-paragraph) li {
+.loadingSkeleton.loadingArtwork {
   height: 195px !important;
   width: 195px !important;
 }
 
-.loadingSkeleton.loadingTitle :global(.ant-skeleton-paragraph) li {
+.loadingSkeleton.loadingTitle {
   height: 24px;
   width: 160px !important;
 }
-.loadingSkeleton.loadingName :global(.ant-skeleton-paragraph) li {
+.loadingSkeleton.loadingName {
   height: 24px;
   width: 120px !important;
 }
@@ -223,12 +220,12 @@
   margin-bottom: 20px;
 }
 
-.loadingSkeleton.loadingInfoSection :global(.ant-skeleton-paragraph) li {
+.loadingSkeleton.loadingInfoSection {
   height: 24px;
   width: 100% !important;
 }
 
-.loadingSkeleton.loadingDescription :global(.ant-skeleton-paragraph) li {
+.loadingSkeleton.loadingDescription {
   height: 24px;
   width: 100% !important;
 }
