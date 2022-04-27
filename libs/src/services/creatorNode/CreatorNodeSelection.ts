@@ -65,7 +65,8 @@ type CreatorNodeSelectionConfig = Omit<
   timeout?: Timeout
   equivalencyDelta?: number | null
   preferHigherPatchForPrimary?: boolean
-  preferHigherPatchForSecondaries?: boolean
+  preferHigherPatchForSecondaries?: boolean,
+  logger?: any
 }
 
 interface Decision {
@@ -87,6 +88,7 @@ export class CreatorNodeSelection extends ServiceSelection {
   backupsList: string[]
   backupTimings: Timing[]
   maxStorageUsedPercent: number
+  logger: any
 
   constructor({
     creatorNode,
@@ -94,6 +96,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
+    logger,
     maxStorageUsedPercent = 95,
     timeout = null,
     equivalencyDelta = null,
@@ -125,6 +128,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     this.equivalencyDelta = equivalencyDelta
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
+    this.logger = logger
 
     this.healthCheckPath = 'health_check/verbose'
     // String array of healthy Content Node endpoints
@@ -226,7 +230,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     })
 
     if (log) {
-      console.info(
+      this.logger.info(
         'CreatorNodeSelection - final decision tree state',
         this.decisionTree
       )
@@ -331,7 +335,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     for (const response of syncResponses) {
       // Could not perform a sync check. Add to unhealthy
       if (response.error) {
-        console.warn(
+        this.logger.warn(
           `CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`
         )
         this.addUnhealthy(response.service)
@@ -396,7 +400,7 @@ export class CreatorNodeSelection extends ServiceSelection {
         if (maxStorageUsedPercent) {
           this.maxStorageUsedPercent = maxStorageUsedPercent
         } else {
-          console.warn(
+          this.logger.warn(
             `maxStorageUsedPercent not found in health check response. Using constructor value of ${this.maxStorageUsedPercent}% as maxStorageUsedPercent.`
           )
         }
@@ -461,7 +465,7 @@ export class CreatorNodeSelection extends ServiceSelection {
             })
           } catch (e) {
             // Swallow errors -- this method should not throw generally
-            console.error(e)
+            this.logger.error(e)
           }
         }
       })

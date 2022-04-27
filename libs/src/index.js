@@ -312,6 +312,7 @@ class AudiusLibs {
     wormholeConfig,
     captchaConfig,
     isServer,
+    logger,
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
@@ -331,6 +332,7 @@ class AudiusLibs {
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
+    this.logger = logger
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils
@@ -511,7 +513,8 @@ class AudiusLibs {
       this.creatorNode,
       this.comstock,
       this.captcha,
-      this.isServer
+      this.isServer,
+      this.logger
     ]
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new User(

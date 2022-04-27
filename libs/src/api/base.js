@@ -23,7 +23,8 @@ class Base {
     creatorNode,
     comstock,
     captcha,
-    isServer
+    isServer,
+    logger
   ) {
     this.userStateManager = userStateManager
     this.identityService = identityService
@@ -39,6 +40,7 @@ class Base {
     this.comstock = comstock
     this.captcha = captcha
     this.isServer = isServer
+    this.logger = logger
 
     this._serviceMapping = {
       [Services.IDENTITY_SERVICE]: this.identityService,
