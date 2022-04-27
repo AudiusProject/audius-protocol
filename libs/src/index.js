@@ -332,7 +332,7 @@ class AudiusLibs {
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
-    this.logger = logger
+    this.logger = logger || console
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils

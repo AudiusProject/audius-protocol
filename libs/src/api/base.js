@@ -40,7 +40,7 @@ class Base {
     this.comstock = comstock
     this.captcha = captcha
     this.isServer = isServer
-    this.logger = logger
+    this.logger = logger || console
 
     this._serviceMapping = {
       [Services.IDENTITY_SERVICE]: this.identityService,
