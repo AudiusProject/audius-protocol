@@ -65,7 +65,7 @@ type CreatorNodeSelectionConfig = Omit<
   timeout?: Timeout
   equivalencyDelta?: number | null
   preferHigherPatchForPrimary?: boolean
-  preferHigherPatchForSecondaries?: boolean,
+  preferHigherPatchForSecondaries?: boolean
   logger?: any
 }
 
