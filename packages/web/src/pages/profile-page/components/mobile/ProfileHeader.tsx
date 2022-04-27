@@ -10,7 +10,6 @@ import {
   IconLink,
   IconTikTok
 } from '@audius/stems'
-import Skeleton from 'antd/lib/skeleton'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
@@ -28,6 +27,7 @@ import { formatCount, squashNewLines } from 'common/utils/formatUtil'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/follow-button/FollowButton'
+import Skeleton from 'components/skeleton/Skeleton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
@@ -57,27 +57,18 @@ const LoadingProfileHeader = () => {
     <div className={styles.headerContainer}>
       <div className={cn(styles.coverPhoto, styles.loading)}>
         <Skeleton
-          avatar
-          active
-          title={false}
-          paragraph={false}
           className={cn(styles.loadingSkeleton, styles.loadingSkeletonAvatar)}
         />
       </div>
       <div className={cn(styles.artistInfo, styles.loadingInfo)}>
         <div className={styles.loadingNameContainer}>
           <Skeleton
-            title={false}
-            paragraph={{ rows: 1 }}
-            active
-            className={cn(styles.loadingShortName)}
+            className={cn(styles.loadingSkeleton, styles.loadingShortName)}
           />
         </div>
+        <Skeleton className={cn(styles.loadingSkeleton)} />
         <Skeleton
-          title={false}
-          paragraph={{ rows: 2 }}
-          active
-          className={cn(styles.loadingSkeleton)}
+          className={cn(styles.loadingSkeleton, styles.loadingShortDesc)}
         />
       </div>
     </div>
