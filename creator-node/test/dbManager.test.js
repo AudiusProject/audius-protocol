@@ -641,9 +641,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
       fileName: `${fileUUID}.mp3`,
       fileDir,
       fileDestination: fileDir,
-      session: {
-        cnodeUserUUID: session.cnodeUserUUID
-      }
+      cnodeUserUUID: session.cnodeUserUUID
     }
   }
 
