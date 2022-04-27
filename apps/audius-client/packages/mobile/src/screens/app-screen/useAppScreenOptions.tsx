@@ -121,6 +121,7 @@ export const useAppScreenOptions = () => {
         cardOverlayEnabled: true,
         cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
         headerShadowVisible: false,
+        headerTitleAlign: 'center',
         headerLeft: props => {
           const { canGoBack, ...other } = props
           if (canGoBack) {
