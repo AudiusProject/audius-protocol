@@ -97,8 +97,8 @@ const healthCheck = async (
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
     await getTranscodeQueueJobs()
-  const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
-    await getAsyncProcessingQueueJobs()
+
+  const asyncProcessingQueueJobs = await getAsyncProcessingQueueJobs()
 
   let solDelegatePublicKeyBase58 = ''
   try {
@@ -151,8 +151,7 @@ const healthCheck = async (
     snapbackJobInterval,
     transcodeActive,
     transcodeWaiting,
-    fileProcessingActive,
-    fileProcessingWaiting,
+    asyncProcessingQueue: asyncProcessingQueueJobs,
     solDelegatePublicKeyBase58,
     stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
       ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
