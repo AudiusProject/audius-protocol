@@ -36,6 +36,43 @@ class SolanaClientManager:
         index = random.randrange(0, len(self.clients))
         return self.clients[index]
 
+    def get_block_height(
+        self, retries=DEFAULT_MAX_RETRIES, encoding="json"
+    ):
+        def get_block_height(client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    logger.info(
+                        f"solana_client_manager.py | get_block_height"
+                    )
+                    tx_info: ConfirmedTransaction = client.get_transaction(
+                        encoding
+                    )
+                    if tx_info["result"] is not None:
+                        return tx_info["result"]
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_block_height, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_block_height | Retrying with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_block_height | Failed with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            get_block_height,
+            f"solana_client_manager.py | get_block_height | All requests failed to fetch",
+        )
+
+
     def get_sol_tx_info(
         self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json"
     ):
