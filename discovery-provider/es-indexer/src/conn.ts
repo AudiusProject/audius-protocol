@@ -4,6 +4,7 @@ import Cursor from 'pg-cursor'
 import _ from 'lodash'
 import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint } from './types/blocknumber_checkpoint'
+import { MsearchResponseItem } from '@elastic/elasticsearch/lib/api/types'
 
 let pool: PG | undefined = undefined
 export function dialPg(): PG {
@@ -64,7 +65,6 @@ export async function getBlocknumberCheckpoints(): Promise<BlocknumberCheckpoint
   }
 
   const multi = await dialEs().msearch({ searches })
-
   const values = multi.responses.map(
     (r: any) => r.aggregations?.max_blocknumber?.value || 0
   )

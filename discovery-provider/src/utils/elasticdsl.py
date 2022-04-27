@@ -1,9 +1,10 @@
+import copy
 import os
 
 from elasticsearch import Elasticsearch
 
 es_url = os.getenv("audius_elasticsearch_url")
-esclient = RuntimeError("no esclient because es_url is not set")
+esclient = None
 if es_url:
     esclient = Elasticsearch(es_url)
 
@@ -70,6 +71,7 @@ omit_keys = [
 
 
 def omit_indexed_fields(doc):
+    doc = copy.copy(doc)
 
     # track
     if "tags" in doc and isinstance(doc["tags"], list):
@@ -78,7 +80,6 @@ def omit_indexed_fields(doc):
     if "following_count" in doc:
         doc["followee_count"] = doc["following_count"]
 
-    # return a copy??
     for key in omit_keys:
         if key in doc:
             del doc[key]

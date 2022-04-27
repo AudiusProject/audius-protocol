@@ -417,10 +417,10 @@ def configure_celery(celery, test_config=None):
                 "task": "synchronize_metrics",
                 "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
             },
-            # "update_materialized_views": {
-            #     "task": "update_materialized_views",
-            #     "schedule": timedelta(seconds=300),
-            # },
+            "update_materialized_views": {
+                "task": "update_materialized_views",
+                "schedule": timedelta(seconds=300),
+            },
             "update_aggregate_plays": {
                 "task": "update_aggregate_plays",
                 "schedule": timedelta(seconds=15),
@@ -489,10 +489,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_rewards_manager",
                 "schedule": timedelta(seconds=5),
             },
-            # "index_related_artists": {
-            #     "task": "index_related_artists",
-            #     "schedule": timedelta(seconds=60),
-            # },
+            "index_related_artists": {
+                "task": "index_related_artists",
+                "schedule": timedelta(seconds=60),
+            },
             "index_listen_count_milestones": {
                 "task": "index_listen_count_milestones",
                 "schedule": timedelta(seconds=5),

@@ -90,7 +90,7 @@ const handlers = {
 }
 
 export async function startListener() {
-  let connectionString = process.env.audius_db_url
+  const connectionString = process.env.audius_db_url
   const client = new Client({ connectionString, application_name: 'es-listen' })
   await client.connect()
   const tables = LISTEN_TABLES
@@ -106,19 +106,6 @@ export async function startListener() {
     }
   })
 
-  // let process uncaughtException print and exit...
-  // client.on('notice', (msg) => logger.warn(msg, 'pg_notice'))
-  // client.on('error', (err) => logger.error(err, 'pg_error'))
-  // client.on('end', () => logger.warn('pg end'))
-
   await client.query(sql)
   logger.info({ tables }, 'LISTEN')
-
-  // process.on('SIGINT', async function () {
-  //   console.log('Caught interrupt signal')
-  //   const sql = tables.map((t) => `UNLISTEN ${t}; `).join(' ')
-  //   await client.query(sql)
-  //   await client.end()
-  //   console.log('bye')
-  // })
 }

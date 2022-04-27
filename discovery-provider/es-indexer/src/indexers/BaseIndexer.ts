@@ -61,7 +61,7 @@ export abstract class BaseIndexer<RowType> {
         index: this.indexName,
         name: this.tableName,
       })
-    } else if (mappedTo != indexName) {
+    } else if (mappedTo !== indexName) {
       logger.info({
         action: 'cutting over index',
         alias: tableName,

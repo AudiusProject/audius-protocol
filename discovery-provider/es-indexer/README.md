@@ -9,12 +9,17 @@ audius_elasticsearch_url=http://elasticsearch:9200
 audius_elasticsearch_run_indexer=true
 ```
 
-## Rolling a new index
+## Mapping Changes
 
 If adding a new field, or changing an existing field mapping, the safest thing is to roll a new index:
 
 - Increment version suffix in `indexNames.ts`
 - You may want to also adjust `omit_keys` in `elasticdsl.py` if adding new fields for indexing which should be removed.
+
+If you are adding a new denormalization (attaching data from a related model), the data dependency tracking should be updated:
+
+- For "catchup" mode this is the `checkpointSql` function. See UserIndexer or TrackIndexer for an example
+- For listen / notify mode, this is the handler code in `listen.ts`
 
 ## How it works
 
