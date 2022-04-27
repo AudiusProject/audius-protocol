@@ -10,6 +10,7 @@ export type Lineup<T, ExtraProps = {}> = {
   }
   total: number
   deleted: number
+  nullCount: number
   status: Status
   hasMore: boolean
   inView: boolean
@@ -29,6 +30,7 @@ export type LineupState<T> = {
   order: Order
   total: number
   deleted: number
+  nullCount: number
   status: Status
   hasMore: boolean
   inView: boolean

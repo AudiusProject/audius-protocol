@@ -298,7 +298,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       initialTrackLoadCount
     } = this.state
     const lineupLength = lineup.entries.length
-    const offset = lineupLength + lineup.deleted
+    const offset = lineupLength + lineup.deleted + lineup.nullCount
     if (
       (!limit || lineupLength !== limit) &&
       loadMore &&
