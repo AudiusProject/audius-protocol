@@ -97,7 +97,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
 
             # Find user ids in DB and create dictionary mapping
             entity_ids = self.extract_ids(session, parsed_transactions)
-            self.msg(f"entity_ids {entity_ids}")
             db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
             if entity_ids["users"]:
                 existing_users = (
@@ -182,7 +181,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     entities["users"].add(user_id)
 
                 elif instruction_name == "init_user_sol":
-                    # TODO: parse the tx data for their user id and fetch
                     # Fetch user_id and embed in instruction
                     user_storage_account = str(
                         instruction.get("account_names_map").get("user")
@@ -195,12 +193,12 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                                 User.user_storage_account == user_storage_account,
                             )
                             .first()
-                        )
+                        )[0]
                     else:
                         user_id = user_storage_to_id[user_storage_account]
 
                     instruction["user_id"] = user_id
-                    pass
+                    entities["users"].add(user_id)
 
                 elif instruction_name == "create_user":
                     # TODO: parse the tx data for their user id and fetch
