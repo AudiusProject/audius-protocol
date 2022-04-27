@@ -21,14 +21,13 @@ def upgrade():
     if not table_exists("user_tips"):
         op.create_table(
             "user_tips",
-            sa.Column("user_tip_id", sa.Integer(), nullable=False, autoincrement=True),
+            sa.Column("slot", sa.Integer(), nullable=False),
             sa.Column("signature", sa.String(), nullable=False),
             sa.Column("sender_user_id", sa.Integer(), nullable=False),
             sa.Column("receiver_user_id", sa.Integer(), nullable=False),
             sa.Column("amount", sa.BigInteger(), nullable=False),
             sa.Column("created_at", sa.DateTime(), nullable=False),
-            sa.PrimaryKeyConstraint("user_tip_id"),
-            keep_existing=True,
+            sa.PrimaryKeyConstraint("sender_user_id", "receiver_user_id"),
         )
         op.create_index(
             op.f("ix_user_tips_receiver_user_id"),
@@ -51,18 +50,11 @@ def upgrade():
             sa.Column("receiver_user_id", sa.Integer(), nullable=False),
             sa.Column("amount", sa.BigInteger(), nullable=False),
             sa.PrimaryKeyConstraint("sender_user_id", "receiver_user_id"),
-            keep_existing=True,
         )
         op.create_index(
             op.f("ix_aggregate_user_tips_receiver_user_id"),
             "aggregate_user_tips",
             ["receiver_user_id"],
-            unique=False,
-        )
-        op.create_index(
-            op.f("ix_aggregate_user_tips_sender_user_id"),
-            "aggregate_user_tips",
-            ["sender_user_id"],
             unique=False,
         )
 

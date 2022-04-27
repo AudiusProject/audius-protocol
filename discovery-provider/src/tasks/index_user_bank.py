@@ -139,7 +139,7 @@ create_token_account_instr: List[InstructionFormat] = [
 
 
 def index_tip(
-    session, sender_account, receiver_account, user_id_accounts, meta, tx_sig
+    session, sender_account, receiver_account, user_id_accounts, meta, tx_sig, slot
 ):
     if user_id_accounts and len(user_id_accounts) == 2:
         sender_id = None
@@ -170,6 +170,7 @@ def index_tip(
                     amount=sent_amount,
                     sender_user_id=sender_id,
                     receiver_user_id=receiver_id,
+                    slot=slot,
                 )
                 session.add(user_tip)
                 session.execute(
@@ -306,6 +307,7 @@ def process_user_bank_tx_details(
             user_id_accounts=user_id_accounts,
             meta=meta,
             tx_sig=tx_sig,
+            slot=result["slot"],
         )
 
 
