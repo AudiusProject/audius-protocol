@@ -1,6 +1,6 @@
 /* globals web3, localStorage, fetch, Image */
+import { IdentityAPI } from '@audius/libs/dist/core'
 import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
-import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   PublicKey,
