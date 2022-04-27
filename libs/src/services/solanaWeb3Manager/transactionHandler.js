@@ -197,7 +197,7 @@ class TransactionHandler {
         let sendCount = 0
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
-          this.connection.sendAndConfirmTransaction(rawTransaction, {
+          this.connection.sendRawTransaction(rawTransaction, {
             skipPreflight:
               skipPreflight === null ? this.skipPreflight : skipPreflight,
             commitment: 'processed',
