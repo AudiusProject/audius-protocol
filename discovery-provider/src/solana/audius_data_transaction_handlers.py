@@ -3,9 +3,10 @@ from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
 from sqlalchemy.orm.session import Session
-from src.models.models import User
+from src.models.models import Track, User
 from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.solana_transaction_types import TransactionInfoResult
+from src.utils import helpers
 from web3 import Web3
 
 logger = logging.getLogger(__name__)
@@ -147,8 +148,8 @@ def handle_create_user(
         updated_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
     )
 
-    ipfs_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
-    update_user_model_metadata(session, user, ipfs_metadata)
+    user_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
+    update_user_model_metadata(session, user, user_metadata)
     records.append(user)
     db_models["users"][user_id].append(user)
 
@@ -175,6 +176,14 @@ def handle_update_is_verified(
     pass
 
 
+class ManageEntityData(TypedDict):
+    management_action: Any
+    entity_type: Any
+    id: int
+    metadata: str
+    user_id_seed_bump: Any
+
+
 def handle_manage_entity(
     session: Session,
     transaction: ParsedTx,
@@ -183,7 +192,32 @@ def handle_manage_entity(
     metadata_dictionary: Dict,
     records: List[Any],
 ):
-    pass
+    # create track
+    instruction_data: ManageEntityData = instruction["data"]
+    management_action = instruction_data["management_action"]
+    entity_type = instruction_data["entity_type"]
+
+    if management_action.Create == type(
+        management_action
+    ) and entity_type.Track == type(entity_type):
+        track_id = instruction_data["id"]
+
+        track = Track(
+            slot=transaction["result"]["slot"],
+            txhash=transaction["tx_sig"],
+            track_id=instruction_data["id"],
+            owner_id=instruction_data["user_id_seed_bump"].user_id,
+            metadata_multihash=instruction_data.get("metadata"),
+            is_current=True,
+            is_delete=False,
+            created_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
+            updated_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
+        )
+        track_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
+        update_track_model_metadata(session, track, track_metadata)
+        # TODO update stems, remixes, challenge
+        records.append(track)
+        db_models["tracks"][track_id].append(track)
 
 
 def handle_create_content_node(
@@ -298,77 +332,144 @@ def handle_remove_user_authority_delegate(
 
 # Metadata updater
 def update_user_model_metadata(
-    session: Session, user_record: User, ipfs_metadata: Dict
+    session: Session, user_record: User, metadata_dict: Dict
 ):
-    if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
-        user_record.profile_picture = ipfs_metadata["profile_picture"]
+    if "profile_picture" in metadata_dict and metadata_dict["profile_picture"]:
+        user_record.profile_picture = metadata_dict["profile_picture"]
 
-    if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
-        user_record.cover_photo = ipfs_metadata["cover_photo"]
+    if (
+        "profile_picture_sizes" in metadata_dict
+        and metadata_dict["profile_picture_sizes"]
+    ):
+        user_record.profile_picture = metadata_dict["profile_picture_sizes"]
 
-    if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
-        user_record.bio = ipfs_metadata["bio"]
+    if "cover_photo" in metadata_dict and metadata_dict["cover_photo"]:
+        user_record.cover_photo = metadata_dict["cover_photo"]
 
-    if "name" in ipfs_metadata and ipfs_metadata["name"]:
-        user_record.name = ipfs_metadata["name"]
+    if "cover_photo_sizes" in metadata_dict:
+        user_record.cover_photo = metadata_dict["cover_photo_sizes"]
 
-    if "location" in ipfs_metadata and ipfs_metadata["location"]:
-        user_record.location = ipfs_metadata["location"]
+    if "bio" in metadata_dict and metadata_dict["bio"]:
+        user_record.bio = metadata_dict["bio"]
+
+    if "name" in metadata_dict and metadata_dict["name"]:
+        user_record.name = metadata_dict["name"]
+
+    if "location" in metadata_dict and metadata_dict["location"]:
+        user_record.location = metadata_dict["location"]
 
     # Fields with no on-chain counterpart
     if (
-        "profile_picture_sizes" in ipfs_metadata
-        and ipfs_metadata["profile_picture_sizes"]
+        "profile_picture_sizes" in metadata_dict
+        and metadata_dict["profile_picture_sizes"]
     ):
-        user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
-
-    if "cover_photo_sizes" in ipfs_metadata and ipfs_metadata["cover_photo_sizes"]:
-        user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+        user_record.profile_picture = metadata_dict["profile_picture_sizes"]
 
     if (
-        "collectibles" in ipfs_metadata
-        and ipfs_metadata["collectibles"]
-        and isinstance(ipfs_metadata["collectibles"], dict)
-        and ipfs_metadata["collectibles"].items()
+        "collectibles" in metadata_dict
+        and metadata_dict["collectibles"]
+        and isinstance(metadata_dict["collectibles"], dict)
+        and metadata_dict["collectibles"].items()
     ):
         user_record.has_collectibles = True
     else:
         user_record.has_collectibles = False
 
     # TODO: implement
-    # if "associated_wallets" in ipfs_metadata:
+    # if "associated_wallets" in metadata_dict:
     #     update_user_associated_wallets(
     #         session: Session,
     #         update_task,
     #         user_record,
-    #         ipfs_metadata["associated_wallets"],
+    #         metadata_dict["associated_wallets"],
     #         "eth",
     #     )
 
     # TODO: implement
-    # if "associated_sol_wallets" in ipfs_metadata:
+    # if "associated_sol_wallets" in metadata_dict:
     #     update_user_associated_wallets(
     #         session: Session,
     #         update_task,
     #         user_record,
-    #         ipfs_metadata["associated_sol_wallets"],
+    #         metadata_dict["associated_sol_wallets"],
     #         "sol",
     #     )
 
-    if "playlist_library" in ipfs_metadata and ipfs_metadata["playlist_library"]:
-        user_record.playlist_library = ipfs_metadata["playlist_library"]
+    if "playlist_library" in metadata_dict and metadata_dict["playlist_library"]:
+        user_record.playlist_library = metadata_dict["playlist_library"]
 
-    if "is_deactivated" in ipfs_metadata:
-        user_record.is_deactivated = ipfs_metadata["is_deactivated"]
+    if "is_deactivated" in metadata_dict:
+        user_record.is_deactivated = metadata_dict["is_deactivated"]
 
     # TODO: implement
-    # if "events" in ipfs_metadata and ipfs_metadata["events"]:
+    # if "events" in metadata_dict and metadata_dict["events"]:
     #     update_user_events(
     #         session: Session,
     #         user_record,
-    #         ipfs_metadata["events"],
+    #         metadata_dict["events"],
     #         update_task.challenge_event_bus,
     #     )
+
+    # reconstructed endpoints from sp IDs in tx not /ipfs response
+    if "creator_node_endpoint" in metadata_dict:
+        user_record.creator_node_endpoint = metadata_dict["creator_node_endpoint"]
+
+
+def update_track_model_metadata(
+    session: Session, track_record: Track, track_metadata: Dict
+):
+    track_record.title = track_metadata["title"]
+    track_record.length = track_metadata["length"] or 0
+    track_record.cover_art_sizes = track_metadata["cover_art_sizes"]
+    if track_metadata["cover_art"]:
+        track_record.cover_art_sizes = track_record.cover_art
+        # TODO check if blacklisted?
+
+    track_record.tags = track_metadata["tags"]
+    track_record.genre = track_metadata["genre"]
+    track_record.mood = track_metadata["mood"]
+    track_record.credits_splits = track_metadata["credits_splits"]
+    track_record.create_date = track_metadata["create_date"]
+    track_record.release_date = track_metadata["release_date"]
+    track_record.file_type = track_metadata["file_type"]
+    track_record.description = track_metadata["description"]
+    track_record.license = track_metadata["license"]
+    track_record.isrc = track_metadata["isrc"]
+    track_record.iswc = track_metadata["iswc"]
+    track_record.track_segments = track_metadata["track_segments"]
+    track_record.is_unlisted = track_metadata["is_unlisted"]
+    track_record.field_visibility = track_metadata["field_visibility"]
+
+    if is_valid_json_field(track_metadata, "stem_of"):
+        track_record.stem_of = track_metadata["stem_of"]
+
+    if is_valid_json_field(track_metadata, "remix_of"):
+        track_record.remix_of = track_metadata["remix_of"]
+
+    if "download" in track_metadata:
+        track_record.download = {
+            "is_downloadable": track_metadata["download"].get("is_downloadable")
+            == True,
+            "requires_follow": track_metadata["download"].get("requires_follow")
+            == True,
+            "cid": track_metadata["download"].get("cid", None),
+        }
+    else:
+        track_record.download = {
+            "is_downloadable": False,
+            "requires_follow": False,
+            "cid": None,
+        }
+
+    track_record.route_id = helpers.create_track_route_id(
+        track_metadata["title"], "handle"
+    )  # TODO use handle from upstream user fetch
+
+
+def is_valid_json_field(metadata, field):
+    if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
+        return True
+    return False
 
 
 transaction_handlers = {

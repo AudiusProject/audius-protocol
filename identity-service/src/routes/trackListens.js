@@ -7,7 +7,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
-const { createTrackListenTransaction, getFeePayerKeypair, sendAndSignTransaction } = require('../solana-client.js')
+const { createTrackListenTransaction, getFeePayerKeypair, sendAndSignTransaction } = require('../solana-client')
 const config = require('../config.js')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
