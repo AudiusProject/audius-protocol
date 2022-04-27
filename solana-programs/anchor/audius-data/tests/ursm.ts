@@ -49,7 +49,7 @@ describe("replicaSet", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -69,11 +69,11 @@ describe("replicaSet", function () {
     const tx = createContentNode({
       payer: provider.wallet.publicKey,
       program,
-      adminPublicKey: adminKeypair.publicKey,
+      adminAuthorityPublicKey: adminKeypair.publicKey,
       baseAuthorityAccount,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       contentNodeAuthority: authority.publicKey,
-      contentNodeAcct: derivedAddress,
+      contentNodeAccount: derivedAddress,
       spID,
       ownerEthAddress: ownerEth.address,
     });
@@ -130,8 +130,8 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      contentNodeAcct: derivedAddress,
+      adminAccount: adminStorageKeypair.publicKey,
+      contentNodeAccount: derivedAddress,
       spID,
       contentNodeAuthority: authority.publicKey,
       ownerEthAddress: ownerEth.address,
@@ -304,9 +304,9 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       contentNodeAuthority: updatedAuthority.publicKey,
-      contentNodeAcct: cnToUpdate.pda,
+      contentNodeAccount: cnToUpdate.pda,
       spID: cnToUpdate.spId,
       ownerEthAddress: cnToUpdate.ownerEthAddress,
       proposer1: {
@@ -363,7 +363,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       adminAuthorityPublicKey: adminKeypair.publicKey,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       cnDelete: {
         pda: derivedAddress,
         authorityPublicKey: cnToDelete.authority.publicKey,
@@ -443,7 +443,7 @@ describe("replicaSet", function () {
       baseAuthorityAccount,
       userAcct: user.pda,
       userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       replicaSet: [2, 3, 6],
       replicaSetBumps: [
         cn2.seedBump.bump,
@@ -485,7 +485,7 @@ describe("replicaSet", function () {
       baseAuthorityAccount,
       userAcct: user.pda,
       userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       replicaSet: [6, 7, 8],
       replicaSetBumps: [
         cn6.seedBump.bump,
@@ -528,7 +528,7 @@ describe("replicaSet", function () {
           baseAuthorityAccount,
           userAcct: user.pda,
           userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
-          adminStoragePublicKey: adminStorageKeypair.publicKey,
+          adminAccount: adminStorageKeypair.publicKey,
           replicaSet: [2, 7, 8],
           replicaSetBumps: [
             cn2.seedBump.bump,

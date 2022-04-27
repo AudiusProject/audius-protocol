@@ -66,7 +66,7 @@ describe("track-actions", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -103,10 +103,10 @@ describe("track-actions", function () {
     const tx = deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminStorageKeypair.publicKey,
+      userAccount: user.pda,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
@@ -136,10 +136,10 @@ describe("track-actions", function () {
     const tx = addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminStorageKeypair.publicKey,
+      userAccount: user.pda,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
@@ -170,10 +170,10 @@ describe("track-actions", function () {
     const tx = addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminStorageKeypair.publicKey,
+      userAccount: user.pda,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
@@ -209,11 +209,11 @@ describe("track-actions", function () {
     const tx = addTrackRepost({
       program,
       baseAuthorityAccount: userDelegate.baseAuthorityAccount,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: userDelegate.userAccountPDA,
-      userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
-      authorityDelegationStatusAccountPDA:
-        userDelegate.authorityDelegationStatusPDA,
+      adminAccount: adminStorageKeypair.publicKey,
+      userAccount: userDelegate.userAccountPDA,
+      userAuthorityDelegateAccount: userDelegate.userAuthorityDelegatePDA,
+      authorityDelegationStatusAccount:
+        userDelegate.authorityDelegationStatusAccount,
       userAuthorityPublicKey:
         userDelegate.userAuthorityDelegateKeypair.publicKey,
       userId: userDelegate.userId,
@@ -246,10 +246,10 @@ describe("track-actions", function () {
     const tx = deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminStorageKeypair.publicKey,
+      userAccount: user.pda,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,

@@ -125,7 +125,7 @@ describe("playlists", function () {
       userId,
       bumpSeed,
       metadata,
-      userStorageAccount: newUserAcctPDA,
+      userAccount: newUserAcctPDA,
       adminStorageKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -159,10 +159,10 @@ describe("playlists", function () {
       id: playlistID,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwnerPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      playlistOwner: newUserAcctPDA,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      adminAccount: adminStorageKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -180,10 +180,10 @@ describe("playlists", function () {
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        playlistOwner: newUserAcctPDA,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
+        adminAccount: adminStorageKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
@@ -195,11 +195,11 @@ describe("playlists", function () {
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       id: playlistID,
-      userStorageAccountPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      userAccount: newUserAcctPDA,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedPlaylistMetadata,
     });
@@ -222,7 +222,7 @@ describe("playlists", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -245,8 +245,8 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userStorageAccount: newUserAcctPDA,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userAccount: newUserAcctPDA,
+      adminAccount: adminStorageKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -259,27 +259,27 @@ describe("playlists", function () {
       id: playlistID,
       baseAuthorityAccount,
       userId,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       bumpSeed,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwnerPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      playlistOwner: newUserAcctPDA,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
     });
 
     await testDeletePlaylist({
       provider,
       program,
       id: playlistID,
-      playlistOwnerPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      playlistOwner: newUserAcctPDA,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
     });
   });
 
@@ -300,7 +300,7 @@ describe("playlists", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminStorageKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -323,8 +323,8 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userStorageAccount: newUserAcctPDA,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userAccount: newUserAcctPDA,
+      adminAccount: adminStorageKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -339,13 +339,13 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        playlistOwner: newUserAcctPDA,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -353,13 +353,13 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         id: randomId(),
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        playlistOwner: newUserAcctPDA,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -367,13 +367,13 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         id: randomId(),
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        playlistOwner: newUserAcctPDA,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
     ]);
     console.log(`Created 3 playlists in ${Date.now() - start}ms`);

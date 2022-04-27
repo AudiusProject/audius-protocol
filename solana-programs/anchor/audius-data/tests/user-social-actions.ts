@@ -167,7 +167,7 @@ describe("user social actions", function () {
       const updateAdminTx = updateAdmin({
         program,
         isWriteEnabled: false,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
       await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
@@ -182,8 +182,8 @@ describe("user social actions", function () {
         bumpSeed: userId1DerivedInfo.bumpSeed,
         metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
-        userStorageAccount: userStorageAccount1,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userAccount: userStorageAccount1,
+        adminAccount: adminStorageKeypair.publicKey,
         ...getURSMParams(),
       });
 
@@ -197,8 +197,8 @@ describe("user social actions", function () {
         bumpSeed: userId2DerivedInfo.bumpSeed,
         metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
-        userStorageAccount: userStorageAccount2,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userAccount: userStorageAccount2,
+        adminAccount: adminStorageKeypair.publicKey,
         ...getURSMParams(),
       });
     });
@@ -208,16 +208,16 @@ describe("user social actions", function () {
       const followTx = followUser({
         baseAuthorityAccount,
         program,
-        sourceUserStorageAccountPDA: userStorageAccount1,
-        targetUserStorageAccountPDA: userStorageAccount2,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        sourceUserAccount: userStorageAccount1,
+        targetUserAccount: userStorageAccount2,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserId: userId1,
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
       });
       const followTxSig = await provider.sendAndConfirm(followTx, [
         newUser1Key,
@@ -257,18 +257,18 @@ describe("user social actions", function () {
       const followTx = followUser({
         baseAuthorityAccount,
         program,
-        sourceUserStorageAccountPDA: userDelegate.userAccountPDA,
-        targetUserStorageAccountPDA: userStorageAccount2,
-        userAuthorityDelegateAccountPDA: userDelegate.userAuthorityDelegatePDA,
-        authorityDelegationStatusAccountPDA:
-          userDelegate.authorityDelegationStatusPDA,
+        sourceUserAccount: userDelegate.userAccountPDA,
+        targetUserAccount: userStorageAccount2,
+        userAuthorityDelegateAccount: userDelegate.userAuthorityDelegatePDA,
+        authorityDelegationStatusAccount:
+          userDelegate.authorityDelegationStatusAccount,
         userAuthorityPublicKey:
           userDelegate.userAuthorityDelegateKeypair.publicKey,
         sourceUserId: userDelegate.userId,
         sourceUserBumpSeed: userDelegate.userBumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
       });
       const followTxSig = await provider.sendAndConfirm(followTx, [
         userDelegate.userAuthorityDelegateKeypair,
@@ -303,16 +303,16 @@ describe("user social actions", function () {
       const unfollowTx = unfollowUser({
         baseAuthorityAccount,
         program,
-        sourceUserStorageAccountPDA: userStorageAccount1,
-        targetUserStorageAccountPDA: userStorageAccount2,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        sourceUserAccount: userStorageAccount1,
+        targetUserAccount: userStorageAccount2,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserId: userId1,
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
       });
       const unfollowTxSig = await provider.sendAndConfirm(unfollowTx, [
         newUser1Key,
@@ -443,16 +443,16 @@ describe("user social actions", function () {
       const subscribeTx = subscribeUser({
         baseAuthorityAccount,
         program,
-        sourceUserStorageAccountPDA: userStorageAccount1,
-        targetUserStorageAccountPDA: userStorageAccount2,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        sourceUserAccount: userStorageAccount1,
+        targetUserAccount: userStorageAccount2,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserId: userId1,
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
       });
       const subscribeTxSig = await provider.sendAndConfirm(subscribeTx, [
         newUser1Key,
@@ -485,16 +485,16 @@ describe("user social actions", function () {
       const unsubscribeTx = unsubscribeUser({
         baseAuthorityAccount,
         program,
-        sourceUserStorageAccountPDA: userStorageAccount1,
-        targetUserStorageAccountPDA: userStorageAccount2,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        sourceUserAccount: userStorageAccount1,
+        targetUserAccount: userStorageAccount2,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
         userAuthorityPublicKey: newUser1Key.publicKey,
         sourceUserId: userId1,
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
       });
       const unsubscribeTxSig = await provider.sendAndConfirm(unsubscribeTx, [
         newUser1Key,
