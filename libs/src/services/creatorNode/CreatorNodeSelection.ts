@@ -96,7 +96,7 @@ export class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
-    logger,
+    logger = console,
     maxStorageUsedPercent = 95,
     timeout = null,
     equivalencyDelta = null,
