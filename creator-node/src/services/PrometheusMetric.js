@@ -141,4 +141,3 @@ class PrometheusMetric {
 }
 
 module.exports = PrometheusMetric
-
