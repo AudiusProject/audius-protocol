@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { CID } = require('ipfs-http-client-latest')
+const CID = require('cids')
 
 // regex to check if a directory or just a regular file
 // if directory - will have both outer and inner properties in match.groups
