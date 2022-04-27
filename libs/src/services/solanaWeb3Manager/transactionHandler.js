@@ -208,7 +208,7 @@ class TransactionHandler {
           if (sendCount % 10 === 0) {
             logger.info(`Send count ${sendCount}`)
           }
-          await delay(this.this.sendingFrequencyMs)
+          await delay(this.sendingFrequencyMs)
           elapsed = Date.now() - startTime
         }
       })()
