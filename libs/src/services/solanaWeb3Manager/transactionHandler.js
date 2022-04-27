@@ -180,13 +180,25 @@ class TransactionHandler {
     const rawTransaction = tx.serialize()
 
     // Send the txn
-    const txid = await this.connection.sendRawTransaction(rawTransaction, {
-      skipPreflight:
-        skipPreflight === null ? this.skipPreflight : skipPreflight,
-      commitment: 'processed',
-      preflightCommitment: 'processed', // TODO: do we want this?
-      maxRetries: retry ? 0 : undefined
-    })
+    let txid
+    try {
+      txid = await this.connection.sendRawTransaction(rawTransaction, {
+        skipPreflight:
+          skipPreflight === null ? this.skipPreflight : skipPreflight,
+        commitment: 'processed',
+        preflightCommitment: 'processed', // TODO: do we want this?
+        maxRetries: retry ? 0 : undefined
+      })
+    } catch (e) {
+      logger.warn(`transactionHandler: Initial send failed: ${e}`)
+      const { message: error } = e
+      const errorCode = this._parseSolanaErrorCode(error)
+      return {
+        res: null,
+        error,
+        errorCode
+      }
+    }
 
     let done = false
 
@@ -197,16 +209,20 @@ class TransactionHandler {
         let sendCount = 0
         // eslint-disable-next-line no-unmodified-loop-condition
         while (!done && elapsed < this.retryTimeoutMs) {
-          this.connection.sendRawTransaction(rawTransaction, {
-            skipPreflight:
+          try {
+            this.connection.sendRawTransaction(rawTransaction, {
+              skipPreflight:
               skipPreflight === null ? this.skipPreflight : skipPreflight,
-            commitment: 'processed',
-            preflightCommitment: 'processed', // TODO: do we want this?
-            maxRetries: retry ? 0 : undefined
-          })
+              commitment: 'processed',
+              preflightCommitment: 'processed', // TODO: do we want this?
+              maxRetries: retry ? 0 : undefined
+            })
+          } catch (e) {
+            logger.warn(`transactionHandler: error in send loop: ${e}`)
+          }
           sendCount++
           if (sendCount % 10 === 0) {
-            logger.info(`Send count ${sendCount}`)
+            logger.warn(`transactionHandler: send count ${sendCount}`)
           }
           await delay(this.sendingFrequencyMs)
           elapsed = Date.now() - startTime
@@ -222,6 +238,7 @@ class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
+      logger.warn(`transactionHandler: error in awaitTransactionSignature: ${e}`)
       done = true
       const { message: error } = e
       const errorCode = this._parseSolanaErrorCode(error)
@@ -302,7 +319,7 @@ class TransactionHandler {
           ;(async () => {
             try {
               if (pollCount % 10 === 0) {
-                logger.info(`Poll count: ${pollCount}`)
+                logger.warn(`transactionHandler: poll count: ${pollCount}`)
               }
               pollCount++
 
