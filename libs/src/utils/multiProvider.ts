@@ -11,7 +11,11 @@ const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
   return provider.send
 }
 
-type Providers = [HttpProvider, ...Array<HttpProvider | AbstractProvider>]
+export type Providers = [
+  HttpProvider,
+  ...Array<HttpProvider | AbstractProvider>
+]
+
 type StringProviders = [string, ...string[]]
 
 /**
