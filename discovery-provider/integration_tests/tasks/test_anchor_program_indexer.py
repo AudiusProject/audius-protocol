@@ -69,12 +69,12 @@ def test_validate_and_save_parsed_tx_records(app):
         {
             "tx_sig": "test_sig1",
             "tx_metadata": {"instructions": []},
-            "result": {"slot": 1},
+            "result": {"slot": 1, "meta": {"err": None}},
         },
         {
             "tx_sig": "test_sig2",
             "tx_metadata": {"instructions": []},
-            "result": {"slot": 2},
+            "result": {"slot": 2, "meta": {"err": None}},
         },
     ]
     anchor_program_indexer.validate_and_save_parsed_tx_records(
