@@ -41,7 +41,7 @@ npm run install-dev
 npm run build
 
 cd $PROTOCOL_DIR/libs
-npm install
+npm install --dev
 npm run build
 
 cd $PROTOCOL_DIR/identity-service
