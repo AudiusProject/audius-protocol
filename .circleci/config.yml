@@ -386,7 +386,6 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/node:14.16
-      - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -419,7 +418,6 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            export ipfsPort=5001
             npm run test:unit
             npm run test:ci
 
