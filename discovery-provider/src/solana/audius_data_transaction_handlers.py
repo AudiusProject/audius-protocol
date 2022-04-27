@@ -65,6 +65,18 @@ class InitUserData(TypedDict):
     _user_bump: int
     _metadata: str
 
+def clone_model(model, **kwargs):
+    """Clone an arbitrary sqlalchemy model object without its primary key values."""
+    # Ensure the model’s data is loaded before copying.
+    # model.id
+
+    table = model.__table__
+    non_pk_columns = [k for k in table.columns.keys() if k not in table.primary_key.columns.keys()]
+    data = {c: getattr(model, c) for c in non_pk_columns}
+    data.update(kwargs)
+
+    clone = model.__class__(**data)
+    return clone
 
 def handle_init_user(
     session: Session,
@@ -83,38 +95,32 @@ def handle_init_user(
     # user.primary_id = replica_set[0]
     # user.secondary_ids = [replica_set[1], replica_set[2]]
 
-    # metadata_cid = instruction.get('data').get('metadata')
-
-    # No action to be taken here
     instruction_data = instruction.get("data")
     user_id = instruction_data.get("user_id")
-    slot=transaction["result"]["slot"]
+    slot = transaction["result"]["slot"]
     txhash = transaction["tx_sig"]
     user_storage_account = str(instruction.get("account_names_map").get("user"))
 
-    user_record = db_models["users"].get(user_id)[0]
+    # Fetch latest entry for this user in db_models
+    user_record = db_models["users"].get(user_id)[-1]
 
-    # Expunge the record so it can be re-added
-    session.expunge(user_record)
-    make_transient(user_record)
+    # Clone new record
+    new_user_record = clone_model(user_record)
 
-    user_record.user_storage_account = user_storage_account
-    user_record.txhash = txhash
-    user_record.slot = slot
-    user_record.is_current = True
+    for prior_record in db_models["users"][user_id]:
+        prior_record.is_current = False
+
+    new_user_record.user_storage_account = user_storage_account
+    new_user_record.txhash = txhash
+    new_user_record.slot = slot
+    new_user_record.is_current = True
+    new_user_record.user_id = user_id
 
     # Append record to save
-    records.append(user_record)
-
-    # TODO: Resolve why uncommenting below results in is_current=False
-    # Invalidate prior records in this batch
-    # for prior_record in db_models["users"][user_id]:
-    #     prior_record.is_current = False
+    records.append(new_user_record)
 
     # Append most recent record
-    db_models["users"][user_id].append(user_record)
-
-    pass
+    db_models["users"][user_id].append(new_user_record)
 
 
 def handle_init_user_sol(
@@ -125,7 +131,31 @@ def handle_init_user_sol(
     metadata_dictionary: Dict,
     records: List[Any],
 ):
-    pass
+    slot = transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
+    user_id = instruction["user_id"]
+    instruction_data = instruction.get('data')
+
+    user_record = db_models["users"].get(user_id)[-1]
+    user_authority = instruction_data.get('user_authority')
+
+    # Clone new record
+    new_user_record = clone_model(user_record)
+
+    for prior_record in db_models["users"][user_id]:
+        prior_record.is_current = False
+
+    new_user_record.user_authority_account = str(user_authority)
+    new_user_record.txhash = txhash
+    new_user_record.slot = slot
+    new_user_record.is_current = True
+    new_user_record.user_id = user_id
+
+    # Append record to save
+    records.append(new_user_record)
+
+    # Append most recent record
+    db_models["users"][user_id].append(new_user_record)
 
 
 class CreateUserData(TypedDict):
