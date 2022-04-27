@@ -6,13 +6,17 @@ const stringifiedDateFields = (obj) => {
 }
 
 const wait = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
+  return new Promise((resolve) => setTimeout(resolve, milliseconds))
 }
 
 const functionThatThrowsWithMessage = (errorMessage) => {
-  return function throwTestingError () {
+  return function throwTestingError() {
     throw new Error(errorMessage)
   }
 }
 
-module.exports = { wait, stringifiedDateFields, functionThatThrowsWithMessage }
+module.exports = {
+  wait,
+  stringifiedDateFields,
+  functionThatThrowsWithMessage
+}

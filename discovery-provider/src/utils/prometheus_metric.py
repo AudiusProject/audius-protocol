@@ -58,16 +58,14 @@ class PrometheusMetric:
         self.save(self.elapsed(start_time), labels)
 
     def save(self, value, labels=None):
+        this_metric = self.metric
         if labels:
-            if self.metric_type == PrometheusType.HISTOGRAM:
-                self.metric.labels(**labels).observe(value)
-            elif self.metric_type == PrometheusType.GAUGE:
-                self.metric.labels(**labels).set(value)
-        else:
-            if self.metric_type == PrometheusType.HISTOGRAM:
-                self.metric.observe(value)
-            elif self.metric_type == PrometheusType.GAUGE:
-                self.metric.set(value)
+            this_metric = this_metric.labels(**labels)
+
+        if self.metric_type == PrometheusType.HISTOGRAM:
+            this_metric.observe(value)
+        elif self.metric_type == PrometheusType.GAUGE:
+            this_metric.set(value)
 
     @classmethod
     def register_collector(cls, name, collector_func):
