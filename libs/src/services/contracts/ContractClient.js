@@ -13,7 +13,7 @@ const METHOD_CALL_MAX_RETRIES = 5
  * time a method on the contract is invoked.
  */
 class ContractClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress, contractAddress = null) {
+  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress, contractAddress = null, logger = console) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
@@ -22,6 +22,7 @@ class ContractClient {
     // Once initialized, contract address and contract are set up
     this._contractAddress = contractAddress
     this._contract = null
+    this.logger = logger
 
     // Initialization setup
     this._isInitialized = false
@@ -75,12 +76,12 @@ class ContractClient {
       this._isInitialized = true
     } catch (e) {
       if (++this._initAttempts >= CONTRACT_INIT_MAX_ATTEMPTS) {
-        console.error(`Failed to initialize ${this.contractRegistryKey}. Max attempts exceeded.`)
+        this.logger.error(`Failed to initialize ${this.contractRegistryKey}. Max attempts exceeded.`)
         return
       }
 
       const selectNewEndpoint = !!this.providerSelector
-      console.error(`Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint}`)
+      this.logger.error(`Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint}`)
       this._isInitializing = false
       await this.retryInit(selectNewEndpoint)
     }
@@ -93,7 +94,7 @@ class ContractClient {
       }
       await this.init()
     } catch (e) {
-      console.error(e.message)
+      this.logger.error(e.message)
     }
   }
 
@@ -105,7 +106,7 @@ class ContractClient {
     this.providerSelector.addUnhealthy(currentProviderUrl)
 
     if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
-      console.log('No healthy providers available - resetting ProviderSelection and selecting.')
+      this.logger.info('No healthy providers available - resetting ProviderSelection and selecting.')
       this.providerSelector.clearUnhealthy()
       this.providerSelector.clearBackups()
     }
@@ -147,7 +148,7 @@ class ContractClient {
         retries: METHOD_CALL_MAX_RETRIES,
         onRetry: (err, i) => {
           if (err) {
-            console.log(`Retry error for ${methodName} : ${err}`)
+            this.logger.info(`Retry error for ${methodName} : ${err}`)
           }
         }
       })
