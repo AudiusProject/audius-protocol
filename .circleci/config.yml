@@ -47,7 +47,7 @@ jobs:
           command: |
             # gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
             ls
-            ssh -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               A up;
             EOF
   test-mad-dog-e2e:
