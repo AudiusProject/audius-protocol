@@ -230,17 +230,23 @@
   background-color: var(--background);
 }
 
-.loadingSkeletonAvatar div {
-  padding: 0px;
+.loadingSkeleton {
+  height: 16px;
+  margin-bottom: 8px;
+  padding: 0;
 }
 
-.loadingSkeletonAvatar span {
+.loadingSkeletonAvatar {
   height: 82px !important;
   width: 82px !important;
   position: absolute;
   left: 10px;
   top: 38px;
   z-index: 10;
+}
+
+.loadingSkeletonAvatar {
+  border-radius: 100%;
 }
 
 .loadingInfo {
@@ -251,9 +257,13 @@
   margin: 8px 0;
 }
 
+.loadingShortDesc {
+  width: 240px;
+  margin-top: 8px;
+}
+
 .loadingShortName {
-  width: 180px;
-  margin-bottom: 8px;
+  width: 80px;
 }
 
 .editButton .editButtonText {
