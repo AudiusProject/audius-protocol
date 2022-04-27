@@ -331,7 +331,7 @@ class AudiusLibs {
     this.wormholeConfig = wormholeConfig
     this.captchaConfig = captchaConfig
     this.isServer = isServer
-    this.isDebug = isDebu
+    this.isDebug = isDebug
     this.logger = logger
 
     this.AudiusABIDecoder = AudiusABIDecoder
