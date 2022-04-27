@@ -13,16 +13,16 @@ const METHOD_CALL_MAX_RETRIES = 5
  * time a method on the contract is invoked.
  */
 class ContractClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress, contractAddress = null, logger = console) {
+  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress, logger = console, contractAddress = null) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
+    this.logger = logger
 
     // Once initialized, contract address and contract are set up
     this._contractAddress = contractAddress
     this._contract = null
-    this.logger = logger
 
     // Initialization setup
     this._isInitialized = false

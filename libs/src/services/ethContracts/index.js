@@ -153,8 +153,8 @@ class EthContracts {
         ClaimDistributionABI,
         ClaimDistributionRegistryKey,
         this.getRegistryAddressForContract,
-        this.claimDistributionContractAddress,
-        this.logger
+        this.logger,
+        this.claimDistributionContractAddress
       )
     }
 
