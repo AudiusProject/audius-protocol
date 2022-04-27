@@ -1,12 +1,14 @@
+const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
 
-const config = require('../config.js')
+const config = require('../config')
 const models = require('../models')
 const {
   saveFileFromBufferToDisk,
   removeTrackFolder,
+  getTmpTrackUploadArtifactsPathWithInputUUID,
   handleTrackContentUpload
 } = require('../fileManager')
 const {
@@ -17,20 +19,24 @@ const {
   errorResponseServerError,
   errorResponseForbidden
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  currentNodeShouldHandleTranscode
+} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
   syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  ensureStorageMiddleware
+  ensureStorageMiddleware,
+  ensureValidSPMiddleware
 } = require('../middlewares')
-
-const { getCID } = require('./files')
 const { decode } = require('../hashids')
+const { getCID, streamFromFileSystem } = require('./files')
 const DBManager = require('../dbManager')
-const { generateListenTimestampAndSignature } = require('../apiSigning.js')
+const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
+const TranscodingQueue = require('../TranscodingQueue')
 
 const readFile = promisify(fs.readFile)
 
@@ -47,27 +53,123 @@ module.exports = function (app) {
     syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
-      const AsyncProcessingQueue =
-        req.app.get('serviceRegistry').asyncProcessingQueue
-
       if (req.fileSizeError || req.fileFilterError) {
         removeTrackFolder({ logContext: req.logContext }, req.fileDir)
         return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
       }
 
-      await AsyncProcessingQueue.addTrackContentUploadTask({
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
+      const selfTranscode = currentNodeShouldHandleTranscode({
+        transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
+        spID: config.get('spID')
+      })
+
+      if (selfTranscode) {
+        await AsyncProcessingQueue.addTrackContentUploadTask({
+          logContext: req.logContext,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileDestination: req.file.destination,
+            cnodeUserUUID: req.session.cnodeUserUUID
+          }
+        })
+      } else {
+        await AsyncProcessingQueue.addTranscodeHandOffTask({
+          logContext: req.logContext,
+          req: {
+            fileName: req.fileName,
+            fileDir: req.fileDir,
+            fileNameNoExtension: req.fileNameNoExtension,
+            fileDestination: req.file.destination,
+            cnodeUserUUID: req.session.cnodeUserUUID,
+            headers: req.headers
+          }
+        })
+      }
+
+      return successResponse({ uuid: req.logContext.requestID })
+    })
+  )
+
+  /**
+   * Given that the requester is a valid SP, the current Content Node has enough storage,
+   * upload the track to the current node and add a transcode and segmenting job to the queue.
+   *
+   * This route is used on an available SP when the primary sends over a transcode and segment request
+   * to initiate the transcode handoff. This route does not run on the primary.
+   */
+  app.post(
+    '/transcode_and_segment',
+    ensureValidSPMiddleware,
+    ensureStorageMiddleware,
+    handleTrackContentUpload,
+    handleResponse(async (req, res) => {
+      const AsyncProcessingQueue =
+        req.app.get('serviceRegistry').asyncProcessingQueue
+
+      await AsyncProcessingQueue.addTranscodeAndSegmentTask({
         logContext: req.logContext,
         req: {
           fileName: req.fileName,
           fileDir: req.fileDir,
-          fileDestination: req.file.destination,
-          session: {
-            cnodeUserUUID: req.session.cnodeUserUUID
-          }
+          uuid: req.logContext.requestID
         }
       })
+
       return successResponse({ uuid: req.logContext.requestID })
     })
+  )
+
+  /**
+   * Given that the request is coming from a valid SP, serve the corresponding file
+   * from the transcode handoff
+   *
+   * This route is used on an available SP when the primary requests the transcoded files after
+   * sending the first request for the transcode handoff. This route does not run on the primary.
+   */
+  app.get(
+    '/transcode_and_segment',
+    ensureValidSPMiddleware,
+    async (req, res) => {
+      const fileName = req.query.fileName
+      const fileType = req.query.fileType
+      const uuid = req.query.uuid
+
+      if (!fileName || !fileType || !uuid) {
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest(
+            `No provided filename=${fileName}, fileType=${fileType}, or uuid=${uuid}`
+          )
+        )
+      }
+
+      const basePath = getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
+      let pathToFile
+      if (fileType === 'transcode') {
+        pathToFile = path.join(basePath, fileName)
+      } else if (fileType === 'segment') {
+        pathToFile = path.join(basePath, 'segments', fileName)
+      } else if (fileType === 'm3u8') {
+        pathToFile = path.join(basePath, fileName)
+      }
+
+      try {
+        return await streamFromFileSystem(req, res, pathToFile)
+      } catch (e) {
+        return sendResponse(
+          req,
+          res,
+          errorResponseServerError(
+            `Could not serve content, error=${e.toString()}`
+          )
+        )
+      }
+    }
   )
 
   /**
