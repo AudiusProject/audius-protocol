@@ -1,7 +1,12 @@
-// Authentication import is possible but not recommended, it should only be used by advanced users
-const { Hedgehog, WalletManager } = require('@audius/hedgehog')
+import { Hedgehog as HedgehogBase, WalletManager } from '@audius/hedgehog'
+import type { IdentityService } from '../identity'
 
-class HedgehogWrapper {
+export class Hedgehog {
+  identityService: IdentityService
+  getFn: IdentityService['getFn']
+  setAuthFn: IdentityService['setAuthFn']
+  setUserFn: IdentityService['setUserFn']
+
   // TODO - update this comment
 
   // This is some black magic going on here. The audiusServiceEndpoint is passed in along with the
@@ -10,22 +15,22 @@ class HedgehogWrapper {
   // Therefore, we need to define this.audiusServiceEndpoint, to satisfy all the deps of the
   // requestToAudiusService and make it execute correctly
 
-  constructor (identityService, useLocalStorage = true) {
+  constructor(identityService: IdentityService, useLocalStorage = true) {
     this.identityService = identityService
 
     this.getFn = async (obj) => {
-      return this.identityService.getFn(obj)
+      return await this.identityService.getFn(obj)
     }
 
     this.setAuthFn = async (obj) => {
-      return this.identityService.setAuthFn(obj)
+      return await this.identityService.setAuthFn(obj)
     }
 
     this.setUserFn = async (obj) => {
-      return this.identityService.setUserFn(obj)
+      return await this.identityService.setUserFn(obj)
     }
 
-    const hedgehog = new Hedgehog(
+    const hedgehog = new HedgehogBase(
       this.getFn,
       this.setAuthFn,
       this.setUserFn,
@@ -40,12 +45,13 @@ class HedgehogWrapper {
       // hedgehog property is called username so being consistent instead of calling it email
       const data = await this.getFn({ lookupKey: lookupKey, username: email })
 
-      if (data && data.iv && data.cipherText) {
-        const { walletObj, entropy } = await WalletManager.decryptCipherTextAndRetrieveWallet(
-          password,
-          data.iv,
-          data.cipherText
-        )
+      if (data?.iv && data.cipherText) {
+        const { walletObj, entropy } =
+          await WalletManager.decryptCipherTextAndRetrieveWallet(
+            password,
+            data.iv,
+            data.cipherText
+          )
 
         // set wallet property on the class
         hedgehog.wallet = walletObj
@@ -60,7 +66,7 @@ class HedgehogWrapper {
 
     /**
      * Generate secure credentials to allow login
-     * @param {String} username username
+     * @param username username
      */
     hedgehog.generateRecoveryInfo = async () => {
       const entropy = await WalletManager.getEntropyFromLocalStorage()
@@ -73,17 +79,13 @@ class HedgehogWrapper {
         btoa = window.btoa
         currentHost = window.location.origin
       } else {
-        btoa = str => Buffer.from(str, 'binary').toString('base64')
+        btoa = (str: string) => Buffer.from(str, 'binary').toString('base64')
         currentHost = 'localhost'
       }
-      const recoveryInfo = {}
-      recoveryInfo.login = btoa(entropy)
-      recoveryInfo.host = currentHost
+      const recoveryInfo = { login: btoa(entropy), host: currentHost }
       return recoveryInfo
     }
 
     return hedgehog
   }
 }
-
-module.exports = HedgehogWrapper

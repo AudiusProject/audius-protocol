@@ -21,6 +21,7 @@ npm install
 
 cd $PROTOCOL_DIR/mad-dog
 npm install
+mkdir -p local-storage/tmp-imgs
 
 cd $PROTOCOL_DIR/contracts
 npm install
@@ -36,7 +37,7 @@ cd $PROTOCOL_DIR/creator-node
 npm install
 
 cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
-yarn install
+npm run install-dev
 npm run build
 
 cd $PROTOCOL_DIR/libs
@@ -49,6 +50,7 @@ npm install
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
+    git checkout main
     npm run init
 fi
 
@@ -59,12 +61,8 @@ fi
 cd $PROTOCOL_DIR/service-commands
 npm link
 
-cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
-npm link
-
 cd $PROTOCOL_DIR/libs
 npm link
-npm link @audius/anchor-audius-data
 
 cd $PROTOCOL_DIR/mad-dog
 npm link @audius/service-commands
