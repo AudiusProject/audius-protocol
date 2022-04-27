@@ -5,6 +5,8 @@
  * CNodeUsers Table considered a Reference Table only
  */
 
+const tableName = 'Playlists'
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     console.log('STARTING MIGRATION 20220427014326-add_playlist_to_clockrecords_enum')
@@ -22,16 +24,31 @@ module.exports = {
     console.log('FINISHED MIGRATION add_playlist_to_clockrecords_enum')
   },
 
-  down: async (queryInterface, Sequelize) => {/* TODO */ }
+  down: async (queryInterface, Sequelize) => {
+    await removeCompositeUniqueConstraints(queryInterface, Sequelize)
+
+    await removePlaylistFromClockRecordSourceTables(queryInterface, Sequelize)
+
+    await dropPlaylistTable(queryInterface, Sequelize)
+  }
 }
 
 async function addPlaylistToClockRecordSourceTables(queryInterface, Sequelize, transaction) {
   await queryInterface.sequelize.query(`ALTER TYPE "enum_ClockRecords_sourceTable" ADD VALUE 'Playlist'`)
 }
 
+async function removePlaylistFromClockRecordSourceTables(queryInterface, Sequelize) {
+  await queryInterface.sequelize.query(`
+  ALTER TYPE "enum_ClockRecords_sourceTable" RENAME TO "enum_ClockRecords_sourceTable_old";
+  CREATE TYPE "enum_ClockRecords_sourceTable" AS ENUM('AudiusUser', 'Track', 'File');
+  ALTER TABLE "ClockRecords" ALTER COLUMN sourceTable TYPE enum_ClockRecords_sourceTable USING sourceTable::text::enum_ClockRecords_sourceTable;
+  DROP TYPE "enum_ClockRecords_sourceTable_old";
+  `)
+}
+
 async function addCompositeUniqueConstraints (queryInterface, Sequelize, transaction) {
   await queryInterface.addConstraint(
-    'Playlists',
+    tableName,
     {
       type: 'UNIQUE',
       fields: ['playlistId', 'clock'],
@@ -41,8 +58,12 @@ async function addCompositeUniqueConstraints (queryInterface, Sequelize, transac
   )
 }
 
+async function removeCompositeUniqueConstraints (queryInterface, Sequelize) {
+  await queryInterface.sequelize.query(`ALTER TABLE ${tableName} DROP CONSTRAINT Playlist_unique_(playlistId,clock); ${tableName}`)
+}
+
 async function createPlaylistTable (queryInterface, Sequelize, transaction) {
-  await queryInterface.createTable('Playlists', {
+  await queryInterface.createTable(tableName, {
     cnodeUserUUID: {
       type: Sequelize.UUID,
       primaryKey: false,
@@ -101,4 +122,8 @@ async function createPlaylistTable (queryInterface, Sequelize, transaction) {
       type: Sequelize.DATE
     }
   }, { transaction })
+}
+
+async function dropPlaylistTable(queryInterface, Sequelize) {
+  await queryInterface.dropTable(tableName)
 }
