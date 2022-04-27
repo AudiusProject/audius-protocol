@@ -1,4 +1,3 @@
-set -x
 #!/usr/bin/env bash
 
 # Usage: create-instance.sh [options] <name>
