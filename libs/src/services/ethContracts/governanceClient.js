@@ -27,8 +27,8 @@ class GovernanceClient extends ContractClient {
     getRegistryAddress,
     audiusTokenClient,
     stakingProxyClient,
-    isDebug = false,
-    logger = console
+    logger = console,
+    isDebug = false
   ) {
     super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, logger)
     this.audiusTokenClient = audiusTokenClient

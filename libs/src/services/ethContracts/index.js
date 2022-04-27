@@ -55,6 +55,7 @@ class EthContracts {
     claimDistributionContractAddress,
     wormholeContractAddress,
     isServer,
+    logger = console,
     isDebug = false
   ) {
     this.ethWeb3Manager = ethWeb3Manager
@@ -63,6 +64,7 @@ class EthContracts {
     this.wormholeContractAddress = wormholeContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
+    this.logger = logger
     this.isDebug = isDebug
     this.expectedServiceVersions = null
 
@@ -83,7 +85,8 @@ class EthContracts {
       StakingABI,
       StakingProxyKey,
       this.getRegistryAddressForContract,
-      this.AudiusTokenClient
+      this.AudiusTokenClient,
+      this.logger
     )
 
     this.GovernanceClient = new GovernanceClient(
@@ -92,21 +95,24 @@ class EthContracts {
       GovernanceRegistryKey,
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
-      this.StakingProxyClient
+      this.StakingProxyClient,
+      this.logger
     )
 
     this.ClaimsManagerClient = new ClaimsManagerClient(
       this.ethWeb3Manager,
       ClaimsManagerABI,
       ClaimsManagerProxyKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.EthRewardsManagerClient = new EthRewardsManagerClient(
       this.ethWeb3Manager,
       EthRewardsManagerABI,
       EthRewardsManagerProxyKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
@@ -114,7 +120,8 @@ class EthContracts {
       ServiceTypeManagerABI,
       ServiceTypeManagerProxyKey,
       this.getRegistryAddressForContract,
-      this.GovernanceClient
+      this.GovernanceClient,
+      this.logger
     )
 
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
@@ -125,6 +132,7 @@ class EthContracts {
       this.AudiusTokenClient,
       this.StakingProxyClient,
       this.GovernanceClient,
+      this.logger,
       this.isDebug
     )
 
@@ -135,7 +143,8 @@ class EthContracts {
       this.getRegistryAddressForContract,
       this.AudiusTokenClient,
       this.StakingProxyClient,
-      this.GovernanceClient
+      this.GovernanceClient,
+      this.logger
     )
 
     if (this.claimDistributionContractAddress) {
@@ -144,7 +153,8 @@ class EthContracts {
         ClaimDistributionABI,
         ClaimDistributionRegistryKey,
         this.getRegistryAddressForContract,
-        this.claimDistributionContractAddress
+        this.claimDistributionContractAddress,
+        this.logger
       )
     }
 
@@ -160,7 +170,8 @@ class EthContracts {
       TrustedNotifierManagerABI,
       TrustedNotifierManagerProxyKey,
       this.getRegistryAddressForContract,
-      this.GovernanceClient
+      this.GovernanceClient,
+      this.logger
     )
 
     this.contractClients = [

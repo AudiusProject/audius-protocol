@@ -432,7 +432,8 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer
+        this.isServer,
+        this.logger
       )
       contractsToInit.push(this.contracts.init())
     }
