@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
-from sqlalchemy.orm.session import Session, make_transient
+from sqlalchemy.orm.session import Session
 from src.models.models import Track, User
 from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.solana_transaction_types import TransactionInfoResult
@@ -65,18 +65,20 @@ class InitUserData(TypedDict):
     _user_bump: int
     _metadata: str
 
+
 def clone_model(model, **kwargs):
     """Clone an arbitrary sqlalchemy model object without its primary key values."""
     # Ensure the model’s data is loaded before copying.
-    # model.id
-
     table = model.__table__
-    non_pk_columns = [k for k in table.columns.keys() if k not in table.primary_key.columns.keys()]
+    non_pk_columns = [
+        k for k in table.columns.keys() if k not in table.primary_key.columns.keys()
+    ]
     data = {c: getattr(model, c) for c in non_pk_columns}
     data.update(kwargs)
 
     clone = model.__class__(**data)
     return clone
+
 
 def handle_init_user(
     session: Session,
@@ -134,10 +136,10 @@ def handle_init_user_sol(
     slot = transaction["result"]["slot"]
     txhash = transaction["tx_sig"]
     user_id = instruction["user_id"]
-    instruction_data = instruction.get('data')
+    instruction_data = instruction.get("data")
 
     user_record = db_models["users"].get(user_id)[-1]
-    user_authority = instruction_data.get('user_authority')
+    user_authority = instruction_data.get("user_authority")
 
     # Clone new record
     new_user_record = clone_model(user_record)

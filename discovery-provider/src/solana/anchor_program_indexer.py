@@ -131,7 +131,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             error = meta["err"]
 
             if error:
-                self.msg(f"Skipping error transaction from chain {transaction['tx_sig']}")
+                self.msg(
+                    f"Skipping error transaction from chain {transaction['tx_sig']}"
+                )
                 continue
 
             for instruction in instructions:
@@ -173,20 +175,27 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     pass
                 elif instruction_name == "init_user":
                     user_id = instruction.get("data").get("user_id")
-                    user_storage_account = str(instruction.get("account_names_map").get("user"))
+                    user_storage_account = str(
+                        instruction.get("account_names_map").get("user")
+                    )
                     user_storage_to_id[user_storage_account] = user_id
                     entities["users"].add(user_id)
 
                 elif instruction_name == "init_user_sol":
                     # TODO: parse the tx data for their user id and fetch
                     # Fetch user_id and embed in instruction
-                    user_storage_account = str(instruction.get("account_names_map").get("user"))
+                    user_storage_account = str(
+                        instruction.get("account_names_map").get("user")
+                    )
                     if user_storage_account not in user_storage_to_id:
-                        user_id = session.query(
-                            User.user_id
-                        ).filter(
-                            User.is_current == True, User.user_storage_account == user_storage_account
-                        ).first()
+                        user_id = (
+                            session.query(User.user_id)
+                            .filter(
+                                User.is_current == True,
+                                User.user_storage_account == user_storage_account,
+                            )
+                            .first()
+                        )
                     else:
                         user_id = user_storage_to_id[user_storage_account]
 
