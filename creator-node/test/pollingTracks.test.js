@@ -51,9 +51,7 @@ function getReqObj(fileUUID, fileDir, session) {
     fileName: `${fileUUID}.mp3`,
     fileDir,
     fileDestination: fileDir,
-    session: {
-      cnodeUserUUID: session.cnodeUserUUID
-    }
+    cnodeUserUUID: session.cnodeUserUUID
   }
 }
 
@@ -895,7 +893,7 @@ describe('test Polling Tracks with real files', function () {
     }
   })
 
-  it('should successfully upload track + transcode and prune upload artifacts', async function () {
+  it('should successfully upload track + transcode and prune upload artifacts when TranscodingQueue is available', async function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
