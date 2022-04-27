@@ -64,6 +64,8 @@ export const FormImageInput = ({
   const [isLoading, setIsLoading] = useState(false)
   const [{ value }, , { setValue }] = useField(name)
 
+  const { url } = value
+
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
 
   const handlePress = useCallback(() => {
@@ -74,6 +76,8 @@ export const FormImageInput = ({
     launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
   }, [setValue, styles.shareSheet.color])
 
+  const isDefaultImage = /imageCoverPhotoBlank/.test(url)
+
   return (
     <Pressable
       style={[style, stylesProp?.root]}
@@ -82,12 +86,13 @@ export const FormImageInput = ({
       onPressOut={handlePressOut}
     >
       <DynamicImage
-        uri={value.url}
+        uri={isDefaultImage ? `https://audius.co/${url}` : url}
         styles={{
           root: [styles.imageContainer, stylesProp?.imageContainer],
           image: [styles.image, stylesProp?.image]
         }}
         onLoad={() => setIsLoading(false)}
+        resizeMode={isDefaultImage ? 'repeat' : undefined}
       >
         <View style={styles.backdrop} />
         <Animated.View style={[styles.centerIcon, { transform: [{ scale }] }]}>

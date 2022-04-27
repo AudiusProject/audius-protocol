@@ -12,6 +12,7 @@ import { Maybe } from 'audius-client/src/common/utils/typeUtils'
 import {
   Animated,
   Image,
+  ImageProps,
   ImageStyle,
   LayoutChangeEvent,
   StyleProp,
@@ -23,7 +24,7 @@ import {
 import { ImageSkeleton } from 'app/components/image-skeleton'
 import { StylesProp } from 'app/styles'
 
-export type DynamicImageProps = {
+export type DynamicImageProps = Omit<ImageProps, 'source'> & {
   // Image uri
   uri?: string
   styles?: StylesProp<{
@@ -63,9 +64,13 @@ type ImageWithPlaceholderProps = {
   style: StyleProp<ImageStyle>
 }
 
-const ImageWithPlaceholder = ({ uri, style }: ImageWithPlaceholderProps) => {
+const ImageWithPlaceholder = ({
+  uri,
+  style,
+  ...other
+}: ImageWithPlaceholderProps) => {
   if (uri) {
-    return <Image source={{ uri }} style={style} />
+    return <Image source={{ uri }} style={style} {...other} />
   }
 
   return <ImageSkeleton styles={{ root: style as ViewStyle }} />
@@ -97,7 +102,8 @@ export const DynamicImage = memo(function DynamicImage({
   immediate,
   children,
   onLoad,
-  animatedValue
+  animatedValue,
+  ...imageProps
 }: DynamicImageProps) {
   const [firstSize, setFirstSize] = useState(0)
   const [secondSize, setSecondSize] = useState(0)
@@ -192,6 +198,7 @@ export const DynamicImage = memo(function DynamicImage({
         <ImageWithPlaceholder
           uri={firstImage}
           style={[{ width: firstSize, height: firstSize }, stylesProp?.image]}
+          {...imageProps}
         />
       </Animated.View>
       <Animated.View
@@ -205,6 +212,7 @@ export const DynamicImage = memo(function DynamicImage({
         <ImageWithPlaceholder
           uri={secondImage}
           style={[{ width: secondSize, height: secondSize }, stylesProp?.image]}
+          {...imageProps}
         />
       </Animated.View>
       {children ? <View style={styles.children}>{children}</View> : null}
