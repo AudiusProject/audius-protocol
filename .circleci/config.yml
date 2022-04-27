@@ -36,7 +36,8 @@ jobs:
           name: what is the name of the ssh key file lol
           command: |
             ls -la $HOME/.ssh/
-            hostname -I
+            curl checkip.amazonaws.com
+            sleep 10
       - run:
           name: gcloud service account auth
           command: |
