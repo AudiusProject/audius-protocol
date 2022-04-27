@@ -36,6 +36,7 @@ jobs:
           name: what is the name of the ssh key file lol
           command: |
             ls -la $HOME/.ssh/
+            hostname -I
       - run:
           name: gcloud service account auth
           command: |
@@ -48,8 +49,14 @@ jobs:
             # gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
             ls
             ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              A run init-repos up;
               A up;
+              exit $?;
             EOF
+      - run:
+          name: gcloud service account auth
+          command: |
+            echo "ran commands with status:" $?
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
