@@ -55,14 +55,17 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
     size: WidthSizes.SIZE_2000
   })
 
+  const isDefaultImage = coverPhoto && /imageCoverPhotoBlank/.test(coverPhoto)
+
   const isArtist = track_count > 0
 
   return (
     <>
       <DynamicImage
         animatedValue={scrollY}
-        uri={coverPhoto}
+        uri={isDefaultImage ? `https://audius.co/${coverPhoto}` : coverPhoto}
         styles={{ root: styles.imageRoot, image: styles.image }}
+        resizeMode={isDefaultImage ? 'repeat' : undefined}
       >
         <AnimatedBlurView
           blurType={'dark'}
