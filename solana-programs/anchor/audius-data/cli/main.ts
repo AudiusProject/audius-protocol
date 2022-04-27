@@ -60,7 +60,8 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
   const wallet = new NodeWallet(ownerKeypair);
   const provider = new AnchorProvider(connection, wallet, opts);
   if (!idl.metadata) {
-    throw new Error("Missing metadata in IDL!");
+    idl.metadata = { address: 'k8NUn3fmzm9ErXxJB5S4p8ejHevuFwfLt4EAUNbAbeM' }
+    // throw new Error("Missing metadata in IDL!");
   }
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
@@ -134,7 +135,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
 type initUserCLIParams = {
   userId: anchor.BN;
   metadata: string;
-  adminStoragePublicKey: PublicKey;
+  adminAccount: PublicKey;
   ethAddress: string;
   ownerKeypairPath: string;
   adminKeypair: Keypair;
@@ -178,9 +179,9 @@ async function initUserCLI(args: initUserCLIParams) {
     userId,
     bumpSeed,
     metadata,
-    userStorageAccount: userStorageAddress,
+    userAccount: userStorageAddress,
     baseAuthorityAccount,
-    adminStorageAccount: adminStoragePublicKey,
+    adminAccount: adminStoragePublicKey,
     adminAuthorityPublicKey: adminKeypair.publicKey,
     cn1,
     cn2,
@@ -223,14 +224,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userStorageAccountPDA,
           metadata: args.metadata,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -242,14 +243,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userStorageAccountPDA,
           metadata: args.metadata,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -261,14 +262,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userStorageAccountPDA,
           metadata: args.metadata,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -280,13 +281,13 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userStorageAccountPDA,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminStorageAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       }
@@ -310,7 +311,7 @@ const functionTypes = Object.freeze({
   updateAdmin: "updateAdmin",
   initUser: "initUser",
   initContentNode: "initContentNode",
-  initUserSolPubkey: "initUserSolPubkey",
+  userAuthorityPublicKey: "initUserSolPubkey",
   createUser: "createUser",
   createTrack: "createTrack",
   getTrackId: "getTrackId",
@@ -395,6 +396,7 @@ const network = options.network
     : LOCALHOST_RPC_POOL;
 
 const main = async () => {
+  console.log('main called')
   const cliVars = initializeCLI(network, options.ownerKeypair);
   const userAuthorityDelegateAccountPDA =
     options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
@@ -406,6 +408,7 @@ const main = async () => {
     userId = new anchor.BN(userId);
     userIdSeed = convertBNToUserIdSeed(userId);
   }
+  console.log(`FUnction is ${options.function}`)
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
@@ -441,10 +444,10 @@ const main = async () => {
         payer: cliVars.provider.wallet.publicKey,
         program: cliVars.program,
         baseAuthorityAccount,
-        adminPublicKey: adminKeypair.publicKey,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAuthorityPublicKey: adminKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         contentNodeAuthority: contentNodeAuthority.publicKey,
-        contentNodeAcct: cnInfo.derivedAddress,
+        contentNodeAccount: cnInfo.derivedAddress,
         spID: cnInfo.spId,
         ownerEthAddress: delegateWallet,
       });
@@ -479,7 +482,7 @@ const main = async () => {
         ownerKeypairPath: options.ownerKeypair,
         ethAddress: options.ethAddress,
         userId: userId,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         adminKeypair,
         metadata: randomCID(),
         replicaSet: userReplicaSet,
@@ -490,7 +493,7 @@ const main = async () => {
       });
       break;
     }
-    case functionTypes.initUserSolPubkey: {
+    case functionTypes.userAuthorityPublicKey: {
       const { ethPrivateKey } = options;
       const userSolPubkey = userSolKeypair.publicKey;
 
@@ -498,7 +501,7 @@ const main = async () => {
         program: cliVars.program,
         message: userSolKeypair.publicKey.toBytes(),
         ethPrivateKey,
-        userStorageAccount: options.userStoragePubkey,
+        userAccount: options.userStoragePubkey,
         userSolPubkey,
       });
       const txHash = await cliVars.provider.sendAndConfirm(tx);
@@ -516,7 +519,7 @@ const main = async () => {
       const tx = updateAdmin({
         program: cliVars.program,
         isWriteEnabled: Boolean(writeEnabled),
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminStorageKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
       const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
@@ -563,9 +566,9 @@ const main = async () => {
         userId: userId,
         bumpSeed,
         metadata: options.metadata,
-        userSolPubkey: userSolKeypair.publicKey,
-        userStorageAccount: derivedAddress,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userAuthorityPublicKey: userSolKeypair.publicKey,
+        userAccount: derivedAddress,
+        adminAccount: adminStorageKeypair.publicKey,
         baseAuthorityAccount: baseAuthorityAccount,
         replicaSet: userReplicaSetSpIds,
         replicaSetBumps,
@@ -607,15 +610,15 @@ const main = async () => {
             {
               id: randomId(),
               baseAuthorityAccount,
-              adminStorageAccount: adminStorageKeypair.publicKey,
+              adminAccount: adminStorageKeypair.publicKey,
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
               metadata: options.metadata,
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userStorageAccountPDA: derivedAddress,
-              userAuthorityDelegateAccountPDA,
-              authorityDelegationStatusAccountPDA,
+              userAccount: derivedAddress,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+              authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
             },
             cliVars.provider,
             ManagementActions.create,
@@ -652,15 +655,15 @@ const main = async () => {
             {
               id: randomId(),
               baseAuthorityAccount,
-              adminStorageAccount: adminStorageKeypair.publicKey,
+              adminAccount: adminStorageKeypair.publicKey,
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
               metadata: randomCID(),
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userStorageAccountPDA: options.userStoragePubkey,
-              userAuthorityDelegateAccountPDA,
-              authorityDelegationStatusAccountPDA,
+              userAccount: options.userStoragePubkey,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+              authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
             },
             cliVars.provider,
             ManagementActions.create,
@@ -694,15 +697,15 @@ const main = async () => {
         {
           id: playlistId,
           baseAuthorityAccount,
-          adminStorageAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminStorageKeypair.publicKey,
           userId: userId,
           program: cliVars.program,
           bumpSeed: bumpSeed,
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
-          userStorageAccountPDA: options.userStoragePubkey,
-          userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA,
+          userAccount: options.userStoragePubkey,
+          userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
         cliVars.provider,
         ManagementActions.update,
@@ -730,15 +733,15 @@ const main = async () => {
         {
           id: playlistId,
           baseAuthorityAccount,
-          adminStorageAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminStorageKeypair.publicKey,
           userId: userId,
           program: cliVars.program,
           bumpSeed: bumpSeed,
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
-          userStorageAccountPDA: options.userStoragePubkey,
-          userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA,
+          userAccount: options.userStoragePubkey,
+          userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
         cliVars.provider,
         ManagementActions.update,
@@ -751,4 +754,5 @@ const main = async () => {
   }
 };
 
+console.log('starting main')
 main();
