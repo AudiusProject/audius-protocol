@@ -45,7 +45,9 @@ jobs:
       - run:
           name: gcloud service account auth
           command: |
-            gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
+            # gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
+            gcloud compute ssh ubuntu@dm-remote-dev-14
+            ls
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
