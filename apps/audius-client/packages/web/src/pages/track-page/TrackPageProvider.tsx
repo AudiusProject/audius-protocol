@@ -28,7 +28,8 @@ import {
   getTrack,
   getRemixParentTrack,
   getStatus,
-  getSourceSelector
+  getSourceSelector,
+  getTrackPermalink
 } from 'common/store/pages/track/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import * as socialTracksActions from 'common/store/social/tracks/actions'
@@ -124,7 +125,14 @@ class TrackPageProvider extends Component<
   }
 
   componentDidUpdate(prevProps: TrackPageProviderProps) {
-    const { pathname, track, status, refetchTracksLinup, user } = this.props
+    const {
+      pathname,
+      track,
+      status,
+      refetchTracksLinup,
+      user,
+      trackPermalink
+    } = this.props
     if (status === Status.ERROR) {
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
@@ -176,16 +184,17 @@ class TrackPageProvider extends Component<
             this.props.replaceRoute(track.permalink)
           }
         } else {
-          // Reroute to the most recent permalink if necessary
+          // Reroute to the most recent permalink if necessary in case user edits the track
+          // name, which changes the permalink
           if (
             pathname === this.state.pathname &&
             prevProps.track?.track_id === track?.track_id &&
-            track.permalink &&
-            track.permalink !== pathname
+            trackPermalink &&
+            trackPermalink !== pathname
           ) {
             // The path is going to change but don't re-fetch as we already have the track
-            this.setState({ pathname: track.permalink })
-            this.props.replaceRoute(track.permalink)
+            this.setState({ pathname: trackPermalink })
+            this.props.replaceRoute(trackPermalink)
           }
         }
       }
@@ -491,6 +500,7 @@ function makeMapStateToProps() {
     return {
       source: getSourceSelector(state),
       track: getTrack(state),
+      trackPermalink: getTrackPermalink(state),
       remixParentTrack: getRemixParentTrack(state),
       user: getUser(state),
       status: getStatus(state),
