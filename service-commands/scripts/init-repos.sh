@@ -8,6 +8,10 @@ set -ex
 # setup root
 cd $PROTOCOL_DIR/
 npm install
+# necessary because we use ts-node globally to call scripts but this can never be installed
+# via package.json https://github.com/npm/npm/issues/2949#issuecomment-11408461
+npm install -g typescript
+npm install -g ts-node
 
 # setup pre-commit hooks
 if ! command -v pre-commit &>/dev/null; then
@@ -41,7 +45,7 @@ npm run install-dev
 npm run build
 
 cd $PROTOCOL_DIR/libs
-npm install --dev
+npm install
 npm run build
 
 cd $PROTOCOL_DIR/identity-service
