@@ -155,7 +155,14 @@ export const Lineup = ({
   const countOrDefault = count !== undefined ? count : MAX_TILES_COUNT
 
   const handleLoadMore = useCallback(() => {
-    const { deleted, nullCount, entries, hasMore, page, status } = lineup
+    const {
+      deleted = 0,
+      nullCount = 0,
+      entries,
+      hasMore,
+      page,
+      status
+    } = lineup
 
     const lineupLength = entries.length
     const offset = lineupLength + deleted + nullCount
