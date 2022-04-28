@@ -16,26 +16,6 @@ class PrometheusMetric {
   static gauges = {}
   static registeredCollectors = {}
 
-  /**
-   * Helper to avoid naming collisions.
-   */
-  _initMetric(
-    name,
-    description,
-    labelNames,
-    collection,
-    PrometheusMetricClass
-  ) {
-    if (!(name in collection)) {
-      collection[name] = new PrometheusMetricClass({
-        name: name,
-        help: description,
-        labelNames: labelNames
-      })
-    }
-    this.metric = collection[name]
-  }
-
   constructor({name, description, labelNames, metricType}) {
     // set this.startTime to now()
     this.resetTimer()
@@ -70,6 +50,26 @@ class PrometheusMetric {
     } else {
       throw new Error(`metricType '${this.metricType}' not found`)
     }
+  }
+
+  /**
+   * Helper to avoid naming collisions.
+   */
+  _initMetric(
+    name,
+    description,
+    labelNames,
+    collection,
+    PrometheusMetricClass
+  ) {
+    if (!(name in collection)) {
+      collection[name] = new PrometheusMetricClass({
+        name: name,
+        help: description,
+        labelNames: labelNames
+      })
+    }
+    this.metric = collection[name]
   }
 
   /**
