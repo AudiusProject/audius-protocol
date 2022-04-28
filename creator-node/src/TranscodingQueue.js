@@ -223,8 +223,11 @@ class TranscodingQueue {
 
   /**
    * The max number of transcode jobs that can run at a given moment is correlated to
-   * the number of cores available. If the remaining slots number is greater than the
-   * minimum slots necessary, mark the transcode queue as available.
+   * the number of cores available.
+   *
+   * If the number of active jobs is equal to the number of cores, and the number of
+   * waiting jobs is equal to or greater than the number of cores, mark the
+   * TranscodingQueue as unavailable.
    *
    * @returns boolean flag if the transcode queue can accept more jobs
    */
@@ -232,17 +235,15 @@ class TranscodingQueue {
     const { active, waiting } = await this.getTranscodeQueueJobs()
 
     await this.logStatus(
-      `vicky! active: ${active} waiting ${waiting} max concurr ${MAX_CONCURRENCY} min slots ${MIN_SLOTS_AVAILABLE}`
+      `vicky! active: ${active} waiting ${waiting} max concurr - min slots ${
+        MAX_CONCURRENCY - MIN_SLOTS_AVAILABLE
+      }`
     )
 
-    if (
+    return !(
       active === MAX_CONCURRENCY - MIN_SLOTS_AVAILABLE &&
       waiting >= MAX_CONCURRENCY
-    ) {
-      return false
-    }
-
-    return true
+    )
   }
 }
 
