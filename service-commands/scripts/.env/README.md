@@ -191,7 +191,7 @@ vi ~/bin/migrate
 [init]
   defaultBranch = main
 [diff]
-	colorMoved = zebra
+  colorMoved = zebra
 [url "git@github.com:"]
   insteadOf = https://github.com/
 ```
@@ -200,6 +200,6 @@ vi ~/bin/migrate
 
 ```
 [user]
-	email = youremail@email.com
-	name = Your Name
+  email = youremail@email.com
+  name = Your Name
 ```
