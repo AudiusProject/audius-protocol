@@ -92,6 +92,9 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   return {
     getTranscodeQueueJobs: async () => {
       return { active, waiting }
+    },
+    isAvailable: async () => {
+      return true
     }
   }
 }
@@ -151,6 +154,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -195,6 +199,8 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
       asyncProcessingQueue: {
         waiting: {
           trackContentUpload: 0,
@@ -243,6 +249,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -287,6 +294,8 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
       asyncProcessingQueue: {
         waiting: {
           trackContentUpload: 0,
@@ -326,6 +335,7 @@ describe('Test Health Check', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -370,6 +380,8 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
       asyncProcessingQueue: {
         waiting: {
           trackContentUpload: 0,
@@ -449,6 +461,7 @@ describe('Test Health Check Verbose', function () {
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
 
@@ -493,6 +506,8 @@ describe('Test Health Check Verbose', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
       asyncProcessingQueue: {
         waiting: {
           trackContentUpload: 0,
@@ -542,6 +557,7 @@ describe('Test Health Check Verbose', function () {
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
     const defaultRes = await healthCheck(
@@ -554,6 +570,7 @@ describe('Test Health Check Verbose', function () {
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
