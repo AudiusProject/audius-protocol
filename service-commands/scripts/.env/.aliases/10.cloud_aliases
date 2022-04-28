@@ -2,8 +2,8 @@
 
 # ssh
 
-alias ssh-keygen-rsa="ssh-keygen -t rsa -a 100 -b 4096"
-alias ssh-keygen="ssh-keygen -t ed25519 -a 100"
+alias ssh_keygen_rsa="ssh-keygen -t rsa -a 100 -b 4096"
+alias ssh_keygen="ssh-keygen -t ed25519 -a 100"
 
 # gcp
 alias gssh='gcloud compute ssh'
