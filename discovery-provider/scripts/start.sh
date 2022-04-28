@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [[ -z "$audius_loggly_disable" ]]; then
     if [[ -n "$audius_loggly_token" ]]; then
@@ -72,6 +73,20 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 # used to remove data that may have been persisted via a k8s emptyDir
 export audius_prometheus_container=server
 
+# run alembic migrations
+if [ "$audius_db_run_migrations" != false ]; then
+    echo "Running alembic migrations"
+    export PYTHONPATH='.'
+    alembic upgrade head
+    echo "Finished running migrations"
+fi
+
+# start es-indexer in polling mode
+if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
+    cd es-indexer && npm i && npm start &
+fi
+
+# start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
