@@ -14,7 +14,7 @@ from src.models import User, UserBankAccount, UserBankTransaction
 from src.models.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
+    FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
@@ -348,7 +348,7 @@ def process_user_bank_txs():
             transactions_history = solana_client_manager.get_signatures_for_address(
                 USER_BANK_ADDRESS,
                 before=last_tx_signature,
-                limit=TX_SIGNATURES_BATCH_SIZE,
+                limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:

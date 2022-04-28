@@ -11,6 +11,7 @@ from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.queries import parse_bool_param
 from src.utils import helpers, redis_connection
+from src.utils.elasticdsl import esclient
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +134,12 @@ def ipld_block_check():
 def ip_check():
     ip = helpers.get_ip(request)
     return success_response(ip, sign_response=False)
+
+
+@bp.route("/es_health", methods=["GET"])
+def es_health():
+    ok = esclient.cat.indices(v=True)
+    return str(ok)
 
 
 @bp.route("/celery_tasks_check", methods=["GET"])
