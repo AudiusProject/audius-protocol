@@ -12,7 +12,7 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
+    FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
@@ -535,7 +535,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         transactions_history = solana_client_manager.get_signatures_for_address(
             TRACK_LISTEN_PROGRAM,
             before=last_tx_signature,
-            limit=TX_SIGNATURES_BATCH_SIZE,
+            limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
         )
         logger.info(
             f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"

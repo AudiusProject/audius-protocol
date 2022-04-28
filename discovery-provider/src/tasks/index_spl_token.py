@@ -16,7 +16,7 @@ from src.models import (
 )
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
+    FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
@@ -343,7 +343,7 @@ def process_spl_token_tx(
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,
             before=last_tx_signature,
-            limit=TX_SIGNATURES_BATCH_SIZE,
+            limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
         )
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
         transactions_array = transactions_history["result"]
