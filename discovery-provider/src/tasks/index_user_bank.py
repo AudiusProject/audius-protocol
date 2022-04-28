@@ -126,55 +126,63 @@ create_token_account_instr: List[InstructionFormat] = [
 ]
 
 
-def index_tip(
-    session, sender_account, receiver_account, user_id_accounts, meta, tx_sig, slot
+def process_transfer_instruction(
+    session: Session,
+    redis: Redis,
+    sender_account: str,
+    receiver_account: str,
+    meta: ResultMeta,
+    tx_sig: str,
+    slot: int,
 ):
+    # Accounts to refresh balance
+    logger.info(
+        f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
+    )
+    user_id_accounts = refresh_user_balances(
+        session, redis, [sender_account, receiver_account]
+    )
+
+    # If there are two userbanks to update, it was a transfer from user to user
+    # Index as a user_tip
     if user_id_accounts and len(user_id_accounts) == 2:
-        sender_id = None
-        receiver_id = None
+        sender_user_id: Optional[int] = None
+        receiver_user_id: Optional[int] = None
         for user_id_account in user_id_accounts:
             if user_id_account[1] == sender_account:
-                sender_id = user_id_account[0]
+                sender_user_id = user_id_account[0]
             elif user_id_account[1] == receiver_account:
-                receiver_id = user_id_account[0]
-        if sender_id and receiver_id:
-            pre_sender_balance = int(
-                meta["preTokenBalances"][0]["uiTokenAmount"]["amount"]
+                receiver_user_id = user_id_account[0]
+        if sender_user_id is None or receiver_user_id is None:
+            logger.error(
+                f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
             )
-            post_sender_balance = int(
-                meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
+            return
+        pre_sender_balance = int(meta["preTokenBalances"][0]["uiTokenAmount"]["amount"])
+        post_sender_balance = int(
+            meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
+        )
+        pre_receiver_balance = int(
+            meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
+        )
+        post_receiver_balance = int(
+            meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
+        )
+        sent_amount = pre_sender_balance - post_sender_balance
+        received_amount = post_receiver_balance - pre_receiver_balance
+        if sent_amount != received_amount:
+            logger.error(
+                f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
             )
-            pre_receiver_balance = int(
-                meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
-            )
-            post_receiver_balance = int(
-                meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
-            )
-            sent_amount = pre_sender_balance - post_sender_balance
-            received_amount = post_receiver_balance - pre_receiver_balance
-            if sent_amount == received_amount:
-                user_tip = UserTip(
-                    signature=tx_sig,
-                    amount=sent_amount,
-                    sender_user_id=sender_id,
-                    receiver_user_id=receiver_id,
-                    slot=slot,
-                )
-                session.add(user_tip)
-                # session.execute(
-                #     text(UPDATE_AGGREGATE_USER_TIPS_QUERY),
-                #     {
-                #         "sender_user_id": sender_id,
-                #         "receiver_user_id": receiver_id,
-                #         "amount": sent_amount,
-                #     },
-                # )
-
-            else:
-                # This should be impossible
-                logger.error(
-                    f"index_user_bank.py | Error: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
-                )
+            return
+        user_tip = UserTip(
+            signature=tx_sig,
+            amount=sent_amount,
+            sender_user_id=sender_user_id,
+            receiver_user_id=receiver_user_id,
+            slot=slot,
+        )
+        session.add(user_tip)
 
 
 class CreateTokenAccount(TypedDict):
@@ -279,20 +287,11 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        # Accounts to refresh balance
-        sender_account = account_keys[1]
-        receiver_account = account_keys[2]
-        logger.info(
-            f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
-        )
-        user_id_accounts = refresh_user_balances(
-            session, redis, [sender_account, receiver_account]
-        )
-        index_tip(
+        process_transfer_instruction(
             session=session,
-            sender_account=sender_account,
-            receiver_account=receiver_account,
-            user_id_accounts=user_id_accounts,
+            redis=redis,
+            sender_account=account_keys[1],
+            receiver_account=account_keys[2],
             meta=meta,
             tx_sig=tx_sig,
             slot=result["slot"],
