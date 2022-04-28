@@ -2,7 +2,7 @@
 
 set -e
 
-GIT_URL=git@github.com:joaquincasares/.env.git
+GIT_URL=git@github.com:your_github_username/.env.git
 GIT_SSH_KEY=~/.ssh/id_ed25519.github
 
 OLD_BOX=${1}
