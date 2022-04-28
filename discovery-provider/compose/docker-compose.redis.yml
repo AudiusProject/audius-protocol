@@ -1,13 +1,38 @@
 # Compose file to run the discovery redis container
-version: '3'
+version: "3"
 services:
   redis-server:
     image: redis:3.0-alpine
-    command: redis-server --save '' 
+    command: redis-server --save ''
     ports:
-      - '${audius_redis_port}:6379'
+      - "${audius_redis_port}:6379"
     networks:
       - audius_dev
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+    container_name: elasticsearch
+    environment:
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - node.name=cluster1-node1
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - audius_dev
+
+volumes:
+  esdata:
 
 networks:
   audius_dev:
