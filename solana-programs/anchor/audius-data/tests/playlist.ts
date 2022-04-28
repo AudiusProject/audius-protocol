@@ -52,9 +52,9 @@ describe("playlists", function () {
         contentNodes["2"].seedBump.bump,
         contentNodes["3"].seedBump.bump,
       ],
-      cn1: contentNodes["1"].pda,
-      cn2: contentNodes["2"].pda,
-      cn3: contentNodes["3"].pda,
+      cn1: contentNodes["1"].accountAddress,
+      cn2: contentNodes["2"].accountAddress,
+      cn3: contentNodes["3"].accountAddress,
     };
   };
   it("Initializing admin account!", async function () {
@@ -110,7 +110,7 @@ describe("playlists", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -125,7 +125,7 @@ describe("playlists", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: newUserAcctPDA,
+      userAccount: userAccountAddress,
       adminStorageKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -144,7 +144,7 @@ describe("playlists", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      newUserAcctPDA,
+      userAccountAddress,
     });
 
     const playlistMetadata = randomCID();
@@ -159,7 +159,7 @@ describe("playlists", function () {
       id: playlistID,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwner: newUserAcctPDA,
+      playlistOwner: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       adminAccount: adminStorageKeypair.publicKey,
@@ -180,7 +180,7 @@ describe("playlists", function () {
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
-        playlistOwner: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
         adminAccount: adminStorageKeypair.publicKey,
@@ -197,7 +197,7 @@ describe("playlists", function () {
       bumpSeed,
       adminAccount: adminStorageKeypair.publicKey,
       id: playlistID,
-      userAccount: newUserAcctPDA,
+      userAccount: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
@@ -211,7 +211,7 @@ describe("playlists", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -245,7 +245,7 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userAccount: newUserAcctPDA,
+      userAccount: userAccountAddress,
       adminAccount: adminStorageKeypair.publicKey,
       ...getURSMParams(),
     });
@@ -263,7 +263,7 @@ describe("playlists", function () {
       bumpSeed,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwner: newUserAcctPDA,
+      playlistOwner: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
     });
@@ -272,7 +272,7 @@ describe("playlists", function () {
       provider,
       program,
       id: playlistID,
-      playlistOwner: newUserAcctPDA,
+      playlistOwner: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
@@ -289,7 +289,7 @@ describe("playlists", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
       adminStorageKeypair.publicKey,
@@ -323,7 +323,7 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userAccount: newUserAcctPDA,
+      userAccount: userAccountAddress,
       adminAccount: adminStorageKeypair.publicKey,
       ...getURSMParams(),
     });
@@ -343,7 +343,7 @@ describe("playlists", function () {
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwner: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
@@ -357,7 +357,7 @@ describe("playlists", function () {
         id: randomId(),
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwner: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
@@ -371,7 +371,7 @@ describe("playlists", function () {
         id: randomId(),
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwner: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),

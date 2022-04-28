@@ -24,8 +24,8 @@ export type InitAdminParams = {
   verifierKeypair: Keypair;
 };
 
-export type AudiusDataIdl = AudiusData
-export type AudiusDataProgram = Program<AudiusData>
+export type AudiusDataIdl = AudiusData;
+export type AudiusDataProgram = Program<AudiusData>;
 
 /// Initialize an Audius Admin instance
 export const initAdmin = ({

@@ -136,17 +136,17 @@ describe("replicaSet", function () {
       contentNodeAuthority: authority.publicKey,
       ownerEthAddress: ownerEth.address,
       proposer1: {
-        pda: cn2.pda,
+        pda: cn2.accountAddress,
         authorityPublicKey: cn2.authority.publicKey,
         seedBump: cn2.seedBump,
       },
       proposer2: {
-        pda: cn4.pda,
+        pda: cn4.accountAddress,
         authorityPublicKey: cn4.authority.publicKey,
         seedBump: cn4.seedBump,
       },
       proposer3: {
-        pda: cn3.pda,
+        pda: cn3.accountAddress,
         authorityPublicKey: cn3.authority.publicKey,
         seedBump: cn3.seedBump,
       },
@@ -220,11 +220,11 @@ describe("replicaSet", function () {
             payer: provider.wallet.publicKey,
             contentNode: derivedAddress,
             systemProgram: SystemProgram.programId,
-            proposer1: cn6.pda,
+            proposer1: cn6.accountAddress,
             proposer1Authority: cn6.authority.publicKey,
-            proposer2: cn7.pda,
+            proposer2: cn7.accountAddress,
             proposer2Authority: cn7.authority.publicKey,
-            proposer3: cn8.pda,
+            proposer3: cn8.accountAddress,
             proposer3Authority: cn8.authority.publicKey,
           },
         }
@@ -306,21 +306,21 @@ describe("replicaSet", function () {
       baseAuthorityAccount,
       adminAccount: adminStorageKeypair.publicKey,
       contentNodeAuthority: updatedAuthority.publicKey,
-      contentNodeAccount: cnToUpdate.pda,
+      contentNodeAccount: cnToUpdate.accountAddress,
       spID: cnToUpdate.spId,
       ownerEthAddress: cnToUpdate.ownerEthAddress,
       proposer1: {
-        pda: cn4.pda,
+        pda: cn4.accountAddress,
         authorityPublicKey: cn4.authority.publicKey,
         seedBump: cn4.seedBump,
       },
       proposer2: {
-        pda: cn2.pda,
+        pda: cn2.accountAddress,
         authorityPublicKey: cn2.authority.publicKey,
         seedBump: cn2.seedBump,
       },
       proposer3: {
-        pda: cn3.pda,
+        pda: cn3.accountAddress,
         authorityPublicKey: cn3.authority.publicKey,
         seedBump: cn3.seedBump,
       },
@@ -331,7 +331,9 @@ describe("replicaSet", function () {
       cn3.authority,
     ]);
 
-    const account = await program.account.contentNode.fetch(cnToUpdate.pda);
+    const account = await program.account.contentNode.fetch(
+      cnToUpdate.accountAddress
+    );
     expect(
       account.authority.toBase58(),
       "updated content node authority to be set"
@@ -373,17 +375,17 @@ describe("replicaSet", function () {
         },
       },
       proposer1: {
-        pda: cn4.pda,
+        pda: cn4.accountAddress,
         authorityPublicKey: cn4.authority.publicKey,
         seedBump: cn4.seedBump,
       },
       proposer2: {
-        pda: cn2.pda,
+        pda: cn2.accountAddress,
         authorityPublicKey: cn2.authority.publicKey,
         seedBump: cn2.seedBump,
       },
       proposer3: {
-        pda: cn3.pda,
+        pda: cn3.accountAddress,
         authorityPublicKey: cn3.authority.publicKey,
         seedBump: cn3.seedBump,
       },
@@ -441,7 +443,7 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      userAcct: user.pda,
+      userAcct: user.accountAddress,
       userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
       adminAccount: adminStorageKeypair.publicKey,
       replicaSet: [2, 3, 6],
@@ -451,14 +453,14 @@ describe("replicaSet", function () {
         cn6.seedBump.bump,
       ],
       contentNodeAuthorityPublicKey: cn2.authority.publicKey,
-      cn1: cn2.pda,
-      cn2: cn3.pda,
-      cn3: cn6.pda,
+      cn1: cn2.accountAddress,
+      cn2: cn3.accountAddress,
+      cn3: cn6.accountAddress,
     });
 
     await provider.sendAndConfirm(tx, [cn2.authority]);
 
-    const updatedUser = await program.account.user.fetch(user.pda);
+    const updatedUser = await program.account.user.fetch(user.accountAddress);
     expect(
       updatedUser.replicaSet,
       "Expect user replicaSet to be updates"
@@ -483,7 +485,7 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      userAcct: user.pda,
+      userAcct: user.accountAddress,
       userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
       adminAccount: adminStorageKeypair.publicKey,
       replicaSet: [6, 7, 8],
@@ -493,12 +495,12 @@ describe("replicaSet", function () {
         cn8.seedBump.bump,
       ],
       contentNodeAuthorityPublicKey: user.keypair.publicKey,
-      cn1: cn6.pda,
-      cn2: cn7.pda,
-      cn3: cn8.pda,
+      cn1: cn6.accountAddress,
+      cn2: cn7.accountAddress,
+      cn3: cn8.accountAddress,
     });
     await provider.sendAndConfirm(tx, [user.keypair]);
-    const updatedUser = await program.account.user.fetch(user.pda);
+    const updatedUser = await program.account.user.fetch(user.accountAddress);
     expect(
       updatedUser.replicaSet,
       "Expect user replicaSet to be updates"
@@ -526,7 +528,7 @@ describe("replicaSet", function () {
           payer: provider.wallet.publicKey,
           program,
           baseAuthorityAccount,
-          userAcct: user.pda,
+          userAcct: user.accountAddress,
           userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
           adminAccount: adminStorageKeypair.publicKey,
           replicaSet: [2, 7, 8],
@@ -536,9 +538,9 @@ describe("replicaSet", function () {
             cn8.seedBump.bump,
           ],
           contentNodeAuthorityPublicKey: cn7.authority.publicKey,
-          cn1: cn2.pda,
-          cn2: cn7.pda,
-          cn3: cn8.pda,
+          cn1: cn2.accountAddress,
+          cn2: cn7.accountAddress,
+          cn3: cn8.accountAddress,
         }),
         [cn7.authority]
       )

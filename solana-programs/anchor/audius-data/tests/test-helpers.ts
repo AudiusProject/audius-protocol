@@ -116,14 +116,14 @@ export const testInitUserSolPubkey = async ({
   message,
   ethPrivateKey,
   newUserPublicKey,
-  newUserAcctPDA,
+  userAccountAddress,
 }) => {
   const tx = initUserSolPubkey({
     program,
     ethPrivateKey,
     message,
-    userSolPubkey: newUserPublicKey,
-    userAccount: newUserAcctPDA,
+    userAuthorityPublicKey: newUserPublicKey,
+    userAccount: userAccountAddress,
   });
 
   const txSignature = await provider.sendAndConfirm(tx);
@@ -140,7 +140,7 @@ export const testInitUserSolPubkey = async ({
     newUserPublicKey.toString()
   );
 
-  const account = await program.account.user.fetch(newUserAcctPDA);
+  const account = await program.account.user.fetch(userAccountAddress);
 
   const chainAuthority = account.authority.toString();
   const expectedAuthority = newUserPublicKey.toString();
@@ -534,14 +534,14 @@ export const testCreateUserDelegate = async ({
 
   // New sol key that will be used as user authority delegate
   const userAuthorityDelegateSeeds = [
-    user.pda.toBytes().slice(0, 32),
+    user.accountAddress.toBytes().slice(0, 32),
     userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
   ];
   const res = await PublicKey.findProgramAddress(
     userAuthorityDelegateSeeds,
     program.programId
   );
-  const userAuthorityDelegatePDA = res[0];
+  const userAuthorityDelegateAccountAddress = res[0];
   const userAuthorityDelegateBump = res[1];
 
   const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
@@ -550,8 +550,8 @@ export const testCreateUserDelegate = async ({
     baseAuthorityAccount: user.authority,
     userId: user.userId,
     userBumpSeed: user.bumpSeed,
-    user: user.pda,
-    currentUserAuthorityDelegate: userAuthorityDelegatePDA,
+    user: user.accountAddress,
+    currentUserAuthorityDelegate: userAuthorityDelegateAccountAddress,
     signerUserAuthorityDelegate: SystemProgram.programId,
     authorityDelegationStatusAccount: SystemProgram.programId,
     delegatePublicKey: userAuthorityDelegateKeypair.publicKey,
@@ -592,8 +592,8 @@ export const testCreateUserDelegate = async ({
     baseAuthorityAccount: user.authority,
     userId: user.userId,
     userBumpSeed: user.bumpSeed,
-    userAccountPDA: user.pda,
-    userAuthorityDelegatePDA,
+    userAccountAddress: user.accountAddress,
+    userAuthorityDelegateAccountAddress,
     userAuthorityDelegateBump,
     authorityDelegationStatusAccount,
     authorityDelegationStatusBump,
@@ -656,7 +656,7 @@ export const createSolanaUser = async (
   const {
     baseAuthorityAccount,
     bumpSeed,
-    derivedAddress: newUserAcctPDA,
+    derivedAddress: userAccountAddress,
   } = await findDerivedPair(
     program.programId,
     adminStorageKeypair.publicKey,
@@ -682,7 +682,7 @@ export const createSolanaUser = async (
     bumpSeed,
     metadata: testConsts.metadata,
     userAuthorityPublicKey: newUserKeypair.publicKey,
-    userAccount: newUserAcctPDA,
+    userAccount: userAccountAddress,
     adminAccount: adminStorageKeypair.publicKey,
     baseAuthorityAccount,
     replicaSet: [1, 2, 3],
@@ -695,11 +695,11 @@ export const createSolanaUser = async (
 
   await provider.sendAndConfirm(tx);
 
-  const account = await program.account.user.fetch(newUserAcctPDA);
+  const account = await program.account.user.fetch(userAccountAddress);
 
   return {
     account,
-    pda: newUserAcctPDA,
+    accountAddress: userAccountAddress,
     userId: testConsts.userId,
     bumpSeed,
     keypair: newUserKeypair,
@@ -752,7 +752,7 @@ export const createSolanaContentNode = async (props: {
     ownerEthAddress: ownerEth.address,
     spId: props.spId,
     account: contentNode,
-    pda: derivedAddress,
+    accountAddress: derivedAddress,
     authority,
     seedBump: { seed, bump: bumpSeed },
     tx: txSignature,

@@ -58,9 +58,9 @@ describe("user social actions", function () {
         contentNodes["2"].seedBump.bump,
         contentNodes["3"].seedBump.bump,
       ],
-      cn1: contentNodes["1"].pda,
-      cn2: contentNodes["2"].pda,
-      cn3: contentNodes["3"].pda,
+      cn1: contentNodes["1"].accountAddress,
+      cn2: contentNodes["2"].accountAddress,
+      cn3: contentNodes["3"].accountAddress,
     };
   };
 
@@ -257,9 +257,10 @@ describe("user social actions", function () {
       const followTx = followUser({
         baseAuthorityAccount,
         program,
-        sourceUserAccount: userDelegate.userAccountPDA,
+        sourceUserAccount: userDelegate.userAccountAddress,
         targetUserAccount: userStorageAccount2,
-        userAuthorityDelegateAccount: userDelegate.userAuthorityDelegatePDA,
+        userAuthorityDelegateAccount:
+          userDelegate.userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount:
           userDelegate.authorityDelegationStatusAccount,
         userAuthorityPublicKey:
