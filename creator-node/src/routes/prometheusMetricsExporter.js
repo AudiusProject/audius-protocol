@@ -1,6 +1,9 @@
 const Prometheus = require('prom-client')
 
-const { handleResponse } = require('../apiHelpers')
+const {
+  handleResponse,
+  errorResponseServerError
+} = require('../apiHelpers')
 const PrometheusMetric = require('../services/PrometheusMetric')
 
 const metricPrefix = 'audius_cn_'
@@ -15,11 +18,12 @@ module.exports = function (app) {
     handleResponse(async (req, res) => {
       try {
         PrometheusMetric.populateCollectors()
-        // res.set('Content-Type', Prometheus.register.contentType)
-        return successResponse(await Prometheus.register.metrics())
+        res.set('Content-Type', Prometheus.register.contentType)
+        res.status(200)
+        res.end(await Prometheus.register.metrics())
       } catch (e) {
         console.error('Prometheus Metrics Exporter error:', e)
-        return errorResponseServerError(e)
+        return errorResponseServerError(e.message)
       }
     })
   )
