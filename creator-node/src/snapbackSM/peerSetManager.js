@@ -184,7 +184,7 @@ class PeerSetManager {
       // Request all users that have this node as a replica (either primary or secondary)
       const resp = await Utils.asyncRetry({
         asyncFn: axios,
-        asyncParms: {
+        asyncParams: {
           method: 'get',
           baseURL: this.discoveryProviderEndpoint,
           url: `v1/full/users/content_node/all`,
