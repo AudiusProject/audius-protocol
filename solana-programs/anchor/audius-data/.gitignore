@@ -7,3 +7,4 @@ node_modules
 adminKeypair.json
 adminStorageKeypair.json
 userKeypair.json
+dist
