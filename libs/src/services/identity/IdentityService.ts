@@ -1,0 +1,527 @@
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { AuthHeaders } from '../../constants'
+import { uuid } from '../../utils/uuid'
+import type { Captcha } from '../../utils'
+
+import { getTrackListens, TimeFrame } from './requests'
+import type Web3Manager from '../web3Manager'
+
+type Data = Record<string, unknown>
+
+export type RelayTransaction = {
+  resp: {
+    txHash: string
+    txParams: {
+      data: string
+      gasLimit: string
+      gasPrice: number
+      nonce: string
+      to: string
+      value: string
+    }
+  }
+}
+
+type TransactionData = {
+  recentBlockhash: string
+  secpInstruction?: {
+    publicKey: string
+    message: string
+    signature: any
+    recoveryId: number
+  }
+  instruction: {
+    keys: Array<{
+      pubkey: string
+      isSigner?: boolean
+      isWritable?: boolean
+    }>
+    programId: string
+    data: Record<string, unknown>
+  }
+}
+
+type AttestationResult = {
+  status: string
+  userId: string
+  challengeId: string
+  amount: number
+  source: string
+  specifier: string
+  error?: string
+  phase?: string
+  reason?: string
+}
+
+// Only probabilistically capture 50% of relay captchas
+const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
+
+export class IdentityService {
+  identityServiceEndpoint: string
+  captcha: Captcha
+  web3Manager: Web3Manager | null
+
+  constructor(identityServiceEndpoint: string, captcha: Captcha) {
+    this.identityServiceEndpoint = identityServiceEndpoint
+    this.captcha = captcha
+    this.web3Manager = null
+  }
+
+  setWeb3Manager(web3Manager: Web3Manager) {
+    this.web3Manager = web3Manager
+  }
+
+  /* ------- HEDGEHOG AUTH ------- */
+
+  async getFn(params: {
+    lookupKey: string
+    username: string
+  }): Promise<{ iv: string; cipherText: string }> {
+    return await this._makeRequest({
+      url: '/authentication',
+      method: 'get',
+      params
+    })
+  }
+
+  async setAuthFn(obj: Data) {
+    return await this._makeRequest({
+      url: '/authentication',
+      method: 'post',
+      data: obj
+    })
+  }
+
+  async setUserFn(obj: Data & { token?: string }) {
+    if (this.captcha) {
+      try {
+        const token = await this.captcha.generate('identity/user')
+        obj.token = token
+      } catch (e) {
+        console.warn(
+          'CAPTCHA (user) - Recaptcha failed to generate token in :',
+          e
+        )
+      }
+    }
+
+    return await this._makeRequest({
+      url: '/user',
+      method: 'post',
+      data: obj
+    })
+  }
+
+  async getUserEvents(walletAddress: string) {
+    return await this._makeRequest({
+      url: '/userEvents',
+      method: 'get',
+      params: { walletAddress }
+    })
+  }
+
+  async sendRecoveryInfo(obj: Record<string, unknown>) {
+    return await this._makeRequest({
+      url: '/recovery',
+      method: 'post',
+      data: obj
+    })
+  }
+
+  /**
+   * Check if an email address has been previously registered.
+   */
+  async checkIfEmailRegistered(email: string) {
+    return await this._makeRequest<{ exists: boolean }>({
+      url: '/users/check',
+      method: 'get',
+      params: {
+        email: email
+      }
+    })
+  }
+
+  /**
+   * Associates a user with a twitter uuid.
+   * @param uuid from the Twitter API
+   * @param userId
+   * @param handle User handle
+   */
+  async associateTwitterUser(uuid: string, userId: number, handle: string) {
+    return await this._makeRequest({
+      url: '/twitter/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle
+      }
+    })
+  }
+
+  /**
+   * Associates a user with an instagram uuid.
+   * @param uuid from the Instagram API
+   * @param userId
+   * @param handle
+   */
+  async associateInstagramUser(uuid: string, userId: number, handle: string) {
+    return await this._makeRequest({
+      url: '/instagram/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle
+      }
+    })
+  }
+
+  /**
+   * Logs a track listen for a given user id.
+   * @param trackId
+   * @param userId
+   * @param listenerAddress if logging this listen on behalf of another IP address, pass through here
+   * @param signatureData if logging this listen via a 3p service, a signed piece of data proving authenticity
+   */
+  async logTrackListen(
+    trackId: number,
+    userId: number,
+    listenerAddress: string,
+    signatureData?: { signature: string; timestamp: string },
+    solanaListen = false
+  ) {
+    const data: {
+      userId: number
+      solanaListen: boolean
+      signature?: string
+      timestamp?: string
+    } = { userId, solanaListen }
+    if (signatureData) {
+      data.signature = signatureData.signature
+      data.timestamp = signatureData.timestamp
+    }
+    const request: AxiosRequestConfig = {
+      url: `/tracks/${trackId}/listen`,
+      method: 'post',
+      data
+    }
+
+    if (listenerAddress) {
+      request.headers = {
+        'x-forwarded-for': listenerAddress
+      }
+    }
+    return await this._makeRequest(request)
+  }
+
+  /**
+   * Return listen history tracks for a given user id.
+   * @param userId - User ID
+   * @param limit - max # of items to return
+   * @param offset - offset into list to return from (for pagination)
+   */
+  async getListenHistoryTracks(userId: number, limit = 100, offset = 0) {
+    const req: AxiosRequestConfig = {
+      method: 'get',
+      url: '/tracks/history',
+      params: { userId, limit, offset }
+    }
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Looks up a Twitter account by handle.
+   * @returns twitter API response.
+   */
+  async lookupTwitterHandle(handle: string) {
+    if (handle) {
+      return await this._makeRequest({
+        url: '/twitter/handle_lookup',
+        method: 'get',
+        params: { handle: handle }
+      })
+    } else {
+      throw new Error('No handle passed into function lookupTwitterHandle')
+    }
+  }
+
+  /**
+   * Gets tracks trending on Audius.
+   * @param timeFrame one of day, week, month, or year
+   * @param idsArray track ids
+   * @param limit
+   * @param offset
+   */
+  async getTrendingTracks(
+    timeFrame: string | null = null,
+    idsArray: number[] | null = null,
+    limit: number | null = null,
+    offset: number | null = null
+  ) {
+    let queryUrl = '/tracks/trending/'
+
+    if (timeFrame != null) {
+      switch (timeFrame) {
+        case 'day':
+        case 'week':
+        case 'month':
+        case 'year':
+          break
+        default:
+          throw new Error('Invalid timeFrame value provided')
+      }
+      queryUrl += timeFrame
+    }
+
+    const queryParams: { id?: number[]; limit?: number; offset?: number } = {}
+    if (idsArray !== null) {
+      queryParams.id = idsArray
+    }
+
+    if (limit !== null) {
+      queryParams.limit = limit
+    }
+
+    if (offset !== null) {
+      queryParams.offset = offset
+    }
+
+    return await this._makeRequest<{
+      listenCounts: Array<{ trackId: number; listens: number }>
+    }>({
+      url: queryUrl,
+      method: 'get',
+      params: queryParams
+    })
+  }
+
+  /**
+   * Gets listens for tracks bucketted by timeFrame.
+   * @param timeFrame one of day, week, month, or year
+   * @param idsArray track ids
+   * @param startTime parseable by Date.parse
+   * @param endTime parseable by Date.parse
+   * @param limit
+   * @param offset
+   */
+  async getTrackListens(
+    timeFrame: TimeFrame | null = null,
+    idsArray: number[] | null = null,
+    startTime: string | null = null,
+    endTime: string | null = null,
+    limit: number | null = null,
+    offset: number | null = null
+  ): Promise<{
+    bucket: Array<{ trackId: number; date: string; listens: number }>
+  }> {
+    const req = getTrackListens(
+      timeFrame,
+      idsArray,
+      startTime,
+      endTime,
+      limit,
+      offset
+    )
+    return await this._makeRequest(req)
+  }
+
+  async createUserRecord(email: string, walletAddress: string) {
+    return await this._makeRequest({
+      url: '/user',
+      method: 'post',
+      data: {
+        username: email,
+        walletAddress
+      }
+    })
+  }
+
+  async relay(
+    contractRegistryKey: string,
+    contractAddress: string,
+    senderAddress: string,
+    encodedABI: string,
+    gasLimit: string
+  ) {
+    const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
+    let token
+    if (this.captcha && shouldCaptcha) {
+      try {
+        token = await this.captcha.generate('identity/relay')
+      } catch (e) {
+        console.warn('CAPTCHA (relay) - Recaptcha failed to generate token:', e)
+      }
+    }
+
+    return await this._makeRequest({
+      url: '/relay',
+      method: 'post',
+      data: {
+        contractRegistryKey,
+        contractAddress,
+        senderAddress,
+        encodedABI,
+        gasLimit,
+        token
+      }
+    })
+  }
+
+  async ethRelay(
+    contractAddress: string,
+    senderAddress: string,
+    encodedABI: string,
+    gasLimit: string
+  ): Promise<RelayTransaction> {
+    return await this._makeRequest({
+      url: '/eth_relay',
+      method: 'post',
+      data: {
+        contractAddress,
+        senderAddress,
+        encodedABI,
+        gasLimit
+      }
+    })
+  }
+
+  async wormholeRelay({
+    senderAddress,
+    permit,
+    transferTokens
+  }: {
+    senderAddress: string
+    permit: string
+    transferTokens: string[]
+  }) {
+    return await this._makeRequest({
+      url: '/wormhole_relay',
+      method: 'post',
+      data: {
+        senderAddress,
+        permit,
+        transferTokens
+      }
+    })
+  }
+
+  /**
+   * Gets the correct wallet that will relay a txn for `senderAddress`
+   * @param senderAddress wallet
+   */
+  async getEthRelayer(senderAddress: string) {
+    return await this._makeRequest({
+      url: '/eth_relayer',
+      method: 'get',
+      params: {
+        wallet: senderAddress
+      }
+    })
+  }
+
+  async getRandomFeePayer() {
+    return await this._makeRequest({
+      url: '/solana/random_fee_payer',
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }
+
+  // Relays tx data through the solana relay endpoint
+  async solanaRelay(transactionData: TransactionData) {
+    const headers: {
+      [AuthHeaders.MESSAGE]?: string
+      [AuthHeaders.SIGNATURE]?: string
+    } = {}
+    if (this.web3Manager) {
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const message = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager?.sign(message)
+      headers[AuthHeaders.MESSAGE] = message
+      headers[AuthHeaders.SIGNATURE] = signature
+    }
+
+    return await this._makeRequest({
+      url: '/solana/relay',
+      method: 'post',
+      data: transactionData,
+      headers
+    })
+  }
+
+  async solanaRelayRaw(transactionData: TransactionData) {
+    return await this._makeRequest({
+      url: '/solana/relay/raw',
+      method: 'post',
+      data: transactionData
+    })
+  }
+
+  async getMinimumDelegationAmount(wallet: string) {
+    return await this._makeRequest({
+      url: `/protocol/${wallet}/delegation/minimum`,
+      method: 'get'
+    })
+  }
+
+  async updateMinimumDelegationAmount(
+    wallet: string,
+    minimumDelegationAmount: number,
+    signedData: AxiosRequestConfig['headers']
+  ) {
+    return await this._makeRequest({
+      url: `/protocol/${wallet}/delegation/minimum`,
+      method: 'post',
+      headers: signedData,
+      data: { minimumDelegationAmount }
+    })
+  }
+
+  /**
+   * Sends an attestation result to identity.
+   *
+   */
+  async sendAttestationResult(data: AttestationResult) {
+    return await this._makeRequest({
+      url: '/rewards/attestation_result',
+      method: 'post',
+      data
+    })
+  }
+
+  /* ------- INTERNAL FUNCTIONS ------- */
+
+  async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
+    axiosRequestObj.baseURL = this.identityServiceEndpoint
+
+    const requestId = uuid()
+    axiosRequestObj.headers = {
+      ...(axiosRequestObj.headers || {}),
+      'X-Request-ID': requestId
+    }
+
+    // Axios throws for non-200 responses
+    try {
+      const resp: AxiosResponse<T> = await axios(axiosRequestObj)
+      if (!resp.data) {
+        throw new Error(
+          `Identity response missing data field for url: ${axiosRequestObj.url}, req-id: ${requestId}`
+        )
+      }
+      return resp.data
+    } catch (e) {
+      const error = e as AxiosError
+      if (error.response?.data?.error) {
+        console.error(
+          `Server returned error for requestId ${requestId}: [${error.response.status.toString()}] ${
+            error.response.data.error
+          }`
+        )
+      }
+      throw error
+    }
+  }
+}
