@@ -119,12 +119,12 @@ async function findCIDInNetwork(
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
-  // get list of creator nodes
-  const creatorNodes = await getAllRegisteredCNodes(libs)
-  if (!creatorNodes.length) return
+  // get list of content nodes
+  const contentNodes = await getAllRegisteredCNodes(libs)
+  if (!contentNodes.length) return
 
-  // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
-  const creatorNodesFiltered = creatorNodes.filter(
+  // Remove excluded nodes from list of content nodes, no-op if empty list or nothing passed in
+  const filteredContentNodes = contentNodes.filter(
     (c) => !excludeList.includes(c.endpoint)
   )
 
@@ -134,14 +134,15 @@ async function findCIDInNetwork(
     { filePath, delegateWallet },
     config.get('delegatePrivateKey')
   )
-  let node
 
-  for (let index = 0; index < creatorNodesFiltered.length; index++) {
-    node = creatorNodesFiltered[index]
+  for (let contentNode of filteredContentNodes) {
+    if (found) break
+
+    const contentNodeEndpoint = contentNode.endpoint
     try {
       const resp = await axios({
         method: 'get',
-        url: `${node.endpoint}/file_lookup`,
+        url: `${contentNodeEndpoint}/file_lookup`,
         params: {
           filePath,
           timestamp,
@@ -152,23 +153,27 @@ async function findCIDInNetwork(
         responseType: 'stream',
         timeout: 1000
       })
-      if (resp.data) {
-        await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
-        // Verify that the file written matches the hash expected
-        const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
-          filePath
+      if (!resp.data) {
+        throw new Error(`No data returned from ${contentNodeEndpoint}`)
+      }
+
+      await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
+
+      // Verify that the file written matches the hash expected
+      const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
+        filePath
+      )
+
+      if (cid !== expectedCID) {
+        await fs.unlink(filePath)
+        logger.error(
+          `findCIDInNetwork - File contents and hash don't match. Input CID: ${cid} expectedCID: ${expectedCID}`
         )
-
-        if (cid !== expectedCID) {
-          await fs.unlink(filePath)
-          logger.error(
-            `findCIDInNetwork - File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
-          )
-        }
+      } else {
         found = true
         logger.info(
-          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+          `findCIDInNetwork - successfully fetched file ${filePath} from node ${contentNodeEndpoint}`
         )
         break
       }
