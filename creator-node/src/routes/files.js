@@ -229,20 +229,20 @@ const getCID = async (req, res) => {
     const storagePath = DiskManager.computeFilePath(CID, false)
     storagePaths.push(storagePath)
   } catch (e) {
-    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
+    req.logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
   }
 
   try {
     const storagePath = DiskManager.computeLegacyFilePath(CID)
     storagePaths.push(storagePath)
   } catch (e) {
-    logger.warn(
+    req.logger.warn(
       `${logPrefix} Could not compute legacy storage path: ${e.message}`
     )
   }
 
   let fsStats = null
-  const storagePathWhereFileExists = null
+  let storagePathWhereFileExists = null
 
   // Check file existence in storage paths. Exit for-loop immediately when file exists.
   for (const storagePath of storagePaths) {
@@ -254,7 +254,7 @@ const getCID = async (req, res) => {
       break
     }
 
-    logger.warn(`${logPrefix} ${response.errorMsg}`)
+    req.logger.warn(`${logPrefix} ${response.errorMsg}`)
   }
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
@@ -275,7 +275,9 @@ const getCID = async (req, res) => {
         fsStats
       )
     } catch (e) {
-      logger.warn(`${logPrefix} Could not stream file from fs: ${e.message}`)
+      req.logger.warn(
+        `${logPrefix} Could not stream file from fs: ${e.message}`
+      )
     }
   }
 
@@ -311,7 +313,7 @@ const getCID = async (req, res) => {
     storagePathWhereFileExists = queryResults.storagePath
   } catch (e) {
     const errorMsg = `${logPrefix} DB query failed: ${e.message}`
-    logger.error(errorMsg)
+    req.logger.error(errorMsg)
     return sendResponse(req, res, errorResponseServerError(errorMsg))
   }
 
@@ -330,7 +332,7 @@ const getCID = async (req, res) => {
     return streamFromFileSystem(req, res, storagePathWhereFileExists, false)
   } catch (e) {
     const errorMsg = `${logPrefix} ${e.message}`
-    logger.error(errorMsg)
+    req.logger.error(errorMsg)
     return sendResponse(req, res, errorResponseServerError(errorMsg))
   }
 }
