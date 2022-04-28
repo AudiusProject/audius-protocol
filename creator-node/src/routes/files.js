@@ -3,7 +3,11 @@ const fs = require('fs-extra')
 const path = require('path')
 const contentDisposition = require('content-disposition')
 
-const { logger: genericLogger } = require('../logging')
+const {
+  logger: genericLogger,
+  logInfoWithDuration,
+  getStartTime
+} = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -129,12 +133,58 @@ const streamFromFileSystem = async (
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
-const logGetCIDDecisionTree = (decisionTree, req) => {
+/**
+ * Checks to see if the path exists and has content on fs. If path turns out to
+ * be a directory, not a proper file, or an empty file, mark as error in checking.
+ * @param {string} storagePath path to check
+ * @returns {Object} {error: true or false, errorMsg: string or null}
+ */
+const checkStoragePathForFile = async (storagePath) => {
+  let response
+  let fsStats = null
   try {
-    req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
+    fsStats = await fs.stat(storagePath)
+
+    if (fsStats.isDirectory()) {
+      response = {
+        error: true,
+        errorMsg: 'this dag node is a directory'
+      }
+    }
+
+    if (!fsStats.isFile()) {
+      response = {
+        error: true,
+        errorMsg: 'CID is of invalid file type'
+      }
+    }
+
+    if (fsStats.size === 0) {
+      response = {
+        error: true,
+        errorMsg: 'empty CID content found'
+      }
+
+      // Remove file if it is empty and force fetch from CN network
+      await fs.unlink(storagePath)
+    } else {
+      response = {
+        error: false,
+        errorMsg: null,
+        fsStats
+      }
+    }
   } catch (e) {
-    console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+    response = {
+      error: true,
+      errorMsg: `Could not check file stat for ${storagePath}: ${e.message}`
+    }
   }
+
+  response.storagePath = storagePath
+  response.fsStats = fsStats
+
+  return response
 }
 
 /**
@@ -145,8 +195,10 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
  * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
  * 4. If not avail in CN network, respond with 400 server error
  */
+
+// notes: getStartTime() and logInfoWithDuration() reference in tracksComponentService.js
 const getCID = async (req, res) => {
-  if (!(req.params && req.params.CID)) {
+  if (!req.params || !req.params.CID) {
     return sendResponse(
       req,
       res,
@@ -156,26 +208,12 @@ const getCID = async (req, res) => {
 
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
+  const BlacklistManager = req.app.get('blacklistManager')
 
-  const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
   const logPrefix = `[getCID] [CID=${CID}]`
 
-  /**
-   * Check if CID is servable from BlacklistManager; return error if not
-   */
-  let startMs = Date.now()
-  const BlacklistManager = req.app.get('blacklistManager')
   const isServable = await BlacklistManager.isServable(CID, trackId)
-  decisionTree.push({
-    stage: `BLACKLIST_MANAGER_CHECK_IS_SERVABLE`,
-    time: `${Date.now() - startMs}ms`
-  })
   if (!isServable) {
-    decisionTree.push({
-      stage: `CID_IS_BLACKLISTED`
-    })
-
-    logGetCIDDecisionTree(decisionTree, req)
     return sendResponse(
       req,
       res,
@@ -185,156 +223,38 @@ const getCID = async (req, res) => {
     )
   }
 
-  // Compute expected storagePath for CID
-  let storagePath
+  // Check file existence on fs with new storage path pattern
+  const storagePaths = []
   try {
-    storagePath = DiskManager.computeFilePath(CID, false)
-    decisionTree.push({
-      stage: `COMPUTE_FILE_PATH_COMPLETE`
-    })
+    let storagePath = DiskManager.computeFilePath(CID, false)
+    storagePaths.push(storagePath)
   } catch (e) {
-    decisionTree.push({
-      stage: `COMPUTE_FILE_PATH_FAILURE`
-    })
-    logGetCIDDecisionTree(decisionTree, req)
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(`${logPrefix} Invalid CID`)
+    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
+  }
+
+  try {
+    let storagePath = DiskManager.computeLegacyFilePath(CID)
+    storagePaths.push(storagePath)
+  } catch (e) {
+    logger.warn(
+      `${logPrefix} Could not compute legacy storage path: ${e.message}`
     )
   }
 
-  /**
-   * Check if file exists on FS at storagePath
-   * If found and not of file type, return error
-   * If found and file type, continue
-   * If not found, continue
-   */
-  startMs = Date.now()
-  let fileFoundOnFS = false
-  let fsStats
-  try {
-    /**
-     * fs.stat returns instance of fs.stats class, used to check if exists, an dir vs file
-     * Throws error if nothing found
-     * https://nodejs.org/api/fs.html#fspromisesstatpath-options
-     */
-    fsStats = await fs.stat(storagePath)
-    decisionTree.push({
-      stage: `FS_STATS`,
-      time: `${Date.now() - startMs}ms`
-    })
+  let fsStats = null
+  const storagePathWhereFileExists = null
 
-    if (fsStats.isFile()) {
-      decisionTree.push({
-        stage: `CID_CONFIRMED_FILE`
-      })
-      fileFoundOnFS = true
-    } else if (fsStats.isDirectory()) {
-      decisionTree.push({
-        stage: `CID_CONFIRMED_DIRECTORY`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest('this dag node is a directory')
-      )
-    } else {
-      decisionTree.push({
-        stage: `CID_INVALID_TYPE`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest('CID is of invalid file type')
-      )
-    }
-  } catch (e) {
-    decisionTree.push({
-      stage: `FS_STATS_CID_NOT_FOUND`,
-      time: `${Date.now() - startMs}ms`
-    })
-    // continue
-  }
+  // Check file existence in storage paths. Exit for-loop immediately when file exists.
+  for (let storagePath of storagePaths) {
+    const response = await checkStoragePathForFile(storagePath)
 
-  /**
-   * If not found on FS at storagePath, check legacyStoragePath
-   */
-  if (!fileFoundOnFS) {
-    // Compute expected legacyStoragePath for CID
-    let legacyStoragePath
-    try {
-      legacyStoragePath = DiskManager.computeLegacyFilePath(CID)
-      decisionTree.push({
-        stage: `COMPUTE_LEGACY_FILE_PATH_COMPLETE`
-      })
-    } catch (e) {
-      decisionTree.push({
-        stage: `COMPUTE_LEGACY_FILE_PATH_FAILURE`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest(`${logPrefix} Invalid CID`)
-      )
+    if (!response.error) {
+      fsStats = response.fsStats
+      storagePathWhereFileExists = response.storagePath
+      break
     }
 
-    /**
-     * Check if file exists on FS at legacyStoragePath
-     * If found and not of file type, return error
-     * If found and of type file, continue with legacyStoragePath
-     * If not found, continue
-     */
-    startMs = Date.now()
-    try {
-      // Will throw if path does not exist
-      // If exists, returns an instance of fs.stats class
-      fsStats = await fs.stat(legacyStoragePath)
-      decisionTree.push({
-        stage: `FS_STATS_LEGACY_STORAGE_PATH`,
-        time: `${Date.now() - startMs}ms`
-      })
-
-      if (fsStats.isFile()) {
-        decisionTree.push({
-          stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
-        })
-        fileFoundOnFS = true
-      } else if (fsStats.isDirectory()) {
-        decisionTree.push({
-          stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`
-        })
-        logGetCIDDecisionTree(decisionTree, req)
-        return sendResponse(
-          req,
-          res,
-          errorResponseBadRequest('this dag node is a directory')
-        )
-      } else {
-        decisionTree.push({
-          stage: `CID_INVALID_TYPE_LEGACY_STORAGE_PATH`
-        })
-        logGetCIDDecisionTree(decisionTree, req)
-        return sendResponse(
-          req,
-          res,
-          errorResponseBadRequest('CID is of invalid file type')
-        )
-      }
-    } catch (e) {
-      decisionTree.push({
-        stage: `FS_STATS_LEGACY_STORAGE_PATH_CID_NOT_FOUND`,
-        time: `${Date.now() - startMs}ms`
-      })
-      // continue
-    }
-
-    if (fileFoundOnFS) {
-      storagePath = legacyStoragePath
-    }
+    logger.warn(`${logPrefix} ${response.errorMsg}`)
   }
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
@@ -345,37 +265,25 @@ const getCID = async (req, res) => {
   // Set the CID cache-control so that client caches the response for 30 days
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
-  /**
-   * If the file is found on file system, stream from file system
-   */
-  if (fileFoundOnFS) {
-    startMs = Date.now()
+  if (storagePathWhereFileExists) {
     try {
-      const fsStream = await streamFromFileSystem(
+      return streamFromFileSystem(
         req,
         res,
-        storagePath,
+        storagePathWhereFileExists,
         false,
         fsStats
       )
-      decisionTree.push({
-        stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
-        time: `${Date.now() - startMs}ms`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
-      return fsStream
     } catch (e) {
-      decisionTree.push({
-        stage: `STREAM_FROM_FILE_SYSTEM_FAILED`,
-        time: `${Date.now() - startMs}ms`
-      })
+      logger.warn(`${logPrefix} Could not stream file from fs: ${e.message}`)
     }
   }
 
-  /**
-   * If not found on FS, check if CID record is in DB, error if not found
-   */
-  startMs = Date.now()
+  // At this point, the file does not exist in the fs in the new nor legacy storage paths.
+
+  // The DB existence is the source of truth whether content should live in in the node.
+  // If found in DB, query the CN network for the content and serve. Else, respond with 404
+
   try {
     const queryResults = await models.File.findOne({
       where: {
@@ -383,100 +291,47 @@ const getCID = async (req, res) => {
       },
       order: [['clock', 'DESC']]
     })
-    decisionTree.push({
-      stage: `DB_CID_QUERY`,
-      time: `${Date.now() - startMs}ms`
-    })
 
     if (!queryResults) {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CID_NOT_FOUND`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
       return sendResponse(
         req,
         res,
-        errorResponseNotFound(
-          `${logPrefix} No valid file found for provided CID`
-        )
+        errorResponseNotFound('No valid file found for provided CID')
       )
-    } else if (queryResults.type === 'dir') {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CONFIRMED_DIR`
-      })
-      logGetCIDDecisionTree(decisionTree, req)
+    }
+
+    if (queryResults.type === 'dir') {
       return sendResponse(
         req,
         res,
         errorResponseBadRequest('this dag node is a directory')
       )
-    } else {
-      decisionTree.push({
-        stage: `DB_CID_QUERY_CID_FOUND`
-      })
-      // This should never happen, logging in case it does
-      if (storagePath !== queryResults.storagePath) {
-        req.logger.error(
-          `${logPrefix} Found unexpected storagePath. Expected ${storagePath}, found ${queryResults.storagePath}.`
-        )
-      }
-      storagePath = queryResults.storagePath
     }
+
+    storagePathWhereFileExists = queryResults.storagePath
   } catch (e) {
-    decisionTree.push({
-      stage: `DB_CID_QUERY_ERROR`,
-      time: `${Date.now() - startMs}ms`,
-      error: `${e.message}`
-    })
-    logGetCIDDecisionTree(decisionTree, req)
-    return sendResponse(
-      req,
-      res,
-      errorResponseServerError(`${logPrefix} DB query failed`)
-    )
+    const errorMsg = `${logPrefix} DB query failed: ${e.message}`
+    logger.error(errorMsg)
+    return sendResponse(req, res, errorResponseServerError(errorMsg))
   }
 
-  /**
-   * If found in DB (means not found in FS):
-   * 1. Attempt to retrieve file from network and save to file system
-   * 2. If retrieved, stream from file system
-   * 3. Else, error
-   */
-  const blockStartMs = Date.now()
   try {
-    startMs = Date.now()
-    const libs = req.app.get('audiusLibs')
     const found = await findCIDInNetwork(
-      storagePath,
+      storagePathWhereFileExists,
       CID,
       req.logger,
-      libs,
+      req.app.get('audiusLibs'),
       trackId
     )
     if (!found) {
       throw new Error('Not found in network')
     }
-    decisionTree.push({
-      stage: `FIND_CID_IN_NETWORK_COMPLETE`,
-      time: `${Date.now() - startMs}ms`
-    })
 
-    startMs = Date.now()
-    const fsStream = await streamFromFileSystem(req, res, storagePath, false)
-    decisionTree.push({
-      stage: `STREAM_FROM_FILE_SYSTEM_AFTER_FIND_CID_IN_NETWORK_COMPLETE`,
-      time: `${Date.now() - startMs}ms`
-    })
-
-    logGetCIDDecisionTree(decisionTree, req)
-    return fsStream
+    return streamFromFileSystem(req, res, storagePathWhereFileExists, false)
   } catch (e) {
-    decisionTree.push({
-      stage: `FIND_CID_IN_NETWORK_ERROR`,
-      time: `${Date.now() - blockStartMs}ms`,
-      error: `${e.message}`
-    })
-    return sendResponse(req, res, errorResponseServerError(e.message))
+    const errorMsg = `${logPrefix} ${e.message}`
+    logger.error(errorMsg)
+    return sendResponse(req, res, errorResponseServerError(errorMsg))
   }
 }
 
@@ -808,11 +663,11 @@ module.exports = function (app) {
         await timeout(250)
       }
 
-      const cidExistanceMap = {
+      const cidExistenceMap = {
         cids: cids.map((cid) => ({ cid, exists: cidExists[cid] || false }))
       }
 
-      return successResponse(cidExistanceMap)
+      return successResponse(cidExistenceMap)
     })
   )
 
@@ -867,11 +722,11 @@ module.exports = function (app) {
         await timeout(250)
       }
 
-      const cidExistanceMap = {
+      const cidExistenceMap = {
         cids: cids.map((cid) => ({ cid, exists: cidExists[cid] || false }))
       }
 
-      return successResponse(cidExistanceMap)
+      return successResponse(cidExistenceMap)
     })
   )
 

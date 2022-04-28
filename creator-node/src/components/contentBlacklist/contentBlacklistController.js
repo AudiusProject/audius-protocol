@@ -56,7 +56,7 @@ const contentBlacklistAddController = async (req) => {
 
   if (type !== types.cid) {
     logger.debug(
-      `ContentBlackListController - [add] checking ids existance in disc prov`
+      `ContentBlackListController - [add] checking ids existence in disc prov`
     )
     const libs = req.app.get('audiusLibs')
     try {
