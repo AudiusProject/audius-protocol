@@ -2,6 +2,7 @@ const Prometheus = require('prom-client')
 
 const {
   handleResponse,
+  sendResponse,
   errorResponseServerError
 } = require('../apiHelpers')
 const PrometheusMetric = require('../services/PrometheusMetric')
@@ -19,8 +20,11 @@ module.exports = function (app) {
       try {
         PrometheusMetric.populateCollectors()
         res.set('Content-Type', Prometheus.register.contentType)
-        res.status(200)
-        res.end(await Prometheus.register.metrics())
+        sendResponse(
+          req,
+          res,
+          { statusCode: 200, object: await Prometheus.register.metrics() }
+        )
       } catch (e) {
         console.error('Prometheus Metrics Exporter error:', e)
         return errorResponseServerError(e.message)
