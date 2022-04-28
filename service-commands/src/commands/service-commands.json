@@ -134,7 +134,7 @@
       "cd libs/; npm run init-local configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
       "cd discovery-provider; rm -f *_dump",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.es.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -142,12 +142,12 @@
     "up-web-server": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd libs/; npm run init-local configure-discprov-wallet #",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.es.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.es.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "sudo rm -rf solana-programs/claimable-tokens/cli/target",
       "sudo rm -rf solana-programs/cli/target",
@@ -162,7 +162,7 @@
     ],
     "restart": [
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.es.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
       "sudo rm -rf solana-programs/claimable-tokens/cli/target",
       "sudo rm -rf solana-programs/cli/target",
@@ -173,7 +173,7 @@
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; rm -f *_dump",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.es.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
