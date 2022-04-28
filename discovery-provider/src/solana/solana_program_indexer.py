@@ -200,7 +200,7 @@ class SolanaProgramIndexer(IndexerBase):
         # Loop exit condition
         intersection_found = False
 
-        # List of signatures that will be populated as we traverse recent operations
+        # List of signatures to be processed
         unindexed_transactions = []
 
         # Current batch
@@ -253,8 +253,6 @@ class SolanaProgramIndexer(IndexerBase):
                 # Append to recently seen cache
                 # cache_traversed_tx(redis, last_tx)
 
-                # Reset batch state
-
                 self.msg(
                     f"intersection_found={intersection_found},\
                     last_tx_signature={last_tx_signature},\
@@ -293,12 +291,6 @@ class SolanaProgramIndexer(IndexerBase):
                 -TX_SIGNATURES_RESIZE_LENGTH:
             ]
             self.msg(f"sliced tx_sigs to {len(transaction_signature_batches)} entries")
-
-        # # map to signatures
-        # for i in range(len(transaction_signature_batches)):
-        #     transaction_signature_batches[i] = [
-        #         list(map(lambda tx: tx["signature"], transaction_signature_batches[i]))
-        #     ]
 
         # sort oldest signatures first
         transaction_signature_batches.reverse()

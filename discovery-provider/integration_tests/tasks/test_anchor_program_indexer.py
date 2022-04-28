@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import MagicMock, create_autospec, patch
+from unittest.mock import MagicMock, create_autospec
 
 import pytest
 from construct import Container, ListContainer
@@ -56,7 +56,34 @@ def test_get_transaction_batches_to_process_single_batch(app):
     ]
 
 
-def test_get_transaction_batches_to_process_overlapping_batch(app):
+def test_get_transaction_batches_to_process_empty_batch(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+
+    mock_transactions_history = {"result": []}
+    solana_client_manager_mock.get_signatures_for_address.return_value = (
+        mock_transactions_history
+    )
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [[]]
+
+
+def test_get_transaction_batches_to_process_interslot_batch(app):
     with app.app_context():
         db = get_db()
         redis = get_redis()
