@@ -36,7 +36,7 @@ class PrometheusMetric {
     this.metric = collection[name]
   }
 
-  constructor(name, description, labelNames, metric_type) {
+  constructor({name, description, labelNames, metric_type}) {
     // set this.startTime to now()
     this.resetTimer()
 

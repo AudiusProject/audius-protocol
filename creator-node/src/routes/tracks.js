@@ -305,11 +305,11 @@ module.exports = function (app) {
         transcodedTrackUUID
       } = req.body
 
-      const metric = new PrometheusMetric(
-        'routes_tracks_runtime_seconds',
-        'Runtimes for src.routes.tracks:/tracks',
-        ['scope']
-      )
+      const metric = new PrometheusMetric({
+        name: 'routes_tracks_runtime_seconds',
+        description: 'Runtimes for src.routes.tracks:/tracks',
+        labelNames: ['scope']
+      })
 
       // Input validation
       if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
