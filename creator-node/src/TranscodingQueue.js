@@ -230,7 +230,13 @@ class TranscodingQueue {
    */
   async isAvailable() {
     const { active, waiting } = await this.getTranscodeQueueJobs()
+
     const remainingSlots = MAX_CONCURRENCY - active - waiting
+    await this.logStatus(
+      `vicky! active: ${active} waiting ${waiting} max concurr ${MAX_CONCURRENCY} min slots ${MIN_SLOTS_AVAILABLE} remainingSlots ${remainingSlots} remainingSlots >= MIN_SLOTS_AVAILABLE ${
+        remainingSlots >= MIN_SLOTS_AVAILABLE
+      }`
+    )
 
     return remainingSlots >= MIN_SLOTS_AVAILABLE
   }
