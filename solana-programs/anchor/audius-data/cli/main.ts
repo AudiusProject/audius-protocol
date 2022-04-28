@@ -165,14 +165,13 @@ async function initUserCLI(args: initUserCLIParams) {
     cn3,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+  const { baseAuthorityAccount, bumpSeed, derivedAddress: userAccount } =
     await findDerivedPair(
       cliVars.programID,
       adminAccount,
       convertBNToUserIdSeed(userId)
     );
 
-  const userStorageAddress = derivedAddress;
   console.log("Initing user");
   const tx = initUser({
     payer: cliVars.provider.wallet.publicKey,
@@ -183,7 +182,7 @@ async function initUserCLI(args: initUserCLIParams) {
     userId,
     bumpSeed,
     metadata,
-    userAccount: userStorageAddress,
+    userAccount,
     baseAuthorityAccount,
     adminAccount: adminAccount,
     adminAuthorityPublicKey: adminKeypair.publicKey,
@@ -196,7 +195,7 @@ async function initUserCLI(args: initUserCLIParams) {
   await cliVars.provider.connection.confirmTransaction(txHash);
 
   console.log(
-    `Initialized user with id=${userId}, tx=${txHash}, userAcct=${userStorageAddress}`
+    `Initialized user with id=${userId}, tx=${txHash}, userAcct=${userAccount}`
   );
 }
 
@@ -300,7 +299,7 @@ async function timeManageEntity(
       await provider.connection.confirmTransaction(tx);
       const duration = Date.now() - start;
       console.log(
-        `Processed tx=${tx} in duration=${duration}, user=${options.userStoragePubkey}`
+        `Processed tx=${tx} in duration=${duration}, user=${options.userAccount}`
       );
       return tx;
     } catch (e) {
@@ -339,7 +338,7 @@ program
   .option("-e, --eth-address <string>", "user/cn eth address")
   .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
   .option(
-    "-ustg, --user-storage-pubkey <string>",
+    "-ua, --user-account <string>",
     "user sol id-based PDA pubkey"
   )
   .option(
@@ -510,14 +509,14 @@ const main = async () => {
         program: cliVars.program,
         message: userSolKeypair.publicKey.toBytes(),
         ethPrivateKey,
-        userAccount: options.userStoragePubkey,
+        userAccount: options.userAccount,
         userAuthorityPublicKey: userSolPubkey,
       });
       const txHash = await cliVars.provider.sendAndConfirm(tx);
 
       await cliVars.provider.connection.confirmTransaction(txHash);
       console.log(
-        `initUserTx = ${txHash}, userStorageAccount = ${options.userStoragePubkey}`
+        `initUserTx = ${txHash}, userAccount = ${options.userAccount}`
       );
       break;
     }
@@ -602,7 +601,7 @@ const main = async () => {
 
       const numTracks = options.numTracks ?? 1;
       console.log(
-        `Number of tracks = ${numTracks}, Target User = ${options.userStoragePubkey}`
+        `Number of tracks = ${numTracks}, Target User = ${options.userAccount}`
       );
 
       const promises = [];
@@ -648,7 +647,7 @@ const main = async () => {
     case functionTypes.createPlaylist: {
       const numPlaylists = options.numPlaylists ?? 1;
       console.log(
-        `Number of playlists = ${numPlaylists}, Target User = ${options.userStoragePubkey}`
+        `Number of playlists = ${numPlaylists}, Target User = ${options.userAccount}`
       );
 
       const promises = [];
@@ -671,7 +670,7 @@ const main = async () => {
               bumpSeed: bumpSeed,
               metadata: randomCID(),
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userAccount: options.userStoragePubkey,
+              userAccount: options.userAccount,
               userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
               authorityDelegationStatusAccount:
                 authorityDelegationStatusAccountPDA,
@@ -694,7 +693,7 @@ const main = async () => {
       const playlistId = new anchor.BN(options.id);
       if (!playlistId) break;
       console.log(
-        `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
+        `Playlist id = ${playlistId} Target User = ${options.userAccount}`
       );
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
@@ -714,7 +713,7 @@ const main = async () => {
           bumpSeed: bumpSeed,
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
-          userAccount: options.userStoragePubkey,
+          userAccount: options.userAccount,
           userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
           authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
@@ -730,7 +729,7 @@ const main = async () => {
       const playlistId = new anchor.BN(options.id);
       if (!playlistId) break;
       console.log(
-        `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
+        `Playlist id = ${playlistId} Target User = ${options.userAccount}`
       );
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
@@ -750,7 +749,7 @@ const main = async () => {
           bumpSeed: bumpSeed,
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
-          userAccount: options.userStoragePubkey,
+          userAccount: options.userAccount,
           userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
           authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
