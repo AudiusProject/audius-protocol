@@ -29,15 +29,15 @@ jobs:
           username: _json_key
           password: $GCLOUD_SERVICE_KEY
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - 3c:b3:45:12:28:12:4a:d6:a4:54:de:4a:b2:ca:06:a5
+      # - add_ssh_keys:
+      #     fingerprints:
+      #       - 3c:b3:45:12:28:12:4a:d6:a4:54:de:4a:b2:ca:06:a5
       - run:
-          name: what is the name of the ssh key file lol
+          name: Find IP of the box
           command: |
-            ls -la $HOME/.ssh/
+            # ls -la $HOME/.ssh/
             curl checkip.amazonaws.com
-            sleep 10
+            #TODO - add to firewall here
       - run:
           name: gcloud service account auth
           command: |
@@ -50,8 +50,9 @@ jobs:
             # gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
             ls
             ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              A run init-repos up;
-              A up;
+              # A run init-repos up;
+              # A up;
+              echo "hi"
               exit $?;
             EOF
       - run:
