@@ -13,6 +13,8 @@ and track changes, respectively.
 
 * Ease environmental pain when migrating between remote-dev boxes.
 * Assist in standardizing your favorite aliases/envar settings.
+* Easily track changes to some of your favorite dotfiles, as seen in [these examples](#add-your-own-files-local-andor-old-box).
+* Easily revert back to a "vanilla" state when attempting to debug setup issues.
 
 ## Non-Goals
 
@@ -35,12 +37,6 @@ only your environment. Be cautious of your customizations.
 ~/bin/.env.add ~/.yourdotfile
 ```
 
-The above helper command essentially does this:
-
-```
-cp ~/.yourdotfile ./.yourdotfile
-```
-
 ### Sync Dotfiles Across Machines
 
 Git is used to keep your environments in sync.
@@ -55,15 +51,6 @@ git pull
 ```
 ~/bin/.env.install
 ```
-
-The installation is a multi-step process:
-
-* Validate existing symlinks at `~/.system_file`.
-* If `$INIT` is set, `cp ~/.system_file .repo_file`.
-* Show `diff ~/.system_file .repo_file` output, if detected.
-* If no `diff` output:
-  * `rm ~/.system_file`
-  * `ln -s .repo_file ~/.system_file`
 
 ## Migration Manager
 
