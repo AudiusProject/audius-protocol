@@ -16,7 +16,7 @@ class PrometheusMetric {
   static gauges = {}
   static registeredCollectors = {}
 
-  constructor({name, description, labelNames, metricType}) {
+  constructor({ name, description, labelNames, metricType }) {
     // set this.startTime to now()
     this.resetTimer()
 
