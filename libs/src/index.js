@@ -1,7 +1,7 @@
 const packageJSON = require('../package.json')
 
 const { EthWeb3Manager } = require('./services/ethWeb3Manager')
-const { AnchorAudiusData } = require('./services/anchorAudiusData/index')
+const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
@@ -296,18 +296,15 @@ class AudiusLibs {
    * Configures a solana audius-data
    * @param {Object} config
    * @param {string} config.programId Program ID of the audius data program
-   * @param {string} config.adminPublicKey Public Key of admin storage account
-   * @param {string} config.adminStoragePublicKey Public Key of admin storage account
+   * @param {string} config.adminAccount Public Key of admin account
    */
   static configSolanaAudiusData ({
     programId,
-    adminPublicKey,
-    adminStoragePublicKey,
+    adminAccount,
   }) {
     return {
       programId,
-      adminPublicKey,
-      adminStoragePublicKey,
+      adminAccount,
     }
   }
 
@@ -437,7 +434,7 @@ class AudiusLibs {
       await this.solanaWeb3Manager.init()
     }
     if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
-      this.anchorAudiusData = new AnchorAudiusData(
+      this.solanaAudiusData = new SolanaAudiusData(
         this.solanaAudiusDataConfig,
         this.solanaWeb3Manager,
         this.web3Manager

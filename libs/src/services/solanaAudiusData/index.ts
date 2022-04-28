@@ -9,8 +9,7 @@ import { audiusDataErrorMapping } from './errors'
 
 type AnchorAudiusDataConfig = {
   programId: string
-  adminPublicKey: string
-  adminStoragePublicKey: string
+  adminAccount: string
 }
 
 type OmitAndRequire<T, K extends keyof T, L extends keyof T> = Partial<
@@ -19,25 +18,25 @@ type OmitAndRequire<T, K extends keyof T, L extends keyof T> = Partial<
   Required<Pick<T, L>>
 
 /**
- * AnchorAudiusData acts as the interface to solana auidus data programs from a client.
+ * SolanaAudiusData acts as the interface to solana audius data programs from a client.
  * It wraps methods to create transactions.
  */
-export class AnchorAudiusData {
+export class SolanaAudiusData {
   anchorAudiusDataConfig: AnchorAudiusDataConfig
   solanaWeb3Manager: SolanaWeb3Manager
   program!: AudiusDataProgram
   programId!: PublicKey
-  adminPublicKey!: PublicKey
-  adminStoragePublicKey!: PublicKey
+  adminAccount!: PublicKey
   provider!: anchor.Provider
   web3Manager: Web3Manager
+  // Exposes all other methods from @audius/anchor-audius-data for ad hoc use
   AudiusData: any
 
   /**
-   * @param {Object} anchorAudiusDataConfig
-   *  the solana cluster RPC endpoint
-   * @param {string} anchorAudiusDataConfig.mintAddress
-   * @param {SolanaWeb3Manager} solanaWeb3Manager
+   * @param {Object} anchorAudiusDataConfig The config object
+   * @param {string} anchorAudiusDataConfig.programId Program ID of the audius data program
+   * @param {string} anchorAudiusDataConfig.adminAccount Public Key of admin storage account
+   * @param {SolanaWeb3Manager} solanaWeb3Manager Solana web3 Manager
    * @param {Web3Manager} web3Manager
    */
   constructor(
@@ -51,24 +50,10 @@ export class AnchorAudiusData {
     this.AudiusData = AudiusData
   }
 
-  didInit() {
-    return Boolean(
-      this.programId &&
-        this.adminPublicKey &&
-        this.adminStoragePublicKey &&
-        this.solanaWeb3Manager.feePayerKey &&
-        this.program
-    )
-  }
-
   async init() {
-    const { programId, adminPublicKey, adminStoragePublicKey } =
-      this.anchorAudiusDataConfig
+    const { programId, adminAccount } = this.anchorAudiusDataConfig
     this.programId = SolanaUtils.newPublicKeyNullable(programId)
-    this.adminPublicKey = SolanaUtils.newPublicKeyNullable(adminPublicKey)
-    this.adminStoragePublicKey = SolanaUtils.newPublicKeyNullable(
-      adminStoragePublicKey
-    )
+    this.adminAccount = SolanaUtils.newPublicKeyNullable(adminAccount)
     this.provider = new anchor.AnchorProvider(
       this.solanaWeb3Manager.connection,
       // NOTE: Method requests type wallet, but because signtransaction is not used, keypair is fine
@@ -83,16 +68,29 @@ export class AnchorAudiusData {
   }
 
   // Setters
-  setAdminPublicKey(adminPublicKey: PublicKey) {
-    this.adminPublicKey = adminPublicKey
+  setAdminAccount(AdminAccount: PublicKey) {
+    this.adminAccount = AdminAccount
   }
 
-  setAdminStoragePublicKey(adminStoragePublicKey: PublicKey) {
-    this.adminStoragePublicKey = adminStoragePublicKey
+  // ============================= HELPERS =============================
+
+  /**
+   * Validate that the program, provider and base variables were initted
+   * @returns {boolean} True if the class was initted
+   */
+  didInit() {
+    return Boolean(
+      this.programId &&
+        this.adminAccount &&
+        this.solanaWeb3Manager.feePayerKey &&
+        this.program
+    )
   }
 
+  /**
+   * Encodes and derives the user account, bump seed, and base authority
+   */
   async getUserIdSeed(userId: BN) {
-    if (!this.programId || !this.adminStoragePublicKey) return {}
     const userIdSeed = userId.toArrayLike(Uint8Array, 'le', 4)
     const {
       baseAuthorityAccount,
@@ -100,7 +98,7 @@ export class AnchorAudiusData {
       derivedAddress: userAccount
     } = await this.solanaWeb3Manager.findDerivedPair(
       this.programId,
-      this.adminStoragePublicKey,
+      this.adminAccount,
       userIdSeed
     )
     return {
@@ -112,12 +110,18 @@ export class AnchorAudiusData {
     }
   }
 
+  /**
+   * Derives the user solana keypair using the user's eth private key
+   */
   getUserKeyPair(): anchor.web3.Keypair {
     return anchor.web3.Keypair.fromSeed(
       this.web3Manager.ownerWallet.getPrivateKey()
     )
   }
 
+  /**
+   * Encodes and derives the content node account and bump seed
+   */
   async getContentNodeSeedAddress(spId: number) {
     const enc = new TextEncoder() // always utf-8
     const baseSpIdSeed = enc.encode('sp_id')
@@ -125,7 +129,7 @@ export class AnchorAudiusData {
     const { bumpSeed, derivedAddress } =
       await this.solanaWeb3Manager.findDerivedPair(
         this.programId,
-        this.adminStoragePublicKey,
+        this.adminAccount,
         new Uint8Array([...baseSpIdSeed, ...spIdValue])
       )
     return {
@@ -134,6 +138,12 @@ export class AnchorAudiusData {
     }
   }
 
+  /**
+   * Signs a transaction using the user's key pair
+   * NOTE: The blockhash and feepayer must be set when signing and passed along
+   * with the transaction for further signatures for consitency or the signature
+   * will be invalide
+   */
   async signTransaction(
     tx: anchor.web3.Transaction,
     userKeyPair: anchor.web3.Keypair
@@ -148,6 +158,11 @@ export class AnchorAudiusData {
     return tx
   }
 
+  /**
+   * Submits a transaction via the solanaWeb3Manager transactionHandler passing along
+   * the signtures.
+   * This base method is used to send all transactions in this class
+   */
   async sendTx(tx: Transaction) {
     const signatures = tx.signatures
       .filter((s) => s.signature && s.publicKey)
@@ -159,7 +174,6 @@ export class AnchorAudiusData {
     const response =
       await this.solanaWeb3Manager.transactionHandler.handleTransaction({
         instructions: tx.instructions,
-        // TODO: Figure out
         errorMapping: audiusDataErrorMapping,
         feePayerOverride: this.solanaWeb3Manager.feePayerKey,
         recentBlockhash: tx.recentBlockhash,
@@ -170,16 +184,16 @@ export class AnchorAudiusData {
     return response
   }
 
+  // ============================= PROGRAM METHODS =============================
+
   /**
-   * Creates a solana transaction for initAdmin
-   *
+   * Creates an admin account
    * @memberof SolanaWeb3Manager
    */
   async initAdmin(
     params: Omit<AudiusData.InitAdminParams, 'payer' | 'program'>
   ) {
     if (!this.program || !this.solanaWeb3Manager.feePayerKey) return
-    // initAdmin = ({ payer, program, adminKeypair, adminStorageKeypair, verifierKeypair, })
     const tx = AudiusData.initAdmin({
       payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
@@ -189,10 +203,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for initUser
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Creates a user account to be claimed.
+   * NOTE: This transaction needs to be signed by the admin account
    * @memberof SolanaWeb3Manager
    */
   async initUser(
@@ -204,7 +216,6 @@ export class AnchorAudiusData {
   ) {
     if (!this.didInit()) return
     // TODO: implement
-    // initUser = ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, replicaSetBumps, metadata, userStorageAccount, baseAuthorityAccount, adminStorageAccount, adminAuthorityPublicKey, cn1, cn2, cn3, })
     const tx = AudiusData.initUser({
       payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
@@ -214,10 +225,7 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for initUserSolPubkey
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Claims a user account that is created via init user using secp
    * @memberof SolanaWeb3Manager
    */
   async initUserSolPubkey(
@@ -243,10 +251,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for createContentNode
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Creates a content node account
+   * NOTE: This transaction must be signed by the admin account
    * @memberof SolanaWeb3Manager
    */
   async createContentNode(
@@ -273,10 +279,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for updateUserReplicaSet
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Updates the user replica set in the user account
+   * NOTE: This transaction must be signed by a replica or the user's authority
    * @memberof SolanaWeb3Manager
    */
   async updateUserReplicaSet(
@@ -292,10 +296,7 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for publicCreateOrUpdateContentNode
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Create or update a content node using attestations from multiple content nodes
    * @memberof SolanaWeb3Manager
    */
   async publicCreateOrUpdateContentNode(
@@ -313,10 +314,7 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for publicDeleteContentNode
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Deletes a content node using attestations from multiple content nodes
    * @memberof SolanaWeb3Manager
    */
   async publicDeleteContentNode(
@@ -331,10 +329,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for createUser
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Creates a user account
+   * NOTE: This method can only we called after the admin account is write enabled false
    * @memberof SolanaWeb3Manager
    */
   async createUser(
@@ -368,7 +364,7 @@ export class AnchorAudiusData {
     const tx = AudiusData.createUser({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       ethAccount: ethAccount as any,
       userId: params.userId,
@@ -387,10 +383,7 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for updateUser
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Updates a user account
    * @memberof SolanaWeb3Manager
    */
   async updateUser(
@@ -417,43 +410,31 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for updateAdmin
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Updates the admin account, used for write enabled
    * @memberof SolanaWeb3Manager
    */
   async updateAdmin(params: Omit<AudiusData.UpdateAdminParams, 'program'>) {
     if (
       !this.program ||
       !this.solanaWeb3Manager.feePayerKey ||
-      !this.adminStoragePublicKey
+      !this.adminAccount
     )
       return
 
-    // updateAdmin = ({ program, isWriteEnabled, adminStorageAccount, adminAuthorityKeypair, })
     const tx = AudiusData.updateAdmin({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       ...params
     })
     return await this.sendTx(tx)
   }
 
-  /**
-   * Creates a solana transaction for initAuthorityDelegationStatus
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
-   * @memberof SolanaWeb3Manager
-   */
   async initAuthorityDelegationStatus(
     params: Omit<
       AudiusData.InitAuthorityDelegationStatusParams,
       'program' | 'payer'
     >
   ) {
-    // initAuthorityDelegationStatus = ({ program, authorityName, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, })
     const tx = AudiusData.initAuthorityDelegationStatus({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
@@ -462,20 +443,12 @@ export class AnchorAudiusData {
     return await this.sendTx(tx)
   }
 
-  /**
-   * Creates a solana transaction for revokeAuthorityDelegation
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
-   * @memberof SolanaWeb3Manager
-   */
   async revokeAuthorityDelegation(
     params: Omit<
       AudiusData.RevokeAuthorityDelegationParams,
       'program' | 'payer'
     >
   ) {
-    // revokeAuthorityDelegation = ({ program, authorityDelegationBump, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, })
     const tx = AudiusData.revokeAuthorityDelegation({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
@@ -484,17 +457,9 @@ export class AnchorAudiusData {
     return await this.sendTx(tx)
   }
 
-  /**
-   * Creates a solana transaction for addUserAuthorityDelegate
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
-   * @memberof SolanaWeb3Manager
-   */
   async addUserAuthorityDelegate(
     params: Omit<AudiusData.AddUserAuthorityDelegateParams, 'program' | 'payer'>
   ) {
-    // addUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, })
     const tx = AudiusData.addUserAuthorityDelegate({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
@@ -503,20 +468,12 @@ export class AnchorAudiusData {
     return await this.sendTx(tx)
   }
 
-  /**
-   * Creates a solana transaction for removeUserAuthorityDelegate
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
-   * @memberof SolanaWeb3Manager
-   */
   async removeUserAuthorityDelegate(
     params: Omit<
       AudiusData.RemoveUserAuthorityDelegateParams,
       'program' | 'payer'
     >
   ) {
-    // removeUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, delegateBump, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, })
     const tx = AudiusData.removeUserAuthorityDelegate({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
@@ -526,10 +483,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for updateIsVerified
-   *
-   * @param {{}} {}
-   * @return {Promise<any>}
+   * Updates a user to be verified
+   * NOTE: This tx must be signed by the admin verifier
    * @memberof SolanaWeb3Manager
    */
   async updateIsVerified(
@@ -545,10 +500,9 @@ export class AnchorAudiusData {
     const { bumpSeed, baseAuthorityAccount, userAccount } =
       await this.getUserIdSeed(params.userId)
 
-    // updateIsVerified = ({ program, adminPublicKey, userStorageAccount, verifierPublicKey, baseAuthorityAccount, userId, bumpSeed, })
     const tx = AudiusData.updateIsVerified({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       bumpSeed,
       baseAuthorityAccount,
       userAccount,
@@ -562,9 +516,8 @@ export class AnchorAudiusData {
   // ============================= MANAGE ENTITY =============================
 
   /**
-   * Creates a solana transaction for createTrack
+   * Creates a track
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -583,7 +536,7 @@ export class AnchorAudiusData {
     const userSolKeypair = this.getUserKeyPair()
     const tx = AudiusData.createTrack({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -599,9 +552,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for updateTrack
+   * Updates a track
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -621,7 +573,7 @@ export class AnchorAudiusData {
 
     const tx = AudiusData.updateTrack({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -637,9 +589,8 @@ export class AnchorAudiusData {
   }
 
   /**
-   * Creates a solana transaction for deleteTrack
+   * Deletes a track
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -658,7 +609,7 @@ export class AnchorAudiusData {
     const userSolKeypair = this.getUserKeyPair()
     const tx = AudiusData.deleteTrack({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -675,7 +626,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for createPlaylist
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -694,7 +644,7 @@ export class AnchorAudiusData {
     const userSolKeypair = this.getUserKeyPair()
     const tx = AudiusData.createPlaylist({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -712,7 +662,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for updatePlaylist
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -731,7 +680,7 @@ export class AnchorAudiusData {
     const userSolKeypair = this.getUserKeyPair()
     const tx = AudiusData.updatePlaylist({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -749,7 +698,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for deletePlaylist
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -768,7 +716,7 @@ export class AnchorAudiusData {
     const userSolKeypair = this.getUserKeyPair()
     const tx = AudiusData.deletePlaylist({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -786,7 +734,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for addTrackRepost
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -803,11 +750,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
-    // addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
     const tx = AudiusData.addTrackSave({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -823,7 +768,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for deleteTrackSave
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -840,11 +784,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
-    // addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
     const tx = AudiusData.deleteTrackSave({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -860,7 +802,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for addTrackRepost
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -877,11 +818,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
-    // addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
     const tx = AudiusData.addTrackRepost({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -897,7 +836,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for deleteTrackRepost
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -914,10 +852,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
     const tx = AudiusData.deleteTrackRepost({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -933,7 +870,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for addPlaylistSave
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -950,10 +886,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
     const tx = AudiusData.addPlaylistSave({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -969,7 +904,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for deletePlaylistSave
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -986,10 +920,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
     const tx = AudiusData.deletePlaylistSave({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -1005,7 +938,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for addPlaylistRepost
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -1022,10 +954,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
     const tx = AudiusData.addPlaylistRepost({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -1041,7 +972,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for deletePlaylistRepost
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -1058,10 +988,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.userId)
 
     const userSolKeypair = this.getUserKeyPair()
-
     const tx = AudiusData.deletePlaylistRepost({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       bumpSeed,
       userAccount,
@@ -1079,7 +1008,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for followUser
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -1104,7 +1032,7 @@ export class AnchorAudiusData {
 
     const tx = AudiusData.followUser({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       sourceUserAccount,
       sourceUserBumpSeed,
@@ -1122,7 +1050,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for unfollowUser
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -1144,10 +1071,9 @@ export class AnchorAudiusData {
       await this.getUserIdSeed(params.targetUserId)
 
     const userSolKeypair = this.getUserKeyPair()
-
     const tx = AudiusData.unfollowUser({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       sourceUserAccount,
       sourceUserBumpSeed,
@@ -1165,7 +1091,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for subscribeUser
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -1189,7 +1114,7 @@ export class AnchorAudiusData {
     const userSolKeypair = this.getUserKeyPair()
     const tx = AudiusData.subscribeUser({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       sourceUserAccount,
       sourceUserBumpSeed,
@@ -1207,7 +1132,6 @@ export class AnchorAudiusData {
   /**
    * Creates a solana transaction for unsubscribeUser
    *
-   * @param {{}} {}
    * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
@@ -1232,7 +1156,7 @@ export class AnchorAudiusData {
 
     const tx = AudiusData.unsubscribeUser({
       program: this.program,
-      adminAccount: this.adminStoragePublicKey,
+      adminAccount: this.adminAccount,
       baseAuthorityAccount,
       sourceUserAccount,
       sourceUserBumpSeed,
@@ -1248,4 +1172,4 @@ export class AnchorAudiusData {
   }
 }
 
-module.exports = AnchorAudiusData
+module.exports = SolanaAudiusData
