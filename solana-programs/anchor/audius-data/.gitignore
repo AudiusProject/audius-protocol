@@ -6,5 +6,6 @@ target
 node_modules
 adminKeypair.json
 adminStorageKeypair.json
+adminAccountKeypair.json
 userKeypair.json
 dist
