@@ -72,6 +72,10 @@ Here's an example of how to provision a gcloud instance called `pietocol-team` a
 
 Don't forget to delete your instance once you're finished using it with `gcloud compute instances delete <instance-name>`.
 
+#### Migrating to a new dev box
+
+When migrating from an old dev box to a new one, our [Migration Manager](./scripts/.env/README.md) may be able to assist with a (more) seamless migration.
+
 ### Bringing up services locally
 Individual service commands can be executed with: `node setup.js run <service> [command]`
 

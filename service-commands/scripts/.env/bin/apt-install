@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+sudo apt-get update
+sudo apt-get install -y \
+    curl \
+    jq \
+    tree \
+    vim \
+    wget
+
+sudo curl -L https://sift-tool.org/downloads/sift/sift_0.9.0_linux_amd64.tar.gz --output /tmp/sift.tar.gz
+(
+    cd /tmp
+    tar xf /tmp/sift.tar.gz
+    sudo mv sift_*/sift /usr/local/bin/sift
+    sudo rm -rf sift*
+)

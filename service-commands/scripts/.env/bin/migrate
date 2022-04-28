@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e
+
+GIT_URL=git@github.com:your_github_username/.env.git
+GIT_SSH_KEY=~/.ssh/id_ed25519.github
+
+OLD_BOX=${1}
+BOX=${2}
+
+function move () {
+    FILE="${1}"
+    TMP_DIR=$(mktemp -d)
+    rsync -ravzhe ssh $OLD_BOX:$FILE $TMP_DIR/$FILE
+    rsync -ravzhe ssh $TMP_DIR/$FILE $BOX:$FILE
+    rm -rf $TMP_DIR
+}
+
+# enable zsh
+ssh $BOX 'sudo chsh -s /bin/zsh $USER'
+
+# copy ~/.gituser
+[ -f "~/.gituser" ] && scp ~/.gituser $BOX:
+
+# setup .env repo
+ssh-add ${GIT_SSH_KEY}
+ssh -t $BOX 'ssh -T git@github.com' || true
+ssh $BOX "[ ! -d '.env' ] && git clone ${GIT_URL} || true"
+
+# show migration diffs in color
+ssh $BOX 'sudo apt-get install -y colordiff'
+
+# copy default dotfiles into an `init-*` branch and install symlinks
+ssh $BOX "cd .env; git checkout -b 'init-$(date +%s)'"
+ssh $BOX 'cd .env; INIT=1 ./bin/.env.install'
+
+# commit default dotfiles and point symlinks to `main` files
+ssh $BOX "cd .env; git commit -am 'init'"
+ssh $BOX "cd .env; git checkout main"
+
+# install software through apt-get
+ssh $BOX 'cd .env; ./bin/apt-install'
+
+# clone load-test-tools
+ssh $BOX '[ ! -d "load-test-tools" ] && git clone git@github.com:AudiusProject/load-test-tools.git || true'
+
+# update audius-protocol
+ssh $BOX '[ -d "audius-protocol" ] && cd audius-protocol; git checkout -f; git pull'
+
+# copy shell history
+move .zsh_history
+
+# reset sessions
+ssh $BOX 'loginctl terminate-user $USER' || true
