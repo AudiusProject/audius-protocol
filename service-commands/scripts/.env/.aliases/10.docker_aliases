@@ -21,22 +21,22 @@ alias dcud='dc up -d'
 alias dcb='dc build'
 alias dcd='dc down'
 
-alias docker-prune="docker rm \$(docker ps --all -q -f status=dead); docker system prune; docker network prune"
-alias docker-port-nuke="sudo systemctl stop docker; sudo rm -rf /var/lib/docker/containers/*; sudo systemctl start docker"
+alias docker_prune="docker rm \$(docker ps --all -q -f status=dead); docker system prune; docker network prune"
+alias docker_port_nuke="sudo systemctl stop docker; sudo rm -rf /var/lib/docker/containers/*; sudo systemctl start docker"
 
-function docker-rm-container() {
+function d_rm_container() {
     sudo systemctl stop docker
     sudo rm -rf /var/lib/docker/containers/${1}
     sudo systemctl start docker
 }
 
-function docker-rm-containers() {
+function d_rm_containers() {
     sudo systemctl stop docker
     sudo rm -rf /var/lib/docker/containers/*
     sudo systemctl start docker
 }
 
-function d-prune-images-1w() {
+function d_prune_images_1w() {
   docker image prune --filter "until=168h"
 }
 
