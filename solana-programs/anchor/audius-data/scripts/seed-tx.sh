@@ -50,7 +50,7 @@ yarn run ts-node cli/main.ts -f initUser \
     --user-id 1 \
     -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 | tee /tmp/initUserOutput.txt
 
-USER_STORAGE_PUBKEY=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
+USER_ACCOUNT=$(cut -d '=' -f 4 <<< $(cat /tmp/initUserOutput.txt | grep userAcct))
 
 echo "Generating new solana pubkey for user"
 
@@ -61,7 +61,7 @@ yarn run ts-node cli/main.ts -f initUserSolPubkey \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --user-account "$USER_ACCOUNT" \
     --eth-private-key d540ca11a0d12345f512e65e00bf8bf87435aa40b3731cbf0322971709eba60f
 
 echo "Creating track"
@@ -69,7 +69,7 @@ echo "Creating track"
 yarn run ts-node cli/main.ts -f createTrack \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --user-account "$USER_ACCOUNT" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --user-id 1 # metadata CID that would point off-chain is randomly generated here
 
@@ -78,7 +78,7 @@ echo "Creating playlist"
 yarn run ts-node cli/main.ts -f createPlaylist \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --user-account "$USER_ACCOUNT" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --user-id 1 | tee /tmp/createPlaylistOutput.txt # metadata CID that would point off-chain is randomly generated here 
 
@@ -89,7 +89,7 @@ echo "Updating playlist"
 yarn run ts-node cli/main.ts -f updatePlaylist \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --user-account "$USER_ACCOUNT" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
     --user-id 1 # metadata CID that would point off-chain is randomly generated here 
@@ -99,7 +99,7 @@ echo "Deleting playlist"
 yarn run ts-node cli/main.ts -f deletePlaylist \
     -k "$OWNER_KEYPAIR_PATH" \
     --user-solana-keypair "$USER_KEYPAIR_PATH" \
-    --user-storage-pubkey "$USER_STORAGE_PUBKEY" \
+    --user-account "$USER_ACCOUNT" \
     --admin-storage-keypair "$ADMIN_STORAGE_KEYPAIR_PATH" \
     --id "$PLAYLIST_ID" \
     --user-id 1

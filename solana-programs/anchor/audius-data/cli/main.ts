@@ -83,13 +83,13 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
 
 type initAdminCLIParams = {
   adminKeypair: Keypair;
-  adminStorageKeypair: Keypair;
+  adminAccountKeypair: Keypair;
   verifierKeypair: Keypair;
   ownerKeypairPath: string;
 };
 
 async function initAdminCLI(network: string, args: initAdminCLIParams) {
-  const { adminKeypair, adminStorageKeypair, ownerKeypairPath } = args;
+  const { adminKeypair, adminAccountKeypair, ownerKeypairPath } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
   console.log(`AdminKeypair:`);
   console.log(adminKeypair.publicKey.toString());
@@ -105,17 +105,17 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     }
   );
 
-  console.log(`adminStorageKeypair:`);
-  console.log(adminStorageKeypair.publicKey.toString());
-  console.log(`[${adminStorageKeypair.secretKey.toString()}]`);
+  console.log(`adminAccountKeypair:`);
+  console.log(adminAccountKeypair.publicKey.toString());
+  console.log(`[${adminAccountKeypair.secretKey.toString()}]`);
   fs.writeFile(
-    "adminStorageKeypair.json",
-    "[" + adminStorageKeypair.secretKey.toString() + "]",
+    "adminAccountKeypair.json",
+    "[" + adminAccountKeypair.secretKey.toString() + "]",
     function (err) {
       if (err) {
         return console.error(err);
       }
-      console.log("Wrote to adminStorageKeypair.json");
+      console.log("Wrote to adminAccountKeypair.json");
     }
   );
 
@@ -124,12 +124,12 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
     payer: cliVars.provider.wallet.publicKey,
     program: cliVars.program,
     adminKeypair,
-    adminStorageKeypair,
+    adminAccountKeypair,
     verifierKeypair,
   });
 
   const txHash = await cliVars.provider.sendAndConfirm(tx, [
-    adminStorageKeypair,
+    adminAccountKeypair,
   ]);
 
   await cliVars.provider.connection.confirmTransaction(txHash);
@@ -331,8 +331,8 @@ program
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
   .option(
-    "-ask, --admin-storage-keypair <keypair>",
-    "admin storage keypair path"
+    "-aak, --admin-account-keypair <keypair>",
+    "admin account keypair path"
   )
   .option("-uid, --user-id <integer>", "user id number")
   .option("-e, --eth-address <string>", "user/cn eth address")
@@ -383,8 +383,8 @@ const adminKeypair = options.adminKeypair
 
 // Admin storage keypair, referenced internally
 // Keypair technically only necessary the first time this is initialized
-const adminStorageKeypair = options.adminStorageKeypair
-  ? keypairFromFilePath(options.adminStorageKeypair)
+const adminAccountKeypair = options.adminAccountKeypair
+  ? keypairFromFilePath(options.adminAccountKeypair)
   : anchor.web3.Keypair.generate();
 
 // User admin keypair
@@ -423,7 +423,7 @@ const main = async () => {
       initAdminCLI(network, {
         ownerKeypairPath: options.ownerKeypair,
         adminKeypair: adminKeypair,
-        adminStorageKeypair: adminStorageKeypair,
+        adminAccountKeypair: adminAccountKeypair,
         verifierKeypair: verifierKeypair,
       });
       break;
@@ -440,12 +440,12 @@ const main = async () => {
 
       const cnInfo = await getContentNode(
         cliVars.program,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         `${options.cnSpId}`
       );
       const { baseAuthorityAccount } = await findDerivedPair(
         cliVars.programID,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         []
       );
       const tx = createContentNode({
@@ -453,7 +453,7 @@ const main = async () => {
         program: cliVars.program,
         baseAuthorityAccount,
         adminAuthorityPublicKey: adminKeypair.publicKey,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         contentNodeAuthority: contentNodeAuthority.publicKey,
         contentNodeAccount: cnInfo.derivedAddress,
         spID: cnInfo.spId,
@@ -474,7 +474,7 @@ const main = async () => {
         userReplicaSet.map(async (x) => {
           return await getContentNode(
             cliVars.program,
-            adminStorageKeypair.publicKey,
+            adminAccountKeypair.publicKey,
             `${x}`
           );
         })
@@ -490,7 +490,7 @@ const main = async () => {
         ownerKeypairPath: options.ownerKeypair,
         ethAddress: options.ethAddress,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         adminKeypair,
         metadata: randomCID(),
         replicaSet: userReplicaSet,
@@ -527,7 +527,7 @@ const main = async () => {
       const tx = updateAdmin({
         program: cliVars.program,
         isWriteEnabled: Boolean(writeEnabled),
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
       const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
@@ -545,7 +545,7 @@ const main = async () => {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
 
@@ -556,7 +556,7 @@ const main = async () => {
         userReplicaSetSpIds.map(async (spId) => {
           return await getContentNode(
             cliVars.program,
-            adminStorageKeypair.publicKey,
+            adminAccountKeypair.publicKey,
             `${spId}`
           );
         })
@@ -576,7 +576,7 @@ const main = async () => {
         metadata: options.metadata,
         userAuthorityPublicKey: userSolKeypair.publicKey,
         userAccount: derivedAddress,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         baseAuthorityAccount: baseAuthorityAccount,
         replicaSet: userReplicaSetSpIds,
         replicaSetBumps,
@@ -608,7 +608,7 @@ const main = async () => {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
 
@@ -618,7 +618,7 @@ const main = async () => {
             {
               id: randomId(),
               baseAuthorityAccount,
-              adminAccount: adminStorageKeypair.publicKey,
+              adminAccount: adminAccountKeypair.publicKey,
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
@@ -654,7 +654,7 @@ const main = async () => {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
 
@@ -664,7 +664,7 @@ const main = async () => {
             {
               id: randomId(),
               baseAuthorityAccount,
-              adminAccount: adminStorageKeypair.publicKey,
+              adminAccount: adminAccountKeypair.publicKey,
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
@@ -699,7 +699,7 @@ const main = async () => {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
       const start = Date.now();
@@ -707,7 +707,7 @@ const main = async () => {
         {
           id: playlistId,
           baseAuthorityAccount,
-          adminAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminAccountKeypair.publicKey,
           userId: userId,
           program: cliVars.program,
           bumpSeed: bumpSeed,
@@ -735,7 +735,7 @@ const main = async () => {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
       const start = Date.now();
@@ -743,7 +743,7 @@ const main = async () => {
         {
           id: playlistId,
           baseAuthorityAccount,
-          adminAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminAccountKeypair.publicKey,
           userId: userId,
           program: cliVars.program,
           bumpSeed: bumpSeed,
