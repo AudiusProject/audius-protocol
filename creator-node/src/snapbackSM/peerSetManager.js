@@ -233,7 +233,7 @@ class PeerSetManager {
       });
       nodePrimaryUsers = resp.data.data
     } catch (e) {
-      throw new Error(`getNodePrimaryUsers() Error: ${e.toString()}`)
+      throw new Error(`getNodePrimaryUsers() Error: ${e.toString()} - connected discprov [${this.discoveryProviderEndpoint}]`)
     }
 
     return nodePrimaryUsers
