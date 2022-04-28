@@ -36,14 +36,14 @@ class PrometheusMetric {
     this.metric = collection[name]
   }
 
-  constructor({name, description, labelNames, metric_type}) {
+  constructor({name, description, labelNames, metricType}) {
     // set this.startTime to now()
     this.resetTimer()
 
     // set metric prefix of audius_project_
     name = `audius_cn_${name}`
 
-    this.metricType = metric_type
+    this.metricType = metricType
     if (this.metricType === undefined) {
       this.metricType = PrometheusType.HISTOGRAM
     }
@@ -68,7 +68,7 @@ class PrometheusMetric {
         client.Gauge
       )
     } else {
-      throw new Error(`metric_type '${this.metricType}' not found`)
+      throw new Error(`metricType '${this.metricType}' not found`)
     }
   }
 
