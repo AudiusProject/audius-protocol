@@ -36,7 +36,7 @@ describe("track-actions", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
   it("track actions - Initializing admin account!", async function () {
@@ -44,14 +44,14 @@ describe("track-actions", function () {
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -66,7 +66,7 @@ describe("track-actions", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -78,32 +78,32 @@ describe("track-actions", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     contentNodes["2"] = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     contentNodes["3"] = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
   });
 
   it("Delete save for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = deleteTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       userAccount: user.accountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
@@ -131,12 +131,12 @@ describe("track-actions", function () {
   });
 
   it("Save a newly created track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = addTrackSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       userAccount: user.accountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
@@ -165,12 +165,12 @@ describe("track-actions", function () {
   });
 
   it("Repost a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = addTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       userAccount: user.accountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
@@ -201,7 +201,7 @@ describe("track-actions", function () {
   it("Delegate reposts a track", async function () {
     const userDelegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair: adminStorageKeypair,
+      adminAccountKeypair: adminAccountKeypair,
       program,
       provider,
     });
@@ -209,7 +209,7 @@ describe("track-actions", function () {
     const tx = addTrackRepost({
       program,
       baseAuthorityAccount: userDelegate.baseAuthorityAccount,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       userAccount: userDelegate.userAccountAddress,
       userAuthorityDelegateAccount:
         userDelegate.userAuthorityDelegateAccountAddress,
@@ -242,12 +242,12 @@ describe("track-actions", function () {
   });
 
   it("Delete repost for a track", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = deleteTrackRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       userAccount: user.accountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,

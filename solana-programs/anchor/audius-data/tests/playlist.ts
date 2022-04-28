@@ -37,7 +37,7 @@ describe("playlists", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
   const getURSMParams = () => {
@@ -62,13 +62,13 @@ describe("playlists", function () {
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
 
     const chainAuthority = adminAccount.authority.toString();
@@ -82,21 +82,21 @@ describe("playlists", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     contentNodes["1"] = cn1;
@@ -113,7 +113,7 @@ describe("playlists", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -126,7 +126,7 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -162,7 +162,7 @@ describe("playlists", function () {
       playlistOwner: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -183,7 +183,7 @@ describe("playlists", function () {
         playlistOwner: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
@@ -195,7 +195,7 @@ describe("playlists", function () {
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       id: playlistID,
       userAccount: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
@@ -214,7 +214,7 @@ describe("playlists", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -222,7 +222,7 @@ describe("playlists", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -246,7 +246,7 @@ describe("playlists", function () {
       metadata,
       newUserKeypair,
       userAccount: userAccountAddress,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -259,7 +259,7 @@ describe("playlists", function () {
       id: playlistID,
       baseAuthorityAccount,
       userId,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       bumpSeed,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
@@ -279,7 +279,7 @@ describe("playlists", function () {
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
     });
   });
 
@@ -292,7 +292,7 @@ describe("playlists", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -300,7 +300,7 @@ describe("playlists", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -324,7 +324,7 @@ describe("playlists", function () {
       metadata,
       newUserKeypair,
       userAccount: userAccountAddress,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -339,7 +339,7 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
@@ -353,7 +353,7 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
@@ -367,7 +367,7 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,

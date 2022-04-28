@@ -49,7 +49,7 @@ describe("audius-data", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
   const getURSMParams = () => {
@@ -75,12 +75,12 @@ describe("audius-data", function () {
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
     const txSignature = await provider.sendAndConfirm(tx, [
-      adminStorageKeypair,
+      adminAccountKeypair,
     ]);
 
     const { decodedInstruction, decodedData, accountPubKeys } =
@@ -94,12 +94,12 @@ describe("audius-data", function () {
       verifierKeypair.publicKey.toString()
     );
     expect(accountPubKeys[0]).to.equal(
-      adminStorageKeypair.publicKey.toString()
+      adminAccountKeypair.publicKey.toString()
     );
     expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
 
     const chainAuthority = adminAccount.authority.toString();
@@ -113,21 +113,21 @@ describe("audius-data", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     contentNodes["1"] = cn1;
@@ -144,7 +144,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -157,7 +157,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -172,7 +172,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -185,7 +185,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -226,7 +226,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -239,7 +239,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -272,7 +272,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -285,7 +285,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -339,7 +339,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -352,7 +352,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -388,7 +388,7 @@ describe("audius-data", function () {
       trackOwner: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -409,7 +409,7 @@ describe("audius-data", function () {
         trackOwner: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
@@ -421,7 +421,7 @@ describe("audius-data", function () {
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       id: trackID,
       userAccount: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
@@ -440,7 +440,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -448,7 +448,7 @@ describe("audius-data", function () {
     await updateAdmin({
       program,
       isWriteEnabled: true,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -471,7 +471,7 @@ describe("audius-data", function () {
         metadata,
         newUserKeypair,
         userAccount: userAccountAddress,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     ).to.be.rejectedWith(Error);
@@ -486,7 +486,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -494,7 +494,7 @@ describe("audius-data", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -517,7 +517,7 @@ describe("audius-data", function () {
         metadata,
         newUserKeypair,
         userAccount: userAccountAddress,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     ).to.be.rejectedWith(Error);
@@ -532,7 +532,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -540,7 +540,7 @@ describe("audius-data", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -564,7 +564,7 @@ describe("audius-data", function () {
       metadata,
       newUserKeypair,
       userAccount: userAccountAddress,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -580,7 +580,7 @@ describe("audius-data", function () {
         metadata,
         newUserKeypair,
         userAccount: userAccountAddress,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     )
@@ -593,7 +593,7 @@ describe("audius-data", function () {
   it("Adding/removing delegate authority (update user)", async function () {
     const userDelegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair: adminStorageKeypair,
+      adminAccountKeypair: adminAccountKeypair,
       program,
       provider,
     });
@@ -627,7 +627,7 @@ describe("audius-data", function () {
 
     const removeUserAuthorityDelegateTx = removeUserAuthorityDelegate({
       program,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       baseAuthorityAccount: userDelegate.baseAuthorityAccount,
       userId: userDelegate.userId,
       userBumpSeed: userDelegate.userBumpSeed,
@@ -680,7 +680,7 @@ describe("audius-data", function () {
   it("Revoking authority delegation status", async function () {
     const userDelegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       program,
       provider,
     });
@@ -753,14 +753,14 @@ describe("audius-data", function () {
   it("delegate adds/removes another delegate", async function () {
     const firstUserDelegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       program,
       provider,
     });
 
     const secondUserDelegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       program,
       provider,
     });
@@ -780,7 +780,7 @@ describe("audius-data", function () {
 
     const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
       program,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       baseAuthorityAccount: firstUserDelegate.baseAuthorityAccount,
       userId: firstUserDelegate.userId,
       userBumpSeed: firstUserDelegate.userBumpSeed,
@@ -803,7 +803,7 @@ describe("audius-data", function () {
 
     const removeUserAuthorityDelegateTx = removeUserAuthorityDelegate({
       program,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       baseAuthorityAccount: firstUserDelegate.baseAuthorityAccount,
       userId: firstUserDelegate.userId,
       userBumpSeed: firstUserDelegate.userBumpSeed,
@@ -834,7 +834,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -847,7 +847,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       userAccount: userAccountAddress,
-      adminStorageKeypair,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -871,7 +871,7 @@ describe("audius-data", function () {
         metadata,
         newUserKeypair,
         userAccount: userAccountAddress,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     )
@@ -886,7 +886,7 @@ describe("audius-data", function () {
 
     const { baseAuthorityAccount, bumpSeed } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -901,7 +901,7 @@ describe("audius-data", function () {
 
     const { derivedAddress: incorrectPDA } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       incorrectUserId
     );
 
@@ -917,7 +917,7 @@ describe("audius-data", function () {
         metadata,
         newUserKeypair,
         userAccount: incorrectPDA,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     )
@@ -936,7 +936,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -958,12 +958,12 @@ describe("audius-data", function () {
       metadata,
       newUserKeypair,
       userAccount: userAccountAddress,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
     const tx = updateIsVerified({
       program,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       userAccount: userAccountAddress,
       verifierPublicKey: verifierKeypair.publicKey,
       baseAuthorityAccount,
@@ -984,14 +984,14 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
     // New sol key that will be used to permission user updates
@@ -1012,7 +1012,7 @@ describe("audius-data", function () {
       metadata,
       newUserKeypair,
       userAccount: userAccountAddress,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -1025,7 +1025,7 @@ describe("audius-data", function () {
       id: trackID,
       baseAuthorityAccount,
       userId,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       bumpSeed,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
@@ -1045,7 +1045,7 @@ describe("audius-data", function () {
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
     });
   });
 
@@ -1058,7 +1058,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountPDA,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -1066,7 +1066,7 @@ describe("audius-data", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -1088,7 +1088,7 @@ describe("audius-data", function () {
       metadata,
       newUserKeypair,
       userAccount: userAccountPDA,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -1128,7 +1128,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1146,7 +1146,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1171,7 +1171,7 @@ describe("audius-data", function () {
     // Add a user delegate relationship
     const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
       program,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       baseAuthorityAccount: baseAuthorityAccount,
       userId: userId,
       userBumpSeed: userBumpSeed,
@@ -1192,7 +1192,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1209,7 +1209,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1226,7 +1226,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1243,7 +1243,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1256,7 +1256,7 @@ describe("audius-data", function () {
     // use different user authority delegate PDA
     const badUserDelegate = await testCreateUserDelegate({
       adminKeypair,
-      adminStorageKeypair: adminStorageKeypair,
+      adminAccountKeypair: adminAccountKeypair,
       program,
       provider,
     });
@@ -1268,7 +1268,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1288,7 +1288,7 @@ describe("audius-data", function () {
         id: trackID,
         baseAuthorityAccount: baseAuthorityAccount,
         userId: userId,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1305,7 +1305,7 @@ describe("audius-data", function () {
       id: trackID,
       baseAuthorityAccount: baseAuthorityAccount,
       userId: userId,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       bumpSeed: userBumpSeed,
       trackMetadata,
       userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
@@ -1324,7 +1324,7 @@ describe("audius-data", function () {
       derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -1332,7 +1332,7 @@ describe("audius-data", function () {
     await updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -1354,7 +1354,7 @@ describe("audius-data", function () {
       newUserKeypair,
       userId,
       userAccount: userAccountAddress,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -1369,7 +1369,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
@@ -1383,7 +1383,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
@@ -1397,7 +1397,7 @@ describe("audius-data", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,

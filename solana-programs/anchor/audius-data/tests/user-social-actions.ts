@@ -43,7 +43,7 @@ describe("user social actions", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
   const getURSMParams = () => {
@@ -69,14 +69,14 @@ describe("user social actions", function () {
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -93,21 +93,21 @@ describe("user social actions", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     contentNodes["1"] = cn1;
@@ -139,13 +139,13 @@ describe("user social actions", function () {
 
       userId1DerivedInfo = await findDerivedPair(
         program.programId,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         convertBNToUserIdSeed(userId1)
       );
 
       userId2DerivedInfo = await findDerivedPair(
         program.programId,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         convertBNToUserIdSeed(userId2)
       );
 
@@ -167,7 +167,7 @@ describe("user social actions", function () {
       const updateAdminTx = updateAdmin({
         program,
         isWriteEnabled: false,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         adminAuthorityKeypair: adminKeypair,
       });
       await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
@@ -183,7 +183,7 @@ describe("user social actions", function () {
         metadata: constants1.metadata,
         newUserKeypair: newUser1Key,
         userAccount: userStorageAccount1,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       });
 
@@ -198,7 +198,7 @@ describe("user social actions", function () {
         metadata: constants2.metadata,
         newUserKeypair: newUser2Key,
         userAccount: userStorageAccount2,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       });
     });
@@ -217,7 +217,7 @@ describe("user social actions", function () {
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
       const followTxSig = await provider.sendAndConfirm(followTx, [
         newUser1Key,
@@ -240,7 +240,7 @@ describe("user social actions", function () {
         constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
-        adminStorageKeypair.publicKey.toString()
+        adminAccountKeypair.publicKey.toString()
       );
       expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
@@ -248,7 +248,7 @@ describe("user social actions", function () {
     it("delegate follows user", async function () {
       const userDelegate = await testCreateUserDelegate({
         adminKeypair,
-        adminStorageKeypair: adminStorageKeypair,
+        adminAccountKeypair: adminAccountKeypair,
         program,
         provider,
       });
@@ -269,7 +269,7 @@ describe("user social actions", function () {
         sourceUserBumpSeed: userDelegate.userBumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
       const followTxSig = await provider.sendAndConfirm(followTx, [
         userDelegate.userAuthorityDelegateKeypair,
@@ -292,7 +292,7 @@ describe("user social actions", function () {
         constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
-        adminStorageKeypair.publicKey.toString()
+        adminAccountKeypair.publicKey.toString()
       );
       expect(accountPubKeys[5]).to.equal(
         userDelegate.userAuthorityDelegateKeypair.publicKey.toString()
@@ -313,7 +313,7 @@ describe("user social actions", function () {
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
       const unfollowTxSig = await provider.sendAndConfirm(unfollowTx, [
         newUser1Key,
@@ -336,7 +336,7 @@ describe("user social actions", function () {
         constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
-        adminStorageKeypair.publicKey.toString()
+        adminAccountKeypair.publicKey.toString()
       );
       expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
@@ -346,7 +346,7 @@ describe("user social actions", function () {
       let expectedErrorFound = false;
       const followArgs = {
         accounts: {
-          admin: adminStorageKeypair.publicKey,
+          admin: adminAccountKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           sourceUserStorage: userStorageAccount1,
@@ -379,7 +379,7 @@ describe("user social actions", function () {
       const wrongUserKeypair = anchor.web3.Keypair.generate();
       const followArgs = {
         accounts: {
-          admin: adminStorageKeypair.publicKey,
+          admin: adminAccountKeypair.publicKey,
           payer: provider.wallet.publicKey,
           authority: newUser1Key.publicKey,
           sourceUserStorage: userStorageAccount1,
@@ -453,7 +453,7 @@ describe("user social actions", function () {
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
       const subscribeTxSig = await provider.sendAndConfirm(subscribeTx, [
         newUser1Key,
@@ -476,7 +476,7 @@ describe("user social actions", function () {
         constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
-        adminStorageKeypair.publicKey.toString()
+        adminAccountKeypair.publicKey.toString()
       );
       expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });
@@ -495,7 +495,7 @@ describe("user social actions", function () {
         sourceUserBumpSeed: userId1DerivedInfo.bumpSeed,
         targetUserId: userId2,
         targetUserBumpSeed: userId2DerivedInfo.bumpSeed,
-        adminAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
       });
       const unsubscribeTxSig = await provider.sendAndConfirm(unsubscribeTx, [
         newUser1Key,
@@ -518,7 +518,7 @@ describe("user social actions", function () {
         constants2.userId.toNumber()
       );
       expect(accountPubKeys[0]).to.equal(
-        adminStorageKeypair.publicKey.toString()
+        adminAccountKeypair.publicKey.toString()
       );
       expect(accountPubKeys[5]).to.equal(newUser1Key.publicKey.toString());
     });

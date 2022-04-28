@@ -64,7 +64,7 @@ export const testInitUser = async ({
   bumpSeed,
   metadata,
   userAccount,
-  adminStorageKeypair,
+  adminAccountKeypair,
   adminKeypair,
   replicaSet,
   replicaSetBumps,
@@ -83,7 +83,7 @@ export const testInitUser = async ({
     metadata,
     userAccount,
     baseAuthorityAccount,
-    adminAccount: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     adminAuthorityPublicKey: adminKeypair.publicKey,
     cn1,
     cn2,
@@ -475,7 +475,7 @@ export const testUpdatePlaylist = async ({
 
 export const testCreateUserDelegate = async ({
   adminKeypair,
-  adminStorageKeypair,
+  adminAccountKeypair,
   program,
   provider,
 }) => {
@@ -483,12 +483,12 @@ export const testCreateUserDelegate = async ({
   const udpateAdminTx = updateAdmin({
     program,
     isWriteEnabled: false,
-    adminAccount: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     adminAuthorityKeypair: adminKeypair,
   });
   await provider.sendAndConfirm(udpateAdminTx, [adminKeypair]);
 
-  const user = await createSolanaUser(program, provider, adminStorageKeypair);
+  const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
   // Init AuthorityDelegationStatus for a new authority
   const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
@@ -546,7 +546,7 @@ export const testCreateUserDelegate = async ({
 
   const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
     program,
-    adminAccount: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     baseAuthorityAccount: user.authority,
     userId: user.userId,
     userBumpSeed: user.bumpSeed,
@@ -649,7 +649,7 @@ export const confirmLogInTransaction = async (
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
-  adminStorageKeypair: anchor.web3.Keypair
+  adminAccountKeypair: anchor.web3.Keypair
 ) => {
   const testConsts = initTestConstants();
 
@@ -659,7 +659,7 @@ export const createSolanaUser = async (
     derivedAddress: userAccountAddress,
   } = await findDerivedPair(
     program.programId,
-    adminStorageKeypair.publicKey,
+    adminAccountKeypair.publicKey,
     convertBNToUserIdSeed(testConsts.userId)
   );
 
@@ -670,9 +670,9 @@ export const createSolanaUser = async (
   // Message as the incoming public key
   const message = newUserKeypair.publicKey.toBytes();
 
-  const cn1 = await getContentNode(program, adminStorageKeypair.publicKey, "1");
-  const cn2 = await getContentNode(program, adminStorageKeypair.publicKey, "2");
-  const cn3 = await getContentNode(program, adminStorageKeypair.publicKey, "3");
+  const cn1 = await getContentNode(program, adminAccountKeypair.publicKey, "1");
+  const cn2 = await getContentNode(program, adminAccountKeypair.publicKey, "2");
+  const cn3 = await getContentNode(program, adminAccountKeypair.publicKey, "3");
 
   const tx = createUser({
     payer: provider.wallet.publicKey,
@@ -683,7 +683,7 @@ export const createSolanaUser = async (
     metadata: testConsts.metadata,
     userAuthorityPublicKey: newUserKeypair.publicKey,
     userAccount: userAccountAddress,
-    adminAccount: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     baseAuthorityAccount,
     replicaSet: [1, 2, 3],
     replicaSetBumps: [cn1.bumpSeed, cn2.bumpSeed, cn3.bumpSeed],
@@ -710,7 +710,7 @@ export const createSolanaUser = async (
 export const createSolanaContentNode = async (props: {
   program: Program<AudiusData>;
   provider: anchor.Provider;
-  adminStorageKeypair: anchor.web3.Keypair;
+  adminAccountKeypair: anchor.web3.Keypair;
   adminKeypair: anchor.web3.Keypair;
   spId: anchor.BN;
 }) => {
@@ -721,7 +721,7 @@ export const createSolanaContentNode = async (props: {
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       props.program.programId,
-      props.adminStorageKeypair.publicKey,
+      props.adminAccountKeypair.publicKey,
       seed
     );
 
@@ -730,7 +730,7 @@ export const createSolanaContentNode = async (props: {
     program: props.program,
     adminAuthorityPublicKey: props.adminKeypair.publicKey,
     baseAuthorityAccount,
-    adminAccount: props.adminStorageKeypair.publicKey,
+    adminAccount: props.adminAccountKeypair.publicKey,
     contentNodeAuthority: authority.publicKey,
     contentNodeAccount: derivedAddress,
     spID: props.spId,

@@ -31,7 +31,7 @@ describe("replicaSet", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
 
@@ -40,16 +40,16 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
     // disable admin writes
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -62,7 +62,7 @@ describe("replicaSet", function () {
     const authority = anchor.web3.Keypair.generate();
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToSpIdSeed(spID)
     );
 
@@ -71,7 +71,7 @@ describe("replicaSet", function () {
       program,
       adminAuthorityPublicKey: adminKeypair.publicKey,
       baseAuthorityAccount,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       contentNodeAuthority: authority.publicKey,
       contentNodeAccount: derivedAddress,
       spID,
@@ -96,21 +96,21 @@ describe("replicaSet", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     const cn4 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(4),
     });
     contentNodes[cn2.spId.toString()] = cn2;
@@ -122,7 +122,7 @@ describe("replicaSet", function () {
 
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToSpIdSeed(spID)
     );
     const authority = anchor.web3.Keypair.generate();
@@ -130,7 +130,7 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       contentNodeAccount: derivedAddress,
       spID,
       contentNodeAuthority: authority.publicKey,
@@ -174,21 +174,21 @@ describe("replicaSet", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(6),
     });
     const cn7 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(7),
     });
     const cn8 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(8),
     });
     contentNodes[cn6.spId.toString()] = cn6;
@@ -200,7 +200,7 @@ describe("replicaSet", function () {
 
     const { baseAuthorityAccount, derivedAddress } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToSpIdSeed(spID)
     );
     const authority = anchor.web3.Keypair.generate();
@@ -216,7 +216,7 @@ describe("replicaSet", function () {
         [...anchor.utils.bytes.hex.decode(ownerEth.address)],
         {
           accounts: {
-            admin: adminStorageKeypair.publicKey,
+            admin: adminAccountKeypair.publicKey,
             payer: provider.wallet.publicKey,
             contentNode: derivedAddress,
             systemProgram: SystemProgram.programId,
@@ -295,7 +295,7 @@ describe("replicaSet", function () {
 
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       seed
     );
     const updatedAuthority = anchor.web3.Keypair.generate();
@@ -304,7 +304,7 @@ describe("replicaSet", function () {
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       contentNodeAuthority: updatedAuthority.publicKey,
       contentNodeAccount: cnToUpdate.accountAddress,
       spID: cnToUpdate.spId,
@@ -352,7 +352,7 @@ describe("replicaSet", function () {
     const { baseAuthorityAccount, bumpSeed, derivedAddress } =
       await findDerivedPair(
         program.programId,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         seed
       );
 
@@ -365,7 +365,7 @@ describe("replicaSet", function () {
       program,
       baseAuthorityAccount,
       adminAuthorityPublicKey: adminKeypair.publicKey,
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       cnDelete: {
         pda: derivedAddress,
         authorityPublicKey: cnToDelete.authority.publicKey,
@@ -434,18 +434,18 @@ describe("replicaSet", function () {
     const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       seed
     );
 
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
     const tx = updateUserReplicaSet({
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
       userAcct: user.accountAddress,
       userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       replicaSet: [2, 3, 6],
       replicaSetBumps: [
         cn2.seedBump.bump,
@@ -476,18 +476,18 @@ describe("replicaSet", function () {
     const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       seed
     );
 
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
     const tx = updateUserReplicaSet({
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
       userAcct: user.accountAddress,
       userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
-      adminAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       replicaSet: [6, 7, 8],
       replicaSetBumps: [
         cn6.seedBump.bump,
@@ -516,11 +516,11 @@ describe("replicaSet", function () {
     const seed = convertBNToSpIdSeed(spID);
     const { baseAuthorityAccount } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       seed
     );
 
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     await expect(
       provider.sendAndConfirm(
@@ -530,7 +530,7 @@ describe("replicaSet", function () {
           baseAuthorityAccount,
           userAcct: user.accountAddress,
           userIdSeedBump: { userId: user.userId, bump: user.bumpSeed },
-          adminAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminAccountKeypair.publicKey,
           replicaSet: [2, 7, 8],
           replicaSetBumps: [
             cn2.seedBump.bump,
