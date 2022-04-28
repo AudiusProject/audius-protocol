@@ -12,6 +12,17 @@ module.exports = {
     initialNotifierEndpoint: null,
     initialNotifierEmail: null
   },
+  'audius_dev': {
+    proxyDeployerAddress: null,
+    proxyAdminAddress: null,
+    guardianAddress: null,
+    wormholeAddress: null,
+    antiAbuseOracleAddresses: null,
+    solanaRecipientAddress: null,
+    initialNotifierWallet: null,
+    initialNotifierEndpoint: null,
+    initialNotifierEmail: null
+  },
   'test_local': {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,

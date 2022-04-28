@@ -73,6 +73,11 @@ module.exports = {
       // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522
       ,disableConfirmationListener: true
     },
+    audius_dev: {
+      host: 'eth-ganache',
+      port: 8545,
+      network_id: '*',
+    },
     test_local: {
       host: '127.0.0.1'
       ,port: 8556

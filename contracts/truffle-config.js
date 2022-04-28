@@ -27,6 +27,11 @@ module.exports = {
       port: 8545,
       network_id: '*' // Match any network id
     },
+    audius_dev: {
+      host: 'poa-ganache',
+      port: 8545,
+      network_id: '*' // Match any network id
+    },
     test_local: {
       host: '127.0.0.1',
       port: 8555,

@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+  # contracts
+
+  poa-ganache:
+    image: trufflesuite/ganache:v7.0.5
+    command: --miner.blockTime 5 --wallet.deterministic
+    ports:
+      - "8546:8545"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').request('http://localhost:8545').end()"
+        ]
+      interval: 5s
+      timeout: 5s
+
+  poa-deploy-contracts:
+    build: contracts
+    command: npx truffle migrate --to 3 --network audius_dev
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+
+  # eth-contracts
+
+  eth-ganache:
+    image: trufflesuite/ganache:v7.0.5
+    command: --miner.blockTime 5 --wallet.deterministic
+    ports:
+      - "8545:8545"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').request('http://localhost:8545').end()"
+        ]
+      interval: 5s
+      timeout: 5s
+
+  eth-deploy-contracts:
+    build: eth-contracts
+    command: npx truffle migrate --to 12 --network audius_dev
+    depends_on:
+      eth-ganache:
+        condition: service_healthy
+
+  # solana-programs
+
+  solana-test-validator:
+    image: solanalabs/solana:v1.10.11
+    entrypoint: solana-test-validator
+    command: --quiet --gossip-host solana-test-validator
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+      - "8901:8901"
+      - "8902:8902"
+    healthcheck:
+      # NOTE: The address used below does not matter
+      test:
+        [
+          "CMD",
+          "solana",
+          "--url",
+          "localhost",
+          "balance",
+          "CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU"
+        ]
+      interval: 5s
+      timeout: 5s
+
+  solana-deploy-programs:
+    build: solana-programs
+    environment:
+      - SOLANA_HOST=http://solana-test-validator:8899
+    depends_on:
+      solana-test-validator:
+        condition: service_healthy
