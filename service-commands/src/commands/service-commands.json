@@ -12,7 +12,8 @@
       "sudo rm -rf solana-programs/reward-manager/target",
       "sudo rm -rf discovery-provider/.venv",
       "sudo rm -rf discovery-provider/.mypy_cache",
-      "sudo rm -f discovery-provider/*.log"
+      "sudo rm -f discovery-provider/*.log",
+      "docker image prune --filter 'dangling=true' --filter 'until=360h'"
     ]
   },
   "network": {

@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const { Buffer } = require('ipfs-http-client')
+const { Buffer } = require('buffer')
 const { promisify } = require('util')
 
 const config = require('../config')
