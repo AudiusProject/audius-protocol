@@ -36,7 +36,3 @@ latest_sol_user_bank_db_tx_key = "latest_sol_program_tx:user_bank:db"
 
 latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
 latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
-
-
-# The most recent user_tip_id aggregated
-most_recent_aggregated_user_tip_redis_key = "most_recently_aggregated_user_tip_from_db"
