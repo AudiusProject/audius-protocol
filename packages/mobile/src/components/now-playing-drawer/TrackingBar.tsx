@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+
 import { Animated, StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -5,6 +7,8 @@ import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { ThemeColors, useThemeColors } from 'app/utils/theme'
 
 import { NOW_PLAYING_HEIGHT } from './constants'
+
+const SEEK_INTERVAL = 200
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -21,22 +25,34 @@ const createStyles = (themeColors: ThemeColors) =>
 
 type TrackingBarProps = {
   /**
-   * Percentage "complete" the tracker should render to be
-   * (i.e. song % completion). Expressed as a number [0, 1]
-   */
-  percentComplete: number
-  /**
    * Animation that signals how "open" the now playing drawer is.
    */
   translationAnim: Animated.Value
 }
 
-export const TrackingBar = ({
-  percentComplete,
-  translationAnim
-}: TrackingBarProps) => {
+export const TrackingBar = ({ translationAnim }: TrackingBarProps) => {
   const styles = useThemedStyles(createStyles)
   const { primaryLight2, primaryDark2 } = useThemeColors()
+
+  const [percentComplete, setPercentComplete] = useState(0)
+  const intervalRef = useRef<NodeJS.Timeout>()
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      const { currentTime, seekableDuration } = global.progress
+      if (seekableDuration !== undefined) {
+        setPercentComplete(currentTime / seekableDuration)
+      } else {
+        setPercentComplete(0)
+      }
+    }, SEEK_INTERVAL)
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [setPercentComplete, intervalRef])
+
   return (
     <Animated.View
       style={[

@@ -4,7 +4,6 @@ import { getRepeat, getShuffle } from 'common/store/queue/selectors'
 import { shuffle, repeat } from 'common/store/queue/slice'
 import { RepeatMode } from 'common/store/queue/types'
 import { Animated, View, StyleSheet } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import IconNext from 'app/assets/images/iconNext.svg'
 import IconPodcastBack from 'app/assets/images/iconPodcastBack.svg'
@@ -15,7 +14,6 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { getPlaying } from 'app/store/audio/selectors'
 import { ThemeColors } from 'app/utils/theme'
 
 import { PlayButton } from './PlayButton'
@@ -65,7 +63,6 @@ export const AudioControls = ({
 
   const styles = useThemedStyles(createStyles)
 
-  const isPlaying = useSelector(getPlaying)
   const shuffleEnabled = useSelectorWeb(getShuffle)
   const repeatMode = useSelectorWeb(getRepeat)
 
@@ -123,7 +120,6 @@ export const AudioControls = ({
     return (
       <Animated.View style={{ transform: [{ scale }] }}>
         <PlayButton
-          iconIndex={isPlaying ? 1 : 0}
           onPressIn={handlePressInScale}
           onPressOut={handlePressOutScale}
           style={styles.button}
