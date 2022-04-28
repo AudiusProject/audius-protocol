@@ -8,7 +8,7 @@ use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 use std::collections::BTreeMap;
 
-declare_id!("9bYFQY5cRCGWszYVBcDgcdwQPQxcZjoh1qpzMNx6iLd4"); // default program ID to be replaced in start.sh
+declare_id!("8AXXpL8BBTuXDaG8y9xhoJ66Ei5eFAjUEHxJHRPDHiQr"); // default program ID to be replaced in start.sh
 
 #[program]
 pub mod audius_data {

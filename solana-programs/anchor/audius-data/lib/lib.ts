@@ -129,7 +129,7 @@ export type InitUserSolPubkeyParams = {
   program: Program<AudiusData>;
   ethPrivateKey: string;
   message: Uint8Array;
-  userSolPubkey: anchor.web3.PublicKey;
+  userAuthorityPublicKey: anchor.web3.PublicKey;
   userAccount: anchor.web3.PublicKey;
 };
 
@@ -138,7 +138,7 @@ export const initUserSolPubkey = ({
   program,
   ethPrivateKey,
   message,
-  userSolPubkey,
+  userAuthorityPublicKey,
   userAccount,
 }: InitUserSolPubkeyParams) => {
   const { signature, recoveryId } = signBytes(message, ethPrivateKey);
@@ -160,7 +160,7 @@ export const initUserSolPubkey = ({
   );
 
   tx.add(
-    program.instruction.initUserSol(userSolPubkey, {
+    program.instruction.initUserSol(userAuthorityPublicKey, {
       accounts: {
         user: userAccount,
         sysvarProgram: SystemSysVarProgramKey,
@@ -697,7 +697,7 @@ export type UpdateIsVerifiedParams = {
   userAccount: anchor.web3.PublicKey;
   verifierPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  adminPublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   bumpSeed: number;
 };
@@ -705,7 +705,7 @@ export type UpdateIsVerifiedParams = {
 /// Verify user with verifier Keypair
 export const updateIsVerified = ({
   program,
-  adminPublicKey,
+  adminAccount,
   userAccount,
   verifierPublicKey,
   baseAuthorityAccount,
@@ -720,7 +720,7 @@ export const updateIsVerified = ({
       {
         accounts: {
           user: userAccount,
-          admin: adminPublicKey,
+          admin: adminAccount,
           verifier: verifierPublicKey,
         },
       }

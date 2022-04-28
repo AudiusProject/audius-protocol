@@ -29,7 +29,9 @@ import {
 } from "../lib/utils";
 
 import { Command } from "commander";
-import fs = require("fs");
+import fs from "fs";
+import path from "path";
+import toml from "toml";
 
 const EthWeb3 = new Web3();
 
@@ -60,8 +62,10 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
   const wallet = new NodeWallet(ownerKeypair);
   const provider = new AnchorProvider(connection, wallet, opts);
   if (!idl.metadata) {
-    idl.metadata = { address: 'k8NUn3fmzm9ErXxJB5S4p8ejHevuFwfLt4EAUNbAbeM' }
-    // throw new Error("Missing metadata in IDL!");
+    const anchorToml = toml.parse(
+      fs.readFileSync(path.join(__dirname, "../Anchor.toml"), 'utf8')
+    );
+    idl.metadata = { address: anchorToml.programs.localnet.audius_data };
   }
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
@@ -153,7 +157,7 @@ async function initUserCLI(args: initUserCLIParams) {
     ethAddress,
     ownerKeypairPath,
     metadata,
-    adminStoragePublicKey,
+    adminAccount,
     replicaSet,
     replicaSetBumps,
     cn1,
@@ -164,7 +168,7 @@ async function initUserCLI(args: initUserCLIParams) {
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       cliVars.programID,
-      adminStoragePublicKey,
+      adminAccount,
       convertBNToUserIdSeed(userId)
     );
 
@@ -181,7 +185,7 @@ async function initUserCLI(args: initUserCLIParams) {
     metadata,
     userAccount: userStorageAddress,
     baseAuthorityAccount,
-    adminAccount: adminStoragePublicKey,
+    adminAccount: adminAccount,
     adminAuthorityPublicKey: adminKeypair.publicKey,
     cn1,
     cn2,
@@ -211,7 +215,8 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
+          args.id
         }`
       );
 
@@ -224,14 +229,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-          userAccount: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           metadata: args.metadata,
           userId: args.userId,
-          adminAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
           authorityDelegationStatusAccount:
-            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -243,14 +248,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-          userAccount: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           metadata: args.metadata,
           userId: args.userId,
-          adminAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
           authorityDelegationStatusAccount:
-            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -262,14 +267,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
-          userAccount: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           metadata: args.metadata,
           userId: args.userId,
-          adminAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
           authorityDelegationStatusAccount:
-            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -281,13 +286,13 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
-          userAccount: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           userId: args.userId,
-          adminAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
           authorityDelegationStatusAccount:
-            args.authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       }
@@ -352,7 +357,11 @@ program
     "true"
   )
   .option("-uid, --user-id <integer>", "ID of incoming user")
-  .option("-we, --write-enabled <bool>", "If write is enabled for admin", "false")
+  .option(
+    "-we, --write-enabled <bool>",
+    "If write is enabled for admin",
+    "false"
+  )
   .option(
     "--user-replica-set <string>",
     "Comma separated list of integers representing spIDs - ex. 2,3,1"
@@ -392,11 +401,11 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-    ? AUDIUS_PROD_RPC_POOL
-    : LOCALHOST_RPC_POOL;
+  ? AUDIUS_PROD_RPC_POOL
+  : LOCALHOST_RPC_POOL;
 
 const main = async () => {
-  console.log('main called')
+  console.log("main called");
   const cliVars = initializeCLI(network, options.ownerKeypair);
   const userAuthorityDelegateAccountPDA =
     options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
@@ -408,7 +417,7 @@ const main = async () => {
     userId = new anchor.BN(userId);
     userIdSeed = convertBNToUserIdSeed(userId);
   }
-  console.log(`FUnction is ${options.function}`)
+  console.log(`FUnction is ${options.function}`);
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
@@ -502,7 +511,7 @@ const main = async () => {
         message: userSolKeypair.publicKey.toBytes(),
         ethPrivateKey,
         userAccount: options.userStoragePubkey,
-        userSolPubkey,
+        userAuthorityPublicKey: userSolPubkey,
       });
       const txHash = await cliVars.provider.sendAndConfirm(tx);
 
@@ -513,7 +522,7 @@ const main = async () => {
       break;
     }
     case functionTypes.updateAdmin: {
-      const writeEnabled = (options.writeEnabled === 'true');
+      const writeEnabled = options.writeEnabled === "true";
 
       console.log({ writeEnabled });
       const tx = updateAdmin({
@@ -618,7 +627,8 @@ const main = async () => {
               userAuthorityPublicKey: userSolKeypair.publicKey,
               userAccount: derivedAddress,
               userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
-              authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
+              authorityDelegationStatusAccount:
+                authorityDelegationStatusAccountPDA,
             },
             cliVars.provider,
             ManagementActions.create,
@@ -663,7 +673,8 @@ const main = async () => {
               userAuthorityPublicKey: userSolKeypair.publicKey,
               userAccount: options.userStoragePubkey,
               userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
-              authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
+              authorityDelegationStatusAccount:
+                authorityDelegationStatusAccountPDA,
             },
             cliVars.provider,
             ManagementActions.create,
@@ -754,5 +765,4 @@ const main = async () => {
   }
 };
 
-console.log('starting main')
 main();
