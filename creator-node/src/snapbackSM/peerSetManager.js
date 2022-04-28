@@ -183,7 +183,7 @@ class PeerSetManager {
     try {
       // Request all users that have this node as a replica (either primary or secondary)
       const resp = await Utils.asyncRetry({
-        asyncFn: axios, 
+        asyncFn: axios,
         asyncParms: {
           method: 'get',
           baseURL: this.discoveryProviderEndpoint,
@@ -194,10 +194,14 @@ class PeerSetManager {
           timeout: DEFAULT_AXIOS_TIMEOUT_MS
         },
         asyncFnTask: 'fetch all users with this node in replica'
-      });
+      })
       allNodeUsers = resp.data.data
     } catch (e) {
-      throw new Error(`getAllNodeUsers() Error: ${e.toString()} - connected discprov [${this.discoveryProviderEndpoint}]`)
+      throw new Error(
+        `getAllNodeUsers() Error: ${e.toString()} - connected discprov [${
+          this.discoveryProviderEndpoint
+        }]`
+      )
     }
 
     return allNodeUsers
@@ -220,7 +224,7 @@ class PeerSetManager {
     let nodePrimaryUsers
     try {
       const resp = await Utils.asyncRetry({
-        asyncFn: axios, 
+        asyncFn: axios,
         asyncParams: {
           method: 'get',
           baseURL: this.discoveryProviderEndpoint,
@@ -229,11 +233,15 @@ class PeerSetManager {
             creator_node_endpoint: this.creatorNodeEndpoint
           }
         },
-        asyncFnTask: '[LEGACY]: fetch users with node in replica',
-      });
+        asyncFnTask: '[LEGACY]: fetch users with node in replica'
+      })
       nodePrimaryUsers = resp.data.data
     } catch (e) {
-      throw new Error(`getNodePrimaryUsers() Error: ${e.toString()} - connected discprov [${this.discoveryProviderEndpoint}]`)
+      throw new Error(
+        `getNodePrimaryUsers() Error: ${e.toString()} - connected discprov [${
+          this.discoveryProviderEndpoint
+        }]`
+      )
     }
 
     return nodePrimaryUsers
