@@ -2,7 +2,7 @@ const SolanaUtils = require('./utils')
 const {
   Transaction,
   PublicKey,
-  sendAndConfirmTransaction
+  sendAndConfirmRawTransaction
 } = require('@solana/web3.js')
 
 /**
@@ -100,7 +100,6 @@ class TransactionHandler {
       }
       return null
     })()
-
     const feePayerAccount = feePayerKeypairOverride || (this.feePayerKeypairs && this.feePayerKeypairs[0])
     if (!feePayerAccount) {
       console.error('Local feepayer keys missing for direct confirmation!')
@@ -113,20 +112,23 @@ class TransactionHandler {
 
     recentBlockhash = recentBlockhash || (await this.connection.getLatestBlockhash('confirmed')).blockhash
     const tx = new Transaction({ recentBlockhash })
+    tx.feePayer = feePayerAccount.publicKey
 
     instructions.forEach(i => tx.add(i))
-    if (Array.isArray(signatures)) {
-      signatures.forEach(({ publicKey, signature }) => {
-        tx.addSignature(PublicKey(publicKey), signature)
-      })
-    }
+
     tx.sign(feePayerAccount)
 
+    if (Array.isArray(signatures)) {
+      signatures.forEach(({ publicKey, signature }) => {
+        tx.addSignature(new PublicKey(publicKey), signature)
+      })
+    }
+
     try {
-      const transactionSignature = await sendAndConfirmTransaction(
+      const txSerialized = tx.serialize()
+      const transactionSignature = await sendAndConfirmRawTransaction(
         this.connection,
-        tx,
-        [feePayerAccount],
+        txSerialized,
         {
           skipPreflight: skipPreflight === null ? this.skipPreflight : skipPreflight,
           commitment: 'processed',
@@ -157,10 +159,15 @@ class TransactionHandler {
    */
   _parseSolanaErrorCode (errorMessage) {
     if (!errorMessage) return null
+    // Match on custom solana program errors
     const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
-    if (!res || !res.length === 2) return null
-    return parseInt(res[1], 16) || null
+    if (res && res.length !== 2) return parseInt(res[1], 16) || null
+    // Match on custom anchor errors
+    const matcher2 = /(?:"Custom":)(\d+)/
+    const res2 = errorMessage.match(matcher2)
+    if (res2 && res2.length === 2) return parseInt(res2[1], 10) || null
+    return null
   }
 }
 

@@ -1,6 +1,7 @@
 const packageJSON = require('../package.json')
 
 const { EthWeb3Manager } = require('./services/ethWeb3Manager')
+const { AnchorAudiusData } = require('./services/anchorAudiusData/index')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
@@ -292,6 +293,25 @@ class AudiusLibs {
   }
 
   /**
+   * Configures a solana audius-data
+   * @param {Object} config
+   * @param {string} config.programId Program ID of the audius data program
+   * @param {string} config.adminPublicKey Public Key of admin storage account
+   * @param {string} config.adminStoragePublicKey Public Key of admin storage account
+   */
+  static configSolanaAudiusData ({
+    programId,
+    adminPublicKey,
+    adminStoragePublicKey,
+  }) {
+    return {
+      programId,
+      adminPublicKey,
+      adminStoragePublicKey,
+    }
+  }
+
+  /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
    * @example
@@ -305,6 +325,7 @@ class AudiusLibs {
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
+    solanaAudiusDataConfig,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -324,6 +345,7 @@ class AudiusLibs {
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.solanaWeb3Config = solanaWeb3Config
+    this.solanaAudiusDataConfig = solanaAudiusDataConfig
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -346,6 +368,7 @@ class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
+    this.anchorAudiusData = null
     this.contracts = null
     this.creatorNode = null
 
@@ -412,6 +435,13 @@ class AudiusLibs {
         this.web3Manager
       )
       await this.solanaWeb3Manager.init()
+    }
+    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
+      this.anchorAudiusData = new AnchorAudiusData(
+        this.solanaAudiusDataConfig,
+        this.solanaWeb3Manager,
+        this.web3Manager
+      )
     }
 
     /** Contracts - Eth and Data Contracts */
@@ -511,6 +541,7 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
+      this.anchorAudiusData,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,

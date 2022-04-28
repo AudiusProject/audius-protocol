@@ -1,4 +1,8 @@
-import type { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import type {
+  Connection,
+  PublicKey,
+  TransactionInstruction
+} from '@solana/web3.js'
 
 type HandleTransactionParams = {
   instructions: TransactionInstruction[]
@@ -17,7 +21,26 @@ class TransactionHandler {
 
 class SolanaWeb3Manager {
   init(): Promise<void>
+  findProgramAddress: (programId: PublicKey, pubkey: PublicKey) => Promise<any>
+  findDerivedPair: (
+    programId: PublicKey,
+    adminAccount: PublicKey,
+    seed: Buffer | Uint8Array
+  ) => Promise<{
+    baseAuthorityAccount: PublicKey
+    derivedAddress: PublicKey
+    bumpSeed: number
+  }>
+
+  findDerivedAddress: (
+    programId: PublicKey,
+    adminAccount: PublicKey,
+    seed: Buffer | Uint8Array
+  ) => Promise<[PublicKey, number]>
+
+  feePayerKey: PublicKey
   transactionHandler: TransactionHandler
+  connection: Connection
 }
 
 export default SolanaWeb3Manager

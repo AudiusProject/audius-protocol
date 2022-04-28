@@ -1,40 +1,85 @@
-import * as AudiusData from '../../../../solana-programs/anchor/audius-data/dist/index'
-import type { AudiusData as AudiusDataProgram } from '../../../../solana-programs/anchor/audius-data/target/types/audius_data'
-import { Program, workspace } from '@project-serum/anchor'
+import * as AudiusData from '@audius/anchor-audius-data'
+import type { AudiusDataProgram } from '@audius/anchor-audius-data'
+import anchor, { BN, Idl } from '@project-serum/anchor'
 import type SolanaWeb3Manager from '../solanaWeb3Manager'
-import type { PublicKey } from '@solana/web3.js'
+import type Web3Manager from '../web3Manager'
+import { PublicKey, Keypair, SystemProgram, Transaction } from '@solana/web3.js'
+import SolanaUtils from '../solanaWeb3Manager/utils'
+import { audiusDataErrorMapping } from './errors'
 
-type AnchorAudiusDataConfig = {}
+type AnchorAudiusDataConfig = {
+  programId: string
+  adminPublicKey: string
+  adminStoragePublicKey: string
+}
+
+type OmitAndRequire<T, K extends keyof T, L extends keyof T> = Partial<
+  Omit<T, K>
+> &
+  Required<Pick<T, L>>
 
 /**
  * AnchorAudiusData acts as the interface to solana auidus data programs from a client.
  * It wraps methods to create transactions.
  */
-class AnchorAudiusData {
+export class AnchorAudiusData {
   anchorAudiusDataConfig: AnchorAudiusDataConfig
   solanaWeb3Manager: SolanaWeb3Manager
-  program: Program<AudiusDataProgram>
-  adminPublicKey: PublicKey | undefined
-  adminStoragePublicKey: PublicKey | undefined
+  program!: AudiusDataProgram
+  programId!: PublicKey
+  adminPublicKey!: PublicKey
+  adminStoragePublicKey!: PublicKey
+  provider!: anchor.Provider
+  web3Manager: Web3Manager
+  AudiusData: any
 
   /**
    * @param {Object} anchorAudiusDataConfig
    *  the solana cluster RPC endpoint
    * @param {string} anchorAudiusDataConfig.mintAddress
    * @param {SolanaWeb3Manager} solanaWeb3Manager
+   * @param {Web3Manager} web3Manager
    */
   constructor(
     anchorAudiusDataConfig: AnchorAudiusDataConfig,
-    solanaWeb3Manager: SolanaWeb3Manager
+    solanaWeb3Manager: SolanaWeb3Manager,
+    web3Manager: Web3Manager
   ) {
     this.anchorAudiusDataConfig = anchorAudiusDataConfig
     this.solanaWeb3Manager = solanaWeb3Manager
-    this.program = workspace.AudiusData as Program<AudiusDataProgram>
+    this.web3Manager = web3Manager
+    this.AudiusData = AudiusData
+  }
+
+  didInit() {
+    return Boolean(
+      this.programId &&
+        this.adminPublicKey &&
+        this.adminStoragePublicKey &&
+        this.solanaWeb3Manager.feePayerKey &&
+        this.program
+    )
   }
 
   async init() {
-    const { ...stuff } = this.anchorAudiusDataConfig
-    console.log({ ...stuff })
+    const { programId, adminPublicKey, adminStoragePublicKey } =
+      this.anchorAudiusDataConfig
+    this.programId = SolanaUtils.newPublicKeyNullable(programId)
+    this.adminPublicKey = SolanaUtils.newPublicKeyNullable(adminPublicKey)
+    this.adminStoragePublicKey = SolanaUtils.newPublicKeyNullable(
+      adminStoragePublicKey
+    )
+    this.provider = new anchor.AnchorProvider(
+      this.solanaWeb3Manager.connection,
+      // NOTE: Method requests type wallet, but because signtransaction is not used, keypair is fine
+      Keypair.generate() as any,
+      anchor.AnchorProvider.defaultOptions()
+    )
+    this.program = new anchor.Program(
+      AudiusData.idl as Idl,
+      this.programId,
+      this.provider
+    ) as any
   }
 
   // Setters
@@ -46,206 +91,367 @@ class AnchorAudiusData {
     this.adminStoragePublicKey = adminStoragePublicKey
   }
 
+  async getUserIdSeed(userId: BN) {
+    if (!this.programId || !this.adminStoragePublicKey) return {}
+    const userIdSeed = userId.toArrayLike(Uint8Array, 'le', 4)
+    const {
+      baseAuthorityAccount,
+      bumpSeed,
+      derivedAddress: userAccount
+    } = await this.solanaWeb3Manager.findDerivedPair(
+      this.programId,
+      this.adminStoragePublicKey,
+      userIdSeed
+    )
+    return {
+      userId,
+      userIdSeed,
+      userAccount,
+      bumpSeed,
+      baseAuthorityAccount
+    }
+  }
+
+  getUserKeyPair(): anchor.web3.Keypair {
+    return anchor.web3.Keypair.fromSeed(
+      this.web3Manager.ownerWallet.getPrivateKey()
+    )
+  }
+
+  async getContentNodeSeedAddress(spId: number) {
+    const enc = new TextEncoder() // always utf-8
+    const baseSpIdSeed = enc.encode('sp_id')
+    const spIdValue = new anchor.BN(spId).toArray('le', 2)
+    const { bumpSeed, derivedAddress } =
+      await this.solanaWeb3Manager.findDerivedPair(
+        this.programId,
+        this.adminStoragePublicKey,
+        new Uint8Array([...baseSpIdSeed, ...spIdValue])
+      )
+    return {
+      bumpSeed,
+      derivedAddress
+    }
+  }
+
+  async signTransaction(
+    tx: anchor.web3.Transaction,
+    userKeyPair: anchor.web3.Keypair
+  ) {
+    const latestBlockHash =
+      await this.solanaWeb3Manager.connection.getLatestBlockhash('confirmed')
+
+    tx.recentBlockhash = latestBlockHash.blockhash
+    tx.feePayer = this.solanaWeb3Manager.feePayerKey
+
+    tx.partialSign(userKeyPair)
+    return tx
+  }
+
+  async sendTx(tx: Transaction) {
+    const signatures = tx.signatures
+      .filter((s) => s.signature && s.publicKey)
+      .map((s: any) => ({
+        publicKey: s.publicKey.toBase58(),
+        signature: s.signature
+      }))
+
+    const response =
+      await this.solanaWeb3Manager.transactionHandler.handleTransaction({
+        instructions: tx.instructions,
+        // TODO: Figure out
+        errorMapping: audiusDataErrorMapping,
+        feePayerOverride: this.solanaWeb3Manager.feePayerKey,
+        recentBlockhash: tx.recentBlockhash,
+        logger: console,
+        sendBlockhash: true,
+        signatures
+      })
+    return response
+  }
+
   /**
    * Creates a solana transaction for initAdmin
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
    * @memberof SolanaWeb3Manager
    */
-  initAdmin(params: Omit<AudiusData.InitAdminParams, 'payer' | 'program'>) {
+  async initAdmin(
+    params: Omit<AudiusData.InitAdminParams, 'payer' | 'program'>
+  ) {
+    if (!this.program || !this.solanaWeb3Manager.feePayerKey) return
     // initAdmin = ({ payer, program, adminKeypair, adminStorageKeypair, verifierKeypair, })
     const tx = AudiusData.initAdmin({
       payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
       ...params
     })
-    return this.solanaWeb3Manager.transactionHandler.handleTransaction({
-      instructions: tx.instructions,
-      errorMapping: null,
-      recentBlockhash: null,
-      logger: console,
-      sendBlockhash: true,
-      signatures: null
-    })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for initUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  initUser(params: Omit<AudiusData.InitUserParams, 'payer' | 'program'>) {
+  async initUser(
+    params: OmitAndRequire<
+      AudiusData.InitUserParams,
+      'program' | 'payer',
+      'userId' | 'metadata'
+    >
+  ) {
+    if (!this.didInit()) return
+    // TODO: implement
     // initUser = ({ payer, program, ethAddress, userId, bumpSeed, replicaSet, replicaSetBumps, metadata, userStorageAccount, baseAuthorityAccount, adminStorageAccount, adminAuthorityPublicKey, cn1, cn2, cn3, })
     const tx = AudiusData.initUser({
       payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for initUserSolPubkey
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  initUserSolPubkey(
-    params: Omit<AudiusData.InitUserSolPubkeyParams, 'program'>
+  async initUserSolPubkey(
+    params: Omit<
+      AudiusData.InitUserSolPubkeyParams,
+      'program' | 'ethPrivateKey' | 'message'
+    > & {
+      userId: BN
+    }
   ) {
-    // initUserSolPubkey = ({ program, ethPrivateKey, message, userSolPubkey, userStorageAccount, })
+    if (!this.didInit()) return
+
+    const userSolKeypair = this.getUserKeyPair()
+    const { userAccount } = await this.getUserIdSeed(params.userId)
     const tx = AudiusData.initUserSolPubkey({
       program: this.program,
-      ...params
+      ethPrivateKey: this.web3Manager.ownerWallet.getPrivateKeyString(),
+      message: userSolKeypair.publicKey.toBytes(),
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for createContentNode
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  createContentNode(params: Omit<AudiusData.CreateContentNodeParams, 'payer' | 'program'>) {
-    // createContentNode = ({ payer, program, adminStoragePublicKey, adminPublicKey, baseAuthorityAccount, spID, contentNodeAuthority, contentNodeAcct, ownerEthAddress, })
+  async createContentNode(
+    params: OmitAndRequire<
+      AudiusData.CreateContentNodeParams,
+      'program',
+      | 'spID'
+      | 'payer'
+      | 'adminAccount'
+      | 'adminAuthorityPublicKey'
+      | 'baseAuthorityAccount'
+      | 'spID'
+      | 'contentNodeAuthority'
+      | 'contentNodeAccount'
+      | 'ownerEthAddress'
+    >
+  ) {
+    if (!this.program) return
     const tx = AudiusData.createContentNode({
-      payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for updateUserReplicaSet
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  updateUserReplicaSet(params: Omit<AudiusData.UpdateUserReplicaSetParams, 'payer' | 'program'>) {
-    // updateUserReplicaSet = ({ payer, program, adminStoragePublicKey, baseAuthorityAccount, replicaSet, userAcct, replicaSetBumps, userIdSeedBump, contentNodeAuthorityPublicKey, cn1, cn2, cn3, })
+  async updateUserReplicaSet(
+    params: Omit<AudiusData.UpdateUserReplicaSetParams, 'program' | 'payer'>
+  ) {
+    if (!this.program || !this.solanaWeb3Manager.feePayerKey) return
     const tx = AudiusData.updateUserReplicaSet({
       payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for publicCreateOrUpdateContentNode
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  publicCreateOrUpdateContentNode(
-    params: Omit<AudiusData.PublicCreateOrUpdateContentNodeParams, 'payer'| 'program'>
+  async publicCreateOrUpdateContentNode(
+    params: Omit<
+      AudiusData.PublicCreateOrUpdateContentNodeParams,
+      'program' | 'payer'
+    >
   ) {
-    // publicCreateOrUpdateContentNode = ({ payer, program, adminStoragePublicKey, baseAuthorityAccount, spID, contentNodeAcct, ownerEthAddress, contentNodeAuthority, proposer1, proposer2, proposer3, })
     const tx = AudiusData.publicCreateOrUpdateContentNode({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for publicDeleteContentNode
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  publicDeleteContentNode(
-    params: Omit<AudiusData.PublicDeleteContentNodeParams, 'payer' | 'program'>
+  async publicDeleteContentNode(
+    params: Omit<AudiusData.PublicDeleteContentNodeParams, 'program' | 'payer'>
   ) {
-    // publicDeleteContentNode = ({ payer, program, adminStoragePublicKey, adminAuthorityPublicKey, baseAuthorityAccount, cnDelete, proposer1, proposer2, proposer3, })
     const tx = AudiusData.publicDeleteContentNode({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for createUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  createUser(params: Omit<AudiusData.CreateUserParams, 'program' | 'payer'>) {
-    // createUser = ({ baseAuthorityAccount, program, ethAccount, message, replicaSet, replicaSetBumps, cn1, cn2, cn3, userId, bumpSeed, metadata, payer, userSolPubkey, userStorageAccount, adminStoragePublicKey, })
+  async createUser(
+    params: OmitAndRequire<
+      AudiusData.CreateUserParams,
+      'program' | 'payer',
+      'userId' | 'metadata'
+    > & {
+      cn1SpId: number
+      cn2SpId: number
+      cn3SpId: number
+    }
+  ) {
+    if (!this.didInit()) return
+
+    const ethAccount = {
+      privateKey: this.web3Manager.ownerWallet.getPrivateKeyString(),
+      address: this.web3Manager.ownerWallet.getAddressString()
+    }
+
+    const userSolKeypair = this.getUserKeyPair()
+    const { userAccount, bumpSeed, baseAuthorityAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const spSeedAddresses = await Promise.all(
+      [params.cn1SpId, params.cn2SpId, params.cn3SpId].map(
+        async (id) => await this.getContentNodeSeedAddress(id)
+      )
+    )
+
     const tx = AudiusData.createUser({
       program: this.program,
       payer: this.solanaWeb3Manager.feePayerKey,
-      ...params
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      ethAccount: ethAccount as any,
+      userId: params.userId,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      message: userSolKeypair.publicKey.toBytes(),
+      replicaSet: [params.cn1SpId, params.cn2SpId, params.cn3SpId],
+      replicaSetBumps: spSeedAddresses.map(({ bumpSeed }) => bumpSeed),
+      cn1: spSeedAddresses[0].derivedAddress,
+      cn2: spSeedAddresses[1].derivedAddress,
+      cn3: spSeedAddresses[2].derivedAddress,
+      metadata: params.metadata
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for updateUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  updateUser(params: Omit<AudiusData.UpdateUserParams, 'payer' | 'program'>) {
-    // updateUser = ({ program, metadata, userStorageAccount, userAuthorityPublicKey, userAuthorityDelegate, authorityDelegationStatusAccount, })
-    const tx = AudiusData.updateUser({ 
+  async updateUser(
+    params: OmitAndRequire<
+      AudiusData.UpdateUserParams,
+      'program',
+      'metadata'
+    > & { userId: anchor.BN }
+  ) {
+    if (!this.didInit()) return
+
+    const { userAccount } = await this.getUserIdSeed(params.userId)
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.updateUser({
       program: this.program,
-      ...params })
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegate: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      metadata: params.metadata
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
-  program: this.program,
 
   /**
    * Creates a solana transaction for updateAdmin
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  updateAdmin(params: Omit<AudiusData.UpdateAdminParams, 'payer' | 'program'>) {
+  async updateAdmin(params: Omit<AudiusData.UpdateAdminParams, 'program'>) {
+    if (
+      !this.program ||
+      !this.solanaWeb3Manager.feePayerKey ||
+      !this.adminStoragePublicKey
+    )
+      return
+
     // updateAdmin = ({ program, isWriteEnabled, adminStorageAccount, adminAuthorityKeypair, })
-    const tx = AudiusData.updateAdmin({       program: this.program,
-...params })
+    const tx = AudiusData.updateAdmin({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      ...params
+    })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for initAuthorityDelegationStatus
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  initAuthorityDelegationStatus(
-    params: Omit<AudiusData.InitAuthorityDelegationStatusParams, 'payer' | 'program'>
+  async initAuthorityDelegationStatus(
+    params: Omit<
+      AudiusData.InitAuthorityDelegationStatusParams,
+      'program' | 'payer'
+    >
   ) {
     // initAuthorityDelegationStatus = ({ program, authorityName, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, })
     const tx = AudiusData.initAuthorityDelegationStatus({
@@ -253,19 +459,21 @@ class AnchorAudiusData {
       payer: this.solanaWeb3Manager.feePayerKey,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for revokeAuthorityDelegation
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  revokeAuthorityDelegation(
-    params: Omit<AudiusData.RevokeAuthorityDelegationParams, 'payer' | 'program'>
+  async revokeAuthorityDelegation(
+    params: Omit<
+      AudiusData.RevokeAuthorityDelegationParams,
+      'program' | 'payer'
+    >
   ) {
     // revokeAuthorityDelegation = ({ program, authorityDelegationBump, userAuthorityDelegatePublicKey, authorityDelegationStatusPDA, payer, })
     const tx = AudiusData.revokeAuthorityDelegation({
@@ -273,19 +481,18 @@ class AnchorAudiusData {
       payer: this.solanaWeb3Manager.feePayerKey,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for addUserAuthorityDelegate
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  addUserAuthorityDelegate(
-    params: Omit<AudiusData.AddUserAuthorityDelegateParams, 'payer' | 'program'>
+  async addUserAuthorityDelegate(
+    params: Omit<AudiusData.AddUserAuthorityDelegateParams, 'program' | 'payer'>
   ) {
     // addUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, })
     const tx = AudiusData.addUserAuthorityDelegate({
@@ -293,19 +500,21 @@ class AnchorAudiusData {
       payer: this.solanaWeb3Manager.feePayerKey,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for removeUserAuthorityDelegate
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  removeUserAuthorityDelegate(
-    params: Omit<AudiusData.RemoveUserAuthorityDelegateParams, 'payer' | 'program'>
+  async removeUserAuthorityDelegate(
+    params: Omit<
+      AudiusData.RemoveUserAuthorityDelegateParams,
+      'program' | 'payer'
+    >
   ) {
     // removeUserAuthorityDelegate = ({ program, baseAuthorityAccount, delegatePublicKey, delegateBump, user, authorityDelegationStatus, currentUserAuthorityDelegate, userId, userBumpSeed, adminStoragePublicKey, signerUserAuthorityDelegate, authorityPublicKey, payer, })
     const tx = AudiusData.removeUserAuthorityDelegate({
@@ -313,281 +522,729 @@ class AnchorAudiusData {
       payer: this.solanaWeb3Manager.feePayerKey,
       ...params
     })
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for updateIsVerified
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  updateIsVerified(params: Omit<AudiusData.updateIsVerified, 'program'>) {
+  async updateIsVerified(
+    params: OmitAndRequire<
+      AudiusData.UpdateIsVerifiedParams,
+      'program' | 'verifierPublicKey',
+      'userId'
+    > & {
+      verifierKeyPair: anchor.web3.Keypair
+    }
+  ) {
+    if (!this.didInit()) return
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
     // updateIsVerified = ({ program, adminPublicKey, userStorageAccount, verifierPublicKey, baseAuthorityAccount, userId, bumpSeed, })
-    const tx = AudiusData.updateIsVerified({       program: this.program,
- ..params })
+    const tx = AudiusData.updateIsVerified({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      bumpSeed,
+      baseAuthorityAccount,
+      userAccount,
+      verifierPublicKey: params.verifierKeyPair.publicKey,
+      ...params
+    })
+    await this.signTransaction(tx, params.verifierKeyPair)
+    return await this.sendTx(tx)
   }
- 
+
+  // ============================= MANAGE ENTITY =============================
+
   /**
    * Creates a solana transaction for createTrack
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  createTrack(params: Omit<AudiusData.CreateEntityParams, 'program'>) {
-    // createTrack = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, })
-    const tx = AudiusData.createTrack({       program: this.program,
-...params })
+  async createTrack(
+    params: OmitAndRequire<
+      AudiusData.CreateEntityParams,
+      'program',
+      'id' | 'userId' | 'metadata'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.createTrack({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      userId: params.userId,
+      id: params.id,
+      metadata: params.metadata
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
- 
+
   /**
    * Creates a solana transaction for updateTrack
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  updateTrack(params: Omit<AudiusData.UpdateEntityParams, 'payer' | 'program'>) {
-    // updateTrack = ({ program, baseAuthorityAccount, id, metadata, userAuthorityPublicKey, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userId, adminStorageAccount, bumpSeed, })
-    const tx = AudiusData.updateTrack({       program: this.program,
-...params })
+  async updateTrack(
+    params: OmitAndRequire<
+      AudiusData.UpdateEntityParams,
+      'program',
+      'id' | 'userId' | 'metadata'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.updateTrack({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      userId: params.userId,
+      id: params.id,
+      metadata: params.metadata
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
-  program: this.program,
 
   /**
    * Creates a solana transaction for deleteTrack
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  deleteTrack(params: Omit<AudiusData.DeleteEntityParams, 'payer' | 'program'>) {
-    // deleteTrack = ({ program, id, userStorageAccountPDA, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, })
-    const tx = AudiusData.deleteTrack({       program: this.program,
-...params })
+  async deleteTrack(
+    params: OmitAndRequire<
+      AudiusData.DeleteEntityParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.deleteTrack({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      userId: params.userId,
+      id: params.id
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for createPlaylist
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  createPlaylist(params: Omit<AudiusData.CreateEntityParams, 'program'>) {
-    // createPlaylist = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, })
-    const tx = AudiusData.createPlaylist({       program: this.program,
-...params })
+  async createPlaylist(
+    params: OmitAndRequire<
+      AudiusData.CreateEntityParams,
+      'program',
+      'id' | 'userId' | 'metadata'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.createPlaylist({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      userId: params.userId,
+      id: params.id,
+      metadata: params.metadata
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for updatePlaylist
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  updatePlaylist(params: Omit<AudiusData.UpdateEntityParams, 'program'>) {
-    // updatePlaylist = ({ id, program, baseAuthorityAccount, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userStorageAccountPDA, metadata, userId, adminStorageAccount, bumpSeed, })
-    const tx = AudiusData.updatePlaylist({       program: this.program,
-...params })
+  async updatePlaylist(
+    params: OmitAndRequire<
+      AudiusData.UpdateEntityParams,
+      'program',
+      'id' | 'userId' | 'metadata'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.updatePlaylist({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      userId: params.userId,
+      id: params.id,
+      metadata: params.metadata
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for deletePlaylist
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  deletePlaylist(params: Omit<AudiusData.DeleteEntityParams, 'payer' | 'program'>) {
-    // deletePlaylist = ({ program, id, userStorageAccountPDA, userAuthorityPublicKey, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, baseAuthorityAccount, userId, adminStorageAccount, bumpSeed, })
-    const tx = AudiusData.deletePlaylist({       program: this.program,
-...params })
+  async deletePlaylist(
+    params: OmitAndRequire<
+      AudiusData.DeleteEntityParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.deletePlaylist({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
+  // ============================= SOCIAL ACTIONS =============================
+
   /**
-   * Creates a solana transaction for addTrackSave
+   * Creates a solana transaction for addTrackRepost
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  addTrackSave(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // addTrackSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.addTrackSave({ program: this.program, ...params })
+  async addTrackSave(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    // addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
+    const tx = AudiusData.addTrackSave({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for deleteTrackSave
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  deleteTrackSave(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // deleteTrackSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.deleteTrackSave({ program: this.program,...params })
+  async deleteTrackSave(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    // addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
+    const tx = AudiusData.deleteTrackSave({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for addTrackRepost
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  addTrackRepost(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
+  async addTrackRepost(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
     // addTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.addTrackRepost({ program: this.program, ...params })
+    const tx = AudiusData.addTrackRepost({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
-  
 
   /**
    * Creates a solana transaction for deleteTrackRepost
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  deleteTrackRepost(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // deleteTrackRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.deleteTrackRepost({ program: this.program, ...params })
+  async deleteTrackRepost(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.deleteTrackRepost({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for addPlaylistSave
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  addPlaylistSave(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // addPlaylistSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.addPlaylistSave({ program: this.program, ...params })
+  async addPlaylistSave(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.addPlaylistSave({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for deletePlaylistSave
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  deletePlaylistSave(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // deletePlaylistSave = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.deletePlaylistSave({ program: this.program, ...params })
+  async deletePlaylistSave(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.deletePlaylistSave({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for addPlaylistRepost
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  addPlaylistRepost(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // addPlaylistRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.addPlaylistRepost({ program: this.program, ...params })
+  async addPlaylistRepost(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.addPlaylistRepost({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for deletePlaylistRepost
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  deletePlaylistRepost(params: Omit<AudiusData.EntitySocialActionParams, 'program'>) {
-    // deletePlaylistRepost = ({ program, baseAuthorityAccount, userStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, userId, bumpSeed, adminStoragePublicKey, id, })
-    const tx = AudiusData.deletePlaylistRepost({ program: this.program, ...params })
+  async deletePlaylistRepost(
+    params: OmitAndRequire<
+      AudiusData.EntitySocialActionParams,
+      'program',
+      'id' | 'userId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const { bumpSeed, baseAuthorityAccount, userAccount } =
+      await this.getUserIdSeed(params.userId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.deletePlaylistRepost({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      bumpSeed,
+      userAccount,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
+
+  // ============================= USER ACTIONS =============================
 
   /**
    * Creates a solana transaction for followUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  followUser(params: Omit<AudiusData.UserSocialActionParams, 'program'>) {
-    // followUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {, })
-    const tx = AudiusData.followUser({ program: this.program, ...params })
+  async followUser(
+    params: OmitAndRequire<
+      AudiusData.UserSocialActionParams,
+      'program',
+      'sourceUserId' | 'targetUserId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const {
+      bumpSeed: sourceUserBumpSeed,
+      baseAuthorityAccount,
+      userAccount: sourceUserAccount
+    } = await this.getUserIdSeed(params.sourceUserId)
+    const { bumpSeed: targetUserBumpSeed, userAccount: targetUserAccount } =
+      await this.getUserIdSeed(params.targetUserId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.followUser({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      sourceUserAccount,
+      sourceUserBumpSeed,
+      targetUserAccount,
+      targetUserBumpSeed,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for unfollowUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  unfollowUser(params: Omit<AudiusData.UserSocialActionParams, 'program'>) {
-    // unfollowUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {})
-    const tx = AudiusData.unfollowUser({ program: this.program, ...params })
+  async unfollowUser(
+    params: OmitAndRequire<
+      AudiusData.UserSocialActionParams,
+      'program',
+      'sourceUserId' | 'targetUserId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const {
+      bumpSeed: sourceUserBumpSeed,
+      baseAuthorityAccount,
+      userAccount: sourceUserAccount
+    } = await this.getUserIdSeed(params.sourceUserId)
+    const { bumpSeed: targetUserBumpSeed, userAccount: targetUserAccount } =
+      await this.getUserIdSeed(params.targetUserId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.unfollowUser({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      sourceUserAccount,
+      sourceUserBumpSeed,
+      targetUserAccount,
+      targetUserBumpSeed,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for subscribeUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  subscribeUser(params: Omit<AudiusData.UserSocialActionParams, 'program'>) {
-    // subscribeUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) => {)
-    const tx = AudiusData.subscribeUser({ program: this.program, ...params })
+  async subscribeUser(
+    params: OmitAndRequire<
+      AudiusData.UserSocialActionParams,
+      'program',
+      'sourceUserId' | 'targetUserId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const {
+      bumpSeed: sourceUserBumpSeed,
+      baseAuthorityAccount,
+      userAccount: sourceUserAccount
+    } = await this.getUserIdSeed(params.sourceUserId)
+    const { bumpSeed: targetUserBumpSeed, userAccount: targetUserAccount } =
+      await this.getUserIdSeed(params.targetUserId)
+
+    const userSolKeypair = this.getUserKeyPair()
+    const tx = AudiusData.subscribeUser({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      sourceUserAccount,
+      sourceUserBumpSeed,
+      targetUserAccount,
+      targetUserBumpSeed,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 
   /**
    * Creates a solana transaction for unsubscribeUser
    *
-   * @param {{
-   *  publicKey: PublicKey
-   * }} { publicKey }
-   * @return {Promise<number>}
+   * @param {{}} {}
+   * @return {Promise<any>}
    * @memberof SolanaWeb3Manager
    */
-  unsubscribeUser(params: Omit<AudiusData.UserSocialActionParams, 'program'>) {
-    // unsubscribeUser = ({ program, baseAuthorityAccount, sourceUserStorageAccountPDA, targetUserStorageAccountPDA, userAuthorityDelegateAccountPDA, authorityDelegationStatusAccountPDA, userAuthorityPublicKey, sourceUserId, sourceUserBumpSeed, targetUserId, targetUserBumpSeed, adminStoragePublicKey, }) =>
-    const tx = AudiusData.unsubscribeUser({ program: this.program, ...params })
+  async unsubscribeUser(
+    params: OmitAndRequire<
+      AudiusData.UserSocialActionParams,
+      'program',
+      'sourceUserId' | 'targetUserId'
+    >
+  ) {
+    if (!this.didInit()) return
+
+    const {
+      bumpSeed: sourceUserBumpSeed,
+      baseAuthorityAccount,
+      userAccount: sourceUserAccount
+    } = await this.getUserIdSeed(params.sourceUserId)
+    const { bumpSeed: targetUserBumpSeed, userAccount: targetUserAccount } =
+      await this.getUserIdSeed(params.targetUserId)
+
+    const userSolKeypair = this.getUserKeyPair()
+
+    const tx = AudiusData.unsubscribeUser({
+      program: this.program,
+      adminAccount: this.adminStoragePublicKey,
+      baseAuthorityAccount,
+      sourceUserAccount,
+      sourceUserBumpSeed,
+      targetUserAccount,
+      targetUserBumpSeed,
+      userAuthorityPublicKey: userSolKeypair.publicKey,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      ...params
+    })
+    await this.signTransaction(tx, userSolKeypair)
+    return await this.sendTx(tx)
   }
 }
 
