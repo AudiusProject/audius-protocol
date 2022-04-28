@@ -424,6 +424,7 @@ class AudiusLibs {
         (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
         (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
         this.isServer,
+        this.logger,
         this.isDebug
       )
       contractsToInit.push(this.ethContracts.init())

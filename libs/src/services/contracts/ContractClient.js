@@ -136,6 +136,7 @@ class ContractClient {
 
     // Override method.call (chain reads) with built in retry logic
     const call = method.call
+    const theLogger = this.logger
     method.call = async (...args) => {
       return retry(async (bail, number) => {
         return call(...args)
@@ -150,7 +151,21 @@ class ContractClient {
           if (err) {
             this.logger.info(`Retry error for ${methodName} : ${err}`)
           }
+
+          // if (theLogger === undefined || theLogger === null) throw new Error("logger is undefined")
+
+          // throw new Error(`WTF IS THE LOGGER? ${theLogger} 
+          //   OR THIS ${typeof(theLogger)} 
+          //   AND TYPE ${typeof(this)} 
+          //   AND CONSTRUCTOR NAME ${this.constructor.name}
+          //   WHAT IS this ${Object.keys(this).map((k, i) => k + ':' + typeof(this[k]))}
+          // `)
+
+          theLogger.info(`Retry error for ${methodName} : ${err}`)
         }
+      }).catch((e) => {
+        // console.log("LOGGER", theLogger)
+        console.log("MAYBE IT WILL SHOW THIS", e)
       })
     }
 
