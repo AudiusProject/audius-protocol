@@ -517,6 +517,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_spl_token",
                 "schedule": timedelta(seconds=5),
             },
+            "index_aggregate_tips": {
+                "task": "index_aggregate_tips",
+                "schedule": timedelta(seconds=5),
+            }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
             #     "task": "index_solana_user_data",

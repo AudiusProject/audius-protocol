@@ -27,7 +27,7 @@ def upgrade():
             sa.Column("receiver_user_id", sa.Integer(), nullable=False),
             sa.Column("amount", sa.BigInteger(), nullable=False),
             sa.Column("created_at", sa.DateTime(), nullable=False),
-            sa.PrimaryKeyConstraint("sender_user_id", "receiver_user_id"),
+            sa.PrimaryKeyConstraint("slot", "signature"),
         )
         op.create_index(
             op.f("ix_user_tips_receiver_user_id"),
@@ -40,6 +40,9 @@ def upgrade():
             "user_tips",
             ["sender_user_id"],
             unique=False,
+        )
+        op.create_index(
+            op.f("ix_user_tips_signature"), "user_tips", ["signature"], unique=False
         )
 
     # AGGREGATE USER TIPS
@@ -64,10 +67,7 @@ def downgrade():
         op.f("ix_aggregate_user_tips_receiver_user_id"),
         table_name="aggregate_user_tips",
     )
-    op.drop_index(
-        op.f("ix_aggregate_user_tips_sender_user_id"), table_name="aggregate_user_tips"
-    )
     op.drop_table("aggregate_user_tips")
-    op.drop_index(op.f("ix_user_tips_sender_user_id"), table_name="user_tips")
+    op.drop_index(op.f("ix_user_tips_signature"), table_name="user_tips")
     op.drop_index(op.f("ix_user_tips_receiver_user_id"), table_name="user_tips")
     op.drop_table("user_tips")

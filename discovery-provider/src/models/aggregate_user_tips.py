@@ -5,7 +5,7 @@ from .models import Base
 
 class AggregateUserTips(Base):
     __tablename__ = "aggregate_user_tips"
-    sender_user_id = Column(Integer, nullable=False, index=True)
+    sender_user_id = Column(Integer, nullable=False)
     receiver_user_id = Column(Integer, nullable=False, index=True)
     amount = Column(BigInteger, nullable=False)
 
