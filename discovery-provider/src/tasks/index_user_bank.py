@@ -53,18 +53,6 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 
-# UPDATE_AGGREGATE_USER_TIPS_QUERY = """
-# INSERT INTO aggregate_user_tips (
-#         sender_user_id
-#         , receiver_user_id
-#         , amount
-#     )
-#     VALUES (:sender_user_id, :receiver_user_id, :amount)
-#     ON CONFLICT (sender_user_id, receiver_user_id)
-#     DO UPDATE
-#         SET amount = EXCLUDED.amount + aggregate_user_tips.amount
-# """
-
 
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
