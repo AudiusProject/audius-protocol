@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback } from 'react'
 
 import { FavoriteSource } from 'audius-client/src/common/models/Analytics'
 import { SquareSizes } from 'audius-client/src/common/models/ImageSizes'
@@ -20,8 +20,6 @@ import { makeStyles } from 'app/styles'
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
-
-const SEEK_INTERVAL = 200
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
@@ -108,24 +106,6 @@ export const PlayBar = ({
 }: PlayBarProps) => {
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
-  const [percentComplete, setPercentComplete] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout>()
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      const { currentTime, seekableDuration } = global.progress
-      if (seekableDuration !== undefined) {
-        setPercentComplete(currentTime / seekableDuration)
-      } else {
-        setPercentComplete(0)
-      }
-    }, SEEK_INTERVAL)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [setPercentComplete, intervalRef])
 
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
@@ -166,10 +146,7 @@ export const PlayBar = ({
         }
       ]}
     >
-      <TrackingBar
-        percentComplete={percentComplete}
-        translationAnim={translationAnim}
-      />
+      <TrackingBar translationAnim={translationAnim} />
       <View style={styles.container}>
         {renderFavoriteButton()}
         <TouchableOpacity
