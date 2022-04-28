@@ -59,6 +59,7 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
   return (
     <AnimatedButton
       {...props}
+      resizeMode='cover'
       haptics
       iconJSON={iconJSON}
       onPress={handlePress}
