@@ -20,7 +20,7 @@ export type InitAdminParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminKeypair: Keypair;
-  adminStorageKeypair: Keypair;
+  adminAccountKeypair: Keypair;
   verifierKeypair: Keypair;
 };
 
@@ -32,7 +32,7 @@ export const initAdmin = ({
   payer,
   program,
   adminKeypair,
-  adminStorageKeypair,
+  adminAccountKeypair,
   verifierKeypair,
 }: InitAdminParams) => {
   const tx = new Transaction();
@@ -43,7 +43,7 @@ export const initAdmin = ({
       verifierKeypair.publicKey,
       {
         accounts: {
-          admin: adminStorageKeypair.publicKey,
+          admin: adminAccountKeypair.publicKey,
           payer,
           systemProgram: SystemProgram.programId,
         },
