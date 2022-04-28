@@ -226,14 +226,14 @@ const getCID = async (req, res) => {
   // Check file existence on fs with new storage path pattern
   const storagePaths = []
   try {
-    let storagePath = DiskManager.computeFilePath(CID, false)
+    const storagePath = DiskManager.computeFilePath(CID, false)
     storagePaths.push(storagePath)
   } catch (e) {
     logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
   }
 
   try {
-    let storagePath = DiskManager.computeLegacyFilePath(CID)
+    const storagePath = DiskManager.computeLegacyFilePath(CID)
     storagePaths.push(storagePath)
   } catch (e) {
     logger.warn(
@@ -245,7 +245,7 @@ const getCID = async (req, res) => {
   const storagePathWhereFileExists = null
 
   // Check file existence in storage paths. Exit for-loop immediately when file exists.
-  for (let storagePath of storagePaths) {
+  for (const storagePath of storagePaths) {
     const response = await checkStoragePathForFile(storagePath)
 
     if (!response.error) {
