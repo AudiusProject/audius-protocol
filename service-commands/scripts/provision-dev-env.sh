@@ -34,7 +34,7 @@ function setup_linux_toolchains() {
         cd /tmp
         tar xf /tmp/sift.tar.gz
         sudo mv sift_*/sift /usr/local/bin/sift
-        sudo rm sift*
+        sudo rm -rf sift*
     )
 }
 
@@ -113,6 +113,12 @@ function setup_profile() {
     echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
     echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >> $HOME/.profile
     echo 'export TN_DIR=$HOME/trusted-notifier-service' >> $HOME/.profile
+    echo '
+if [ -d ~/.aliases ]; then
+  for f in ~/.aliases/*; do
+    source $f
+  done
+fi' >> $HOME/.profile
 }
 
 function silence_motd() {
