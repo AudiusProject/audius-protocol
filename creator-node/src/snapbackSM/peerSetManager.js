@@ -1,6 +1,7 @@
 const axios = require('axios')
 
 const config = require('../config')
+const Utils = require('../utils')
 const { logger } = require('../logging')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
@@ -20,7 +21,7 @@ const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
 
-const DEFAULT_AXIOS_TIMEOUT_MS = 5000 // 5s
+const DEFAULT_AXIOS_TIMEOUT_MS = 10_000 // 10s
 
 class PeerSetManager {
   constructor({
@@ -177,21 +178,23 @@ class PeerSetManager {
       throw new Error('No discovery provider currently selected, exiting')
     }
 
-    // Request all users that have this node as a replica (either primary or secondary)
-    const requestParams = {
-      method: 'get',
-      baseURL: this.discoveryProviderEndpoint,
-      url: `v1/full/users/content_node/all`,
-      params: {
-        creator_node_endpoint: this.creatorNodeEndpoint
-      },
-      timeout: DEFAULT_AXIOS_TIMEOUT_MS
-    }
-
     // Will throw error on non-200 response
     let allNodeUsers
     try {
-      const resp = await axios(requestParams)
+      // Request all users that have this node as a replica (either primary or secondary)
+      const resp = await Utils.asyncRetry({
+        asyncFn: axios, 
+        asyncParms: {
+          method: 'get',
+          baseURL: this.discoveryProviderEndpoint,
+          url: `v1/full/users/content_node/all`,
+          params: {
+            creator_node_endpoint: this.creatorNodeEndpoint
+          },
+          timeout: DEFAULT_AXIOS_TIMEOUT_MS
+        },
+        asyncFnTask: 'fetch all users with this node in replica'
+      });
       allNodeUsers = resp.data.data
     } catch (e) {
       throw new Error(`getAllNodeUsers() Error: ${e.toString()}`)
@@ -213,20 +216,21 @@ class PeerSetManager {
       throw new Error('No discovery provider currently selected, exiting')
     }
 
-    const requestParams = {
-      method: 'get',
-      baseURL: this.discoveryProviderEndpoint,
-      url: `users/creator_node`,
-      params: {
-        creator_node_endpoint: this.creatorNodeEndpoint
-      },
-      timeout: DEFAULT_AXIOS_TIMEOUT_MS
-    }
-
     // Will throw error on non-200 response
     let nodePrimaryUsers
     try {
-      const resp = await axios(requestParams)
+      const resp = await Utils.asyncRetry({
+        asyncFn: axios, 
+        asyncParams: {
+          method: 'get',
+          baseURL: this.discoveryProviderEndpoint,
+          url: `users/creator_node`,
+          params: {
+            creator_node_endpoint: this.creatorNodeEndpoint
+          }
+        },
+        asyncFnTask: '[LEGACY]: fetch users with node in replica',
+      });
       nodePrimaryUsers = resp.data.data
     } catch (e) {
       throw new Error(`getNodePrimaryUsers() Error: ${e.toString()}`)
