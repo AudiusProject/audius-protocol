@@ -135,7 +135,7 @@ async function findCIDInNetwork(
     config.get('delegatePrivateKey')
   )
 
-  for (let contentNode of filteredContentNodes) {
+  for (const contentNode of filteredContentNodes) {
     if (found) break
 
     const contentNodeEndpoint = contentNode.endpoint
