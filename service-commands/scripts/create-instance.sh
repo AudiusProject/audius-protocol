@@ -102,7 +102,7 @@ case "$provider" in
 	gcp)
 		gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type 2> /dev/null
 		gcloud compute disks create $name-solana-disk \
-			--size 1000 \
+			--size 500 \
 			--type pd-balanced
 		gcloud compute instances attach-disk $name \
 			--disk $name-solana-disk
