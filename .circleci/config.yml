@@ -69,7 +69,7 @@ jobs:
             ls -la "$PROTOCOL_DIR"
             cd "$PROTOCOL_DIR/service-commands/"
             npm install --unsafe-perm
-            A setup --assume-yes remote-dev audius-bake-nightly
+            yes | A setup remote-dev audius-bake-nightly
       - run:
           name: gcloud service account auth
           command: |
