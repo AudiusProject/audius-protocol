@@ -12,7 +12,6 @@ import {
   IconPencil,
   IconRocket
 } from '@audius/stems'
-import Input from 'antd/lib/input'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 import PropTypes from 'prop-types'
@@ -24,6 +23,7 @@ import { squashNewLines } from 'common/utils/formatUtil'
 import { formatSecondsAsText, formatDate } from 'common/utils/timeUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { Input } from 'components/input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -657,6 +657,8 @@ class CollectionHeader extends PureComponent {
               prefix={<IconFilter />}
               onChange={this.onFilterChange}
               value={this.state.filterText}
+              size='small'
+              variant='bordered'
             />
           </div>
         </div>
