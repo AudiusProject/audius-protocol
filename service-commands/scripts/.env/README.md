@@ -80,6 +80,8 @@ fi' >> $HOME/.profile
 ```
 cp -r . ~/.env
 rm ~/.env/.gitignore
+brew install findutils
+export PATH=“/opt/homebrew/opt/findutils/libexec/gnubin:$PATH”
 ~/.env/bin/.env.install
 ```
 
@@ -88,6 +90,7 @@ rm ~/.env/.gitignore
 ```
 cd ~/.env
 git init
+git add .
 git commit -am "first commit"
 ```
 
@@ -175,6 +178,7 @@ Perform the migration:
 vi ~/bin/migrate
 # update GIT_URL
 # update logic/flow
+~/bin/migrate box-old box
 ```
 
 ## Additional Optional Settings
