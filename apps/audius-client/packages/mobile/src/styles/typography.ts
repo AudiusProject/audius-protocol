@@ -1,6 +1,6 @@
 import { TextStyle } from 'react-native'
 
-type FontWeight =
+export type FontWeight =
   | 'heavy'
   | 'bold'
   | 'demiBold'
@@ -22,6 +22,7 @@ export const fontByWeight: Record<FontWeight, string> = {
 }
 
 const fontSize = {
+  xxs: 10,
   xs: 12,
   small: 14,
   medium: 16,
@@ -72,7 +73,7 @@ export const typography = {
     marginBottom: fontSize.xs * 0.2
   },
   label: {
-    fontSize: 10,
+    fontSize: fontSize.xxs,
     fontFamily: fontByWeight.bold,
     letterSpacing: 0.15
   },
