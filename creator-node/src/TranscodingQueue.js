@@ -234,15 +234,6 @@ class TranscodingQueue {
   async isAvailable() {
     const { active, waiting } = await this.getTranscodeQueueJobs()
 
-    await this.logStatus(
-      `vicky! active: ${active} waiting ${waiting} max concurr - min slots ${
-        MAX_CONCURRENCY - MIN_SLOTS_AVAILABLE
-      } isAvailable ${!(
-        active === MAX_CONCURRENCY - MIN_SLOTS_AVAILABLE &&
-        waiting > MAX_CONCURRENCY
-      )}`
-    )
-
     return !(
       active === MAX_CONCURRENCY - MIN_SLOTS_AVAILABLE &&
       waiting > MAX_CONCURRENCY
