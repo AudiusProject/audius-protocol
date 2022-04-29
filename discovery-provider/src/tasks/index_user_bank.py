@@ -465,7 +465,7 @@ def process_user_bank_txs():
             if latest_global_slot is not None:
                 redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
         except:
-            logger.error('index_user_bank.py | Failed to get block height')
+            logger.error("index_user_bank.py | Failed to get block height")
 
 
 # ####### CELERY TASKS ####### #
