@@ -35,7 +35,7 @@ jobs:
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            GCLOUD_VM_NAME=audius-bake-nightly+$(date +"%Y-%m-%dT%T.%3N")
+            GCLOUD_VM_NAME=audius-bake-nightly-$(date +%s)
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
       
             # Set up dependencies to provision GCP box
