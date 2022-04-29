@@ -99,6 +99,17 @@ case "$service" in
 	remote-dev)
 		wait_for_instance $provider $user $name
 		echo "Waiting for instance $name on $provider to be ready for ssh connections... You may see some SSH connection errors during this time but instance should eventually come up."
+		if [ "${fast:-0}" -eq "0" ]; then
+			execute_with_ssh $provider $user $name \
+				"[[ ! -d ~/audius-protocol ]]" \
+				"&& git clone --branch $audius_protocol_git_ref https://github.com/AudiusProject/audius-protocol.git" \
+				"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh $audius_protocol_git_ref $audius_client_git_ref"
+
+			wait_for_instance $provider $user $name
+			reboot_instance $provider $name
+			wait_for_instance $provider $user $name
+			# TODO fix install and provisioning for fast
+		fi
 		
 		# Mounted attached disks
 		case "$provider" in
@@ -114,19 +125,6 @@ case "$service" in
 				"
 				;;
 		esac
-		
-		# provision-dev-env.sh
-		if [ "${fast:-0}" -eq "0" ]; then
-			execute_with_ssh $provider $user $name \
-				"[[ ! -d ~/audius-protocol ]]" \
-				"&& git clone --branch $audius_protocol_git_ref https://github.com/AudiusProject/audius-protocol.git" \
-				"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh $audius_protocol_git_ref $audius_client_git_ref"
-
-			wait_for_instance $provider $user $name
-			reboot_instance $provider $name
-			wait_for_instance $provider $user $name
-			# TODO fix install and provisioning for fast
-		fi
 
 		# configure local files: /etc/hosts
 		configure_etc_hosts
