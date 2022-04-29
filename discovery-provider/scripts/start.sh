@@ -88,7 +88,7 @@ fi
 
 # start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
-    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
+    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) /server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) worker.log &
         celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) beat.log &
