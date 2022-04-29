@@ -61,6 +61,7 @@ from .models import (
 from .related_artist import RelatedArtist
 from .reward_manager import RewardManagerTransaction
 from .spl_token_transaction import SPLTokenTransaction
+from .tipper_rank_up import TipperRankUp
 from .track_route import TrackRoute
 from .track_trending_score import TrackTrendingScore
 from .trending_param import TrendingParam
@@ -123,6 +124,7 @@ __all__ = [
     "SPLTokenTransaction",
     "Stem",
     "TagTrackUserMatview",
+    "TipperRankUp",
     "Track",
     "TrackRoute",
     "TrackTrendingScore",

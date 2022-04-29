@@ -5,9 +5,13 @@ import operator
 from redis import Redis
 from sqlalchemy import func, text
 from sqlalchemy.orm.session import Session
-from src.models import UserTip
+from src.models import TipperRankUp, UserTip
 from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table
 from src.tasks.celery_app import celery
+from src.utils.redis_constants import (
+    latest_sol_aggregate_tips_slot_key,
+    latest_sol_user_bank_slot_key,
+)
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
@@ -79,7 +83,6 @@ def _update_aggregate_tips(session: Session):
     max_slot_result = session.query(func.max(UserTip.slot)).one_or_none()
     max_slot = int(max_slot_result[0]) if max_slot_result is not None else 0
     if prev_slot == max_slot:
-        logger.info("index_aggregate_tips.py | skipped")
         return
     ranks_before = _get_ranks(session, prev_slot, max_slot)
     update_aggregate_table(
@@ -97,7 +100,6 @@ def _update_aggregate_tips(session: Session):
             ranks_before, operator.itemgetter("receiver_user_id")
         )
     }
-    logger.info("index_aggregate_tips.py | done")
     for row in ranks_after:
         if (
             # Receiver was not previously tipped
@@ -109,16 +111,14 @@ def _update_aggregate_tips(session: Session):
             or row["rank"]
             < grouped_ranks_before[row["receiver_user_id"]][row["sender_user_id"]]
         ):
-            prev_rank = (
-                grouped_ranks_before[row["receiver_user_id"]][row["sender_user_id"]]
-                if row["receiver_user_id"] in grouped_ranks_before
-                and row["sender_user_id"]
-                in grouped_ranks_before[row["receiver_user_id"]]
-                else None
+            rank_up = TipperRankUp(
+                slot=max_slot,
+                sender_user_id=row["sender_user_id"],
+                receiver_user_id=row["receiver_user_id"],
+                rank=row["rank"],
             )
-            logger.info(
-                f"index_aggregate_tips.py | NOTIF | sender: {row['sender_user_id']}, receiver: {row['receiver_user_id']}, rank: {row['rank']}, prev_rank: {prev_rank}"
-            )
+            session.add(rank_up)
+            logger.info(f"index_aggregate_tips.py | Rank Up: {rank_up}")
 
 
 # ####### CELERY TASKS ####### #
@@ -130,6 +130,9 @@ def update_aggregate_tips(self):
     db: SessionManager = update_aggregate_tips.db
     redis: Redis = update_aggregate_tips.redis
 
+    latest_user_bank_slot = redis.get(latest_sol_user_bank_slot_key)
     init_task_and_acquire_lock(
         logger, db, redis, AGGREGATE_TIPS, _update_aggregate_tips
     )
+    if latest_user_bank_slot is not None:
+        redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))

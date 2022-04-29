@@ -40,6 +40,7 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
+    latest_sol_user_bank_slot_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -319,7 +320,7 @@ def parse_user_bank_transaction(
 
 
 def process_user_bank_txs():
-    solana_client_manager = index_user_bank.solana_client_manager
+    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
     db = index_user_bank.db
     redis = index_user_bank.redis
     logger.info("index_user_bank.py | Acquired lock")
@@ -457,6 +458,14 @@ def process_user_bank_txs():
                 "timestamp": last_tx["blockTime"],
             },
         )
+        redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
+    else:
+        try:
+            latest_global_slot = solana_client_manager.get_block_height()
+            if latest_global_slot is not None:
+                redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
+        except:
+            logger.error('index_user_bank.py | Failed to get block height')
 
 
 # ####### CELERY TASKS ####### #

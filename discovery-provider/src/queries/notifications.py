@@ -17,6 +17,7 @@ from src.models import (
     RepostType,
     Save,
     SaveType,
+    TipperRankUp,
     Track,
     UserBalanceChange,
 )
@@ -39,6 +40,7 @@ from src.tasks.index_listen_count_milestones import (
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
+from src.utils.redis_constants import latest_sol_aggregate_tips_slot_key
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -993,20 +995,31 @@ def notifications():
 
 
 def get_max_slot(redis: Redis):
-    max_slot = 0
-
     listen_milestone_slot = redis.get(PROCESSED_LISTEN_MILESTONE)
     if listen_milestone_slot:
-        max_slot = int(listen_milestone_slot)
+        listen_milestone_slot = int(listen_milestone_slot)
 
     rewards_manager_db_cache = get_latest_cached_sol_rewards_manager_db(redis)
     tx_cache = get_latest_cached_sol_rewards_manager_program_tx(redis)
-
+    rewards_manager_slot = None
     if tx_cache and rewards_manager_db_cache:
         if tx_cache["slot"] != rewards_manager_db_cache["slot"]:
-            max_slot = min(rewards_manager_db_cache["slot"], max_slot)
+            rewards_manager_slot = rewards_manager_db_cache["slot"]
 
-    return max_slot
+    tipper_rank_up_slot = redis.get(latest_sol_aggregate_tips_slot_key)
+    if tipper_rank_up_slot:
+        tipper_rank_up_slot = int(tipper_rank_up_slot)
+
+    all_slots = list(
+        filter(
+            lambda x: x is not None,
+            [listen_milestone_slot, rewards_manager_slot, tipper_rank_up_slot],
+        )
+    )
+    logger.info(f"notifications.py | {all_slots}")
+    if len(all_slots) == 0:
+        return None
+    return min(all_slots)
 
 
 @bp.route("/solana_notifications", methods=("GET",))
@@ -1020,7 +1033,7 @@ def solana_notifications():
 
     Response - Json object w/ the following fields
         notifications: Array of notifications of shape:
-            type: 'ChallengeReward' | 'MilestoneListen'
+            type: 'ChallengeReward' | 'MilestoneListen' | 'TipperRankUp'
             slot: (int) slot number of notification
             initiator: (int) the user id that caused this notification
             metadata?: (any) additional information about the notification
@@ -1102,8 +1115,35 @@ def solana_notifications():
                 }
             )
 
+        tipper_rank_ups_result = (
+            session.query(TipperRankUp)
+            .filter(
+                TipperRankUp.slot >= min_slot_number,
+                TipperRankUp.slot <= max_slot_number,
+            )
+            .all()
+        )
+        logger.info(
+            f"notifications.py | tipper_rank_ups_result: {tipper_rank_ups_result} max_slot_number: {max_slot_number}"
+        )
+        tipper_rank_ups = []
+        for tipper_rank_up in tipper_rank_ups_result:
+            tipper_rank_ups.append(
+                {
+                    const.solana_notification_type: const.solana_notification_type_tipper_rank_up,
+                    const.solana_notification_slot: tipper_rank_up.slot,
+                    const.solana_notification_initiator: tipper_rank_up.sender_user_id,
+                    const.solana_notification_metadata: {
+                        const.notification_entity_id: tipper_rank_up.receiver_user_id,
+                        const.notification_entity_type: "user",
+                        const.solana_notification_tip_rank: tipper_rank_up.rank,
+                    },
+                }
+            )
+
         notifications_unsorted.extend(challenge_reward_notifications)
         notifications_unsorted.extend(track_listen_milestones)
+        notifications_unsorted.extend(tipper_rank_ups)
 
     # Final sort
     sorted_notifications = sorted(
