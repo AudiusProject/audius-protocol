@@ -1,8 +1,7 @@
 import React from 'react'
 
-import Input from 'antd/lib/input'
-
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
+import { Input } from 'components/input'
 
 import styles from './FilterInput.module.css'
 
@@ -18,10 +17,12 @@ const FilterInput = ({ placeholder, onChange, value }: FilterInputProps) => {
   return (
     <div className={styles.filterContainer}>
       <Input
+        className={styles.filterInput}
         placeholder={placeholder}
         prefix={<IconFilter />}
         onChange={onChange}
         value={value}
+        variant='bordered'
       />
     </div>
   )
