@@ -39,7 +39,7 @@ jobs:
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
       
             # Set up dependencies to provision GCP box
-            set -x
+            # set -x
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
             # install python3.9
             apt update -y && apt upgrade -y
@@ -70,7 +70,7 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             # gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@$GCLOUD_VM_NAME \<< EOF
-            ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               A run init-repos up;
               A up;
               A down;
