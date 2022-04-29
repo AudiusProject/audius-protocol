@@ -84,21 +84,6 @@ if ! instance_exists $provider $name; then
 	fi
 fi
 
-# Mounted attached disks
-case "$provider" in
-	gcp)
-		execute_with_ssh $provider $user $name "sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb"
-		execute_with_ssh $provider $user $name "sudo mkdir -p /mnt/disks/solana-disk"
-		execute_with_ssh $provider $user $name "sudo mount -o discard,defaults /dev/sdb /mnt/disks/solana-disk"
-		execute_with_ssh $provider $user $name "sudo chmod a+w /mnt/disks/solana-disk"
-		execute_with_ssh $provider $user $name "
-			UUID=\$(sudo blkid /dev/sdb | sed 's/.*UUID=\"//g' | sed 's/\".*//g') \
-			&& echo \"UUID=\$UUID /mnt/disks/solana-disk ext4 discard,defaults,nofail 0 2\" \
-				| sudo tee -a /etc/fstab
-		"
-		;;
-esac
-
 # Setup service
 case "$service" in
 	creator-node)
@@ -114,6 +99,23 @@ case "$service" in
 	remote-dev)
 		wait_for_instance $provider $user $name
 		echo "Waiting for instance $name on $provider to be ready for ssh connections... You may see some SSH connection errors during this time but instance should eventually come up."
+		
+		# Mounted attached disks
+		case "$provider" in
+			gcp)
+				execute_with_ssh $provider $user $name "sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb"
+				execute_with_ssh $provider $user $name "sudo mkdir -p /mnt/disks/solana-disk"
+				execute_with_ssh $provider $user $name "sudo mount -o discard,defaults /dev/sdb /mnt/disks/solana-disk"
+				execute_with_ssh $provider $user $name "sudo chmod a+w /mnt/disks/solana-disk"
+				execute_with_ssh $provider $user $name "
+					UUID=\$(sudo blkid /dev/sdb | sed 's/.*UUID=\"//g' | sed 's/\".*//g') \
+					&& echo \"UUID=\$UUID /mnt/disks/solana-disk ext4 discard,defaults,nofail 0 2\" \
+						| sudo tee -a /etc/fstab
+				"
+				;;
+		esac
+		
+		# provision-dev-env.sh
 		if [ "${fast:-0}" -eq "0" ]; then
 			execute_with_ssh $provider $user $name \
 				"[[ ! -d ~/audius-protocol ]]" \
