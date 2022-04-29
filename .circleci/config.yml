@@ -77,7 +77,7 @@ jobs:
       - run:
             name: Delete GCP box
             command: |
-              gcloud compute instances delete $GCLOUD_IP_ADDRESS --quiet
+              echo "gcloud compute instances delete $GCLOUD_IP_ADDRESS --quiet"
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
