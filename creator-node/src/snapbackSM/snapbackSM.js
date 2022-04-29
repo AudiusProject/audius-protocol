@@ -989,110 +989,110 @@ class SnapbackSM {
         }
       )
 
-       // Issue all required sync requests
-       let numSyncRequestsRequired,
-         numSyncRequestsEnqueued,
-         enqueueSyncRequestErrors
-       try {
-         const resp = await this.issueSyncRequestsToSecondaries(
-           potentialSyncRequests,
-           replicaSetNodesToUserClockStatusesMap
-         )
-         numSyncRequestsRequired = resp.numSyncRequestsRequired
-         numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
-         enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
+      // Issue all required sync requests
+      let numSyncRequestsRequired,
+        numSyncRequestsEnqueued,
+        enqueueSyncRequestErrors
+      try {
+        const resp = await this.issueSyncRequestsToSecondaries(
+          potentialSyncRequests,
+          replicaSetNodesToUserClockStatusesMap
+        )
+        numSyncRequestsRequired = resp.numSyncRequestsRequired
+        numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
+        enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
 
-         // Error if > 50% syncRequests fail
-         if (enqueueSyncRequestErrors.length > numSyncRequestsEnqueued) {
-           throw new Error('More than 50% of SyncRequests failed to be enqueued')
-         }
+        // Error if > 50% syncRequests fail
+        if (enqueueSyncRequestErrors.length > numSyncRequestsEnqueued) {
+          throw new Error('More than 50% of SyncRequests failed to be enqueued')
+        }
 
-         this._addToStateMachineQueueDecisionTree(
-           decisionTree,
-           'issueSyncRequestsToSecondaries() Success',
-           {
-             numSyncRequestsRequired,
-             numSyncRequestsEnqueued,
-             numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
-             enqueueSyncRequestErrors
-           }
-         )
-       } catch (e) {
-         this._addToStateMachineQueueDecisionTree(
-           decisionTree,
-           'issueSyncRequestsToSecondaries() Error',
-           {
-             error: e.message,
-             numSyncRequestsRequired,
-             numSyncRequestsEnqueued,
-             numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
-             enqueueSyncRequestErrors
-           }
-         )
-       }
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Success',
+          {
+            numSyncRequestsRequired,
+            numSyncRequestsEnqueued,
+            numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
+            enqueueSyncRequestErrors
+          }
+        )
+      } catch (e) {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Error',
+          {
+            error: e.message,
+            numSyncRequestsRequired,
+            numSyncRequestsEnqueued,
+            numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
+            enqueueSyncRequestErrors
+          }
+        )
+      }
 
-       /**
-        * Issue all required replica set updates
-        * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
-        */
-       let numUpdateReplicaOpsIssued = 0
-       try {
-         /**
-          * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-          * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-          * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-          * There will be an explicit clock value check on the newly selected replica set nodes instead.
-          */
-         const { services: healthyServicesMap } =
-           await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-             performSyncCheck: false,
-             whitelist: this.reconfigNodeWhitelist,
-             log: true
-           })
+      /**
+       * Issue all required replica set updates
+       * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
+       */
+      let numUpdateReplicaOpsIssued = 0
+      try {
+        /**
+         * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+         * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+         * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+         * There will be an explicit clock value check on the newly selected replica set nodes instead.
+         */
+        const { services: healthyServicesMap } =
+          await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+            performSyncCheck: false,
+            whitelist: this.reconfigNodeWhitelist,
+            log: true
+          })
 
-         const healthyNodes = Object.keys(healthyServicesMap)
-         if (healthyNodes.length === 0)
-           throw new Error(
-             'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
-           )
+        const healthyNodes = Object.keys(healthyServicesMap)
+        if (healthyNodes.length === 0)
+          throw new Error(
+            'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
+          )
 
-         let numIssueUpdateReplicaSetOpErrors = 0
-         for await (const userInfo of requiredUpdateReplicaSetOps) {
-           const { errorMsg, issuedReconfig } =
-             await this.issueUpdateReplicaSetOp(
-               userInfo.user_id,
-               userInfo.wallet,
-               userInfo.primary,
-               userInfo.secondary1,
-               userInfo.secondary2,
-               userInfo.unhealthyReplicas,
-               healthyNodes,
-               replicaSetNodesToUserWalletsMap
-             )
+        let numIssueUpdateReplicaSetOpErrors = 0
+        for await (const userInfo of requiredUpdateReplicaSetOps) {
+          const { errorMsg, issuedReconfig } =
+            await this.issueUpdateReplicaSetOp(
+              userInfo.user_id,
+              userInfo.wallet,
+              userInfo.primary,
+              userInfo.secondary1,
+              userInfo.secondary2,
+              userInfo.unhealthyReplicas,
+              healthyNodes,
+              replicaSetNodesToUserWalletsMap
+            )
 
-           if (errorMsg) numIssueUpdateReplicaSetOpErrors++
-           if (issuedReconfig) numUpdateReplicaOpsIssued++
-         }
-         if (numIssueUpdateReplicaSetOpErrors > 0)
-           throw new Error(
-             `issueUpdateReplicaSetOp() failed for ${numIssueUpdateReplicaSetOpErrors} users`
-           )
+          if (errorMsg) numIssueUpdateReplicaSetOpErrors++
+          if (issuedReconfig) numUpdateReplicaOpsIssued++
+        }
+        if (numIssueUpdateReplicaSetOpErrors > 0)
+          throw new Error(
+            `issueUpdateReplicaSetOp() failed for ${numIssueUpdateReplicaSetOpErrors} users`
+          )
 
-         this._addToStateMachineQueueDecisionTree(
-           decisionTree,
-           'issueUpdateReplicaSetOp() Success',
-           { numUpdateReplicaOpsIssued }
-         )
-       } catch (e) {
-         this._addToStateMachineQueueDecisionTree(
-           decisionTree,
-           'issueUpdateReplicaSetOp() Error',
-           { error: e.message }
-         )
-         throw new Error(
-           'processStateMachineOperation():issueUpdateReplicaSetOp() Error'
-         )
-       }
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Success',
+          { numUpdateReplicaOpsIssued }
+        )
+      } catch (e) {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Error',
+          { error: e.message }
+        )
+        throw new Error(
+          'processStateMachineOperation():issueUpdateReplicaSetOp() Error'
+        )
+      }
     } catch (e) {
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
@@ -1195,11 +1195,11 @@ class SnapbackSM {
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
   async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
-    console.log('theo001')
+    console.log('theo002')
     const BATCH_SIZE = 500
     const nodeUserBatches = _.chunk(nodeUsers, BATCH_SIZE)
     const resultBatches = []
-    while (nodeUserBatches.length) { // TODO: Change to for loop
+    while (nodeUserBatches.length) {
       const nodeUserBatch = nodeUserBatches.shift()
       const resultBatch = await Promise.allSettled(
         nodeUserBatch.map((nodeUser) =>
@@ -1209,35 +1209,56 @@ class SnapbackSM {
       resultBatches.push(resultBatch)
     }
     const results = _.flatten(resultBatches)
-    // TODO: Maybe do this without reduce if it's slow
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      results.reduce(
-        (accumulator, resolvedPromise) => {
-          // Skip failed promises
-          const { status: promiseStatus, value: reconfigAndSyncOps } =
-            resolvedPromise
-          if (promiseStatus !== 'fulfilled') return accumulator
+    let requiredUpdateReplicaSetOps = []
+    let potentialSyncRequests = []
+    for (const resolvedPromise of results) {
+      // Skip failed promises
+      const { status: promiseStatus, value: reconfigAndSyncOps } =
+        resolvedPromise
+      if (promiseStatus !== 'fulfilled') {
+        continue
+      }
 
-          // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
-          const {
-            requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
-            potentialSyncRequests: potentialSyncRequestsFromPromise
-          } = reconfigAndSyncOps
-          const {
-            requiredUpdateReplicaSetOps: accRequiredUpdateReplicaSetOps,
-            potentialSyncRequests: accPotentialSyncRequests
-          } = accumulator
-          return {
-            requiredUpdateReplicaSetOps: accRequiredUpdateReplicaSetOps.concat(
-              requiredUpdateReplicaSetOpsFromPromise
-            ),
-            potentialSyncRequests: accPotentialSyncRequests.concat(
-              potentialSyncRequestsFromPromise
-            )
-          }
-        },
-        { requiredUpdateReplicaSetOps: [], potentialSyncRequests: [] }
+      // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
+      const {
+        requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
+        potentialSyncRequests: potentialSyncRequestsFromPromise
+      } = reconfigAndSyncOps
+      requiredUpdateReplicaSetOps = requiredUpdateReplicaSetOps.concat(
+        requiredUpdateReplicaSetOpsFromPromise
       )
+      potentialSyncRequests = potentialSyncRequests.concat(
+        potentialSyncRequestsFromPromise
+      )
+    }
+    // const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
+    //   results.reduce(
+    //     (accumulator, resolvedPromise) => {
+    //       // Skip failed promises
+    //       const { status: promiseStatus, value: reconfigAndSyncOps } =
+    //         resolvedPromise
+    //       if (promiseStatus !== 'fulfilled') return accumulator
+
+    //       // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
+    //       const {
+    //         requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
+    //         potentialSyncRequests: potentialSyncRequestsFromPromise
+    //       } = reconfigAndSyncOps
+    //       const {
+    //         requiredUpdateReplicaSetOps: accRequiredUpdateReplicaSetOps,
+    //         potentialSyncRequests: accPotentialSyncRequests
+    //       } = accumulator
+    //       return {
+    //         requiredUpdateReplicaSetOps: accRequiredUpdateReplicaSetOps.concat(
+    //           requiredUpdateReplicaSetOpsFromPromise
+    //         ),
+    //         potentialSyncRequests: accPotentialSyncRequests.concat(
+    //           potentialSyncRequestsFromPromise
+    //         )
+    //       }
+    //     },
+    //     { requiredUpdateReplicaSetOps: [], potentialSyncRequests: [] }
+    //   )
     return { requiredUpdateReplicaSetOps, potentialSyncRequests }
   }
 
