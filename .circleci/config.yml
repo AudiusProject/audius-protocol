@@ -62,7 +62,9 @@ jobs:
             ls -la "$PROTOCOL_DIR"
             cd "$PROTOCOL_DIR/service-commands/"
             npm install --unsafe-perm
-            yes | A setup remote-dev $GCLOUD_VM_NAME
+            
+            # this is || true because exit code returns 141, we need to progress even if we get 141
+            yes | A setup remote-dev $GCLOUD_VM_NAME || true
             # if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
       
             # Run A up on remote box
