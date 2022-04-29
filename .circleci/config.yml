@@ -68,8 +68,9 @@ jobs:
             # if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
       
             # Run A up on remote box
-            # ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-            gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@$GCLOUD_VM_NAME \<< EOF
+            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+            # gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@$GCLOUD_VM_NAME \<< EOF
+            ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               A run init-repos up;
               A up;
               A down;
@@ -77,7 +78,7 @@ jobs:
             EOF
 
             # Delete GCP box
-            echo "gcloud compute instances delete $GCLOUD_IP_ADDRESS --quiet"
+            echo "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
