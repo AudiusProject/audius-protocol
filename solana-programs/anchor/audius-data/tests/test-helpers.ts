@@ -63,8 +63,8 @@ export const testInitUser = async ({
   userId,
   bumpSeed,
   metadata,
-  userStorageAccount,
-  adminStorageKeypair,
+  userAccount,
+  adminAccountKeypair,
   adminKeypair,
   replicaSet,
   replicaSetBumps,
@@ -81,9 +81,9 @@ export const testInitUser = async ({
     userId,
     bumpSeed,
     metadata,
-    userStorageAccount,
+    userAccount,
     baseAuthorityAccount,
-    adminStorageAccount: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     adminAuthorityPublicKey: adminKeypair.publicKey,
     cn1,
     cn2,
@@ -91,7 +91,7 @@ export const testInitUser = async ({
   });
   const txSignature = await provider.sendAndConfirm(tx, [adminKeypair]);
 
-  const account = await program.account.user.fetch(userStorageAccount);
+  const account = await program.account.user.fetch(userAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(ethAddress.toLowerCase());
@@ -116,14 +116,14 @@ export const testInitUserSolPubkey = async ({
   message,
   ethPrivateKey,
   newUserPublicKey,
-  newUserAcctPDA,
+  userAccount,
 }) => {
   const tx = initUserSolPubkey({
     program,
     ethPrivateKey,
     message,
-    userSolPubkey: newUserPublicKey,
-    userStorageAccount: newUserAcctPDA,
+    userAuthorityPublicKey: newUserPublicKey,
+    userAccount,
   });
 
   const txSignature = await provider.sendAndConfirm(tx);
@@ -140,7 +140,7 @@ export const testInitUserSolPubkey = async ({
     newUserPublicKey.toString()
   );
 
-  const account = await program.account.user.fetch(newUserAcctPDA);
+  const account = await program.account.user.fetch(userAccount);
 
   const chainAuthority = account.authority.toString();
   const expectedAuthority = newUserPublicKey.toString();
@@ -156,8 +156,8 @@ export const testCreateUser = async ({
   bumpSeed,
   metadata,
   newUserKeypair,
-  userStorageAccount,
-  adminStoragePublicKey,
+  userAccount,
+  adminAccount,
   replicaSet,
   replicaSetBumps,
   cn1,
@@ -174,9 +174,9 @@ export const testCreateUser = async ({
     replicaSet,
     replicaSetBumps,
     metadata,
-    userSolPubkey: newUserKeypair.publicKey,
-    userStorageAccount,
-    adminStoragePublicKey,
+    userAuthorityPublicKey: newUserKeypair.publicKey,
+    userAccount,
+    adminAccount,
     baseAuthorityAccount,
     cn1,
     cn2,
@@ -196,10 +196,10 @@ export const testCreateUser = async ({
   expect(decodedData.userId).to.deep.equal(userId.toNumber());
   expect(decodedData.userBump).to.equal(bumpSeed);
   expect(decodedData.metadata).to.equal(metadata);
-  expect(accountPubKeys[0]).to.equal(userStorageAccount.toString());
-  expect(accountPubKeys[5]).to.equal(adminStoragePublicKey.toString());
+  expect(accountPubKeys[0]).to.equal(userAccount.toString());
+  expect(accountPubKeys[5]).to.equal(adminAccount.toString());
 
-  const account = await program.account.user.fetch(userStorageAccount);
+  const account = await program.account.user.fetch(userAccount);
 
   const chainEthAddress = EthWeb3.utils.bytesToHex(account.ethAddress);
   expect(chainEthAddress, "eth address").to.equal(
@@ -218,24 +218,24 @@ export const testCreateTrack = async ({
   baseAuthorityAccount,
   userId,
   bumpSeed,
-  adminStorageAccount,
+  adminAccount,
   trackMetadata,
   userAuthorityKeypair,
-  trackOwnerPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  trackOwnerAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
 }) => {
   const tx = await createTrack({
     id,
     program,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-    userStorageAccountPDA: trackOwnerPDA,
-    userAuthorityDelegateAccountPDA,
-    authorityDelegationStatusAccountPDA,
+    userAccount: trackOwnerAccount,
+    userAuthorityDelegateAccount,
+    authorityDelegationStatusAccount,
     metadata: trackMetadata,
     baseAuthorityAccount,
     userId,
-    adminStorageAccount,
+    adminAccount,
     bumpSeed,
   });
   const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
@@ -252,7 +252,7 @@ export const testCreateTrack = async ({
   // 1st index = track owner user storage account
   // 2nd index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
+  expect(accountPubKeys[1]).to.equal(trackOwnerAccount.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -260,26 +260,26 @@ export const testDeleteTrack = async ({
   provider,
   program,
   id,
-  trackOwnerPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  trackOwnerAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityKeypair,
   baseAuthorityAccount,
   userId,
   bumpSeed,
-  adminStorageAccount,
+  adminAccount,
 }) => {
   const tx = deleteTrack({
     id,
     program,
-    userStorageAccountPDA: trackOwnerPDA,
-    userAuthorityDelegateAccountPDA,
-    authorityDelegationStatusAccountPDA,
+    userAccount: trackOwnerAccount,
+    userAuthorityDelegateAccount,
+    authorityDelegationStatusAccount,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     baseAuthorityAccount,
     userId,
     bumpSeed,
-    adminStorageAccount,
+    adminAccount,
   });
   const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
 
@@ -293,7 +293,7 @@ export const testDeleteTrack = async ({
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(trackOwnerPDA.toString());
+  expect(accountPubKeys[1]).to.equal(trackOwnerAccount.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -301,26 +301,26 @@ export const testUpdateTrack = async ({
   provider,
   program,
   id,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
   userId,
   bumpSeed,
-  adminStorageAccount,
+  adminAccount,
 }) => {
   const tx = await updateTrack({
     program,
     baseAuthorityAccount,
     userId,
     bumpSeed,
-    adminStorageAccount,
+    adminAccount,
     id,
-    userStorageAccountPDA,
-    userAuthorityDelegateAccountPDA,
-    authorityDelegationStatusAccountPDA,
+    userAccount,
+    userAuthorityDelegateAccount,
+    authorityDelegationStatusAccount,
     metadata,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
   });
@@ -338,7 +338,7 @@ export const testUpdateTrack = async ({
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(userStorageAccountPDA.toString());
+  expect(accountPubKeys[1]).to.equal(userAccount.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -349,24 +349,24 @@ export const testCreatePlaylist = async ({
   baseAuthorityAccount,
   userId,
   bumpSeed,
-  adminStorageAccount,
+  adminAccount,
   playlistMetadata,
   userAuthorityKeypair,
-  playlistOwnerPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  playlistOwner,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
 }) => {
   const tx = await createPlaylist({
     id,
     program,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-    userStorageAccountPDA: playlistOwnerPDA,
-    userAuthorityDelegateAccountPDA,
-    authorityDelegationStatusAccountPDA,
+    userAccount: playlistOwner,
+    userAuthorityDelegateAccount,
+    authorityDelegationStatusAccount,
     metadata: playlistMetadata,
     baseAuthorityAccount,
     userId,
-    adminStorageAccount,
+    adminAccount,
     bumpSeed,
   });
 
@@ -384,7 +384,7 @@ export const testCreatePlaylist = async ({
   // 1st index = playlist owner user storage account
   // 2nd index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString());
+  expect(accountPubKeys[1]).to.equal(playlistOwner.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -392,26 +392,26 @@ export const testDeletePlaylist = async ({
   provider,
   program,
   id,
-  playlistOwnerPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  playlistOwner,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityKeypair,
   baseAuthorityAccount,
   userId,
   bumpSeed,
-  adminStorageAccount,
+  adminAccount,
 }) => {
   const tx = await deletePlaylist({
     id,
     program,
-    userStorageAccountPDA: playlistOwnerPDA,
-    userAuthorityDelegateAccountPDA,
-    authorityDelegationStatusAccountPDA,
+    userAccount: playlistOwner,
+    userAuthorityDelegateAccount,
+    authorityDelegationStatusAccount,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
     baseAuthorityAccount,
     userId,
     bumpSeed,
-    adminStorageAccount,
+    adminAccount,
   });
   const txSignature = await provider.sendAndConfirm(tx, [userAuthorityKeypair]);
   const { decodedInstruction, decodedData, accountPubKeys } =
@@ -424,7 +424,7 @@ export const testDeletePlaylist = async ({
   // 0th index = playlist owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(playlistOwnerPDA.toString());
+  expect(accountPubKeys[1]).to.equal(playlistOwner.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -432,26 +432,26 @@ export const testUpdatePlaylist = async ({
   provider,
   program,
   id,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   metadata,
   userAuthorityKeypair,
   baseAuthorityAccount,
   userId,
   bumpSeed,
-  adminStorageAccount,
+  adminAccount,
 }) => {
   const tx = await updatePlaylist({
     program,
     baseAuthorityAccount,
     userId,
     bumpSeed,
-    adminStorageAccount,
+    adminAccount,
     id,
-    userStorageAccountPDA,
-    userAuthorityDelegateAccountPDA,
-    authorityDelegationStatusAccountPDA,
+    userAccount,
+    userAuthorityDelegateAccount,
+    authorityDelegationStatusAccount,
     metadata,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
   });
@@ -469,13 +469,13 @@ export const testUpdatePlaylist = async ({
   // 0th index = playlist owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the playlist owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(userStorageAccountPDA.toString());
+  expect(accountPubKeys[1]).to.equal(userAccount.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
 export const testCreateUserDelegate = async ({
   adminKeypair,
-  adminStorageKeypair,
+  adminAccountKeypair,
   program,
   provider,
 }) => {
@@ -483,12 +483,12 @@ export const testCreateUserDelegate = async ({
   const udpateAdminTx = updateAdmin({
     program,
     isWriteEnabled: false,
-    adminStorageAccount: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     adminAuthorityKeypair: adminKeypair,
   });
   await provider.sendAndConfirm(udpateAdminTx, [adminKeypair]);
 
-  const user = await createSolanaUser(program, provider, adminStorageKeypair);
+  const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
   // Init AuthorityDelegationStatus for a new authority
   const userAuthorityDelegateKeypair = anchor.web3.Keypair.generate();
@@ -501,14 +501,14 @@ export const testCreateUserDelegate = async ({
     authorityDelegationStatusSeeds,
     program.programId
   );
-  const authorityDelegationStatusPDA = authorityDelegationStatusRes[0];
+  const authorityDelegationStatusAccount = authorityDelegationStatusRes[0];
   const authorityDelegationStatusBump = authorityDelegationStatusRes[1];
 
   const initAuthorityDelegationStatusTx = initAuthorityDelegationStatus({
     program,
     authorityName: "authority_name",
     userAuthorityDelegatePublicKey: userAuthorityDelegateKeypair.publicKey,
-    authorityDelegationStatusPDA,
+    authorityDelegationStatusAccount,
     payer: provider.wallet.publicKey,
   });
   const initAuthorityDelegationStatusTxSig = await provider.sendAndConfirm(
@@ -534,26 +534,26 @@ export const testCreateUserDelegate = async ({
 
   // New sol key that will be used as user authority delegate
   const userAuthorityDelegateSeeds = [
-    user.pda.toBytes().slice(0, 32),
+    user.accountAddress.toBytes().slice(0, 32),
     userAuthorityDelegateKeypair.publicKey.toBytes().slice(0, 32),
   ];
   const res = await PublicKey.findProgramAddress(
     userAuthorityDelegateSeeds,
     program.programId
   );
-  const userAuthorityDelegatePDA = res[0];
+  const userAuthorityDelegateAccountAddress = res[0];
   const userAuthorityDelegateBump = res[1];
 
   const addUserAuthorityDelegateTx = addUserAuthorityDelegate({
     program,
-    adminStoragePublicKey: adminStorageKeypair.publicKey,
+    adminAccount: adminAccountKeypair.publicKey,
     baseAuthorityAccount: user.authority,
     userId: user.userId,
     userBumpSeed: user.bumpSeed,
-    user: user.pda,
-    currentUserAuthorityDelegate: userAuthorityDelegatePDA,
+    user: user.accountAddress,
+    currentUserAuthorityDelegate: userAuthorityDelegateAccountAddress,
     signerUserAuthorityDelegate: SystemProgram.programId,
-    authorityDelegationStatus: SystemProgram.programId,
+    authorityDelegationStatusAccount: SystemProgram.programId,
     delegatePublicKey: userAuthorityDelegateKeypair.publicKey,
     authorityPublicKey: user.keypair.publicKey,
     payer: provider.wallet.publicKey,
@@ -592,10 +592,10 @@ export const testCreateUserDelegate = async ({
     baseAuthorityAccount: user.authority,
     userId: user.userId,
     userBumpSeed: user.bumpSeed,
-    userAccountPDA: user.pda,
-    userAuthorityDelegatePDA,
+    userAccountAddress: user.accountAddress,
+    userAuthorityDelegateAccountAddress,
     userAuthorityDelegateBump,
-    authorityDelegationStatusPDA,
+    authorityDelegationStatusAccount,
     authorityDelegationStatusBump,
     userKeypair: user.keypair,
     userAuthorityDelegateKeypair,
@@ -649,17 +649,17 @@ export const confirmLogInTransaction = async (
 export const createSolanaUser = async (
   program: Program<AudiusData>,
   provider: anchor.Provider,
-  adminStorageKeypair: anchor.web3.Keypair
+  adminAccountKeypair: anchor.web3.Keypair
 ) => {
   const testConsts = initTestConstants();
 
   const {
     baseAuthorityAccount,
     bumpSeed,
-    derivedAddress: newUserAcctPDA,
+    derivedAddress: userAccountAddress,
   } = await findDerivedPair(
     program.programId,
-    adminStorageKeypair.publicKey,
+    adminAccountKeypair.publicKey,
     convertBNToUserIdSeed(testConsts.userId)
   );
 
@@ -670,9 +670,9 @@ export const createSolanaUser = async (
   // Message as the incoming public key
   const message = newUserKeypair.publicKey.toBytes();
 
-  const cn1 = await getContentNode(program, adminStorageKeypair.publicKey, "1");
-  const cn2 = await getContentNode(program, adminStorageKeypair.publicKey, "2");
-  const cn3 = await getContentNode(program, adminStorageKeypair.publicKey, "3");
+  const cn1 = await getContentNode(program, adminAccountKeypair.publicKey, "1");
+  const cn2 = await getContentNode(program, adminAccountKeypair.publicKey, "2");
+  const cn3 = await getContentNode(program, adminAccountKeypair.publicKey, "3");
 
   const tx = createUser({
     payer: provider.wallet.publicKey,
@@ -681,9 +681,9 @@ export const createSolanaUser = async (
     message,
     bumpSeed,
     metadata: testConsts.metadata,
-    userSolPubkey: newUserKeypair.publicKey,
-    userStorageAccount: newUserAcctPDA,
-    adminStoragePublicKey: adminStorageKeypair.publicKey,
+    userAuthorityPublicKey: newUserKeypair.publicKey,
+    userAccount: userAccountAddress,
+    adminAccount: adminAccountKeypair.publicKey,
     baseAuthorityAccount,
     replicaSet: [1, 2, 3],
     replicaSetBumps: [cn1.bumpSeed, cn2.bumpSeed, cn3.bumpSeed],
@@ -695,11 +695,11 @@ export const createSolanaUser = async (
 
   await provider.sendAndConfirm(tx);
 
-  const account = await program.account.user.fetch(newUserAcctPDA);
+  const account = await program.account.user.fetch(userAccountAddress);
 
   return {
     account,
-    pda: newUserAcctPDA,
+    accountAddress: userAccountAddress,
     userId: testConsts.userId,
     bumpSeed,
     keypair: newUserKeypair,
@@ -710,7 +710,7 @@ export const createSolanaUser = async (
 export const createSolanaContentNode = async (props: {
   program: Program<AudiusData>;
   provider: anchor.Provider;
-  adminStorageKeypair: anchor.web3.Keypair;
+  adminAccountKeypair: anchor.web3.Keypair;
   adminKeypair: anchor.web3.Keypair;
   spId: anchor.BN;
 }) => {
@@ -721,18 +721,18 @@ export const createSolanaContentNode = async (props: {
   const { baseAuthorityAccount, bumpSeed, derivedAddress } =
     await findDerivedPair(
       props.program.programId,
-      props.adminStorageKeypair.publicKey,
+      props.adminAccountKeypair.publicKey,
       seed
     );
 
   const tx = createContentNode({
     payer: props.provider.wallet.publicKey,
     program: props.program,
-    adminPublicKey: props.adminKeypair.publicKey,
+    adminAuthorityPublicKey: props.adminKeypair.publicKey,
     baseAuthorityAccount,
-    adminStoragePublicKey: props.adminStorageKeypair.publicKey,
+    adminAccount: props.adminAccountKeypair.publicKey,
     contentNodeAuthority: authority.publicKey,
-    contentNodeAcct: derivedAddress,
+    contentNodeAccount: derivedAddress,
     spID: props.spId,
     ownerEthAddress: ownerEth.address,
   });
@@ -752,7 +752,7 @@ export const createSolanaContentNode = async (props: {
     ownerEthAddress: ownerEth.address,
     spId: props.spId,
     account: contentNode,
-    pda: derivedAddress,
+    accountAddress: derivedAddress,
     authority,
     seedBump: { seed, bump: bumpSeed },
     tx: txSignature,

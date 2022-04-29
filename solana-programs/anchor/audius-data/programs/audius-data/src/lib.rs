@@ -8,7 +8,7 @@ use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 use std::collections::BTreeMap;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
+declare_id!("8AXXpL8BBTuXDaG8y9xhoJ66Ei5eFAjUEHxJHRPDHiQr"); // default program ID to be replaced in start.sh
 
 #[program]
 pub mod audius_data {
@@ -517,7 +517,7 @@ pub mod audius_data {
         _authority_name: String,
     ) -> Result<()> {
 
-        ctx.accounts.authority_delegation_status_pda.is_revoked = false;
+        ctx.accounts.authority_delegation_status.is_revoked = false;
 
         Ok(())
     }
@@ -529,7 +529,7 @@ pub mod audius_data {
     ) -> Result<()> {
         // TODO add user validation
 
-        ctx.accounts.authority_delegation_status_pda.is_revoked = true;
+        ctx.accounts.authority_delegation_status.is_revoked = true;
 
         Ok(())
     }
@@ -554,7 +554,7 @@ pub mod audius_data {
         // Maintain the user's storage account and the incoming delegate authority key
         ctx.accounts
             .current_user_authority_delegate
-            .user_storage_account = ctx.accounts.user.key();
+            .user_account = ctx.accounts.user.key();
         ctx.accounts.current_user_authority_delegate.delegate_authority = delegate_pubkey;
         Ok(())
     }
@@ -581,7 +581,7 @@ pub mod audius_data {
         ctx.accounts.current_user_authority_delegate.delegate_authority = dummy_owner_field;
         ctx.accounts
             .current_user_authority_delegate
-            .user_storage_account = dummy_owner_field;
+            .user_account = dummy_owner_field;
         Ok(())
     }
 }
@@ -769,7 +769,7 @@ pub struct CreateUser<'info> {
     pub cn3: Account<'info, ContentNode>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    #[account(mut)]
+    #[account()]
     pub admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
     /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
@@ -804,7 +804,7 @@ pub struct UpdateAdmin<'info> {
 /// Instruction container to initialize an AuthorityDelegationStatus.
 /// The authority initializes itself as a delegate.
 /// `delegate_authority` is the authority that will become a delegate
-/// `authority_delegation_status_pda` is the target PDA for the authority's delegation
+/// `authority_delegation_status` is the target PDA for the authority's delegation
 #[derive(Accounts)]
 #[instruction(authority_name: String)]
 pub struct InitAuthorityDelegationStatus<'info> {
@@ -818,7 +818,7 @@ pub struct InitAuthorityDelegationStatus<'info> {
         bump,
         space = AUTHORITY_DELEGATION_STATUS_ACCOUNT_SIZE
     )]
-    pub authority_delegation_status_pda: Account<'info, AuthorityDelegationStatus>,
+    pub authority_delegation_status: Account<'info, AuthorityDelegationStatus>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -838,7 +838,7 @@ pub struct RevokeAuthorityDelegationStatus<'info> {
         seeds = [AUTHORITY_DELEGATION_STATUS_SEED, delegate_authority.key().as_ref()],
         bump = authority_delegation_status_bump,
     )]
-    pub authority_delegation_status_pda: Account<'info, AuthorityDelegationStatus>,
+    pub authority_delegation_status: Account<'info, AuthorityDelegationStatus>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -1024,7 +1024,7 @@ pub struct UserAuthorityDelegate {
     // The account that is given permission to operate on this user's behalf
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
-    pub user_storage_account: Pubkey,
+    pub user_account: Pubkey,
 }
 
 /// Authority delegation status account
