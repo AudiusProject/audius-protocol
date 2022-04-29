@@ -17,9 +17,6 @@ module.exports = function (app) {
       // as opposed to histograms which are great for timing pieces of code
       PrometheusMetric.populateCollectors()
 
-      // sets the content type to 'text/plain; version=0.0.4; charset=utf-8'
-      res.set('Content-Type', Prometheus.register.contentType)
-
       // uses the Prometheus client to generate a Prometheus-friendly text output
       // for a Prometheus instance to scrape
       return sendResponse(req, res, {
