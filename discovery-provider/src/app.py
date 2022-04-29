@@ -220,9 +220,9 @@ def create(test_config=None, mode="app"):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     if shared_config["cors"]["allow_all"]:
-        CORS(app, resources={r"/*": {"origins": "*"}})
+        CORS(app, max_age=86400, resources={r"/*": {"origins": "*"}})
     else:
-        CORS(app)
+        CORS(app, max_age=86400)
     app.iniconfig = ConfigIni()
     configure_flask(test_config, app, mode)
 
