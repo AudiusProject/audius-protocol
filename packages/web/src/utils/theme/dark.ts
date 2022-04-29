@@ -44,6 +44,8 @@ const theme = {
 
   '--card-image-shadow': 'rgba(17,17,17,.25)',
 
+  '--input-background': 'rgba(76,80,107,.8)',
+
   '--search-bar-background': 'rgba(76,80,107,.8)',
   '--search-bar-expanded': 'rgba(76,80,107,1.0)',
   '--search-bar-border': 'rgba(143,149,152,0.1)',

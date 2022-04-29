@@ -58,6 +58,8 @@ const theme = {
 
   '--card-image-shadow': 'rgba(133,129,153,0.75)',
 
+  '--input-background': 'rgba(255, 255, 255, 0.8)',
+
   '--search-bar-background': 'rgba(255, 255, 255, 0.8)',
   '--search-bar-expanded': 'rgba(255, 255, 255, 1.0)',
   '--search-bar-border': 'rgba(143,149,152,0.1)',
