@@ -72,6 +72,21 @@ case "$provider" in
 		;;
 esac
 
+# Mounted attached disks
+case "$provider" in
+	gcp)
+		execute_with_ssh $provider $user $name "sudo mkfs.ext4 -m 0 -E lazy_itable_init=0,lazy_journal_init=0,discard /dev/sdb"
+		execute_with_ssh $provider $user $name "sudo mkdir -p /mnt/disks/solana-disk"
+		execute_with_ssh $provider $user $name "sudo mount -o discard,defaults /dev/sdb /mnt/disks/solana-disk"
+		execute_with_ssh $provider $user $name "sudo chmod a+w /mnt/disks/solana-disk"
+		execute_with_ssh $provider $user $name "
+			UUID=\$(sudo blkid /dev/sdb | sed 's/.*UUID=\"//g' | sed 's/\".*//g') \
+			&& echo \"UUID=\$UUID /mnt/disks/solana-disk ext4 discard,defaults,nofail 0 2\" \
+				| sudo tee -a /etc/fstab
+		"
+		;;
+esac
+
 # Create instance if it does not exist
 if ! instance_exists $provider $name; then
 	echo "Instance does not exist. Creating it"
