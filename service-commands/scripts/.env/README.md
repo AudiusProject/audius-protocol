@@ -78,10 +78,14 @@ fi' >> $HOME/.profile
 ### Install Env Manager Locally (on your MBP)
 
 ```
+brew install findutils
+# execute the following line and add it to a dotfile of your choice
+export PATH=“/opt/homebrew/opt/findutils/libexec/gnubin:$PATH”
+```
+
+```
 cp -r . ~/.env
 rm ~/.env/.gitignore
-brew install findutils
-export PATH=“/opt/homebrew/opt/findutils/libexec/gnubin:$PATH”
 ~/.env/bin/.env.install
 ```
 
