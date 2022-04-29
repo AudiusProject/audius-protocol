@@ -45,11 +45,37 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
       - run:
+          name: set up bake environment
+          command: | # todo bake this into a docker image and publish; it takes too long to set up
+            set -x
+            # install python3.9
+            apt update -y && apt upgrade -y
+            apt install -y sudo wget build-essential libreadline-gplv2-dev libncursesw5-dev \
+            libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev jq
+            wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
+            tar xzf Python-3.9.6.tgz >/dev/null
+            cd Python-3.9.6 && ./configure --enable-optimizations
+            make altinstall
+            # install nvm
+            curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+            # update path
+            echo "PATH=$HOME/.local/bin:$PATH" >> ~/.profile
+            source ~/.profile
+            nvm install v14.17.5
+            nvm use 14
+            export PROTOCOL_DIR=/home/circleci/project
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+            pwd "$PROTOCOL_DIR"
+            ls -la "$PROTOCOL_DIR"
+            cd "$PROTOCOL_DIR/service-commands/"
+            npm install --unsafe-perm
+            A setup --assume-yes remote-dev audius-bake-nightly
+      - run:
           name: gcloud service account auth
           command: |
-            # gcloud compute instances create dm-remote-dev-mad-dog-test --image-project=ubuntu-os-cloud --image-family=ubuntu-2004-lts --boot-disk-size 256 --machine-type n2-custom-12-24576
-            ls
-            ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            # GCLOUD_IP_ADDRESS=$(gcloud compute instances describe dm-remote-dev-5 --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+            # ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+            gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@audius-bake-nightly \<< EOF
               # A run init-repos up;
               # A up;
               echo "hi"
@@ -803,7 +829,7 @@ workflows:
     jobs:
       - create-gcp-box:
           context:
-            - GCP
+            - GCP2
           name: create-gcp-box
   test-build-and-push:
     jobs:
