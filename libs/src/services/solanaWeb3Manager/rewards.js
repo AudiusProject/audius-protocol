@@ -270,7 +270,9 @@ async function submitAttestations ({
 
   // If there's any error in any of the transactions, just return that one
   for (const res of results) {
-    if (res.error || res.errorCode) {
+    // Opt to return anything with a known errorCode vs an error,
+    // because errorCode is usually actionable vs error is normally just Solana congestion
+    if (res.errorCode || res.error) {
       return res
     }
   }
