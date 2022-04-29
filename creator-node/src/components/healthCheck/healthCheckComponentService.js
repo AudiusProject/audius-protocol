@@ -30,6 +30,7 @@ const healthCheck = async (
   sequelize,
   getMonitors,
   getTranscodeQueueJobs,
+  transcodingQueueIsAvailable,
   getAsyncProcessingQueueJobs,
   numberOfCPUs,
   randomBytesToSign = null
@@ -97,8 +98,14 @@ const healthCheck = async (
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
     await getTranscodeQueueJobs()
-  const { active: fileProcessingActive, waiting: fileProcessingWaiting } =
-    await getAsyncProcessingQueueJobs()
+
+  const asyncProcessingQueueJobs = await getAsyncProcessingQueueJobs()
+
+  const isAvailable = await transcodingQueueIsAvailable()
+  const shouldHandleTranscode = utils.currentNodeShouldHandleTranscode({
+    transcodingQueueCanAcceptMoreJobs: isAvailable,
+    spID: config.get('spID')
+  })
 
   let solDelegatePublicKeyBase58 = ''
   try {
@@ -151,8 +158,9 @@ const healthCheck = async (
     snapbackJobInterval,
     transcodeActive,
     transcodeWaiting,
-    fileProcessingActive,
-    fileProcessingWaiting,
+    transcodeQueueIsAvailable: isAvailable,
+    shouldHandleTranscode,
+    asyncProcessingQueue: asyncProcessingQueueJobs,
     solDelegatePublicKeyBase58,
     stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
       ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
@@ -203,6 +211,7 @@ const healthCheckVerbose = async (
   getMonitors,
   numberOfCPUs,
   getTranscodeQueueJobs,
+  transcodingQueueIsAvailable,
   getAsyncProcessingQueueJobs
 ) => {
   return healthCheck(
@@ -211,6 +220,7 @@ const healthCheckVerbose = async (
     sequelize,
     getMonitors,
     getTranscodeQueueJobs,
+    transcodingQueueIsAvailable,
     getAsyncProcessingQueueJobs,
     numberOfCPUs
   )

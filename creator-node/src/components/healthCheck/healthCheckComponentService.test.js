@@ -92,14 +92,39 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   return {
     getTranscodeQueueJobs: async () => {
       return { active, waiting }
+    },
+    isAvailable: async () => {
+      return true
     }
   }
 }
 
-const AsyncProcessingQueueMock = (active = 0, waiting = 0) => {
+const AsyncProcessingQueueMock = (active = 0, waiting = 0, failed = 0) => {
   return {
     getAsyncProcessingQueueJobs: async () => {
-      return { active, waiting }
+      return {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: waiting
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: active
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: failed
+        }
+      }
     }
   }
 }
@@ -120,11 +145,16 @@ describe('Test Health Check', function () {
     config.set('dataProviderUrl', 'http://test.dataProviderUrl')
 
     const res = await healthCheck(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -169,8 +199,31 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineQueueLatestJobSuccess: null,
       stateMachineQueueLatestJobStart: null
@@ -188,11 +241,15 @@ describe('Test Health Check', function () {
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
 
     const res = await healthCheck(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -237,8 +294,31 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineQueueLatestJobSuccess: null,
       stateMachineQueueLatestJobStart: null
@@ -247,11 +327,15 @@ describe('Test Health Check', function () {
 
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
     const res = await healthCheck(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -296,8 +380,31 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineQueueLatestJobSuccess: null,
       stateMachineQueueLatestJobStart: null
@@ -345,12 +452,16 @@ describe('Test Health Check Verbose', function () {
     config.set('manualSyncsDisabled', false)
 
     const res = await healthCheckVerbose(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
 
@@ -395,8 +506,31 @@ describe('Test Health Check Verbose', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2,
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
       stateMachineQueueLatestJobSuccess: null,
       stateMachineQueueLatestJobStart: null
@@ -413,20 +547,30 @@ describe('Test Health Check Verbose', function () {
     config.set('manualSyncsDisabled', false)
 
     const verboseRes = await healthCheckVerbose(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
     const defaultRes = await healthCheck(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )

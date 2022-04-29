@@ -12,7 +12,8 @@
       "sudo rm -rf solana-programs/reward-manager/target",
       "sudo rm -rf discovery-provider/.venv",
       "sudo rm -rf discovery-provider/.mypy_cache",
-      "sudo rm -f discovery-provider/*.log"
+      "sudo rm -f discovery-provider/*.log",
+      "docker image prune --filter 'dangling=true' --filter 'until=360h'"
     ]
   },
   "network": {
@@ -62,7 +63,7 @@
     "port": 8899,
     "health_check_endpoint": "",
     "up": [
-      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.9.13 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 10000000'"
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.9.13 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 1000000'"
     ],
     "down": [
       "docker container stop solana || true",
