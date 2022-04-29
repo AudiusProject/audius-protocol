@@ -141,7 +141,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -156,7 +156,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -169,7 +169,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -184,7 +184,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -213,7 +213,7 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: keypairFromSecretKey.publicKey,
-      userAccount: userAccountAddress,
+      userAccount,
     });
   });
 
@@ -223,7 +223,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -238,7 +238,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -258,7 +258,7 @@ describe("audius-data", function () {
         message,
         ethPrivateKey: ethAccount.privateKey,
         newUserPublicKey: newUserKeypair.publicKey,
-        userAccount: userAccountAddress,
+        userAccount,
       })
     ).to.be.rejectedWith(Error);
   });
@@ -269,7 +269,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -284,7 +284,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -303,14 +303,14 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      userAccount: userAccountAddress,
+      userAccount,
     });
 
     const updatedCID = randomCID();
     const tx = await updateUser({
       program,
       metadata: updatedCID,
-      userAccount: userAccountAddress,
+      userAccount,
       userAuthorityPublicKey: newUserKeypair.publicKey,
       // No delegate authority needs to be provided in this happy path, so use the SystemProgram ID
       userAuthorityDelegate: SystemProgram.programId,
@@ -325,7 +325,7 @@ describe("audius-data", function () {
     expect(decodedInstruction.name).to.equal("updateUser");
     expect(decodedData.metadata).to.equal(updatedCID);
 
-    expect(accountPubKeys[0]).to.equal(userAccountAddress.toString());
+    expect(accountPubKeys[0]).to.equal(userAccount.toString());
     expect(accountPubKeys[1]).to.equal(newUserKeypair.publicKey.toString());
     expect(accountPubKeys[2]).to.equal(SystemProgram.programId.toString());
   });
@@ -336,7 +336,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -351,7 +351,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -370,7 +370,7 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      userAccount: userAccountAddress,
+      userAccount,
     });
 
     const trackMetadata = randomCID();
@@ -385,7 +385,7 @@ describe("audius-data", function () {
       id: trackID,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
-      trackOwnerAccount: userAccountAddress,
+      trackOwnerAccount: userAccount,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       adminAccount: adminAccountKeypair.publicKey,
@@ -406,7 +406,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata,
         userAuthorityKeypair: wrongUserKeypair,
-        trackOwnerAccount: userAccountAddress,
+        trackOwnerAccount: userAccount,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
         adminAccount: adminAccountKeypair.publicKey,
@@ -423,7 +423,7 @@ describe("audius-data", function () {
       bumpSeed,
       adminAccount: adminAccountKeypair.publicKey,
       id: trackID,
-      userAccount: userAccountAddress,
+      userAccount,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
@@ -437,7 +437,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -470,7 +470,7 @@ describe("audius-data", function () {
         bumpSeed,
         metadata,
         newUserKeypair,
-        userAccount: userAccountAddress,
+        userAccount,
         adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
@@ -483,7 +483,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -516,7 +516,7 @@ describe("audius-data", function () {
         bumpSeed,
         metadata,
         newUserKeypair,
-        userAccount: userAccountAddress,
+        userAccount,
         adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
@@ -529,7 +529,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -563,7 +563,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
@@ -579,14 +579,14 @@ describe("audius-data", function () {
         bumpSeed,
         metadata,
         newUserKeypair,
-        userAccount: userAccountAddress,
+        userAccount,
         adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     )
       .to.eventually.be.rejected.and.property("logs")
       .to.include(
-        `Allocate: account Address { address: ${userAccountAddress.toString()}, base: None } already in use`
+        `Allocate: account Address { address: ${userAccount.toString()}, base: None } already in use`
       );
   });
 
@@ -831,7 +831,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -846,7 +846,7 @@ describe("audius-data", function () {
       userId,
       bumpSeed,
       metadata,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
@@ -870,14 +870,14 @@ describe("audius-data", function () {
         bumpSeed,
         metadata,
         newUserKeypair,
-        userAccount: userAccountAddress,
+        userAccount,
         adminAccount: adminAccountKeypair.publicKey,
         ...getURSMParams(),
       })
     )
       .to.eventually.be.rejected.and.property("logs")
       .to.include(
-        `Allocate: account Address { address: ${userAccountAddress.toString()}, base: None } already in use`
+        `Allocate: account Address { address: ${userAccount.toString()}, base: None } already in use`
       );
   });
 
@@ -933,7 +933,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -957,14 +957,14 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
     const tx = updateIsVerified({
       program,
       adminAccount: adminAccountKeypair.publicKey,
-      userAccount: userAccountAddress,
+      userAccount,
       verifierPublicKey: verifierKeypair.publicKey,
       baseAuthorityAccount,
       userId,
@@ -981,7 +981,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -1011,7 +1011,7 @@ describe("audius-data", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
@@ -1029,7 +1029,7 @@ describe("audius-data", function () {
       bumpSeed,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
-      trackOwnerAccount: userAccountAddress,
+      trackOwnerAccount: userAccount,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
     });
@@ -1038,7 +1038,7 @@ describe("audius-data", function () {
       program,
       provider,
       id: trackID,
-      trackOwnerAccount: userAccountAddress,
+      trackOwnerAccount: userAccount,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
@@ -1321,7 +1321,7 @@ describe("audius-data", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: userAccountAddress,
+      derivedAddress: userAccount,
     } = await findDerivedPair(
       program.programId,
       adminAccountKeypair.publicKey,
@@ -1353,7 +1353,7 @@ describe("audius-data", function () {
       metadata,
       newUserKeypair,
       userId,
-      userAccount: userAccountAddress,
+      userAccount,
       adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
@@ -1373,7 +1373,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
-        trackOwnerAccount: userAccountAddress,
+        trackOwnerAccount: userAccount,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
@@ -1387,7 +1387,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
-        trackOwnerAccount: userAccountAddress,
+        trackOwnerAccount: userAccount,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
@@ -1401,7 +1401,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,
-        trackOwnerAccount: userAccountAddress,
+        trackOwnerAccount: userAccount,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
