@@ -75,13 +75,15 @@ if [ -d ~/.aliases ]; then
 fi' >> $HOME/.profile
 ```
 
-### Install Env Manager Locally (on your MBP)
+### Install GNU's `find`
 
 ```
 brew install findutils
 # execute the following line and add it to a dotfile of your choice
 export PATH=“/opt/homebrew/opt/findutils/libexec/gnubin:$PATH”
 ```
+
+### Install Env Manager Locally (on your MBP)
 
 ```
 cp -r . ~/.env
