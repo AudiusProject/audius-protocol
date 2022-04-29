@@ -36,10 +36,11 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             GCLOUD_VM_NAME=audius-bake-nightly+$(date +"%Y-%m-%dT%T.%3N")
-      - run:
-          name: Set up dependencies to provision GCP box
-          command: | # todo bake this into a docker image and publish; it takes too long to set up
+            echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+      
+            # Set up dependencies to provision GCP box
             set -x
+            echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
             # install python3.9
             apt update -y && apt upgrade -y
             apt install -y sudo wget build-essential libreadline-gplv2-dev libncursesw5-dev \
@@ -63,10 +64,8 @@ jobs:
             npm install --unsafe-perm
             yes | A setup remote-dev $GCLOUD_VM_NAME
             if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
-      - run:
-          name: Run A up on remote box
-          command: |
-            # GCLOUD_IP_ADDRESS=$(gcloud compute instances describe dm-remote-dev-5 --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+      
+            # Run A up on remote box
             # ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
             gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@$GCLOUD_VM_NAME \<< EOF
               A run init-repos up;
@@ -74,10 +73,9 @@ jobs:
               A down;
               exit $?;
             EOF
-      - run:
-            name: Delete GCP box
-            command: |
-              echo "gcloud compute instances delete $GCLOUD_IP_ADDRESS --quiet"
+
+            # Delete GCP box
+            echo "gcloud compute instances delete $GCLOUD_IP_ADDRESS --quiet"
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
