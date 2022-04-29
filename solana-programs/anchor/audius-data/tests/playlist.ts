@@ -144,7 +144,7 @@ describe("playlists", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      userAccountAddress,
+      userAccount: userAccountAddress,
     });
 
     const playlistMetadata = randomCID();

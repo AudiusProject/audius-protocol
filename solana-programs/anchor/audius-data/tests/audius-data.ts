@@ -213,7 +213,7 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: keypairFromSecretKey.publicKey,
-      userAccountAddress,
+      userAccount: userAccountAddress,
     });
   });
 
@@ -258,7 +258,7 @@ describe("audius-data", function () {
         message,
         ethPrivateKey: ethAccount.privateKey,
         newUserPublicKey: newUserKeypair.publicKey,
-        userAccountAddress,
+        userAccount: userAccountAddress,
       })
     ).to.be.rejectedWith(Error);
   });
@@ -303,7 +303,7 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      userAccountAddress,
+      userAccount: userAccountAddress,
     });
 
     const updatedCID = randomCID();
@@ -370,7 +370,7 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      userAccountAddress,
+      userAccount: userAccountAddress,
     });
 
     const trackMetadata = randomCID();
@@ -385,7 +385,7 @@ describe("audius-data", function () {
       id: trackID,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
-      trackOwner: userAccountAddress,
+      trackOwnerAccount: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       adminAccount: adminAccountKeypair.publicKey,
@@ -406,7 +406,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata,
         userAuthorityKeypair: wrongUserKeypair,
-        trackOwner: userAccountAddress,
+        trackOwnerAccount: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
         adminAccount: adminAccountKeypair.publicKey,
@@ -1029,7 +1029,7 @@ describe("audius-data", function () {
       bumpSeed,
       trackMetadata,
       userAuthorityKeypair: newUserKeypair,
-      trackOwner: userAccountAddress,
+      trackOwnerAccount: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
     });
@@ -1038,7 +1038,7 @@ describe("audius-data", function () {
       program,
       provider,
       id: trackID,
-      trackOwner: userAccountAddress,
+      trackOwnerAccount: userAccountAddress,
       userAuthorityDelegateAccount: SystemProgram.programId,
       authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
@@ -1132,7 +1132,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount: authorityDelegationStatusPDA,
       })
@@ -1150,7 +1150,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount: authorityDelegationStatusPDA,
       })
@@ -1196,7 +1196,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: SystemProgram.programId, // missing PDA
         authorityDelegationStatusAccount: authorityDelegationStatusPDA,
       })
@@ -1213,7 +1213,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount: SystemProgram.programId, // missing PDA
       })
@@ -1230,7 +1230,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount: authorityDelegationStatusPDA,
       })
@@ -1247,7 +1247,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount: authorityDelegationStatusPDA,
       })
@@ -1272,7 +1272,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount:
           badUserDelegate.authorityDelegationStatusAccount, // mismatched PDA
         authorityDelegationStatusAccount: authorityDelegationStatusPDA,
@@ -1292,7 +1292,7 @@ describe("audius-data", function () {
         bumpSeed: userBumpSeed,
         trackMetadata,
         userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-        trackOwner: userAccountPDA,
+        trackOwnerAccount: userAccountPDA,
         userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
         authorityDelegationStatusAccount:
           badUserDelegate.authorityDelegationStatusAccount,
@@ -1309,7 +1309,7 @@ describe("audius-data", function () {
       bumpSeed: userBumpSeed,
       trackMetadata,
       userAuthorityKeypair: userAuthorityDelegateKeypair, // substitute delegate
-      trackOwner: userAccountPDA,
+      trackOwnerAccount: userAccountPDA,
       userAuthorityDelegateAccount: userAuthorityDelegateAccountAddress,
       authorityDelegationStatusAccount: authorityDelegationStatusPDA,
     });
@@ -1373,7 +1373,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata,
         userAuthorityKeypair: newUserKeypair,
-        trackOwner: userAccountAddress,
+        trackOwnerAccount: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
@@ -1387,7 +1387,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata: trackMetadata2,
         userAuthorityKeypair: newUserKeypair,
-        trackOwner: userAccountAddress,
+        trackOwnerAccount: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),
@@ -1401,7 +1401,7 @@ describe("audius-data", function () {
         id: randomId(),
         trackMetadata: trackMetadata3,
         userAuthorityKeypair: newUserKeypair,
-        trackOwner: userAccountAddress,
+        trackOwnerAccount: userAccountAddress,
         userAuthorityDelegateAccount: SystemProgram.programId,
         authorityDelegationStatusAccount: SystemProgram.programId,
       }),

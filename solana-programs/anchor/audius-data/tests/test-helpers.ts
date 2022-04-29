@@ -116,14 +116,14 @@ export const testInitUserSolPubkey = async ({
   message,
   ethPrivateKey,
   newUserPublicKey,
-  userAccountAddress,
+  userAccount,
 }) => {
   const tx = initUserSolPubkey({
     program,
     ethPrivateKey,
     message,
     userAuthorityPublicKey: newUserPublicKey,
-    userAccount: userAccountAddress,
+    userAccount,
   });
 
   const txSignature = await provider.sendAndConfirm(tx);
@@ -140,7 +140,7 @@ export const testInitUserSolPubkey = async ({
     newUserPublicKey.toString()
   );
 
-  const account = await program.account.user.fetch(userAccountAddress);
+  const account = await program.account.user.fetch(userAccount);
 
   const chainAuthority = account.authority.toString();
   const expectedAuthority = newUserPublicKey.toString();
@@ -221,7 +221,7 @@ export const testCreateTrack = async ({
   adminAccount,
   trackMetadata,
   userAuthorityKeypair,
-  trackOwner,
+  trackOwnerAccount,
   userAuthorityDelegateAccount,
   authorityDelegationStatusAccount,
 }) => {
@@ -229,7 +229,7 @@ export const testCreateTrack = async ({
     id,
     program,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-    userAccount: trackOwner,
+    userAccount: trackOwnerAccount,
     userAuthorityDelegateAccount,
     authorityDelegationStatusAccount,
     metadata: trackMetadata,
@@ -252,7 +252,7 @@ export const testCreateTrack = async ({
   // 1st index = track owner user storage account
   // 2nd index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(trackOwner.toString());
+  expect(accountPubKeys[1]).to.equal(trackOwnerAccount.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 
@@ -260,7 +260,7 @@ export const testDeleteTrack = async ({
   provider,
   program,
   id,
-  trackOwner,
+  trackOwnerAccount,
   userAuthorityDelegateAccount,
   authorityDelegationStatusAccount,
   userAuthorityKeypair,
@@ -272,7 +272,7 @@ export const testDeleteTrack = async ({
   const tx = deleteTrack({
     id,
     program,
-    userAccount: trackOwner,
+    userAccount: trackOwnerAccount,
     userAuthorityDelegateAccount,
     authorityDelegationStatusAccount,
     userAuthorityPublicKey: userAuthorityKeypair.publicKey,
@@ -293,7 +293,7 @@ export const testDeleteTrack = async ({
   // 0th index = track owner user storage account
   // 1st index = user authority keypair
   // Indexing code must check that the track owner PDA is known before processing
-  expect(accountPubKeys[1]).to.equal(trackOwner.toString());
+  expect(accountPubKeys[1]).to.equal(trackOwnerAccount.toString());
   expect(accountPubKeys[2]).to.equal(userAuthorityKeypair.publicKey.toString());
 };
 

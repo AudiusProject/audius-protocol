@@ -82,26 +82,26 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
 }
 
 type initAdminCLIParams = {
-  adminKeypair: Keypair;
+  adminAuthorityKeypair: Keypair;
   adminAccountKeypair: Keypair;
   verifierKeypair: Keypair;
   ownerKeypairPath: string;
 };
 
 async function initAdminCLI(network: string, args: initAdminCLIParams) {
-  const { adminKeypair, adminAccountKeypair, ownerKeypairPath } = args;
+  const { adminAuthorityKeypair, adminAccountKeypair, ownerKeypairPath } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  console.log(`AdminKeypair:`);
-  console.log(adminKeypair.publicKey.toString());
-  console.log(`[${adminKeypair.secretKey.toString()}]`);
+  console.log(`AdminAuthorityKeypair:`);
+  console.log(adminAuthorityKeypair.publicKey.toString());
+  console.log(`[${adminAuthorityKeypair.secretKey.toString()}]`);
   fs.writeFile(
-    "adminKeypair.json",
-    "[" + adminKeypair.secretKey.toString() + "]",
+    "adminAuthorityKeypair.json",
+    "[" + adminAuthorityKeypair.secretKey.toString() + "]",
     function (err) {
       if (err) {
         return console.error(err);
       }
-      console.log("Wrote to adminKeypair.json");
+      console.log("Wrote to adminAuthorityKeypair.json");
     }
   );
 
@@ -123,7 +123,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
   let tx = initAdmin({
     payer: cliVars.provider.wallet.publicKey,
     program: cliVars.program,
-    adminKeypair,
+    adminKeypair: adminAuthorityKeypair,
     adminAccountKeypair,
     verifierKeypair,
   });
@@ -142,7 +142,7 @@ type initUserCLIParams = {
   adminAccount: PublicKey;
   ethAddress: string;
   ownerKeypairPath: string;
-  adminKeypair: Keypair;
+  adminAuthorityKeypair: Keypair;
   replicaSet: number[];
   replicaSetBumps: number[];
   cn1: PublicKey;
@@ -152,7 +152,7 @@ type initUserCLIParams = {
 
 async function initUserCLI(args: initUserCLIParams) {
   const {
-    adminKeypair,
+    adminAuthorityKeypair,
     userId,
     ethAddress,
     ownerKeypairPath,
@@ -184,13 +184,13 @@ async function initUserCLI(args: initUserCLIParams) {
     metadata,
     userAccount,
     baseAuthorityAccount,
-    adminAccount: adminAccount,
-    adminAuthorityPublicKey: adminKeypair.publicKey,
+    adminAccount,
+    adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
     cn1,
     cn2,
     cn3,
   });
-  const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
+  const txHash = await cliVars.provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
   await cliVars.provider.connection.confirmTransaction(txHash);
 
@@ -315,7 +315,7 @@ const functionTypes = Object.freeze({
   updateAdmin: "updateAdmin",
   initUser: "initUser",
   initContentNode: "initContentNode",
-  userAuthorityPublicKey: "initUserSolPubkey",
+  initUserSolPubkey: "initUserSolPubkey",
   createUser: "createUser",
   createTrack: "createTrack",
   getTrackId: "getTrackId",
@@ -377,8 +377,8 @@ const options = program.opts();
 
 // Conditionally load keys if provided
 // Admin key used to control accounts
-const adminKeypair = options.adminKeypair
-  ? keypairFromFilePath(options.adminKeypair)
+const adminAuthorityKeypair = options.adminAuthorityKeypair
+  ? keypairFromFilePath(options.adminAuthorityKeypair)
   : anchor.web3.Keypair.generate();
 
 // Admin storage keypair, referenced internally
@@ -404,10 +404,9 @@ const network = options.network
   : LOCALHOST_RPC_POOL;
 
 const main = async () => {
-  console.log("main called");
   const cliVars = initializeCLI(network, options.ownerKeypair);
-  const userAuthorityDelegateAccountPDA =
-    options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
+  const userAuthorityDelegateAccount =
+    options.userAuthorityDelegateAccount ?? SYSTEM_PROGRAM_ID;
   const authorityDelegationStatusAccountPDA =
     options.authorityDelegationStatusAccountPDA ?? SYSTEM_PROGRAM_ID;
   let { userId } = options;
@@ -416,14 +415,14 @@ const main = async () => {
     userId = new anchor.BN(userId);
     userIdSeed = convertBNToUserIdSeed(userId);
   }
-  console.log(`FUnction is ${options.function}`);
+  console.log(`Calling function: ${options.function}`);
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
       initAdminCLI(network, {
         ownerKeypairPath: options.ownerKeypair,
-        adminKeypair: adminKeypair,
-        adminAccountKeypair: adminAccountKeypair,
+        adminAuthorityKeypair,
+        adminAccountKeypair,
         verifierKeypair: verifierKeypair,
       });
       break;
@@ -452,14 +451,14 @@ const main = async () => {
         payer: cliVars.provider.wallet.publicKey,
         program: cliVars.program,
         baseAuthorityAccount,
-        adminAuthorityPublicKey: adminKeypair.publicKey,
+        adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
         adminAccount: adminAccountKeypair.publicKey,
         contentNodeAuthority: contentNodeAuthority.publicKey,
         contentNodeAccount: cnInfo.derivedAddress,
         spID: cnInfo.spId,
         ownerEthAddress: delegateWallet,
       });
-      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
+      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
       console.log(`Initialized with ${txHash}`);
       break;
@@ -491,7 +490,7 @@ const main = async () => {
         ethAddress: options.ethAddress,
         userId: userId,
         adminAccount: adminAccountKeypair.publicKey,
-        adminKeypair,
+        adminAuthorityKeypair,
         metadata: randomCID(),
         replicaSet: userReplicaSet,
         replicaSetBumps,
@@ -501,7 +500,7 @@ const main = async () => {
       });
       break;
     }
-    case functionTypes.userAuthorityPublicKey: {
+    case functionTypes.initUserSolPubkey: {
       const { ethPrivateKey } = options;
       const userSolPubkey = userSolKeypair.publicKey;
 
@@ -528,9 +527,9 @@ const main = async () => {
         program: cliVars.program,
         isWriteEnabled: Boolean(writeEnabled),
         adminAccount: adminAccountKeypair.publicKey,
-        adminAuthorityKeypair: adminKeypair,
+        adminAuthorityKeypair,
       });
-      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
+      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
       await cliVars.provider.connection.confirmTransaction(txHash);
       console.log(`updateAdmin = ${txHash}`);
@@ -625,7 +624,7 @@ const main = async () => {
               metadata: options.metadata,
               userAuthorityPublicKey: userSolKeypair.publicKey,
               userAccount: derivedAddress,
-              userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccount,
               authorityDelegationStatusAccount:
                 authorityDelegationStatusAccountPDA,
             },
@@ -671,7 +670,7 @@ const main = async () => {
               metadata: randomCID(),
               userAuthorityPublicKey: userSolKeypair.publicKey,
               userAccount: options.userAccount,
-              userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccount,
               authorityDelegationStatusAccount:
                 authorityDelegationStatusAccountPDA,
             },
@@ -714,7 +713,7 @@ const main = async () => {
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
           userAccount: options.userAccount,
-          userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          userAuthorityDelegateAccount: userAuthorityDelegateAccount,
           authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
         cliVars.provider,
@@ -750,7 +749,7 @@ const main = async () => {
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
           userAccount: options.userAccount,
-          userAuthorityDelegateAccount: userAuthorityDelegateAccountPDA,
+          userAuthorityDelegateAccount: userAuthorityDelegateAccount,
           authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
         cliVars.provider,
