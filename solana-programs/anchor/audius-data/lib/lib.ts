@@ -8,7 +8,7 @@ import { Keypair } from "@solana/web3.js";
 import { Account } from "web3-core";
 import * as secp256k1 from "secp256k1";
 import { AudiusData } from "../target/types/audius_data";
-import idll from '../target/idl/audius_data.json';
+import idll from "../target/idl/audius_data.json";
 import { signBytes, SystemSysVarProgramKey } from "./utils";
 const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 
@@ -20,16 +20,19 @@ export type InitAdminParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
   adminKeypair: Keypair;
-  adminStorageKeypair: Keypair;
+  adminAccountKeypair: Keypair;
   verifierKeypair: Keypair;
 };
+
+export type AudiusDataIdl = AudiusData;
+export type AudiusDataProgram = Program<AudiusData>;
 
 /// Initialize an Audius Admin instance
 export const initAdmin = ({
   payer,
   program,
   adminKeypair,
-  adminStorageKeypair,
+  adminAccountKeypair,
   verifierKeypair,
 }: InitAdminParams) => {
   const tx = new Transaction();
@@ -40,7 +43,7 @@ export const initAdmin = ({
       verifierKeypair.publicKey,
       {
         accounts: {
-          admin: adminStorageKeypair.publicKey,
+          admin: adminAccountKeypair.publicKey,
           payer,
           systemProgram: SystemProgram.programId,
         },
@@ -65,9 +68,9 @@ export type InitUserParams = {
   userId: anchor.BN;
   bumpSeed: number;
   metadata: string;
-  userStorageAccount: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  adminStorageAccount: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   adminAuthorityPublicKey: anchor.web3.PublicKey;
   replicaSet: number[];
   replicaSetBumps: number[];
@@ -87,9 +90,9 @@ export const initUser = ({
   replicaSet,
   replicaSetBumps,
   metadata,
-  userStorageAccount,
+  userAccount,
   baseAuthorityAccount,
-  adminStorageAccount,
+  adminAccount,
   adminAuthorityPublicKey,
   cn1,
   cn2,
@@ -107,8 +110,8 @@ export const initUser = ({
       metadata,
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccount,
+          admin: adminAccount,
+          user: userAccount,
           cn1,
           cn2,
           cn3,
@@ -126,8 +129,8 @@ export type InitUserSolPubkeyParams = {
   program: Program<AudiusData>;
   ethPrivateKey: string;
   message: Uint8Array;
-  userSolPubkey: anchor.web3.PublicKey;
-  userStorageAccount: anchor.web3.PublicKey;
+  userAuthorityPublicKey: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
 };
 
 /// Claim a user's account using given an eth private key
@@ -135,8 +138,8 @@ export const initUserSolPubkey = ({
   program,
   ethPrivateKey,
   message,
-  userSolPubkey,
-  userStorageAccount,
+  userAuthorityPublicKey,
+  userAccount,
 }: InitUserSolPubkeyParams) => {
   const { signature, recoveryId } = signBytes(message, ethPrivateKey);
 
@@ -157,9 +160,9 @@ export const initUserSolPubkey = ({
   );
 
   tx.add(
-    program.instruction.initUserSol(userSolPubkey, {
+    program.instruction.initUserSol(userAuthorityPublicKey, {
       accounts: {
-        user: userStorageAccount,
+        user: userAccount,
         sysvarProgram: SystemSysVarProgramKey,
       },
     })
@@ -171,10 +174,10 @@ export const initUserSolPubkey = ({
 export type CreateContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
-  adminPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAuthorityPublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAccount: anchor.web3.PublicKey;
   contentNodeAuthority: anchor.web3.PublicKey;
   spID: anchor.BN;
   ownerEthAddress: string;
@@ -183,12 +186,12 @@ export type CreateContentNodeParams = {
 export const createContentNode = ({
   payer,
   program,
-  adminStoragePublicKey,
-  adminPublicKey,
+  adminAccount,
+  adminAuthorityPublicKey,
   baseAuthorityAccount,
   spID,
   contentNodeAuthority,
-  contentNodeAcct,
+  contentNodeAccount,
   ownerEthAddress,
 }: CreateContentNodeParams) => {
   const tx = new Transaction();
@@ -201,10 +204,10 @@ export const createContentNode = ({
       [...anchor.utils.bytes.hex.decode(ownerEthAddress)],
       {
         accounts: {
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
           payer,
-          contentNode: contentNodeAcct,
-          authority: adminPublicKey,
+          contentNode: contentNodeAccount,
+          authority: adminAuthorityPublicKey,
           systemProgram: SystemProgram.programId,
         },
       }
@@ -217,7 +220,7 @@ export const createContentNode = ({
 export type UpdateUserReplicaSetParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   replicaSet: number[];
   replicaSetBumps: number[];
@@ -232,7 +235,7 @@ export type UpdateUserReplicaSetParams = {
 export const updateUserReplicaSet = ({
   payer,
   program,
-  adminStoragePublicKey,
+  adminAccount,
   baseAuthorityAccount,
   replicaSet,
   userAcct,
@@ -252,7 +255,7 @@ export const updateUserReplicaSet = ({
       replicaSetBumps,
       {
         accounts: {
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
           user: userAcct,
           cnAuthority: contentNodeAuthorityPublicKey,
           cn1,
@@ -271,9 +274,9 @@ export const updateUserReplicaSet = ({
 export type PublicCreateOrUpdateContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  contentNodeAcct: anchor.web3.PublicKey;
+  contentNodeAccount: anchor.web3.PublicKey;
   contentNodeAuthority: anchor.web3.PublicKey;
   spID: anchor.BN;
   ownerEthAddress: string;
@@ -285,10 +288,10 @@ export type PublicCreateOrUpdateContentNodeParams = {
 export const publicCreateOrUpdateContentNode = ({
   payer,
   program,
-  adminStoragePublicKey,
+  adminAccount,
   baseAuthorityAccount,
   spID,
-  contentNodeAcct,
+  contentNodeAccount,
   ownerEthAddress,
   contentNodeAuthority,
   proposer1,
@@ -307,9 +310,9 @@ export const publicCreateOrUpdateContentNode = ({
       [...anchor.utils.bytes.hex.decode(ownerEthAddress)],
       {
         accounts: {
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
           payer,
-          contentNode: contentNodeAcct,
+          contentNode: contentNodeAccount,
           systemProgram: SystemProgram.programId,
           proposer1: proposer1.pda,
           proposer1Authority: proposer1.authorityPublicKey,
@@ -328,7 +331,7 @@ export const publicCreateOrUpdateContentNode = ({
 export type PublicDeleteContentNodeParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   adminAuthorityPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   cnDelete: Proposer;
@@ -340,7 +343,7 @@ export type PublicDeleteContentNodeParams = {
 export const publicDeleteContentNode = ({
   payer,
   program,
-  adminStoragePublicKey,
+  adminAccount,
   adminAuthorityPublicKey,
   baseAuthorityAccount,
   cnDelete,
@@ -358,7 +361,7 @@ export const publicDeleteContentNode = ({
       { seed: [...proposer3.seedBump.seed], bump: proposer3.seedBump.bump },
       {
         accounts: {
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
           adminAuthority: adminAuthorityPublicKey,
           payer,
           contentNode: cnDelete.pda,
@@ -384,9 +387,9 @@ export type CreateUserParams = {
   userId: anchor.BN;
   bumpSeed: number;
   metadata: string;
-  userSolPubkey: anchor.web3.PublicKey;
-  userStorageAccount: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  userAuthorityPublicKey: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
   replicaSet: number[];
   replicaSetBumps: number[];
@@ -409,9 +412,9 @@ export const createUser = ({
   bumpSeed,
   metadata,
   payer,
-  userSolPubkey,
-  userStorageAccount,
-  adminStoragePublicKey,
+  userAuthorityPublicKey,
+  userAccount,
+  adminAccount,
 }: CreateUserParams) => {
   const { signature, recoveryId } = signBytes(message, ethAccount.privateKey);
 
@@ -432,6 +435,7 @@ export const createUser = ({
       recoveryId,
     })
   );
+
   tx.add(
     program.instruction.createUser(
       baseAuthorityAccount,
@@ -441,17 +445,17 @@ export const createUser = ({
       userId.toNumber(),
       bumpSeed,
       metadata,
-      userSolPubkey,
+      userAuthorityPublicKey,
       {
         accounts: {
           payer,
-          user: userStorageAccount,
+          user: userAccount,
           cn1,
           cn2,
           cn3,
           systemProgram: SystemProgram.programId,
           sysvarProgram: SystemSysVarProgramKey,
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
         },
       }
     )
@@ -464,7 +468,7 @@ export const createUser = ({
 export type UpdateUserParams = {
   program: Program<AudiusData>;
   metadata: string;
-  userStorageAccount: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
   userAuthorityDelegate: anchor.web3.PublicKey;
   authorityDelegationStatusAccount: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
@@ -473,7 +477,7 @@ export type UpdateUserParams = {
 export const updateUser = ({
   program,
   metadata,
-  userStorageAccount,
+  userAccount,
   userAuthorityPublicKey,
   userAuthorityDelegate,
   authorityDelegationStatusAccount,
@@ -482,7 +486,7 @@ export const updateUser = ({
   tx.add(
     program.instruction.updateUser(metadata, {
       accounts: {
-        user: userStorageAccount,
+        user: userAccount,
         userAuthority: userAuthorityPublicKey,
         userAuthorityDelegate,
         authorityDelegationStatus: authorityDelegationStatusAccount,
@@ -495,21 +499,21 @@ export const updateUser = ({
 export type UpdateAdminParams = {
   program: Program<AudiusData>;
   isWriteEnabled: boolean;
-  adminStorageAccount: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   adminAuthorityKeypair: anchor.web3.Keypair;
 };
 
 export const updateAdmin = ({
   program,
   isWriteEnabled,
-  adminStorageAccount,
+  adminAccount,
   adminAuthorityKeypair,
 }: UpdateAdminParams) => {
   const tx = new Transaction();
   tx.add(
     program.instruction.updateAdmin(isWriteEnabled, {
       accounts: {
-        admin: adminStorageAccount,
+        admin: adminAccount,
         adminAuthority: adminAuthorityKeypair.publicKey,
       },
       signers: [adminAuthorityKeypair],
@@ -526,7 +530,7 @@ export type InitAuthorityDelegationStatusParams = {
   program: Program<AudiusData>;
   authorityName: string;
   userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
-  authorityDelegationStatusPDA: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
 
@@ -534,7 +538,7 @@ export const initAuthorityDelegationStatus = ({
   program,
   authorityName,
   userAuthorityDelegatePublicKey,
-  authorityDelegationStatusPDA,
+  authorityDelegationStatusAccount,
   payer,
 }: InitAuthorityDelegationStatusParams) => {
   const tx = new Transaction();
@@ -542,7 +546,7 @@ export const initAuthorityDelegationStatus = ({
     program.instruction.initAuthorityDelegationStatus(authorityName, {
       accounts: {
         delegateAuthority: userAuthorityDelegatePublicKey,
-        authorityDelegationStatusPda: authorityDelegationStatusPDA,
+        authorityDelegationStatus: authorityDelegationStatusAccount,
         payer,
         systemProgram: SystemProgram.programId,
       },
@@ -555,7 +559,7 @@ export type RevokeAuthorityDelegationParams = {
   program: Program<AudiusData>;
   authorityDelegationBump: number;
   userAuthorityDelegatePublicKey: anchor.web3.PublicKey;
-  authorityDelegationStatusPDA: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
 
@@ -563,7 +567,7 @@ export const revokeAuthorityDelegation = ({
   program,
   authorityDelegationBump,
   userAuthorityDelegatePublicKey,
-  authorityDelegationStatusPDA,
+  authorityDelegationStatusAccount,
   payer,
 }: RevokeAuthorityDelegationParams) => {
   const tx = new Transaction();
@@ -571,7 +575,7 @@ export const revokeAuthorityDelegation = ({
     program.instruction.revokeAuthorityDelegation(authorityDelegationBump, {
       accounts: {
         delegateAuthority: userAuthorityDelegatePublicKey,
-        authorityDelegationStatusPda: authorityDelegationStatusPDA,
+        authorityDelegationStatus: authorityDelegationStatusAccount,
         payer,
         systemProgram: SystemProgram.programId,
       },
@@ -586,11 +590,11 @@ export type AddUserAuthorityDelegateParams = {
   delegatePublicKey: anchor.web3.PublicKey;
   user: anchor.web3.PublicKey;
   currentUserAuthorityDelegate: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   userBumpSeed: number;
   signerUserAuthorityDelegate: anchor.web3.PublicKey;
-  authorityDelegationStatus: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   authorityPublicKey: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
@@ -600,11 +604,11 @@ export const addUserAuthorityDelegate = ({
   baseAuthorityAccount,
   delegatePublicKey,
   user,
-  authorityDelegationStatus,
+  authorityDelegationStatusAccount,
   currentUserAuthorityDelegate,
   userId,
   userBumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   signerUserAuthorityDelegate,
   authorityPublicKey,
   payer,
@@ -617,11 +621,11 @@ export const addUserAuthorityDelegate = ({
       delegatePublicKey,
       {
         accounts: {
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
           user,
           currentUserAuthorityDelegate,
           signerUserAuthorityDelegate,
-          authorityDelegationStatus,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: authorityPublicKey,
           payer,
           systemProgram: SystemProgram.programId,
@@ -639,11 +643,11 @@ export type RemoveUserAuthorityDelegateParams = {
   delegateBump: number;
   user: anchor.web3.PublicKey;
   currentUserAuthorityDelegate: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   userBumpSeed: number;
   signerUserAuthorityDelegate: anchor.web3.PublicKey;
-  authorityDelegationStatus: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   authorityPublicKey: anchor.web3.PublicKey;
   payer: anchor.web3.PublicKey;
 };
@@ -654,11 +658,11 @@ export const removeUserAuthorityDelegate = ({
   delegatePublicKey,
   delegateBump,
   user,
-  authorityDelegationStatus,
+  authorityDelegationStatusAccount,
   currentUserAuthorityDelegate,
   userId,
   userBumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   signerUserAuthorityDelegate,
   authorityPublicKey,
   payer,
@@ -672,11 +676,11 @@ export const removeUserAuthorityDelegate = ({
       delegateBump,
       {
         accounts: {
-          admin: adminStoragePublicKey,
+          admin: adminAccount,
           user,
           currentUserAuthorityDelegate,
           signerUserAuthorityDelegate,
-          authorityDelegationStatus,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: authorityPublicKey,
           payer,
           systemProgram: SystemProgram.programId,
@@ -690,10 +694,10 @@ export const removeUserAuthorityDelegate = ({
 // Verify user with authenticatorKeypair.
 export type UpdateIsVerifiedParams = {
   program: Program<AudiusData>;
-  userStorageAccount: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
   verifierPublicKey: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  adminPublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   bumpSeed: number;
 };
@@ -701,8 +705,8 @@ export type UpdateIsVerifiedParams = {
 /// Verify user with verifier Keypair
 export const updateIsVerified = ({
   program,
-  adminPublicKey,
-  userStorageAccount,
+  adminAccount,
+  userAccount,
   verifierPublicKey,
   baseAuthorityAccount,
   userId,
@@ -715,8 +719,8 @@ export const updateIsVerified = ({
       { userId: userId.toNumber(), bump: bumpSeed },
       {
         accounts: {
-          user: userStorageAccount,
-          admin: adminPublicKey,
+          user: userAccount,
+          admin: adminAccount,
           verifier: verifierPublicKey,
         },
       }
@@ -728,13 +732,13 @@ export const updateIsVerified = ({
 export type CreateEntityParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  adminStorageAccount: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   bumpSeed: number;
   userAuthorityPublicKey: anchor.web3.PublicKey;
-  userStorageAccountPDA: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
+  userAuthorityDelegateAccount: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   metadata: string;
   id: anchor.BN;
 };
@@ -743,11 +747,11 @@ export type DeleteEntityParams = {
   program: Program<AudiusData>;
   id: anchor.BN;
   userAuthorityPublicKey: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
-  userStorageAccountPDA: anchor.web3.PublicKey;
+  userAuthorityDelegateAccount: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  adminStorageAccount: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   bumpSeed: number;
 };
@@ -757,12 +761,12 @@ export const createTrack = ({
   program,
   baseAuthorityAccount,
   userAuthorityPublicKey,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
-  userStorageAccountPDA,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
+  userAccount,
   metadata,
   userId,
-  adminStorageAccount,
+  adminAccount,
   bumpSeed,
 }: CreateEntityParams) => {
   const tx = new Transaction();
@@ -776,11 +780,11 @@ export const createTrack = ({
       metadata,
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -809,15 +813,15 @@ export const ManagementActions = {
 export type UpdateEntityParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  adminStorageAccount: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   bumpSeed: number;
   metadata: string;
   id: anchor.BN;
   userAuthorityPublicKey: anchor.web3.PublicKey;
-  userStorageAccountPDA: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
+  userAuthorityDelegateAccount: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
 };
 
 export const updateTrack = ({
@@ -826,11 +830,11 @@ export const updateTrack = ({
   id,
   metadata,
   userAuthorityPublicKey,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userId,
-  adminStorageAccount,
+  adminAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
   const tx = new Transaction();
@@ -844,11 +848,11 @@ export const updateTrack = ({
       metadata,
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -861,13 +865,13 @@ export const updateTrack = ({
 export const deleteTrack = ({
   program,
   id,
-  userStorageAccountPDA,
+  userAccount,
   userAuthorityPublicKey,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   baseAuthorityAccount,
   userId,
-  adminStorageAccount,
+  adminAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
   const tx = new Transaction();
@@ -881,11 +885,11 @@ export const deleteTrack = ({
       "",
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -900,12 +904,12 @@ export const createPlaylist = ({
   program,
   baseAuthorityAccount,
   userAuthorityPublicKey,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
-  userStorageAccountPDA,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
+  userAccount,
   metadata,
   userId,
-  adminStorageAccount,
+  adminAccount,
   bumpSeed,
 }: CreateEntityParams) => {
   const tx = new Transaction();
@@ -919,11 +923,11 @@ export const createPlaylist = ({
       metadata,
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -938,12 +942,12 @@ export const updatePlaylist = ({
   program,
   baseAuthorityAccount,
   userAuthorityPublicKey,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
-  userStorageAccountPDA,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
+  userAccount,
   metadata,
   userId,
-  adminStorageAccount,
+  adminAccount,
   bumpSeed,
 }: UpdateEntityParams) => {
   const tx = new Transaction();
@@ -957,11 +961,11 @@ export const updatePlaylist = ({
       metadata,
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -973,13 +977,13 @@ export const updatePlaylist = ({
 export const deletePlaylist = ({
   program,
   id,
-  userStorageAccountPDA,
+  userAccount,
   userAuthorityPublicKey,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   baseAuthorityAccount,
   userId,
-  adminStorageAccount,
+  adminAccount,
   bumpSeed,
 }: DeleteEntityParams) => {
   const tx = new Transaction();
@@ -993,11 +997,11 @@ export const deletePlaylist = ({
       "",
       {
         accounts: {
-          admin: adminStorageAccount,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -1028,11 +1032,11 @@ export const EntitySocialActions = {
 export type EntitySocialActionParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  userStorageAccountPDA: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+  userAccount: anchor.web3.PublicKey;
+  userAuthorityDelegateAccount: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   userId: anchor.BN;
   bumpSeed: number;
   id: string;
@@ -1042,13 +1046,13 @@ export type EntitySocialActionParams = {
 export const addTrackSave = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1061,11 +1065,11 @@ export const addTrackSave = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
           authority: userAuthorityPublicKey,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
         },
       }
     )
@@ -1076,13 +1080,13 @@ export const addTrackSave = ({
 export const deleteTrackSave = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1095,10 +1099,10 @@ export const deleteTrackSave = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1110,13 +1114,13 @@ export const deleteTrackSave = ({
 export const addTrackRepost = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1129,10 +1133,10 @@ export const addTrackRepost = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1144,13 +1148,13 @@ export const addTrackRepost = ({
 export const deleteTrackRepost = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1163,10 +1167,10 @@ export const deleteTrackRepost = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1178,13 +1182,13 @@ export const deleteTrackRepost = ({
 export const addPlaylistSave = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1197,10 +1201,10 @@ export const addPlaylistSave = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1212,13 +1216,13 @@ export const addPlaylistSave = ({
 export const deletePlaylistSave = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1231,10 +1235,10 @@ export const deletePlaylistSave = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1246,13 +1250,13 @@ export const deletePlaylistSave = ({
 export const addPlaylistRepost = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1265,10 +1269,10 @@ export const addPlaylistRepost = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1280,13 +1284,13 @@ export const addPlaylistRepost = ({
 export const deletePlaylistRepost = ({
   program,
   baseAuthorityAccount,
-  userStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  userAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   userId,
   bumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
   id,
 }: EntitySocialActionParams) => {
   const tx = new Transaction();
@@ -1299,10 +1303,10 @@ export const deletePlaylistRepost = ({
       id,
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          user: userStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          user: userAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1324,12 +1328,12 @@ export const UserSocialActions = {
 export type UserSocialActionParams = {
   program: Program<AudiusData>;
   baseAuthorityAccount: anchor.web3.PublicKey;
-  sourceUserStorageAccountPDA: anchor.web3.PublicKey;
-  targetUserStorageAccountPDA: anchor.web3.PublicKey;
-  userAuthorityDelegateAccountPDA: anchor.web3.PublicKey;
-  authorityDelegationStatusAccountPDA: anchor.web3.PublicKey;
+  sourceUserAccount: anchor.web3.PublicKey;
+  targetUserAccount: anchor.web3.PublicKey;
+  userAuthorityDelegateAccount: anchor.web3.PublicKey;
+  authorityDelegationStatusAccount: anchor.web3.PublicKey;
   userAuthorityPublicKey: anchor.web3.PublicKey;
-  adminStoragePublicKey: anchor.web3.PublicKey;
+  adminAccount: anchor.web3.PublicKey;
   sourceUserId: anchor.BN;
   sourceUserBumpSeed: number;
   targetUserId: anchor.BN;
@@ -1339,16 +1343,16 @@ export type UserSocialActionParams = {
 export const followUser = ({
   program,
   baseAuthorityAccount,
-  sourceUserStorageAccountPDA,
-  targetUserStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  sourceUserAccount,
+  targetUserAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   sourceUserId,
   sourceUserBumpSeed,
   targetUserId,
   targetUserBumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
 }: UserSocialActionParams) => {
   const tx = new Transaction();
   tx.add(
@@ -1359,11 +1363,11 @@ export const followUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          sourceUserStorage: sourceUserStorageAccountPDA,
-          targetUserStorage: targetUserStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          sourceUserStorage: sourceUserAccount,
+          targetUserStorage: targetUserAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1375,16 +1379,16 @@ export const followUser = ({
 export const unfollowUser = ({
   program,
   baseAuthorityAccount,
-  sourceUserStorageAccountPDA,
-  targetUserStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  sourceUserAccount,
+  targetUserAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   sourceUserId,
   sourceUserBumpSeed,
   targetUserId,
   targetUserBumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
 }: UserSocialActionParams) => {
   const tx = new Transaction();
   tx.add(
@@ -1395,11 +1399,11 @@ export const unfollowUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          sourceUserStorage: sourceUserStorageAccountPDA,
-          targetUserStorage: targetUserStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          sourceUserStorage: sourceUserAccount,
+          targetUserStorage: targetUserAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1411,16 +1415,16 @@ export const unfollowUser = ({
 export const subscribeUser = ({
   program,
   baseAuthorityAccount,
-  sourceUserStorageAccountPDA,
-  targetUserStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  sourceUserAccount,
+  targetUserAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   sourceUserId,
   sourceUserBumpSeed,
   targetUserId,
   targetUserBumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
 }: UserSocialActionParams) => {
   const tx = new Transaction();
   tx.add(
@@ -1431,11 +1435,11 @@ export const subscribeUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          sourceUserStorage: sourceUserStorageAccountPDA,
-          targetUserStorage: targetUserStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          sourceUserStorage: sourceUserAccount,
+          targetUserStorage: targetUserAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
@@ -1447,16 +1451,16 @@ export const subscribeUser = ({
 export const unsubscribeUser = ({
   program,
   baseAuthorityAccount,
-  sourceUserStorageAccountPDA,
-  targetUserStorageAccountPDA,
-  userAuthorityDelegateAccountPDA,
-  authorityDelegationStatusAccountPDA,
+  sourceUserAccount,
+  targetUserAccount,
+  userAuthorityDelegateAccount,
+  authorityDelegationStatusAccount,
   userAuthorityPublicKey,
   sourceUserId,
   sourceUserBumpSeed,
   targetUserId,
   targetUserBumpSeed,
-  adminStoragePublicKey,
+  adminAccount,
 }: UserSocialActionParams) => {
   const tx = new Transaction();
   tx.add(
@@ -1467,11 +1471,11 @@ export const unsubscribeUser = ({
       { userId: targetUserId, bump: targetUserBumpSeed },
       {
         accounts: {
-          admin: adminStoragePublicKey,
-          sourceUserStorage: sourceUserStorageAccountPDA,
-          targetUserStorage: targetUserStorageAccountPDA,
-          userAuthorityDelegate: userAuthorityDelegateAccountPDA,
-          authorityDelegationStatus: authorityDelegationStatusAccountPDA,
+          admin: adminAccount,
+          sourceUserStorage: sourceUserAccount,
+          targetUserStorage: targetUserAccount,
+          userAuthorityDelegate: userAuthorityDelegateAccount,
+          authorityDelegationStatus: authorityDelegationStatusAccount,
           authority: userAuthorityPublicKey,
         },
       }
