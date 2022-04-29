@@ -63,7 +63,7 @@
     "port": 8899,
     "health_check_endpoint": "",
     "up": [
-      "mkdir -p /mnt/disk/solana-disk",
+      "sudo mkdir -p /mnt/disk/solana-disk",
       "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' -v \"/mnt/disk/solana-disk:/test-ledger\" solanalabs/solana:v1.9.13 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 1000000'"
     ],
     "down": [
