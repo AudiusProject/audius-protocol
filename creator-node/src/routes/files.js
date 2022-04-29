@@ -414,12 +414,6 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `DB_CID_QUERY_CID_FOUND`
       })
-      // This should never happen, logging in case it does
-      if (storagePath !== queryResults.storagePath) {
-        req.logger.error(
-          `${logPrefix} Found unexpected storagePath. Expected ${storagePath}, found ${queryResults.storagePath}.`
-        )
-      }
       storagePath = queryResults.storagePath
     }
   } catch (e) {
