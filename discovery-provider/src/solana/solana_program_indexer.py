@@ -170,6 +170,9 @@ class SolanaProgramIndexer(IndexerBase):
         for tx_sig in tx_sig_batch_records:
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
+        # Reverse parsed transactions so oldest is first
+        parsed_transactions.reverse()
+
         # Fetch metadata in parallel
         cid_metadata, blacklisted_cids = await self.fetch_cid_metadata(
             parsed_transactions
