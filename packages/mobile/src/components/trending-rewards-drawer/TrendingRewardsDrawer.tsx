@@ -12,19 +12,17 @@ import {
   TRENDING_PLAYLISTS_PAGE,
   TRENDING_UNDERGROUND_PAGE
 } from 'audius-client/src/utils/route'
-import {
-  Image,
-  ImageStyle,
-  Linking,
-  ScrollView,
-  TouchableWithoutFeedback,
-  View
-} from 'react-native'
+import { Image, ImageStyle, ScrollView, View } from 'react-native'
 
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { SegmentedControl, GradientText, Button } from 'app/components/core'
-import Text from 'app/components/text'
+import {
+  SegmentedControl,
+  Text,
+  GradientText,
+  Button,
+  Link
+} from 'app/components/core'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -37,7 +35,7 @@ import { useThemeVariant } from 'app/utils/theme'
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
 const TRENDING_REWARDS_DRAWER_NAME = 'TrendingRewardsExplainer'
-const TOS_URL = 'https://blog.audius.co/posts/audio-rewards'
+const TOS_URL = 'https://blog.audius.co/article/audio-rewards'
 
 const messages = {
   tracksTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',
@@ -127,13 +125,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginBottom: spacing(8),
     marginTop: spacing(8)
   },
-  title: {
-    color: palette.secondary,
-    fontSize: typography.fontSize.small,
-    marginBottom: spacing(2)
-  },
   subtitle: {
-    color: palette.neutralLight4,
     fontSize: 13
   },
   trendingControl: {
@@ -152,7 +144,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   button: { paddingHorizontal: 0 },
   terms: {
     marginBottom: spacing(4),
-    fontSize: typography.fontSize.xs,
     textAlign: 'center',
     width: '100%',
     textDecorationLine: 'underline'
@@ -222,10 +213,6 @@ export const TrendingRewardsDrawer = () => {
     onClose()
   }, [modalType, navigation, onClose])
 
-  const onPressToS = useCallback(() => {
-    Linking.openURL(TOS_URL)
-  }, [])
-
   return (
     <AppDrawer
       modalName={TRENDING_REWARDS_DRAWER_NAME}
@@ -256,10 +243,10 @@ export const TrendingRewardsDrawer = () => {
             />
           </View>
           <View style={styles.titles}>
-            <Text style={styles.title} weight='bold'>
+            <Text variant='h3' color='secondary'>
               {textMap[modalType].title}
             </Text>
-            <Text style={styles.subtitle} weight='bold'>
+            <Text style={styles.subtitle} weight='bold' color='neutralLight4'>
               {messages.winners}
             </Text>
           </View>
@@ -291,9 +278,11 @@ export const TrendingRewardsDrawer = () => {
               styles={{ button: styles.button }}
             />
           </View>
-          <TouchableWithoutFeedback onPress={onPressToS}>
-            <Text style={styles.terms}>{messages.terms}</Text>
-          </TouchableWithoutFeedback>
+          <Link url={TOS_URL}>
+            <Text style={styles.terms} variant='body2'>
+              {messages.terms}
+            </Text>
+          </Link>
         </ScrollView>
       </View>
     </AppDrawer>
