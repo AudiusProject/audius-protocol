@@ -75,6 +75,14 @@ if [ -d ~/.aliases ]; then
 fi' >> $HOME/.profile
 ```
 
+### Install GNU's `find`
+
+```
+brew install findutils
+# execute the following line and add it to a dotfile of your choice
+export PATH=“/opt/homebrew/opt/findutils/libexec/gnubin:$PATH”
+```
+
 ### Install Env Manager Locally (on your MBP)
 
 ```
@@ -88,6 +96,7 @@ rm ~/.env/.gitignore
 ```
 cd ~/.env
 git init
+git add .
 git commit -am "first commit"
 ```
 
@@ -175,6 +184,7 @@ Perform the migration:
 vi ~/bin/migrate
 # update GIT_URL
 # update logic/flow
+~/bin/migrate box-old box
 ```
 
 ## Additional Optional Settings
