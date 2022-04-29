@@ -72,6 +72,18 @@ case "$provider" in
 		;;
 esac
 
+# Create instance if it does not exist
+if ! instance_exists $provider $name; then
+	echo "Instance does not exist. Creating it"
+	if [ "${fast:-0}" -eq "1" ]; then
+		echo "Defrosting prebaked image for provisioning... $image"
+	fi
+	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" $name; then
+		echo "Creation of new instance did not succeed. Aborting"
+		exit 1
+	fi
+fi
+
 # Mounted attached disks
 case "$provider" in
 	gcp)
@@ -86,18 +98,6 @@ case "$provider" in
 		"
 		;;
 esac
-
-# Create instance if it does not exist
-if ! instance_exists $provider $name; then
-	echo "Instance does not exist. Creating it"
-	if [ "${fast:-0}" -eq "1" ]; then
-		echo "Defrosting prebaked image for provisioning... $image"
-	fi
-	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" $name; then
-		echo "Creation of new instance did not succeed. Aborting"
-		exit 1
-	fi
-fi
 
 # Setup service
 case "$service" in
