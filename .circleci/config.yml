@@ -63,7 +63,7 @@ jobs:
             cd "$PROTOCOL_DIR/service-commands/"
             npm install --unsafe-perm
             yes | A setup remote-dev $GCLOUD_VM_NAME
-            if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
+            # if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
       
             # Run A up on remote box
             # ssh -o "StrictHostKeyChecking no" -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
