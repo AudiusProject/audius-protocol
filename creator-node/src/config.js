@@ -621,7 +621,7 @@ const config = convict({
     doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
     format: 'nat',
     env: 'minimumTranscodingSlotsAvailable',
-    default: 1
+    default: 0
   },
   trustedNotifierID: {
     doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
