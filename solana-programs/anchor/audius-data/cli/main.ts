@@ -29,7 +29,9 @@ import {
 } from "../lib/utils";
 
 import { Command } from "commander";
-import fs = require("fs");
+import fs from "fs";
+import path from "path";
+import toml from "toml";
 
 const EthWeb3 = new Web3();
 
@@ -60,7 +62,10 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
   const wallet = new NodeWallet(ownerKeypair);
   const provider = new AnchorProvider(connection, wallet, opts);
   if (!idl.metadata) {
-    throw new Error("Missing metadata in IDL!");
+    const anchorToml = toml.parse(
+      fs.readFileSync(path.join(__dirname, "../Anchor.toml"), 'utf8')
+    );
+    idl.metadata = { address: anchorToml.programs.localnet.audius_data };
   }
   const programID = new PublicKey(idl.metadata.address);
   const program = new Program<AudiusData>(idl, programID, provider);
@@ -77,40 +82,40 @@ function initializeCLI(network: string, ownerKeypairPath: string) {
 }
 
 type initAdminCLIParams = {
-  adminKeypair: Keypair;
-  adminStorageKeypair: Keypair;
+  adminAuthorityKeypair: Keypair;
+  adminAccountKeypair: Keypair;
   verifierKeypair: Keypair;
   ownerKeypairPath: string;
 };
 
 async function initAdminCLI(network: string, args: initAdminCLIParams) {
-  const { adminKeypair, adminStorageKeypair, ownerKeypairPath } = args;
+  const { adminAuthorityKeypair, adminAccountKeypair, ownerKeypairPath } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  console.log(`AdminKeypair:`);
-  console.log(adminKeypair.publicKey.toString());
-  console.log(`[${adminKeypair.secretKey.toString()}]`);
+  console.log(`AdminAuthorityKeypair:`);
+  console.log(adminAuthorityKeypair.publicKey.toString());
+  console.log(`[${adminAuthorityKeypair.secretKey.toString()}]`);
   fs.writeFile(
-    "adminKeypair.json",
-    "[" + adminKeypair.secretKey.toString() + "]",
+    "adminAuthorityKeypair.json",
+    "[" + adminAuthorityKeypair.secretKey.toString() + "]",
     function (err) {
       if (err) {
         return console.error(err);
       }
-      console.log("Wrote to adminKeypair.json");
+      console.log("Wrote to adminAuthorityKeypair.json");
     }
   );
 
-  console.log(`adminStorageKeypair:`);
-  console.log(adminStorageKeypair.publicKey.toString());
-  console.log(`[${adminStorageKeypair.secretKey.toString()}]`);
+  console.log(`adminAccountKeypair:`);
+  console.log(adminAccountKeypair.publicKey.toString());
+  console.log(`[${adminAccountKeypair.secretKey.toString()}]`);
   fs.writeFile(
-    "adminStorageKeypair.json",
-    "[" + adminStorageKeypair.secretKey.toString() + "]",
+    "adminAccountKeypair.json",
+    "[" + adminAccountKeypair.secretKey.toString() + "]",
     function (err) {
       if (err) {
         return console.error(err);
       }
-      console.log("Wrote to adminStorageKeypair.json");
+      console.log("Wrote to adminAccountKeypair.json");
     }
   );
 
@@ -118,13 +123,13 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
   let tx = initAdmin({
     payer: cliVars.provider.wallet.publicKey,
     program: cliVars.program,
-    adminKeypair,
-    adminStorageKeypair,
+    adminKeypair: adminAuthorityKeypair,
+    adminAccountKeypair,
     verifierKeypair,
   });
 
   const txHash = await cliVars.provider.sendAndConfirm(tx, [
-    adminStorageKeypair,
+    adminAccountKeypair,
   ]);
 
   await cliVars.provider.connection.confirmTransaction(txHash);
@@ -134,10 +139,10 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
 type initUserCLIParams = {
   userId: anchor.BN;
   metadata: string;
-  adminStoragePublicKey: PublicKey;
+  adminAccount: PublicKey;
   ethAddress: string;
   ownerKeypairPath: string;
-  adminKeypair: Keypair;
+  adminAuthorityKeypair: Keypair;
   replicaSet: number[];
   replicaSetBumps: number[];
   cn1: PublicKey;
@@ -147,12 +152,12 @@ type initUserCLIParams = {
 
 async function initUserCLI(args: initUserCLIParams) {
   const {
-    adminKeypair,
+    adminAuthorityKeypair,
     userId,
     ethAddress,
     ownerKeypairPath,
     metadata,
-    adminStoragePublicKey,
+    adminAccount,
     replicaSet,
     replicaSetBumps,
     cn1,
@@ -160,14 +165,13 @@ async function initUserCLI(args: initUserCLIParams) {
     cn3,
   } = args;
   const cliVars = initializeCLI(network, ownerKeypairPath);
-  const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+  const { baseAuthorityAccount, bumpSeed, derivedAddress: userAccount } =
     await findDerivedPair(
       cliVars.programID,
-      adminStoragePublicKey,
+      adminAccount,
       convertBNToUserIdSeed(userId)
     );
 
-  const userStorageAddress = derivedAddress;
   console.log("Initing user");
   const tx = initUser({
     payer: cliVars.provider.wallet.publicKey,
@@ -178,20 +182,20 @@ async function initUserCLI(args: initUserCLIParams) {
     userId,
     bumpSeed,
     metadata,
-    userStorageAccount: userStorageAddress,
+    userAccount,
     baseAuthorityAccount,
-    adminStorageAccount: adminStoragePublicKey,
-    adminAuthorityPublicKey: adminKeypair.publicKey,
+    adminAccount,
+    adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
     cn1,
     cn2,
     cn3,
   });
-  const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
+  const txHash = await cliVars.provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
   await cliVars.provider.connection.confirmTransaction(txHash);
 
   console.log(
-    `Initialized user with id=${userId}, tx=${txHash}, userAcct=${userStorageAddress}`
+    `Initialized user with id=${userId}, tx=${txHash}, userAcct=${userAccount}`
   );
 }
 
@@ -210,7 +214,8 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
+          args.id
         }`
       );
 
@@ -223,14 +228,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           metadata: args.metadata,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -242,14 +247,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: userAuthorityKeypair.publicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           metadata: args.metadata,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -261,14 +266,14 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           metadata: args.metadata,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -280,13 +285,13 @@ async function timeManageEntity(
           program: args.program,
           baseAuthorityAccount: args.baseAuthorityAccount,
           userAuthorityPublicKey: args.userAuthorityPublicKey,
-          userStorageAccountPDA: args.userStorageAccountPDA,
+          userAccount: args.userAccount,
           userId: args.userId,
-          adminStorageAccount: args.adminStorageAccount,
+          adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
-          userAuthorityDelegateAccountPDA: args.userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA:
-            args.authorityDelegationStatusAccountPDA,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount:
+            args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       }
@@ -294,7 +299,7 @@ async function timeManageEntity(
       await provider.connection.confirmTransaction(tx);
       const duration = Date.now() - start;
       console.log(
-        `Processed tx=${tx} in duration=${duration}, user=${options.userStoragePubkey}`
+        `Processed tx=${tx} in duration=${duration}, user=${options.userAccount}`
       );
       return tx;
     } catch (e) {
@@ -326,14 +331,14 @@ program
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
   .option("-ak, --admin-keypair <keypair>", "admin keypair path")
   .option(
-    "-ask, --admin-storage-keypair <keypair>",
-    "admin storage keypair path"
+    "-aak, --admin-account-keypair <keypair>",
+    "admin account keypair path"
   )
   .option("-uid, --user-id <integer>", "user id number")
   .option("-e, --eth-address <string>", "user/cn eth address")
   .option("-u, --user-solana-keypair <string>", "user admin sol keypair path")
   .option(
-    "-ustg, --user-storage-pubkey <string>",
+    "-ua, --user-account <string>",
     "user sol id-based PDA pubkey"
   )
   .option(
@@ -351,7 +356,11 @@ program
     "true"
   )
   .option("-uid, --user-id <integer>", "ID of incoming user")
-  .option("-we, --write-enabled <bool>", "If write is enabled for admin", "false")
+  .option(
+    "-we, --write-enabled <bool>",
+    "If write is enabled for admin",
+    "false"
+  )
   .option(
     "--user-replica-set <string>",
     "Comma separated list of integers representing spIDs - ex. 2,3,1"
@@ -368,14 +377,14 @@ const options = program.opts();
 
 // Conditionally load keys if provided
 // Admin key used to control accounts
-const adminKeypair = options.adminKeypair
-  ? keypairFromFilePath(options.adminKeypair)
+const adminAuthorityKeypair = options.adminAuthorityKeypair
+  ? keypairFromFilePath(options.adminAuthorityKeypair)
   : anchor.web3.Keypair.generate();
 
 // Admin storage keypair, referenced internally
 // Keypair technically only necessary the first time this is initialized
-const adminStorageKeypair = options.adminStorageKeypair
-  ? keypairFromFilePath(options.adminStorageKeypair)
+const adminAccountKeypair = options.adminAccountKeypair
+  ? keypairFromFilePath(options.adminAccountKeypair)
   : anchor.web3.Keypair.generate();
 
 // User admin keypair
@@ -391,13 +400,13 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-    ? AUDIUS_PROD_RPC_POOL
-    : LOCALHOST_RPC_POOL;
+  ? AUDIUS_PROD_RPC_POOL
+  : LOCALHOST_RPC_POOL;
 
 const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
-  const userAuthorityDelegateAccountPDA =
-    options.userAuthorityDelegateAccountPDA ?? SYSTEM_PROGRAM_ID;
+  const userAuthorityDelegateAccount =
+    options.userAuthorityDelegateAccount ?? SYSTEM_PROGRAM_ID;
   const authorityDelegationStatusAccountPDA =
     options.authorityDelegationStatusAccountPDA ?? SYSTEM_PROGRAM_ID;
   let { userId } = options;
@@ -406,13 +415,14 @@ const main = async () => {
     userId = new anchor.BN(userId);
     userIdSeed = convertBNToUserIdSeed(userId);
   }
+  console.log(`Calling function: ${options.function}`);
   switch (options.function) {
     case functionTypes.initAdmin:
       console.log(`Initializing admin`);
       initAdminCLI(network, {
         ownerKeypairPath: options.ownerKeypair,
-        adminKeypair: adminKeypair,
-        adminStorageKeypair: adminStorageKeypair,
+        adminAuthorityKeypair,
+        adminAccountKeypair,
         verifierKeypair: verifierKeypair,
       });
       break;
@@ -429,26 +439,26 @@ const main = async () => {
 
       const cnInfo = await getContentNode(
         cliVars.program,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         `${options.cnSpId}`
       );
       const { baseAuthorityAccount } = await findDerivedPair(
         cliVars.programID,
-        adminStorageKeypair.publicKey,
+        adminAccountKeypair.publicKey,
         []
       );
       const tx = createContentNode({
         payer: cliVars.provider.wallet.publicKey,
         program: cliVars.program,
         baseAuthorityAccount,
-        adminPublicKey: adminKeypair.publicKey,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         contentNodeAuthority: contentNodeAuthority.publicKey,
-        contentNodeAcct: cnInfo.derivedAddress,
+        contentNodeAccount: cnInfo.derivedAddress,
         spID: cnInfo.spId,
         ownerEthAddress: delegateWallet,
       });
-      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
+      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
       console.log(`Initialized with ${txHash}`);
       break;
@@ -463,7 +473,7 @@ const main = async () => {
         userReplicaSet.map(async (x) => {
           return await getContentNode(
             cliVars.program,
-            adminStorageKeypair.publicKey,
+            adminAccountKeypair.publicKey,
             `${x}`
           );
         })
@@ -479,8 +489,8 @@ const main = async () => {
         ownerKeypairPath: options.ownerKeypair,
         ethAddress: options.ethAddress,
         userId: userId,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
-        adminKeypair,
+        adminAccount: adminAccountKeypair.publicKey,
+        adminAuthorityKeypair,
         metadata: randomCID(),
         replicaSet: userReplicaSet,
         replicaSetBumps,
@@ -498,28 +508,28 @@ const main = async () => {
         program: cliVars.program,
         message: userSolKeypair.publicKey.toBytes(),
         ethPrivateKey,
-        userStorageAccount: options.userStoragePubkey,
-        userSolPubkey,
+        userAccount: options.userAccount,
+        userAuthorityPublicKey: userSolPubkey,
       });
       const txHash = await cliVars.provider.sendAndConfirm(tx);
 
       await cliVars.provider.connection.confirmTransaction(txHash);
       console.log(
-        `initUserTx = ${txHash}, userStorageAccount = ${options.userStoragePubkey}`
+        `initUserTx = ${txHash}, userAccount = ${options.userAccount}`
       );
       break;
     }
     case functionTypes.updateAdmin: {
-      const writeEnabled = (options.writeEnabled === 'true');
+      const writeEnabled = options.writeEnabled === "true";
 
       console.log({ writeEnabled });
       const tx = updateAdmin({
         program: cliVars.program,
         isWriteEnabled: Boolean(writeEnabled),
-        adminStorageAccount: adminStorageKeypair.publicKey,
-        adminAuthorityKeypair: adminKeypair,
+        adminAccount: adminAccountKeypair.publicKey,
+        adminAuthorityKeypair,
       });
-      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminKeypair]);
+      const txHash = await cliVars.provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
       await cliVars.provider.connection.confirmTransaction(txHash);
       console.log(`updateAdmin = ${txHash}`);
@@ -534,7 +544,7 @@ const main = async () => {
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
 
@@ -545,7 +555,7 @@ const main = async () => {
         userReplicaSetSpIds.map(async (spId) => {
           return await getContentNode(
             cliVars.program,
-            adminStorageKeypair.publicKey,
+            adminAccountKeypair.publicKey,
             `${spId}`
           );
         })
@@ -563,9 +573,9 @@ const main = async () => {
         userId: userId,
         bumpSeed,
         metadata: options.metadata,
-        userSolPubkey: userSolKeypair.publicKey,
-        userStorageAccount: derivedAddress,
-        adminStoragePublicKey: adminStorageKeypair.publicKey,
+        userAuthorityPublicKey: userSolKeypair.publicKey,
+        userAccount: derivedAddress,
+        adminAccount: adminAccountKeypair.publicKey,
         baseAuthorityAccount: baseAuthorityAccount,
         replicaSet: userReplicaSetSpIds,
         replicaSetBumps,
@@ -590,14 +600,14 @@ const main = async () => {
 
       const numTracks = options.numTracks ?? 1;
       console.log(
-        `Number of tracks = ${numTracks}, Target User = ${options.userStoragePubkey}`
+        `Number of tracks = ${numTracks}, Target User = ${options.userAccount}`
       );
 
       const promises = [];
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
 
@@ -607,15 +617,16 @@ const main = async () => {
             {
               id: randomId(),
               baseAuthorityAccount,
-              adminStorageAccount: adminStorageKeypair.publicKey,
+              adminAccount: adminAccountKeypair.publicKey,
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
               metadata: options.metadata,
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userStorageAccountPDA: derivedAddress,
-              userAuthorityDelegateAccountPDA,
-              authorityDelegationStatusAccountPDA,
+              userAccount: derivedAddress,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccount,
+              authorityDelegationStatusAccount:
+                authorityDelegationStatusAccountPDA,
             },
             cliVars.provider,
             ManagementActions.create,
@@ -635,14 +646,14 @@ const main = async () => {
     case functionTypes.createPlaylist: {
       const numPlaylists = options.numPlaylists ?? 1;
       console.log(
-        `Number of playlists = ${numPlaylists}, Target User = ${options.userStoragePubkey}`
+        `Number of playlists = ${numPlaylists}, Target User = ${options.userAccount}`
       );
 
       const promises = [];
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
 
@@ -652,15 +663,16 @@ const main = async () => {
             {
               id: randomId(),
               baseAuthorityAccount,
-              adminStorageAccount: adminStorageKeypair.publicKey,
+              adminAccount: adminAccountKeypair.publicKey,
               userId: userId,
               program: cliVars.program,
               bumpSeed: bumpSeed,
               metadata: randomCID(),
               userAuthorityPublicKey: userSolKeypair.publicKey,
-              userStorageAccountPDA: options.userStoragePubkey,
-              userAuthorityDelegateAccountPDA,
-              authorityDelegationStatusAccountPDA,
+              userAccount: options.userAccount,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccount,
+              authorityDelegationStatusAccount:
+                authorityDelegationStatusAccountPDA,
             },
             cliVars.provider,
             ManagementActions.create,
@@ -680,13 +692,13 @@ const main = async () => {
       const playlistId = new anchor.BN(options.id);
       if (!playlistId) break;
       console.log(
-        `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
+        `Playlist id = ${playlistId} Target User = ${options.userAccount}`
       );
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
       const start = Date.now();
@@ -694,15 +706,15 @@ const main = async () => {
         {
           id: playlistId,
           baseAuthorityAccount,
-          adminStorageAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminAccountKeypair.publicKey,
           userId: userId,
           program: cliVars.program,
           bumpSeed: bumpSeed,
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
-          userStorageAccountPDA: options.userStoragePubkey,
-          userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA,
+          userAccount: options.userAccount,
+          userAuthorityDelegateAccount: userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
         cliVars.provider,
         ManagementActions.update,
@@ -716,13 +728,13 @@ const main = async () => {
       const playlistId = new anchor.BN(options.id);
       if (!playlistId) break;
       console.log(
-        `Playlist id = ${playlistId} Target User = ${options.userStoragePubkey}`
+        `Playlist id = ${playlistId} Target User = ${options.userAccount}`
       );
 
       const { baseAuthorityAccount, bumpSeed, derivedAddress } =
         await findDerivedPair(
           cliVars.programID,
-          adminStorageKeypair.publicKey,
+          adminAccountKeypair.publicKey,
           userIdSeed
         );
       const start = Date.now();
@@ -730,15 +742,15 @@ const main = async () => {
         {
           id: playlistId,
           baseAuthorityAccount,
-          adminStorageAccount: adminStorageKeypair.publicKey,
+          adminAccount: adminAccountKeypair.publicKey,
           userId: userId,
           program: cliVars.program,
           bumpSeed: bumpSeed,
           metadata: randomCID(),
           userAuthorityPublicKey: userSolKeypair.publicKey,
-          userStorageAccountPDA: options.userStoragePubkey,
-          userAuthorityDelegateAccountPDA,
-          authorityDelegationStatusAccountPDA,
+          userAccount: options.userAccount,
+          userAuthorityDelegateAccount: userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount: authorityDelegationStatusAccountPDA,
         },
         cliVars.provider,
         ManagementActions.update,
