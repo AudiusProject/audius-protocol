@@ -189,7 +189,7 @@ describe('test src/utils.js', () => {
       const resp = await Utils.asyncRetry({
         asyncFn,
         asyncFnParams: [1, 2, 8],
-        asyncFnTaskLabel: 'test function with no params'
+        asyncFnTaskLabel: 'test function with params'
       })
 
       assert.strictEqual(resp, 24)
