@@ -332,7 +332,6 @@ function currentNodeShouldHandleTranscode({
   transcodingQueueCanAcceptMoreJobs,
   spID
 }) {
-  return false
   // If the TranscodingQueue is available, let current node handle transcode
   if (transcodingQueueCanAcceptMoreJobs) return true
 
