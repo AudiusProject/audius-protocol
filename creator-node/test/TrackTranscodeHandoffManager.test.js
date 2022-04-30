@@ -93,7 +93,9 @@ describe('test TrackTranscodeHandoffManager', function () {
     const allSPsSet = new Set(allSPs.map((sp) => sp.endpoint))
 
     // Return 3 SPs for libs
-    let randomSPs = await TrackTranscodeHandoffManager.selectRandomSPs(libsMock)
+    const randomSPs = await TrackTranscodeHandoffManager.selectRandomSPs(
+      libsMock
+    )
     assert.strictEqual(randomSPs.length, 3)
     randomSPs.forEach((sp) => {
       assert.ok(allSPsSet.has(sp))
@@ -105,7 +107,7 @@ describe('test TrackTranscodeHandoffManager', function () {
     }
 
     // Return 1 SP for libs
-    let oneSP = await TrackTranscodeHandoffManager.selectRandomSPs(libsMock)
+    const oneSP = await TrackTranscodeHandoffManager.selectRandomSPs(libsMock)
     assert.strictEqual(oneSP.length, 1)
     assert.ok(allSPsSet.has(oneSP[0]))
   })

@@ -348,43 +348,74 @@ function currentNodeShouldHandleTranscode({
  * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
  * @param {func} param.asyncFn the fn to asynchronously retry
- * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
- * @param {string} param.asyncFnTask the task label used to print on retry. used for debugging purposes
- * @param {number} param.factor the exponential factor
- * @param {number} [retries=5] the max number of retries. defaulted to 5
- * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
- * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
+ * @param {Array} param.asyncFnParams the params to pass into the fn
+ * @param {string} param.asyncFnTaskLabel the task label used to print on retry. used for debugging purposes
+ * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
+ * @param {number} [param.options.factor=2] the exponential factor
+ * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
+ * @param {number} [param.options.minTimeout=1000] minimum number of ms to wait after first retry. defaulted to 1000ms
+ * @param {number} [param.options.maxTimeout=5000] maximum number of ms between two retries. defaulted to 5000ms
+ * @param {func} [param.options.onRetry] fn that gets called per retry
  * @returns the fn response if success, or throws an error
  */
 function asyncRetry({
-  asyncFn,
-  asyncFnParams,
-  asyncFnTask,
-  retries = 5,
-  factor = 2, // default for async-retry
-  minTimeout = 1000, // default for async-retry
-  maxTimeout = 5000
+  asyncFn: inputAsyncFn,
+  asyncFnTaskLabel,
+  asyncFnParams = [],
+  options = {},
+  handleBackwardsCompatibility = false
 }) {
-  return retry(
-    async () => {
-      if (asyncFnParams) {
-        return asyncFn(asyncFnParams)
+  options = {
+    retries: 5,
+    factor: 2,
+    minTimeout: 1000,
+    maxTimeout: 5000,
+    onRetry: (err, i) => {
+      if (err) {
+        console.log(`${asyncFnTaskLabel} ${i} retry error: `, err)
       }
-
-      return asyncFn()
     },
-    {
-      retries,
-      factor,
-      minTimeout,
-      maxTimeout,
-      onRetry: (err, i) => {
-        if (err) {
-          console.log(`${asyncFnTask} ${i} retry error: `, err)
-        }
+    ...options
+  }
+
+  let asyncFn
+  if (handleBackwardsCompatibility) {
+    asyncFn = _backwardsCompatReq(inputAsyncFn, asyncFnParams)
+  } else {
+    asyncFn = async () => {
+      return inputAsyncFn(...asyncFnParams)
+    }
+  }
+
+  return retry(asyncFn, options)
+}
+
+/**
+ * This fn is used when trying to hit any SP that has not yet upgraded and to not retry
+ * on 404 (indicating SP has not yet upgraded)
+ *
+ * @param {func} asyncFn the observed async function
+ * @param {Object} axiosParams network request params
+ * @returns async function that bails if 404 occurs
+ */
+function _backwardsCompatReq(asyncFn, params) {
+  return async (bail) => {
+    let resp
+    try {
+      resp = await asyncFn(...params)
+    } catch (e) {
+      // If SP 404's, the SP has not upgraded. Bail without retries.
+      // Else, just throw the caught error
+      if (e.response && e.response.status === 404) {
+        bail(new Error('Route not supported'))
+        return
+      } else {
+        throw e
       }
     }
-  )
+
+    return resp
+  }
 }
 
 module.exports = Utils
