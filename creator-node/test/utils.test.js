@@ -2,6 +2,8 @@ const assert = require('assert')
 const nock = require('nock')
 const axios = require('axios')
 
+const { logger: genericLogger } = require('../src/logging')
+
 // Module under test
 const Utils = require('../src/utils')
 
@@ -46,6 +48,7 @@ describe('test src/utils.js', () => {
     let didRetry = false
     try {
       await Utils.asyncRetry({
+        logger: genericLogger,
         asyncFn: axios,
         asyncFnParams: [
           {
@@ -53,7 +56,7 @@ describe('test src/utils.js', () => {
             method: 'get'
           }
         ],
-        asyncFnTaskLabel:
+        asyncFnLabel:
           'test handleBackwardsCompatibility=true with 404 response',
         options: {
           onRetry: () => {
@@ -80,6 +83,7 @@ describe('test src/utils.js', () => {
     let didRetry = false
     try {
       await Utils.asyncRetry({
+        logger: genericLogger,
         asyncFn: axios,
         asyncFnParams: [
           {
@@ -93,7 +97,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        asyncFnTaskLabel:
+        asyncFnLabel:
           'test handleBackwardsCompatibility=false with 404 response'
       })
     } catch (e) {
@@ -112,6 +116,7 @@ describe('test src/utils.js', () => {
     let didRetry = false
     try {
       await Utils.asyncRetry({
+        logger: genericLogger,
         asyncFn: axios,
         asyncFnParams: [
           {
@@ -125,7 +130,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        asyncFnTaskLabel: 'test 500 response'
+        asyncFnLabel: 'test 500 response'
       })
     } catch (e) {
       assert.strictEqual(didRetry, true)
@@ -143,6 +148,7 @@ describe('test src/utils.js', () => {
     let didRetry = false
     try {
       const resp = await Utils.asyncRetry({
+        logger: genericLogger,
         asyncFn: axios,
         asyncFnParams: [
           {
@@ -156,7 +162,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        asyncFnTaskLabel: 'test 200 response'
+        asyncFnLabel: 'test 200 response'
       })
 
       assert.strictEqual(didRetry, false)
@@ -169,10 +175,11 @@ describe('test src/utils.js', () => {
   it('Works as expected with no params', async function () {
     try {
       const resp = await Utils.asyncRetry({
+        logger: genericLogger,
         asyncFn: async () => {
           return 'nice'
         },
-        asyncFnTaskLabel: 'test function with no params'
+        asyncFnLabel: 'test function with no params'
       })
 
       assert.strictEqual(resp, 'nice')
@@ -187,9 +194,10 @@ describe('test src/utils.js', () => {
         return c * (a + b)
       }
       const resp = await Utils.asyncRetry({
+        logger: genericLogger,
         asyncFn,
         asyncFnParams: [1, 2, 8],
-        asyncFnTaskLabel: 'test function with params'
+        asyncFnLabel: 'test function with params'
       })
 
       assert.strictEqual(resp, 24)

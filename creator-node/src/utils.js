@@ -351,7 +351,7 @@ function currentNodeShouldHandleTranscode({
  * @param {Object} param.logger
  * @param {func} param.asyncFn the fn to asynchronously retry
  * @param {Array} param.asyncFnParams the params to pass into the fn
- * @param {string} param.asyncFnTaskLabel the task label used to print on retry. used for debugging purposes
+ * @param {string} param.asyncFnLabel the task label used to print on retry. used for debugging purposes
  * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
  * @param {number} [param.options.factor=2] the exponential factor
  * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
@@ -363,7 +363,7 @@ function currentNodeShouldHandleTranscode({
 function asyncRetry({
   logger,
   asyncFn: inputAsyncFn,
-  asyncFnTaskLabel,
+  asyncFnLabel,
   asyncFnParams = [],
   options = {},
   handleBackwardsCompatibility = false
@@ -375,7 +375,7 @@ function asyncRetry({
     maxTimeout: 5000,
     onRetry: (err, i) => {
       if (err) {
-        logger.warn(`${asyncFnTaskLabel} ${i} retry error: `, err)
+        logger.warn(`${asyncFnLabel} ${i} retry error: `, err)
       }
     },
     ...options

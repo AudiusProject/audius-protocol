@@ -238,7 +238,7 @@ class TrackTranscodeHandoffManager {
           return resp
         }
       },
-      asyncFnTaskLabel: 'polling transcode',
+      asyncFnLabel: 'polling transcode',
       options: {
         retries: POLLING_TRANSCODE_AND_SEGMENTS_RETRIES,
         minTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MIN_TIMEOUT,
@@ -374,7 +374,7 @@ class TrackTranscodeHandoffManager {
           timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
         }
       ],
-      asyncFnTask: 'transcode and segment',
+      asyncFnLabel: 'transcode and segment',
       handleBackwardsCompatibility: true
     })
 
@@ -433,7 +433,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
         }
       ],
-      asyncFnTaskLabel: 'fetch track content processing status'
+      asyncFnLabel: 'fetch track content processing status'
     })
 
     return body.data
@@ -470,7 +470,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         }
       ],
-      asyncFnTask: 'fetch segment',
+      asyncFnLabel: 'fetch segment',
       handleBackwardsCompatibility: true
     })
   }
@@ -506,7 +506,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         }
       ],
-      asyncFnTask: 'fetch transcode',
+      asyncFnLabel: 'fetch transcode',
       handleBackwardsCompatibility: true
     })
   }
@@ -542,7 +542,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         }
       ],
-      asyncFnTask: 'fetch m3u8',
+      asyncFnLabel: 'fetch m3u8',
       handleBackwardsCompatibility: true
     })
   }
