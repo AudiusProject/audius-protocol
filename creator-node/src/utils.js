@@ -411,9 +411,9 @@ function _backwardsCompatReq(asyncFn, params) {
       if (e.response && e.response.status === 404) {
         bail(new Error('Route not supported'))
         return
-      } else {
-        throw e
       }
+
+      throw e
     }
 
     return resp
