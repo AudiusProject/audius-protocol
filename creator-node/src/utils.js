@@ -348,6 +348,7 @@ function currentNodeShouldHandleTranscode({
  *
  * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
+ * @param {Object} param.logger
  * @param {func} param.asyncFn the fn to asynchronously retry
  * @param {Array} param.asyncFnParams the params to pass into the fn
  * @param {string} param.asyncFnTaskLabel the task label used to print on retry. used for debugging purposes
@@ -360,6 +361,7 @@ function currentNodeShouldHandleTranscode({
  * @returns the fn response if success, or throws an error
  */
 function asyncRetry({
+  logger,
   asyncFn: inputAsyncFn,
   asyncFnTaskLabel,
   asyncFnParams = [],
@@ -373,7 +375,7 @@ function asyncRetry({
     maxTimeout: 5000,
     onRetry: (err, i) => {
       if (err) {
-        console.log(`${asyncFnTaskLabel} ${i} retry error: `, err)
+        logger.warn(`${asyncFnTaskLabel} ${i} retry error: `, err)
       }
     },
     ...options

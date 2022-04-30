@@ -203,6 +203,7 @@ class TrackTranscodeHandoffManager {
     )
 
     return Utils.asyncRetry({
+      logger: TrackTranscodeHandoffManager.logger,
       asyncFn: async (bail, num) => {
         if (num === 50) {
           bail(
@@ -349,6 +350,7 @@ class TrackTranscodeHandoffManager {
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
     const resp = await Utils.asyncRetry({
+      logger: TrackTranscodeHandoffManager.logger,
       asyncFn: axios,
       asyncFnParams: [
         {
@@ -421,6 +423,7 @@ class TrackTranscodeHandoffManager {
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
     const { data: body } = await Utils.asyncRetry({
+      logger: TrackTranscodeHandoffManager.logger,
       asyncFn: axios,
       asyncFnParams: [
         {
@@ -449,6 +452,7 @@ class TrackTranscodeHandoffManager {
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
     return Utils.asyncRetry({
+      logger: TrackTranscodeHandoffManager.logger,
       asyncFn: axios,
       asyncFnParams: [
         {
@@ -484,6 +488,7 @@ class TrackTranscodeHandoffManager {
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
     return Utils.asyncRetry({
+      logger: TrackTranscodeHandoffManager.logger,
       asyncFn: axios,
       asyncFnParams: [
         {
@@ -519,6 +524,7 @@ class TrackTranscodeHandoffManager {
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
     return Utils.asyncRetry({
+      logger: TrackTranscodeHandoffManager.logger,
       asyncFn: axios,
       asyncFnParams: [
         {
