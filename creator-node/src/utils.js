@@ -395,7 +395,7 @@ function asyncRetry({
  * on 404 (indicating SP has not yet upgraded)
  *
  * @param {func} asyncFn the observed async function
- * @param {Object} axiosParams network request params
+ * @param {Object} params network request params
  * @returns async function that bails if 404 occurs
  */
 function _backwardsCompatReq(asyncFn, params) {
