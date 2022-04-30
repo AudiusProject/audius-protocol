@@ -15,8 +15,17 @@ depends_on = None
 
 
 def upgrade():
-    op.create_index(op.f("ix_user_tips_slot"), "user_tips", ["slot"], unique=False)
-    op.drop_index("ix_user_tips_signature", table_name="user_tips")
+    conn = op.get_bind()
+    conn.execute(
+        """
+    BEGIN;
+    CREATE INDEX IF NOT EXISTS ix_user_tips_slot ON user_tips (slot);
+    DROP INDEX IF EXISTS ix_user_tips_signature;
+    COMMIT;
+    """
+    )
+    # op.create_index(op.f("ix_user_tips_slot"), "user_tips", ["slot"], unique=False)
+    # op.drop_index("ix_user_tips_signature", table_name="user_tips")
     # ### end Alembic commands ###
 
 
