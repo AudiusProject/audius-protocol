@@ -375,7 +375,12 @@ function asyncRetry({
     maxTimeout: 5000,
     onRetry: (err, i) => {
       if (err) {
-        logger.warn(`${asyncFnLabel} ${i} retry error: `, err)
+        logger.warn(
+          `wat ${JSON.stringify(
+            asyncFnParams[0]
+          )} ${asyncFnLabel} ${i} retry error: `,
+          err
+        )
       }
     },
     ...options
