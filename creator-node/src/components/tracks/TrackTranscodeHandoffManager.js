@@ -32,9 +32,9 @@ const HAND_OFF_STATES = Object.freeze({
 
 // Handles sending a transcode and segment request to an available node in the network
 
-class TranscodeDelegationManager {
+class TrackTranscodeHandoffManager {
   static logContext = {}
-  static logger = genericLogger.child(TranscodeDelegationManager.logContext)
+  static logger = genericLogger.child(TrackTranscodeHandoffManager.logContext)
 
   /**
    * Wrapper function to:
@@ -64,7 +64,7 @@ class TranscodeDelegationManager {
    * @returns
    */
   static async handOff({ logContext }, req) {
-    const logger = TranscodeDelegationManager.initLogger(logContext)
+    const logger = TrackTranscodeHandoffManager.initLogger(logContext)
 
     const decisionTree = { state: HAND_OFF_STATES.INITIALIZED }
     const libs = req.libs
@@ -73,7 +73,7 @@ class TranscodeDelegationManager {
     let sps
     try {
       decisionTree.state = HAND_OFF_STATES.SELECTING_RANDOM_SPS
-      sps = await TranscodeDelegationManager.selectRandomSPs(libs)
+      sps = await TrackTranscodeHandoffManager.selectRandomSPs(libs)
     } catch (e) {
       logger.warn(`Could not select random SPs: ${e.message}`)
       return resp
@@ -86,18 +86,18 @@ class TranscodeDelegationManager {
         decisionTree.state = HAND_OFF_STATES.HANDING_OFF_TO_SP
 
         const transcodeAndSegmentUUID =
-          await TranscodeDelegationManager.sendTrackToSp({ sp, req })
+          await TrackTranscodeHandoffManager.sendTrackToSp({ sp, req })
 
         decisionTree.state = HAND_OFF_STATES.POLLING_FOR_TRANSCODE
         const polledTranscodeResponse =
-          await TranscodeDelegationManager.pollForTranscode({
+          await TrackTranscodeHandoffManager.pollForTranscode({
             sp,
             uuid: transcodeAndSegmentUUID
           })
 
         decisionTree.state = HAND_OFF_STATES.FETCHING_FILES_AND_WRITING_TO_FS
         const localFilePaths =
-          await TranscodeDelegationManager.fetchFilesAndWriteToFs({
+          await TrackTranscodeHandoffManager.fetchFilesAndWriteToFs({
             ...polledTranscodeResponse,
             sp,
             fileNameNoExtension: req.fileNameNoExtension
@@ -171,14 +171,14 @@ class TranscodeDelegationManager {
    * @returns the transcoding job uuid
    */
   static async sendTrackToSp({ sp, req }) {
-    const logger = TranscodeDelegationManager.logger
+    const logger = TrackTranscodeHandoffManager.logger
     const { fileDir, fileName, fileNameNoExtension } = req
 
-    await TranscodeDelegationManager.fetchHealthCheck(sp)
+    await TrackTranscodeHandoffManager.fetchHealthCheck(sp)
 
     logger.info({ sp }, `Sending off transcode and segmenting request...`)
     const transcodeAndSegmentUUID =
-      await TranscodeDelegationManager.sendTranscodeAndSegmentRequest({
+      await TrackTranscodeHandoffManager.sendTranscodeAndSegmentRequest({
         sp,
         fileDir,
         fileName,
@@ -196,7 +196,7 @@ class TranscodeDelegationManager {
    * @returns the transcode job results
    */
   static async pollForTranscode({ uuid, sp }) {
-    const logger = TranscodeDelegationManager.logger
+    const logger = TrackTranscodeHandoffManager.logger
     logger.info(
       { sp },
       `Polling for transcode and segments with uuid=${uuid}...`
@@ -212,7 +212,7 @@ class TranscodeDelegationManager {
         }
 
         const { status, resp } =
-          await TranscodeDelegationManager.fetchTranscodeProcessingStatus({
+          await TrackTranscodeHandoffManager.fetchTranscodeProcessingStatus({
             sp,
             uuid
           })
@@ -237,10 +237,12 @@ class TranscodeDelegationManager {
           return resp
         }
       },
-      asyncFnTask: 'polling transcode',
-      retries: POLLING_TRANSCODE_AND_SEGMENTS_RETRIES,
-      minTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MIN_TIMEOUT,
-      maxTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MAX_TIMEOUT
+      asyncFnTaskLabel: 'polling transcode',
+      options: {
+        retries: POLLING_TRANSCODE_AND_SEGMENTS_RETRIES,
+        minTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MIN_TIMEOUT,
+        maxTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MAX_TIMEOUT
+      }
     })
   }
 
@@ -270,7 +272,7 @@ class TranscodeDelegationManager {
     fileDir,
     sp
   }) {
-    const logger = TranscodeDelegationManager.logger
+    const logger = TrackTranscodeHandoffManager.logger
 
     let res
 
@@ -283,7 +285,7 @@ class TranscodeDelegationManager {
         const segmentFileName = segmentFileNames[i]
         const segmentFilePath = segmentFilePaths[i]
 
-        res = await TranscodeDelegationManager.fetchSegment(
+        res = await TrackTranscodeHandoffManager.fetchSegment(
           sp,
           segmentFileName,
           fileNameNoExtension
@@ -293,7 +295,7 @@ class TranscodeDelegationManager {
 
       // Get transcode and write to tmp disk
       logger.info({ sp, transcodeFilePath }, 'Fetching transcode...')
-      res = await TranscodeDelegationManager.fetchTranscode(
+      res = await TrackTranscodeHandoffManager.fetchTranscode(
         sp,
         fileNameNoExtension
       )
@@ -301,7 +303,7 @@ class TranscodeDelegationManager {
 
       // Get m3u8 file and write to tmp disk
       logger.info({ sp, m3u8FilePath }, 'Fetching m3u8...')
-      res = await TranscodeDelegationManager.fetchM3U8File(
+      res = await TrackTranscodeHandoffManager.fetchM3U8File(
         sp,
         fileNameNoExtension
       )
@@ -310,7 +312,7 @@ class TranscodeDelegationManager {
       logger.error(
         `Could not complete writing files to disk: ${e.message}. Removing files..`
       )
-      removeTrackFolder(TranscodeDelegationManager.logContext, fileDir)
+      removeTrackFolder(TrackTranscodeHandoffManager.logContext, fileDir)
       throw e
     }
 
@@ -337,7 +339,9 @@ class TranscodeDelegationManager {
     fileNameNoExtension
   }) {
     const originalTrackFormData =
-      await TranscodeDelegationManager.createFormData(fileDir + '/' + fileName)
+      await TrackTranscodeHandoffManager.createFormData(
+        fileDir + '/' + fileName
+      )
 
     // TODO: make this constant. perhaps in a class
     const spID = config.get('spID')
@@ -346,27 +350,30 @@ class TranscodeDelegationManager {
 
     const resp = await Utils.asyncRetry({
       asyncFn: axios,
-      asyncFnParams: {
-        url: `${sp}/transcode_and_segment`,
-        method: 'post',
-        data: originalTrackFormData,
-        headers: {
-          ...originalTrackFormData.getHeaders()
-        },
-        params: {
-          uuid: fileNameNoExtension,
-          timestamp,
-          signature,
-          spID
-        },
-        adapter: require('axios/lib/adapters/http'),
-        // Set content length headers (only applicable in server/node environments).
-        // See: https://github.com/axios/axios/issues/1362
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-        timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
-      },
-      asyncFnTask: 'transcode and segment'
+      asyncFnParams: [
+        {
+          url: `${sp}/transcode_and_segment`,
+          method: 'post',
+          data: originalTrackFormData,
+          headers: {
+            ...originalTrackFormData.getHeaders()
+          },
+          params: {
+            uuid: fileNameNoExtension,
+            timestamp,
+            signature,
+            spID
+          },
+          adapter: require('axios/lib/adapters/http'),
+          // Set content length headers (only applicable in server/node environments).
+          // See: https://github.com/axios/axios/issues/1362
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
+        }
+      ],
+      asyncFnTask: 'transcode and segment',
+      handleBackwardsCompatibility: true
     })
 
     return resp.data.data.uuid
@@ -415,13 +422,15 @@ class TranscodeDelegationManager {
 
     const { data: body } = await Utils.asyncRetry({
       asyncFn: axios,
-      asyncFnParams: {
-        url: `${sp}/async_processing_status`,
-        params: { uuid, timestamp, signature, spID },
-        method: 'get',
-        timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
-      },
-      asyncFnTask: 'fetch track content processing status'
+      asyncFnParams: [
+        {
+          url: `${sp}/async_processing_status`,
+          params: { uuid, timestamp, signature, spID },
+          method: 'get',
+          timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
+        }
+      ],
+      asyncFnTaskLabel: 'fetch track content processing status'
     })
 
     return body.data
@@ -441,21 +450,24 @@ class TranscodeDelegationManager {
 
     return Utils.asyncRetry({
       asyncFn: axios,
-      asyncFnParams: {
-        url: `${sp}/transcode_and_segment`,
-        method: 'get',
-        params: {
-          fileName: segmentFileName,
-          fileType: 'segment',
-          uuid: fileNameNoExtension,
-          timestamp,
-          signature,
-          spID
-        },
-        responseType: 'stream',
-        timeout: FETCH_STREAM_TIMEOUT_MS
-      },
-      asyncFnTask: 'fetch segment'
+      asyncFnParams: [
+        {
+          url: `${sp}/transcode_and_segment`,
+          method: 'get',
+          params: {
+            fileName: segmentFileName,
+            fileType: 'segment',
+            uuid: fileNameNoExtension,
+            timestamp,
+            signature,
+            spID
+          },
+          responseType: 'stream',
+          timeout: FETCH_STREAM_TIMEOUT_MS
+        }
+      ],
+      asyncFnTask: 'fetch segment',
+      handleBackwardsCompatibility: true
     })
   }
 
@@ -473,21 +485,24 @@ class TranscodeDelegationManager {
 
     return Utils.asyncRetry({
       asyncFn: axios,
-      asyncFnParams: {
-        url: `${sp}/transcode_and_segment`,
-        method: 'get',
-        params: {
-          fileName: transcodeFileName,
-          fileType: 'transcode',
-          uuid: fileNameNoExtension,
-          timestamp,
-          signature,
-          spID
-        },
-        responseType: 'stream',
-        timeout: FETCH_STREAM_TIMEOUT_MS
-      },
-      asyncFnTask: 'fetch transcode'
+      asyncFnParams: [
+        {
+          url: `${sp}/transcode_and_segment`,
+          method: 'get',
+          params: {
+            fileName: transcodeFileName,
+            fileType: 'transcode',
+            uuid: fileNameNoExtension,
+            timestamp,
+            signature,
+            spID
+          },
+          responseType: 'stream',
+          timeout: FETCH_STREAM_TIMEOUT_MS
+        }
+      ],
+      asyncFnTask: 'fetch transcode',
+      handleBackwardsCompatibility: true
     })
   }
 
@@ -505,21 +520,24 @@ class TranscodeDelegationManager {
 
     return Utils.asyncRetry({
       asyncFn: axios,
-      asyncFnParams: {
-        url: `${sp}/transcode_and_segment`,
-        method: 'get',
-        params: {
-          fileName: m3u8FileName,
-          fileType: 'm3u8',
-          uuid: fileNameNoExtension,
-          timestamp,
-          signature,
-          spID
-        },
-        responseType: 'stream',
-        timeout: FETCH_STREAM_TIMEOUT_MS
-      },
-      asyncFnTask: 'fetch m3u8'
+      asyncFnParams: [
+        {
+          url: `${sp}/transcode_and_segment`,
+          method: 'get',
+          params: {
+            fileName: m3u8FileName,
+            fileType: 'm3u8',
+            uuid: fileNameNoExtension,
+            timestamp,
+            signature,
+            spID
+          },
+          responseType: 'stream',
+          timeout: FETCH_STREAM_TIMEOUT_MS
+        }
+      ],
+      asyncFnTask: 'fetch m3u8',
+      handleBackwardsCompatibility: true
     })
   }
 
@@ -528,11 +546,11 @@ class TranscodeDelegationManager {
    * @param {Object} logContext
    */
   static initLogger(logContext) {
-    TranscodeDelegationManager.logContext = logContext
-    TranscodeDelegationManager.logger = genericLogger.child(logContext)
+    TrackTranscodeHandoffManager.logContext = logContext
+    TrackTranscodeHandoffManager.logger = genericLogger.child(logContext)
 
-    return TranscodeDelegationManager.logger
+    return TrackTranscodeHandoffManager.logger
   }
 }
 
-module.exports = TranscodeDelegationManager
+module.exports = TrackTranscodeHandoffManager
