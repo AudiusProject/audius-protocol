@@ -404,6 +404,7 @@ def parse_sol_tx_batch(
 
     # Cache the latest play from this batch
     # This reflects the ordering from chain
+    logger.info(f"index_solana_plays.py | Committing {plays}")
     for play in plays:
         if play.get("signature") == last_tx_in_batch:
             most_recent_db_play = {
