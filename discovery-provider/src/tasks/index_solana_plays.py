@@ -402,7 +402,11 @@ def parse_sol_tx_batch(
     # This means every subsequent run will continue to no-op on error transactions and the cache will never be updated
     if tx_sig_batch_records and not plays:
         logger.info("index_solana_plays.py | Clearing redis cache")
-        redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+        # redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+
+        # don't delete instead, trim
+        redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
+
 
     # Cache the latest play from this batch
     # This reflects the ordering from chain
