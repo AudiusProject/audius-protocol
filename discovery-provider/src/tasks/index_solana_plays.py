@@ -11,11 +11,7 @@ from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
-from src.solana.constants import (
-    FETCH_TX_SIGNATURES_BATCH_SIZE,
-    TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
-)
+from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
