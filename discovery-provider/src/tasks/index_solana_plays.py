@@ -420,39 +420,40 @@ def parse_sol_tx_batch(
         f"index_solana_plays.py | DB | Saving test to DB, fetched batch tx details in {db_save_start - batch_start_time}"
     )
 
-    with db.scoped_session() as session:
+    if plays:
+        with db.scoped_session() as session:
+            logger.info(
+                f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+            )
+            session_execute_start = time.time()
+            # Save in bulk
+            session.execute(Play.__table__.insert().values(plays))
+            logger.info(
+                f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+            )
+
         logger.info(
-            f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+            f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
         )
-        session_execute_start = time.time()
-        # Save in bulk
-        session.execute(Play.__table__.insert().values(plays))
+
+        track_play_ids = [play["play_item_id"] for play in plays]
+        if track_play_ids:
+            redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
+
+        logger.info("index_solana_plays.py | Dispatching listen events")
+        listen_dispatch_start = time.time()
+        for event in challenge_bus_events:
+            challenge_bus.dispatch(
+                ChallengeEvent.track_listen,
+                event.get("slot"),
+                event.get("user_id"),
+                {"created_at": event.get("created_at")},
+            )
+        listen_dispatch_end = time.time()
+        listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
         logger.info(
-            f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+            f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
         )
-
-    logger.info(
-        f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
-    )
-
-    track_play_ids = [play["play_item_id"] for play in plays]
-    if track_play_ids:
-        redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
-
-    logger.info("index_solana_plays.py | Dispatching listen events")
-    listen_dispatch_start = time.time()
-    for event in challenge_bus_events:
-        challenge_bus.dispatch(
-            ChallengeEvent.track_listen,
-            event.get("slot"),
-            event.get("user_id"),
-            {"created_at": event.get("created_at")},
-        )
-    listen_dispatch_end = time.time()
-    listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
-    logger.info(
-        f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
-    )
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
