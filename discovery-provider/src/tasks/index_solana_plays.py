@@ -407,7 +407,6 @@ def parse_sol_tx_batch(
         # don't delete instead, trim
         redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
 
-
     # Cache the latest play from this batch
     # This reflects the ordering from chain
     for play in plays:
@@ -489,8 +488,10 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
             )
             redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
             # If a single element is remaining, clear the list to avoid dupe processing
-            if redis.llen(REDIS_TX_CACHE_QUEUE_PREFIX) == 1:
-                redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+            # if redis.llen(REDIS_TX_CACHE_QUEUE_PREFIX) == 1:
+            #     redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+            # ^ don't think this is necessary  
+
             # Return if a valid signature is found
             if last_cached_tx["slot"] > latest_db_slot:
                 cached_offset_tx_found = True
