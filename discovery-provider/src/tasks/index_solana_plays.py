@@ -357,16 +357,17 @@ def parse_sol_tx_batch(
 
                     # Append plays to a list that will be written if all plays are successfully retrieved
                     # from the rpc pool
-                    play: PlayInfo = {
-                        "user_id": user_id,
-                        "play_item_id": track_id,
-                        "created_at": created_at,
-                        "updated_at": datetime.now(),
-                        "source": source,
-                        "slot": slot,
-                        "signature": tx_sig,
-                    }
-                    plays.append(play)
+                    if track_id is not None:
+                        play: PlayInfo = {
+                            "user_id": user_id,
+                            "play_item_id": track_id,
+                            "created_at": created_at,
+                            "updated_at": datetime.now(),
+                            "source": source,
+                            "slot": slot,
+                            "signature": tx_sig,
+                        }
+                        plays.append(play)
                     # Only enqueue a challenge event if it's *not*
                     # an anonymous listen
                     if user_id is not None:
