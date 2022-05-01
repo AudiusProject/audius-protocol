@@ -11,11 +11,7 @@ from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
-from src.solana.constants import (
-    FETCH_TX_SIGNATURES_BATCH_SIZE,
-    TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
-)
+from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
@@ -401,9 +397,15 @@ def parse_sol_tx_batch(
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
 
+    # In the case where an entire batch is comprised of errors, wipe the cache to avoid a future find intersection loop
+    # For example, if the transactions between the latest cached value and database tail are entirely errors, no Play record will be inserted.
+    # This means every subsequent run will continue to no-op on error transactions and the cache will never be updated
+    if tx_sig_batch_records and not plays:
+        logger.info("index_solana_plays.py | Clearing redis cache")
+        redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+
     # Cache the latest play from this batch
     # This reflects the ordering from chain
-    logger.info(f"index_solana_plays.py | Committing {plays}")
     for play in plays:
         if play.get("signature") == last_tx_in_batch:
             most_recent_db_play = {
@@ -584,18 +586,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                 # Append batch of processed signatures
                 if transaction_signature_batch:
                     transaction_signatures.append(transaction_signature_batch)
-
-                # Ensure processing does not grow unbounded
-                if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                    logger.info(
-                        f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries"
-                    )
-                    transaction_signatures = transaction_signatures[
-                        -TX_SIGNATURES_RESIZE_LENGTH:
-                    ]
-                    logger.info(
-                        f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries"
-                    )
 
                 # Reset batch state
                 transaction_signature_batch = []
