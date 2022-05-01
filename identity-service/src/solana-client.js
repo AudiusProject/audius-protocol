@@ -118,14 +118,15 @@ function getFeePayerKeypair (singleFeePayer = true) {
 }
 
 let cachedListenBlocktime = null // in seconds, tracks recent blocktime
-let lastRetrievedListenBlocktime = null // in seconds, tracks time when cachedListenBlocktime was fetched 
+let lastRetrievedListenBlocktime = null // in seconds, tracks time when cachedListenBlocktime was fetched
 
 /**
  * Get the blocktime for a recently finalized block, this relative time will be passed into listen transaction.
  * Used to prevent clock skew errors when sol chain halts and sol clock diverges from real clock
+ * @param {Object} connection initialized solana connection object
  * @returns Number epoch in seconds
  */
- async function getListenTimestamp () {
+async function getListenTimestamp (connection) {
   const currentEpochInSec = Math.round(Date.now() / 1000)
   if (cachedListenBlocktime && Math.abs(lastRetrievedListenBlocktime - currentEpochInSec) < 30) {
     return cachedListenBlocktime
@@ -133,7 +134,7 @@ let lastRetrievedListenBlocktime = null // in seconds, tracks time when cachedLi
 
   const slot = await connection.getSlot('finalized')
   const blockTime = await connection.getBlockTime(slot)
-  
+
   // update cached values
   cachedListenBlocktime = blockTime
   lastRetrievedListenBlocktime = currentEpochInSec
@@ -164,7 +165,7 @@ async function createTrackListenTransaction ({
     userId: userId,
     trackId: trackId,
     source: source,
-    timestamp: (await getListenTimestamp()) || Math.round(new Date().getTime() / 1000)
+    timestamp: (await getListenTimestamp(connection)) || Math.round(new Date().getTime() / 1000)
   })
 
   const serializedTrackData = borsh.serialize(trackDataSchema, trackData)
