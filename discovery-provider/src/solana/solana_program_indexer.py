@@ -6,9 +6,10 @@ from typing import Any, Dict, List, TypedDict
 from redis import Redis
 from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
+    FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
+    WRITE_TX_SIGNATURES_BATCH_SIZE,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import TransactionInfoResult
@@ -169,6 +170,9 @@ class SolanaProgramIndexer(IndexerBase):
         for tx_sig in tx_sig_batch_records:
             parsed_transactions.append(tx_sig_futures_map[tx_sig])
 
+        # Reverse parsed transactions so oldest is first
+        parsed_transactions.reverse()
+
         # Fetch metadata in parallel
         cid_metadata, blacklisted_cids = await self.fetch_cid_metadata(
             parsed_transactions
@@ -199,11 +203,8 @@ class SolanaProgramIndexer(IndexerBase):
         # Loop exit condition
         intersection_found = False
 
-        # List of signatures that will be populated as we traverse recent operations
-        transaction_signatures = []
-
-        # Current batch of transactions
-        transaction_signature_batch = []
+        # List of signatures to be processed
+        unindexed_transactions = []
 
         # Current batch
         page_count = 0
@@ -215,7 +216,7 @@ class SolanaProgramIndexer(IndexerBase):
                 self._solana_client_manager.get_signatures_for_address(
                     self._program_id,
                     before=last_tx_signature,
-                    limit=TX_SIGNATURES_BATCH_SIZE,
+                    limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
                 )
             )
             transactions_array = transactions_history["result"]
@@ -228,19 +229,17 @@ class SolanaProgramIndexer(IndexerBase):
             else:
                 with self._db.scoped_session() as read_session:
                     for tx in transactions_array:
-                        tx_sig = tx["signature"]
-                        slot = tx["slot"]
                         if tx["slot"] > latest_processed_slot:
-                            transaction_signature_batch.append(tx_sig)
+                            unindexed_transactions.append(tx)
                         elif tx["slot"] <= latest_processed_slot:
                             # Check the tx signature for any txs in the latest batch,
                             # and if not present in DB, add to processing
                             self.msg(
                                 f"Latest slot re-traversal\
-                                slot={slot}, sig={tx_sig},\
+                                slot={tx['slot']}, sig={tx['signature']},\
                                 latest_processed_slot(db)={latest_processed_slot}"
                             )
-                            exists = self.is_tx_in_db(read_session, tx_sig)
+                            exists = self.is_tx_in_db(read_session, tx["signature"])
                             if exists:
                                 # Exit loop and set terminal condition since this tx has been found in DB
                                 # Transactions are returned with most recently committed first, so we can assume
@@ -248,40 +247,54 @@ class SolanaProgramIndexer(IndexerBase):
                                 intersection_found = True
                                 break
                             # Otherwise, ensure this transaction is still processed
-                            transaction_signature_batch.append(tx_sig)
-                    # Restart processing at the end of this transaction signature batch
-                    last_tx = transactions_array[-1]
-                    last_tx_signature = last_tx["signature"]
+                            unindexed_transactions.append(tx)
+                # Restart processing at the end of this transaction signature batch
+                last_tx = unindexed_transactions[-1]
+                last_tx_signature = last_tx["signature"]
 
-                    # TODO: Add Caching
-                    # Append to recently seen cache
-                    # cache_traversed_tx(redis, last_tx)
+                # TODO: Add Caching
+                # Append to recently seen cache
+                # cache_traversed_tx(redis, last_tx)
 
-                    # Append batch of processed signatures
-                    if transaction_signature_batch:
-                        transaction_signatures.append(transaction_signature_batch)
+                self.msg(
+                    f"intersection_found={intersection_found},\
+                    last_tx_signature={last_tx_signature},\
+                    page_count={page_count}"
+                )
+                page_count = page_count + 1
 
-                    # Ensure processing does not grow unbounded
-                    if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                        self.msg(
-                            f"slicing tx_sigs from {len(transaction_signatures)} entries"
-                        )
-                        transaction_signatures = transaction_signatures[
-                            -TX_SIGNATURES_RESIZE_LENGTH:
-                        ]
-                        self.msg(
-                            f"sliced tx_sigs to {len(transaction_signatures)} entries"
-                        )
+        if len(unindexed_transactions) <= FETCH_TX_SIGNATURES_BATCH_SIZE:
+            # Transaction batch is less than the max batch size so all slots are complete
+            return [list(map(lambda tx: tx["signature"], unindexed_transactions))]
 
-                    # Reset batch state
-                    transaction_signature_batch = []
+        # Batch transactions to be indexed together
+        transaction_signature_batches = []
+        transaction_signature_batch = [unindexed_transactions[0]["signature"]]
+        for i in range(1, len(unindexed_transactions)):
+            # Ensure txs with the same slot are batched together
+            if (
+                len(transaction_signature_batch) >= WRITE_TX_SIGNATURES_BATCH_SIZE
+                and unindexed_transactions[i - 1]["slot"]
+                != unindexed_transactions[i]["slot"]
+            ):
+                transaction_signature_batches.append(transaction_signature_batch)
+                transaction_signature_batch = []
 
+            transaction_signature_batch.append(unindexed_transactions[i]["signature"])
+
+        if transaction_signature_batch:
+            transaction_signature_batches.append(transaction_signature_batch)
+
+        # Ensure processing does not grow unbounded
+        if len(transaction_signature_batches) > TX_SIGNATURES_MAX_BATCHES:
             self.msg(
-                f"intersection_found={intersection_found},\
-                last_tx_signature={last_tx_signature},\
-                page_count={page_count}"
+                f"slicing tx_sigs from {len(transaction_signature_batches)} entries"
             )
-            page_count = page_count + 1
+            transaction_signature_batches = transaction_signature_batches[
+                -TX_SIGNATURES_RESIZE_LENGTH:
+            ]
+            self.msg(f"sliced tx_sigs to {len(transaction_signature_batches)} entries")
 
-        transaction_signatures.reverse()
-        return transaction_signatures
+        # sort oldest signatures first
+        transaction_signature_batches.reverse()
+        return transaction_signature_batches

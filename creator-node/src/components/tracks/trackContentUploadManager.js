@@ -59,7 +59,8 @@ class TrackContentUploadManager {
       segmentFileNames,
       segmentFilePaths,
       m3u8FilePath,
-      fileName
+      fileName,
+      fileDir
     }
   }
 
@@ -318,4 +319,5 @@ async function batchSaveFilesToDisk({
 
   return { segmentFileResult, transcodeFileResult }
 }
+
 module.exports = TrackContentUploadManager

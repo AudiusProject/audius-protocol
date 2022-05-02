@@ -32,7 +32,7 @@ describe("playlist-actions", function () {
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
 
@@ -41,14 +41,14 @@ describe("playlist-actions", function () {
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.sendAndConfirm(tx, [adminStorageKeypair]);
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -63,7 +63,7 @@ describe("playlist-actions", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
@@ -75,21 +75,21 @@ describe("playlist-actions", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     contentNodes["1"] = cn1;
@@ -98,15 +98,15 @@ describe("playlist-actions", function () {
   });
 
   it("Delete save for a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = deletePlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
@@ -133,15 +133,15 @@ describe("playlist-actions", function () {
   });
 
   it("Save a newly created playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = addPlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
@@ -167,15 +167,15 @@ describe("playlist-actions", function () {
   });
 
   it("Repost a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = addPlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
@@ -201,15 +201,15 @@ describe("playlist-actions", function () {
   });
 
   it("Delete repost for a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = deletePlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,

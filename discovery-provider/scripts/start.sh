@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 if [[ -z "$audius_loggly_disable" ]]; then
     if [[ -n "$audius_loggly_token" ]]; then
@@ -72,7 +73,18 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 # used to remove data that may have been persisted via a k8s emptyDir
 export audius_prometheus_container=server
 
+
+# start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
+
+    # run alembic migrations
+    if [ "$audius_db_run_migrations" != false ]; then
+        echo "Running alembic migrations"
+        export PYTHONPATH='.'
+        alembic upgrade head
+        echo "Finished running migrations"
+    fi
+
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) worker.log &
@@ -85,7 +97,6 @@ else
         celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 
-    docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
 
 wait

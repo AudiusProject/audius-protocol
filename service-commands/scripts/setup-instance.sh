@@ -60,7 +60,7 @@ case "$provider" in
 			echo "aborting"
 			exit 1
 		fi
-		azure_setup_defaults
+		azure_set_defaults
 		;;
 	gcp)
 		if [[ ! $(type gcloud 2> /dev/null) ]]; then
@@ -113,12 +113,6 @@ case "$service" in
 
 		# configure local files: /etc/hosts
 		configure_etc_hosts
-
-		# upload personal files: ~/.gitconfig
-		upload_gitconfig
-		
-		# copy zsh 
-		setup_zsh
 		
 		echo -e "\nLogin using:\n"
 		echo -e "gcloud compute ssh $user@$name\n"
