@@ -882,6 +882,8 @@ workflows:
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
       - bake-gcp-dev-image:
+          context:
+            - GCP2
           name: bake-gcp-dev-image-nightly
     triggers:
       - schedule:
