@@ -18,7 +18,7 @@ class ContractClient {
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
-    this.logger = logger || console
+    this.logger = logger
 
     // Once initialized, contract address and contract are set up
     this._contractAddress = contractAddress
