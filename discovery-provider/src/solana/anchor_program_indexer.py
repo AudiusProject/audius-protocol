@@ -32,7 +32,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def __init__(
         self,
         program_id: str,
-        admin_address: str,
+        admin_storage_public_key: str,
         label: str,
         redis: Redis,
         db: SessionManager,
@@ -41,7 +41,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
         self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
-        self.admin_address = admin_address
+        self.admin_storage_public_key = admin_storage_public_key
         self.cid_metadata_client = cid_metadata_client
 
         # TODO fill out the rest
@@ -281,7 +281,10 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def is_valid_instruction(self, parsed_instruction: Dict):
         # check if admin matches
         if "admin" in parsed_instruction["account_names_map"]:
-            if parsed_instruction["account_names_map"]["admin"] != self.admin_address:
+            if (
+                parsed_instruction["account_names_map"]["admin"]
+                != self.admin_storage_public_key
+            ):
                 return False
 
         # check create track
@@ -396,6 +399,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     .all()
                 )
             )
+
         metadata_dict = (
             await self.cid_metadata_client.async_fetch_metadata_from_gateway_endpoints(
                 cids_txhash_set,
