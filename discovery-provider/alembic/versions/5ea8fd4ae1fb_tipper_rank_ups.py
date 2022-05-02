@@ -51,5 +51,4 @@ def downgrade():
         op.f("ix_tipper_rank_ups_receiver_user_id"), table_name="tipper_rank_ups"
     )
     op.drop_table("tipper_rank_ups")
-    op.drop_table("tag_track_user")
     # ### end Alembic commands ###
