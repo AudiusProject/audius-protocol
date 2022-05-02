@@ -24,7 +24,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   input: {
     flex: 1,
     color: palette.neutral,
-    fontFamily: typography.fontByWeight.medium
+    fontFamily: typography.fontByWeight.medium,
+    padding: 0
   },
   icon: {
     fill: palette.neutralLight5,
