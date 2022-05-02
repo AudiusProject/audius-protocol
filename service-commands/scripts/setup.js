@@ -91,7 +91,6 @@ program
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
     const { verbose, parallel, withAao: withAAO, withSolanaProgramsBuild: buildSolana } = opts
-    console.log({ buildSolana })
     await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, buildSolana, opts })
   })
 
