@@ -96,7 +96,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             )
 
             # Find user ids in DB and create dictionary mapping
-            entity_ids = self.extract_ids(parsed_transactions)
+            entity_ids = self.extract_ids(session, parsed_transactions)
             db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
             if entity_ids["users"]:
                 existing_users = (
@@ -126,6 +126,15 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         records: List[Any] = []
         for transaction in processed_transactions:
             instructions = transaction["tx_metadata"]["instructions"]
+            meta = transaction["result"]["meta"]
+            error = meta["err"]
+
+            if error:
+                self.msg(
+                    f"Skipping error transaction from chain {transaction['tx_sig']}"
+                )
+                continue
+
             for instruction in instructions:
                 instruction_name = instruction.get("instruction_name")
                 if instruction_name in transaction_handlers:
@@ -139,6 +148,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     )
 
         self.invalidate_old_records(session, db_models)
+        self.msg(f"Saving {records}")
         session.bulk_save_objects(records)
 
     def invalidate_old_records(self, session: Session, db_models: Dict[str, Dict]):
@@ -150,8 +160,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 User.is_current == True, User.user_id.in_(user_ids)
             ).update({"is_current": False}, synchronize_session="fetch")
 
-    def extract_ids(self, processed_transactions: List[ParsedTx]):
+    def extract_ids(self, session, processed_transactions: List[ParsedTx]):
         entities: Dict[str, Set[str]] = defaultdict(lambda: set())
+        user_storage_to_id = {}
 
         for transaction in processed_transactions:
             instructions = transaction["tx_metadata"]["instructions"]
@@ -162,13 +173,32 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "update_admin":
                     pass
                 elif instruction_name == "init_user":
-                    # No action to be taken here
-                    pass
+                    user_id = instruction.get("data").get("user_id")
+                    user_storage_account = str(
+                        instruction.get("account_names_map").get("user")
+                    )
+                    user_storage_to_id[user_storage_account] = user_id
+                    entities["users"].add(user_id)
 
                 elif instruction_name == "init_user_sol":
-                    # TODO: parse the tx data for their user id and fetch
-                    # user_id = instruction.get("data").get("id")
-                    pass
+                    # Fetch user_id and embed in instruction
+                    user_storage_account = str(
+                        instruction.get("account_names_map").get("user")
+                    )
+                    if user_storage_account not in user_storage_to_id:
+                        user_id = (
+                            session.query(User.user_id)
+                            .filter(
+                                User.is_current == True,
+                                User.user_storage_account == user_storage_account,
+                            )
+                            .first()
+                        )[0]
+                    else:
+                        user_id = user_storage_to_id[user_storage_account]
+
+                    instruction["user_id"] = user_id
+                    entities["users"].add(user_id)
 
                 elif instruction_name == "create_user":
                     # TODO: parse the tx data for their user id and fetch

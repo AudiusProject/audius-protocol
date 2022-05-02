@@ -37,7 +37,7 @@ pub fn validate_user_authority<'info>(
             &mut &user_authority_delegate.try_borrow_data()?[..],
         )?;
         // Confirm that the delegate authority and user match the function parameters
-        if user_authority_delegate_account.user_storage_account != user.key()
+        if user_authority_delegate_account.user_account != user.key()
             || user_authority_delegate_account.delegate_authority != authority.key()
         {
             return Err(ErrorCode::InvalidUserAuthorityDelegation.into());

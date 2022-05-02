@@ -13,7 +13,7 @@
       "sudo rm -rf discovery-provider/.venv",
       "sudo rm -rf discovery-provider/.mypy_cache",
       "sudo rm -f discovery-provider/*.log",
-      "docker image prune --filter 'dangling=true' --filter 'until=360h'"
+      "docker image prune -f --filter 'dangling=true' --filter 'until=360h'"
     ]
   },
   "network": {
