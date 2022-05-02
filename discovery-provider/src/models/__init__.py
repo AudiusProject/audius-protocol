@@ -1,4 +1,5 @@
 from .aggregate_interval_play import AggregateIntervalPlay
+from .aggregate_user_tips import AggregateUserTips
 from .milestone import Milestone
 from .models import (
     AggregateDailyAppNameMetrics,
@@ -66,6 +67,7 @@ from .trending_param import TrendingParam
 from .trending_result import TrendingResult
 from .user_bank import UserBankAccount, UserBankTransaction
 from .user_events import UserEvents
+from .user_tip import UserTip
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -79,6 +81,7 @@ __all__ = [
     "AggregateMonthlyPlays",
     "AggregateTrack",
     "AggregateUser",
+    "AggregateUserTips",
     "AggregateIntervalPlay",
     "AppMetricsAllTime",
     "AppMetricsTrailingMonth",
@@ -134,5 +137,6 @@ __all__ = [
     "UserBankAccount",
     "UserEvents",
     "UserListeningHistory",
+    "UserTip",
     "WalletChain",
 ]

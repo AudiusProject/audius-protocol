@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# start es-indexer
+if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
+    cd es-indexer && npm i && npm start &
+fi
+
 # Audius Discovery Provider / Flask
 # Exports environment variables necessary for Flask app
 
