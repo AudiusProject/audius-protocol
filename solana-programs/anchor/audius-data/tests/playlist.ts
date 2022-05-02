@@ -61,7 +61,7 @@ describe("playlists", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -223,7 +223,7 @@ describe("playlists", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
@@ -301,7 +301,7 @@ describe("playlists", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);

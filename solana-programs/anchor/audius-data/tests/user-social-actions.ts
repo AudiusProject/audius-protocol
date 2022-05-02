@@ -68,7 +68,7 @@ describe("user social actions", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -168,7 +168,7 @@ describe("user social actions", function () {
         program,
         isWriteEnabled: false,
         adminAccount: adminAccountKeypair.publicKey,
-        adminAuthorityKeypair: adminAuthorityKeypair,
+        adminAuthorityKeypair,
       });
       await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
 
@@ -247,7 +247,7 @@ describe("user social actions", function () {
 
     it("delegate follows user", async function () {
       const userDelegate = await testCreateUserDelegate({
-        adminAuthorityKeypair: adminAuthorityKeypair,
+        adminAuthorityKeypair,
         adminAccountKeypair: adminAccountKeypair,
         program,
         provider,

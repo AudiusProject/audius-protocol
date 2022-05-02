@@ -484,7 +484,7 @@ export const testCreateUserDelegate = async ({
     program,
     isWriteEnabled: false,
     adminAccount: adminAccountKeypair.publicKey,
-    adminAuthorityKeypair: adminAuthorityKeypair,
+    adminAuthorityKeypair,
   });
   await provider.sendAndConfirm(udpateAdminTx, [adminAuthorityKeypair]);
 

@@ -146,7 +146,7 @@
     admin_storage_keypair_path="$PWD/adminAccountKeypair.json"
     admin_authority_keypair_publickey=$(solana-keygen pubkey adminAuthorityKeypair.json)
     admin_authority_keypair_privatekey=$(cat adminAuthorityKeypair.json)
-    admin_storage_keypair_publickey=$(solana-keygen pubkey adminAccountKeypair.json)
+    admin_account_keypair_publickey=$(solana-keygen pubkey adminAccountKeypair.json)
     admin_storage_keypair_privatekey=$(cat adminAccountKeypair.json)
 
     # initialize Content/URSM nodes - initContentNode uses deterministic 
@@ -182,8 +182,8 @@ cat <<EOF
     "anchorProgramId": "$anchor_program_id",
     "anchorAdminAuthorityPublicKey": "$admin_authority_keypair_publickey",
     "anchorAdminAuthorityPrivateKey": "$admin_authority_keypair_privatekey",
-    "anchorAdminStoragePublicKey": "$admin_storage_keypair_publickey",
-    "anchorAdminStoragePrivateKey": "$admin_storage_keypair_privatekey",
+    "anchorAdminAccountPublicKey": "$admin_account_keypair_publickey",
+    "anchorAdminAccountPrivateKey": "$admin_storage_keypair_privatekey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",

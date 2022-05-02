@@ -74,7 +74,7 @@ describe("audius-data", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -449,7 +449,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: true,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates
@@ -495,7 +495,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates
@@ -541,7 +541,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
@@ -992,7 +992,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -1067,7 +1067,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates
@@ -1333,7 +1333,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates

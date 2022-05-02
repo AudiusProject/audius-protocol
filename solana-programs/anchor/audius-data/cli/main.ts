@@ -123,7 +123,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
   let tx = initAdmin({
     payer: cliVars.provider.wallet.publicKey,
     program: cliVars.program,
-    adminKeypair: adminAuthorityKeypair,
+    adminAuthorityKeypair,
     adminAccountKeypair,
     verifierKeypair,
   });
@@ -399,8 +399,8 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-    ? AUDIUS_PROD_RPC_POOL
-    : LOCALHOST_RPC_POOL;
+  ? AUDIUS_PROD_RPC_POOL
+  : LOCALHOST_RPC_POOL;
 
 const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);

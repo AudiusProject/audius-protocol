@@ -50,7 +50,7 @@ describe("replicaSet", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminAuthorityKeypair,
+      adminAuthorityKeypair,
     });
 
     await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
