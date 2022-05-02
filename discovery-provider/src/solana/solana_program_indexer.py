@@ -249,7 +249,7 @@ class SolanaProgramIndexer(IndexerBase):
                             # Otherwise, ensure this transaction is still processed
                             unindexed_transactions.append(tx)
                 # Restart processing at the end of this transaction signature batch
-                if unindexed_transactions: 
+                if unindexed_transactions:
                     last_tx = unindexed_transactions[-1]
                     last_tx_signature = last_tx["signature"]
 

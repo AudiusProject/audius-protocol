@@ -258,7 +258,6 @@ def handle_manage_entity(
     slot = transaction["result"]["slot"]
     txhash = transaction["tx_sig"]
 
-
     if isinstance(management_action, management_action.Create) and isinstance(
         entity_type, entity_type.Track
     ):
@@ -306,7 +305,6 @@ def handle_manage_entity(
 
         # Append most recent record
         db_models["tracks"][id].append(new_track_record)
-
 
 
 def handle_create_content_node(

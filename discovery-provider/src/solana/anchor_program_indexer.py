@@ -283,10 +283,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def is_valid_instruction(self, parsed_instruction: Dict):
         # check if admin matches
         if "admin" in parsed_instruction["account_names_map"]:
-            if (
-                parsed_instruction["account_names_map"]["admin"]
-                != self.admin_address
-            ):
+            if parsed_instruction["account_names_map"]["admin"] != self.admin_address:
                 return False
 
         # check create track
