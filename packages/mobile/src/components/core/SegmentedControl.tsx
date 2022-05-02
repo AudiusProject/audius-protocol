@@ -65,7 +65,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     paddingRight: 0
   },
   tab: {
-    elevation: 3,
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(4),
     borderRadius: 4,
@@ -87,7 +86,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   },
   slider: {
     position: 'absolute',
-    elevation: 2,
     top: 3,
     bottom: 3,
     borderRadius: 4,
