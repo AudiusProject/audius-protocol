@@ -154,21 +154,21 @@
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_storage_keypair_path" \
+        --admin-account-keypair "$admin_account_keypair_path" \
         --cn-sp-id 1 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_storage_keypair_path" \
+        --admin-account-keypair "$admin_account_keypair_path" \
         --cn-sp-id 2 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_storage_keypair_path" \
+        --admin-account-keypair "$admin_account_keypair_path" \
         --cn-sp-id 3 \
         --network "$SOLANA_HOST"
 
