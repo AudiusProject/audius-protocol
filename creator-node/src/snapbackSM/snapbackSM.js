@@ -28,7 +28,7 @@ const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
 const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 
-// Number of users to process in each batch for this._aggregateOpsWithQueriedSpIds
+// Number of users to process in each batch for this._aggregateOps
 const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 
 // Describes the type of sync operation
@@ -1195,30 +1195,32 @@ class SnapbackSM {
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
   async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
-    // Parallelize calling this._aggregateOpsWithQueriedSpIds on chunks of 500 nodeUsers at a time
+    // Parallelize calling this._aggregateOps on chunks of 500 nodeUsers at a time
     const nodeUserBatches = _.chunk(
       nodeUsers,
       AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE
     )
-    const resultBatches = []
+    const results = []
     while (nodeUserBatches.length) {
       const nodeUserBatch = nodeUserBatches.shift()
       const resultBatch = await Promise.allSettled(
         nodeUserBatch.map((nodeUser) =>
-          this._aggregateOpsWithQueriedSpIds(nodeUser, unhealthyPeers)
+          this._aggregateOps(nodeUser, unhealthyPeers)
         )
       )
-      resultBatches.push(resultBatch)
+      results.push(...resultBatch)
     }
 
     // Combine each batch's requiredUpdateReplicaSetOps and potentialSyncRequests
-    const results = _.flatten(resultBatches)
     let requiredUpdateReplicaSetOps = []
     let potentialSyncRequests = []
     for (const promiseResult of results) {
-      // Skip failed promises
+      // Skip and log failed promises
       const { status: promiseStatus, value: reconfigAndSyncOps } = promiseResult
       if (promiseStatus !== 'fulfilled') {
+        logger.error(
+          `[aggregateReconfigAndPotentialSyncOps()] encountered unexpected failure: ${reconfigAndSyncOps}`
+        )
         continue
       }
 
@@ -1243,7 +1245,7 @@ class SnapbackSM {
    * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
    */
-  async _aggregateOpsWithQueriedSpIds(nodeUser, unhealthyPeers) {
+  async _aggregateOps(nodeUser, unhealthyPeers) {
     const requiredUpdateReplicaSetOps = []
     const potentialSyncRequests = []
     const unhealthyReplicas = []
