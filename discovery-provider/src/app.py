@@ -555,7 +555,7 @@ def configure_celery(celery, test_config=None):
     # Initialize Anchor Indexer
     anchor_program_indexer = AnchorProgramIndexer(
         shared_config["solana"]["anchor_data_program_id"],
-        shared_config["solana"]["anchor_admin_storage_public_key"],
+        shared_config["solana"]["anchor_admin_address"],
         "index_solana_user_data",
         redis_inst,
         db,

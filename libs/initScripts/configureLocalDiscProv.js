@@ -17,7 +17,7 @@ const SOLANA_REWARDS_MANAGER_ADDRESS = 'audius_solana_rewards_manager_program_ad
 const SOLANA_REWARDS_MANAGER_ACCOUNT = 'audius_solana_rewards_manager_account'
 
 const SOLANA_ANCHOR_PROGRAM_ID = 'audius_solana_anchor_data_program_id'
-const SOLANA_ANCHOR_ADMIN_ACCOUNT = 'audius_solana_anchor_admin_account'
+const SOLANA_ANCHOR_ADMIN_ADDRESS = 'audius_solana_anchor_admin_address'
 
 // LOCAL DEVELOPMENT ONLY
 // Updates audius_eth_contracts_registry in discovery provider
@@ -31,7 +31,7 @@ const configureLocalDiscProv = async () => {
   const rewardsManagerAddress = solanaConfig.rewardsManagerAddress
   const rewardsManagerAccount = solanaConfig.rewardsManagerAccount
   const anchorProgramId = solanaConfig.anchorProgramId
-  const anchorAdminAccountPublicKey = solanaConfig.anchorAdminAccountPublicKey
+  const anchorAdminAddress = solanaConfig.anchorAdminAddress
   console.log(`waudioAddress: ${waudioMint}, claimableTokenAddress: ${claimableTokenAddress}, waudioMint=${waudioMint}`)
   const envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
 
@@ -47,7 +47,7 @@ const configureLocalDiscProv = async () => {
     rewardsManagerAddress,
     rewardsManagerAccount,
     anchorProgramId,
-    anchorAdminAccountPublicKey,
+    anchorAdminAddress,
   )
 }
 
@@ -64,7 +64,7 @@ const _updateDiscoveryProviderEnvFile = async (
   rewardsManagerAddress,
   rewardsManagerAccount,
   anchorProgramId,
-  anchorAdminAccountPublicKey,
+  anchorAdminAddressLine,
 ) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
@@ -82,7 +82,7 @@ const _updateDiscoveryProviderEnvFile = async (
   let rewardsAddressFound = false
   let rewardsAccountFound = false
   let anchorProgramIdFound = false
-  let anchorAdminAccountPublicKeyFound = false
+  let anchorAdminAddressLineFound = false
 
   const ethRegistryAddressLine = `${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress}`
   const solanaTrackListenCountAddressLine = `${SOLANA_TRACK_LISTEN_COUNT_ADDRESS}=${solanaTrackListenCountAddress}`
@@ -93,7 +93,7 @@ const _updateDiscoveryProviderEnvFile = async (
   const rewardsManagerAddressLine = `${SOLANA_REWARDS_MANAGER_ADDRESS}=${rewardsManagerAddress}`
   const rewardsManagerAccountLine = `${SOLANA_REWARDS_MANAGER_ACCOUNT}=${rewardsManagerAccount}`
   const anchorProgramIdLine = `${SOLANA_ANCHOR_PROGRAM_ID}=${anchorProgramId}`
-  const anchorAdminAccountPublicKeyLine = `${SOLANA_ANCHOR_ADMIN_ACCOUNT}=${anchorAdminAccountPublicKey}`
+  const anchorAdminAddressLine = `${SOLANA_ANCHOR_ADMIN_ADDRESS}=${anchorAdminAddressLine}`
 
   for await (const line of rl) {
     if (line.includes(ETH_CONTRACTS_REGISTRY)) {
@@ -123,9 +123,9 @@ const _updateDiscoveryProviderEnvFile = async (
     } else if (line.includes(SOLANA_ANCHOR_PROGRAM_ID)) {
       output.push(anchorProgramIdLine)
       anchorProgramIdFound = true
-    } else if (line.includes(SOLANA_ANCHOR_ADMIN_ACCOUNT)) {
-      output.push(anchorAdminAccountPublicKeyLine)
-      anchorAdminAccountPublicKeyFound = true
+    } else if (line.includes(SOLANA_ANCHOR_ADMIN_ADDRESS)) {
+      output.push(anchorAdminAddressLine)
+      anchorAdminAddressLineFound = true
     } else {
       output.push(line)
     }
@@ -157,8 +157,8 @@ const _updateDiscoveryProviderEnvFile = async (
   if (!anchorProgramIdFound) {
     output.push(anchorProgramIdLine)
   }
-  if (!anchorAdminAccountPublicKeyFound) {
-    output.push(anchorAdminAccountPublicKeyLine)
+  if (!anchorAdminAddressLineFound) {
+    output.push(anchorAdminAddressLine)
   }
   fs.writeFileSync(writePath, output.join('\n'))
   console.log(`Updated DISCOVERY PROVIDER ${writePath} ${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress} ${output}`)

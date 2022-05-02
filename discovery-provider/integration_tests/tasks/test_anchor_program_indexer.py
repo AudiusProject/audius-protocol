@@ -14,7 +14,7 @@ from src.utils.redis_connection import get_redis
 from web3 import Web3
 
 PROGRAM_ID = shared_config["solana"]["anchor_data_program_id"]
-ADMIN_STORAGE_PUBLIC_KEY = shared_config["solana"]["anchor_admin_storage_public_key"]
+ADMIN_ADDRESS = shared_config["solana"]["anchor_admin_address"]
 
 LABEL = "test_indexer"
 
@@ -28,7 +28,7 @@ def test_get_transaction_batches_to_process_single_batch(app):
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -65,7 +65,7 @@ def test_get_transaction_batches_to_process_empty_batch(app):
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -92,7 +92,7 @@ def test_get_transaction_batches_to_process_interslot_batch(app):
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -130,7 +130,7 @@ def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -160,7 +160,7 @@ def test_validate_and_save_parsed_tx_records(app):
 
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -206,7 +206,7 @@ def test_parse_tx(app, mocker):
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -247,7 +247,7 @@ def test_is_valid_instruction(app):
     cid_metadata_client_mock = create_autospec(CIDMetadataClient)
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
@@ -256,7 +256,7 @@ def test_is_valid_instruction(app):
     )
 
     parsed_instruction = {
-        "account_names_map": {"admin": ADMIN_STORAGE_PUBLIC_KEY},
+        "account_names_map": {"admin": ADMIN_ADDRESS},
         "instruction_name": "init_admin",
     }
     resp = anchor_program_indexer.is_valid_instruction(parsed_instruction)
@@ -281,7 +281,7 @@ async def test_fetch_metadata(app, mocker):
 
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
-        ADMIN_STORAGE_PUBLIC_KEY,
+        ADMIN_ADDRESS,
         LABEL,
         redis,
         db,
