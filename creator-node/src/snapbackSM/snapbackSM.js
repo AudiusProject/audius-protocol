@@ -1195,7 +1195,8 @@ class SnapbackSM {
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
   async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
-    console.log('theo002')
+    console.log('theo003')
+    // Parallelize calling this._aggregateOpsWithQueriedSpIds on chunks of 500 nodeUsers at a time
     const BATCH_SIZE = 500
     const nodeUserBatches = _.chunk(nodeUsers, BATCH_SIZE)
     const resultBatches = []
@@ -1208,6 +1209,8 @@ class SnapbackSM {
       )
       resultBatches.push(resultBatch)
     }
+
+    // Combine each batch's requiredUpdateReplicaSetOps and potentialSyncRequests
     const results = _.flatten(resultBatches)
     let requiredUpdateReplicaSetOps = []
     let potentialSyncRequests = []
@@ -1231,34 +1234,7 @@ class SnapbackSM {
         potentialSyncRequestsFromPromise
       )
     }
-    // const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-    //   results.reduce(
-    //     (accumulator, resolvedPromise) => {
-    //       // Skip failed promises
-    //       const { status: promiseStatus, value: reconfigAndSyncOps } =
-    //         resolvedPromise
-    //       if (promiseStatus !== 'fulfilled') return accumulator
 
-    //       // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
-    //       const {
-    //         requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
-    //         potentialSyncRequests: potentialSyncRequestsFromPromise
-    //       } = reconfigAndSyncOps
-    //       const {
-    //         requiredUpdateReplicaSetOps: accRequiredUpdateReplicaSetOps,
-    //         potentialSyncRequests: accPotentialSyncRequests
-    //       } = accumulator
-    //       return {
-    //         requiredUpdateReplicaSetOps: accRequiredUpdateReplicaSetOps.concat(
-    //           requiredUpdateReplicaSetOpsFromPromise
-    //         ),
-    //         potentialSyncRequests: accPotentialSyncRequests.concat(
-    //           potentialSyncRequestsFromPromise
-    //         )
-    //       }
-    //     },
-    //     { requiredUpdateReplicaSetOps: [], potentialSyncRequests: [] }
-    //   )
     return { requiredUpdateReplicaSetOps, potentialSyncRequests }
   }
 
@@ -1268,143 +1244,135 @@ class SnapbackSM {
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
    */
   async _aggregateOpsWithQueriedSpIds(nodeUser, unhealthyPeers) {
-    try {
-      const requiredUpdateReplicaSetOps = []
-      const potentialSyncRequests = []
-      const unhealthyReplicas = []
+    const requiredUpdateReplicaSetOps = []
+    const potentialSyncRequests = []
+    const unhealthyReplicas = []
 
-      const {
-        wallet,
-        primary,
-        secondary1,
-        secondary2,
-        primarySpID,
-        secondary1SpID,
-        secondary2SpID
-      } = nodeUser
+    const {
+      wallet,
+      primary,
+      secondary1,
+      secondary2,
+      primarySpID,
+      secondary1SpID,
+      secondary2SpID
+    } = nodeUser
+
+    /**
+     * If this node is primary for user, check both secondaries for health
+     * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
+     */
+    let replicaSetNodesToObserve = [
+      { endpoint: secondary1, spId: secondary1SpID },
+      { endpoint: secondary2, spId: secondary2SpID }
+    ]
+
+    if (primary === this.endpoint) {
+      // filter out false-y values to account for incomplete replica sets
+      const secondariesInfo = replicaSetNodesToObserve.filter(
+        (entry) => entry.endpoint
+      )
+      const secondariesEndpoint = secondariesInfo.map((entry) => entry.endpoint)
 
       /**
-       * If this node is primary for user, check both secondaries for health
-       * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
+       * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
        */
-      let replicaSetNodesToObserve = [
-        { endpoint: secondary1, spId: secondary1SpID },
-        { endpoint: secondary2, spId: secondary2SpID }
-      ]
-
-      if (primary === this.endpoint) {
-        // filter out false-y values to account for incomplete replica sets
-        const secondariesInfo = replicaSetNodesToObserve.filter(
-          (entry) => entry.endpoint
+      const userSecondarySyncMetrics =
+        await this._computeUserSecondarySyncSuccessRates(
+          nodeUser,
+          secondariesEndpoint
         )
-        const secondariesEndpoint = secondariesInfo.map(
-          (entry) => entry.endpoint
-        )
+      for (const secondaryInfo of secondariesInfo) {
+        const secondary = secondaryInfo.endpoint
 
-        /**
-         * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
-         */
-        const userSecondarySyncMetrics =
-          await this._computeUserSecondarySyncSuccessRates(
-            nodeUser,
-            secondariesEndpoint
+        const { successRate, successCount, failureCount } =
+          userSecondarySyncMetrics[secondary]
+
+        // Error case 1 - mismatched spID
+        if (
+          this.peerSetManager.endpointToSPIdMap[secondary] !==
+          secondaryInfo.spId
+        ) {
+          this.logError(
+            `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${this.peerSetManager.endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`
           )
-        for (const secondaryInfo of secondariesInfo) {
-          const secondary = secondaryInfo.endpoint
+          unhealthyReplicas.push(secondary)
 
-          const { successRate, successCount, failureCount } =
-            userSecondarySyncMetrics[secondary]
+          // Error case 2 - already marked unhealthy
+        } else if (unhealthyPeers.has(secondary)) {
+          this.logError(
+            `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
+          )
+          unhealthyReplicas.push(secondary)
 
-          // Error case 1 - mismatched spID
-          if (
-            this.peerSetManager.endpointToSPIdMap[secondary] !==
-            secondaryInfo.spId
-          ) {
-            this.logError(
-              `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${this.peerSetManager.endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`
-            )
-            unhealthyReplicas.push(secondary)
+          // Error case 3 - low user sync success rate
+        } else if (
+          failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig &&
+          successRate < this.MinimumSecondaryUserSyncSuccessPercent
+        ) {
+          this.logError(
+            `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
+          )
+          unhealthyReplicas.push(secondary)
 
-            // Error case 2 - already marked unhealthy
-          } else if (unhealthyPeers.has(secondary)) {
-            this.logError(
-              `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
-            )
-            unhealthyReplicas.push(secondary)
-
-            // Error case 3 - low user sync success rate
-          } else if (
-            failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig &&
-            successRate < this.MinimumSecondaryUserSyncSuccessPercent
-          ) {
-            this.logError(
-              `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
-            )
-            unhealthyReplicas.push(secondary)
-
-            // Success case
-          } else {
-            potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
-          }
-        }
-
-        /**
-         * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
-         */
-        if (unhealthyReplicas.length > 0) {
-          requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
-        }
-
-        /**
-         * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
-         * Ignore unhealthy secondaries for now
-         */
-      } else {
-        // filter out false-y values to account for incomplete replica sets and filter out the
-        // the self node
-        replicaSetNodesToObserve = [
-          { endpoint: primary, spId: primarySpID },
-          ...replicaSetNodesToObserve
-        ]
-        replicaSetNodesToObserve = replicaSetNodesToObserve.filter((entry) => {
-          return entry.endpoint && entry.endpoint !== this.endpoint
-        })
-
-        for (const replica of replicaSetNodesToObserve) {
-          // If the map's spId does not match the query's spId, then regardless
-          // of the relationship of the node to the user, issue a reconfig for that node
-          if (
-            this.peerSetManager.endpointToSPIdMap[replica.endpoint] !==
-            replica.spId
-          ) {
-            unhealthyReplicas.push(replica.endpoint)
-          } else if (unhealthyPeers.has(replica.endpoint)) {
-            // Else, continue with conducting extra health check if the current observed node is a primary, and
-            // add to `unhealthyReplicas` if observed node is a secondary
-            let addToUnhealthyReplicas = true
-
-            if (replica.endpoint === primary) {
-              addToUnhealthyReplicas =
-                !(await this.peerSetManager.isPrimaryHealthy(primary))
-            }
-
-            if (addToUnhealthyReplicas) {
-              unhealthyReplicas.push(replica.endpoint)
-            }
-          }
-        }
-
-        if (unhealthyReplicas.length > 0) {
-          requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
+          // Success case
+        } else {
+          potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
         }
       }
 
-      return { requiredUpdateReplicaSetOps, potentialSyncRequests }
-    } catch (outerErr) {
-      console.log('OUTER ERROR')
-      console.log(`${outerErr}`)
+      /**
+       * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
+       */
+      if (unhealthyReplicas.length > 0) {
+        requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
+      }
+
+      /**
+       * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
+       * Ignore unhealthy secondaries for now
+       */
+    } else {
+      // filter out false-y values to account for incomplete replica sets and filter out the
+      // the self node
+      replicaSetNodesToObserve = [
+        { endpoint: primary, spId: primarySpID },
+        ...replicaSetNodesToObserve
+      ]
+      replicaSetNodesToObserve = replicaSetNodesToObserve.filter((entry) => {
+        return entry.endpoint && entry.endpoint !== this.endpoint
+      })
+
+      for (const replica of replicaSetNodesToObserve) {
+        // If the map's spId does not match the query's spId, then regardless
+        // of the relationship of the node to the user, issue a reconfig for that node
+        if (
+          this.peerSetManager.endpointToSPIdMap[replica.endpoint] !==
+          replica.spId
+        ) {
+          unhealthyReplicas.push(replica.endpoint)
+        } else if (unhealthyPeers.has(replica.endpoint)) {
+          // Else, continue with conducting extra health check if the current observed node is a primary, and
+          // add to `unhealthyReplicas` if observed node is a secondary
+          let addToUnhealthyReplicas = true
+
+          if (replica.endpoint === primary) {
+            addToUnhealthyReplicas =
+              !(await this.peerSetManager.isPrimaryHealthy(primary))
+          }
+
+          if (addToUnhealthyReplicas) {
+            unhealthyReplicas.push(replica.endpoint)
+          }
+        }
+      }
+
+      if (unhealthyReplicas.length > 0) {
+        requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
+      }
     }
-    throw new Error('theo error')
+
+    return { requiredUpdateReplicaSetOps, potentialSyncRequests }
   }
 
   // Wrapper fn
