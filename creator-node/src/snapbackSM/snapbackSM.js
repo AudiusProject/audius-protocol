@@ -232,16 +232,16 @@ class SnapbackSM {
     )
 
     // Enqueue stateMachineQueue jobs on a cron, after an initial delay
-    // await this.stateMachineQueue.add(
-    //   /** data */ { startTime: Date.now() },
-    //   /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
-    // )
-    // await this.stateMachineQueue.add(
-    //   /** data */ { startTime: Date.now() },
-    //   /** opts */ {
-    //     repeat: { every: this.snapbackJobInterval }
-    //   }
-    // )
+    await this.stateMachineQueue.add(
+      /** data */ { startTime: Date.now() },
+      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+    )
+    await this.stateMachineQueue.add(
+      /** data */ { startTime: Date.now() },
+      /** opts */ {
+        repeat: { every: this.snapbackJobInterval }
+      }
+    )
 
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; jobs will be enqueued every ${this.snapbackJobInterval}ms`
@@ -1180,12 +1180,9 @@ class SnapbackSM {
 
   /**
    * For every node user, record sync requests to issue to secondaries if this node is primary
-   *    and record replica set updates to issue for any unhealthy replicas
+   * and record replica set updates to issue for any unhealthy replicas
    *
-   * Purpose for the if/else case is that if the current node is a primary, issue reconfig or sync requests.
-   * Else, if the current node is a secondary, only issue reconfig requests.
-   *
-   * @param {Object} nodeUser { primary, secondary1, secondary2, [primarySpID?], [secondary1SpID?], [secondary2SpID?], user_id, wallet}
+   * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
    * @returns
    * {
@@ -1195,7 +1192,6 @@ class SnapbackSM {
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
   async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
-    console.log('theo003')
     // Parallelize calling this._aggregateOpsWithQueriedSpIds on chunks of 500 nodeUsers at a time
     const BATCH_SIZE = 500
     const nodeUserBatches = _.chunk(nodeUsers, BATCH_SIZE)
