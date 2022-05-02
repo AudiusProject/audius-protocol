@@ -15,7 +15,7 @@ cd "$ANCHOR_PROGRAM_DIR"
 
 echo "Seeding transactions..."
 
-solana airdrop 100
+echo "Init admin"
 
 yarn run ts-node cli/main.ts -f initAdmin \
     -k "$OWNER_KEYPAIR_PATH" | tee /tmp/initAdminOutput.txt

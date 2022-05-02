@@ -124,7 +124,7 @@ async function initAdminCLI(network: string, args: initAdminCLIParams) {
   let tx = initAdmin({
     payer: cliVars.provider.wallet.publicKey,
     program: cliVars.program,
-    adminAuthorityKeypair,
+    adminKeypair: adminAuthorityKeypair,
     adminAccountKeypair,
     verifierKeypair,
   });
