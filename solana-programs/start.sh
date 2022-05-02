@@ -143,7 +143,7 @@
 
     # Propagate local variables
     admin_authority_keypair_path="$PWD/adminAuthorityKeypair.json"
-    admin_storage_keypair_path="$PWD/adminAccountKeypair.json"
+    admin_account_keypair_path="$PWD/adminAccountKeypair.json"
     admin_authority_keypair_publickey=$(solana-keygen pubkey adminAuthorityKeypair.json)
     admin_authority_keypair_privatekey=$(cat adminAuthorityKeypair.json)
     admin_account_keypair_publickey=$(solana-keygen pubkey adminAccountKeypair.json)
@@ -154,21 +154,21 @@
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_account_keypair_privatekey" \
+        --admin-account-keypair "$admin_storage_keypair_path" \
         --cn-sp-id 1 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_account_keypair_privatekey" \
+        --admin-account-keypair "$admin_storage_keypair_path" \
         --cn-sp-id 2 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_account_keypair_privatekey" \
+        --admin-account-keypair "$admin_storage_keypair_path" \
         --cn-sp-id 3 \
         --network "$SOLANA_HOST"
 
