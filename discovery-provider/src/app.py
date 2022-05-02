@@ -220,9 +220,9 @@ def create(test_config=None, mode="app"):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     if shared_config["cors"]["allow_all"]:
-        CORS(app, resources={r"/*": {"origins": "*"}})
+        CORS(app, max_age=86400, resources={r"/*": {"origins": "*"}})
     else:
-        CORS(app)
+        CORS(app, max_age=86400)
     app.iniconfig = ConfigIni()
     configure_flask(test_config, app, mode)
 
@@ -395,6 +395,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
             "src.tasks.index_solana_user_data",
+            "src.tasks.index_aggregate_tips",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -516,6 +517,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_spl_token",
                 "schedule": timedelta(seconds=5),
             },
+            "index_aggregate_tips": {
+                "task": "index_aggregate_tips",
+                "schedule": timedelta(seconds=5),
+            }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
             #     "task": "index_solana_user_data",
