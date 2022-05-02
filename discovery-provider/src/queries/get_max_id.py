@@ -16,6 +16,7 @@ def get_max_id(type):
             latest = (
                 session.query(func.max(Track.track_id))
                 .filter(Track.is_unlisted == False)
+                .filter(Track.is_current == True)
                 .scalar()
             )
             return latest
@@ -24,10 +25,15 @@ def get_max_id(type):
             latest = (
                 session.query(func.max(Playlist.playlist_id))
                 .filter(Playlist.is_private == False)
+                .filter(Playlist.is_current == True)
                 .scalar()
             )
             return latest
 
         # user
-        latest = session.query(func.max(User.user_id)).scalar()
+        latest = (
+            session.query(func.max(User.user_id))
+            .filter(User.is_current == True)
+            .scalar()
+        )
         return latest
