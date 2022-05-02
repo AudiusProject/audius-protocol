@@ -147,28 +147,28 @@
     admin_authority_keypair_publickey=$(solana-keygen pubkey adminAuthorityKeypair.json)
     admin_authority_keypair_privatekey=$(cat adminAuthorityKeypair.json)
     admin_account_keypair_publickey=$(solana-keygen pubkey adminAccountKeypair.json)
-    admin_storage_keypair_privatekey=$(cat adminAccountKeypair.json)
+    admin_account_keypair_privatekey=$(cat adminAccountKeypair.json)
 
     # initialize Content/URSM nodes - initContentNode uses deterministic 
     # addresses and pkeys from eth-contracts ganache chain.
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_storage_keypair_path" \
+        --admin-account-keypair "$admin_account_keypair_privatekey" \
         --cn-sp-id 1 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_storage_keypair_path" \
+        --admin-account-keypair "$admin_account_keypair_privatekey" \
         --cn-sp-id 2 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
         --admin-authority-keypair "$admin_authority_keypair_path"\
-        --admin-account-keypair "$admin_storage_keypair_path" \
+        --admin-account-keypair "$admin_account_keypair_privatekey" \
         --cn-sp-id 3 \
         --network "$SOLANA_HOST"
 
@@ -184,7 +184,7 @@ cat <<EOF
     "anchorAdminPublicKey": "$admin_authority_keypair_publickey",
     "anchorAdminPrivateKey": "$admin_authority_keypair_privatekey",
     "anchorAdminStoragePublicKey": "$admin_account_keypair_publickey",
-    "anchorAdminStoragePrivateKey": "$admin_storage_keypair_privatekey",
+    "anchorAdminStoragePrivateKey": "$admin_account_keypair_privatekey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",
