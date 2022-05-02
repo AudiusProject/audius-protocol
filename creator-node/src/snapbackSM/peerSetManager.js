@@ -21,7 +21,6 @@ const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
 
-const DEFAULT_AXIOS_TIMEOUT_MS = 60_000 // 60s
 
 class PeerSetManager {
   constructor({
@@ -137,7 +136,7 @@ class PeerSetManager {
           params: {
             creator_node_endpoint: this.creatorNodeEndpoint
           },
-          timeout: DEFAULT_AXIOS_TIMEOUT_MS
+          timeout: 60_000 // 60s
         },
         asyncFnTask: 'fetch all users with this node in replica'
       })
