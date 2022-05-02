@@ -28,6 +28,9 @@ const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
 const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 
+// Number of users to process in each batch for this._aggregateOpsWithQueriedSpIds
+const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
+
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring:
@@ -80,10 +83,10 @@ const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
 const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
 
-/*
- SnapbackSM aka Snapback StateMachine
- Ensures file availability through recurring sync operations
-*/
+/**
+ * SnapbackSM aka Snapback StateMachine.
+ * Ensures file availability through recurring sync operations
+ */
 class SnapbackSM {
   constructor(nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
@@ -1193,8 +1196,10 @@ class SnapbackSM {
    */
   async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
     // Parallelize calling this._aggregateOpsWithQueriedSpIds on chunks of 500 nodeUsers at a time
-    const BATCH_SIZE = 500
-    const nodeUserBatches = _.chunk(nodeUsers, BATCH_SIZE)
+    const nodeUserBatches = _.chunk(
+      nodeUsers,
+      AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE
+    )
     const resultBatches = []
     while (nodeUserBatches.length) {
       const nodeUserBatch = nodeUserBatches.shift()
@@ -1210,10 +1215,9 @@ class SnapbackSM {
     const results = _.flatten(resultBatches)
     let requiredUpdateReplicaSetOps = []
     let potentialSyncRequests = []
-    for (const resolvedPromise of results) {
+    for (const promiseResult of results) {
       // Skip failed promises
-      const { status: promiseStatus, value: reconfigAndSyncOps } =
-        resolvedPromise
+      const { status: promiseStatus, value: reconfigAndSyncOps } = promiseResult
       if (promiseStatus !== 'fulfilled') {
         continue
       }
