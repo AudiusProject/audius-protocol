@@ -64,7 +64,7 @@ const _updateDiscoveryProviderEnvFile = async (
   rewardsManagerAddress,
   rewardsManagerAccount,
   anchorProgramId,
-  anchorAdminAddressLine,
+  anchorAdminAddress,
 ) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
@@ -93,7 +93,7 @@ const _updateDiscoveryProviderEnvFile = async (
   const rewardsManagerAddressLine = `${SOLANA_REWARDS_MANAGER_ADDRESS}=${rewardsManagerAddress}`
   const rewardsManagerAccountLine = `${SOLANA_REWARDS_MANAGER_ACCOUNT}=${rewardsManagerAccount}`
   const anchorProgramIdLine = `${SOLANA_ANCHOR_PROGRAM_ID}=${anchorProgramId}`
-  const anchorAdminAddressLine = `${SOLANA_ANCHOR_ADMIN_ADDRESS}=${anchorAdminAddressLine}`
+  const anchorAdminAddressLine = `${SOLANA_ANCHOR_ADMIN_ADDRESS}=${anchorAdminAddress}`
 
   for await (const line of rl) {
     if (line.includes(ETH_CONTRACTS_REGISTRY)) {
