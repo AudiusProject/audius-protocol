@@ -1201,8 +1201,7 @@ class SnapbackSM {
       AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE
     )
     const results = []
-    while (nodeUserBatches.length) {
-      const nodeUserBatch = nodeUserBatches.shift()
+    for (const nodeUserBatch of nodeUserBatches) {
       const resultBatch = await Promise.allSettled(
         nodeUserBatch.map((nodeUser) =>
           this._aggregateOps(nodeUser, unhealthyPeers)
@@ -1216,10 +1215,14 @@ class SnapbackSM {
     let potentialSyncRequests = []
     for (const promiseResult of results) {
       // Skip and log failed promises
-      const { status: promiseStatus, value: reconfigAndSyncOps } = promiseResult
+      const {
+        status: promiseStatus,
+        value: reconfigAndSyncOps,
+        reason: promiseError
+      } = promiseResult
       if (promiseStatus !== 'fulfilled') {
         logger.error(
-          `[aggregateReconfigAndPotentialSyncOps()] encountered unexpected failure: ${reconfigAndSyncOps}`
+          `aggregateReconfigAndPotentialSyncOps() encountered unexpected failure: ${promiseError}`
         )
         continue
       }
