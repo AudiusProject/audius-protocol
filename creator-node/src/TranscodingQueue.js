@@ -225,8 +225,8 @@ class TranscodingQueue {
    * The max number of transcode jobs that can run at a given moment is correlated to
    * the number of cores available.
    *
-   * If the number of active jobs is equal to the number of cores, and the number of
-   * waiting jobs is equal to or greater than the number of cores, mark the
+   * If the number of active jobs is less than MAX_ACTIVE_JOBS, and the number of
+   * waiting jobs is less than or equal to or greater MAX_WAITING_JOBS, mark the
    * TranscodingQueue as unavailable.
    *
    * @returns boolean flag if the transcode queue can accept more jobs
@@ -234,7 +234,7 @@ class TranscodingQueue {
   async isAvailable() {
     const { active, waiting } = await this.getTranscodeQueueJobs()
 
-    return !(active === MAX_ACTIVE_JOBS && waiting > MAX_WAITING_JOBS)
+    return active < MAX_ACTIVE_JOBS || waiting <= MAX_WAITING_JOBS
   }
 }
 
