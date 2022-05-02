@@ -597,7 +597,8 @@ const allUp = async ({
   numDiscoveryNodes = 1,
   withAAO = false,
   verbose = false,
-  parallel = false
+  parallel = false,
+  buildSolana = false
 }) => {
   if (verbose) {
     console.log('Running in verbose mode.')
@@ -628,6 +629,10 @@ const allUp = async ({
     [Service.CONTRACTS, SetupCommand.UP],
     [Service.ETH_CONTRACTS, SetupCommand.UP]
   ]
+
+  if (buildSolana) {
+    ipfsAndContractsCommands.push([Service.SOLANA_PROGRAMS, SetupCommand.UP])
+  }
 
   let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(
     serviceNumber => {

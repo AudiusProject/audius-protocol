@@ -4,12 +4,16 @@ const { exec, execSync } = require('child_process')
 const solanaProgramsPath = `${process.env.PROTOCOL_DIR}/solana-programs`
 const tmp = `/tmp/solana-deploy`
 
-const writeMetadata = async () => {
+const getGitHash = async () => {
   const gitHash = await new Promise(resolve =>
     exec(`cd ${solanaProgramsPath} && git rev-parse HEAD`, (_, stdout) =>
-      resolve(stdout)
+      resolve(stdout.trim())
     )
   )
+  return gitHash
+}
+
+const writeMetadata = async ({ gitHash }) => {
   fs.writeFileSync(
     `${tmp}/metadata.json`,
     JSON.stringify(
@@ -58,12 +62,20 @@ const main = async () => {
     `cp -r ${solanaProgramsPath}/anchor/audius-data/target ${tmp}/audius-data`,
     { stdio: 'inherit' }
   )
-  await writeMetadata()
+
+  const gitHash = await getGitHash()
+  await writeMetadata({ gitHash })
+
   // Make the dockerfile
   execSync(
     `cd ${tmp} && docker build -f Dockerfile.cacheLedger -t audius/solana-programs:predeployed-latest .`,
     { stdio: 'inherit' }
   )
+  execSync(
+    `docker tag audius/solana-programs:predeployed-latest audius/solana-programs:predeployed-${gitHash}`,
+    { stdio: 'inherit' }
+  )
+  execSync('docker kill solana && docker rm solana', { stdio: 'inherit' })
 
   // TODO: Deploy to docker registry (dockerhub)
   console.log('Be sure to publish the docker file if using externally')
