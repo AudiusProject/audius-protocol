@@ -25,7 +25,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => {
   return {
     root: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       borderBottomWidth: 1,
       borderBottomColor: palette.neutralLight8,
       width: Dimensions.get('window').width,
@@ -43,10 +43,13 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => {
     },
     input: {
       ...inputText,
+      padding: 0,
       width: '100%',
       flexShrink: 1
     },
-    prefix: inputText
+    prefix: {
+      ...inputText
+    }
   }
 })
 
