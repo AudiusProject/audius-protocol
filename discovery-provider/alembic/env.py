@@ -81,6 +81,7 @@ def run_migrations_online():
 @compiles(CreateTable)
 def _add_if_not_exists(element, compiler, **kw):
     """Adds support for IF NOT EXISTS to CREATE TABLE and CREATE INDEX commands"""
+    # Inspired by https://github.com/AudiusProject/audius-protocol/pull/2997
     if isinstance(element, ddl.CreateIndex):
         output = compiler.visit_create_index(element, **kw)
     elif isinstance(element, ddl.CreateTable):
@@ -96,6 +97,7 @@ def _add_if_not_exists(element, compiler, **kw):
 @compiles(DropTable)
 def _add_if_exists(element, compiler, **kw):
     """Adds support for IF EXISTS to DROP TABLE and DROP INDEX commands"""
+    # Inspired by https://github.com/AudiusProject/audius-protocol/pull/2997
     if isinstance(element, ddl.DropIndex):
         output = compiler.visit_drop_index(element, **kw)
     elif isinstance(element, ddl.DropTable):
