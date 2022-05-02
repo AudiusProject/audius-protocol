@@ -36,6 +36,7 @@ jobs:
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
             GCLOUD_VM_NAME=audius-bake-nightly-$(date +%s)
+            BAKE_IMAGE_NAME=ci-image-bake-latest
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
@@ -58,6 +59,12 @@ jobs:
               A down;
               exit $?;
             EOF
+
+            # Stop GCP box, can't take an image from a running VM
+            gcloud compute instances start $GCLOUD_VM_NAME
+
+            # Delete image with the same name (if exists)
+            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
 
             # Delete GCP box
             echo "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
