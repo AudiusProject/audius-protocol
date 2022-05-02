@@ -1222,7 +1222,9 @@ class SnapbackSM {
       } = promiseResult
       if (promiseStatus !== 'fulfilled') {
         logger.error(
-          `aggregateReconfigAndPotentialSyncOps() encountered unexpected failure: ${promiseError}`
+          `aggregateReconfigAndPotentialSyncOps() encountered unexpected failure: ${
+            promiseError.message || promiseError
+          }`
         )
         continue
       }
