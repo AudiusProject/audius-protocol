@@ -13,7 +13,7 @@ const messages = {
   description: 'Visit audius.co from a desktop browser',
   unlimited: 'Unlimited Uploads',
   clear: 'Crystal Clear 320kbps',
-  exclusive: 'Exclusive Conent'
+  exclusive: 'Exclusive Content'
 }
 
 const checks = [messages.unlimited, messages.clear, messages.exclusive]
