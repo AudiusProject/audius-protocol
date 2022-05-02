@@ -1,7 +1,7 @@
 """Tipper Rank Ups
 
 Revision ID: 5ea8fd4ae1fb
-Revises: 8c10373f2615
+Revises: 378ef6680606
 Create Date: 2022-04-29 03:01:37.097134
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "5ea8fd4ae1fb"
-down_revision = "8c10373f2615"
+down_revision = "378ef6680606"
 branch_labels = None
 depends_on = None
 
