@@ -286,12 +286,18 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
  * Handy helper function for executing an operation against
  * an array of libs wrappers in parallel.
  */
-const makeExecuteAll = libsArray => async operation => {
+const makeExecuteAll = (libsArray, batchSize) => async (operation) => {
   let responses
   let timeOfCall
   try {
     timeOfCall = moment()
-    responses = await Promise.all(libsArray.map(operation))
+    let responses = []
+    for (let i = 0; i < libsArray.length; i += batchSize) {
+      const libsArraySlice = libsArray.slice(i, i + batchSize)
+  
+      const sliceResps = await Promise.all(libsArraySlice.map(operation))
+      responses = responses.concat(sliceResps)
+    }
   } catch (e) {
     const endTimeOfCall = moment()
     const errorInfo = {
