@@ -119,7 +119,6 @@ class PeerSetManager {
    * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getNodeUsers() {
-
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -144,11 +143,11 @@ class PeerSetManager {
       })
       nodeUsers = resp.data.data
     } catch (e) {
-        throw new Error(
-          `getNodeUsers() Error: ${e.toString()} - connected discprov [${
-            this.discoveryProviderEndpoint
-          }]`
-        )
+      throw new Error(
+        `getNodeUsers() Error: ${e.toString()} - connected discprov [${
+          this.discoveryProviderEndpoint
+        }]`
+      )
     }
 
     // Ensure every object in response array contains all required fields
@@ -166,9 +165,7 @@ class PeerSetManager {
       )
       if (!allRequiredFieldsPresent) {
         throw new Error(
-          `getAllNodeUsers() Error: ${e.toString()} - connected discprov [${
-            this.discoveryProviderEndpoint
-          }]`
+          'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
         )
       }
     })
@@ -176,7 +173,7 @@ class PeerSetManager {
     return nodeUsers
   }
 
- /**
+  /**
    * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @returns {Set} Set of content node endpoint strings
    */
