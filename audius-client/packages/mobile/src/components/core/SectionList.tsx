@@ -4,6 +4,8 @@ import { Portal } from '@gorhom/portal'
 import {
   Animated,
   DefaultSectionT,
+  Platform,
+  RefreshControl,
   SectionList as RNSectionList,
   SectionListProps as RNSectionListProps,
   View
@@ -48,7 +50,7 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
   )
 
   const scrollPropsAndRef = useCollapsibleSectionListScene(sceneName)
-  const { staticWhite } = useThemeColors()
+  const { neutral, staticWhite } = useThemeColors()
 
   return (
     <View>
@@ -71,6 +73,16 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
           scrollPropsAndRef.onScroll,
           props.onScroll
         )}
+        refreshControl={
+          Platform.OS === 'ios' ? undefined : (
+            <RefreshControl
+              progressViewOffset={scrollPropsAndRef.progressViewOffset}
+              refreshing={!!refreshing}
+              onRefresh={onRefresh ?? undefined}
+              colors={[neutral]}
+            />
+          )
+        }
       />
     </View>
   )
@@ -82,6 +94,7 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
     ref: MutableRefObject<RNSectionList<any, DefaultSectionT> | null>
   ) {
     const { refreshing, onRefresh, onScroll, ...other } = props
+    const { neutral } = useThemeColors()
     const scrollResponder = ref?.current?.getScrollResponder()
     const {
       isRefreshing,
@@ -108,9 +121,19 @@ const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
             isRefreshDisabled={isRefreshDisabled}
           />
         ) : null}
+
         <Animated.SectionList
           {...other}
           scrollToOverflowEnabled
+          refreshControl={
+            Platform.OS === 'ios' ? undefined : (
+              <RefreshControl
+                refreshing={!!isRefreshing}
+                onRefresh={onRefresh ?? undefined}
+                colors={[neutral]}
+              />
+            )
+          }
           ref={ref}
           onScroll={handleScroll}
           onScrollBeginDrag={onScrollBeginDrag}
