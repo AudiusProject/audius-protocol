@@ -6,7 +6,7 @@ set -x
 
 ANCHOR_PROGRAM_DIR="$PROTOCOL_DIR/solana-programs/anchor/audius-data"
 OWNER_KEYPAIR_PATH="$HOME/.config/solana/id.json"
-ADMIN_KEYPAIR_PATH="$PWD/adminKeypair.json"
+ADMIN_AUTHORITY_KEYPAIR_PATH="$PWD/adminAuthorityKeypair.json"
 ADMIN_ACCOUNT_KEYPAIR_PATH="$PWD/adminAccountKeypair.json"
 USER_KEYPAIR_PATH="$PWD/userKeypair.json"
 AUDIUS_DATA_PROGRAM_ID=$(solana-keygen pubkey $PWD/target/deploy/audius_data-keypair.json)
@@ -24,19 +24,19 @@ echo "Registering content nodes!"
 # Register content nodes
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
+    --admin-authority-keypair "$ADMIN_AUTHORITY_KEYPAIR_PATH" \
     --admin-account-keypair "$ADMIN_ACCOUNT_KEYPAIR_PATH" \
     --cn-sp-id 1
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
+    --admin-authority-keypair "$ADMIN_AUTHORITY_KEYPAIR_PATH" \
     --admin-account-keypair "$ADMIN_ACCOUNT_KEYPAIR_PATH" \
     --cn-sp-id 2
 
 yarn run ts-node cli/main.ts -f initContentNode \
     -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
+    --admin-authority-keypair "$ADMIN_AUTHORITY_KEYPAIR_PATH" \
     --admin-account-keypair "$ADMIN_ACCOUNT_KEYPAIR_PATH" \
     --cn-sp-id 3
 
@@ -44,7 +44,7 @@ echo "Init user"
 
 yarn run ts-node cli/main.ts -f initUser \
     -k "$OWNER_KEYPAIR_PATH" \
-    --admin-keypair "$ADMIN_KEYPAIR_PATH" \
+    --admin-authority-keypair "$ADMIN_AUTHORITY_KEYPAIR_PATH" \
     --admin-account-keypair "$ADMIN_ACCOUNT_KEYPAIR_PATH" \
     --user-replica-set 1,2,3 \
     --user-id 1 \
