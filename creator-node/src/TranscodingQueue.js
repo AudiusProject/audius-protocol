@@ -110,6 +110,7 @@ class TranscodingQueue {
     this.segment = this.segment.bind(this)
     this.transcode320 = this.transcode320.bind(this)
     this.getTranscodeQueueJobs = this.getTranscodeQueueJobs.bind(this)
+    this.isAvailable = this.isAvailable.bind(this)
   }
 
   /**

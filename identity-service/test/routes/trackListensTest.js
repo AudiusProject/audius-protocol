@@ -11,12 +11,17 @@ describe('test Solana listen tracking', function () {
   const TRACKING_LISTEN_SUBMISSION_KEY = 'listens-tx-submission-ts'
   const TRACKING_LISTEN_SUCCESS_KEY = 'listens-tx-success-ts'
 
-  let app, server, sandbox
+  let app, server, sandbox, solanaWeb3Stub, createTrackListenTransactionStub, sendAndSignTransactionStub
   beforeEach(async () => {
+    delete require.cache[require.resolve('../../src/routes/trackListens')]
     sandbox = sinon.createSandbox()
+    createTrackListenTransactionStub = sandbox.stub(solClient, 'createTrackListenTransaction')
+    sendAndSignTransactionStub = sandbox.stub(solClient, 'sendAndSignTransaction')
     const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
+    solanaWeb3Stub = sandbox.stub()
+    app.get('audiusLibs').solanaWeb3Manager.solanaWeb3 = solanaWeb3Stub
     await app.get('redis').flushdb()
   })
   afterEach(async () => {
@@ -24,34 +29,36 @@ describe('test Solana listen tracking', function () {
     await server.close()
   })
 
-  const recordSuccessfulListen = async () => {
-    if (solClient.createAndVerifyMessage.restore &&
-      solClient.createAndVerifyMessage.restore.sinon
-    ) {
-      solClient.createAndVerifyMessage.restore()
+  const recordSuccessfulListen = async (raw) => {
+    // Common to both raw and non-raw path
+    createTrackListenTransactionStub.resolves('expected success')
+
+    if (raw) {
+      sendAndSignTransactionStub.resolves('expected success')
+    } else {
+      solanaWeb3Stub.sendAndConfirmTransaction = () => Promise.resolve('expected success')
     }
-    sandbox.stub(solClient, 'createAndVerifyMessage').resolves('txReceipt')
+
     const resp = await request(app)
       .post(`/tracks/${TRACK_ID}/listen`)
       .send({
         userId: USER_ID,
-        solanaListen: true
+        solanaListen: true,
+        sendRawTransaction: raw
       })
     assert.strictEqual(resp.status, 200)
   }
 
-  const recordFailedListen = async () => {
-    if (solClient.createAndVerifyMessage.restore &&
-      solClient.createAndVerifyMessage.restore.sinon
-    ) {
-      solClient.createAndVerifyMessage.restore()
-    }
-    sandbox.stub(solClient, 'createAndVerifyMessage').rejects()
+  const recordFailedListen = async (raw) => {
+    // Failed listen just needs createTrackListenTransaction to fail because it's called before raw/non-raw logic
+    createTrackListenTransactionStub.rejects('intentional failure')
+
     const resp = await request(app)
       .post(`/tracks/${TRACK_ID}/listen`)
       .send({
         userId: USER_ID,
-        solanaListen: true
+        solanaListen: true,
+        sendRawTransaction: raw
       })
     assert.strictEqual(resp.status, 500)
   }
@@ -93,43 +100,46 @@ describe('test Solana listen tracking', function () {
     await new Promise(resolve => setTimeout(resolve, seconds * 1000))
   }
 
-  it('records successful and failed transactions and fails when threshold is not met', async function () {
-    await recordSuccessfulListen()
-    await recordFailedListen()
-    await verifySuccessfulListens(1, 2, 0.5, 0.5)
-    await verifyFailedListens(0.51)
-  })
+  for (const raw of [true, false]) {
+    const pathText = `for ${raw ? 'sendRawTransaction' : 'sendAndConfirmTransaction'} path`
+    it(`records successful and failed transactions and fails when threshold is not met ${pathText}`, async function () {
+      await recordSuccessfulListen()
+      await recordFailedListen()
+      await verifySuccessfulListens(1, 2, 0.5, 0.5)
+      await verifyFailedListens(0.51)
+    })
 
-  it('only counts listens in the given time range', async function () {
-    const twoSecondsInMinutes = 2 / 60
-    const fourSecondsInMinutes = 4 / 60
-    const listensInLastTwoSeconds = 1
-    const listensInLastFourSeconds = 2
+    it(`only counts listens in the given time range ${pathText}`, async function () {
+      const twoSecondsInMinutes = 2 / 60
+      const fourSecondsInMinutes = 4 / 60
+      const listensInLastTwoSeconds = 1
+      const listensInLastFourSeconds = 2
 
-    await recordSuccessfulListen()
-    await delaySeconds(3)
-    await recordSuccessfulListen()
+      await recordSuccessfulListen()
+      await delaySeconds(3)
+      await recordSuccessfulListen()
 
-    await verifyListensInRange(twoSecondsInMinutes, 2, listensInLastTwoSeconds)
-    await verifyListensInRange(fourSecondsInMinutes, 2, listensInLastFourSeconds)
-  })
+      await verifyListensInRange(twoSecondsInMinutes, 2, listensInLastTwoSeconds)
+      await verifyListensInRange(fourSecondsInMinutes, 2, listensInLastFourSeconds)
+    })
 
-  it('expires only listens greater than 1 week', async function () {
-    const now = Date.now()
-    const lastWeek = now - (24 * 60 * 60 * 1000 * 7 + 1)
-    const redis = app.get('redis')
-    await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, now, now)
-    await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, now, now)
-    await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, lastWeek, lastWeek)
-    await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, lastWeek, lastWeek)
-    const successBeforeCleanup = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, 0, Number.MAX_SAFE_INTEGER)
-    assert.strictEqual(successBeforeCleanup, 2)
-    await verifySuccessfulListens(1, 1, 1, 1)
-  })
+    it(`expires only listens greater than 1 week ${pathText}`, async function () {
+      const now = Date.now()
+      const lastWeek = now - (24 * 60 * 60 * 1000 * 7 + 1)
+      const redis = app.get('redis')
+      await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, now, now)
+      await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, now, now)
+      await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, lastWeek, lastWeek)
+      await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, lastWeek, lastWeek)
+      const successBeforeCleanup = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, 0, Number.MAX_SAFE_INTEGER)
+      assert.strictEqual(successBeforeCleanup, 2)
+      await verifySuccessfulListens(1, 1, 1, 1)
+    })
 
-  it('counts 0 submissions as 100% success', async function () {
-    await verifySuccessfulListens(0, 0, 1, 1)
-    await recordFailedListen()
-    await verifyFailedListens(0.1)
-  })
+    it(`counts 0 submissions as 100% success ${pathText}`, async function () {
+      await verifySuccessfulListens(0, 0, 1, 1)
+      await recordFailedListen()
+      await verifyFailedListens(0.1)
+    })
+  }
 })

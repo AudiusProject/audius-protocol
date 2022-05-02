@@ -46,7 +46,7 @@ export class Captcha {
       throw new Error('No captcha found, did you forget to import it?')
     }
 
-    return await new Promise((resolve) => {
+    return await new Promise<string>((resolve) => {
       window.grecaptcha.ready(() => {
         window.grecaptcha.execute(this.siteKey, { action }).then((token) => {
           resolve(token)

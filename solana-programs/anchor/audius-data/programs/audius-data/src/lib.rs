@@ -8,7 +8,7 @@ use crate::{constants::*, error::ErrorCode, utils::*};
 use anchor_lang::prelude::*;
 use std::collections::BTreeMap;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"); // default program ID to be replaced in start.sh
+declare_id!("8AXXpL8BBTuXDaG8y9xhoJ66Ei5eFAjUEHxJHRPDHiQr"); // default program ID to be replaced in start.sh
 
 #[program]
 pub mod audius_data {
@@ -30,25 +30,25 @@ pub mod audius_data {
         authority: Pubkey,
         verifier: Pubkey,
     ) -> Result<()> {
-        let audius_admin = &mut ctx.accounts.admin;
-        audius_admin.authority = authority;
-        audius_admin.verifier = verifier;
-        audius_admin.is_write_enabled = true;
+        let admin = &mut ctx.accounts.admin;
+        admin.authority = authority;
+        admin.verifier = verifier;
+        admin.is_write_enabled = true;
         Ok(())
     }
 
-    /// Verifies a user by asserting that the audius_admin's verifier matches the signed verifier account
+    /// Verifies a user by asserting that the admin's verifier matches the signed verifier account
     pub fn update_is_verified(
         ctx: Context<UpdateIsVerified>,
         base: Pubkey,
         _user_id_seed_bump: UserIdSeedBump,
     ) -> Result<()> {
         // Validate that the audius admin verifier matches the verifier passed in
-        if ctx.accounts.audius_admin.verifier != ctx.accounts.verifier.key() {
+        if ctx.accounts.admin.verifier != ctx.accounts.verifier.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
 
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
@@ -351,7 +351,7 @@ pub mod audius_data {
     ) -> Result<()> {
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = Pubkey::find_program_address(
-            &[&ctx.accounts.audius_admin.key().to_bytes()[..32]],
+            &[&ctx.accounts.admin.key().to_bytes()[..32]],
             ctx.program_id,
         );
 
@@ -360,7 +360,7 @@ pub mod audius_data {
         }
 
         // Confirm admin is disabled
-        if ctx.accounts.audius_admin.is_write_enabled {
+        if ctx.accounts.admin.is_write_enabled {
             return Err(ErrorCode::Unauthorized.into());
         }
 
@@ -425,7 +425,7 @@ pub mod audius_data {
         _metadata: String,
     ) -> Result<()> {
         // Confirm the base PDA matches the expected value provided the target audius admin
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
         if base_pda != base {
@@ -452,7 +452,7 @@ pub mod audius_data {
         _entity_type: EntityTypes,
         _id: String,
     ) -> Result<()> {
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
@@ -490,7 +490,7 @@ pub mod audius_data {
         _source_user_id_seed_bump: UserIdSeedBump,
         _target_user_id_seed_bump: UserIdSeedBump,
     ) -> Result<()> {
-        let admin_key: &Pubkey = &ctx.accounts.audius_admin.key();
+        let admin_key: &Pubkey = &ctx.accounts.admin.key();
         let (base_pda, _bump) =
             Pubkey::find_program_address(&[&admin_key.to_bytes()[..32]], ctx.program_id);
 
@@ -517,7 +517,7 @@ pub mod audius_data {
         _authority_name: String,
     ) -> Result<()> {
 
-        ctx.accounts.authority_delegation_status_pda.is_revoked = false;
+        ctx.accounts.authority_delegation_status.is_revoked = false;
 
         Ok(())
     }
@@ -529,7 +529,7 @@ pub mod audius_data {
     ) -> Result<()> {
         // TODO add user validation
 
-        ctx.accounts.authority_delegation_status_pda.is_revoked = true;
+        ctx.accounts.authority_delegation_status.is_revoked = true;
 
         Ok(())
     }
@@ -554,7 +554,7 @@ pub mod audius_data {
         // Maintain the user's storage account and the incoming delegate authority key
         ctx.accounts
             .current_user_authority_delegate
-            .user_storage_account = ctx.accounts.user.key();
+            .user_account = ctx.accounts.user.key();
         ctx.accounts.current_user_authority_delegate.delegate_authority = delegate_pubkey;
         Ok(())
     }
@@ -581,7 +581,7 @@ pub mod audius_data {
         ctx.accounts.current_user_authority_delegate.delegate_authority = dummy_owner_field;
         ctx.accounts
             .current_user_authority_delegate
-            .user_storage_account = dummy_owner_field;
+            .user_account = dummy_owner_field;
         Ok(())
     }
 }
@@ -769,8 +769,8 @@ pub struct CreateUser<'info> {
     pub cn3: Account<'info, ContentNode>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    #[account()]
+    pub admin: Account<'info, AudiusAdmin>,
     pub system_program: Program<'info, System>,
     /// CHECK: This is required since we load an instruction at index - 1 to verify eth signature
     pub sysvar_program: AccountInfo<'info>,
@@ -804,7 +804,7 @@ pub struct UpdateAdmin<'info> {
 /// Instruction container to initialize an AuthorityDelegationStatus.
 /// The authority initializes itself as a delegate.
 /// `delegate_authority` is the authority that will become a delegate
-/// `authority_delegation_status_pda` is the target PDA for the authority's delegation
+/// `authority_delegation_status` is the target PDA for the authority's delegation
 #[derive(Accounts)]
 #[instruction(authority_name: String)]
 pub struct InitAuthorityDelegationStatus<'info> {
@@ -818,7 +818,7 @@ pub struct InitAuthorityDelegationStatus<'info> {
         bump,
         space = AUTHORITY_DELEGATION_STATUS_ACCOUNT_SIZE
     )]
-    pub authority_delegation_status_pda: Account<'info, AuthorityDelegationStatus>,
+    pub authority_delegation_status: Account<'info, AuthorityDelegationStatus>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -838,7 +838,7 @@ pub struct RevokeAuthorityDelegationStatus<'info> {
         seeds = [AUTHORITY_DELEGATION_STATUS_SEED, delegate_authority.key().as_ref()],
         bump = authority_delegation_status_bump,
     )]
-    pub authority_delegation_status_pda: Account<'info, AuthorityDelegationStatus>,
+    pub authority_delegation_status: Account<'info, AuthorityDelegationStatus>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -923,7 +923,7 @@ pub struct RemoveUserAuthorityDelegate<'info> {
 // Instruction base pda, user id
 pub struct ManageEntity<'info> {
     #[account()]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     // Audiusadmin
     #[account(
         seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()],
@@ -947,7 +947,7 @@ pub struct ManageEntity<'info> {
 pub struct WriteEntitySocialAction<'info> {
     // TODO - Verify removal here
     #[account()]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump = user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     #[account()]
@@ -965,7 +965,7 @@ pub struct WriteEntitySocialAction<'info> {
 #[instruction(base: Pubkey, user_instr:UserAction, source_user_id_seed_bump: UserIdSeedBump, target_user_id_seed_bump: UserIdSeedBump)]
 pub struct WriteUserSocialAction<'info> {
     #[account(mut)]
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     // Confirm the source user PDA matches the expected value provided the target user id and base
     #[account(mut, seeds = [&base.to_bytes()[..32], &source_user_id_seed_bump.user_id.to_le_bytes()], bump = source_user_id_seed_bump.bump)]
     pub source_user_storage: Account<'info, User>,
@@ -987,7 +987,7 @@ pub struct WriteUserSocialAction<'info> {
 #[derive(Accounts)]
 #[instruction(base: Pubkey, user_id_seed_bump: UserIdSeedBump)]
 pub struct UpdateIsVerified<'info> {
-    pub audius_admin: Account<'info, AudiusAdmin>,
+    pub admin: Account<'info, AudiusAdmin>,
     #[account(seeds = [&base.to_bytes()[..32], &user_id_seed_bump.user_id.to_le_bytes()], bump = user_id_seed_bump.bump)]
     pub user: Account<'info, User>,
     pub verifier: Signer<'info>,
@@ -1024,7 +1024,7 @@ pub struct UserAuthorityDelegate {
     // The account that is given permission to operate on this user's behalf
     pub delegate_authority: Pubkey,
     // PDA of user storage account enabling operations
-    pub user_storage_account: Pubkey,
+    pub user_account: Pubkey,
 }
 
 /// Authority delegation status account

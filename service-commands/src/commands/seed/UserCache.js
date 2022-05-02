@@ -56,6 +56,16 @@ class UserCache {
     this.update(cache)
   }
 
+  addWalletDetails = ({ entropy, privKey }) => {
+    const match = ([alias, { hedgehogEntropyKey }]) => {
+      return hedgehogEntropyKey === entropy
+    }
+    let cache = this.get()
+    const [alias, info] = Object.entries(cache).find(match)
+    cache[alias] = Object.assign(info, { wallet: { privKey } })
+    this.update(cache)
+  }
+
   get = () => {
     let cache
     if (fs.existsSync(this.CACHE_PATH)) {

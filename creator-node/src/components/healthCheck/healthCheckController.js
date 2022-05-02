@@ -91,7 +91,8 @@ const healthCheckController = async (req) => {
 
   const { randomBytesToSign, enforceStateMachineQueueHealth } = req.query
 
-  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+  const AsyncProcessingQueue =
+    req.app.get('serviceRegistry').asyncProcessingQueue
 
   const logger = req.logger
   const response = await healthCheck(
@@ -100,6 +101,7 @@ const healthCheckController = async (req) => {
     sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
+    TranscodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs,
     numberOfCPUs,
     randomBytesToSign
@@ -151,7 +153,8 @@ const healthCheckVerboseController = async (req) => {
     return errorResponseServerError()
   }
 
-  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+  const AsyncProcessingQueue =
+    req.app.get('serviceRegistry').asyncProcessingQueue
 
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(
@@ -161,6 +164,7 @@ const healthCheckVerboseController = async (req) => {
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
+    TranscodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 

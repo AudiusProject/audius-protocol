@@ -1,10 +1,13 @@
 import asyncio
-from unittest.mock import create_autospec
+from unittest.mock import MagicMock, create_autospec
 
-from construct import ListContainer
+import pytest
+from construct import Container, ListContainer
+from integration_tests.utils import populate_mock_db
 from src.models.models import AudiusDataTx
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
+from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -16,12 +19,13 @@ ADMIN_STORAGE_PUBLIC_KEY = shared_config["solana"]["anchor_admin_storage_public_
 LABEL = "test_indexer"
 
 
-def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
+def test_get_transaction_batches_to_process_single_batch(app):
     with app.app_context():
         db = get_db()
         redis = get_redis()
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
         ADMIN_STORAGE_PUBLIC_KEY,
@@ -29,6 +33,109 @@ def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
         redis,
         db,
         solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+    anchor_program_indexer.is_tx_in_db = MagicMock(return_value=True)
+
+    mock_transactions_history = {
+        "result": [
+            {"slot": 3, "signature": "sig3"},
+            {"slot": 2, "signature": "sig2"},
+            {"slot": 1, "signature": "sig1"},
+            {"slot": 0, "signature": "intersection"},
+        ]
+    }
+    solana_client_manager_mock.get_signatures_for_address.return_value = (
+        mock_transactions_history
+    )
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [
+        list(map(lambda x: x["signature"], mock_transactions_history["result"][:-1]))
+    ]
+
+
+def test_get_transaction_batches_to_process_empty_batch(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+
+    mock_transactions_history = {"result": []}
+    solana_client_manager_mock.get_signatures_for_address.return_value = (
+        mock_transactions_history
+    )
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [[]]
+
+
+def test_get_transaction_batches_to_process_interslot_batch(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+    anchor_program_indexer.is_tx_in_db = MagicMock(return_value=True)
+
+    mock_first_transactions_history = {
+        "result": [{"slot": 3, "signature": "sig3"}] * 500
+        + [{"slot": 2, "signature": "sig2"}] * 500
+    }
+    mock_second_transactions_history = {
+        "result": [{"slot": 2, "signature": "sig2"}] * 500
+        + [{"slot": 1, "signature": "sig1"}]
+        + [{"slot": 0, "signature": "intersection"}]
+    }
+
+    solana_client_manager_mock.get_signatures_for_address.side_effect = [
+        mock_first_transactions_history,
+        mock_second_transactions_history,
+    ]
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [["sig1"], ["sig2"] * 1000, ["sig3"] * 500]
+
+
+def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
     )
 
     TEST_TX_HASH = "3EvzmLSZekcQn3zEGFUkaoXej9nUrwkomyTpu9PRBaJJDAtzFQ3woYuGmnLHrqY6kZJtxamqCgeu17euyGp3EN4W"
@@ -49,6 +156,8 @@ def test_validate_and_save_parsed_tx_records(app):
         redis = get_redis()
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
         ADMIN_STORAGE_PUBLIC_KEY,
@@ -56,10 +165,19 @@ def test_validate_and_save_parsed_tx_records(app):
         redis,
         db,
         solana_client_manager_mock,
+        cid_metadata_client_mock,
     )
     processed_transactions = [
-        {"tx_sig": "test_sig1", "result": {"slot": 1}},
-        {"tx_sig": "test_sig2", "result": {"slot": 2}},
+        {
+            "tx_sig": "test_sig1",
+            "tx_metadata": {"instructions": []},
+            "result": {"slot": 1, "meta": {"err": None}},
+        },
+        {
+            "tx_sig": "test_sig2",
+            "tx_metadata": {"instructions": []},
+            "result": {"slot": 2, "meta": {"err": None}},
+        },
     ]
     anchor_program_indexer.validate_and_save_parsed_tx_records(
         processed_transactions, {}
@@ -71,12 +189,20 @@ def test_validate_and_save_parsed_tx_records(app):
             )
 
 
-def test_parse_tx(app):
+def test_parse_tx(app, mocker):
     with app.app_context():
         db = get_db()
         redis = get_redis()
 
+    mocker.patch(
+        "src.solana.anchor_program_indexer.AnchorProgramIndexer.is_valid_instruction",
+        return_value=True,  # return true because admin differs
+        autospec=True,
+    )
+
     solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
     anchor_program_indexer = AnchorProgramIndexer(
         PROGRAM_ID,
@@ -85,6 +211,7 @@ def test_parse_tx(app):
         redis,
         db,
         solana_client_manager_mock,
+        cid_metadata_client_mock,
     )
     resp = asyncio.run(
         anchor_program_indexer.parse_tx(
@@ -109,6 +236,86 @@ def test_parse_tx(app):
     assert str(base) == "DUvTEvu2WHLWstwgn38S5fCpE23L8yd36WDKxYoAHHax"
     assert str(authority) == "HEpbkzohyMFbc2cQ4KPRbXRUVbgFW3uVrHaKPdMD6pqJ"
     assert owner_eth_address_hex == "0x25A3Acd4758Ab107ea0Bd739382B8130cD1F204d"
+
+
+def test_is_valid_instruction(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+
+    parsed_instruction = {
+        "account_names_map": {"admin": ADMIN_STORAGE_PUBLIC_KEY},
+        "instruction_name": "init_admin",
+    }
+    resp = anchor_program_indexer.is_valid_instruction(parsed_instruction)
+
+    assert resp == True
+
+
+@pytest.mark.asyncio
+async def test_fetch_metadata(app, mocker):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    populate_mock_db(db, basic_entities, block_offset=3)
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+
+    cid_metadata_client_mock.async_fetch_metadata_from_gateway_endpoints.return_value = (
+        mock_cid_metadata
+    )
+
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    parsed_tx = {
+        "tx_metadata": {
+            "instructions": [
+                {
+                    "instruction_name": "init_user",
+                    "data": Container([("metadata", mock_cid), ("user_id", 1)]),
+                }
+            ]
+        },
+        "tx_sig": "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV",
+    }
+    mock_parsed_transactions = [parsed_tx]
+    cid_metadata, blacklisted_cids = await anchor_program_indexer.fetch_cid_metadata(
+        mock_parsed_transactions
+    )
+
+    assert cid_metadata == mock_cid_metadata
+
+
+basic_entities = {
+    "users": [
+        {
+            "user_id": 1,
+            "is_current": True,
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+        }
+    ],
+}
 
 
 """
@@ -165,4 +372,28 @@ mock_tx_info = {
         ],
     },
     "id": 1,
+}
+
+mock_cid = "QmyEHHWXbES1nOUBIM89eYfsmM25r3Cw7iBpFZyZ9lbfRS"
+mock_cid_metadata = {
+    mock_cid: {
+        "is_creator": False,
+        "is_verified": False,
+        "is_deactivated": False,
+        "name": "test user name",
+        "handle": "test_handle",
+        "profile_picture": None,
+        "profile_picture_sizes": "QmProfilePictures",
+        "cover_photo": None,
+        "cover_photo_sizes": None,
+        "bio": None,
+        "location": None,
+        "creator_node_endpoint": "https://creatornode3.audius.co,https://creatornode2.audius.co,https://content-node.audius.co",
+        "associated_wallets": None,
+        "associated_sol_wallets": None,
+        "collectibles": None,
+        "playlist_library": None,
+        "events": None,
+        "user_id": 1,
+    }
 }

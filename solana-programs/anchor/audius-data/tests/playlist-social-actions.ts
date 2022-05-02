@@ -21,34 +21,34 @@ const { SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("playlist-actions", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
 
   it("playlist actions - Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair])
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
 
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
     if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
       console.log(
@@ -63,11 +63,11 @@ describe("playlist-actions", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
   });
 
   it("Initializing Content Node accounts!", async function () {
@@ -75,21 +75,21 @@ describe("playlist-actions", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     contentNodes["1"] = cn1;
@@ -98,22 +98,22 @@ describe("playlist-actions", function () {
   });
 
   it("Delete save for a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = deletePlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
 
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
 
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -122,8 +122,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteSave
@@ -134,21 +133,21 @@ describe("playlist-actions", function () {
   });
 
   it("Save a newly created playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = addPlaylistSave({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
 
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -157,8 +156,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addSave
@@ -169,21 +167,21 @@ describe("playlist-actions", function () {
   });
 
   it("Repost a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = addPlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
 
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
@@ -192,8 +190,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.addRepost
@@ -204,21 +201,21 @@ describe("playlist-actions", function () {
   });
 
   it("Delete repost for a playlist", async function () {
-    const user = await createSolanaUser(program, provider, adminStorageKeypair);
+    const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
     const tx = deletePlaylistRepost({
       program,
       baseAuthorityAccount: user.authority,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
-      userStorageAccountPDA: user.pda,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
+      userAccount: user.accountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityPublicKey: user.keypair.publicKey,
       userId: user.userId,
       bumpSeed: user.bumpSeed,
       id: randomString(10),
     });
-    const txSignature = await provider.send(tx, [user.keypair])
+    const txSignature = await provider.sendAndConfirm(tx, [user.keypair]);
     const info = await getTransaction(provider, txSignature);
     const instructionCoder = program.coder.instruction as BorshInstructionCoder;
     const decodedInstruction = instructionCoder.decode(
@@ -226,8 +223,7 @@ describe("playlist-actions", function () {
       "base58"
     );
     const userIdSeed = user.userId;
-    const instructionUserId =
-      decodedInstruction.data.userIdSeedBump.userId;
+    const instructionUserId = decodedInstruction.data.userIdSeedBump.userId;
     assert.equal(instructionUserId, userIdSeed);
     expect(decodedInstruction.data.entitySocialAction).to.deep.equal(
       EntitySocialActionEnumValues.deleteRepost

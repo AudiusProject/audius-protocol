@@ -16,7 +16,7 @@ from src.models import (
 )
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
+    FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
@@ -383,7 +383,7 @@ def get_transaction_signatures(
         latest_processed_slot = get_latest_slot(session)
         while not intersection_found:
             transactions_history = solana_client_manager.get_signatures_for_address(
-                program, before=last_tx_signature, limit=TX_SIGNATURES_BATCH_SIZE
+                program, before=last_tx_signature, limit=FETCH_TX_SIGNATURES_BATCH_SIZE
             )
 
             transactions_array = transactions_history["result"]

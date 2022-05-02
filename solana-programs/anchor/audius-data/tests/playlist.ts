@@ -3,7 +3,12 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, randomCID, randomId, convertBNToUserIdSeed } from "../lib/utils";
+import {
+  findDerivedPair,
+  randomCID,
+  randomId,
+  convertBNToUserIdSeed,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
@@ -21,18 +26,18 @@ const { SystemProgram } = anchor.web3;
 chai.use(chaiAsPromised);
 
 describe("playlists", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStorageKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
   const getURSMParams = () => {
@@ -47,23 +52,23 @@ describe("playlists", function () {
         contentNodes["2"].seedBump.bump,
         contentNodes["3"].seedBump.bump,
       ],
-      cn1: contentNodes["1"].pda,
-      cn2: contentNodes["2"].pda,
-      cn3: contentNodes["3"].pda,
+      cn1: contentNodes["1"].accountAddress,
+      cn2: contentNodes["2"].accountAddress,
+      cn3: contentNodes["3"].accountAddress,
     };
   };
   it("Initializing admin account!", async function () {
-    let tx = initAdmin({
+    const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
 
-    await provider.send(tx, [adminStorageKeypair])
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStorageKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
 
     const chainAuthority = adminAccount.authority.toString();
@@ -77,21 +82,21 @@ describe("playlists", function () {
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
       adminKeypair,
-      adminStorageKeypair,
+      adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     contentNodes["1"] = cn1;
@@ -105,10 +110,10 @@ describe("playlists", function () {
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -120,8 +125,8 @@ describe("playlists", function () {
       userId,
       bumpSeed,
       metadata,
-      userStorageAccount: newUserAcctPDA,
-      adminStorageKeypair,
+      userAccount: userAccountAddress,
+      adminAccountKeypair,
       adminKeypair,
       ...getURSMParams(),
     });
@@ -139,7 +144,7 @@ describe("playlists", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      newUserAcctPDA,
+      userAccount: userAccountAddress,
     });
 
     const playlistMetadata = randomCID();
@@ -154,10 +159,10 @@ describe("playlists", function () {
       id: playlistID,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwnerPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      playlistOwner: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -175,10 +180,10 @@ describe("playlists", function () {
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
+        adminAccount: adminAccountKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
@@ -190,27 +195,26 @@ describe("playlists", function () {
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       id: playlistID,
-      userStorageAccountPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      userAccount: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedPlaylistMetadata,
     });
   });
 
   it("creating + deleting a playlist", async function () {
-    const { ethAccount, metadata, userId } =
-      initTestConstants();
+    const { ethAccount, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -218,11 +222,11 @@ describe("playlists", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -241,9 +245,8 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userId,
-      userStorageAccount: newUserAcctPDA,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userAccount: userAccountAddress,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -256,41 +259,40 @@ describe("playlists", function () {
       id: playlistID,
       baseAuthorityAccount,
       userId,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       bumpSeed,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwnerPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      playlistOwner: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
     });
 
     await testDeletePlaylist({
       provider,
       program,
       id: playlistID,
-      playlistOwnerPDA: newUserAcctPDA,
-      userAuthorityDelegateAccountPDA: SystemProgram.programId,
-      authorityDelegationStatusAccountPDA: SystemProgram.programId,
+      playlistOwner: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
       userId,
       bumpSeed,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
     });
   });
 
   it("create multiple playlists in parallel", async function () {
-    const { ethAccount, metadata, userId } =
-      initTestConstants();
+    const { ethAccount, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStorageKeypair.publicKey,
+      adminAccountKeypair.publicKey,
       convertBNToUserIdSeed(userId)
     );
 
@@ -298,11 +300,11 @@ describe("playlists", function () {
     const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStorageAccount: adminStorageKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
 
-    await provider.send(updateAdminTx, [adminKeypair])
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -321,9 +323,8 @@ describe("playlists", function () {
       bumpSeed,
       metadata,
       newUserKeypair,
-      userId,
-      userStorageAccount: newUserAcctPDA,
-      adminStoragePublicKey: adminStorageKeypair.publicKey,
+      userAccount: userAccountAddress,
+      adminAccount: adminAccountKeypair.publicKey,
       ...getURSMParams(),
     });
 
@@ -338,13 +339,13 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -352,13 +353,13 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
@@ -366,13 +367,13 @@ describe("playlists", function () {
         baseAuthorityAccount,
         userId,
         bumpSeed,
-        adminStorageAccount: adminStorageKeypair.publicKey,
+        adminAccount: adminAccountKeypair.publicKey,
         id: randomId(),
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        userAuthorityDelegateAccountPDA: SystemProgram.programId,
-        authorityDelegationStatusAccountPDA: SystemProgram.programId,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
     ]);
     console.log(`Created 3 playlists in ${Date.now() - start}ms`);

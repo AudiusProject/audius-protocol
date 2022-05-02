@@ -5,13 +5,21 @@ const redisClient = require('./redis')
 
 // Processing fns
 const {
-  handleTrackContentRoute: trackContentUpload
+  handleTrackContentRoute: trackContentUpload,
+  handleTranscodeAndSegment: transcodeAndSegment,
+  handleTranscodeHandOff: transcodeHandOff
 } = require('./components/tracks/tracksComponentService')
+const {
+  processTranscodeAndSegments
+} = require('./components/tracks/trackContentUploadManager')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION_SECONDS = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
-  trackContentUpload: 'trackContentUpload'
+  trackContentUpload: 'trackContentUpload',
+  transcodeAndSegment: 'transcodeAndSegment',
+  processTranscodeAndSegments: 'processTranscodeAndSegments',
+  transcodeHandOff: 'transcodeHandOff'
 })
 const PROCESS_STATES = Object.freeze({
   IN_PROGRESS: 'IN_PROGRESS',
@@ -27,7 +35,7 @@ const PROCESS_STATES = Object.freeze({
  */
 
 class AsyncProcessingQueue {
-  constructor() {
+  constructor(libs) {
     this.queue = new Bull('asyncProcessing', {
       redis: {
         host: config.get('redisHost'),
@@ -39,22 +47,49 @@ class AsyncProcessingQueue {
       }
     })
 
+    this.libs = libs
+
     this.queue.process(MAX_CONCURRENCY, async (job, done) => {
       const { logContext, task } = job.data
 
       const func = this.getFn(task)
 
-      try {
-        const response = await this.monitorProgress(task, func, job.data)
-        done(null, { response })
-      } catch (e) {
-        this.logError(
-          `Could not process taskType=${task} uuid=${
-            logContext.requestID
-          }: ${e.toString()}`,
-          logContext
-        )
-        done(e.toString())
+      if (task === PROCESS_NAMES.transcodeHandOff) {
+        const { transcodeFilePath, segmentFileNames, sp } =
+          await this.monitorProgress(task, transcodeHandOff, job.data)
+
+        if (!transcodeFilePath || !segmentFileNames) {
+          this.logStatus(
+            'Failed to hand off transcode. Retrying upload to current node..'
+          )
+          await this.addTrackContentUploadTask({
+            logContext,
+            req: job.data.req
+          })
+          done(null, {})
+        } else {
+          this.logStatus(
+            `Succesfully handed off transcoding and segmenting to sp=${sp}. Wrapping up remainder of track association..`
+          )
+          await this.addProcessTranscodeAndSegmentTask({
+            logContext,
+            req: { ...job.data.req, transcodeFilePath, segmentFileNames }
+          })
+          done(null, { response: { transcodeFilePath, segmentFileNames } })
+        }
+      } else {
+        try {
+          const response = await this.monitorProgress(task, func, job.data)
+          done(null, { response })
+        } catch (e) {
+          this.logError(
+            `Could not process taskType=${task} uuid=${
+              logContext.requestID
+            }: ${e.toString()}`,
+            logContext
+          )
+          done(e.toString())
+        }
       }
     })
 
@@ -91,6 +126,21 @@ class AsyncProcessingQueue {
     return this.addTask(params)
   }
 
+  async addTranscodeAndSegmentTask(params) {
+    params.task = PROCESS_NAMES.transcodeAndSegment
+    return this.addTask(params)
+  }
+
+  async addProcessTranscodeAndSegmentTask(params) {
+    params.task = PROCESS_NAMES.processTranscodeAndSegments
+    return this.addTask(params)
+  }
+
+  async addTranscodeHandOffTask(params) {
+    params.task = PROCESS_NAMES.transcodeHandOff
+    return this.addTask(params)
+  }
+
   async addTask(params) {
     const { logContext, task } = params
 
@@ -113,15 +163,30 @@ class AsyncProcessingQueue {
    */
   getFn(task) {
     switch (task) {
+      // Called via /track_content_async route (runs on primary)
       case PROCESS_NAMES.trackContentUpload:
         return trackContentUpload
+
+      // Called via /transcode_and_segment (running on node that has been handed off track)
+      case PROCESS_NAMES.transcodeAndSegment:
+        return transcodeAndSegment
+
+      // Part 1 of transcode handoff flow - called via /track_content_async if currentNodeShouldHandleTranscode = false (runs on primary)
+      case PROCESS_NAMES.transcodeHandOff:
+        return transcodeHandOff
+
+      // Part 2 of transcode handoff flow - called by process function in this queue after transcodeHandoff successfully runs (runs on primary)
+      case PROCESS_NAMES.processTranscodeAndSegments:
+        return processTranscodeAndSegments
+
       default:
         return null
     }
   }
 
   /**
-   * Processes the input function and adds the response to redis.
+   * Processes the input function and adds the response to redis. Tasks will either be in a
+   * IN_PROGRESS, DONE, or FAILED state.
    * @param {string} task a process in PROCESS_NAMES
    * @param {function} func the processing fn
    * @param {Object} param
@@ -144,7 +209,7 @@ class AsyncProcessingQueue {
 
     let response
     try {
-      response = await func({ logContext }, req)
+      response = await func({ logContext }, { ...req, libs: this.libs })
       state = { task, status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(`Successful ${task}, uuid=${uuid}`, logContext)
       await redisClient.set(
@@ -172,16 +237,53 @@ class AsyncProcessingQueue {
     return response
   }
 
+  /**
+   * Given the jobs, create a count of the type of tasks.
+   * @param {Object} jobs jobs returned from the queue
+   * @returns {Object} the number of jobs per task
+   * Example response:
+   *
+   * {
+   *    trackContentUpload: 1,
+   *    transcodeAndSegment: 4,
+   *    processTranscodeAndSegments: 0,
+   *    transcodeHandOff: 2
+   *    total: 7
+   * }
+   *
+   */
+  getTasks(jobs) {
+    const response = {
+      trackContentUpload: 0,
+      transcodeAndSegment: 0,
+      processTranscodeAndSegments: 0,
+      transcodeHandOff: 0
+    }
+
+    jobs.forEach((job) => {
+      response[job.data.task] += 1
+    })
+
+    response.total = jobs.length
+
+    return response
+  }
+
   async getAsyncProcessingQueueJobs() {
     const queue = this.queue
-    const [waiting, active] = await Promise.all([
+    const [waiting, active, failed] = await Promise.all([
       queue.getJobs(['waiting']),
-      queue.getJobs(['active'])
+      queue.getJobs(['active']),
+      queue.getJobs(['failed'])
     ])
-    return {
-      waiting: waiting.length,
-      active: active.length
+
+    const allTasks = {
+      waiting: this.getTasks(waiting),
+      active: this.getTasks(active),
+      failed: this.getTasks(failed)
     }
+
+    return allTasks
   }
 
   constructAsyncProcessingKey(uuid) {
