@@ -231,7 +231,7 @@ class SolanaProgramIndexer(IndexerBase):
                     for tx in transactions_array:
                         if tx["slot"] > latest_processed_slot:
                             unindexed_transactions.append(tx)
-                        elif tx["slot"] <= latest_processed_slot:
+                        else:
                             # Check the tx signature for any txs in the latest batch,
                             # and if not present in DB, add to processing
                             self.msg(
@@ -249,8 +249,9 @@ class SolanaProgramIndexer(IndexerBase):
                             # Otherwise, ensure this transaction is still processed
                             unindexed_transactions.append(tx)
                 # Restart processing at the end of this transaction signature batch
-                last_tx = unindexed_transactions[-1]
-                last_tx_signature = last_tx["signature"]
+                if unindexed_transactions: 
+                    last_tx = unindexed_transactions[-1]
+                    last_tx_signature = last_tx["signature"]
 
                 # TODO: Add Caching
                 # Append to recently seen cache

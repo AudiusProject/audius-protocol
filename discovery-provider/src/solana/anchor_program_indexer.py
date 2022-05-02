@@ -32,7 +32,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     def __init__(
         self,
         program_id: str,
-        admin_storage_public_key: str,
+        admin_address: str,
         label: str,
         redis: Redis,
         db: SessionManager,
@@ -41,7 +41,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
     ):
         super().__init__(program_id, label, redis, db, solana_client_manager)
         self.anchor_parser = AnchorParser(AUDIUS_DATA_IDL_PATH, program_id)
-        self.admin_storage_public_key = admin_storage_public_key
+        self.admin_address = admin_address
         self.cid_metadata_client = cid_metadata_client
 
         # TODO fill out the rest
@@ -109,6 +109,17 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 )
                 for user in existing_users:
                     db_models["users"][user.user_id] = [user]
+            if entity_ids["tracks"]:
+                existing_tracks = (
+                    session.query(Track)
+                    .filter(
+                        Track.is_current,
+                        Track.track_id.in_(list(entity_ids["tracks"])),
+                    )
+                    .all()
+                )
+                for track in existing_tracks:
+                    db_models["tracks"][track.track_id] = [track]
 
             # TODO: Find all other track/playlist/etc. models
 
@@ -212,7 +223,10 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "update_is_verified":
                     pass
                 elif instruction_name == "manage_entity":
-                    pass
+                    id = instruction["data"]["id"]
+                    entity_type = instruction["data"]["entity_type"]
+                    if isinstance(entity_type, entity_type.Track):
+                        entities["tracks"].add(id)
                 elif instruction_name == "create_content_node":
                     pass
                 elif instruction_name == "public_create_or_update_content_node":
@@ -249,6 +263,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         tx_instructions = []
         for instruction in tx.instructions:
             parsed_instruction = self.anchor_parser.parse_instruction(instruction)
+            self.msg(f"isaac parsed_instruction {parsed_instruction}")
+
             if self.is_valid_instruction(parsed_instruction):
                 tx_instructions.append(parsed_instruction)
 
@@ -269,24 +285,35 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         if "admin" in parsed_instruction["account_names_map"]:
             if (
                 parsed_instruction["account_names_map"]["admin"]
-                != self.admin_storage_public_key
+                != self.admin_address
             ):
                 return False
 
         # check create track
-        if parsed_instruction["instruction_name"] == "manage_entity":
-            entity_type = parsed_instruction["data"]["entity_type"]
-            if entity_type.Track == type(entity_type):
-                track_id = parsed_instruction["data"]["id"]
-                with self.db.scoped_session() as session:
-                    track_exists = (
-                        session.query(Track.track_id)
-                        .filter(Track.track_id == track_id)
-                        .first()
-                        is not None
-                    )
-                    if track_exists:
-                        return False
+        # TODO pass existing records from upstream and validate
+
+        # if parsed_instruction["instruction_name"] == "manage_entity":
+        #     entity_type = instruction_data["entity_type"]
+        #     if entity_type.Track == type(entity_type):
+        #         track_id = instruction_data["id"]
+        #         with self.db.scoped_session() as session:
+        #             # track_exists = (
+        #             #     session.query(Track.track_id)
+        #             #     .filter(Track.track_id == track_id)
+        #             #     .first()
+        #             #     is not None
+        #             # )
+        #             track_exists = True
+        #             management_action = instruction_data["management_action"]
+        #             if track_exists and (
+        #                 isinstance(management_action, management_action.Create)
+        #             ):
+        #                 return False
+        #             elif not track_exists and (
+        #                 isinstance(management_action, management_action.Update)
+        #                 or isinstance(management_action, management_action.Delete)
+        #             ):
+        #                 return False
 
         # TODO update entity
         # check if user owns track
@@ -374,7 +401,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     .all()
                 )
             )
-
         metadata_dict = (
             await self.cid_metadata_client.async_fetch_metadata_from_gateway_endpoints(
                 cids_txhash_set,

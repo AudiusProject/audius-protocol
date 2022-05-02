@@ -255,10 +255,13 @@ def handle_manage_entity(
     instruction_data: ManageEntityData = instruction["data"]
     management_action = instruction_data["management_action"]
     entity_type = instruction_data["entity_type"]
+    slot = transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
 
-    if management_action.Create == type(
-        management_action
-    ) and entity_type.Track == type(entity_type):
+
+    if isinstance(management_action, management_action.Create) and isinstance(
+        entity_type, entity_type.Track
+    ):
         track_id = instruction_data["id"]
 
         track = Track(
@@ -277,6 +280,33 @@ def handle_manage_entity(
         # TODO update stems, remixes, challenge
         records.append(track)
         db_models["tracks"][track_id].append(track)
+    elif isinstance(management_action, management_action.Update) and isinstance(
+        entity_type, entity_type.Track
+    ):
+        txhash = transaction["tx_sig"]
+        instruction_data = instruction.get("data")
+        id = instruction_data["id"]
+
+        track_record = db_models["tracks"].get(id)[-1]
+
+        # Clone new record
+        new_track_record = clone_model(track_record)
+
+        for prior_record in db_models["tracks"][id]:
+            prior_record.is_current = False
+        new_track_record.track_id = id
+        new_track_record.txhash = txhash
+        new_track_record.slot = slot
+        new_track_record.is_current = True
+        track_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
+        update_track_model_metadata(session, new_track_record, track_metadata)
+
+        # Append record to save
+        records.append(new_track_record)
+
+        # Append most recent record
+        db_models["tracks"][id].append(new_track_record)
+
 
 
 def handle_create_content_node(
