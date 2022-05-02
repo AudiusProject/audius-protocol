@@ -21,7 +21,7 @@ const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
 
-const DEFAULT_AXIOS_TIMEOUT_MS = 60_000 // 10s
+const DEFAULT_AXIOS_TIMEOUT_MS = 60_000 // 60s
 
 class PeerSetManager {
   constructor({
