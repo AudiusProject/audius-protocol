@@ -265,7 +265,10 @@ def get_feed_es(args, limit=10):
         item["followee_saves"] = follow_saves[item["item_key"]]
 
     # populate metadata + remove extra fields from items
-    [populate_track_or_playlist_metadata_es(item, current_user) for item in sorted_feed]
+    sorted_feed = [
+        populate_track_or_playlist_metadata_es(item, current_user)
+        for item in sorted_feed
+    ]
 
     return sorted_feed[0:limit]
 
