@@ -46,7 +46,7 @@ jobs:
             npm install --unsafe-perm
             
             # this is || true because exit code returns 141, we need to progress even if we get 141
-            yes | A setup remote-dev $GCLOUD_VM_NAME || true
+            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME || true
             # if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
       
             # Run A up on remote box
