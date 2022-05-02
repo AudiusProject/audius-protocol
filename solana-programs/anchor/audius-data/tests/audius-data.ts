@@ -48,7 +48,7 @@ describe("audius-data", function () {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminAuthorityKeypair = anchor.web3.Keypair.generate();
   const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
@@ -74,7 +74,7 @@ describe("audius-data", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -88,7 +88,7 @@ describe("audius-data", function () {
 
     expect(decodedInstruction.name).to.equal("initAdmin");
     expect(decodedData.authority.toString()).to.equal(
-      adminKeypair.publicKey.toString()
+      adminAuthorityKeypair.publicKey.toString()
     );
     expect(decodedData.verifier.toString()).to.equal(
       verifierKeypair.publicKey.toString()
@@ -103,7 +103,7 @@ describe("audius-data", function () {
     );
 
     const chainAuthority = adminAccount.authority.toString();
-    const expectedAuthority = adminKeypair.publicKey.toString();
+    const expectedAuthority = adminAuthorityKeypair.publicKey.toString();
     expect(chainAuthority, "authority").to.equal(expectedAuthority);
     expect(adminAccount.isWriteEnabled, "is_write_enabled").to.equal(true);
   });
@@ -112,21 +112,21 @@ describe("audius-data", function () {
     const cn1 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(3),
     });
@@ -158,7 +158,7 @@ describe("audius-data", function () {
       metadata,
       userAccount,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
   });
@@ -186,7 +186,7 @@ describe("audius-data", function () {
       metadata,
       userAccount,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
 
@@ -240,7 +240,7 @@ describe("audius-data", function () {
       metadata,
       userAccount,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
 
@@ -286,7 +286,7 @@ describe("audius-data", function () {
       metadata,
       userAccount,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
 
@@ -353,7 +353,7 @@ describe("audius-data", function () {
       metadata,
       userAccount,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
 
@@ -449,7 +449,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: true,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates
@@ -495,7 +495,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates
@@ -541,10 +541,10 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
-    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
+    await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -592,7 +592,7 @@ describe("audius-data", function () {
 
   it("Adding/removing delegate authority (update user)", async function () {
     const userDelegate = await testCreateUserDelegate({
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair: adminAccountKeypair,
       program,
       provider,
@@ -679,7 +679,7 @@ describe("audius-data", function () {
 
   it("Revoking authority delegation status", async function () {
     const userDelegate = await testCreateUserDelegate({
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       program,
       provider,
@@ -752,14 +752,14 @@ describe("audius-data", function () {
 
   it("delegate adds/removes another delegate", async function () {
     const firstUserDelegate = await testCreateUserDelegate({
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       program,
       provider,
     });
 
     const secondUserDelegate = await testCreateUserDelegate({
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       program,
       provider,
@@ -848,7 +848,7 @@ describe("audius-data", function () {
       metadata,
       userAccount,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
 
@@ -992,7 +992,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -1067,7 +1067,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates
@@ -1255,7 +1255,7 @@ describe("audius-data", function () {
 
     // use different user authority delegate PDA
     const badUserDelegate = await testCreateUserDelegate({
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair: adminAccountKeypair,
       program,
       provider,
@@ -1333,7 +1333,7 @@ describe("audius-data", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
     // New sol key that will be used to permission user updates

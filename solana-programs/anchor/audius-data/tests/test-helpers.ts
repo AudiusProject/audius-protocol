@@ -65,7 +65,7 @@ export const testInitUser = async ({
   metadata,
   userAccount,
   adminAccountKeypair,
-  adminKeypair,
+  adminAuthorityKeypair,
   replicaSet,
   replicaSetBumps,
   cn1,
@@ -84,12 +84,12 @@ export const testInitUser = async ({
     userAccount,
     baseAuthorityAccount,
     adminAccount: adminAccountKeypair.publicKey,
-    adminAuthorityPublicKey: adminKeypair.publicKey,
+    adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
     cn1,
     cn2,
     cn3,
   });
-  const txSignature = await provider.sendAndConfirm(tx, [adminKeypair]);
+  const txSignature = await provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
   const account = await program.account.user.fetch(userAccount);
 
@@ -474,7 +474,7 @@ export const testUpdatePlaylist = async ({
 };
 
 export const testCreateUserDelegate = async ({
-  adminKeypair,
+  adminAuthorityKeypair,
   adminAccountKeypair,
   program,
   provider,
@@ -484,9 +484,9 @@ export const testCreateUserDelegate = async ({
     program,
     isWriteEnabled: false,
     adminAccount: adminAccountKeypair.publicKey,
-    adminAuthorityKeypair: adminKeypair,
+    adminAuthorityKeypair: adminAuthorityKeypair,
   });
-  await provider.sendAndConfirm(udpateAdminTx, [adminKeypair]);
+  await provider.sendAndConfirm(udpateAdminTx, [adminAuthorityKeypair]);
 
   const user = await createSolanaUser(program, provider, adminAccountKeypair);
 
@@ -711,7 +711,7 @@ export const createSolanaContentNode = async (props: {
   program: Program<AudiusData>;
   provider: anchor.Provider;
   adminAccountKeypair: anchor.web3.Keypair;
-  adminKeypair: anchor.web3.Keypair;
+  adminAuthorityKeypair: anchor.web3.Keypair;
   spId: anchor.BN;
 }) => {
   const ownerEth = EthWeb3.eth.accounts.create();
@@ -728,7 +728,7 @@ export const createSolanaContentNode = async (props: {
   const tx = createContentNode({
     payer: props.provider.wallet.publicKey,
     program: props.program,
-    adminAuthorityPublicKey: props.adminKeypair.publicKey,
+    adminAuthorityPublicKey: props.adminAuthorityKeypair.publicKey,
     baseAuthorityAccount,
     adminAccount: props.adminAccountKeypair.publicKey,
     contentNodeAuthority: authority.publicKey,
@@ -737,7 +737,7 @@ export const createSolanaContentNode = async (props: {
     ownerEthAddress: ownerEth.address,
   });
   const txSignature = await props.provider.sendAndConfirm(tx, [
-    props.adminKeypair,
+    props.adminAuthorityKeypair,
   ]);
 
   const contentNode = await props.program.account.contentNode.fetch(

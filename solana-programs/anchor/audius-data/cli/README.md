@@ -19,27 +19,27 @@ Output:
 
 ```
 Initializing admin
-AdminKeypair:
+AdminAuthorityKeypair:
 5wVFf9KXRhkxZXr7cGeeNT5yrz5mX4YXvYMXe9quaYu5
 [197,98,127,...]
-echo "[197,98,127,...]" > adminKeypair.json
+echo "[197,98,127,...]" > adminAuthorityKeypair.json
 adminStorageKeypair:
 3oQQ3XNjSyiBR5m8gbSTMiZJYKyQrowqz2FqKEa3yUyB
 [196,4,5,...]
-echo "196,4,5,..." > adminStorageKeypair.json
+echo "196,4,5,..." > adminAccountKeypair.json
 initAdmin Tx = 46wLJrPPwDjXJeeZU37eDM2h7kUSGDMzEiz23BvZvtYjpU2uQW2SFEtrqki4YkBjgVZ7dsdvf8nFKY2qF7pdGqSX
 Admin: 5wVFf9KXRhkxZXr7cGeeNT5yrz5mX4YXvYMXe9quaYu5
 AdminStorage 3oQQ3XNjSyiBR5m8gbSTMiZJYKyQrowqz2FqKEa3yUyB
 AdminAccount (from Chain) 5wVFf9KXRhkxZXr7cGeeNT5yrz5mX4YXvYMXe9quaYu5
 ```
 
-Now, you can use the `echo [...] > adminKeypair.json` and `echo [...] > adminStorageKeypair.json` to write these accounts to local filesystem (or your pair of choice)
+Now, you can use the `echo [...] > adminAuthorityKeypair.json` and `echo [...] > adminAccountKeypair.json` to write these accounts to local filesystem (or your pair of choice)
 
 What are these 2 accounts?
 
-    - adminKeypair - the Account required to sign administrative operations within the protocol
+    - adminAuthorityKeypair - the Account required to sign administrative operations within the protocol
 
-    - adminStorageKeypair - the Account where administrative info is stored on chain, includes various metadata such as global track ID nonce (to be expanded). This account has a reference to the adminKeypair
+    - adminStorageKeypair - the Account where administrative info is stored on chain, includes various metadata such as global track ID nonce (to be expanded). This account has a reference to the adminAuthorityKeypair
 
 ## 2. Initializing a user account from administrator
 
@@ -48,8 +48,8 @@ For a user with userId=1 and ethereum public key = `0x0a93d8cb0Be85B3Ea8f33FA635
 ```
 yarn run ts-node cli/main.ts -f initUser \
 -k ~/.config/solana/id.json \
---admin-keypair $PWD/adminKeypair.json \
---admin-storage-keypair $PWD/adminStorageKeypair.json \
+--admin-authority-keypair $PWD/adminAuthorityKeypair.json \
+--admin-storage-keypair $PWD/adminAccountKeypair.json \
 --user-id 1 \
 -e 0x0a93d8cb0Be85B3Ea8f33FA63500D118deBc83F7 # this value is hard-coded
 ```
@@ -80,7 +80,7 @@ Execute the command using the returned user account from earlier (`BmBwwWjcSduP7
 yarn run ts-node cli/main.ts -f initUserSolPubkey \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
---admin-storage-keypair $PWD/adminStorageKeypair.json \
+--admin-storage-keypair $PWD/adminAccountKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
 --eth-private-key d540ca11a0d12345f512e65e00bf8bf87435aa40b3731cbf0322971709eba60f
 ```
@@ -93,7 +93,7 @@ yarn run ts-node cli/main.ts -f createTrack \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---admin-storage-keypair $PWD/adminStorageKeypair.json \
+--admin-storage-keypair $PWD/adminAccountKeypair.json \
 --user-id 1
 ```
 
@@ -106,7 +106,7 @@ yarn run ts-node cli/main.ts -f createPlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---admin-storage-keypair $PWD/adminStorageKeypair.json \
+--admin-storage-keypair $PWD/adminAccountKeypair.json \
 --user-id 1
 ```
 
@@ -120,7 +120,7 @@ yarn run ts-node cli/main.ts -f updatePlaylist \
 -k ~/.config/solana/id.json \
 --user-solana-keypair $PWD/userKeypair.json \
 --user-storage-pubkey $USER_STORAGE_PUBKEY \
---admin-storage-keypair $PWD/adminStorageKeypair.json \
+--admin-storage-keypair $PWD/adminAccountKeypair.json \
 --id "$PLAYLIST_ID" \
 --user-id 1
 ```

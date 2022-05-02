@@ -30,7 +30,7 @@ describe("replicaSet", function () {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminAuthorityKeypair = anchor.web3.Keypair.generate();
   const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
@@ -39,7 +39,7 @@ describe("replicaSet", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -50,10 +50,10 @@ describe("replicaSet", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
-    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
+    await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
   });
 
   it("Creates Content Node with the Admin account", async function () {
@@ -69,7 +69,7 @@ describe("replicaSet", function () {
     const tx = createContentNode({
       payer: provider.wallet.publicKey,
       program,
-      adminAuthorityPublicKey: adminKeypair.publicKey,
+      adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
       baseAuthorityAccount,
       adminAccount: adminAccountKeypair.publicKey,
       contentNodeAuthority: authority.publicKey,
@@ -77,7 +77,7 @@ describe("replicaSet", function () {
       spID,
       ownerEthAddress: ownerEth.address,
     });
-    await provider.sendAndConfirm(tx, [adminKeypair]);
+    await provider.sendAndConfirm(tx, [adminAuthorityKeypair]);
 
     const account = await program.account.contentNode.fetch(derivedAddress);
 
@@ -95,21 +95,21 @@ describe("replicaSet", function () {
     const cn2 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(3),
     });
     const cn4 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(4),
     });
@@ -173,21 +173,21 @@ describe("replicaSet", function () {
     const cn6 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(6),
     });
     const cn7 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(7),
     });
     const cn8 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(8),
     });
@@ -357,14 +357,14 @@ describe("replicaSet", function () {
       );
 
     const initAudiusAdminBalance = await provider.connection.getBalance(
-      adminKeypair.publicKey
+      adminAuthorityKeypair.publicKey
     );
 
     const tx = publicDeleteContentNode({
       payer: provider.wallet.publicKey,
       program,
       baseAuthorityAccount,
-      adminAuthorityPublicKey: adminKeypair.publicKey,
+      adminAuthorityPublicKey: adminAuthorityKeypair.publicKey,
       adminAccount: adminAccountKeypair.publicKey,
       cnDelete: {
         pda: derivedAddress,
@@ -405,7 +405,7 @@ describe("replicaSet", function () {
       retries > 0
     ) {
       updatedAudiusAdminBalance = await provider.connection.getBalance(
-        adminKeypair.publicKey
+        adminAuthorityKeypair.publicKey
       );
       await new Promise((resolve) => setTimeout(resolve, 100));
       retries--;

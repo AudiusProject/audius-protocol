@@ -35,7 +35,7 @@ describe("track-actions", function () {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminAuthorityKeypair = anchor.web3.Keypair.generate();
   const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
 
@@ -43,7 +43,7 @@ describe("track-actions", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -53,12 +53,12 @@ describe("track-actions", function () {
     const adminAccount = await program.account.audiusAdmin.fetch(
       adminAccountKeypair.publicKey
     );
-    if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
+    if (!adminAccount.authority.equals(adminAuthorityKeypair.publicKey)) {
       console.log(
         "On chain retrieved admin info: ",
         adminAccount.authority.toString()
       );
-      console.log("Provided admin info: ", adminKeypair.publicKey.toString());
+      console.log("Provided admin info: ", adminAuthorityKeypair.publicKey.toString());
       throw new Error("Invalid returned values");
     }
 
@@ -67,31 +67,31 @@ describe("track-actions", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
-    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
+    await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
   });
 
   it("Initializing Content Node accounts!", async function () {
     contentNodes["1"] = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     contentNodes["2"] = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     contentNodes["3"] = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(3),
     });
@@ -200,7 +200,7 @@ describe("track-actions", function () {
 
   it("Delegate reposts a track", async function () {
     const userDelegate = await testCreateUserDelegate({
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair: adminAccountKeypair,
       program,
       provider,

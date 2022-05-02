@@ -36,7 +36,7 @@ describe("playlists", function () {
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
-  const adminKeypair = anchor.web3.Keypair.generate();
+  const adminAuthorityKeypair = anchor.web3.Keypair.generate();
   const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
   const contentNodes = {};
@@ -61,7 +61,7 @@ describe("playlists", function () {
     const tx = initAdmin({
       payer: provider.wallet.publicKey,
       program,
-      adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
       adminAccountKeypair,
       verifierKeypair,
     });
@@ -72,7 +72,7 @@ describe("playlists", function () {
     );
 
     const chainAuthority = adminAccount.authority.toString();
-    const expectedAuthority = adminKeypair.publicKey.toString();
+    const expectedAuthority = adminAuthorityKeypair.publicKey.toString();
     expect(chainAuthority, "authority").to.equal(expectedAuthority);
     expect(adminAccount.isWriteEnabled, "is_write_enabled").to.equal(true);
   });
@@ -81,21 +81,21 @@ describe("playlists", function () {
     const cn1 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(1),
     });
     const cn2 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(2),
     });
     const cn3 = await createSolanaContentNode({
       program,
       provider,
-      adminKeypair,
+      adminAuthorityKeypair,
       adminAccountKeypair,
       spId: new anchor.BN(3),
     });
@@ -127,7 +127,7 @@ describe("playlists", function () {
       metadata,
       userAccount: userAccountAddress,
       adminAccountKeypair,
-      adminKeypair,
+      adminAuthorityKeypair,
       ...getURSMParams(),
     });
 
@@ -223,10 +223,10 @@ describe("playlists", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
-    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
+    await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -301,10 +301,10 @@ describe("playlists", function () {
       program,
       isWriteEnabled: false,
       adminAccount: adminAccountKeypair.publicKey,
-      adminAuthorityKeypair: adminKeypair,
+      adminAuthorityKeypair: adminAuthorityKeypair,
     });
 
-    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
+    await provider.sendAndConfirm(updateAdminTx, [adminAuthorityKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();

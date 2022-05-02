@@ -19,7 +19,7 @@ const { SystemProgram, Transaction, Secp256k1Program } = anchor.web3;
 export type InitAdminParams = {
   payer: anchor.web3.PublicKey;
   program: Program<AudiusData>;
-  adminKeypair: Keypair;
+  adminAuthorityKeypair: Keypair;
   adminAccountKeypair: Keypair;
   verifierKeypair: Keypair;
 };
@@ -31,7 +31,7 @@ export type AudiusDataProgram = Program<AudiusData>;
 export const initAdmin = ({
   payer,
   program,
-  adminKeypair,
+  adminAuthorityKeypair,
   adminAccountKeypair,
   verifierKeypair,
 }: InitAdminParams) => {
@@ -39,7 +39,7 @@ export const initAdmin = ({
 
   tx.add(
     program.instruction.initAdmin(
-      adminKeypair.publicKey,
+      adminAuthorityKeypair.publicKey,
       verifierKeypair.publicKey,
       {
         accounts: {

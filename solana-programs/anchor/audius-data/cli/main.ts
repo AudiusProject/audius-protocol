@@ -214,8 +214,7 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
-          args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
         }`
       );
 
@@ -329,7 +328,7 @@ program
   .option("-f, --function <type>", "function to invoke")
   .option("-n, --network <string>", "solana network")
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
-  .option("-ak, --admin-keypair <keypair>", "admin keypair path")
+  .option("-ak, --admin-authority-keypair <keypair>", "admin authority keypair path")
   .option(
     "-aak, --admin-account-keypair <keypair>",
     "admin account keypair path"
@@ -381,7 +380,7 @@ const adminAuthorityKeypair = options.adminAuthorityKeypair
   ? keypairFromFilePath(options.adminAuthorityKeypair)
   : anchor.web3.Keypair.generate();
 
-// Admin storage keypair, referenced internally
+// Admin account keypair, referenced internally
 // Keypair technically only necessary the first time this is initialized
 const adminAccountKeypair = options.adminAccountKeypair
   ? keypairFromFilePath(options.adminAccountKeypair)
@@ -400,8 +399,8 @@ const verifierKeypair = options.verifierKeypair
 const network = options.network
   ? options.network
   : process.env.NODE_ENV === "production"
-  ? AUDIUS_PROD_RPC_POOL
-  : LOCALHOST_RPC_POOL;
+    ? AUDIUS_PROD_RPC_POOL
+    : LOCALHOST_RPC_POOL;
 
 const main = async () => {
   const cliVars = initializeCLI(network, options.ownerKeypair);
@@ -522,7 +521,10 @@ const main = async () => {
     case functionTypes.updateAdmin: {
       const writeEnabled = options.writeEnabled === "true";
 
-      console.log({ writeEnabled });
+      console.log(
+        cliVars.program.programId
+      );
+
       const tx = updateAdmin({
         program: cliVars.program,
         isWriteEnabled: Boolean(writeEnabled),
@@ -586,7 +588,7 @@ const main = async () => {
       const txHash = await cliVars.provider.sendAndConfirm(tx);
       await cliVars.provider.connection.confirmTransaction(txHash);
       console.log(
-        `createUserTx = ${txHash}, userStorageAccount = ${derivedAddress}`
+        `createUserTx = ${txHash}, userAccount = ${derivedAddress}`
       );
       break;
     }
