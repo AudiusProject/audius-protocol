@@ -4,9 +4,13 @@ import {
   Animated,
   FlatList as RNFlatList,
   FlatListProps as RNFlatListProps,
+  Platform,
+  RefreshControl,
   View
 } from 'react-native'
 import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
+
+import { useThemeColors } from 'app/utils/theme'
 
 import { CollapsibleTabNavigatorContext } from '../top-tab-bar'
 
@@ -21,8 +25,9 @@ type CollapsibleFlatListProps = {
 
 const CollapsibleFlatList = (props: CollapsibleFlatListProps) => {
   const { sceneName, ...other } = props
-  const { onRefresh } = other
+  const { refreshing, onRefresh } = other
   const scrollPropsAndRef = useCollapsibleScene(sceneName)
+  const { neutral } = useThemeColors()
   return (
     <View>
       {onRefresh ? <PullToRefresh /> : null}
@@ -34,6 +39,16 @@ const CollapsibleFlatList = (props: CollapsibleFlatListProps) => {
           scrollPropsAndRef.onScroll,
           props.onScroll
         )}
+        refreshControl={
+          Platform.OS === 'ios' ? undefined : (
+            <RefreshControl
+              progressViewOffset={scrollPropsAndRef.progressViewOffset}
+              refreshing={!!refreshing}
+              onRefresh={onRefresh ?? undefined}
+              colors={[neutral]}
+            />
+          )
+        }
       />
     </View>
   )
@@ -45,6 +60,7 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
     ref: MutableRefObject<RNFlatList<any> | null>
   ) {
     const scrollRef = useRef<Animated.FlatList>(null)
+    const { neutral } = useThemeColors()
 
     const {
       isRefreshing,
@@ -74,6 +90,15 @@ const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
         <Animated.FlatList
           {...other}
           scrollToOverflowEnabled
+          refreshControl={
+            Platform.OS === 'ios' ? undefined : (
+              <RefreshControl
+                refreshing={!!isRefreshing}
+                onRefresh={onRefresh ?? undefined}
+                colors={[neutral]}
+              />
+            )
+          }
           ref={ref || scrollRef}
           onScroll={handleScroll}
           onScrollBeginDrag={onScrollBeginDrag}
