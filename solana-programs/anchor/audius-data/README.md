@@ -104,3 +104,6 @@ Deploying program "audius-data"...
 Program path: /Users/hareeshnagaraj/Development/audius-protocol/solana-programs/anchor/audius-data/target/deploy/audius_data.so...
 Program Id: EoDXzUBiESoz9FEYdTScXgmfmzBKDRLVxgnNkFjpKtJc
 ```
+
+# Reference
+https://github.com/project-serum/anchor/blob/master/lang/src/error.rs

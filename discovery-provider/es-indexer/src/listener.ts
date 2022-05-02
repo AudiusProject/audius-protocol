@@ -65,7 +65,7 @@ const handlers = {
     if (repost.repost_type == 'track') {
       pending.trackIds.add(repost.repost_item_id)
     } else {
-      pending.trackIds.add(repost.repost_item_id)
+      pending.playlistIds.add(repost.repost_item_id)
     }
   },
   follows: (follow: FollowRow) => {

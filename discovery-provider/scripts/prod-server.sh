@@ -1,6 +1,19 @@
 #!/bin/bash
 set -e
 
+# run alembic migrations
+if [ "$audius_db_run_migrations" != false ]; then
+  echo "Running alembic migrations"
+  export PYTHONPATH='.'
+  alembic upgrade head
+  echo "Finished running migrations"
+fi
+
+# start es-indexer
+if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
+    cd es-indexer && npm i && npm start &
+fi
+
 # Audius Discovery Provider / Gunicorn
 
 # run with gunicorn web server in prod for greater performance and robustness
