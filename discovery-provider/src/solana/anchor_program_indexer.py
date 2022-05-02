@@ -263,8 +263,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         tx_instructions = []
         for instruction in tx.instructions:
             parsed_instruction = self.anchor_parser.parse_instruction(instruction)
-            self.msg(f"isaac parsed_instruction {parsed_instruction}")
-
             if self.is_valid_instruction(parsed_instruction):
                 tx_instructions.append(parsed_instruction)
 
