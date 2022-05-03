@@ -28,25 +28,37 @@ const writeMetadata = async ({ gitHash }) => {
 }
 
 const main = async () => {
-  // Spin up the solana validator from a blank state
-  execSync('A run solana-validator up', { stdio: 'inherit' })
-  // Compile all the solana programs and deploy to the validator
-  execSync('A run solana-programs up', { stdio: 'inherit' })
-
   // Do some setup...
   execSync(`rm -rf ${tmp}`, { stdio: 'inherit' })
   execSync(`mkdir -p ${tmp}`, { stdio: 'inherit' })
 
-  // wait for memory to be written to disk
-  await new Promise(resolve => setTimeout(resolve, 1000 * 60))
+  // Spin up the solana validator from a blank state
+  // NOTE: The validator must be run locally and NOT in a docker container
+  // If run in docker, the cache cannot be copied after ~300 slots
+  const solanaValidator = exec(`cd ${tmp} && solana-test-validator`)
 
-  // Copy the 'test-ledger' directory with all the information on chain to a local tmp folder
-  execSync(`docker cp solana:/test-ledger ${tmp}`, { stdio: 'inherit' })
+  // Compile all the solana programs and deploy to the validator
+  execSync(
+    `cd ${solanaProgramsPath} && docker run --name audius_solana_programs --network host -e SOLANA_HOST='http://127.0.0.1:8899' -v "$PWD:/usr/src/app" audius/solana-programs:develop2 > solana-program-config.json`,
+    { stdio: 'inherit' }
+  )
 
-  // Copy the solana configs to the tmp folder
+  // Copy the solana-program-config.json to the tmp folder
   execSync(`cp ${solanaProgramsPath}/solana-program-config.json ${tmp}`, {
     stdio: 'inherit'
   })
+
+  solanaValidator.kill()
+
+  // Compile all the solana programs and deploy to the validator
+  let solanaConfig = fs.readFileSync(`${tmp}/solana-program-config.json`)
+  solanaConfig = JSON.parse(solanaConfig)
+  solanaConfig.endpoint = 'http://solana:8899'
+  fs.writeFileSync(
+    `${tmp}/solana-program-config.json`,
+    JSON.stringify(solanaConfig, null, ' ')
+  )
+
   // Copy the Dockerfile to the tmp folder
   execSync(`cp ${solanaProgramsPath}/Dockerfile.cacheLedger ${tmp}`, {
     stdio: 'inherit'
@@ -75,7 +87,10 @@ const main = async () => {
     `docker tag audius/solana-programs:predeployed-latest audius/solana-programs:predeployed-${gitHash}`,
     { stdio: 'inherit' }
   )
-  execSync('docker kill solana && docker rm solana', { stdio: 'inherit' })
+  execSync(
+    'docker kill audius_solana_programs && docker rm audius_solana_programs',
+    { stdio: 'inherit' }
+  )
 
   // TODO: Deploy to docker registry (dockerhub)
   console.log('Be sure to publish the docker file if using externally')
