@@ -45,11 +45,11 @@ jobs:
             ls -la "$PROTOCOL_DIR"
             cd "$PROTOCOL_DIR/service-commands/"
             npm install --unsafe-perm
-            
+
             # this is || true because exit code returns 141, we need to progress even if we get 141
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME || true
             # if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
-      
+
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             # gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@$GCLOUD_VM_NAME \<< EOF
@@ -65,6 +65,13 @@ jobs:
 
             # Delete image with the same name (if exists)
             gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+
+            # Create the new CI bake image
+            gcloud compute images create "BAKE_IMAGE_NAME" \
+              --project="$GOOGLE_PROJECT_ID" \
+              --source-disk="$GCLOUD_VM_NAME" \
+              --source-disk-zone="GOOGLE_COMPUTE_ZONE" \
+              --storage-location=us
 
             # Delete GCP box
             echo "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
