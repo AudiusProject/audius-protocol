@@ -68,8 +68,7 @@ fn check_fee_payer_balance(config: &Config, required_balance: u64) -> Result<(),
     }
 }
 
-fn command_create_signer_group(config: &Config) -> CommandResult {
-    let signer_group = Keypair::new();
+fn command_create_signer_group(config: &Config, signer_group: Box<dyn Signer>) -> CommandResult {
     println!(
         "Creating new signer group account {}",
         signer_group.pubkey()
@@ -104,7 +103,7 @@ fn command_create_signer_group(config: &Config) -> CommandResult {
     )?;
 
     transaction.sign(
-        &[config.fee_payer.as_ref(), &signer_group],
+        &[config.fee_payer.as_ref(), signer_group.as_ref()],
         recent_blockhash,
     );
     Ok(Some(transaction))
@@ -397,7 +396,22 @@ fn main() {
                      Defaults to the client keypair.",
                 ),
         )
-        .subcommand(SubCommand::with_name("create-signer-group").about("Create a new signer group"))
+        .subcommand(
+            SubCommand::with_name("create-signer-group")
+            .about("Create a new signer group")
+            .arg(
+                Arg::with_name("signer_group")
+                    .value_name("SIGENR_GROUP_KEYPAIR")
+                    .validator(is_keypair)
+                    .takes_value(true)
+                    .index(1)
+                    .help(
+                        "Specify the signer group keypair. \
+                         This may be a keypair file, the ASK keyword. \
+                         Defaults to randomly generated keypair.",
+                    ),
+            )
+        )
         .subcommand(
             SubCommand::with_name("create-valid-signer")
                 .about("Create new valid signer and add to the signer group")
@@ -538,7 +552,26 @@ fn main() {
     solana_logger::setup_with_default("solana=info");
 
     let _ = match matches.subcommand() {
-        ("create-signer-group", Some(_)) => command_create_signer_group(&config),
+        ("create-signer-group", Some(arg_matches)) => {
+            let opt_signer_group = arg_matches.value_of("signer_group").map(|path| {
+                signer_from_path(
+                    arg_matches,
+                    path,
+                    "signer_group",
+                    &mut wallet_manager,
+                ).unwrap_or_else(|e| {
+                    eprintln!("error: {}", e);
+                    exit(1);
+                })
+            });
+
+            let signer_group = opt_signer_group.unwrap_or_else(|| {
+                let keypair = Keypair::new();
+                Box::new(keypair) as Box<dyn Signer>
+            });
+
+            command_create_signer_group(&config, signer_group)
+        },
         ("query-eth-registry", Some(_)) => command_query_eth_registry(&config),
         ("query-signer-group", Some(arg_matches)) => {
             let signer_group: Pubkey = pubkey_of(arg_matches, "signer_group").unwrap();
