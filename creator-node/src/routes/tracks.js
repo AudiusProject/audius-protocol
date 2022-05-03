@@ -61,10 +61,12 @@ module.exports = function (app) {
       const AsyncProcessingQueue =
         req.app.get('serviceRegistry').asyncProcessingQueue
 
-      const selfTranscode = currentNodeShouldHandleTranscode({
-        transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
-        spID: config.get('spID')
-      })
+      // TODO: Uncomment code block out in version 0.3.58
+      // const selfTranscode = currentNodeShouldHandleTranscode({
+      //   transcodingQueueCanAcceptMoreJobs: await TranscodingQueue.isAvailable(),
+      //   spID: config.get('spID')
+      // })
+      const selfTranscode = true
 
       if (selfTranscode) {
         await AsyncProcessingQueue.addTrackContentUploadTask({
