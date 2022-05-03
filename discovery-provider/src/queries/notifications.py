@@ -24,23 +24,20 @@ from src.models import (
 from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
-from src.queries.get_sol_rewards_manager import (
-    get_latest_cached_sol_rewards_manager_db,
-    get_latest_cached_sol_rewards_manager_program_tx,
-)
 from src.queries.query_helpers import (
     get_follower_count_dict,
     get_repost_counts,
     get_save_counts,
 )
-from src.tasks.index_listen_count_milestones import (
-    LISTEN_COUNT_MILESTONE,
-    PROCESSED_LISTEN_MILESTONE,
-)
+from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
-from src.utils.redis_constants import latest_sol_aggregate_tips_slot_key
+from src.utils.redis_constants import (
+    latest_sol_aggregate_tips_slot_key,
+    latest_sol_listen_count_milestones_slot_key,
+    latest_sol_rewards_manager_slot_key,
+)
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -995,16 +992,13 @@ def notifications():
 
 
 def get_max_slot(redis: Redis):
-    listen_milestone_slot = redis.get(PROCESSED_LISTEN_MILESTONE)
+    listen_milestone_slot = redis.get(latest_sol_listen_count_milestones_slot_key)
     if listen_milestone_slot:
         listen_milestone_slot = int(listen_milestone_slot)
 
-    rewards_manager_db_cache = get_latest_cached_sol_rewards_manager_db(redis)
-    tx_cache = get_latest_cached_sol_rewards_manager_program_tx(redis)
-    rewards_manager_slot = None
-    if tx_cache and rewards_manager_db_cache:
-        if tx_cache["slot"] != rewards_manager_db_cache["slot"]:
-            rewards_manager_slot = rewards_manager_db_cache["slot"]
+    rewards_manager_slot = redis.get(latest_sol_rewards_manager_slot_key)
+    if rewards_manager_slot:
+        rewards_manager_slot = int(rewards_manager_slot)
 
     supporter_rank_up_slot = redis.get(latest_sol_aggregate_tips_slot_key)
     if supporter_rank_up_slot:
