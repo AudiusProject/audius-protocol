@@ -508,8 +508,6 @@ def process_solana_rewards_manager(
     solana_client_manager: SolanaClientManager, db: SessionManager, redis: Redis
 ):
     """Fetches the next set of reward manager transactions and updates the DB with Challenge Disbursements"""
-    # Get the latests slot available globally before fetching txs to keep track of indexing progress
-
     if not is_valid_rewards_manager_program:
         logger.error(
             "index_rewards_manager.py | no valid reward manager program passed"
