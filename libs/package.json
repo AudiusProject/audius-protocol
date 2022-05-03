@@ -28,7 +28,7 @@
     "setup": "./scripts/migrate_contracts.sh",
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src ./types",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit"
   },

@@ -13,8 +13,4 @@
     ],
     "exactOptionalPropertyTypes": false
   },
-  "exclude": [
-    "node_modules",
-    "types"
-  ]
 }
