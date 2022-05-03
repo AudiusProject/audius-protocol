@@ -46,8 +46,8 @@ export class DiscoveryProviderSelection extends ServiceSelection {
   ethContracts: EthContracts
   reselectTimeout: Maybe<number>
   selectionCallback: Maybe<
-    | DiscoveryProviderSelectionConfig['selectionCallback']
-    >
+    DiscoveryProviderSelectionConfig['selectionCallback']
+  >
 
   monitoringCallbacks:
     | NonNullable<DiscoveryProviderSelectionConfig['monitoringCallbacks']>
