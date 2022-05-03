@@ -231,7 +231,7 @@ class SolanaProgramIndexer(IndexerBase):
                     for tx in transactions_array:
                         if tx["slot"] > latest_processed_slot:
                             unindexed_transactions.append(tx)
-                        else:  
+                        else:
                             # Add any txs that haven't been indexed yet
                             # Check the tx signature for any txs in the latest batch,
                             # and if not present in DB, add to processing
