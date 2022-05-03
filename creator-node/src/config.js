@@ -619,13 +619,13 @@ const config = convict({
     default: ''
   },
   maximumTranscodingActiveJobs: {
-    doc: 'The maximuim number of active jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
+    doc: 'The maximum number of active jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
     format: 'nat',
     env: 'maximumTranscodingActiveJobs',
     default: os.cpus().length
   },
   maximumTranscodingWaitingJobs: {
-    doc: 'The maximuim number of waiting jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
+    doc: 'The maximum number of waiting jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
     format: 'nat',
     env: 'maximumTranscodingWaitingJobs',
     default: os.cpus().length

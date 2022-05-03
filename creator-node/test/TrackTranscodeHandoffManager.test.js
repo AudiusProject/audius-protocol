@@ -1,9 +1,11 @@
 const assert = require('assert')
 const sinon = require('sinon')
+const nock = require('nock')
+
 const _ = require('lodash')
 const uuid = require('uuid')
+const axios = require('axios')
 
-const TestUtils = require('./lib/utils')
 const { getLibsMock } = require('./lib/libsMock')
 
 const { logger: genericLogger } = require('../src/logging')
@@ -284,5 +286,36 @@ describe('test TrackTranscodeHandoffManager', function () {
     } catch (e) {
       assert.fail('if fetching files succeed, should not err')
     }
+  })
+
+  it('Do not retry if request responds with 404', async function () {
+    nock('https://content_node.com')
+      .get('/404')
+      .reply(404, { data: 'i dont exist........' })
+
+    let didRetry = false
+    try {
+      await TrackTranscodeHandoffManager.asyncRetryNotOn404({
+        logger: genericLogger,
+        asyncFn: async () => {
+          return axios({
+            url: 'https://content_node.com/404',
+            method: 'get'
+          })
+        },
+        options: {
+          onRetry: () => {
+            didRetry = true
+          },
+          retries: 1
+        }
+      })
+    } catch (e) {
+      assert.strictEqual(didRetry, false)
+      assert.strictEqual(e.message, 'Route not supported')
+      return
+    }
+
+    assert.fail('Observed fn should have failed')
   })
 })

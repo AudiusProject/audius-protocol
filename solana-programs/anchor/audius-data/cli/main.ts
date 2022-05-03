@@ -329,7 +329,7 @@ program
   .option("-f, --function <type>", "function to invoke")
   .option("-n, --network <string>", "solana network")
   .option("-k, --owner-keypair <keypair>", "owner keypair path")
-  .option("-ak, --admin-keypair <keypair>", "admin keypair path")
+  .option("-ak, --admin-authority-keypair <keypair>", "admin authority keypair path")
   .option(
     "-aak, --admin-account-keypair <keypair>",
     "admin account keypair path"
@@ -381,7 +381,7 @@ const adminAuthorityKeypair = options.adminAuthorityKeypair
   ? keypairFromFilePath(options.adminAuthorityKeypair)
   : anchor.web3.Keypair.generate();
 
-// Admin storage keypair, referenced internally
+// Admin account keypair, referenced internally
 // Keypair technically only necessary the first time this is initialized
 const adminAccountKeypair = options.adminAccountKeypair
   ? keypairFromFilePath(options.adminAccountKeypair)
@@ -586,7 +586,7 @@ const main = async () => {
       const txHash = await cliVars.provider.sendAndConfirm(tx);
       await cliVars.provider.connection.confirmTransaction(txHash);
       console.log(
-        `createUserTx = ${txHash}, userStorageAccount = ${derivedAddress}`
+        `createUserTx = ${txHash}, userAccount = ${derivedAddress}`
       );
       break;
     }
