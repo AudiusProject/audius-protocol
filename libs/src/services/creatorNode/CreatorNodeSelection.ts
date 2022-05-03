@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import _ from 'lodash'
+import type EthContracts from '../ethContracts'
 
 import {
   ServiceSelection,
@@ -8,7 +9,6 @@ import {
 import {
   timeRequests,
   sortServiceTimings,
-  ServiceWithEndpoint,
   Service,
   ServiceName,
   Timing
@@ -42,18 +42,6 @@ type CreatorNode = {
     healthCheck?: (config: Record<string, unknown>) => Promise<AxiosResponse>
   }
 }
-
-type EthContracts = {
-  getCurrentVersion: (serviceName: string) => Promise<string>
-  getNumberOfVersions: (spType: string) => Promise<number>
-  getVersion: (spType: string, queryIndex: number) => Promise<string>
-  getServiceProviderList: (
-    serviceName: string
-  ) => Promise<ServiceWithEndpoint[]>
-  hasSameMajorAndMinorVersion: (version1: string, version2: string) => boolean
-  isInRegressedMode: () => boolean
-}
-
 type CreatorNodeSelectionConfig = Omit<
   ServiceSelectionConfig,
   'getServices'

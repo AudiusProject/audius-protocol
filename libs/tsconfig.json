@@ -10,10 +10,7 @@
     "typeRoots": [
       "./types",
       "./node_modules/@types"
-    ]
+    ],
+    "exactOptionalPropertyTypes": false
   },
-  "exclude": [
-    "node_modules",
-    "types"
-  ]
 }

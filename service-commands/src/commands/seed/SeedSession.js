@@ -120,6 +120,18 @@ class SeedSession {
       return
     }
   }
+
+  getAuthenticationHeaders = async ({ alias = '', userId = null }) => {
+    await this.setUser({ alias, userId })
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await this.libs.web3Manager.sign(message)
+    return {
+      'Encoded-Data-Message': message,
+      'Encoded-Data-Signature': signature
+    }
+    
+  }
 }
 
 module.exports = SeedSession

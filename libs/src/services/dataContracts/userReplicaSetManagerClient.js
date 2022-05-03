@@ -1,4 +1,4 @@
-const ContractClient = require('../contracts/ContractClient')
+const { ContractClient } = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 
 class UserReplicaSetManagerClient extends ContractClient {

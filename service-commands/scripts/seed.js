@@ -107,6 +107,20 @@ program
     }
   })
 
+program
+  .command('auth-headers')
+  .description('Logs out auth headers that Identity would expect for a user')
+  .option('-a, --user-alias <alias>', 'alias of user to set as active', null)
+  .option('-u, --user-id <number>', 'ID of user to set as active', null)
+  .action(async options => {
+    const { userAlias: alias, userId } = options.opts()
+    const seed = new SeedSession()
+    const headers = await seed.getAuthenticationHeaders({ alias, userId })
+    console.log({headers})
+    process.exit(0)
+  })
+
+
 const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
   Object.entries(CLI_TO_COMMAND_MAP).forEach(
     ([cliCommand, { api, description, method, params, onSuccess }]) => {

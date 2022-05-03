@@ -66,6 +66,20 @@ class InitUserData(TypedDict):
     _metadata: str
 
 
+def clone_model(model, **kwargs):
+    """Clone an arbitrary sqlalchemy model object without its primary key values."""
+    # Ensure the model’s data is loaded before copying.
+    table = model.__table__
+    non_pk_columns = [
+        k for k in table.columns.keys() if k not in table.primary_key.columns.keys()
+    ]
+    data = {c: getattr(model, c) for c in non_pk_columns}
+    data.update(kwargs)
+
+    clone = model.__class__(**data)
+    return clone
+
+
 def handle_init_user(
     session: Session,
     transaction: ParsedTx,
@@ -75,7 +89,6 @@ def handle_init_user(
     records: List[Any],
 ):
     # NOTE: Not sure if we should update the user's model until they claim account
-    # user_id = instruction.get("data").get("id")
     # existing_user = db_models.get("users", {}).get(user_id)
     # user = User(**existing_user.asdict())
     # user.slot = transaction["result"]["slot"]
@@ -84,10 +97,32 @@ def handle_init_user(
     # user.primary_id = replica_set[0]
     # user.secondary_ids = [replica_set[1], replica_set[2]]
 
-    # metadata_cid = instruction.get('data').get('metadata')
+    instruction_data = instruction.get("data")
+    user_id = instruction_data.get("user_id")
+    slot = transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
+    user_storage_account = str(instruction.get("account_names_map").get("user"))
 
-    # No action to be taken here
-    pass
+    # Fetch latest entry for this user in db_models
+    user_record = db_models["users"].get(user_id)[-1]
+
+    # Clone new record
+    new_user_record = clone_model(user_record)
+
+    for prior_record in db_models["users"][user_id]:
+        prior_record.is_current = False
+
+    new_user_record.user_storage_account = user_storage_account
+    new_user_record.txhash = txhash
+    new_user_record.slot = slot
+    new_user_record.is_current = True
+    new_user_record.user_id = user_id
+
+    # Append record to save
+    records.append(new_user_record)
+
+    # Append most recent record
+    db_models["users"][user_id].append(new_user_record)
 
 
 def handle_init_user_sol(
@@ -98,7 +133,31 @@ def handle_init_user_sol(
     metadata_dictionary: Dict,
     records: List[Any],
 ):
-    pass
+    slot = transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
+    user_id = instruction["user_id"]
+    instruction_data = instruction.get("data")
+
+    user_record = db_models["users"].get(user_id)[-1]
+    user_authority = instruction_data.get("user_authority")
+
+    # Clone new record
+    new_user_record = clone_model(user_record)
+
+    for prior_record in db_models["users"][user_id]:
+        prior_record.is_current = False
+
+    new_user_record.user_authority_account = str(user_authority)
+    new_user_record.txhash = txhash
+    new_user_record.slot = slot
+    new_user_record.is_current = True
+    new_user_record.user_id = user_id
+
+    # Append record to save
+    records.append(new_user_record)
+
+    # Append most recent record
+    db_models["users"][user_id].append(new_user_record)
 
 
 class CreateUserData(TypedDict):
