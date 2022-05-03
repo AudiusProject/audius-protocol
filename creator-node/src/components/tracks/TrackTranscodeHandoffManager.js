@@ -349,11 +349,10 @@ class TrackTranscodeHandoffManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    const resp = await Utils.asyncRetry({
+    const resp = await TrackTranscodeHandoffManager.asyncRetryNotOn404({
       logger: TrackTranscodeHandoffManager.logger,
-      asyncFn: axios,
-      asyncFnParams: [
-        {
+      asyncFn: async () => {
+        return axios({
           url: `${sp}/transcode_and_segment`,
           method: 'post',
           data: originalTrackFormData,
@@ -372,10 +371,9 @@ class TrackTranscodeHandoffManager {
           maxContentLength: Infinity,
           maxBodyLength: Infinity,
           timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
-        }
-      ],
-      asyncFnLabel: 'transcode and segment',
-      handleBackwardsCompatibility: true
+        })
+      },
+      asyncFnLabel: 'transcode and segment'
     })
 
     return resp.data.data.uuid
@@ -422,19 +420,19 @@ class TrackTranscodeHandoffManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    const { data: body } = await Utils.asyncRetry({
-      logger: TrackTranscodeHandoffManager.logger,
-      asyncFn: axios,
-      asyncFnParams: [
-        {
-          url: `${sp}/async_processing_status`,
-          params: { uuid, timestamp, signature, spID },
-          method: 'get',
-          timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
-        }
-      ],
-      asyncFnLabel: 'fetch track content processing status'
-    })
+    const { data: body } =
+      await TrackTranscodeHandoffManager.asyncRetryNotOn404({
+        logger: TrackTranscodeHandoffManager.logger,
+        asyncFn: async () => {
+          return axios({
+            url: `${sp}/async_processing_status`,
+            params: { uuid, timestamp, signature, spID },
+            method: 'get',
+            timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
+          })
+        },
+        asyncFnLabel: 'fetch track content processing status'
+      })
 
     return body.data
   }
@@ -451,11 +449,10 @@ class TrackTranscodeHandoffManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return Utils.asyncRetry({
+    return TrackTranscodeHandoffManager.asyncRetryNotOn404({
       logger: TrackTranscodeHandoffManager.logger,
-      asyncFn: axios,
-      asyncFnParams: [
-        {
+      asyncFn: async () => {
+        return axios({
           url: `${sp}/transcode_and_segment`,
           method: 'get',
           params: {
@@ -468,10 +465,9 @@ class TrackTranscodeHandoffManager {
           },
           responseType: 'stream',
           timeout: FETCH_STREAM_TIMEOUT_MS
-        }
-      ],
-      asyncFnLabel: 'fetch segment',
-      handleBackwardsCompatibility: true
+        })
+      },
+      asyncFnLabel: 'fetch segment'
     })
   }
 
@@ -487,11 +483,10 @@ class TrackTranscodeHandoffManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return Utils.asyncRetry({
+    return TrackTranscodeHandoffManager.asyncRetryNotOn404({
       logger: TrackTranscodeHandoffManager.logger,
-      asyncFn: axios,
-      asyncFnParams: [
-        {
+      asyncFn: async () => {
+        return axios({
           url: `${sp}/transcode_and_segment`,
           method: 'get',
           params: {
@@ -504,10 +499,9 @@ class TrackTranscodeHandoffManager {
           },
           responseType: 'stream',
           timeout: FETCH_STREAM_TIMEOUT_MS
-        }
-      ],
-      asyncFnLabel: 'fetch transcode',
-      handleBackwardsCompatibility: true
+        })
+      },
+      asyncFnLabel: 'fetch transcode'
     })
   }
 
@@ -523,11 +517,10 @@ class TrackTranscodeHandoffManager {
     const { timestamp, signature } =
       generateTimestampAndSignatureForSPVerification(spID, DELEGATE_PRIVATE_KEY)
 
-    return Utils.asyncRetry({
+    return TrackTranscodeHandoffManager.asyncRetryNotOn404({
       logger: TrackTranscodeHandoffManager.logger,
-      asyncFn: axios,
-      asyncFnParams: [
-        {
+      asyncFn: async () => {
+        return axios({
           url: `${sp}/transcode_and_segment`,
           method: 'get',
           params: {
@@ -540,10 +533,9 @@ class TrackTranscodeHandoffManager {
           },
           responseType: 'stream',
           timeout: FETCH_STREAM_TIMEOUT_MS
-        }
-      ],
-      asyncFnLabel: 'fetch m3u8',
-      handleBackwardsCompatibility: true
+        })
+      },
+      asyncFnLabel: 'fetch m3u8'
     })
   }
 
@@ -556,6 +548,50 @@ class TrackTranscodeHandoffManager {
     TrackTranscodeHandoffManager.logger = genericLogger.child(logContext)
 
     return TrackTranscodeHandoffManager.logger
+  }
+
+  /**
+   * Wrapper around async-retry API, with no retry on 404. Used to handle backwards compatibility when
+   * an SP has not yet upgraded and the route is not found.
+   *
+   * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
+   * @param {Object} param
+   * @param {Object} param.logger
+   * @param {func} param.asyncFn the fn to asynchronously retry
+   * @param {string} param.asyncFnLabel the task label used to print on retry. used for debugging purposes
+   * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
+   * @param {number} [param.options.factor=2] the exponential factor
+   * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
+   * @param {number} [param.options.minTimeout=1000] minimum number of ms to wait after first retry. defaulted to 1000ms
+   * @param {number} [param.options.maxTimeout=5000] maximum number of ms between two retries. defaulted to 5000ms
+   * @param {func} [param.options.onRetry] fn that gets called per retry
+   * @returns the fn response if success, or throws an error
+   */
+  static asyncRetryNotOn404({
+    logger,
+    asyncFn: inputAsyncFn,
+    asyncFnLabel,
+    options = {}
+  }) {
+    const asyncFn = async (bail) => {
+      let resp
+      try {
+        resp = await inputAsyncFn()
+      } catch (e) {
+        // If SP 404's, the SP has not upgraded. Bail without retries.
+        // Else, just throw the caught error
+        if (e.response && e.response.status === 404) {
+          bail(new Error('Route not supported'))
+          return
+        }
+
+        throw e
+      }
+
+      return resp
+    }
+
+    return Utils.asyncRetry({ logger, asyncFn, asyncFnLabel, options })
   }
 }
 
