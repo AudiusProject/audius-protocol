@@ -332,14 +332,7 @@ function currentNodeShouldHandleTranscode({
   transcodingQueueCanAcceptMoreJobs,
   spID
 }) {
-  // If the TranscodingQueue is available, let current node handle transcode
-  if (transcodingQueueCanAcceptMoreJobs) return true
-
-  // Else, if spID is not initialized, the track cannot be handed off to another node to transcode.
-  // Continue with the upload on the current node.
-  const currentNodeShouldHandleTranscode = !Number.isInteger(spID)
-
-  return currentNodeShouldHandleTranscode
+  return false
 }
 
 /**
