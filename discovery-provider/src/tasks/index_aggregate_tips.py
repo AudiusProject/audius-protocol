@@ -78,7 +78,8 @@ def _get_ranks(session: Session, prev_slot: int, current_slot: int):
     ).fetchall()
 
 
-def _update_aggregate_tips(session: Session):
+def _update_aggregate_tips(session: Session, redis: Redis):
+    latest_user_bank_slot = redis.get(latest_sol_user_bank_slot_key)
     prev_slot = get_last_indexed_checkpoint(session, AGGREGATE_TIPS)
     max_slot_result = session.query(func.max(UserTip.slot)).one_or_none()
     max_slot = int(max_slot_result[0]) if max_slot_result is not None else 0
@@ -119,6 +120,8 @@ def _update_aggregate_tips(session: Session):
             )
             session.add(rank_up)
             logger.info(f"index_aggregate_tips.py | Rank Up: {rank_up}")
+    if latest_user_bank_slot is not None:
+        redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
 
 
 # ####### CELERY TASKS ####### #
@@ -130,9 +133,6 @@ def update_aggregate_tips(self):
     db: SessionManager = update_aggregate_tips.db
     redis: Redis = update_aggregate_tips.redis
 
-    latest_user_bank_slot = redis.get(latest_sol_user_bank_slot_key)
     init_task_and_acquire_lock(
         logger, db, redis, AGGREGATE_TIPS, _update_aggregate_tips
     )
-    if latest_user_bank_slot is not None:
-        redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
