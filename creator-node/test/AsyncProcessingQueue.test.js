@@ -2,7 +2,6 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 const uuid = require('uuid')
-const TestUtils = require('./lib/utils')
 
 const AsyncProcessingQueue = require('../src/AsyncProcessingQueue')
 
