@@ -267,7 +267,6 @@ def handle_manage_entity(
             logger.info(f"Skipping create track {track_id} because it already exists.")
             return
 
-
         track = Track(
             slot=transaction["result"]["slot"],
             txhash=transaction["tx_sig"],
