@@ -1,7 +1,7 @@
 const assert = require('assert')
 const sinon = require('sinon')
 
-const ContractClient = require('../src/services/contracts/ContractClient')
+const { ContractClient } = require('../src/services/contracts/ContractClient')
 const Web3Manager = require('../src/services/web3Manager')
 const { EthWeb3Manager } = require('../src/services/ethWeb3Manager')
 

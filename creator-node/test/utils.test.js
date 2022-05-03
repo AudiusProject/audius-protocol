@@ -1,4 +1,8 @@
 const assert = require('assert')
+const nock = require('nock')
+const axios = require('axios')
+
+const { logger: genericLogger } = require('../src/logging')
 
 // Module under test
 const Utils = require('../src/utils')
@@ -34,5 +38,96 @@ describe('test src/utils.js', () => {
       }),
       false
     )
+  })
+
+  it('Handle retrying for requests that return 404 status code', async function () {
+    nock('https://content_node.com')
+      .get('/404')
+      .reply(404, { data: 'i dont exist........' })
+
+    let didRetry = false
+    try {
+      await Utils.asyncRetry({
+        logger: genericLogger,
+        asyncFn: async () => {
+          return axios({ url: 'https://content_node.com/404', method: 'get' })
+        },
+        options: {
+          onRetry: () => {
+            didRetry = true
+          },
+          retries: 1
+        },
+        asyncFnLabel:
+          'test handleBackwardsCompatibility=false with 404 response'
+      })
+    } catch (e) {
+      assert.strictEqual(didRetry, true)
+      return
+    }
+
+    assert.fail('Observed fn should have failed')
+  })
+
+  it('Handle retrying for requests that return 500 status code', async function () {
+    nock('https://content_node.com')
+      .get('/500')
+      .reply(500, { data: 'bad server' })
+
+    let didRetry = false
+    try {
+      await Utils.asyncRetry({
+        logger: genericLogger,
+        asyncFn: async () => {
+          return axios({
+            url: 'https://content_node.com/500',
+            method: 'get'
+          })
+        },
+        options: {
+          onRetry: () => {
+            didRetry = true
+          },
+          retries: 1
+        },
+        asyncFnLabel: 'test 500 response'
+      })
+    } catch (e) {
+      assert.strictEqual(didRetry, true)
+      return
+    }
+
+    assert.fail('Observed fn should have failed')
+  })
+
+  it('Do not retry successful requests', async function () {
+    nock('https://content_node.com')
+      .get('/200')
+      .reply(200, { data: 'glad server' })
+
+    let didRetry = false
+    try {
+      const resp = await Utils.asyncRetry({
+        logger: genericLogger,
+        asyncFn: async () => {
+          return axios({
+            url: 'https://content_node.com/200',
+            method: 'get'
+          })
+        },
+        options: {
+          onRetry: () => {
+            didRetry = true
+          },
+          retries: 1
+        },
+        asyncFnLabel: 'test 200 response'
+      })
+
+      assert.strictEqual(didRetry, false)
+      assert.strictEqual(resp.data.data, 'glad server')
+    } catch (e) {
+      assert.fail('Observed fn should not have failed')
+    }
   })
 })
