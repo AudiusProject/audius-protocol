@@ -40,7 +40,7 @@ describe('test src/utils.js', () => {
     )
   })
 
-  it('Do not retry if request responds with 404 and handleBackwardsCompatibility flag is enabled', async function () {
+  it('Handle retrying for requests that return 404 status code', async function () {
     nock('https://content_node.com')
       .get('/404')
       .reply(404, { data: 'i dont exist........' })
@@ -49,48 +49,9 @@ describe('test src/utils.js', () => {
     try {
       await Utils.asyncRetry({
         logger: genericLogger,
-        asyncFn: axios,
-        asyncFnParams: [
-          {
-            url: 'https://content_node.com/404',
-            method: 'get'
-          }
-        ],
-        asyncFnLabel:
-          'test handleBackwardsCompatibility=true with 404 response',
-        options: {
-          onRetry: () => {
-            didRetry = true
-          },
-          retries: 1
+        asyncFn: async () => {
+          return axios({ url: 'https://content_node.com/404', method: 'get' })
         },
-        handleBackwardsCompatibility: true
-      })
-    } catch (e) {
-      assert.strictEqual(didRetry, false)
-      assert.strictEqual(e.message, 'Route not supported')
-      return
-    }
-
-    assert.fail('Observed fn should have failed')
-  })
-
-  it('Retry if request responds with 404 and handleBackwardsCompatibiilty flag is not enabled', async function () {
-    nock('https://content_node.com')
-      .get('/404')
-      .reply(404, { data: 'i dont exist........' })
-
-    let didRetry = false
-    try {
-      await Utils.asyncRetry({
-        logger: genericLogger,
-        asyncFn: axios,
-        asyncFnParams: [
-          {
-            url: 'https://content_node.com/404',
-            method: 'get'
-          }
-        ],
         options: {
           onRetry: () => {
             didRetry = true
@@ -108,7 +69,7 @@ describe('test src/utils.js', () => {
     assert.fail('Observed fn should have failed')
   })
 
-  it('Handle retrying failing requests', async function () {
+  it('Handle retrying for requests that return 500 status code', async function () {
     nock('https://content_node.com')
       .get('/500')
       .reply(500, { data: 'bad server' })
@@ -117,13 +78,12 @@ describe('test src/utils.js', () => {
     try {
       await Utils.asyncRetry({
         logger: genericLogger,
-        asyncFn: axios,
-        asyncFnParams: [
-          {
+        asyncFn: async () => {
+          return axios({
             url: 'https://content_node.com/500',
             method: 'get'
-          }
-        ],
+          })
+        },
         options: {
           onRetry: () => {
             didRetry = true
@@ -149,13 +109,12 @@ describe('test src/utils.js', () => {
     try {
       const resp = await Utils.asyncRetry({
         logger: genericLogger,
-        asyncFn: axios,
-        asyncFnParams: [
-          {
+        asyncFn: async () => {
+          return axios({
             url: 'https://content_node.com/200',
             method: 'get'
-          }
-        ],
+          })
+        },
         options: {
           onRetry: () => {
             didRetry = true
@@ -167,40 +126,6 @@ describe('test src/utils.js', () => {
 
       assert.strictEqual(didRetry, false)
       assert.strictEqual(resp.data.data, 'glad server')
-    } catch (e) {
-      assert.fail('Observed fn should not have failed')
-    }
-  })
-
-  it('Works as expected with no params', async function () {
-    try {
-      const resp = await Utils.asyncRetry({
-        logger: genericLogger,
-        asyncFn: async () => {
-          return 'nice'
-        },
-        asyncFnLabel: 'test function with no params'
-      })
-
-      assert.strictEqual(resp, 'nice')
-    } catch (e) {
-      assert.fail('Observed fn should not have failed')
-    }
-  })
-
-  it('Works as expected with params', async function () {
-    try {
-      const asyncFn = (a, b, c) => {
-        return c * (a + b)
-      }
-      const resp = await Utils.asyncRetry({
-        logger: genericLogger,
-        asyncFn,
-        asyncFnParams: [1, 2, 8],
-        asyncFnLabel: 'test function with params'
-      })
-
-      assert.strictEqual(resp, 24)
     } catch (e) {
       assert.fail('Observed fn should not have failed')
     }
