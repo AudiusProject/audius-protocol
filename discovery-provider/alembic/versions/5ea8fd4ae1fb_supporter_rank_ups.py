@@ -23,32 +23,47 @@ def upgrade():
         sa.Column("receiver_user_id", sa.Integer(), nullable=False),
         sa.Column("rank", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("slot", "sender_user_id", "receiver_user_id"),
+        info={"if_not_exists": True},
     )
     op.create_index(
         op.f("ix_supporter_rank_ups_receiver_user_id"),
         "supporter_rank_ups",
         ["receiver_user_id"],
         unique=False,
+        info={"if_not_exists": True},
     )
     op.create_index(
         op.f("ix_supporter_rank_ups_sender_user_id"),
         "supporter_rank_ups",
         ["sender_user_id"],
         unique=False,
+        info={"if_not_exists": True},
     )
     op.create_index(
-        op.f("ix_supporter_rank_ups_slot"), "supporter_rank_ups", ["slot"], unique=False
+        op.f("ix_supporter_rank_ups_slot"),
+        "supporter_rank_ups",
+        ["slot"],
+        unique=False,
+        info={"if_not_exists": True},
     )
     # ### end Alembic commands ###
 
 
 def downgrade():
-    op.drop_index(op.f("ix_supporter_rank_ups_slot"), table_name="supporter_rank_ups")
     op.drop_index(
-        op.f("ix_supporter_rank_ups_sender_user_id"), table_name="supporter_rank_ups"
+        op.f("ix_supporter_rank_ups_slot"),
+        table_name="supporter_rank_ups",
+        info={"if_exists": True},
     )
     op.drop_index(
-        op.f("ix_supporter_rank_ups_receiver_user_id"), table_name="supporter_rank_ups"
+        op.f("ix_supporter_rank_ups_sender_user_id"),
+        table_name="supporter_rank_ups",
+        info={"if_exists": True},
     )
-    op.drop_table("supporter_rank_ups")
+    op.drop_index(
+        op.f("ix_supporter_rank_ups_receiver_user_id"),
+        table_name="supporter_rank_ups",
+        info={"if_exists": True},
+    )
+    op.drop_table("supporter_rank_ups", info={"if_exists": True})
     # ### end Alembic commands ###
