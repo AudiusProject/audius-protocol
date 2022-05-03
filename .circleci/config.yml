@@ -46,9 +46,9 @@ jobs:
             cd "$PROTOCOL_DIR/service-commands/"
             npm install --unsafe-perm
 
-            # this is || true because exit code returns 141, we need to progress even if we get 141
+            # run A setup on remote dev box to clone protocol and install the prerequisites for A
+            # A setup ... || true is necessary because exit code returns 141 by default
             yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME || true
-            # if [[ $? -eq 141 ]]; then exit 0; else exit $?; fi
 
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
@@ -67,7 +67,7 @@ jobs:
             gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
 
             # Create the new CI bake image
-            gcloud compute images create "BAKE_IMAGE_NAME" \
+            gcloud compute images create "$BAKE_IMAGE_NAME" \
               --project="$GOOGLE_PROJECT_ID" \
               --source-disk="$GCLOUD_VM_NAME" \
               --source-disk-zone="GOOGLE_COMPUTE_ZONE" \
