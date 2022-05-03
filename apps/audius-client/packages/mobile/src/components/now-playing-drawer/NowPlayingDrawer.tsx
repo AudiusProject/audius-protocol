@@ -21,6 +21,7 @@ import Drawer, {
   FULL_DRAWER_HEIGHT
 } from 'app/components/drawer'
 import { Scrubber } from 'app/components/scrubber'
+import { useAndroidNavigationBarHeight } from 'app/hooks/useAndroidNavigationBarHeight'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -86,6 +87,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const insets = useSafeAreaInsets()
+  const androidNavigationBarHeight = useAndroidNavigationBarHeight()
   const staticTopInset = useRef(insets.top)
   const bottomBarHeight = BOTTOM_BAR_HEIGHT + insets.bottom
   const styles = useStyles()
@@ -244,7 +246,9 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       isOpen={isOpen}
       onClose={handleDrawerCloseFromSwipe}
       onOpen={onDrawerOpen}
-      initialOffsetPosition={bottomBarHeight + PLAY_BAR_HEIGHT}
+      initialOffsetPosition={
+        bottomBarHeight + PLAY_BAR_HEIGHT + androidNavigationBarHeight
+      }
       shouldCloseToInitialOffset={isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}
