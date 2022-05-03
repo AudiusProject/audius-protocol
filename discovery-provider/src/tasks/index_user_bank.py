@@ -341,6 +341,12 @@ def process_user_bank_txs():
     # Loop exit condition
     intersection_found = False
 
+    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    try:
+        latest_global_slot = solana_client_manager.get_block_height()
+    except:
+        logger.error("index_user_bank.py | Failed to get block height")
+
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
@@ -458,14 +464,10 @@ def process_user_bank_txs():
                 "timestamp": last_tx["blockTime"],
             },
         )
+    if latest_global_slot is not None:
+        redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
+    elif last_tx:
         redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
-    else:
-        try:
-            latest_global_slot = solana_client_manager.get_block_height()
-            if latest_global_slot is not None:
-                redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
-        except:
-            logger.error("index_user_bank.py | Failed to get block height")
 
 
 # ####### CELERY TASKS ####### #
