@@ -62,7 +62,7 @@ export type UserSubscription = BaseNotification & {
 export type Follow = BaseNotification & {
   type: NotificationType.Follow
   userIds: ID[]
-  users?: User[]
+  users: User[]
 }
 
 export type Repost = BaseNotification & {
