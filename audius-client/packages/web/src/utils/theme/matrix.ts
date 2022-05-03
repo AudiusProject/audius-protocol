@@ -14,6 +14,8 @@ const theme = {
   '--secondary-light-1': '#184F17',
   '--secondary-light-2': '#184F17',
 
+  '--primary-secondary-text': 'var(--white)',
+
   '--neutral': '#21B404',
   '--neutral-dark-1': '#21B404',
   '--neutral-dark-2': '#21B404',
