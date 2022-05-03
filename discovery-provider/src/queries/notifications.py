@@ -1016,7 +1016,9 @@ def get_max_slot(redis: Redis):
             [listen_milestone_slot, rewards_manager_slot, supporter_rank_up_slot],
         )
     )
-    logger.info(f"notifications.py | {all_slots}")
+    logger.info(
+        f"notifications.py | get_max_slot() | listen_milestone_slot:{listen_milestone_slot} rewards_manager_slot:{rewards_manager_slot} supporter_rank_up_slot:{supporter_rank_up_slot}"
+    )
     if len(all_slots) == 0:
         return None
     return min(all_slots)
@@ -1122,9 +1124,6 @@ def solana_notifications():
                 SupporterRankUp.slot <= max_slot_number,
             )
             .all()
-        )
-        logger.info(
-            f"notifications.py | supporter_rank_ups_result: {supporter_rank_ups_result} max_slot_number: {max_slot_number}"
         )
         supporter_rank_ups = []
         for supporter_rank_up in supporter_rank_ups_result:
