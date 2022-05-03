@@ -144,6 +144,7 @@ const Service = Object.freeze({
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
   SOLANA_VALIDATOR: 'solana-validator',
+  SOLANA_VALIDATOR_PREDEPLOYED: 'solana-validator-predeployed',
   SOLANA_PROGRAMS: 'solana-programs',
   IPFS: 'ipfs',
   IPFS_2: 'ipfs-2',
@@ -295,7 +296,10 @@ const performHealthCheckWithRetry = async (
 const performHealthCheck = async (service, serviceNumber) => {
   const url = getServiceURL(service, serviceNumber)
   let healthCheckRequestOptions = { method: 'get', url }
-  if (service === Service.SOLANA_VALIDATOR) {
+  if (
+    service === Service.SOLANA_VALIDATOR ||
+    service === Service.SOLANA_VALIDATOR_PREDEPLOYED
+  ) {
     healthCheckRequestOptions = {
       method: 'post',
       data: {
@@ -593,7 +597,8 @@ const allUp = async ({
   numDiscoveryNodes = 1,
   withAAO = false,
   verbose = false,
-  parallel = false
+  parallel = false,
+  buildSolana = false
 }) => {
   if (verbose) {
     console.log('Running in verbose mode.')
@@ -614,17 +619,20 @@ const allUp = async ({
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.HEALTH_CHECK]
   ]
 
   const ipfsAndContractsCommands = [
     [Service.IPFS, SetupCommand.UP],
     [Service.IPFS_2, SetupCommand.UP],
     [Service.CONTRACTS, SetupCommand.UP],
-    [Service.ETH_CONTRACTS, SetupCommand.UP],
-    [Service.SOLANA_PROGRAMS, SetupCommand.UP]
+    [Service.ETH_CONTRACTS, SetupCommand.UP]
   ]
+
+  if (buildSolana) {
+    ipfsAndContractsCommands.push([Service.SOLANA_PROGRAMS, SetupCommand.UP])
+  }
 
   let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(
     serviceNumber => {
