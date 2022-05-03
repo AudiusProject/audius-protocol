@@ -251,11 +251,9 @@ async function timeManageEntity(
           adminAccount: args.adminAccount,
           bumpSeed: args.bumpSeed,
           userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
-          authorityDelegationStatusAccount:
-            args.authorityDelegationStatusAccount,
+          authorityDelegationStatusAccount: args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
-        console.log(tx)
       } else if (
         manageAction == ManagementActions.create &&
         entityType == EntityTypesEnumValues.playlist
@@ -634,7 +632,7 @@ const main = async () => {
         promises.push(
           timeManageEntity(
             {
-              id: options.id,
+              id: new anchor.BN(options.id),
               baseAuthorityAccount,
               adminAccount: adminAccountKeypair.publicKey,
               userId: userId,
@@ -681,7 +679,7 @@ const main = async () => {
         promises.push(
           timeManageEntity(
             {
-              id: options.id,
+              id: new anchor.BN(options.id),
               baseAuthorityAccount,
               adminAccount: adminAccountKeypair.publicKey,
               userId: userId,

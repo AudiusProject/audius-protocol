@@ -257,11 +257,16 @@ def handle_manage_entity(
     entity_type = instruction_data["entity_type"]
     slot = transaction["result"]["slot"]
     txhash = transaction["tx_sig"]
+    track_id = instruction_data["id"]
 
     if isinstance(management_action, management_action.Create) and isinstance(
         entity_type, entity_type.Track
     ):
-        track_id = instruction_data["id"]
+
+        if track_id in db_models["tracks"]:
+            logger.info(f"Skipping create track {track_id} because it already exists.")
+            return
+
 
         track = Track(
             slot=transaction["result"]["slot"],
@@ -282,21 +287,21 @@ def handle_manage_entity(
     elif isinstance(management_action, management_action.Update) and isinstance(
         entity_type, entity_type.Track
     ):
-        txhash = transaction["tx_sig"]
-        instruction_data = instruction.get("data")
-        id = instruction_data["id"]
-
-        track_record = db_models["tracks"].get(id)[-1]
+        if track_id not in db_models["tracks"]:
+            logger.info(f"Skipping update track {track_id} because it doesn't exist.")
+            return
+        track_record = db_models["tracks"].get(track_id)[-1]
 
         # Clone new record
         new_track_record = clone_model(track_record)
 
-        for prior_record in db_models["tracks"][id]:
+        for prior_record in db_models["tracks"][track_id]:
             prior_record.is_current = False
-        new_track_record.track_id = id
+        new_track_record.track_id = track_id
         new_track_record.txhash = txhash
         new_track_record.slot = slot
         new_track_record.is_current = True
+        new_track_record.metadata_multihash = instruction_data["metadata"]
         track_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
         update_track_model_metadata(session, new_track_record, track_metadata)
 
@@ -304,7 +309,7 @@ def handle_manage_entity(
         records.append(new_track_record)
 
         # Append most recent record
-        db_models["tracks"][id].append(new_track_record)
+        db_models["tracks"][track_id].append(new_track_record)
 
 
 def handle_create_content_node(

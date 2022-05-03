@@ -287,32 +287,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             ):
                 return False
 
-        # check create track
-        # TODO pass existing records from upstream and validate
-
-        # if parsed_instruction["instruction_name"] == "manage_entity":
-        #     entity_type = instruction_data["entity_type"]
-        #     if entity_type.Track == type(entity_type):
-        #         track_id = instruction_data["id"]
-        #         with self.db.scoped_session() as session:
-        #             # track_exists = (
-        #             #     session.query(Track.track_id)
-        #             #     .filter(Track.track_id == track_id)
-        #             #     .first()
-        #             #     is not None
-        #             # )
-        #             track_exists = True
-        #             management_action = instruction_data["management_action"]
-        #             if track_exists and (
-        #                 isinstance(management_action, management_action.Create)
-        #             ):
-        #                 return False
-        #             elif not track_exists and (
-        #                 isinstance(management_action, management_action.Update)
-        #                 or isinstance(management_action, management_action.Delete)
-        #             ):
-        #                 return False
-
         # TODO update entity
         # check if user owns track
 
@@ -364,10 +338,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         blacklisted_cids.add(cid)
                     else:
                         cids_txhash_set.add((cid, transaction["tx_sig"]))
-                        if (
-                            "user"
-                            in self.instruction_type[instruction["instruction_name"]]
-                        ):
+                        if "user" in instruction["instruction_name"]:
                             cid_to_entity_type[cid] = "user"
                             # TODO add logic to use existing user records: account -> endpoint
                             user_id = instruction["data"]["user_id"]
