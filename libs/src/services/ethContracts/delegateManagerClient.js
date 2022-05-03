@@ -1,4 +1,4 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
 
 class DelegateManagerClient extends GovernedContractClient {
@@ -433,6 +433,26 @@ class DelegateManagerClient extends GovernedContractClient {
     )
     const info = await method.call()
     return info
+  }
+
+  async getSPMinDelegationAmount ({ serviceProvider }) {
+    const method = await this.getMethod(
+      'getSPMinDelegationAmount',
+      serviceProvider
+    )
+    const info = await method.call()
+    return Utils.toBN(info)
+  }
+
+  async updateSPMinDelegationAmount ({ serviceProvider, amount }) {
+    const method = await this.getMethod(
+      'updateSPMinDelegationAmount',
+      serviceProvider,
+      amount
+    )
+    return this.web3Manager.sendTransaction(
+      method
+    )
   }
 
   async updateRemoveDelegatorLockupDuration (duration) {

@@ -1,6 +1,6 @@
 const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const sigUtil = require('eth-sig-util')
 const BufferSafe = require('safe-buffer').Buffer
 

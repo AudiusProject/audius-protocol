@@ -19,7 +19,7 @@ commands:
             or:
               - equal: [master, << pipeline.git.branch >>]
               - matches:
-                  pattern: '^release.*$'
+                  pattern: "^release.*$"
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
@@ -31,8 +31,8 @@ jobs:
     parallelism: 1
     parameters:
       mad-dog-type:
-        description: 'test, test-nightly'
-        default: 'test'
+        description: "test, test-nightly"
+        default: "test"
         type: string
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
@@ -233,11 +233,11 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ['-l', '8000000', '-a', '50']
+        command: ["-l", "8000000", "-a", "50"]
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ['-l', '8000000', '-p', '8546', '-a', '50']
+        command: ["-l", "8000000", "-p", "8546", "-a", "50"]
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -304,7 +304,7 @@ jobs:
     docker:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
-        command: ['--port=8555', '-a', '100', '-l', '8000000']
+        command: ["--port=8555", "-a", "100", "-l", "8000000"]
     steps:
       - checkout
       - diff-if-necessary:
@@ -345,7 +345,7 @@ jobs:
     docker:
       - image: circleci/node:14.17.3
       - image: trufflesuite/ganache-cli:latest
-        command: ['--port=8546', '-a', '50', '-l', '8000000']
+        command: ["--port=8546", "-a", "50", "-l", "8000000"]
     steps:
       - checkout
       - diff-if-necessary:
@@ -386,7 +386,6 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/node:14.16
-      - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -419,13 +418,12 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            export ipfsPort=5001
             npm run test:unit
             npm run test:ci
 
   test-discovery-provider:
     docker:
-      - image: circleci/python:3.8-node-browsers
+      - image: cimg/python:3.9-node
       # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
@@ -435,9 +433,9 @@ jobs:
         # Bring up ganache
       - image: redis:3.0-alpine
       - image: trufflesuite/ganache-cli:latest
-        command: ['--port=8555', '-a', '100', '-l', '8000000']
+        command: ["--port=8555", "-a", "100", "-l", "8000000"]
       - image: trufflesuite/ganache-cli:latest
-        command: ['--port=8556', '-a', '100', '-l', '8000000']
+        command: ["--port=8556", "-a", "100", "-l", "8000000"]
     steps:
       - checkout
       - diff-if-necessary:
@@ -450,19 +448,20 @@ jobs:
           name: python-setup
           command: |
             cd discovery-provider
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
+            python3 -m pip install --user virtualenv
+            python3 -m venv env
+            source env/bin/activate
+            pip3 install -r requirements.txt
       - save_cache:
           paths:
-            - discovery-provider/venv/
+            - discovery-provider/env/
           key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
       - run:
           name: python-lint
           command: |
             export PROTOCOL_DIR=/home/circleci/project
             cd discovery-provider
-            source venv/bin/activate
+            source env/bin/activate
             sh scripts/lint.sh
       - restore_cache:
           keys:
@@ -509,7 +508,7 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ['-l', '8000000']
+        command: ["-l", "8000000"]
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -567,7 +566,7 @@ jobs:
       - run:
           name: Setup solana
           command: |
-            sh -c "$(curl -sSfL https://release.solana.com/v1.8.9/install)"
+            sh -c "$(curl -sSfL https://release.solana.com/v1.9.14/install)"
             export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
 
       - restore_cache:
@@ -601,24 +600,6 @@ jobs:
           paths:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
-
-      - restore_cache:
-          keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
-            - anchor-node-deps-
-      - run:
-          name: anchor tests
-          command: |
-            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/bin:$PATH"
-            solana-keygen new --no-bip39-passphrase
-            cd solana-programs/anchor/audius-data
-            yarn
-            npx anchor test
-      - save_cache:
-          paths:
-            - solana-programs/anchor/audius-data/node_modules
-          key: anchor-ndoe-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
-
       # - restore_cache:
       #     keys:
       #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
@@ -650,6 +631,67 @@ jobs:
       #     paths:
       #       - solana-programs/track_listen_count/target
       #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+  test-solana-programs-anchor:
+    resource_class: large # 4vcpu/8gb
+    machine:
+      image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
+      docker_layer_caching: true
+    steps:
+      # TODO implement cache for faster build
+      - checkout
+      - diff-if-necessary:
+          service: solana-programs
+      - run:
+          name: Install node
+          command: |
+            export PROTOCOL_DIR="/home/circleci/project"
+            export NVM_VERSION="v0.35.3"
+            export NODE_VERSION="v14.18.1"
+            sudo apt update -y && sudo apt upgrade -y && sudo apt install curl -y
+            curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
+            source ~/.bashrc
+            nvm install "$NODE_VERSION"
+      - restore_cache:
+          keys:
+            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+            - anchor-node-deps-
+      - run:
+          name: Setup dev dependencies
+          command: |
+            export NODE_VERSION="v14.18.1"
+            source ~/.profile
+            source ~/.bashrc
+            nvm use "$NODE_VERSION"
+            export CARGO_HOME="cargo"
+            export PROTOCOL_DIR="/home/circleci/project"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            source /opt/circleci/.nvm/nvm.sh
+            npm run install-dev
+      - run:
+          name: anchor tests
+          command: |
+            export PROTOCOL_DIR="/home/circleci/project"
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/lbin:$PATH"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            npm test
+      - save_cache:
+          paths:
+            - solana-programs/anchor/audius-data/node_modules
+          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
+      - run:
+          name: anchor program seed CLI tests
+          command: |
+            export NODE_VERSION="v14.18.1"
+            source ~/.profile
+            source ~/.bashrc
+            nvm use "$NODE_VERSION"
+            export PROTOCOL_DIR="/home/circleci/project"
+            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
+            solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
+            yarn
+            source /opt/circleci/.nvm/nvm.sh
+            npm run localnet-up-ci
+            npm run dev-setup
 
   docker-build-and-push:
     docker:
@@ -661,6 +703,41 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
+      - run:
+          name: Get tag or latest
+          command: |
+            # order of precendence for IMAGE tag is:
+            # 1. CIRCLE_TAG if defined,
+            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 3. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+      - run:
+          name: Docker login
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          name: Docker build << parameters.repo >>
+          command: |
+            cd << parameters.repo >>
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
+            docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM
+      - run:
+          name: Docker push << parameters.repo >>
+          command: |
+            docker push audius/<< parameters.repo >>:$IMAGE_TAG
+            docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
+
+  docker-build-and-push-updated:
+    docker:
+      - image: cimg/base:2022.03
+    parameters:
+      repo:
+        type: string
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 20.10.11
       - run:
           name: Get tag or latest
           command: |
@@ -714,7 +791,7 @@ workflows:
 
       - test-discovery-provider:
           name: test-discovery-provider
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-discovery-provider
           repo: discovery-provider
 
@@ -726,6 +803,8 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
+      - test-solana-programs-anchor:
+          name: test-solana-programs-anchor
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
@@ -762,7 +841,7 @@ workflows:
           mad-dog-type: test-nightly
     triggers:
       - schedule:
-          cron: '0 5 * * *'
+          cron: "0 5 * * *"
           filters:
             branches:
               only: /(^master$)/

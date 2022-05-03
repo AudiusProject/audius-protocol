@@ -1,5 +1,5 @@
-const Utils = require('../utils')
-const CreatorNode = require('../services/creatorNode')
+const { Utils } = require('../utils')
+const { CreatorNode } = require('../services/creatorNode')
 
 const THREE_SECONDS = 3000
 const MAX_TRIES = 3

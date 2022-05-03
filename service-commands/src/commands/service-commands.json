@@ -6,7 +6,14 @@
       "docker volume prune -f",
       "docker network prune -f",
       "sudo rm -rf creator-node/compose/env/tmp",
-      "sudo rm -rf discovery-provider/compose/env/tmp"
+      "sudo rm -rf discovery-provider/compose/env/tmp",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log",
+      "docker image prune -f --filter 'dangling=true' --filter 'until=360h'"
     ]
   },
   "network": {
@@ -22,7 +29,7 @@
   "contracts": {
     "up": [
       "cd contracts/",
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5 --deterministic true",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
@@ -38,7 +45,7 @@
     "path": "eth-contracts",
     "up": [
       "cd eth-contracts/; sudo rm -rf build",
-      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000 --deterministic true",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
@@ -50,25 +57,26 @@
       "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
     ]
   },
- "solana-validator": {
-   "protocol": "http",
-   "host": "localhost",
-   "port": 8899,
-   "health_check_endpoint": "",
-   "up": [
-      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 100000'"
-   ],
+  "solana-validator": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8899,
+    "health_check_endpoint": "",
+    "up": [
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.9.13 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 1000000'"
+    ],
     "down": [
       "docker container stop solana || true",
       "docker container rm solana || true"
     ]
- },
- "solana-programs": {
+  },
+  "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
+      "cd solana-programs/; docker run --name audius_solana_programs --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop2 > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
-      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json",
+      "mkdir -p ./discovery-provider/idl/; cp solana-programs/anchor/audius-data/target/idl/audius_data.json discovery-provider/idl/audius_data.json"
     ],
     "add-sender": [
       "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
@@ -140,7 +148,13 @@
     ],
     "down": [
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
-      "cd discovery-provider; . compose/env/unsetShellEnv.sh"
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log"
     ],
     "register": [
       "cd libs/; npm run init-local register-discovery-node #",
@@ -150,6 +164,12 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; rm -f *_dump",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",

@@ -1,4 +1,5 @@
 const assert = require('assert')
+const { Keypair } = require('@solana/web3.js')
 
 const {
   healthCheck,
@@ -9,6 +10,20 @@ const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
 
 const TEST_ENDPOINT = 'test_endpoint'
+
+// Secp256k1 private key (delegatePrivateKey env var is set to this when tests are run)
+const ETH_PRIV_KEY =
+  '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
+
+// Ed25519 private key (base64 encoded) when ETH_PRIV_KEY is the seed
+const SOL_SECRET_KEY_BASE64 =
+  '21J+TUokEqRDwX4WZnZNO7pD6J5hEpo1+avDN+wXCl3kGVNVzgvgquSQo60wNfF0ISQcb3CE+DjEgyMrbmGhpg=='
+
+// Ed25519 private key (Buffer form) when ETH_PRIV_KEY is the seed
+const SOL_SECRET_KEY_BUFFER = Buffer.from(SOL_SECRET_KEY_BASE64, 'base64')
+
+// Ed25519 public key (base58 encoded) when ETH_PRIV_KEY is the seed
+const SOL_PUBLIC_KEY_BASE58 = 'GMQMUsxnCKjnDVKG9UfYtQdkLVxDsHyZ9z3sLtLS6Unq'
 
 const snapbackSMMock = {
   highestEnabledReconfigMode: 'RECONFIG_DISABLED'
@@ -77,14 +92,39 @@ const TranscodingQueueMock = (active = 0, waiting = 0) => {
   return {
     getTranscodeQueueJobs: async () => {
       return { active, waiting }
+    },
+    isAvailable: async () => {
+      return true
     }
   }
 }
 
-const AsyncProcessingQueueMock = (active = 0, waiting = 0) => {
+const AsyncProcessingQueueMock = (active = 0, waiting = 0, failed = 0) => {
   return {
     getAsyncProcessingQueueJobs: async () => {
-      return { active, waiting }
+      return {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: waiting
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: active
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: failed
+        }
+      }
     }
   }
 }
@@ -98,17 +138,23 @@ describe('Test Health Check', function () {
     config.set('snapbackJobInterval', 1000)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
+    config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
 
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
     config.set('dataProviderUrl', 'http://test.dataProviderUrl')
 
     const res = await healthCheck(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -153,8 +199,34 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
@@ -166,13 +238,18 @@ describe('Test Health Check', function () {
     config.set('snapbackJobInterval', 1000)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
+    config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
 
     const res = await healthCheck(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -217,18 +294,48 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
     const res = await healthCheck(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )
@@ -273,11 +380,64 @@ describe('Test Health Check', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
+  })
+
+  it('Should derive Solana public key from Ethereum private key', function () {
+    // Set initial config values
+    const privateKeyBuffer = Buffer.from(ETH_PRIV_KEY.replace('0x', ''), 'hex')
+    const solKeyPair = Keypair.fromSeed(privateKeyBuffer)
+    const solSecretKey = solKeyPair.secretKey
+    config.set(
+      'solDelegatePrivateKeyBase64',
+      Buffer.from(solSecretKey).toString('base64')
+    )
+
+    // Get values from config and derive Solana public key
+    const solSecretKeyDerived = config.get('solDelegatePrivateKeyBase64')
+    const solSecretKeyBufferDerived = new Uint8Array(
+      Buffer.from(solSecretKeyDerived, 'base64')
+    )
+    const solKeyPairDerived = Keypair.fromSecretKey(solSecretKeyBufferDerived)
+    const solPublicKeyDerived = solKeyPairDerived.publicKey
+
+    // Verify derived values are correct and using the right encodings
+    assert.strictEqual(
+      new TextDecoder('utf8').decode(solSecretKey).toString(),
+      SOL_SECRET_KEY_BUFFER.toString('utf8')
+    )
+    assert.strictEqual(solSecretKeyDerived, SOL_SECRET_KEY_BASE64)
+    assert.strictEqual(solPublicKeyDerived.toBase58(), SOL_PUBLIC_KEY_BASE58)
   })
 })
 
@@ -292,12 +452,16 @@ describe('Test Health Check Verbose', function () {
     config.set('manualSyncsDisabled', false)
 
     const res = await healthCheckVerbose(
-      { snapbackSM: snapbackSMMock },
+      {
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
 
@@ -342,8 +506,34 @@ describe('Test Health Check Verbose', function () {
       snapbackJobInterval: 1000,
       transcodeActive: 4,
       transcodeWaiting: 0,
-      fileProcessingActive: 0,
-      fileProcessingWaiting: 2
+      transcodeQueueIsAvailable: true,
+      shouldHandleTranscode: true,
+      asyncProcessingQueue: {
+        waiting: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 2
+        },
+        active: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        },
+        failed: {
+          trackContentUpload: 0,
+          transcodeAndSegment: 0,
+          processTranscodeAndSegments: 0,
+          transcodeHandOff: 0,
+          total: 0
+        }
+      },
+      solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
+      stateMachineQueueLatestJobSuccess: null,
+      stateMachineQueueLatestJobStart: null
     })
   })
 
@@ -357,20 +547,30 @@ describe('Test Health Check Verbose', function () {
     config.set('manualSyncsDisabled', false)
 
     const verboseRes = await healthCheckVerbose(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs
     )
     const defaultRes = await healthCheck(
-      { libs: libsMock, snapbackSM: snapbackSMMock },
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
+      },
       mockLogger,
       sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
       AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
       2
     )

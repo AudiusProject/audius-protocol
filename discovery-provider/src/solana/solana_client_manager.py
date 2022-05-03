@@ -5,9 +5,9 @@ import time
 from contextlib import contextmanager
 from typing import Optional, Union
 
-from solana.account import Account
+from solana.keypair import Keypair
 from solana.publickey import PublicKey
-from solana.rpc.api import Client
+from solana.rpc.api import Client, Commitment
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResponse,
     ConfirmedTransaction,
@@ -36,10 +36,12 @@ class SolanaClientManager:
         index = random.randrange(0, len(self.clients))
         return self.clients[index]
 
-    def get_sol_tx_info(self, tx_sig: str, retries=DEFAULT_MAX_RETRIES):
+    def get_sol_tx_info(
+        self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json"
+    ):
         """Fetches a solana transaction by signature with retries and a delay."""
 
-        def handle_get_sol_tx_info(client, index):
+        def handle_get_sol_tx_info(client: Client, index: int):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
@@ -47,8 +49,8 @@ class SolanaClientManager:
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}"
                     )
-                    tx_info: ConfirmedTransaction = client.get_confirmed_transaction(
-                        tx_sig
+                    tx_info: ConfirmedTransaction = client.get_transaction(
+                        tx_sig, encoding
                     )
                     logger.info(
                         f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}"
@@ -78,14 +80,15 @@ class SolanaClientManager:
 
     def get_signatures_for_address(
         self,
-        account: Union[str, Account, PublicKey],
+        account: Union[str, Keypair, PublicKey],
         before: Optional[str] = None,
+        until: Optional[str] = None,
         limit: Optional[int] = None,
-        retries: Optional[int] = DEFAULT_MAX_RETRIES,
+        retries: int = DEFAULT_MAX_RETRIES,
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_signatures_for_address(client, index):
+        def handle_get_signatures_for_address(client: Client, index: int):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
@@ -94,7 +97,9 @@ class SolanaClientManager:
                         f"solana_client_manager.py | handle_get_signatures_for_address | Fetching {before} {endpoint}"
                     )
                     transactions: ConfirmedSignatureForAddressResponse = (
-                        client.get_signatures_for_address(account, before, limit)
+                        client.get_signatures_for_address(
+                            account, before, until, limit, Commitment("finalized")
+                        )
                     )
                     logger.info(
                         f"solana_client_manager.py | handle_get_signatures_for_address | Finished fetching {before} {endpoint}"

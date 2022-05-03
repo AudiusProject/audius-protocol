@@ -1,11 +1,9 @@
 #!/bin/bash
 set -e
 
-if [ "$audius_db_run_migrations" != false ]; then
-    echo "Running alembic migrations"
-    export PYTHONPATH='.'
-    alembic upgrade head
-    echo "Finished running migrations"
+# start es-indexer
+if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
+    cd es-indexer && npm i && npm start &
 fi
 
 # Audius Discovery Provider / Flask

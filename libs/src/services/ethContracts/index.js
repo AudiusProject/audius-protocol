@@ -13,7 +13,7 @@ const ClaimDistributionClient = require('./claimDistributionClient')
 const WormholeClient = require('./wormholeClient')
 const EthRewardsManagerClient = require('./ethRewardsManagerClient')
 const TrustedNotifierManagerClient = require('./trustedNotifierManagerClient')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi
@@ -21,7 +21,7 @@ const GovernanceABI = Utils.importEthContractABI('Governance.json').abi
 const ServiceTypeManagerABI = Utils.importEthContractABI('ServiceTypeManager.json').abi
 const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
-const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
+const DelegateManagerABI = Utils.importEthContractABI('DelegateManagerV2.json').abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
 const WormholeClientABI = Utils.importEthContractABI('WormholeClient.json').abi

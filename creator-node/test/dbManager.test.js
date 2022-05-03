@@ -12,6 +12,7 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
+const { Utils } = require('@audius/libs')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -20,7 +21,6 @@ const {
   createSession
 } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
-const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { saveFileToStorage } = require('./lib/helpers')
 
@@ -40,12 +40,7 @@ describe('Test createNewDataRecord()', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(
-      getIPFSMock(),
-      getLibsMock(),
-      BlacklistManager,
-      getIPFSMock(true)
-    )
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -393,7 +388,7 @@ describe('Test ClockRecord model', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -603,7 +598,7 @@ describe('Test deleteSessionTokensFromDB() when provided an Array of SessionToke
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
@@ -646,38 +641,19 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
       fileName: `${fileUUID}.mp3`,
       fileDir,
       fileDestination: fileDir,
-      session: {
-        cnodeUserUUID: session.cnodeUserUUID
-      }
+      cnodeUserUUID: session.cnodeUserUUID
     }
   }
 
-  let session,
-    app,
-    cnodeUser,
-    cnodeUserUUID,
-    server,
-    ipfsMock,
-    ipfsLatestMock,
-    libsMock
+  let session, app, cnodeUser, cnodeUserUUID, server, libsMock
 
   /** Init server to run DB migrations */
   before(async () => {
     const spId = 1
-    ipfsMock = getIPFSMock()
-    ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
-    const appInfo = await getApp(
-      ipfsMock,
-      libsMock,
-      BlacklistManager,
-      ipfsLatestMock,
-      null,
-      spId
-    )
+    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
     server = appInfo.server
     app = appInfo.app
-    mockServiceRegistry = appInfo.mockServiceRegistry
   })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
@@ -694,8 +670,8 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
 
   /** Wipe all CNodeUsers + dependent data */
   after(async () => {
+    sinon.restore()
     await destroyUsers()
-
     await server.close()
   })
 
@@ -721,28 +697,29 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     }
 
     const uploadTrackState = async () => {
-      // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
-      const MockSavefileMultihash =
-        'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
+      const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
+          '@audius/libs': {
+            Utils: {
+              fileHasher: {
+                generateNonImageCid: sinon.stub().returns(
+                  new Promise((resolve) => {
+                    return resolve(mockCid)
+                  })
+                )
+              }
+            },
+            '@global': true
+          },
           '../../fileManager': {
-            saveFileToIPFSFromFS: sinon
-              .stub(FileManager, 'saveFileToIPFSFromFS')
-              .returns(
-                new Promise((resolve, reject) => {
-                  const multihash = MockSavefileMultihash
-                  return resolve(multihash)
-                })
-              ),
             copyMultihashToFs: sinon
               .stub(FileManager, 'copyMultihashToFs')
               .returns(
                 new Promise((resolve) => {
-                  const dstPath = DiskManager.computeFilePath(
-                    MockSavefileMultihash
-                  )
+                  const dstPath = DiskManager.computeFilePath(mockCid)
                   return resolve(dstPath)
                 })
               ),
@@ -763,8 +740,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
         track_segments: trackSegments,
         source_file: sourceFile,
         transcodedTrackUUID
-      } =
-        trackContentResp
+      } = trackContentResp
       const trackMetadata = {
         test: 'field1',
         track_segments: trackSegments,
@@ -871,12 +847,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
 
   /** Init server to run DB migrations */
   before(async () => {
-    const appInfo = await getApp(
-      getIPFSMock(),
-      getLibsMock(),
-      BlacklistManager,
-      getIPFSMock(true)
-    )
+    const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 

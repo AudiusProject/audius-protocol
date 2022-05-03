@@ -6,18 +6,15 @@ const {
   errorResponseServerError
 } = require('../apiHelpers')
 const config = require('../config')
-const { getIPFSPeerId } = require('../utils')
 
 module.exports = function (app) {
   /**
    * Exports all db data (not files) associated with walletPublicKey[] as JSON.
-   * Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
    *
    * This route is only run on a user's primary, to export data to the user's secondaries.
    *
    * @return {
    *  cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
-   *  ipfsIDObj Object containing IPFS Node's peer ID
    * }
    */
   app.get(
@@ -147,10 +144,6 @@ module.exports = function (app) {
           )
         })
 
-        // Expose ipfs node's peer ID.
-        const ipfs = req.app.get('ipfsAPI')
-        const ipfsIDObj = await getIPFSPeerId(ipfs)
-
         req.logger.info(
           `Successful export for wallets ${walletPublicKeys} to source endpoint ${
             sourceEndpoint || '(not provided)'
@@ -158,7 +151,7 @@ module.exports = function (app) {
             Date.now() - start
           } ms`
         )
-        return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
+        return successResponse({ cnodeUsers: cnodeUsersDict })
       } catch (e) {
         req.logger.error(
           `Error in /export for wallets ${walletPublicKeys} to source endpoint ${

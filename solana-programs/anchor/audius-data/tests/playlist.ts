@@ -3,10 +3,16 @@ import { Program } from "@project-serum/anchor";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { initAdmin, updateAdmin } from "../lib/lib";
-import { findDerivedPair, randomCID, randomString } from "../lib/utils";
+import {
+  findDerivedPair,
+  randomCID,
+  randomId,
+  convertBNToUserIdSeed,
+} from "../lib/utils";
 import { AudiusData } from "../target/types/audius_data";
 import {
   testCreatePlaylist,
+  createSolanaContentNode,
   initTestConstants,
   testCreateUser,
   testInitUser,
@@ -15,33 +21,54 @@ import {
   testUpdatePlaylist,
 } from "./test-helpers";
 
+const { SystemProgram } = anchor.web3;
+
 chai.use(chaiAsPromised);
 
-describe("audius-data", function () {
-  const provider = anchor.Provider.local("http://localhost:8899", {
+describe("playlists", function () {
+  const provider = anchor.AnchorProvider.local("http://localhost:8899", {
     preflightCommitment: "confirmed",
     commitment: "confirmed",
   });
 
   // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.Provider.env());
+  anchor.setProvider(anchor.AnchorProvider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
 
   const adminKeypair = anchor.web3.Keypair.generate();
-  const adminStgKeypair = anchor.web3.Keypair.generate();
+  const adminAccountKeypair = anchor.web3.Keypair.generate();
   const verifierKeypair = anchor.web3.Keypair.generate();
-
+  const contentNodes = {};
+  const getURSMParams = () => {
+    return {
+      replicaSet: [
+        contentNodes["1"].spId.toNumber(),
+        contentNodes["2"].spId.toNumber(),
+        contentNodes["3"].spId.toNumber(),
+      ],
+      replicaSetBumps: [
+        contentNodes["1"].seedBump.bump,
+        contentNodes["2"].seedBump.bump,
+        contentNodes["3"].seedBump.bump,
+      ],
+      cn1: contentNodes["1"].accountAddress,
+      cn2: contentNodes["2"].accountAddress,
+      cn3: contentNodes["3"].accountAddress,
+    };
+  };
   it("Initializing admin account!", async function () {
-    await initAdmin({
-      provider,
+    const tx = initAdmin({
+      payer: provider.wallet.publicKey,
       program,
       adminKeypair,
-      adminStgKeypair,
+      adminAccountKeypair,
       verifierKeypair,
     });
+
+    await provider.sendAndConfirm(tx, [adminAccountKeypair]);
     const adminAccount = await program.account.audiusAdmin.fetch(
-      adminStgKeypair.publicKey
+      adminAccountKeypair.publicKey
     );
 
     const chainAuthority = adminAccount.authority.toString();
@@ -50,17 +77,44 @@ describe("audius-data", function () {
     expect(adminAccount.isWriteEnabled, "is_write_enabled").to.equal(true);
   });
 
+  it("Initializing Content Node accounts!", async function () {
+    const cn1 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminAccountKeypair,
+      spId: new anchor.BN(1),
+    });
+    const cn2 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminAccountKeypair,
+      spId: new anchor.BN(2),
+    });
+    const cn3 = await createSolanaContentNode({
+      program,
+      provider,
+      adminKeypair,
+      adminAccountKeypair,
+      spId: new anchor.BN(3),
+    });
+    contentNodes["1"] = cn1;
+    contentNodes["2"] = cn2;
+    contentNodes["3"] = cn3;
+  });
+
   it("Initializing + claiming user, creating + updating playlist", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+    const { ethAccount, userId, metadata } = initTestConstants();
 
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
-      Buffer.from(handleBytesArray)
+      adminAccountKeypair.publicKey,
+      convertBNToUserIdSeed(userId)
     );
 
     await testInitUser({
@@ -68,12 +122,13 @@ describe("audius-data", function () {
       program,
       baseAuthorityAccount,
       ethAddress: ethAccount.address,
-      handleBytesArray,
+      userId,
       bumpSeed,
       metadata,
-      userStgAccount: newUserAcctPDA,
-      adminStgKeypair,
+      userAccount: userAccountAddress,
+      adminAccountKeypair,
       adminKeypair,
+      ...getURSMParams(),
     });
 
     // New sol key that will be used to permission user updates
@@ -89,23 +144,25 @@ describe("audius-data", function () {
       message,
       ethPrivateKey: ethAccount.privateKey,
       newUserPublicKey: newUserKeypair.publicKey,
-      newUserAcctPDA,
+      userAccount: userAccountAddress,
     });
 
     const playlistMetadata = randomCID();
-    const playlistID = randomString(10);
+    const playlistID = randomId();
 
     await testCreatePlaylist({
       provider,
       program,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       id: playlistID,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwnerPDA: newUserAcctPDA,
-      adminStgAccount: adminStgKeypair.publicKey,
+      playlistOwner: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
+      adminAccount: adminAccountKeypair.publicKey,
     });
 
     // Expected signature validation failure
@@ -118,13 +175,15 @@ describe("audius-data", function () {
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
-        id: randomString(10),
+        id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: wrongUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
-        adminStgAccount: adminStgKeypair.publicKey,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
+        adminAccount: adminAccountKeypair.publicKey,
       });
     } catch (e) {
       console.log(`Error found as expected ${e}`);
@@ -134,35 +193,41 @@ describe("audius-data", function () {
       provider,
       program,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       id: playlistID,
-      userStgAccountPDA: newUserAcctPDA,
+      userAccount: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       metadata: updatedPlaylistMetadata,
     });
   });
 
   it("creating + deleting a playlist", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+    const { ethAccount, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
-      Buffer.from(handleBytesArray)
+      adminAccountKeypair.publicKey,
+      convertBNToUserIdSeed(userId)
     );
 
-    await updateAdmin({
+    // disable admin writes
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
+
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
 
@@ -176,63 +241,70 @@ describe("audius-data", function () {
       message,
       baseAuthorityAccount,
       ethAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       metadata,
       newUserKeypair,
-      userStgAccount: newUserAcctPDA,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      userAccount: userAccountAddress,
+      adminAccount: adminAccountKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     const playlistMetadata = randomCID();
-    const playlistID = randomString(10);
+    const playlistID = randomId();
 
     await testCreatePlaylist({
       provider,
       program,
       id: playlistID,
       baseAuthorityAccount,
-      handleBytesArray,
-      adminStgAccount: adminStgKeypair.publicKey,
+      userId,
+      adminAccount: adminAccountKeypair.publicKey,
       bumpSeed,
       playlistMetadata,
       userAuthorityKeypair: newUserKeypair,
-      playlistOwnerPDA: newUserAcctPDA,
+      playlistOwner: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
     });
 
     await testDeletePlaylist({
       provider,
       program,
       id: playlistID,
-      playlistOwnerPDA: newUserAcctPDA,
+      playlistOwner: userAccountAddress,
+      userAuthorityDelegateAccount: SystemProgram.programId,
+      authorityDelegationStatusAccount: SystemProgram.programId,
       userAuthorityKeypair: newUserKeypair,
       baseAuthorityAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
     });
   });
 
   it("create multiple playlists in parallel", async function () {
-    const { ethAccount, handleBytesArray, metadata } = initTestConstants();
+    const { ethAccount, metadata, userId } = initTestConstants();
 
     const {
       baseAuthorityAccount,
       bumpSeed,
-      derivedAddress: newUserAcctPDA,
+      derivedAddress: userAccountAddress,
     } = await findDerivedPair(
       program.programId,
-      adminStgKeypair.publicKey,
-      Buffer.from(handleBytesArray)
+      adminAccountKeypair.publicKey,
+      convertBNToUserIdSeed(userId)
     );
 
     // Disable admin writes
-    await updateAdmin({
+    const updateAdminTx = updateAdmin({
       program,
       isWriteEnabled: false,
-      adminStgAccount: adminStgKeypair.publicKey,
+      adminAccount: adminAccountKeypair.publicKey,
       adminAuthorityKeypair: adminKeypair,
     });
+
+    await provider.sendAndConfirm(updateAdminTx, [adminKeypair]);
 
     // New sol key that will be used to permission user updates
     const newUserKeypair = anchor.web3.Keypair.generate();
@@ -247,12 +319,13 @@ describe("audius-data", function () {
       message,
       baseAuthorityAccount,
       ethAccount,
-      handleBytesArray,
+      userId,
       bumpSeed,
       metadata,
       newUserKeypair,
-      userStgAccount: newUserAcctPDA,
-      adminStgPublicKey: adminStgKeypair.publicKey,
+      userAccount: userAccountAddress,
+      adminAccount: adminAccountKeypair.publicKey,
+      ...getURSMParams(),
     });
 
     const playlistMetadata = randomCID();
@@ -264,37 +337,43 @@ describe("audius-data", function () {
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
-        adminStgAccount: adminStgKeypair.publicKey,
-        id: randomString(10),
+        adminAccount: adminAccountKeypair.publicKey,
+        id: randomId(),
         playlistMetadata,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
-        adminStgAccount: adminStgKeypair.publicKey,
-        id: randomString(10),
+        adminAccount: adminAccountKeypair.publicKey,
+        id: randomId(),
         playlistMetadata: playlistMetadata2,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
       testCreatePlaylist({
         provider,
         program,
         baseAuthorityAccount,
-        handleBytesArray,
+        userId,
         bumpSeed,
-        adminStgAccount: adminStgKeypair.publicKey,
-        id: randomString(10),
+        adminAccount: adminAccountKeypair.publicKey,
+        id: randomId(),
         playlistMetadata: playlistMetadata3,
         userAuthorityKeypair: newUserKeypair,
-        playlistOwnerPDA: newUserAcctPDA,
+        playlistOwner: userAccountAddress,
+        userAuthorityDelegateAccount: SystemProgram.programId,
+        authorityDelegationStatusAccount: SystemProgram.programId,
       }),
     ]);
     console.log(`Created 3 playlists in ${Date.now() - start}ms`);

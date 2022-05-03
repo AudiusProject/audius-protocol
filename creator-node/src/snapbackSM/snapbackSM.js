@@ -6,6 +6,7 @@ const retry = require('async-retry')
 const utils = require('../utils')
 const models = require('../models')
 const { logger } = require('../logging')
+const redis = require('../redis.js')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
@@ -20,14 +21,15 @@ const SyncMonitoringRetryDelayMs = 15000
 const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
 // Timeout for fetching batch clock values
-const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
 
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
-const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = 5000
-
 const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
+
+// Number of users to process in each batch for this._aggregateOps
+const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
@@ -81,10 +83,10 @@ const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
 const STATE_MACHINE_QUEUE_INIT_DELAY_MS = 30000 // 30s
 
-/*
-  SnapbackSM aka Snapback StateMachine
-  Ensures file availability through recurring sync operations
-*/
+/**
+ * SnapbackSM aka Snapback StateMachine.
+ * Ensures file availability through recurring sync operations
+ */
 class SnapbackSM {
   constructor(nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
@@ -119,6 +121,11 @@ class SnapbackSM {
       'maxSyncMonitoringDurationInMs'
     )
 
+    const reconfigNodeWhitelist = this.nodeConfig.get('reconfigNodeWhitelist')
+    this.reconfigNodeWhitelist = reconfigNodeWhitelist
+      ? new Set(reconfigNodeWhitelist.split(','))
+      : null
+
     // Throw an error if no libs are provided
     if (
       !this.audiusLibs ||
@@ -126,15 +133,8 @@ class SnapbackSM {
       !this.endpoint ||
       !this.delegatePrivateKey
     ) {
-      throw new Error('Missing required configs - cannot start')
+      throw new Error('SnapbackSM: Missing required configs - cannot start')
     }
-
-    // State machine queue processes all user operations
-    this.stateMachineQueue = this.createBullQueue('state-machine')
-
-    // Sync queues handle issuing sync request from primary -> secondary
-    this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
-    this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
     // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
     // ex: 1/<24> users are handled over <3600000> ms (1 hour)
@@ -143,15 +143,39 @@ class SnapbackSM {
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
+    // The interval when SnapbackSM is fired for state machine jobs
+    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
+
+    // State machine queue processes all user operations
+    // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
+    this.stateMachineQueue = this.createBullQueue('state-machine', {
+      // Should be sufficiently larger than expected job runtime
+      lockDuration: this.snapbackJobInterval * 2,
+      // we never want to re-process stalled job
+      maxStalledCount: 0
+    })
+
+    // Sync queues handle issuing sync request from primary -> secondary
+    this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
+    this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
+
+    // Add stalled event handlers for all queues
+    this.stateMachineQueue.on('global:stalled', (job) => {
+      this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
+    })
+    this.manualSyncQueue.on('global:stalled', (job) => {
+      this.logError(`manualSyncQueue Job Stalled - ID ${job.id}}`)
+    })
+    this.recurringSyncQueue.on('global:stalled', (job) => {
+      this.logError(`recurringSyncQueue Job Stalled - ID ${job.id}}`)
+    })
+
     // PeerSetManager instance to determine the peer set and its health state
     this.peerSetManager = new PeerSetManager({
       discoveryProviderEndpoint:
         audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       creatorNodeEndpoint: this.endpoint
     })
-
-    // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
     this.updateEnabledReconfigModesSet()
   }
@@ -175,61 +199,55 @@ class SnapbackSM {
      */
 
     // Initialize stateMachineQueue job processor
-    // - Re-adds job to queue after processing current job, with a fixed delay
-    this.stateMachineQueue.process(async (job, done) => {
+    this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
+      const jobId = job.id
+      await redis.set('stateMachineQueueLatestJobStart', Date.now())
       try {
         await this.processStateMachineOperation()
+        await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
-        this.logError(`StateMachineQueue processing error: ${e}`)
+        this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
       }
-
-      await utils.timeout(this.snapbackJobInterval)
-
-      await this.stateMachineQueue.add({ startTime: Date.now() })
-
-      done()
     })
 
     // Initialize manualSyncQueue job processor
     this.manualSyncQueue.process(
       this.MaxManualRequestSyncJobConcurrency,
-      async (job, done) => {
+      async (job) => {
         try {
           await this.processSyncOperation(job, SyncType.Manual)
         } catch (e) {
           this.logError(`ManualSyncQueue processing error: ${e}`)
         }
-
-        done()
       }
     )
 
     // Initialize recurringSyncQueue job processor
     this.recurringSyncQueue.process(
       this.MaxRecurringRequestSyncJobConcurrency,
-      async (job, done) => {
+      async (job) => {
         try {
           await this.processSyncOperation(job, SyncType.Recurring)
         } catch (e) {
           this.logError(`RecurringSyncQueue processing error ${e}`)
         }
-
-        done()
       }
     )
 
-    // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
+    // Enqueue stateMachineQueue jobs on a cron, after an initial delay
     await this.stateMachineQueue.add(
-      {
-        startTime: Date.now() + STATE_MACHINE_QUEUE_INIT_DELAY_MS
-      },
-      {
-        delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS
+      /** data */ { startTime: Date.now() },
+      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+    )
+    await this.stateMachineQueue.add(
+      /** data */ { startTime: Date.now() },
+      /** opts */ {
+        repeat: { every: this.snapbackJobInterval }
       }
     )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; jobs will be enqueued every ${this.snapbackJobInterval}ms`
     )
   }
 
@@ -249,9 +267,9 @@ class SnapbackSM {
     logger.error(`SnapbackSM ERROR: ${msg}`)
   }
 
-  // Initialize queue object with provided name and unix timestamp
-  createBullQueue(queueName) {
-    return new Bull(`${queueName}-${Date.now()}`, {
+  // Initialize bull queue instance with provided name and settings
+  createBullQueue(queueName, settings = {}) {
+    return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
         host: this.nodeConfig.get('redisHost')
@@ -260,7 +278,8 @@ class SnapbackSM {
         // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
         removeOnComplete: true,
         removeOnFail: true
-      }
+      },
+      settings
     })
   }
 
@@ -706,15 +725,9 @@ class SnapbackSM {
         const walletsOnReplica = replicasToWalletsMap[replica]
 
         // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
-        for (
-          let i = 0;
-          i < walletsOnReplica.length;
-          i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
-        ) {
-          const walletsOnReplicaSlice = walletsOnReplica.slice(
-            i,
-            i + MAX_BATCH_CLOCK_STATUS_BATCH_SIZE
-          )
+        const batchSize = this.nodeConfig.get('maxBatchClockStatusBatchSize')
+        for (let i = 0; i < walletsOnReplica.length; i += batchSize) {
+          const walletsOnReplicaSlice = walletsOnReplica.slice(i, i + batchSize)
 
           const axiosReqParams = {
             baseURL: replica,
@@ -842,21 +855,18 @@ class SnapbackSM {
    * - Processes all users in chunks
    * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
    * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
-   *
-   * @note refer to git history for reference to `processStateMachineOperationOld()`
    */
   async processStateMachineOperation() {
     // Record all stages of this function along with associated information for use in logging
-    const decisionTree = [
+    const decisionTree = []
+    this._addToStateMachineQueueDecisionTree(
+      decisionTree,
+      'BEGIN processStateMachineOperation()',
       {
-        stage: 'BEGIN processStateMachineOperation()',
-        vals: {
-          currentModuloSlice: this.currentModuloSlice,
-          moduloBase: this.moduloBase
-        },
-        time: Date.now()
+        currentModuloSlice: this.currentModuloSlice,
+        moduloBase: this.moduloBase
       }
-    ]
+    )
 
     try {
       let nodeUsers
@@ -864,17 +874,17 @@ class SnapbackSM {
         nodeUsers = await this.peerSetManager.getNodeUsers()
         nodeUsers = this.sliceUsers(nodeUsers)
 
-        decisionTree.push({
-          stage: 'getNodeUsers() and sliceUsers() Success',
-          vals: { nodeUsersLength: nodeUsers.length },
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'getNodeUsers() and sliceUsers() Success',
+          { nodeUsersLength: nodeUsers.length }
+        )
       } catch (e) {
-        decisionTree.push({
-          stage: 'getNodeUsers() or sliceUsers() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'getNodeUsers() or sliceUsers() Error',
+          { error: e.message }
+        )
         throw new Error(
           `processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`
         )
@@ -883,20 +893,20 @@ class SnapbackSM {
       let unhealthyPeers
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
-        decisionTree.push({
-          stage: 'getUnhealthyPeers() Success',
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'getUnhealthyPeers() Success',
+          {
             unhealthyPeerSetLength: unhealthyPeers.size,
             unhealthyPeers: Array.from(unhealthyPeers)
-          },
-          time: Date.now()
-        })
+          }
+        )
       } catch (e) {
-        decisionTree.push({
-          stage: 'processStateMachineOperation():getUnhealthyPeers() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'processStateMachineOperation():getUnhealthyPeers() Error',
+          { error: e.message }
+        )
         throw new Error(
           `processStateMachineOperation():getUnhealthyPeers() Error: ${e.toString()}`
         )
@@ -905,14 +915,14 @@ class SnapbackSM {
       // Build map of <replica set node : [array of wallets that are on this replica set node]>
       const replicaSetNodesToUserWalletsMap =
         this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
-      decisionTree.push({
-        stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
-        vals: {
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'buildReplicaSetNodesToUserWalletsMap() Success',
+        {
           numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)
             .length
-        },
-        time: Date.now()
-      })
+        }
+      )
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
@@ -923,26 +933,25 @@ class SnapbackSM {
         // Update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet()
 
-        decisionTree.push({
-          stage: `updateEndpointToSpIdMap() Success`,
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'updateEndpointToSpIdMap() Success',
+          {
             endpointToSPIdMapSize: Object.keys(
               this.peerSetManager.endpointToSPIdMap
             ).length
-          },
-          time: Date.now()
-        })
+          }
+        )
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet(
           /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
         )
-
-        decisionTree.push({
-          stage: `updateEndpointToSpIdMap() Error`,
-          vals: { error: e.message },
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'updateEndpointToSpIdMap() Error',
+          { error: e.message }
+        )
       }
 
       // Retrieve clock statuses for all users and their current replica sets
@@ -953,35 +962,35 @@ class SnapbackSM {
             replicaSetNodesToUserWalletsMap,
             unhealthyPeers
           )
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
+        )
       } catch (e) {
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
+          { error: e.message }
+        )
         throw new Error(
           'processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error'
         )
       }
 
+      // Find sync requests that need to be issued and ReplicaSets that need to be updated
       const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
         await this.aggregateReconfigAndPotentialSyncOps(
           nodeUsers,
           unhealthyPeers
         )
-      decisionTree.push({
-        stage:
-          'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
-        vals: {
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
+        {
           requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
           potentialSyncRequestsLength: potentialSyncRequests.length
-        },
-        time: Date.now()
-      })
+        }
+      )
 
       // Issue all required sync requests
       let numSyncRequestsRequired,
@@ -1001,28 +1010,28 @@ class SnapbackSM {
           throw new Error('More than 50% of SyncRequests failed to be enqueued')
         }
 
-        decisionTree.push({
-          stage: 'issueSyncRequestsToSecondaries() Success',
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Success',
+          {
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
             numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
             enqueueSyncRequestErrors
-          },
-          time: Date.now()
-        })
+          }
+        )
       } catch (e) {
-        decisionTree.push({
-          stage: 'issueSyncRequestsToSecondaries() Error',
-          vals: {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueSyncRequestsToSecondaries() Error',
+          {
             error: e.message,
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
             numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
             enqueueSyncRequestErrors
-          },
-          time: Date.now()
-        })
+          }
+        )
       }
 
       /**
@@ -1040,7 +1049,8 @@ class SnapbackSM {
         const { services: healthyServicesMap } =
           await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
             performSyncCheck: false,
-            log: false
+            whitelist: this.reconfigNodeWhitelist,
+            log: true
           })
 
         const healthyNodes = Object.keys(healthyServicesMap)
@@ -1071,57 +1081,77 @@ class SnapbackSM {
             `issueUpdateReplicaSetOp() failed for ${numIssueUpdateReplicaSetOpErrors} users`
           )
 
-        decisionTree.push({
-          stage: 'issueUpdateReplicaSetOp() Success',
-          vals: { numUpdateReplicaOpsIssued },
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Success',
+          { numUpdateReplicaOpsIssued }
+        )
       } catch (e) {
-        decisionTree.push({
-          stage: 'issueUpdateReplicaSetOp() Error',
-          vals: e.message,
-          time: Date.now()
-        })
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'issueUpdateReplicaSetOp() Error',
+          { error: e.message }
+        )
         throw new Error(
           'processStateMachineOperation():issueUpdateReplicaSetOp() Error'
         )
       }
-
-      decisionTree.push({
-        stage: 'END processStateMachineOperation()',
-        vals: {
-          currentModuloSlice: this.currentModuloSlice,
-          moduloBase: this.moduloBase,
-          numSyncRequestsEnqueued,
-          numUpdateReplicaOpsIssued
-        },
-        time: Date.now()
-      })
-
-      // Log error without throwing - next run will attempt to rectify
     } catch (e) {
-      decisionTree.push({
-        stage: 'processStateMachineOperation Error',
-        vals: e.message,
-        time: Date.now()
-      })
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'processStateMachineOperation() Error',
+        { error: e.message }
+      )
     } finally {
-      // Increment and adjust current slice by this.moduloBase
-      this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
+      this._addToStateMachineQueueDecisionTree(
+        decisionTree,
+        'END processStateMachineOperation()',
+        {
+          currentModuloSlice: this.currentModuloSlice,
+          moduloBase: this.moduloBase
+        }
+      )
 
       // Log decision tree
-      try {
-        this.log(
-          `processStateMachineOperation Decision Tree ${JSON.stringify(
-            decisionTree
-          )}`
-        )
-      } catch (e) {
-        this.logError(
-          `Error printing processStateMachineOperation Decision Tree ${decisionTree}`
-        )
+      this._printStateMachineQueueDecisionTree(decisionTree)
+
+      // Increment and adjust current slice by this.moduloBase
+      this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
+    }
+  }
+
+  _addToStateMachineQueueDecisionTree(decisionTree, stage, data = {}) {
+    const obj = { stage, data, time: Date.now() }
+
+    if (decisionTree.length > 0) {
+      // Set duration if both objs have time field
+      const lastObj = decisionTree[decisionTree.length - 1]
+      if (lastObj && lastObj.time) {
+        const duration = obj.time - lastObj.time
+        obj.duration = duration
       }
+    }
+    decisionTree.push(obj)
+  }
+
+  _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
+    // Compute and record `fullDuration`
+    if (decisionTree.length > 2) {
+      const startTime = decisionTree[0].time
+      const endTime = decisionTree[decisionTree.length - 1].time
+      const duration = endTime - startTime
+      decisionTree[decisionTree.length - 1].fullDuration = duration
+    }
+    try {
+      this.log(
+        `processStateMachineOperation() Decision Tree${
+          msg ? ` - ${msg} - ` : ''
+        }${JSON.stringify(decisionTree)}`
+      )
+    } catch (e) {
+      this.logError(
+        `Error printing processStateMachineOperation() Decision Tree ${decisionTree}`
+      )
     }
   }
 
@@ -1153,12 +1183,9 @@ class SnapbackSM {
 
   /**
    * For every node user, record sync requests to issue to secondaries if this node is primary
-   *    and record replica set updates to issue for any unhealthy replicas
+   * and record replica set updates to issue for any unhealthy replicas
    *
-   * Purpose for the if/else case is that if the current node is a primary, issue reconfig or sync requests.
-   * Else, if the current node is a secondary, only issue reconfig requests.
-   *
-   * @param {Object} nodeUser { primary, secondary1, secondary2, [primarySpID?], [secondary1SpID?], [secondary2SpID?], user_id, wallet}
+   * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
    * @returns
    * {
@@ -1168,35 +1195,51 @@ class SnapbackSM {
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
   async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
+    // Parallelize calling this._aggregateOps on chunks of 500 nodeUsers at a time
+    const nodeUserBatches = _.chunk(
+      nodeUsers,
+      AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE
+    )
+    const results = []
+    for (const nodeUserBatch of nodeUserBatches) {
+      const resultBatch = await Promise.allSettled(
+        nodeUserBatch.map((nodeUser) =>
+          this._aggregateOps(nodeUser, unhealthyPeers)
+        )
+      )
+      results.push(...resultBatch)
+    }
+
+    // Combine each batch's requiredUpdateReplicaSetOps and potentialSyncRequests
     let requiredUpdateReplicaSetOps = []
     let potentialSyncRequests = []
-
-    for (const nodeUser of nodeUsers) {
-      const { primarySpID, secondary1SpID, secondary2SpID } = nodeUser
-
-      // If these spIds are undefined, it means that the Discovery Node does not have the latest code to return
-      // these fields. Fallback to the original aggregation logic. If present, use the spIds to determine whether
-      // reconfigs/syncs are necessary.
-      let subsetReplicaOps, subsetSyncReqs
-      if (primarySpID && secondary1SpID && secondary2SpID) {
-        ;({
-          requiredUpdateReplicaSetOps: subsetReplicaOps,
-          potentialSyncRequests: subsetSyncReqs
-        } = await this._aggregateOpsWithQueriedSpIds(nodeUser, unhealthyPeers))
-      } else {
-        // TODO: remove this else case once all the Discovery Nodes have upgraded and return the necessary replica set spIds
-        ;({
-          requiredUpdateReplicaSetOps: subsetReplicaOps,
-          potentialSyncRequests: subsetSyncReqs
-        } = await this._aggregateOpsWithoutQueriedSpIds(
-          nodeUser,
-          unhealthyPeers
-        ))
+    for (const promiseResult of results) {
+      // Skip and log failed promises
+      const {
+        status: promiseStatus,
+        value: reconfigAndSyncOps,
+        reason: promiseError
+      } = promiseResult
+      if (promiseStatus !== 'fulfilled') {
+        logger.error(
+          `aggregateReconfigAndPotentialSyncOps() encountered unexpected failure: ${
+            promiseError.message || promiseError
+          }`
+        )
+        continue
       }
 
-      requiredUpdateReplicaSetOps =
-        requiredUpdateReplicaSetOps.concat(subsetReplicaOps)
-      potentialSyncRequests = potentialSyncRequests.concat(subsetSyncReqs)
+      // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
+      const {
+        requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
+        potentialSyncRequests: potentialSyncRequestsFromPromise
+      } = reconfigAndSyncOps
+      requiredUpdateReplicaSetOps = requiredUpdateReplicaSetOps.concat(
+        requiredUpdateReplicaSetOpsFromPromise
+      )
+      potentialSyncRequests = potentialSyncRequests.concat(
+        potentialSyncRequestsFromPromise
+      )
     }
 
     return { requiredUpdateReplicaSetOps, potentialSyncRequests }
@@ -1207,7 +1250,7 @@ class SnapbackSM {
    * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
    */
-  async _aggregateOpsWithQueriedSpIds(nodeUser, unhealthyPeers) {
+  async _aggregateOps(nodeUser, unhealthyPeers) {
     const requiredUpdateReplicaSetOps = []
     const potentialSyncRequests = []
     const unhealthyReplicas = []
@@ -1328,106 +1371,6 @@ class SnapbackSM {
           if (addToUnhealthyReplicas) {
             unhealthyReplicas.push(replica.endpoint)
           }
-        }
-      }
-
-      if (unhealthyReplicas.length > 0) {
-        requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
-      }
-    }
-
-    return { requiredUpdateReplicaSetOps, potentialSyncRequests }
-  }
-
-  /**
-   * Used to determine the `requiredUpdateReplicaSetOps` and `potentialSyncRequests` for a given nodeUser, given that the
-   * nodeUser observed did not return any spIds for the replica set from the Discovery query.
-   * @param {Object} nodeUser {secondary1, secondary2, primary, user_id, wallet}
-   * @param {Set<string>} unhealthyPeers set of unhealthy peers
-   * @param {Object[]} requiredUpdateReplicaSetOps array of {...nodeUsers, unhealthyReplicas: {string[]} endpoints of unhealthy rset nodes }
-   * @param {Object[]} potentialSyncRequests array of {...nodeUsers, endpoint: {string} endpoint to sync to }
-   *
-   * @note this is for backwards compatibility. Once all the discovery nodes have upgraded, we can deprecate and remove this method.
-   */
-  async _aggregateOpsWithoutQueriedSpIds(nodeUser, unhealthyPeers) {
-    const requiredUpdateReplicaSetOps = []
-    const potentialSyncRequests = []
-    const unhealthyReplicas = []
-
-    const { secondary1, secondary2, primary } = nodeUser
-
-    /**
-     * If this node is primary for user, check both secondaries for health
-     * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
-     */
-    if (primary === this.endpoint) {
-      // filter out false-y values to account for incomplete replica sets
-      const secondaries = [secondary1, secondary2].filter(Boolean)
-
-      /**
-       * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
-       */
-      const userSecondarySyncMetrics =
-        await this._computeUserSecondarySyncSuccessRates(
-          nodeUser.wallet,
-          secondaries
-        )
-      for (const secondary of secondaries) {
-        const { successRate, successCount, failureCount } =
-          userSecondarySyncMetrics[secondary]
-
-        // Error case 1 - already marked unhealty
-        if (unhealthyPeers.has(secondary)) {
-          this.logError(
-            `processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} in unhealthy peer set. Marking replica as unhealthy.`
-          )
-          unhealthyReplicas.push(secondary)
-
-          // Error case 2 - low user sync success rate
-        } else if (
-          failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig &&
-          successRate < this.MinimumSecondaryUserSyncSuccessPercent
-        ) {
-          this.logError(
-            `processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
-          )
-          unhealthyReplicas.push(secondary)
-
-          // Success case
-        } else {
-          potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
-        }
-      }
-
-      /**
-       * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
-       */
-      if (unhealthyReplicas.length > 0) {
-        requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
-      }
-
-      /**
-       * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
-       * Ignore unhealthy secondaries for now
-       */
-    } else {
-      // filter out false-y values to account for incomplete replica sets
-      let replicas = [primary, secondary1, secondary2].filter(Boolean)
-      // filter out this endpoint
-      replicas = replicas.filter((replica) => replica !== this.endpoint)
-
-      for (const replica of replicas) {
-        if (unhealthyPeers.has(replica)) {
-          let addToUnhealthyReplicas = true
-
-          // If the current replica is the primary, perform a second health check.
-          // and determine if the primary is truly unhealthy
-          if (replica === primary) {
-            addToUnhealthyReplicas =
-              !(await this.peerSetManager.isPrimaryHealthy(primary))
-          }
-
-          if (addToUnhealthyReplicas) unhealthyReplicas.push(replica)
         }
       }
 

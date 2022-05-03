@@ -11,11 +11,7 @@ from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
-from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
-    TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
-)
+from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
@@ -32,6 +28,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.helpers import split_list
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
@@ -400,6 +397,13 @@ def parse_sol_tx_batch(
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
 
+    # In the case where an entire batch is comprised of errors, wipe the cache to avoid a future find intersection loop
+    # For example, if the transactions between the latest cached value and database tail are entirely errors, no Play record will be inserted.
+    # This means every subsequent run will continue to no-op on error transactions and the cache will never be updated
+    if tx_sig_batch_records and not plays:
+        logger.info("index_solana_plays.py | Clearing redis cache")
+        redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+
     # Cache the latest play from this batch
     # This reflects the ordering from chain
     for play in plays:
@@ -417,39 +421,40 @@ def parse_sol_tx_batch(
         f"index_solana_plays.py | DB | Saving test to DB, fetched batch tx details in {db_save_start - batch_start_time}"
     )
 
-    with db.scoped_session() as session:
+    if plays:
+        with db.scoped_session() as session:
+            logger.info(
+                f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+            )
+            session_execute_start = time.time()
+            # Save in bulk
+            session.execute(Play.__table__.insert().values(plays))
+            logger.info(
+                f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+            )
+
         logger.info(
-            f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+            f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
         )
-        session_execute_start = time.time()
-        # Save in bulk
-        session.execute(Play.__table__.insert().values(plays))
+
+        track_play_ids = [play["play_item_id"] for play in plays]
+        if track_play_ids:
+            redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
+
+        logger.info("index_solana_plays.py | Dispatching listen events")
+        listen_dispatch_start = time.time()
+        for event in challenge_bus_events:
+            challenge_bus.dispatch(
+                ChallengeEvent.track_listen,
+                event.get("slot"),
+                event.get("user_id"),
+                {"created_at": event.get("created_at")},
+            )
+        listen_dispatch_end = time.time()
+        listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
         logger.info(
-            f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+            f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
         )
-
-    logger.info(
-        f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
-    )
-
-    track_play_ids = [play["play_item_id"] for play in plays]
-    if track_play_ids:
-        redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
-
-    logger.info("index_solana_plays.py | Dispatching listen events")
-    listen_dispatch_start = time.time()
-    for event in challenge_bus_events:
-        challenge_bus.dispatch(
-            ChallengeEvent.track_listen,
-            event.get("slot"),
-            event.get("user_id"),
-            {"created_at": event.get("created_at")},
-        )
-    listen_dispatch_end = time.time()
-    listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
-    logger.info(
-        f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
-    )
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
@@ -457,11 +462,6 @@ def parse_sol_tx_batch(
         f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
     )
     return None
-
-
-def split_list(list, n):
-    for i in range(0, len(list), n):
-        yield list[i : i + n]
 
 
 # Push to head of array containing seen transactions
@@ -539,7 +539,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         transactions_history = solana_client_manager.get_signatures_for_address(
             TRACK_LISTEN_PROGRAM,
             before=last_tx_signature,
-            limit=TX_SIGNATURES_BATCH_SIZE,
+            limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
         )
         logger.info(
             f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"
@@ -586,18 +586,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                 # Append batch of processed signatures
                 if transaction_signature_batch:
                     transaction_signatures.append(transaction_signature_batch)
-
-                # Ensure processing does not grow unbounded
-                if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                    logger.info(
-                        f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries"
-                    )
-                    transaction_signatures = transaction_signatures[
-                        -TX_SIGNATURES_RESIZE_LENGTH:
-                    ]
-                    logger.info(
-                        f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries"
-                    )
 
                 # Reset batch state
                 transaction_signature_batch = []

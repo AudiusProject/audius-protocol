@@ -1,5 +1,5 @@
 const { Base, Services } = require('./base')
-const Utils = require('../utils')
+const { Utils } = require('../utils')
 
 const MAX_PLAYLIST_LENGTH = 200
 
@@ -13,6 +13,7 @@ class Playlists extends Base {
     this.addPlaylistTrack = this.addPlaylistTrack.bind(this)
     this.orderPlaylistTracks = this.orderPlaylistTracks.bind(this)
     this.validateTracksInPlaylist = this.validateTracksInPlaylist.bind(this)
+    this.uploadPlaylistCoverPhoto = this.uploadPlaylistCoverPhoto.bind(this)
     this.updatePlaylistCoverPhoto = this.updatePlaylistCoverPhoto.bind(this)
     this.updatePlaylistName = this.updatePlaylistName.bind(this)
     this.updatePlaylistDescription = this.updatePlaylistDescription.bind(this)
@@ -207,17 +208,33 @@ class Playlists extends Base {
   }
 
   /**
-   * Updates the cover photo for a playlist
-   * @param {number} playlistId
-   * @param {File} fileData
+   * Uploads a cover photo for a playlist without updating the actual playlist
+   * @param {File} coverPhotoFile the file to upload as the cover photo
+   * @return {string} CID of the uploaded cover photo
    */
-  async updatePlaylistCoverPhoto (playlistId, fileData) {
+  async uploadPlaylistCoverPhoto (coverPhotoFile) {
     this.REQUIRES(Services.CREATOR_NODE)
 
-    const updatedPlaylistImage = await this.creatorNode.uploadImage(fileData, true)
+    const updatedPlaylistImage = await this.creatorNode.uploadImage(
+      coverPhotoFile,
+      true // square
+    )
+    return updatedPlaylistImage.dirCID
+  }
+
+  /**
+   * Updates the cover photo for a playlist
+   * @param {number} playlistId
+   * @param {File} coverPhoto
+   */
+  async updatePlaylistCoverPhoto (playlistId, coverPhoto) {
+    this.REQUIRES(Services.CREATOR_NODE)
+
+    const updatedPlaylistImageDirCid = await this.uploadPlaylistCoverPhoto(coverPhoto, true)
     return this.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
       playlistId,
-      Utils.formatOptionalMultihash(updatedPlaylistImage.dirCID))
+      Utils.formatOptionalMultihash(updatedPlaylistImageDirCid)
+    )
   }
 
   /**

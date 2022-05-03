@@ -1,10 +1,12 @@
 const { Base, Services } = require('./base')
-const CreatorNodeService = require('../services/creatorNode/index')
-const Utils = require('../utils')
+const { CreatorNode } = require('../services/creatorNode')
+const { Utils } = require('../utils')
 const { AuthHeaders } = require('../constants')
 const {
   getPermitDigest, sign
 } = require('../utils/signatures')
+const { PublicKey } = require('@solana/web3.js')
+const { BN } = require('@project-serum/anchor')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -31,6 +33,8 @@ class Account extends Base {
     this.searchTags = this.searchTags.bind(this)
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
+    this.getUserAccountOnSolana = this.getUserAccountOnSolana.bind(this)
+    this.userHasClaimedSolAccount = this.userHasClaimedSolAccount.bind(this)
   }
 
   /**
@@ -71,7 +75,7 @@ class Account extends Base {
       this.userStateManager.setCurrentUser(userAccount)
       const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
+        this.creatorNode.setEndpoint(CreatorNode.getPrimary(creatorNodeEndpoint))
       }
       return { user: userAccount, error: false, phase }
     }
@@ -115,7 +119,6 @@ class Account extends Base {
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    createWAudioUserBank = false,
     handleUserBankOutcomes = () => {},
     userBankOutcomes = {},
     feePayerOverride = null,
@@ -154,7 +157,7 @@ class Account extends Base {
       // Create a wAudio user bank address.
       // If userbank creation fails, we still proceed
       // through signup
-      if (createWAudioUserBank && this.solanaWeb3Manager) {
+      if (this.solanaWeb3Manager) {
         phase = phases.SOLANA_USER_BANK_CREATION;
         // Fire and forget createUserBank. In the case of failure, we will
         // retry to create user banks in a later session before usage
@@ -593,6 +596,64 @@ class Account extends Base {
       [AuthHeaders.MESSAGE]: message,
       [AuthHeaders.SIGNATURE]: signature
     })
+  }
+
+  /**
+   * Get current user account PDA from SOL given an ID and ETH wallet address
+   * @returns {object} with keys ethAddress, authority, replicaSet or
+   * null when account not found
+   */
+  async getUserAccountOnSolana (
+    { userId, wallet } = { userId: null, wallet: null }
+  ) {
+    this.REQUIRES(Services.SOLANA_WEB3_MANAGER)
+
+    // If wallet or userId are not passed in, use the user loaded in libs
+    if (!wallet || !userId) {
+      const user = this.getCurrentUser()
+      wallet = user.wallet
+      userId = user.userId
+    }
+
+    if (!(userId instanceof BN)) {
+      userId = new BN(userId)
+    }
+    // matches format for PDA derivation seed in SOL program
+    // use BN.toArrayLike instead of .toBuffer for browser compat reasons
+    const userIdSeed = userId.toArrayLike(Buffer, 'le', 4)
+
+    const { derivedAddress: userAccountPDA } =
+      await this.solanaWeb3Manager.findDerivedPair(
+        this.solanaWeb3Manager.audiusDataProgramId,
+        this.solanaWeb3Manager.audiusDataAdminStorageKeypairPublicKey,
+        userIdSeed
+      )
+
+    const account = await this.solanaWeb3Manager.fetchAccount(userAccountPDA)
+    return account
+  }
+
+  /**
+   * Checks that the current user has claimed account PDA on SOL
+   * @returns {boolean} userHasClaimedAccount
+   */
+  async userHasClaimedSolAccount (
+    { account = null, wallet = null, userId = null } = {
+      account: null,
+      wallet: null,
+      userId: null
+    }
+  ) {
+    if (!account && !wallet && !userId) {
+      throw new Error('Must supply EITHER an `account` OR `wallet` and `userId` to look up whether userHasClaimedSolAccount')
+    }
+    if (!account && wallet && userId) {
+      account = await this.getUserAccountOnSolana({ wallet, userId })
+    }
+    const userHasClaimedAccount =
+      PublicKey.default.toString() !== account.authority.toString()
+
+    return userHasClaimedAccount
   }
 }
 

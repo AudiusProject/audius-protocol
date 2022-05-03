@@ -1,23 +1,15 @@
 # mad-dog
-🐶 Creator Node Test Suite
+🐶 End-to-End Protocol Test Suite
 
 ## Usage
-### Standing Up/Down Services:
-1. If necessary, run `npm i` in `/mad-dog` and `/service-commands`
-2. cd to `/libs` and run `npm link`
-3. cd to `/service-commands` and run `npm link @audius/libs`
-4. Run `npm link`
-5. cd to `/mad-dog` and run `npm link @audius/service-commands`
-6. If systems are already up, run `npm run start down`
-7. Run `npm run start up`
-
-**Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
-
-Serveral tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chaos testing tool for Docker  
-**Pumba Installation**  
-`sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`  
-`chmod +x /usr/local/bin/pumba`
-
+### Setup/Installation -- Linking Local Packages:
+1. Make sure your services are up (`A run init-repos up && A up`). Mad dog runs against local services to provide e2e test coverage.
+2. cd to `/libs` and run `npm i && npm run build && npm link`
+3. cd to `/service-commands` and run `npm i && npm link && npm link @audius/libs`
+4. cd to `/mad-dog` and run `npm i && npm link @audius/libs @audius/service-commands`
+5. Install Pumba (chaos testing tool for Docker -- some but not all tests use it):
+    1. `sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`
+    2. `sudo chmod +x /usr/local/bin/pumba`
 
 ### Running Tests
 **Run all the tests in test suite**: 
@@ -32,6 +24,8 @@ Serveral tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a cha
 
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
+- In the event that mad-dog fails due to libs errors, try running `npm i` in `/libs` and relinking packages.
+- If mad-dog fails for other random reasons, it could be a state issue -- try bringing up a fresh set of services.
 
 ## Code Structure
 - The single test in mad-dog is based on the class `EmitterBasedTest`. This class
@@ -39,7 +33,7 @@ sets up a test that uses emitters to fire off events representing requests to ou
 
 - If you want to run tests without the emitter system, look at `tests/test_ipldBlacklist.js`
 
-- `executeOne`? `executeAll`? These are just two helper functions that make it easier to perform libs operations in a test. `executeAll` performs some operation on every initted instance of libs in parallel, while `executeOne` takes in index and performs the operation against that instance of libs. Both functions accept a function that is passed an instance of libs:
+- `executeOne`? `executeAll`? These are just two helper functions that make it easier to perform libs operations in a test. `executeAll` performs some operation on every initted instance of libs in parallel (we init a new libs instance for each wallet), while `executeOne` takes in index and performs the operation against that instance of libs. Both functions accept a function that is passed an instance of libs:
 ```
 const trackId = await executeOne(walletIndex, libs =>
   uploadTrack(libs, track, TRACK_DIR)

@@ -89,9 +89,10 @@ const healthCheckController = async (req) => {
     return errorResponseServerError()
   }
 
-  const { randomBytesToSign } = req.query
+  const { randomBytesToSign, enforceStateMachineQueueHealth } = req.query
 
-  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+  const AsyncProcessingQueue =
+    req.app.get('serviceRegistry').asyncProcessingQueue
 
   const logger = req.logger
   const response = await healthCheck(
@@ -100,10 +101,25 @@ const healthCheckController = async (req) => {
     sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
+    TranscodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs,
     numberOfCPUs,
     randomBytesToSign
   )
+
+  const { stateMachineQueueLatestJobSuccess } = response
+  if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
+    const healthyThresholdMs = 5 * config.get('snapbackJobInterval')
+
+    const delta =
+      Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
+    if (delta > healthyThresholdMs) {
+      return errorResponseServerError(
+        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${healthyThresholdMs}ms`
+      )
+    }
+  }
+
   return successResponse(response)
 }
 
@@ -137,7 +153,8 @@ const healthCheckVerboseController = async (req) => {
     return errorResponseServerError()
   }
 
-  const AsyncProcessingQueue = serviceRegistry.asyncProcessingQueue
+  const AsyncProcessingQueue =
+    req.app.get('serviceRegistry').asyncProcessingQueue
 
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(
@@ -147,6 +164,7 @@ const healthCheckVerboseController = async (req) => {
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
+    TranscodingQueue.isAvailable,
     AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 

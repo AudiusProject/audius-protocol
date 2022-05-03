@@ -49,7 +49,7 @@ def test_get_sol_tx_info(_):
     expected_response = {"result": "OK"}
 
     # test that it returns the client call response
-    client_mocks[0].get_confirmed_transaction.return_value = expected_response
+    client_mocks[0].get_transaction.return_value = expected_response
     assert (
         solana_client_manager.get_sol_tx_info("transaction signature")
         == expected_response
@@ -62,16 +62,16 @@ def test_get_sol_tx_info(_):
     client_mocks[2].reset_mock()
 
     num_retries = 2
-    client_mocks[0].get_confirmed_transaction.side_effect = Exception()
-    client_mocks[1].get_confirmed_transaction.side_effect = Exception()
-    client_mocks[2].get_confirmed_transaction.return_value = expected_response
+    client_mocks[0].get_transaction.side_effect = Exception()
+    client_mocks[1].get_transaction.side_effect = Exception()
+    client_mocks[2].get_transaction.return_value = expected_response
     assert (
         solana_client_manager.get_sol_tx_info("transaction signature", num_retries)
         == expected_response
     )
-    assert client_mocks[0].get_confirmed_transaction.call_count == 2
-    assert client_mocks[1].get_confirmed_transaction.call_count == 2
-    assert client_mocks[2].get_confirmed_transaction.call_count == 1
+    assert client_mocks[0].get_transaction.call_count == 2
+    assert client_mocks[1].get_transaction.call_count == 2
+    assert client_mocks[2].get_transaction.call_count == 1
 
 
 @mock.patch("solana.rpc.api.Client")
@@ -88,7 +88,9 @@ def test_get_signatures_for_address(_):
     # test that it returns the client call response
     client_mocks[0].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_signatures_for_address("account", "before", "limit")
+        solana_client_manager.get_signatures_for_address(
+            "account", "before", "until", "limit"
+        )
         == expected_response
     )
 
@@ -97,7 +99,9 @@ def test_get_signatures_for_address(_):
     client_mocks[1].get_signatures_for_address.side_effect = Exception()
     client_mocks[2].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_signatures_for_address("account", "before", "limit")
+        solana_client_manager.get_signatures_for_address(
+            "account", "before", "until", "limit"
+        )
         == expected_response
     )
 
@@ -106,4 +110,6 @@ def test_get_signatures_for_address(_):
     client_mocks[1].get_signatures_for_address.side_effect = Exception()
     client_mocks[2].get_signatures_for_address.side_effect = Exception()
     with pytest.raises(Exception):
-        solana_client_manager.get_signatures_for_address("account", "before", "limit")
+        solana_client_manager.get_signatures_for_address(
+            "account", "before", "until", "limit"
+        )

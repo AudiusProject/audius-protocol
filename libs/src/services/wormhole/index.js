@@ -3,10 +3,9 @@ const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
 const wormholeSDK = require('@certusone/wormhole-sdk')
-const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const { wAudioFromWeiAudio } = require('../solanaWeb3Manager/wAudio')
 const { sign, getTransferTokensDigest } = require('../../utils/signatures')
 /** Singleton state-manager for Audius Eth Contracts */
@@ -53,9 +52,6 @@ class Wormhole {
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
     this.wormholeSDK = wormholeSDK
-    if (isServer) {
-      setDefaultWasm('node')
-    }
   }
 
   async getSignedVAAWithRetry (
@@ -133,7 +129,7 @@ class Wormhole {
         signTransaction = customSignTransaction
       } else {
         signTransaction = async (transaction) => {
-          const { blockhash } = await connection.getRecentBlockhash()
+          const { blockhash } = await connection.getLatestBlockhash()
           // Must call serialize message to set the correct signatures on the transaction
           transaction.serializeMessage()
           const transactionData = {
@@ -184,7 +180,7 @@ class Wormhole {
       } else {
         transaction.serializeMessage()
 
-        const { blockhash } = await connection.getRecentBlockhash()
+        const { blockhash } = await connection.getLatestBlockhash()
         const transactionData = {
           recentBlockhash: blockhash,
           instructions: transaction.instructions.map(SolanaUtils.prepareInstructionForRelay),
@@ -281,7 +277,7 @@ class Wormhole {
       tx.serializeMessage()
       tx.partialSign(rootSolanaAccount)
 
-      const { blockhash } = await connection.getRecentBlockhash()
+      const { blockhash } = await connection.getLatestBlockhash()
       const transactionData = {
         recentBlockhash: blockhash,
         instructions: tx.instructions.map(SolanaUtils.prepareInstructionForRelay),

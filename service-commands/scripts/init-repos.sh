@@ -1,83 +1,82 @@
 #!/usr/bin/env bash
 set -ex
 
+####################################
+####### INSTALL DEPENDENCIES #######
+####################################
+
 # setup root
 cd $PROTOCOL_DIR/
 npm install
 
 # setup pre-commit hooks
-if command -v pre-commit &>/dev/null; then
-    pre-commit install -t pre-commit -t pre-push
-else
+if ! command -v pre-commit &>/dev/null; then
     echo "pre-commit not installed; not setting up pre-commit hooks"
+else
+    pre-commit install -t pre-commit -t pre-push
 fi
 
-# setup service commands
-cd $PROTOCOL_DIR/
-cd service-commands/
-npm install
-npm install lodash # fry_kek
-npm link
-
-# setup mad dog
-cd $PROTOCOL_DIR/
-cd mad-dog/
-npm install
-npm link @audius/service-commands
-
-# setup contracts
-cd $PROTOCOL_DIR/
-cd contracts/
+cd $PROTOCOL_DIR/service-commands
 npm install
 
-# setup eth contracts
-cd $PROTOCOL_DIR/
-cd eth-contracts/
+cd $PROTOCOL_DIR/mad-dog
+npm install
+mkdir -p local-storage/tmp-imgs
+
+cd $PROTOCOL_DIR/contracts
+npm install
+
+cd $PROTOCOL_DIR/eth-contracts
 npm install
 
 # no discovery provider setup needed
 # 'pip install' is performed through Docker for development
 # TODO: Revisit whether this is optimal after hot reloading for disc prov
 
-# setup creator node
-cd $PROTOCOL_DIR/
-cd creator-node/
+cd $PROTOCOL_DIR/creator-node
 npm install
 
-# setup libs
-cd $PROTOCOL_DIR/
-cd libs/
-npm install
-npm install lodash # lodash isn't installed on the first run for some reason...
-npm install web3   # web3 has the same issue...
-
-# setup identity service
-cd $PROTOCOL_DIR/
-cd identity-service/
-npm install --also=dev
-
-wait
-
-# build and create link for libs
-cd $PROTOCOL_DIR/
-cd libs
+cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+npm run install-dev
 npm run build
-npm link
 
-# link service-commands to libs
-cd $PROTOCOL_DIR/
-cd service-commands
-npm link @audius/libs
+cd $PROTOCOL_DIR/libs
+npm install
+npm run build
 
-# link creator-node to libs
-cd $PROTOCOL_DIR/
-cd creator-node
-npm link @audius/libs
+cd $PROTOCOL_DIR/identity-service
+npm install
 
-cd $PROTOCOL_DIR/
-cd ..
+cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
-    npm install
-    npm link @audius/libs
+    git checkout main
+    npm run init
+fi
+
+####################################
+######## LINK DEPENDENCIES #########
+####################################
+
+cd $PROTOCOL_DIR/service-commands
+npm link
+
+cd $PROTOCOL_DIR/libs
+npm link
+
+cd $PROTOCOL_DIR/mad-dog
+npm link @audius/service-commands
+
+cd $PROTOCOL_DIR/service-commands
+npm link @audius/libs
+
+cd $PROTOCOL_DIR/creator-node
+npm link @audius/libs
+
+cd $PROTOCOL_DIR/identity-service
+npm link @audius/libs
+
+cd $PROTOCOL_DIR/..
+if [ -d "audius-client" ]; then
+    cd audius-client/packages/web && npm link @audius/libs
 fi

@@ -28,18 +28,6 @@ EOF
     fi
 fi
 
-if [ -z "$ipfsHost" ]; then
-    if [ -z "$(ls -A /root/.ipfs)" ]; then
-        ipfs init --profile server
-    fi
-
-    ipfs daemon &
-    export ipfsHost=localhost
-    export ipfsPort=5001
-    export WAIT_HOSTS="localhost:5001"
-    /usr/bin/wait
-fi
-
 if [ -z "$redisHost" ]; then
     redis-server --daemonize yes
     export redisHost=localhost

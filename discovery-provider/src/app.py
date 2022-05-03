@@ -33,11 +33,12 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
+from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.utils import helpers
+from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
-from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
@@ -219,9 +220,9 @@ def create(test_config=None, mode="app"):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     if shared_config["cors"]["allow_all"]:
-        CORS(app, resources={r"/*": {"origins": "*"}})
+        CORS(app, max_age=86400, resources={r"/*": {"origins": "*"}})
     else:
-        CORS(app)
+        CORS(app, max_age=86400)
     app.iniconfig = ConfigIni()
     configure_flask(test_config, app, mode)
 
@@ -367,7 +368,6 @@ def configure_celery(celery, test_config=None):
         imports=[
             "src.tasks.index",
             "src.tasks.index_blacklist",
-            "src.tasks.index_plays",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.aggregates.index_aggregate_plays",
@@ -394,6 +394,8 @@ def configure_celery(celery, test_config=None):
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
+            "src.tasks.index_solana_user_data",
+            "src.tasks.index_aggregate_tips",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -403,10 +405,6 @@ def configure_celery(celery, test_config=None):
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
                 "schedule": timedelta(seconds=ipld_interval),
-            },
-            "update_play_count": {
-                "task": "update_play_count",
-                "schedule": timedelta(seconds=60),
             },
             "update_metrics": {
                 "task": "update_metrics",
@@ -519,6 +517,15 @@ def configure_celery(celery, test_config=None):
                 "task": "index_spl_token",
                 "schedule": timedelta(seconds=5),
             },
+            "index_aggregate_tips": {
+                "task": "index_aggregate_tips",
+                "schedule": timedelta(seconds=5),
+            }
+            # UNCOMMENT BELOW FOR MIGRATION DEV WORK
+            # "index_solana_user_data": {
+            #     "task": "index_solana_user_data",
+            #     "schedule": timedelta(seconds=5),
+            # },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -534,8 +541,8 @@ def configure_celery(celery, test_config=None):
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
 
-    # Initialize IPFS client for celery task context
-    ipfs_client = IPFSClient(
+    # Initialize CIDMetadataClient for celery task context
+    cid_metadata_client = CIDMetadataClient(
         eth_web3,
         shared_config,
         redis_inst,
@@ -544,6 +551,17 @@ def configure_celery(celery, test_config=None):
 
     # Clear last scanned redis block on startup
     delete_last_scanned_eth_block_redis(redis_inst)
+
+    # Initialize Anchor Indexer
+    anchor_program_indexer = AnchorProgramIndexer(
+        shared_config["solana"]["anchor_data_program_id"],
+        shared_config["solana"]["anchor_admin_storage_public_key"],
+        "index_solana_user_data",
+        redis_inst,
+        db,
+        solana_client_manager,
+        cid_metadata_client,
+    )
 
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
@@ -578,11 +596,12 @@ def configure_celery(celery, test_config=None):
                 abi_values=abi_values,
                 eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
-                ipfs_client=ipfs_client,
+                cid_metadata_client=cid_metadata_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
+                anchor_program_indexer=anchor_program_indexer,
             )
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)

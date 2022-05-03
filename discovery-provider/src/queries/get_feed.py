@@ -1,9 +1,10 @@
 import datetime
 
+from flask import request
 from sqlalchemy import and_, desc, func, or_
-from src import api_helpers
 from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
 from src.queries import response_name_constants
+from src.queries.get_feed_es import get_feed_es
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     get_pagination_vars,
@@ -15,11 +16,25 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.utils.elasticdsl import es_url
 
 trackDedupeMaxMinutes = 10
 
 
 def get_feed(args):
+    skip_es = request.args.get("es") == "0"
+    use_es = es_url and not skip_es
+    if use_es:
+        try:
+            (limit, _) = get_pagination_vars()
+            return get_feed_es(args, limit)
+        except:
+            return get_feed_sql(args)
+    else:
+        return get_feed_sql(args)
+
+
+def get_feed_sql(args):
     feed_results = []
     db = get_db_read_replica()
 
@@ -80,9 +95,7 @@ def get_feed(args):
                     for track_entry in playlist.playlist_contents["track_ids"]:
                         track = playlist_tracks_dict.get(track_entry["track"])
                         if not track:
-                            return api_helpers.error_response(
-                                "Something caused the server to crash."
-                            )
+                            continue
                         max_timedelta = datetime.timedelta(
                             minutes=trackDedupeMaxMinutes
                         )

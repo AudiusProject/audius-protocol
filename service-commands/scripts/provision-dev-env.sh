@@ -34,7 +34,7 @@ function setup_linux_toolchains() {
         cd /tmp
         tar xf /tmp/sift.tar.gz
         sudo mv sift_*/sift /usr/local/bin/sift
-        sudo rm sift*
+        sudo rm -rf sift*
     )
 }
 
@@ -52,16 +52,6 @@ function setup_vscode() {
     echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
     sudo sysctl -p
     cat /proc/sys/fs/inotify/max_user_watches
-}
-
-function setup_postgres() {
-    wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-    RELEASE=$(lsb_release -cs)
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/postgresql-pgdg.list > /dev/null
-    sudo apt-get update
-    sudo apt -y install postgresql-11
-    dpkg -l | grep postgresql
-    sudo systemctl disable postgresql # disable auto-start on boot
 }
 
 function setup_python() {
@@ -88,6 +78,7 @@ function setup_docker() {
     sudo usermod -aG docker $USER
     sudo curl -L "https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
+    sudo chmod 666 /var/run/docker.sock
     # prevent docker logs from eating all memory
     sudo sh -c "cat >/etc/docker/daemon.json" <<EOF
 {
@@ -122,10 +113,21 @@ function setup_profile() {
     echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
     echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >> $HOME/.profile
     echo 'export TN_DIR=$HOME/trusted-notifier-service' >> $HOME/.profile
+    echo '
+if [ -d ~/.aliases ]; then
+  for f in ~/.aliases/*; do
+    source $f
+  done
+fi' >> $HOME/.profile
 }
 
 function silence_motd() {
     touch ~/.hushlogin
+}
+
+function setup_solana_dev() {
+    cd $PROTOCOL_DIR/solana-programs/anchor/audius-data
+    npm run install-dev
 }
 
 function setup_audius_repos() {
@@ -148,6 +150,8 @@ function setup_audius_repos() {
 
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
+    
+    setup_solana_dev
 }
 
 function install_zsh_tooling() {
@@ -161,7 +165,6 @@ function setup() {
         install_zsh_tooling
         setup_ssh_timeouts
         setup_vscode
-        setup_postgres
         setup_python
         setup_docker
         setup_mad_dog

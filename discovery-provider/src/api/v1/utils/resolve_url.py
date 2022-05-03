@@ -33,7 +33,7 @@ def resolve_url(session, url):
     if match:
         slug = match.group("slug")
         handle = match.group("handle")
-        return ns_url_for(tracks_ns, "track_by_route", slug=slug, handle=handle)
+        return ns_url_for(tracks_ns, "bulk_tracks", slug=slug, handle=handle)
 
     match = playlist_url_regex.match(path)
     if match:
@@ -50,6 +50,6 @@ def resolve_url(session, url):
             .one()
         )
         hashed_id = encode_int_id(user.user_id)
-        return ns_url_for(users_ns, "user", user_id=hashed_id)
+        return ns_url_for(users_ns, "user", id=hashed_id)
 
     return None

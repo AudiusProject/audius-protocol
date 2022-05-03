@@ -2,7 +2,6 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 const BlacklistManager = require('../src/blacklistManager')
-const ipfsClient = require('../src/ipfsClient')
 const redis = require('../src/redis')
 
 const { getApp } = require('./lib/app')
@@ -14,11 +13,9 @@ describe('test blacklistManager', () => {
   const CID = 'QmYkZMB1cdo8k1Lizco4YyiAMfUwCn9yUQaJn7T274uc5z'
 
   beforeEach(async () => {
-    const ipfs = ipfsClient.ipfs
-    const ipfsLatest = ipfsClient.ipfsLatest
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
+    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
     await BlacklistManager.init()
 
     server = appInfo.server

@@ -2,15 +2,14 @@
 
 const ON_DEATH = require('death')
 const EthereumWallet = require('ethereumjs-wallet')
+const { Keypair } = require('@solana/web3.js')
 
 const initializeApp = require('./app')
 const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
-const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
-const { pinCID } = require('./pinCID')
 
 const exitWithError = (...msg: any[]) => {
   logger.error('ERROR: ', ...msg)
@@ -40,15 +39,6 @@ const runDBMigrations = async () => {
 const connectToDBAndRunMigrations = async () => {
   await verifyDBConnection()
   await runDBMigrations()
-}
-
-const getMode = () => {
-  const arg = process.argv[2]
-  const modes = ['--run-migrations', '--run-app', '--run-all']
-  if (!modes.includes(arg)) {
-    return '--run-all'
-  }
-  return arg
 }
 
 /**
@@ -102,32 +92,31 @@ const startApp = async () => {
     )
   }
 
-  const mode = getMode()
-  let appInfo: any
-
-  if (mode === '--run-migrations') {
-    await connectToDBAndRunMigrations()
-    process.exit(0)
-  } else {
-    if (mode === '--run-all') {
-      await connectToDBAndRunMigrations()
-    }
-
-    await logIpfsPeerIds()
-
-    const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-    await serviceRegistry.initServices()
-    logger.info(`Initialized services (Node running in ${nodeMode})`)
-
-    appInfo = initializeApp(getPort(), serviceRegistry)
-    logger.info('Initialized app and server')
-
-    await pinCID(serviceRegistry.ipfsLatest)
-
-    // Some Services cannot start until server is up. Start them now
-    // No need to await on this as this process can take a while and can run in the background
-    serviceRegistry.initServicesThatRequireServer()
+  try {
+    const solDelegateKeypair = Keypair.fromSeed(privateKeyBuffer)
+    const solDelegatePrivateKey = solDelegateKeypair.secretKey
+    config.set(
+      'solDelegatePrivateKeyBase64',
+      Buffer.from(solDelegatePrivateKey).toString('base64')
+    )
+  } catch (e: any) {
+    logger.error(
+      `Failed to create and set solDelegatePrivateKeyBase64: ${e.message}`
+    )
   }
+
+  await connectToDBAndRunMigrations()
+
+  const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+  await serviceRegistry.initServices()
+  logger.info(`Initialized services (Node running in ${nodeMode})`)
+
+  const appInfo = initializeApp(getPort(), serviceRegistry)
+  logger.info('Initialized app and server')
+
+  // Some Services cannot start until server is up. Start them now
+  // No need to await on this as this process can take a while and can run in the background
+  serviceRegistry.initServicesThatRequireServer()
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {

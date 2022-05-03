@@ -3,9 +3,10 @@ const assert = require('assert')
 const semver = require('semver')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 const DiscoveryProvider = require('.')
-const helpers = require('../../../tests/helpers')
+// const helpers = require('../../../tests/helpers')
 const { DISCOVERY_PROVIDER_TIMESTAMP } = require('./constants')
-let audiusInstance = helpers.audiusInstance
+let audiusInstance = {}
+const helpers = { audiusInstance }
 
 const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   getCurrentVersion: async () => currrentVersion,
@@ -28,7 +29,8 @@ const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   }
 })
 
-describe('DiscoveryProviderSelection', () => {
+// eslint-disable-next-line mocha/no-skipped-tests -- have to skip since it relies on generated data
+xdescribe('DiscoveryProviderSelection', () => {
   beforeEach(() => {
     const LocalStorage = require('node-localstorage').LocalStorage
     const localStorage = new LocalStorage('./local-storage')

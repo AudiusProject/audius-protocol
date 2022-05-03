@@ -1,4 +1,4 @@
-const Utils = require('../../utils')
+const { Utils } = require('../../utils')
 const Web3Manager = require('../web3Manager/index')
 const ProviderSelection = require('../contracts/ProviderSelection')
 

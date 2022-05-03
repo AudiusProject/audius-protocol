@@ -70,7 +70,7 @@ if [ "${debug}" ]; then
   # debugging does not get interrupted
   TIMEOUT=0
 else
-  TIMEOUT=10000
+  TIMEOUT=12000
 fi
 
 ./node_modules/mocha/bin/mocha test/index.js --timeout "${TIMEOUT}" --exit

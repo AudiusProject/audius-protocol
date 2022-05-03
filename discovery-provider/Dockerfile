@@ -1,14 +1,12 @@
 # requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 as contracts
 
-FROM alpine:3.13
+FROM alpine:3.15
 LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
 RUN mkdir -p $INSTALL_PATH
 WORKDIR $INSTALL_PATH
-
-COPY requirements.txt requirements.txt
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
@@ -30,7 +28,15 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add py3-wheel && \
     apk add rsyslog && \
     apk add docker && \
-    apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0 && \
+    apk add nodejs && \
+    apk add npm && \
+    apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
+
+COPY requirements.txt requirements.txt
+
+RUN apk add libseccomp-dev && \
+    # Upgrade pip to accomodate anchor.py installation
+    python3 -m pip install --upgrade pip && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 

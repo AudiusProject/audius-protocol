@@ -10,6 +10,7 @@ from prometheus_client import (
     multiprocess,
     values,
 )
+from src.utils.prometheus_metric import PrometheusMetric
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ values.ValueClass = values.MultiProcessValue(process_identifier=process_identifi
 
 @bp.route("/prometheus_metrics", methods=["GET"])
 def prometheus_metrics_exporter():
+    PrometheusMetric.populate_collectors()
     registry = CollectorRegistry()
     multiprocess.MultiProcessCollector(registry)
     data = generate_latest(registry)
