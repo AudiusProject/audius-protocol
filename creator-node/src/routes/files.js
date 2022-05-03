@@ -150,24 +150,21 @@ const checkStoragePathForFile = async (storagePath) => {
         error: true,
         errorMsg: 'this dag node is a directory'
       }
-    }
-
-    if (!fsStats.isFile()) {
+    } else if (!fsStats.isFile()) {
       response = {
         error: true,
         errorMsg: 'CID is of invalid file type'
       }
-    }
+    } else if (fsStats.size === 0) {
+      // Remove file if it is empty and force fetch from CN network
+      await fs.unlink(storagePath)
 
-    if (fsStats.size === 0) {
       response = {
         error: true,
         errorMsg: 'empty CID content found'
       }
-
-      // Remove file if it is empty and force fetch from CN network
-      await fs.unlink(storagePath)
     } else {
+      // Is a valid, non-empty file
       response = {
         error: false,
         errorMsg: null,
@@ -318,6 +315,7 @@ const getCID = async (req, res) => {
   }
 
   try {
+    const startTime = getStartTime()
     const found = await findCIDInNetwork(
       storagePathWhereFileExists,
       CID,
