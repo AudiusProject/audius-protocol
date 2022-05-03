@@ -332,9 +332,6 @@ function currentNodeShouldHandleTranscode({
   transcodingQueueCanAcceptMoreJobs,
   spID
 }) {
-  // TODO: hold off on enabling transcode load balance until version 0.3.58
-  return true
-
   // If the TranscodingQueue is available, let current node handle transcode
   if (transcodingQueueCanAcceptMoreJobs) return true
 
