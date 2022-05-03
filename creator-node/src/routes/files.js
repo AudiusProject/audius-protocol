@@ -137,51 +137,33 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
  * Checks to see if the path exists and has content on fs. If path turns out to
  * be a directory, not a proper file, or an empty file, mark as error in checking.
  * @param {string} storagePath path to check
- * @returns {Object} {error: true or false, errorMsg: string or null}
  */
 const checkStoragePathForFile = async (storagePath) => {
-  let response
-  let fsStats = null
+  let fileIsEmpty = false
   try {
-    fsStats = await fs.stat(storagePath)
+    const fsStats = await fs.stat(storagePath)
 
     if (fsStats.isDirectory()) {
-      response = {
-        error: true,
-        errorMsg: 'this dag node is a directory'
-      }
-    } else if (!fsStats.isFile()) {
-      response = {
-        error: true,
-        errorMsg: 'CID is of invalid file type'
-      }
-    } else if (fsStats.size === 0) {
+      throw new Error('this dag node is a directory')
+    }
+
+    if (!fsStats.isFile()) {
+      throw new Error('CID is of invalid file type')
+    }
+
+    if (fsStats.size === 0) {
       // Remove file if it is empty and force fetch from CN network
       await fs.unlink(storagePath)
-
-      response = {
-        error: true,
-        errorMsg: 'empty CID content found'
-      }
-    } else {
-      // Is a valid, non-empty file
-      response = {
-        error: false,
-        errorMsg: null,
-        fsStats
-      }
+      fileIsEmpty = true
     }
+
+    // Is a valid, non-empty file
+    return { fsStats, storagePath, fileIsEmpty }
   } catch (e) {
-    response = {
-      error: true,
-      errorMsg: `Could not check file stat for ${storagePath}: ${e.message}`
-    }
+    throw new Error(
+      `Could not check file stat for ${storagePath}: ${e.message}`
+    )
   }
-
-  response.storagePath = storagePath
-  response.fsStats = fsStats
-
-  return response
 }
 
 /**
@@ -209,7 +191,13 @@ const getCID = async (req, res) => {
 
   const logPrefix = `[getCID] [CID=${CID}]`
 
+  const codeBlockTimeStart = getStartTime()
   const isServable = await BlacklistManager.isServable(CID, trackId)
+  logInfoWithDuration(
+    { logger: req.logger, startTime: codeBlockTimeStart },
+    `${logPrefix} Content is servable: ${isServable}`
+  )
+
   if (!isServable) {
     return sendResponse(
       req,
@@ -238,21 +226,38 @@ const getCID = async (req, res) => {
     )
   }
 
-  let fsStats = null
-  let storagePathWhereFileExists = null
-
-  // Check file existence in storage paths. Exit for-loop immediately when file exists.
+  // Check file existence in storage paths. Exit for-loop immediately when file exists
+  let checkStorageResponse
   for (const storagePath of storagePaths) {
-    const response = await checkStoragePathForFile(storagePath)
-
-    if (!response.error) {
-      fsStats = response.fsStats
-      storagePathWhereFileExists = response.storagePath
+    try {
+      checkStorageResponse = await checkStoragePathForFile(storagePath)
       break
+    } catch (e) {
+      req.logger.warn(`${logPrefix} ${e.message}`)
     }
-
-    req.logger.warn(`${logPrefix} ${response.errorMsg}`)
   }
+
+  const {
+    fsStats,
+    storagePath: storagePathWhereFileExists,
+    fileIsEmpty
+  } = checkStorageResponse
+
+  // let checkStorageResponse
+  // for (const storagePath of storagePaths) {
+  //   checkStorageResponse = await checkStoragePathForFile(storagePath)
+
+  //   if (!checkStorageResponse.error) {
+  //     fsStats = checkStorageResponse.fsStats
+  //     storagePathWhereFileExists = checkStorageResponse.storagePath
+  //     break
+  //   }
+
+  //   req.logger.warn(`${logPrefix} ${checkStorageResponse.errorMsg}`)
+  // }
+
+  // if (checkStorageResponse.error) {
+  // }
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query.filename) {
@@ -262,20 +267,20 @@ const getCID = async (req, res) => {
   // Set the CID cache-control so that client caches the response for 30 days
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
-  if (storagePathWhereFileExists) {
-    try {
-      return streamFromFileSystem(
-        req,
-        res,
-        storagePathWhereFileExists,
-        false,
-        fsStats
-      )
-    } catch (e) {
-      req.logger.warn(
-        `${logPrefix} Could not stream file from fs: ${e.message}`
-      )
+  try {
+    if (fileIsEmpty) {
+      throw new Error('File is empty. Attempting to fetch from CN network..')
     }
+
+    return streamFromFileSystem(
+      req,
+      res,
+      storagePathWhereFileExists,
+      false,
+      fsStats
+    )
+  } catch (e) {
+    req.logger.warn(`${logPrefix} Could not stream file from fs: ${e.message}`)
   }
 
   // At this point, the file does not exist in the fs in the new nor legacy storage paths.
@@ -315,7 +320,7 @@ const getCID = async (req, res) => {
   }
 
   try {
-    const startTime = getStartTime()
+    const codeBlockTimeStart = getStartTime()
     const found = await findCIDInNetwork(
       storagePathWhereFileExists,
       CID,
@@ -323,6 +328,12 @@ const getCID = async (req, res) => {
       req.app.get('audiusLibs'),
       trackId
     )
+
+    logInfoWithDuration(
+      { logger: req.logger, startTime: codeBlockTimeStart },
+      `${logPrefix} Found cid: ${found}`
+    )
+
     if (!found) {
       throw new Error('Not found in network')
     }
