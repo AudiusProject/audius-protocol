@@ -1,0 +1,7 @@
+.root {
+  display: flex;
+  align-items: center;
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+}
