@@ -14,6 +14,7 @@ import {
 import semver from 'semver'
 import type EthContracts from '../ethContracts'
 import type { AxiosResponse } from 'axios'
+import type { Maybe, Nullable } from '../../utils'
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5
 
@@ -30,7 +31,7 @@ export type DiscoveryProviderSelectionConfig = Omit<
   ServiceSelectionConfig,
   'getServices'
 > & {
-  reselectTimeout?: number | undefined
+  reselectTimeout?: number
   selectionCallback?: (endpoint: string, decisionTree: Decision[]) => void
   monitoringCallbacks?: {
     healthCheck: (config: Record<string, unknown>) => void
@@ -43,19 +44,19 @@ export type DiscoveryProviderSelectionConfig = Omit<
 export class DiscoveryProviderSelection extends ServiceSelection {
   currentVersion: string
   ethContracts: EthContracts
-  reselectTimeout: number | undefined
-  selectionCallback:
+  reselectTimeout: Maybe<number>
+  selectionCallback: Maybe<
     | DiscoveryProviderSelectionConfig['selectionCallback']
-    | undefined
+    >
 
   monitoringCallbacks:
     | NonNullable<DiscoveryProviderSelectionConfig['monitoringCallbacks']>
     | {}
 
-  unhealthySlotDiffPlays: number | null
+  unhealthySlotDiffPlays: Nullable<number>
   unhealthyBlockDiff: number
   _regressedMode: boolean
-  validVersions: string[] | null
+  validVersions: Nullable<string[]>
 
   constructor(
     config: DiscoveryProviderSelectionConfig,

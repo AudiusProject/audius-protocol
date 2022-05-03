@@ -1,7 +1,7 @@
 import { ProviderSelection } from './ProviderSelection'
 import Web3Manager from '../web3Manager'
 import retry from 'async-retry'
-import type { ContractABI } from '../../utils'
+import type { ContractABI, Nullable } from '../../utils'
 import type { Contract } from 'web3-eth-contract'
 import type { HttpProvider } from 'web3-core'
 
@@ -20,19 +20,19 @@ export class ContractClient {
   contractABI: ContractABI['abi']
   contractRegistryKey: string
   getRegistryAddress: (key: string) => Promise<string>
-  _contractAddress: string | null
-  _contract: Contract | null
+  _contractAddress: Nullable<string>
+  _contract: Nullable<Contract>
   _isInitialized: boolean
   _isInitializing: boolean
   _initAttempts: number
-  providerSelector: ProviderSelection | null
+  providerSelector: Nullable<ProviderSelection>
 
   constructor(
     web3Manager: Web3Manager,
     contractABI: ContractABI['abi'],
     contractRegistryKey: string,
     getRegistryAddress: (key: string) => Promise<string>,
-    contractAddress: string | null = null
+    contractAddress: Nullable<string> = null
   ) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI

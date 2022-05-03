@@ -4,7 +4,8 @@ import {
   allRequests,
   ServiceName,
   ServiceWithEndpoint,
-  Service
+  Service,
+  Maybe
 } from '../utils'
 import { DECISION_TREE_STATE } from './constants'
 import type { AxiosResponse } from 'axios'
@@ -51,7 +52,7 @@ export interface ServiceSelectionConfig {
    */
   maxConcurrentRequests?: number
   // the timeout at which to give up on a service
-  requestTimeout?: number | undefined
+  requestTimeout?: Maybe<number>
   /*
    *the point at which the unhealthy services are freed so they
    * may be tried again (re-requested)
