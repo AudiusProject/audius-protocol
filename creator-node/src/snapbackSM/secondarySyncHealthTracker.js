@@ -42,19 +42,42 @@ const Utils = {
     return keyMap
   },
 
+  async _getMetricsMatchingPatternWithWallets(pattern, wallets) {
+    const keys = await Utils._getAllKeysMatchingPattern(pattern, (key) =>
+      wallets.some((wallet) => key.includes(wallet))
+    )
+
+    // Short-circuit here since redis `mget` throws if array param has 0-length
+    if (!keys || !keys.length) {
+      return {}
+    }
+
+    // This works because vals.length === keys.length
+    // https://redis.io/commands/mget
+    const vals = await redisClient.mget(keys)
+
+    // Zip keys and vals arrays into map of key-val pairs
+    const keyMap = {}
+    for (let i = 0; i < keys.length; i++) {
+      keyMap[keys[i]] = vals[i]
+    }
+
+    return keyMap
+  },
+
   /**
    * Returns array of all keys in Redis matching pattern, using redis SCAN
    * https://github.com/luin/ioredis#streamify-scanning
    *
    * @returns array | Error
    */
-  async _getAllKeysMatchingPattern(pattern) {
+  async _getAllKeysMatchingPattern(pattern, extraFilter = (_) => true) {
     const stream = redisClient.scanStream({ match: pattern })
 
     const keySet = new Set()
     return new Promise((resolve, reject) => {
       stream.on('data', async (keys = []) => {
-        keys.forEach((key) => {
+        keys.filter(extraFilter).forEach((key) => {
           keySet.add(key)
         })
       })
@@ -177,6 +200,62 @@ const Getters = {
   },
 
   /**
+   * Given wallet and secondaries array, returns map from each secondary to successCount, failureCount, and successRate
+   *
+   * @param {Object { <wallet (string)>: <secondary endpoints (string array)}} walletsToSecondariesMapping
+   */
+  async batchComputeUserSecondarySyncSuccessRates(walletsToSecondariesMapping) {
+    // Initialize sync success and failure counts for every secondary to 0
+    const secondarySyncMetricsMap = {}
+    const wallets = Object.keys(walletsToSecondariesMapping)
+    for (const wallet of wallets) {
+      const secondaries = walletsToSecondariesMapping[wallet]
+      const secondarySyncMetrics = secondarySyncMetricsMap[wallet] || {}
+      secondaries.forEach((secondary) => {
+        secondarySyncMetrics[secondary] = { successCount: 0, failureCount: 0 }
+        secondarySyncMetricsMap[wallet] = secondarySyncMetrics
+      })
+    }
+
+    // Retrieve map of all SyncRequestOutcome keys and daily counts for user from all secondaries
+    const userSecondarySyncHealthOutcomes =
+      await Getters.batchGetSyncRequestOutcomeMetrics(wallets)
+
+    // Aggregate all daily SyncRequest outcome counts by secondary
+    for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
+      count = parseInt(count)
+      const { wallet, secondary, outcome } =
+        Utils._parseRedisKeyIntoComponents(key)
+      const secondarySyncMetrics = secondarySyncMetricsMap[wallet]
+
+      if (!(secondary in secondarySyncMetrics)) {
+        // This case can be hit for old secondaries that have been cycled out of user's replica set - these can be safely skipped
+        continue
+      }
+
+      if (outcome === Outcomes.SUCCESS) {
+        secondarySyncMetrics[secondary].successCount += count
+      } else if (outcome === Outcomes.FAILURE) {
+        secondarySyncMetrics[secondary].failureCount += count
+      }
+      secondarySyncMetricsMap[wallet] = secondarySyncMetrics
+      // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
+    }
+
+    // For each secondary, compute and store successRate
+    for (const wallet of wallets) {
+      Object.keys(secondarySyncMetricsMap[wallet]).forEach((secondary) => {
+        const { successCount, failureCount } =
+          secondarySyncMetricsMap[wallet][secondary]
+        secondarySyncMetricsMap[wallet][secondary].successRate =
+          failureCount === 0 ? 1 : successCount / (successCount + failureCount)
+      })
+    }
+
+    return secondarySyncMetricsMap
+  },
+
+  /**
    * Get SyncRequest outcome metrics, optionally filtered on `secondary`, `wallet`, `syncType`, `outcome`, and `date`
    * @param {Object} filters object specifying any of above filters
    * @returns {Object} map from every key matching pattern with above filters to associated value
@@ -188,6 +267,23 @@ const Getters = {
     } catch (e) {
       logger.error(
         `SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`
+      )
+      return {}
+    }
+  },
+
+  /**
+   * Get SyncRequest outcome metrics for a batch of wallets
+   * @param {String[]} wallets wallets to use as individual filters
+   * @returns {Object} map from every redis key matching sync request pattern with any of the given wallets
+   */
+  async batchGetSyncRequestOutcomeMetrics(wallets) {
+    try {
+      const pattern = Utils._getRedisKeyPattern({})
+      return Utils._getMetricsMatchingPatternWithWallets(pattern, wallets)
+    } catch (e) {
+      logger.error(
+        `SecondarySyncHealthTracker - batchGetSyncRequestOutcomeMetrics() Error || ${e.message}`
       )
       return {}
     }
@@ -224,6 +320,8 @@ const SecondarySyncHealthTracker = {
   recordFailure: Setters.recordFailure,
 
   // Getters
+  batchComputeUserSecondarySyncSuccessRates:
+    Getters.batchComputeUserSecondarySyncSuccessRates,
   computeUserSecondarySyncSuccessRates:
     Getters.computeUserSecondarySyncSuccessRates,
   getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,

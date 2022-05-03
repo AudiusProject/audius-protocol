@@ -235,16 +235,16 @@ class SnapbackSM {
     )
 
     // Enqueue stateMachineQueue jobs on a cron, after an initial delay
-    await this.stateMachineQueue.add(
-      /** data */ { startTime: Date.now() },
-      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
-    )
-    await this.stateMachineQueue.add(
-      /** data */ { startTime: Date.now() },
-      /** opts */ {
-        repeat: { every: this.snapbackJobInterval }
-      }
-    )
+    // await this.stateMachineQueue.add(
+    //   /** data */ { startTime: Date.now() },
+    //   /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+    // )
+    // await this.stateMachineQueue.add(
+    //   /** data */ { startTime: Date.now() },
+    //   /** opts */ {
+    //     repeat: { every: this.snapbackJobInterval }
+    //   }
+    // )
 
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; jobs will be enqueued every ${this.snapbackJobInterval}ms`
@@ -977,11 +977,38 @@ class SnapbackSM {
         )
       }
 
+      // Retrieve success metrics for all users syncing to their secondaries
+      let userSecondarySyncMetricsMap = {}
+      try {
+        userSecondarySyncMetricsMap =
+          await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'computeUserSecondarySyncSuccessRatesMap() Success',
+          {
+            userSecondarySyncMetricsMapLength: Object.keys(
+              userSecondarySyncMetricsMap
+            ).length
+          }
+        )
+      } catch (e) {
+        this._addToStateMachineQueueDecisionTree(
+          decisionTree,
+          'computeUserSecondarySyncSuccessRatesMap() Error',
+          { error: e.message }
+        )
+        console.log(e.stack) // TODO: Remove before publishing PR draft
+        throw new Error(
+          'processStateMachineOperation():computeUserSecondarySyncSuccessRatesMap() Error'
+        )
+      }
+
       // Find sync requests that need to be issued and ReplicaSets that need to be updated
       const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
         await this.aggregateReconfigAndPotentialSyncOps(
           nodeUsers,
-          unhealthyPeers
+          unhealthyPeers,
+          userSecondarySyncMetricsMap
         )
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
@@ -1187,6 +1214,7 @@ class SnapbackSM {
    *
    * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
+   * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
    * @returns
    * {
    *  requiredUpdateReplicaSetOps: {Object[]} array of {...nodeUsers, unhealthyReplicas: {string[]} endpoints of unhealthy rset nodes }
@@ -1194,7 +1222,11 @@ class SnapbackSM {
    * }
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
-  async aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers) {
+  async aggregateReconfigAndPotentialSyncOps(
+    nodeUsers,
+    unhealthyPeers,
+    userSecondarySyncMetricsMap
+  ) {
     // Parallelize calling this._aggregateOps on chunks of 500 nodeUsers at a time
     const nodeUserBatches = _.chunk(
       nodeUsers,
@@ -1204,7 +1236,11 @@ class SnapbackSM {
     for (const nodeUserBatch of nodeUserBatches) {
       const resultBatch = await Promise.allSettled(
         nodeUserBatch.map((nodeUser) =>
-          this._aggregateOps(nodeUser, unhealthyPeers)
+          this._aggregateOps(
+            nodeUser,
+            unhealthyPeers,
+            userSecondarySyncMetricsMap[nodeUser.wallet]
+          )
         )
       )
       results.push(...resultBatch)
@@ -1249,8 +1285,9 @@ class SnapbackSM {
    * Used to determine the `requiredUpdateReplicaSetOps` and `potentialSyncRequests` for a given nodeUser.
    * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
+   * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetrics mapping of each secondary to the success metrics the nodeUser has had syncing to it
    */
-  async _aggregateOps(nodeUser, unhealthyPeers) {
+  async _aggregateOps(nodeUser, unhealthyPeers, userSecondarySyncMetrics) {
     const requiredUpdateReplicaSetOps = []
     const potentialSyncRequests = []
     const unhealthyReplicas = []
@@ -1284,11 +1321,27 @@ class SnapbackSM {
       /**
        * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
        */
-      const userSecondarySyncMetrics =
+      // TODO: Theo remove before submitting non-draft PR
+      const userSecondarySyncMetricsExpected =
         await this._computeUserSecondarySyncSuccessRates(
           nodeUser,
           secondariesEndpoint
         )
+      try {
+        if (
+          !_.isEqual(userSecondarySyncMetrics, userSecondarySyncMetricsExpected)
+        ) {
+          logger.error(`[theo] ERROR MISMATCHED METRICS`)
+          logger.error(
+            `[theo] expected: ${JSON.stringify(
+              userSecondarySyncMetricsExpected
+            )}, got: ${JSON.stringify(userSecondarySyncMetrics)}`
+          )
+          throw new Error('mismatched')
+        }
+      } catch (e) {
+        logger.error(`[theo] Mismatched redis results error: ${e}`)
+      }
       for (const secondaryInfo of secondariesInfo) {
         const secondary = secondaryInfo.endpoint
 
@@ -1380,6 +1433,31 @@ class SnapbackSM {
     }
 
     return { requiredUpdateReplicaSetOps, potentialSyncRequests }
+  }
+
+  async computeUserSecondarySyncSuccessRatesMap(nodeUsers) {
+    let walletsToSecondariesMapping = {}
+    for (const nodeUser of nodeUsers) {
+      const { wallet, secondary1, secondary2 } = nodeUser
+      const secondaries = [{ endpoint: secondary1 }, { endpoint: secondary2 }]
+
+      // Get only truthy secondaries (ignore empty secondary endpoints that result from incomplete replica sets)
+      const secondaryEndpoints = secondaries
+        .filter((secondary) => secondary.endpoint)
+        .map((secondary) => secondary.endpoint)
+
+      walletsToSecondariesMapping = {
+        ...walletsToSecondariesMapping,
+        [wallet]: secondaryEndpoints
+      }
+    }
+
+    const userSecondarySyncMetricsMap =
+      await SecondarySyncHealthTracker.batchComputeUserSecondarySyncSuccessRates(
+        walletsToSecondariesMapping
+      )
+
+    return userSecondarySyncMetricsMap
   }
 
   // Wrapper fn
