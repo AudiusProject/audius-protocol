@@ -21,7 +21,6 @@ const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
 
-
 class PeerSetManager {
   constructor({
     discoveryProviderEndpoint,
