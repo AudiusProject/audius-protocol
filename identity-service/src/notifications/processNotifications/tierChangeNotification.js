@@ -43,6 +43,7 @@ async function processTierChangeNotifications (notifications, tx) {
       transaction: tx
     })
   }
+  return notifications
 }
 
 module.exports = processTierChangeNotifications
