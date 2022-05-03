@@ -10,7 +10,7 @@ DEFAULT_PROTOCOL_DIR = os.path.join(os.path.dirname(__file__), "../../")
 PROTOCOL_DIR = os.getenv("PROTOCOL_DIR", DEFAULT_PROTOCOL_DIR)
 
 
-def create_instance(provider, image, disk_size, machine_type, name):
+def create_instance(provider, image, disk_size, machine_type, spot_instance, name):
     """Create instance with provided options"""
     subprocess.run(
         [
@@ -20,6 +20,7 @@ def create_instance(provider, image, disk_size, machine_type, name):
             *(["-i", image] if image else []),
             *(["-d", disk_size] if disk_size else []),
             *(["-m", machine_type] if machine_type else []),
+            *(["-s", "true"] if spot_instance else []),
             name,
         ],
         check=False,
@@ -27,7 +28,7 @@ def create_instance(provider, image, disk_size, machine_type, name):
 
 
 def setup(
-    provider, service, user, config, fast, protocol_git_ref, client_git_ref, name
+    provider, service, user, config, fast, protocol_git_ref, client_git_ref, spot_instance, name
 ):
     """Setup a environment suitable for development on a remote machine"""
     subprocess.run(
@@ -40,6 +41,7 @@ def setup(
             *(["-r", protocol_git_ref] if protocol_git_ref else []),
             *(["-l", client_git_ref] if client_git_ref else []),
             *(["-f"] if fast else []),
+            *(["-s", "true"] if spot_instance else []),
             service,
             name,
         ],
@@ -107,6 +109,12 @@ def main():
     )
 
     parser_create_instance.add_argument(
+        "--spot-instance",
+        help="VM will be spot instance if defined",
+        action=argparse.BooleanOptionalAction,
+    )
+
+    parser_create_instance.add_argument(
         "name",
         help="name to assign to the created instance",
     )
@@ -149,6 +157,12 @@ def main():
     )
 
     parser_setup.add_argument(
+        "--spot-instance",
+        help="VM will be spot instance if defined",
+        action=argparse.BooleanOptionalAction,
+    )
+
+    parser_setup.add_argument(
         "service",
         choices=["creator-node", "discovery-provider", "remote-dev"],
         help="service to setup on the remote machine",
@@ -161,6 +175,7 @@ def main():
 
     try:
         args = parser.parse_args()
+        print(args)
 
         if args.operation == "create-instance":
             create_instance(
@@ -168,6 +183,7 @@ def main():
                 args.image,
                 args.disk_size,
                 args.machine_type,
+                args.spot_instance,
                 args.name,
             )
         elif args.operation == "setup":
@@ -179,6 +195,7 @@ def main():
                 args.fast,
                 args.protocol_git_ref,
                 args.client_git_ref,
+                args.spot_instance,
                 args.name,
             )
     except argparse.ArgumentError:
