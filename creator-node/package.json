@@ -32,7 +32,7 @@
     "cids": "0.8.0",
     "commander": "^6.2.1",
     "content-disposition": "^0.5.3",
-    "convict": "^5.2.0",
+    "convict": "^6.2.2",
     "cors": "^2.8.4",
     "death": "^1.1.0",
     "deferential": "^1.0.0",
