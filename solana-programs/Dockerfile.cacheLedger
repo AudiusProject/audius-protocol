@@ -1,0 +1,6 @@
+FROM solanalabs/solana:v1.9.13
+
+COPY . .
+COPY test-ledger cached-ledger
+
+ENTRYPOINT ["solana-test-validator", "--gossip-host", "solana", "--limit-ledger-size", "1000000", "--ledger", "/cached-ledger"]

@@ -57,6 +57,23 @@
       "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
     ]
   },
+  "solana-validator-predeployed": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8899,
+    "health_check_endpoint": "",
+    "up": [
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev audius/solana-programs:predeployed-6cc9fdc48706622cd86951b9aa6438d606a0c46f",
+      "mkdir -p ~/.audius; docker cp solana:/solana-program-config.json ~/.audius",
+      "docker cp solana:/solana-program-config.json $PROTOCOL_DIR/solana-programs",
+      "docker cp solana:/solana-program-config.json $PROTOCOL_DIR/identity-service",
+      "mkdir -p $PROTOCOL_DIR/discovery-provider/idl/; docker cp solana:/audius-data/target/idl/audius_data.json $PROTOCOL_DIR/discovery-provider/idl/audius_data.json"
+    ],
+    "down": [
+      "docker container stop solana || true",
+      "docker container rm solana || true"
+    ]
+  },
   "solana-validator": {
     "protocol": "http",
     "host": "localhost",
