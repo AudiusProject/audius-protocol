@@ -555,6 +555,8 @@ class TrackTranscodeHandoffManager {
    * an SP has not yet upgraded and the route is not found.
    *
    * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
+   *
+   * @dev please deprecate this fn after all content nodes upgrade to 0.3.57
    * @param {Object} param
    * @param {Object} param.logger
    * @param {func} param.asyncFn the fn to asynchronously retry
