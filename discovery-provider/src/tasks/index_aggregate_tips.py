@@ -5,7 +5,7 @@ import operator
 from redis import Redis
 from sqlalchemy import func, text
 from sqlalchemy.orm.session import Session
-from src.models import TipperRankUp, UserTip
+from src.models import SupporterRankUp, UserTip
 from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table
 from src.tasks.celery_app import celery
 from src.utils.redis_constants import (
@@ -111,7 +111,7 @@ def _update_aggregate_tips(session: Session):
             or row["rank"]
             < grouped_ranks_before[row["receiver_user_id"]][row["sender_user_id"]]
         ):
-            rank_up = TipperRankUp(
+            rank_up = SupporterRankUp(
                 slot=max_slot,
                 sender_user_id=row["sender_user_id"],
                 receiver_user_id=row["receiver_user_id"],

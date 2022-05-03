@@ -1,4 +1,4 @@
-"""Tipper Rank Ups
+"""Supporter Rank Ups
 
 Revision ID: 5ea8fd4ae1fb
 Revises: 378ef6680606
@@ -17,7 +17,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "tipper_rank_ups",
+        "supporter_rank_ups",
         sa.Column("slot", sa.Integer(), nullable=False),
         sa.Column("sender_user_id", sa.Integer(), nullable=False),
         sa.Column("receiver_user_id", sa.Integer(), nullable=False),
@@ -25,30 +25,30 @@ def upgrade():
         sa.PrimaryKeyConstraint("slot", "sender_user_id", "receiver_user_id"),
     )
     op.create_index(
-        op.f("ix_tipper_rank_ups_receiver_user_id"),
-        "tipper_rank_ups",
+        op.f("ix_supporter_rank_ups_receiver_user_id"),
+        "supporter_rank_ups",
         ["receiver_user_id"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_tipper_rank_ups_sender_user_id"),
-        "tipper_rank_ups",
+        op.f("ix_supporter_rank_ups_sender_user_id"),
+        "supporter_rank_ups",
         ["sender_user_id"],
         unique=False,
     )
     op.create_index(
-        op.f("ix_tipper_rank_ups_slot"), "tipper_rank_ups", ["slot"], unique=False
+        op.f("ix_supporter_rank_ups_slot"), "supporter_rank_ups", ["slot"], unique=False
     )
     # ### end Alembic commands ###
 
 
 def downgrade():
-    op.drop_index(op.f("ix_tipper_rank_ups_slot"), table_name="tipper_rank_ups")
+    op.drop_index(op.f("ix_supporter_rank_ups_slot"), table_name="supporter_rank_ups")
     op.drop_index(
-        op.f("ix_tipper_rank_ups_sender_user_id"), table_name="tipper_rank_ups"
+        op.f("ix_supporter_rank_ups_sender_user_id"), table_name="supporter_rank_ups"
     )
     op.drop_index(
-        op.f("ix_tipper_rank_ups_receiver_user_id"), table_name="tipper_rank_ups"
+        op.f("ix_supporter_rank_ups_receiver_user_id"), table_name="supporter_rank_ups"
     )
-    op.drop_table("tipper_rank_ups")
+    op.drop_table("supporter_rank_ups")
     # ### end Alembic commands ###

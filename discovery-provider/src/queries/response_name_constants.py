@@ -109,7 +109,7 @@ notification_tier = "tier"
 solana_notification_type = "type"
 solana_notification_type_challenge_reward = "ChallengeReward"
 solana_notification_type_listen_milestone = "MilestoneListen"
-solana_notification_type_tipper_rank_up = "TipperRankUp"
+solana_notification_type_supporter_rank_up = "SupporterRankUp"
 
 solana_notification_slot = "slot"
 solana_notification_timestamp = "timestamp"
