@@ -1,0 +1,21 @@
+.icon {
+  height: 30px;
+  width: 30px;
+  margin-right: var(--unit-2);
+}
+.iconFollow {
+  composes: icon;
+}
+
+.iconFollow g {
+  fill: var(--secondary);
+}
+
+.iconRepost {
+  composes: icon;
+  height: 18px;
+}
+
+.iconRepost g path {
+  fill: var(--secondary);
+}
