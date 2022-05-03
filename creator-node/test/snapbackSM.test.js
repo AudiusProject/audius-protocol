@@ -668,7 +668,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
@@ -712,7 +713,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
@@ -756,7 +758,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
@@ -790,7 +793,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
     assert.strictEqual(potentialSyncRequests.length, 0)
@@ -832,7 +836,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://deregisteredCN.co')
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
