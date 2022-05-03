@@ -1,0 +1,22 @@
+.root {
+  all: unset;
+  border-radius: 4px;
+  background-color: var(--static-twitter-blue);
+  padding: 8px 24px;
+  display: inline-flex;
+  align-items: center;
+
+  color: var(--static-white);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 18px;
+  margin-top: 12px;
+}
+
+.icon {
+  margin-right: 8px;
+}
+
+.icon path {
+  fill: var(--static-white);
+}

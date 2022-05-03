@@ -69,15 +69,15 @@ export type Repost = BaseNotification & {
   type: NotificationType.Repost
   entityId: ID
   userIds: ID[]
-  users?: User[]
+  users: User[]
 } & (
     | {
         entityType: Entity.Playlist | Entity.Album
-        entity?: Collection & { user: User }
+        entity: Collection & { user: User }
       }
     | {
         entityType: Entity.Track
-        entity?: Track & { user: User }
+        entity: Track & { user: User }
       }
   )
 

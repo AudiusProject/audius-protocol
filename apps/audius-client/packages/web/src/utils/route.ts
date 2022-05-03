@@ -2,7 +2,10 @@ import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
+import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
+import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import { encodeUrlName } from 'common/utils/formatUtil'
 
 const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
@@ -344,4 +347,22 @@ export const pushUniqueRoute = (route: string) => {
     return pushRoute(route)
   }
   return { type: '' }
+}
+
+export const getEntityLink = (
+  entity: (Track & { user: User }) | (Collection & { user: User }),
+  fullRoute = false
+) => {
+  if ('track_id' in entity) {
+    return fullRoute ? fullTrackPage(entity.permalink) : entity.permalink
+  } else if (entity.playlist_id && entity.is_album) {
+    const getRoute = fullRoute ? fullAlbumPage : albumPage
+    return getRoute(
+      entity.user.handle,
+      entity.playlist_name,
+      entity.playlist_id
+    )
+  }
+  const getRoute = fullRoute ? fullPlaylistPage : playlistPage
+  return getRoute(entity.user.handle, entity.playlist_name, entity.playlist_id)
 }

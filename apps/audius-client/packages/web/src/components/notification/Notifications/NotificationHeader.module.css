@@ -6,13 +6,3 @@
   margin-bottom: var(--unit-4);
   border-bottom: 1px solid var(--neutral-light-8);
 }
-
-.root svg {
-  height: 30px;
-  width: 30px;
-  margin-right: var(--unit-2);
-}
-
-.root svg g {
-  fill: var(--secondary);
-}

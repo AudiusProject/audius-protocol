@@ -1,0 +1,42 @@
+.root {
+  display: flex;
+}
+
+.profilePictureBase {
+  transition: all 0.07s ease-in-out;
+  transform: scale3d(1, 1, 1);
+}
+
+.profilePictureBase:hover {
+  transform: scale3d(0.95, 0.95, 0.95);
+}
+
+.userHeader {
+  display: inline-flex;
+  align-items: center;
+}
+
+.profilePicture {
+  composes: profilePictureBase;
+  margin-right: calc(var(--unit-2) * -1);
+}
+
+.profilePictureExtra {
+  composes: profilePicture;
+  position: absolute;
+}
+
+.profilePictureCount {
+  composes: profilePictureBase;
+  position: absolute;
+  z-index: 2;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--white);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+}
