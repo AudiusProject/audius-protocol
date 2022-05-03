@@ -1,56 +1,99 @@
-module.exports.getUsers = (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) => {
-  const req = {
-    endpoint: 'users',
-    queryParams: { limit: limit, offset: offset }
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
+
+export const getUsers = (
+  limit = 100,
+  offset = 0,
+  idsArray?: string[],
+  walletAddress?: string,
+  handle?: string,
+  isCreator: boolean | null = null,
+  minBlockNumber?: number
+) => {
+  type QueryParams = {
+    limit: number
+    offset: number
+    is_creator?: boolean
+    handle?: string
+    wallet?: string
+    min_block_number?: number
+    id?: string[]
   }
+
+  const queryParams: QueryParams = { limit: limit, offset: offset }
   if (isCreator !== null) {
-    req.queryParams.is_creator = isCreator
+    queryParams.is_creator = isCreator
   }
   if (handle) {
-    req.queryParams.handle = handle
+    queryParams.handle = handle
   }
   if (walletAddress) {
-    req.queryParams.wallet = walletAddress
+    queryParams.wallet = walletAddress
   }
   if (minBlockNumber) {
-    req.queryParams.min_block_number = minBlockNumber
+    queryParams.min_block_number = minBlockNumber
   }
   if (idsArray != null) {
     if (!Array.isArray(idsArray)) {
       throw new Error('Expected integer array of user ids')
     }
-    req.queryParams.id = idsArray
+    queryParams.id = idsArray
   }
+
+  const req = { endpoint: 'users', queryParams }
+
   return req
 }
 
-module.exports.getTracks = (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null, withUsers = false) => {
-  const req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
+export const getTracks = (
+  limit = 100,
+  offset = 0,
+  idsArray?: string[],
+  targetUserId?: string,
+  sort?: boolean,
+  minBlockNumber?: number,
+  filterDeleted?: boolean,
+  withUsers = false
+) => {
+  type QueryParams = {
+    limit: number
+    offset: number
+    id?: string[]
+    min_block_number?: number
+    user_id?: string
+    sort?: boolean
+    filter_deleted?: boolean
+    with_users?: boolean
+  }
+
+  const queryParams: QueryParams = { limit: limit, offset: offset }
+
   if (idsArray) {
     if (!Array.isArray(idsArray)) {
       throw new Error('Expected array of track ids')
     }
-    req.queryParams.id = idsArray
+    queryParams.id = idsArray
   }
   if (minBlockNumber) {
-    req.queryParams.min_block_number = minBlockNumber
+    queryParams.min_block_number = minBlockNumber
   }
   if (targetUserId) {
-    req.queryParams.user_id = targetUserId
+    queryParams.user_id = targetUserId
   }
   if (sort) {
-    req.queryParams.sort = sort
+    queryParams.sort = sort
   }
   if (typeof filterDeleted === 'boolean') {
-    req.queryParams.filter_deleted = filterDeleted
+    queryParams.filter_deleted = filterDeleted
   }
   if (withUsers) {
-    req.queryParams.with_users = true
+    queryParams.with_users = true
   }
+
+  const req = { endpoint: 'tracks', queryParams }
   return req
 }
 
-module.exports.getTracksByHandleAndSlug = (handle, slug) => {
+export const getTracksByHandleAndSlug = (handle: string, slug: string) => {
   return {
     endpoint: 'v1/tracks',
     method: 'get',
@@ -58,22 +101,34 @@ module.exports.getTracksByHandleAndSlug = (handle, slug) => {
   }
 }
 
-module.exports.getTracksIncludingUnlisted = (identifiers, withUsers = false) => {
+export const getTracksIncludingUnlisted = (
+  identifiers: string[],
+  withUsers = false
+) => {
+  const queryParams: { with_users?: boolean } = {}
+
+  if (withUsers) {
+    queryParams.with_users = true
+  }
+
   const req = {
     endpoint: 'tracks_including_unlisted',
     method: 'post',
     data: {
       tracks: identifiers
     },
-    queryParams: {}
+    queryParams
   }
-  if (withUsers) {
-    req.queryParams.with_users = true
-  }
+
   return req
 }
 
-module.exports.getRandomTracks = (genre, limit, exclusionList, time) => {
+export const getRandomTracks = (
+  genre: string,
+  limit: number,
+  exclusionList: number[],
+  time: string
+) => {
   const req = {
     endpoint: 'tracks/random',
     queryParams: {
@@ -86,7 +141,7 @@ module.exports.getRandomTracks = (genre, limit, exclusionList, time) => {
   return req
 }
 
-module.exports.getStemsForTrack = (trackId) => {
+export const getStemsForTrack = (trackId: number) => {
   const req = {
     endpoint: `stems/${trackId}`,
     queryParams: {
@@ -96,7 +151,11 @@ module.exports.getStemsForTrack = (trackId) => {
   return req
 }
 
-module.exports.getRemixesOfTrack = (trackId, limit = null, offset = null) => {
+export const getRemixesOfTrack = (
+  trackId: number,
+  limit: number | null = null,
+  offset: number | null = null
+) => {
   const req = {
     endpoint: `remixes/${trackId}/children`,
     queryParams: {
@@ -108,7 +167,11 @@ module.exports.getRemixesOfTrack = (trackId, limit = null, offset = null) => {
   return req
 }
 
-module.exports.getRemixTrackParents = (trackId, limit = null, offset = null) => {
+export const getRemixTrackParents = (
+  trackId: number,
+  limit: number | null = null,
+  offset: number | null = null
+) => {
   const req = {
     endpoint: `remixes/${trackId}/parents`,
     queryParams: {
@@ -120,7 +183,14 @@ module.exports.getRemixTrackParents = (trackId, limit = null, offset = null) => 
   return req
 }
 
-module.exports.getTrendingTracks = (genre = null, timeFrame = null, idsArray = null, limit = null, offset = null, withUsers = false) => {
+export const getTrendingTracks = (
+  genre: string | null = null,
+  timeFrame: string | null = null,
+  idsArray: number[] | null = null,
+  limit: number | null = null,
+  offset: number | null = null,
+  withUsers = false
+) => {
   let endpoint = '/trending/'
 
   if (timeFrame != null) {
@@ -133,7 +203,7 @@ module.exports.getTrendingTracks = (genre = null, timeFrame = null, idsArray = n
       default:
         throw new Error('Invalid timeFrame value provided')
     }
-    endpoint += timeFrame
+    endpoint += `${endpoint}${timeFrame}`
   }
 
   const req = {
@@ -150,7 +220,13 @@ module.exports.getTrendingTracks = (genre = null, timeFrame = null, idsArray = n
   return req
 }
 
-module.exports.getPlaylists = (limit = 100, offset = 0, idsArray = null, targetUserId = null, withUsers = false) => {
+export const getPlaylists = (
+  limit = 100,
+  offset = 0,
+  idsArray = null,
+  targetUserId = null,
+  withUsers = false
+) => {
   if (idsArray != null) {
     if (!Array.isArray(idsArray)) {
       throw new Error('Expected integer array of user ids')
@@ -168,7 +244,13 @@ module.exports.getPlaylists = (limit = 100, offset = 0, idsArray = null, targetU
   }
 }
 
-module.exports.getSocialFeed = (filter, limit = 100, offset = 0, withUsers = false, tracksOnly = false) => {
+export const getSocialFeed = (
+  filter: string,
+  limit = 100,
+  offset = 0,
+  withUsers = false,
+  tracksOnly = false
+) => {
   return {
     endpoint: 'feed',
     queryParams: {
@@ -181,7 +263,12 @@ module.exports.getSocialFeed = (filter, limit = 100, offset = 0, withUsers = fal
   }
 }
 
-module.exports.getUserRepostFeed = (userId, limit = 100, offset = 0, withUsers = false) => {
+export const getUserRepostFeed = (
+  userId: number,
+  limit = 100,
+  offset = 0,
+  withUsers = false
+) => {
   return {
     endpoint: 'feed',
     urlParams: '/reposts/' + userId,
@@ -189,7 +276,12 @@ module.exports.getUserRepostFeed = (userId, limit = 100, offset = 0, withUsers =
   }
 }
 
-module.exports.getFollowIntersectionUsers = (limit = 100, offset = 0, followeeUserId, followerUserId) => {
+export const getFollowIntersectionUsers = (
+  limit = 100,
+  offset = 0,
+  followeeUserId: number,
+  followerUserId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/intersection/follow/' + followeeUserId + '/' + followerUserId,
@@ -197,23 +289,42 @@ module.exports.getFollowIntersectionUsers = (limit = 100, offset = 0, followeeUs
   }
 }
 
-module.exports.getTrackRepostIntersectionUsers = (limit = 100, offset = 0, repostTrackId, followerUserId) => {
+export const getTrackRepostIntersectionUsers = (
+  limit = 100,
+  offset = 0,
+  repostTrackId: number,
+  followerUserId: number
+) => {
   return {
     endpoint: 'users',
-    urlParams: '/intersection/repost/track/' + repostTrackId + '/' + followerUserId,
+    urlParams:
+      '/intersection/repost/track/' + repostTrackId + '/' + followerUserId,
     queryParams: { limit: limit, offset: offset }
   }
 }
 
-module.exports.getPlaylistRepostIntersectionUsers = (limit = 100, offset = 0, repostPlaylistId, followerUserId) => {
+export const getPlaylistRepostIntersectionUsers = (
+  limit = 100,
+  offset = 0,
+  repostPlaylistId: number,
+  followerUserId: number
+) => {
   return {
     endpoint: 'users',
-    urlParams: '/intersection/repost/playlist/' + repostPlaylistId + '/' + followerUserId,
+    urlParams:
+      '/intersection/repost/playlist/' +
+      repostPlaylistId +
+      '/' +
+      followerUserId,
     queryParams: { limit: limit, offset: offset }
   }
 }
 
-module.exports.getFollowersForUser = (limit = 100, offset = 0, followeeUserId) => {
+export const getFollowersForUser = (
+  limit = 100,
+  offset = 0,
+  followeeUserId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/followers/' + followeeUserId,
@@ -221,7 +332,11 @@ module.exports.getFollowersForUser = (limit = 100, offset = 0, followeeUserId) =
   }
 }
 
-module.exports.getFolloweesForUser = (limit = 100, offset = 0, followerUserId) => {
+export const getFolloweesForUser = (
+  limit = 100,
+  offset = 0,
+  followerUserId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/followees/' + followerUserId,
@@ -229,7 +344,11 @@ module.exports.getFolloweesForUser = (limit = 100, offset = 0, followerUserId) =
   }
 }
 
-module.exports.getRepostersForTrack = (limit = 100, offset = 0, repostTrackId) => {
+export const getRepostersForTrack = (
+  limit = 100,
+  offset = 0,
+  repostTrackId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/reposts/track/' + repostTrackId,
@@ -237,7 +356,11 @@ module.exports.getRepostersForTrack = (limit = 100, offset = 0, repostTrackId) =
   }
 }
 
-module.exports.getRepostersForPlaylist = (limit = 100, offset = 0, repostPlaylistId) => {
+export const getRepostersForPlaylist = (
+  limit = 100,
+  offset = 0,
+  repostPlaylistId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/reposts/playlist/' + repostPlaylistId,
@@ -245,7 +368,11 @@ module.exports.getRepostersForPlaylist = (limit = 100, offset = 0, repostPlaylis
   }
 }
 
-module.exports.getSaversForTrack = (limit = 100, offset = 0, saveTrackId) => {
+export const getSaversForTrack = (
+  limit = 100,
+  offset = 0,
+  saveTrackId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/saves/track/' + saveTrackId,
@@ -253,7 +380,11 @@ module.exports.getSaversForTrack = (limit = 100, offset = 0, saveTrackId) => {
   }
 }
 
-module.exports.getSaversForPlaylist = (limit = 100, offset = 0, savePlaylistId) => {
+export const getSaversForPlaylist = (
+  limit = 100,
+  offset = 0,
+  savePlaylistId: number
+) => {
   return {
     endpoint: 'users',
     urlParams: '/saves/playlist/' + savePlaylistId,
@@ -261,42 +392,63 @@ module.exports.getSaversForPlaylist = (limit = 100, offset = 0, savePlaylistId) 
   }
 }
 
-module.exports.searchFull = (text, kind, limit = 100, offset = 0) => {
+export const searchFull = (
+  text: string,
+  kind: string,
+  limit = 100,
+  offset = 0
+) => {
   return {
     endpoint: 'search/full',
     queryParams: { query: text, kind, limit, offset }
   }
 }
 
-module.exports.searchAutocomplete = (text, limit = 100, offset = 0) => {
+export const searchAutocomplete = (text: string, limit = 100, offset = 0) => {
   return {
     endpoint: 'search/autocomplete',
     queryParams: { query: text, limit: limit, offset: offset }
   }
 }
 
-module.exports.searchTags = (text, user_tag_count = 2, kind = 'all', limit = 100, offset = 0) => {
+export const searchTags = (
+  text: string,
+  userTagCount = 2,
+  kind = 'all',
+  limit = 100,
+  offset = 0
+) => {
   return {
     endpoint: 'search/tags',
-    queryParams: { query: text, user_tag_count, kind, limit, offset }
+    queryParams: {
+      query: text,
+      user_tag_count: userTagCount,
+      kind,
+      limit,
+      offset
+    }
   }
 }
 
-module.exports.getSavedPlaylists = (limit = 100, offset = 0, withUsers = false) => {
+export const getSavedPlaylists = (
+  limit = 100,
+  offset = 0,
+  withUsers = false
+) => {
   return {
     endpoint: 'saves/playlists',
     queryParams: { limit: limit, offset: offset, with_users: withUsers }
   }
 }
 
-module.exports.getSavedAlbums = (limit = 100, offset = 0, withUsers = false) => {
+export const getSavedAlbums = (limit = 100, offset = 0, withUsers = false) => {
   return {
     endpoint: 'saves/albums',
     queryParams: { limit: limit, offset: offset, with_users: withUsers }
   }
 }
 
-module.exports.getSavedTracks = (limit = 100, offset = 0, withUsers = false) => {
+export const getSavedTracks = (limit = 100, offset = 0, withUsers = false) => {
   return {
     endpoint: 'saves/tracks',
     queryParams: { limit: limit, offset: offset, with_users: withUsers }
@@ -306,7 +458,7 @@ module.exports.getSavedTracks = (limit = 100, offset = 0, withUsers = false) => 
 /**
  * Return user collections (saved & uploaded) along w/ users for those collections
  */
-module.exports.getUserAccount = (wallet) => {
+export const getUserAccount = (wallet: string) => {
   if (wallet === undefined) {
     throw new Error('Expected wallet to get user account')
   }
@@ -316,7 +468,13 @@ module.exports.getUserAccount = (wallet) => {
   }
 }
 
-module.exports.getTopPlaylists = (type, limit, mood, filter, withUsers = false) => {
+export const getTopPlaylists = (
+  type: string,
+  limit: number,
+  mood: string,
+  filter: string,
+  withUsers = false
+) => {
   return {
     endpoint: `/top/${type}`,
     queryParams: {
@@ -328,7 +486,12 @@ module.exports.getTopPlaylists = (type, limit, mood, filter, withUsers = false) 
   }
 }
 
-module.exports.getTopFolloweeWindowed = (type, window, limit, withUsers = false) => {
+export const getTopFolloweeWindowed = (
+  type: string,
+  window: string,
+  limit: string,
+  withUsers = false
+) => {
   return {
     endpoint: `/top_followee_windowed/${type}/${window}`,
     queryParams: {
@@ -338,7 +501,11 @@ module.exports.getTopFolloweeWindowed = (type, window, limit, withUsers = false)
   }
 }
 
-module.exports.getTopFolloweeSaves = (type, limit, withUsers = false) => {
+export const getTopFolloweeSaves = (
+  type: string,
+  limit: string,
+  withUsers = false
+) => {
   return {
     endpoint: `/top_followee_saves/${type}`,
     queryParams: {
@@ -348,20 +515,25 @@ module.exports.getTopFolloweeSaves = (type, limit, withUsers = false) => {
   }
 }
 
-module.exports.getLatest = (type) => {
+export const getLatest = (type: string) => {
   return {
     endpoint: `/latest/${type}`
   }
 }
 
-module.exports.getTopCreatorsByGenres = (genres, limit = 30, offset = 0, withUsers = false) => {
+export const getTopCreatorsByGenres = (
+  genres: string[],
+  limit = 30,
+  offset = 0,
+  withUsers = false
+) => {
   return {
     endpoint: 'users/genre/top',
     queryParams: { genre: genres, limit, offset, with_users: withUsers }
   }
 }
 
-module.exports.getURSMContentNodes = (ownerWallet) => {
+export const getURSMContentNodes = (ownerWallet: string | null) => {
   return {
     endpoint: 'ursm_content_nodes',
     queryParams: {
@@ -370,7 +542,11 @@ module.exports.getURSMContentNodes = (ownerWallet) => {
   }
 }
 
-module.exports.getNotifications = (minBlockNumber, trackIds, timeout) => {
+export const getNotifications = (
+  minBlockNumber: string,
+  trackIds: string[],
+  timeout: number
+) => {
   return {
     endpoint: 'notifications',
     queryParams: {
@@ -381,7 +557,10 @@ module.exports.getNotifications = (minBlockNumber, trackIds, timeout) => {
   }
 }
 
-module.exports.getSolanaNotifications = (minSlotNumber, timeout) => {
+export const getSolanaNotifications = (
+  minSlotNumber: number,
+  timeout: number
+) => {
   return {
     endpoint: 'solana_notifications',
     queryParams: {
@@ -391,14 +570,19 @@ module.exports.getSolanaNotifications = (minSlotNumber, timeout) => {
   }
 }
 
-module.exports.getTrackListenMilestones = (timout) => {
+export const getTrackListenMilestones = (timeout: number) => {
   return {
     endpoint: 'track_listen_milestones',
-    timout
+    timeout
   }
 }
 
-module.exports.getChallengeAttestation = (challengeId, encodedUserId, specifier, oracleAddress) => {
+export const getChallengeAttestation = (
+  challengeId: string,
+  encodedUserId: string,
+  specifier: string,
+  oracleAddress: string
+) => {
   return {
     endpoint: `/v1/challenges/${challengeId}/attest`,
     queryParams: {
@@ -409,7 +593,7 @@ module.exports.getChallengeAttestation = (challengeId, encodedUserId, specifier,
   }
 }
 
-module.exports.getCreateSenderAttestation = (senderEthAddress) => {
+export const getCreateSenderAttestation = (senderEthAddress: string) => {
   return {
     endpoint: '/v1/challenges/attest_sender',
     queryParams: {
@@ -418,7 +602,12 @@ module.exports.getCreateSenderAttestation = (senderEthAddress) => {
   }
 }
 
-module.exports.getUndisbursedChallenges = (limit, offset, completedBlockNumber, encodedUserId) => {
+export const getUndisbursedChallenges = (
+  limit: number | null,
+  offset: number | null,
+  completedBlockNumber: string | null,
+  encodedUserId: number | null
+) => {
   return {
     endpoint: '/v1/challenges/undisbursed',
     queryParams: {

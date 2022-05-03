@@ -1,5 +1,5 @@
 const { Utils } = require('../../utils')
-const ContractClient = require('../contracts/ContractClient')
+const { ContractClient } = require('../contracts/ContractClient')
 
 class ClaimsManagerClient extends ContractClient {
   /* ------- GETTERS ------- */
