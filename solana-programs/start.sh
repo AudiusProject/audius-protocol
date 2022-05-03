@@ -142,33 +142,33 @@
     yarn run ts-node cli/main.ts --function initAdmin --owner-keypair $owner_wallet_path --network $SOLANA_HOST
 
     # Propagate local variables
-    admin_keypair_path="$PWD/adminKeypair.json"
-    admin_storage_keypair_path="$PWD/adminStorageKeypair.json"
-    admin_keypair_publickey=$(solana-keygen pubkey adminKeypair.json)
-    admin_keypair_privatekey=$(cat adminKeypair.json)
-    admin_storage_keypair_publickey=$(solana-keygen pubkey adminStorageKeypair.json)
-    admin_storage_keypair_privatekey=$(cat adminStorageKeypair.json)
+    admin_authority_keypair_path="$PWD/adminAuthorityKeypair.json"
+    admin_account_keypair_path="$PWD/adminAccountKeypair.json"
+    admin_authority_keypair_publickey=$(solana-keygen pubkey adminAuthorityKeypair.json)
+    admin_authority_keypair_privatekey=$(cat adminAuthorityKeypair.json)
+    admin_account_keypair_publickey=$(solana-keygen pubkey adminAccountKeypair.json)
+    admin_account_keypair_privatekey=$(cat adminAccountKeypair.json)
 
     # initialize Content/URSM nodes - initContentNode uses deterministic 
     # addresses and pkeys from eth-contracts ganache chain.
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
-        --admin-keypair "$admin_keypair_path"\
-        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --admin-authority-keypair "$admin_authority_keypair_path"\
+        --admin-account-keypair "$admin_account_keypair_path" \
         --cn-sp-id 1 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
-        --admin-keypair "$admin_keypair_path"\
-        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --admin-authority-keypair "$admin_authority_keypair_path"\
+        --admin-account-keypair "$admin_account_keypair_path" \
         --cn-sp-id 2 \
         --network "$SOLANA_HOST"
 
     yarn run ts-node cli/main.ts --function initContentNode \
         --owner-keypair "$owner_wallet_path" \
-        --admin-keypair "$admin_keypair_path"\
-        --admin-storage-keypair "$admin_storage_keypair_path" \
+        --admin-authority-keypair "$admin_authority_keypair_path"\
+        --admin-account-keypair "$admin_account_keypair_path" \
         --cn-sp-id 3 \
         --network "$SOLANA_HOST"
 
@@ -177,13 +177,14 @@
 # Back up 2 directories to audius-protocol/solana-programs
 cd ../../
 
+# TODO follow up PR on cleaning up anchor admin storage naming
 cat <<EOF
 {
     "anchorProgramId": "$anchor_program_id",
-    "anchorAdminPublicKey": "$admin_keypair_publickey",
-    "anchorAdminPrivateKey": "$admin_keypair_privatekey",
-    "anchorAdminStoragePublicKey": "$admin_storage_keypair_publickey",
-    "anchorAdminStoragePrivateKey": "$admin_storage_keypair_privatekey",
+    "anchorAdminPublicKey": "$admin_authority_keypair_publickey",
+    "anchorAdminPrivateKey": "$admin_authority_keypair_privatekey",
+    "anchorAdminStoragePublicKey": "$admin_account_keypair_publickey",
+    "anchorAdminStoragePrivateKey": "$admin_account_keypair_privatekey",
     "trackListenCountAddress": "$track_listen_count_address",
     "audiusEthRegistryAddress": "$audius_eth_registry_address",
     "validSigner": "$valid_signer",
