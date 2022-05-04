@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "@audius/libs": "1.2.113-flare70.0",
-    "@audius/stems": "0.3.31",
+    "@audius/stems": "0.3.32",
     "@craco/craco": "6.4.3",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@hcaptcha/react-hcaptcha": "0.3.6",
