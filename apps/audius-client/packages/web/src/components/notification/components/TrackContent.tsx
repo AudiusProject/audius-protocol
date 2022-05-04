@@ -9,6 +9,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './TrackContent.module.css'
+
 const TrackContent = ({
   notification,
   goToEntityPage
