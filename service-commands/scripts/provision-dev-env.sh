@@ -59,7 +59,6 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
     alias python=python3.9
-    alias python=python3.9
     alias pip=pip3
 
     pip install \
