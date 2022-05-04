@@ -50,6 +50,14 @@
   flex: 1 0 auto;
 }
 
+.progress {
+  height: 12px;
+}
+
+.progressSlider {
+  transition: 0.2s ease-in-out;
+}
+
 .uploadText {
   margin: 0px 16px 0px 24px;
   flex: 0 0 70px;

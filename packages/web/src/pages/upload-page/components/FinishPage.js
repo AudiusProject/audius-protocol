@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 
+import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
@@ -16,7 +17,6 @@ import TrackListItem from 'components/track/desktop/TrackListItem'
 import TrackTile from 'components/track/desktop/TrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { ComponentPlacement } from 'components/types'
-import ProgressBar from 'components/upload/ProgressBar'
 import UserBadges from 'components/user-badges/UserBadges'
 
 import { ProgressStatus } from '../store/types'
@@ -94,14 +94,9 @@ class FinishPage extends Component {
     <div className={cn(styles.uploadingInfo)}>
       <div className={styles.progressBar}>
         <ProgressBar
-          percent={uploadPercent}
-          status={
-            hasErrored
-              ? 'exception'
-              : uploadText === 'Complete!' || uploadPercent !== 100
-              ? 'normal'
-              : 'active'
-          }
+          value={uploadPercent}
+          className={styles.progress}
+          sliderBarClassName={styles.progressSlider}
         />
       </div>
       <div
