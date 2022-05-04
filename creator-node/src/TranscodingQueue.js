@@ -6,6 +6,8 @@ const ffmpeg = require('./ffmpeg')
 const { logger: genericLogger } = require('./logging')
 
 const TRANSCODING_MAX_CONCURRENCY = config.get('transcodingMaxConcurrency')
+const MAX_ACTIVE_JOBS = config.get('maximumTranscodingActiveJobs')
+const MAX_WAITING_JOBS = config.get('maximumTranscodingWaitingJobs')
 
 // Maximum concurrency set to config var if provided
 // Otherwise, uses the number of CPU cores available to node
@@ -13,8 +15,6 @@ const MAX_CONCURRENCY =
   TRANSCODING_MAX_CONCURRENCY !== -1
     ? TRANSCODING_MAX_CONCURRENCY
     : os.cpus().length
-
-const MIN_SLOTS_AVAILABLE = config.get('minimumTranscodingSlotsAvailable')
 
 const PROCESS_NAMES = Object.freeze({
   segment: 'segment',
@@ -223,16 +223,18 @@ class TranscodingQueue {
 
   /**
    * The max number of transcode jobs that can run at a given moment is correlated to
-   * the number of cores available. If the remaining slots number is greater than the
-   * minimum slots necessary, mark the transcode queue as available.
+   * the number of cores available.
+   *
+   * If the number of active jobs is less than MAX_ACTIVE_JOBS, and the number of
+   * waiting jobs is less than or equal to or greater MAX_WAITING_JOBS, mark the
+   * TranscodingQueue as unavailable.
    *
    * @returns boolean flag if the transcode queue can accept more jobs
    */
   async isAvailable() {
     const { active, waiting } = await this.getTranscodeQueueJobs()
-    const remainingSlots = MAX_CONCURRENCY - active - waiting
 
-    return remainingSlots >= MIN_SLOTS_AVAILABLE
+    return active < MAX_ACTIVE_JOBS || waiting <= MAX_WAITING_JOBS
   }
 }
 

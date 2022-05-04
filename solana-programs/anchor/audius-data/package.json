@@ -1,6 +1,6 @@
 {
   "name": "@audius/anchor-audius-data",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -62,5 +62,8 @@
     "ts-mocha": "^8.0.0",
     "typescript": "^4.6.2",
     "web3": "1.2.8"
-  }
+  },
+  "description": "Audius solana anchor js bindings",
+  "author": "Audius",
+  "license": "Apache-2.0"
 }
