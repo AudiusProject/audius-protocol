@@ -26,10 +26,10 @@ const Utils = {
    */
   async _getMetricsMatchingPattern(pattern, wallets = []) {
     const keys = wallets
-      ? await Utils._getAllKeysMatchingPattern(pattern)
-      : await Utils._getAllKeysMatchingPattern(pattern, (key) =>
+      ? await Utils._getAllKeysMatchingPattern(pattern, (key) =>
           wallets.some((wallet) => key.includes(wallet))
         )
+      : await Utils._getAllKeysMatchingPattern(pattern)
 
     // Short-circuit here since redis `mget` throws if array param has 0-length
     if (!keys || !keys.length) {
@@ -93,8 +93,8 @@ const Utils = {
 
   _parseRedisKeyIntoComponents(key) {
     const components = key.split(':::')
-    const [, secondary, wallet, syncType, outcome, date] = components
-    return { secondary, wallet, syncType, outcome, date }
+    const [, secondary, wallet, syncType, date, outcome] = components
+    return { secondary, wallet, syncType, date, outcome }
   },
 
   async _recordSyncRequestOutcome(secondary, wallet, syncType, success = true) {
@@ -150,15 +150,14 @@ const Getters = {
     const secondarySyncMetricsMap = {}
     const wallets = Object.keys(walletsToSecondariesMapping)
     for (const wallet of wallets) {
-      const secondaries = walletsToSecondariesMapping[wallet]
       const secondarySyncMetrics = secondarySyncMetricsMap[wallet] || {}
-      secondaries.forEach((secondary) => {
+      for (const secondary of walletsToSecondariesMapping[wallet]) {
         secondarySyncMetrics[secondary] = { successCount: 0, failureCount: 0 }
         secondarySyncMetricsMap[wallet] = secondarySyncMetrics
-      })
+      }
     }
 
-    // Retrieve map of all SyncRequestOutcome keys and daily counts for user from all secondaries
+    // Retrieve map of all SyncRequestOutcome keys and daily counts for wallets from all secondaries
     const userSecondarySyncHealthOutcomes =
       await Getters.batchGetSyncRequestOutcomeMetrics(wallets)
 
