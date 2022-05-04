@@ -287,11 +287,13 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
+        sender_index = instruction["accounts"].index(1)
+        receiver_index = instruction["accounts"].index(2)
         process_transfer_instruction(
             session=session,
             redis=redis,
-            sender_account=account_keys[1],
-            receiver_account=account_keys[2],
+            sender_account=account_keys[sender_index],
+            receiver_account=account_keys[receiver_index],
             meta=meta,
             tx_sig=tx_sig,
             slot=result["slot"],
