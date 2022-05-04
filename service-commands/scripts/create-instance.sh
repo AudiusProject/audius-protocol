@@ -104,9 +104,9 @@ case "$provider" in
 		;;
 	gcp)
 		if [[ "$spot_instance" = true ]]; then
-			echo gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type --provisioning-model=SPOT 2> /dev/null
+			gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type --provisioning-model=SPOT 2> /dev/null
 		else
-			echo gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type 2> /dev/null
+			gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type 2> /dev/null
 		fi
 		;;
 esac
