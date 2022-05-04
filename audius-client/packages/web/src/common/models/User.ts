@@ -31,6 +31,7 @@ export type UserMetadata = {
   cover_photo_sizes: Nullable<CID>
   profile_picture_sizes: Nullable<CID>
   metadata_multihash: Nullable<CID>
+  spl_wallet: SolanaWalletAddress
   has_collectibles: boolean
   collectibles?: CollectiblesMetadata
   collectibleList?: Collectible[]

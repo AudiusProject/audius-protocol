@@ -54,6 +54,7 @@ import remoteConfigSagas from 'common/store/remote-config/sagas'
 import signOutSagas from 'common/store/sign-out/sagas'
 import solanaReducer from 'common/store/solana/slice'
 import stemsUpload from 'common/store/stems-upload/slice'
+import tippingReducer from 'common/store/tipping/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from 'common/store/ui/add-to-playlist/reducer'
@@ -174,7 +175,10 @@ export const reducers = (ctx: CommonStoreContext) => ({
   // Solana
   solana: solanaReducer,
 
-  stemsUpload
+  stemsUpload,
+
+  // Tipping
+  tipping: tippingReducer
 })
 
 /**
@@ -308,4 +312,7 @@ export type CommonState = {
   solana: ReturnType<typeof solanaReducer>
 
   stemsUpload: ReturnType<typeof stemsUpload>
+
+  // Tipping
+  tipping: ReturnType<typeof tippingReducer>
 }

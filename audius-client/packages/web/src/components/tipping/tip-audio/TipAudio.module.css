@@ -1,0 +1,348 @@
+.tipIconTextContainer {
+  display: flex;
+  align-items: center;
+}
+
+.tipText {
+  margin-left: 8px;
+}
+
+.modalBody {
+  width: 488px;
+  height: 492px;
+}
+
+.modalContentContainer {
+  margin: 24px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+}
+
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileUser {
+  margin-top: 32px;
+  margin-bottom: 24px;
+}
+
+.confirmProfileUser {
+  margin-top: 0;
+}
+
+.becomeTopSupporter {
+  margin-bottom: 24px;
+  padding: 8px 0;
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  color: var(--white);
+  background: linear-gradient(
+    315deg,
+    var(--page-header-gradient-color-1) 0%,
+    var(--page-header-gradient-color-2) 100%
+  );
+  border-radius: 4px;
+}
+
+.becomeTopSupporterTrophy {
+  height: 16px;
+  width: 16px;
+  margin-right: 6px;
+}
+
+.becomeTopSupporterTrophy g path {
+  fill: var(--white);
+}
+
+.amountToSend {
+  margin: 0 24px 24px 24px;
+}
+
+.amountAvailableContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 24px 24px 24px;
+  color: var(--neutral-light-4);
+  font-weight: var(--font-heavy);
+}
+
+.amountAvailableText {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-s);
+}
+
+.amountAvailableText svg path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.amountAvailableInfo {
+  margin-left: 6px;
+}
+
+.amountContainer {
+  display: flex;
+  align-items: center;
+}
+
+.amountAvailable {
+  margin-left: 4px;
+  font-size: var(--font-s);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+  transition: color 0.07s ease-in-out;
+  cursor: pointer;
+}
+
+.buttonContainer {
+  margin-bottom: 24px;
+}
+
+.buttonContainer .disabled:hover {
+  background: var(--neutral-light-7);
+}
+
+.buttonText {
+  font-size: var(--font-l) !important;
+}
+
+.accountWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-shrink: 0;
+  margin-bottom: 4px;
+  color: var(--neutral);
+  transition: all ease-in-out 0.18s;
+}
+
+.wrapperPhoto {
+  position: relative;
+
+  overflow: hidden;
+  flex: 0 0 78px;
+  height: 78px;
+}
+
+.dynamicPhoto {
+  height: 78px;
+  border-radius: 40px;
+  border: 1px solid var(--white);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
+
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.accountWrapper .photo {
+  position: relative;
+
+  overflow: hidden;
+  flex: 0 0 78px;
+  height: 78px;
+  border-radius: 30px;
+  border: 1px solid var(--white);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
+
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.accountWrapper .userInfoWrapper {
+  margin-left: 8px;
+  text-align: left;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow: hidden;
+}
+
+.accountWrapper .userInfoWrapper .name {
+  font-size: var(--font-s);
+  line-height: 17px;
+  font-weight: var(--font-bold);
+  padding-bottom: 4px;
+  padding-right: 4px;
+  color: var(--neutral);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  margin-left: 4px;
+}
+
+.accountWrapper .userInfoWrapper .handleContainer {
+  display: inline-flex;
+  overflow: hidden;
+  line-height: 14px;
+  padding-right: 4px;
+}
+
+.accountWrapper .userInfoWrapper .handle {
+  font-size: var(--font-s);
+  color: var(--neutral);
+  font-weight: var(--font-medium);
+  transition: all 0.07s ease-in-out;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountWrapper .userInfoWrapper .handleContainer svg {
+  transition: all 0.07s ease-in-out;
+}
+
+.areYouSure {
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  margin-bottom: 24px;
+}
+
+.goBackContainer {
+  margin-top: 24px;
+  color: var(--neutral-light-4);
+  cursor: pointer;
+}
+
+.goBack {
+  margin-left: 4px;
+  font-weight: var(--font-bold);
+}
+
+.disabled {
+  cursor: unset;
+}
+
+.loadingSpinner {
+  height: 24px;
+  width: 24px;
+}
+
+.loadingSpinner g path {
+  stroke: var(--static-white) !important;
+}
+
+.sendingContainer {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.1em;
+}
+
+.sendingIcon {
+  margin-right: 4px;
+}
+
+.sendingIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sendingIcon svg path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.sendingAudio {
+  font-size: var(--font-3xl);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+  margin-bottom: 28px;
+}
+
+.sendAmount {
+  margin-right: 4px;
+  color: var(--neutral);
+}
+
+.sentAudio {
+  font-size: var(--font-3xl);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+  margin-bottom: 24px;
+}
+
+.sentSuccessfullyContainer {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  color: var(--neutral-light-4);
+  margin-top: 48px;
+  margin-bottom: 8px;
+  letter-spacing: 0.1em;
+}
+
+.sentSuccessfullyIcon {
+  margin-right: 4px;
+}
+
+.sentSuccessfullyIcon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sentSuccessfullyIcon svg path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.shareButton,
+.shareButton:hover {
+  background: var(--static-twitter-blue) !important;
+}
+
+.support {
+  margin-bottom: 24px;
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+}
+
+.input {
+  padding: 16px;
+  color: var(--neutral-light-4);
+  background-color: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-8);
+  font-size: var(--font-xl);
+  font-weight: var(--font-medium);
+}
+
+.rightLabel {
+  bottom: 17px;
+  right: 16px;
+  color: var(--neutral);
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+}
+
+.error {
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  color: var(--accent-red);
+  margin-bottom: 24px;
+}
+
+.button:hover {
+  background: var(--primary-light-1) !important;
+}
+
+.button:active {
+  background: var(--primary-dark-1) !important;
+  transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
+}
