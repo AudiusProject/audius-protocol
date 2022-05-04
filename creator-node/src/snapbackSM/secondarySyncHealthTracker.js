@@ -19,33 +19,17 @@ const Outcomes = Object.freeze({
 const Utils = {
   /**
    * Given redis key pattern, returns all keys matching pattern and associated values
-   * Returns map of key-value pairs
+   *
+   * @param {string} pattern the pattern to run a redis SCAN on to find matching keys
+   * @param {String[]} wallets optional array of wallets to filter matched keys by
+   * @returns map of key-value pairs
    */
-  async _getMetricsMatchingPattern(pattern) {
-    const keys = await Utils._getAllKeysMatchingPattern(pattern)
-
-    // Short-circuit here since redis `mget` throws if array param has 0-length
-    if (!keys || !keys.length) {
-      return {}
-    }
-
-    // This works because vals.length === keys.length
-    // https://redis.io/commands/mget
-    const vals = await redisClient.mget(keys)
-
-    // Zip keys and vals arrays into map of key-val pairs
-    const keyMap = {}
-    for (let i = 0; i < keys.length; i++) {
-      keyMap[keys[i]] = vals[i]
-    }
-
-    return keyMap
-  },
-
-  async _getMetricsMatchingPatternWithWallets(pattern, wallets) {
-    const keys = await Utils._getAllKeysMatchingPattern(pattern, (key) =>
-      wallets.some((wallet) => key.includes(wallet))
-    )
+  async _getMetricsMatchingPattern(pattern, wallets = []) {
+    const keys = wallets
+      ? await Utils._getAllKeysMatchingPattern(pattern)
+      : await Utils._getAllKeysMatchingPattern(pattern, (key) =>
+          wallets.some((wallet) => key.includes(wallet))
+        )
 
     // Short-circuit here since redis `mget` throws if array param has 0-length
     if (!keys || !keys.length) {
@@ -237,7 +221,7 @@ const Getters = {
   async batchGetSyncRequestOutcomeMetrics(wallets) {
     try {
       const pattern = Utils._getRedisKeyPattern({})
-      return Utils._getMetricsMatchingPatternWithWallets(pattern, wallets)
+      return Utils._getMetricsMatchingPattern(pattern, wallets)
     } catch (e) {
       logger.error(
         `SecondarySyncHealthTracker - batchGetSyncRequestOutcomeMetrics() Error || ${e.message}`
