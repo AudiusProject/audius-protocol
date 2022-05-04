@@ -19,7 +19,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/libs": "1.2.112",
+    "@audius/libs": "1.2.113",
     "@solana/web3.js": "1.31.0",
     "JSONStream": "^1.3.5",
     "axios": "^0.19.2",
