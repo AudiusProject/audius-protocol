@@ -10,6 +10,7 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_support,
     extend_track,
     extend_user,
     format_limit,
@@ -24,6 +25,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.common import favorite
+from src.api.v1.models.support import support
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
@@ -44,6 +46,10 @@ from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_save_tracks import get_save_tracks
 from src.queries.get_saves import get_saves
+from src.queries.get_support_for_user import (
+    get_support_received_by_user,
+    get_support_sent_by_user,
+)
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
@@ -890,3 +896,46 @@ class GetChallenges(Resource):
             challenges = list(map(extend_challenge_response, challenges))
 
             return success_response(challenges)
+
+
+get_supporters_response = make_response(
+    "get_supporters", ns, fields.List(fields.Nested(support))
+)
+
+
+@ns.route("/<string:id>/supporters")
+class GetSupporters(Resource):
+    @ns.doc(
+        id="""Get User Supporters""",
+        description="""Gets the supporters of the given user""",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(get_supporters_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str):
+        args = pagination_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        args["user_id"] = decoded_id
+        support = get_support_received_by_user(args)
+        support = list(map(extend_support, support))
+        return success_response(support)
+
+
+@ns.route("/<string:id>/supporting")
+class GetSupporting(Resource):
+    @ns.doc(
+        id="""Get User Supporters""",
+        description="""Gets the supporters of the given user""",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(get_supporters_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str):
+        args = pagination_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        args["user_id"] = decoded_id
+        support = get_support_sent_by_user(args)
+        support = list(map(extend_support, support))
+        return success_response(support)
