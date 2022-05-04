@@ -103,11 +103,10 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         echo "Finished running migrations"
     fi
 
-    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
+    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) & # docker exec -it <disc-prov container> tail -f /var/log/discprov-server.log
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
-        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
-    fi
+        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) & # docker exec -it <disc-prov container> tail -f /var/log/discprov-worker.log
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) & # docker exec -it <disc-prov container> tail -f /var/log/discprov-beat.log
 else
     ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
