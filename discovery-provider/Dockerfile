@@ -86,7 +86,7 @@ COPY scripts/wait /wait
 RUN chmod +x /wait
 
 # Permission scripts directory
-RUN chmod +x scripts
+RUN chmod +x scripts/*
 
 RUN mkdir -p ./build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
