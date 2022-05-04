@@ -10,6 +10,7 @@ import App from 'pages/App'
 import AppContext from 'pages/AppContext'
 import { AppErrorBoundary } from 'pages/AppErrorBoundary'
 import { MainContentContext } from 'pages/MainContentContext'
+import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import history from 'utils/history'
 
@@ -42,6 +43,11 @@ const AudiusApp = ({
                   <Route path='/error'>
                     <SomethingWrong />
                   </Route>
+                  <Route
+                    exact
+                    path={'/oauth/auth'}
+                    component={OAuthLoginPage}
+                  />
                   <Route path='/'>
                     <AppErrorBoundary>
                       <App
