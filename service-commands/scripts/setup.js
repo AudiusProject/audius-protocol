@@ -80,13 +80,18 @@ program
     'whether to include AAO',
     false
   )
+  .option(
+    '-wspb, --with-solana-programs-build',
+    'whether to build solana programs (as opposed to using cached)',
+    false
+  )
   .action(async opts => {
     console.log('Bringing up services...')
     console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`)
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
-    const { verbose, parallel, withAao: withAAO } = opts
-    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, opts })
+    const { verbose, parallel, withAao: withAAO, withSolanaProgramsBuild: buildSolana } = opts
+    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, buildSolana, opts })
   })
 
 program

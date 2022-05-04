@@ -4,7 +4,8 @@ import {
   allRequests,
   ServiceName,
   ServiceWithEndpoint,
-  Service
+  Service,
+  Maybe
 } from '../utils'
 import { DECISION_TREE_STATE } from './constants'
 import type { AxiosResponse } from 'axios'
@@ -17,6 +18,9 @@ export type GetServicesInput =
   | (() => Promise<ServiceName[]>)
   | ((config: { verbose: false }) => Promise<ServiceName[]>)
   | ((config: { verbose: true }) => Promise<ServiceWithEndpoint[]>)
+  | ((config: {
+      verbose: boolean
+    }) => Promise<ServiceName[] | ServiceWithEndpoint[]>)
 
 interface GetServices {
   (): Promise<ServiceName[]>
@@ -25,10 +29,12 @@ interface GetServices {
   (config: { verbose: boolean }): Promise<Service[]>
 }
 
-interface Decision {
+export interface Decision {
   stage: string
   val?: unknown
 }
+
+export type Backup = { block_difference: number; version: string }
 
 export interface ServiceSelectionConfig {
   // services from this list should not be picked
@@ -46,7 +52,7 @@ export interface ServiceSelectionConfig {
    */
   maxConcurrentRequests?: number
   // the timeout at which to give up on a service
-  requestTimeout?: number
+  requestTimeout?: Maybe<number>
   /*
    *the point at which the unhealthy services are freed so they
    * may be tried again (re-requested)
@@ -95,7 +101,7 @@ export class ServiceSelection {
   unhealthyTTL: number
   backupsTTL: number
   unhealthy: Set<string>
-  backups: Record<string, AxiosResponse>
+  backups: Record<string, Backup>
   totalAttempts: number
   decisionTree: Decision[]
   unhealthyCleanupTimeout: NodeJS.Timeout | null = null
@@ -137,7 +143,7 @@ export class ServiceSelection {
    * @param reset if reset is true, clear the decision tree
    */
   // we need any type here to allow sub-classes to more strictly type return type
-  async select(reset = true): Promise<any> {
+  async select(reset: any = true): Promise<any> {
     if (reset) {
       this.decisionTree = []
     }
@@ -423,7 +429,7 @@ export class ServiceSelection {
    * @param response the services response. This can be used to weigh various
    * backups against eachother
    */
-  addBackup(service: string, response: AxiosResponse) {
+  addBackup(service: string, response: Backup) {
     this.backups[service] = response
   }
 
@@ -431,7 +437,7 @@ export class ServiceSelection {
    * Controls how a backup is picked. Overriding methods may choose to use the backup's response.
    * e.g. pick a backup that's the fewest versions behind
    */
-  selectFromBackups() {
+  async selectFromBackups() {
     return Object.keys(this.backups)[0]
   }
 

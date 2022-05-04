@@ -9,9 +9,10 @@ class DelegateManagerClient extends GovernedContractClient {
     getRegistryAddress,
     audiusTokenClient,
     stakingProxyClient,
-    governanceClient
+    governanceClient,
+    logger = console
   ) {
-    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, governanceClient)
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, governanceClient, logger)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
   }

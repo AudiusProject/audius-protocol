@@ -134,8 +134,8 @@ def index_rank_ups(
 def _update_aggregate_tips(session: Session, redis: Redis):
     latest_user_bank_slot = redis.get(latest_sol_user_bank_slot_key)
     prev_slot = get_last_indexed_checkpoint(session, AGGREGATE_TIPS)
-    max_slot_result = session.query(func.max(UserTip.slot)).one_or_none()
-    max_slot = int(max_slot_result[0]) if max_slot_result is not None else 0
+    max_slot_result = session.query(func.max(UserTip.slot)).one()
+    max_slot = int(max_slot_result[0]) if max_slot_result[0] is not None else 0
     if prev_slot == max_slot:
         return
     ranks_before = _get_ranks(session, prev_slot, max_slot)

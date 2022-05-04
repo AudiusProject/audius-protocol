@@ -1,4 +1,4 @@
-const ContractClient = require('../contracts/ContractClient')
+const { ContractClient } = require('../contracts/ContractClient')
 const { Utils } = require('../../utils')
 
 /**
@@ -27,9 +27,10 @@ class GovernanceClient extends ContractClient {
     getRegistryAddress,
     audiusTokenClient,
     stakingProxyClient,
+    logger = console,
     isDebug = false
   ) {
-    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, logger)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
     this.isDebug = isDebug
