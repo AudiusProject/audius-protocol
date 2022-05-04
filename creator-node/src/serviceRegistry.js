@@ -329,8 +329,7 @@ class ServiceRegistry {
       isDebug: config.get('creatorNodeIsDebug'),
       isServer: true,
       preferHigherPatchForPrimary: true,
-      preferHigherPatchForSecondaries: true,
-      logger
+      preferHigherPatchForSecondaries: true
     })
 
     await audiusLibs.init()
