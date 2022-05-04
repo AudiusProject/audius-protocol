@@ -204,8 +204,8 @@ fn command_create_valid_signer(
     config: &Config,
     signer_group: &Pubkey,
     eth_address: String,
+    valid_signer: Box<dyn Signer>,
 ) -> CommandResult {
-    let valid_signer = Keypair::new();
     println!(
         "Creating new valid signer account {}",
         valid_signer.pubkey()
@@ -248,7 +248,7 @@ fn command_create_valid_signer(
         &[
             config.fee_payer.as_ref(),
             config.owner.as_ref(),
-            &valid_signer,
+            valid_signer.as_ref(),
         ],
         recent_blockhash,
     );
@@ -398,19 +398,19 @@ fn main() {
         )
         .subcommand(
             SubCommand::with_name("create-signer-group")
-            .about("Create a new signer group")
-            .arg(
-                Arg::with_name("signer_group")
-                    .value_name("SIGENR_GROUP_KEYPAIR")
-                    .validator(is_keypair)
-                    .takes_value(true)
-                    .index(1)
-                    .help(
-                        "Specify the signer group keypair. \
-                         This may be a keypair file, the ASK keyword. \
-                         Defaults to randomly generated keypair.",
-                    ),
-            )
+                .about("Create a new signer group")
+                .arg(
+                    Arg::with_name("signer_group")
+                        .value_name("SIGNER_GROUP_KEYPAIR")
+                        .validator(is_keypair)
+                        .takes_value(true)
+                        .index(1)
+                        .help(
+                            "Specify the signer group keypair. \
+                             This may be a keypair file, the ASK keyword. \
+                             Defaults to randomly generated keypair.",
+                        ),
+                )
         )
         .subcommand(
             SubCommand::with_name("create-valid-signer")
@@ -432,6 +432,18 @@ fn main() {
                         .takes_value(true)
                         .required(true)
                         .help("Ethereum address calculated valid signer's private key (without 0x prefix)."),
+                )
+                .arg(
+                    Arg::with_name("valid_signer")
+                        .value_name("VALID_SIGNER_KEYPAIR")
+                        .validator(is_keypair)
+                        .takes_value(true)
+                        .index(3)
+                        .help(
+                            "Specify the valid signer keypair. \
+                             This may be a keypair file, the ASK keyword. \
+                             Defaults to randomly generated keypair.",
+                        ),
                 ),
         )
         .subcommand(
@@ -553,7 +565,7 @@ fn main() {
 
     let _ = match matches.subcommand() {
         ("create-signer-group", Some(arg_matches)) => {
-            let opt_signer_group = arg_matches.value_of("signer_group").map(|path| {
+            let signer_group = arg_matches.value_of("signer_group").map(|path| {
                 signer_from_path(
                     arg_matches,
                     path,
@@ -563,9 +575,7 @@ fn main() {
                     eprintln!("error: {}", e);
                     exit(1);
                 })
-            });
-
-            let signer_group = opt_signer_group.unwrap_or_else(|| {
+            }).unwrap_or_else(|| {
                 let keypair = Keypair::new();
                 Box::new(keypair) as Box<dyn Signer>
             });
@@ -584,7 +594,22 @@ fn main() {
         ("create-valid-signer", Some(arg_matches)) => {
             let signer_group: Pubkey = pubkey_of(arg_matches, "signer_group").unwrap();
             let eth_address: String = value_t_or_exit!(arg_matches, "eth_address", String);
-            command_create_valid_signer(&config, &signer_group, eth_address)
+            let valid_signer = arg_matches.value_of("valid_signer").map(|path| {
+                signer_from_path(
+                    arg_matches,
+                    path,
+                    "valid_signer",
+                    &mut wallet_manager,
+                ).unwrap_or_else(|e| {
+                    eprintln!("error: {}", e);
+                    exit(1);
+                })
+            }).unwrap_or_else(|| {
+                let keypair = Keypair::new();
+                Box::new(keypair) as Box<dyn Signer>
+            });
+
+            command_create_valid_signer(&config, &signer_group, eth_address, valid_signer)
         }
         ("clear-valid-signer", Some(arg_matches)) => {
             let valid_signer: Pubkey = pubkey_of(arg_matches, "valid_signer").unwrap();
