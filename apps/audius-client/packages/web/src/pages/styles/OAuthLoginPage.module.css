@@ -1,0 +1,7 @@
+.container {
+  flex-direction: column;
+}
+
+.list {
+  display: block;
+}

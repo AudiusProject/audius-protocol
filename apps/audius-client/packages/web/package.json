@@ -63,6 +63,7 @@
     "pixi.js": "4.8.9",
     "promise.allsettled": "1.0.4",
     "prop-types": "15.7.2",
+    "query-string": "6.13.5",
     "raw-loader": "0.5.1",
     "react": "^16.14.0",
     "react-beautiful-dnd": "10.0.4",
