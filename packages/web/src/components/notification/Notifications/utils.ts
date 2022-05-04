@@ -1,3 +1,4 @@
+import { formatCount } from 'common/utils/formatUtil'
 import {
   albumPage,
   fullAlbumPage,
@@ -21,4 +22,14 @@ export const getEntityLink = (entity: EntityType, fullRoute = false) => {
   }
   const getRoute = fullRoute ? fullPlaylistPage : playlistPage
   return getRoute(entity.user.handle, entity.playlist_name, entity.playlist_id)
+}
+
+export const formatOthersCount = (userCount: number) =>
+  ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`
+
+export const getRankSuffix = (rank: number) => {
+  if (rank === 1) return 'st'
+  if (rank === 2) return 'nd'
+  if (rank === 3) return 'rd'
+  return 'th'
 }

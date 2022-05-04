@@ -47,15 +47,15 @@ export type UserSubscription = BaseNotification & {
   type: NotificationType.UserSubscription
   userId: ID
   entityIds: ID[]
-  user?: User
+  user: User
 } & (
     | {
         entityType: Entity.Track
-        entities?: Array<Track & { user: User }>
+        entities: Array<Track & { user: User }>
       }
     | {
         entityType: Entity.Playlist | Entity.Album
-        entities?: Array<Collection & { user: User }>
+        entities: Array<Collection & { user: User }>
       }
   )
 
@@ -85,7 +85,7 @@ export type Favorite = BaseNotification & {
   type: NotificationType.Favorite
   entityId: ID
   userIds: ID[]
-  users?: User[]
+  users: User[]
 } & (
     | {
         entityType: Entity.Playlist | Entity.Album
@@ -110,7 +110,7 @@ export type Milestone = BaseNotification & { user: User } & (
         type: NotificationType.Milestone
         entityType: Entity
         entityId: ID
-        entity: User | Track | Collection
+        entity: Track | Collection
         achievement: Exclude<Achievement, Achievement.Followers>
         value?: number
       }

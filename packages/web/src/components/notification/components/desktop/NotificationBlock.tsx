@@ -120,6 +120,7 @@ const NotificationBlock = (props: NotificationBlockProps) => {
         goToEntityPage={goToEntityPage}
       />
     ) : null
+
   const onContainerClick = () => {
     markNotificationAsRead()
     switch (type) {
