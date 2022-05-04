@@ -280,12 +280,12 @@ const performHealthCheckWithRetry = async (
   let attempts = retries
   while (attempts > 0) {
     try {
+      await wait(10000)
       await performHealthCheck(service, serviceNumber)
       return
     } catch (e) {
       console.log(`${e}`)
     }
-    await wait(10000)
     attempts -= 1
   }
   const serviceNumberString = serviceNumber ? `, spId=${serviceNumber}` : ''
