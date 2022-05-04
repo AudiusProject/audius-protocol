@@ -287,7 +287,9 @@ const getCID = async (req, res) => {
     })
     logInfoWithDuration(
       { logger: req.logger, startTime: codeBlockTimeStart },
-      `${logPrefix} Content query search duration`
+      `${logPrefix} Content query found: ${!!queryResults}${
+        queryResults && queryResults.type === 'dir' ? ' and is a dir type' : ''
+      }`
     )
 
     if (!queryResults) {
@@ -324,7 +326,7 @@ const getCID = async (req, res) => {
     )
     logInfoWithDuration(
       { logger: req.logger, startTime: codeBlockTimeStart },
-      `${logPrefix} Found cid: ${found}`
+      `${logPrefix} Found cid from network: ${found}`
     )
 
     if (!found) {
