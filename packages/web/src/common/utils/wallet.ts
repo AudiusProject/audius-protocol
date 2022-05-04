@@ -6,8 +6,11 @@ import {
   trimRightZeros,
   formatNumberCommas,
   formatWeiToAudioString,
-  parseWeiNumber
+  parseWeiNumber,
+  convertFloatToWei
 } from 'common/utils/formatUtil'
+
+import { Nullable } from './typeUtils'
 
 export const weiToAudioString = (bnWei: BNWei): StringAudio => {
   const stringAudio = formatWeiToAudioString(bnWei) as StringAudio
@@ -44,6 +47,19 @@ export const weiToString = (wei: BNWei): StringWei => {
 
 export const stringAudioToStringWei = (stringAudio: StringAudio): StringWei => {
   return weiToString(audioToWei(stringAudio))
+}
+
+export const parseAudioInputToWei = (audio: StringAudio): Nullable<BNWei> => {
+  if (!audio.length) return null
+  // First try converting from float, in case audio has decimal value
+  const floatWei = convertFloatToWei(audio) as Nullable<BNWei>
+  if (floatWei) return floatWei
+  // Safe to assume no decimals
+  try {
+    return audioToWei(audio)
+  } catch {
+    return null
+  }
 }
 
 /**
