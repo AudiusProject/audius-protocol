@@ -287,8 +287,11 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        sender_index = instruction["accounts"].index(1)
-        receiver_index = instruction["accounts"].index(2)
+        # The sender/receiver are index 1 and 2 respectfully in the instruction,
+        # but the transaction might list them in a different order in the pubKeys.
+        # The "accounts" field of the instruction has the mapping of accounts to pubKey index
+        sender_index = instruction["accounts"][1]
+        receiver_index = instruction["accounts"][2]
         process_transfer_instruction(
             session=session,
             redis=redis,
