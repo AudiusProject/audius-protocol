@@ -10,7 +10,8 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
-    extend_support,
+    extend_supporter,
+    extend_supporting,
     extend_track,
     extend_user,
     format_limit,
@@ -25,7 +26,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.common import favorite
-from src.api.v1.models.support import support
+from src.api.v1.models.support import supporter_response, supporting_response
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
@@ -899,7 +900,7 @@ class GetChallenges(Resource):
 
 
 get_supporters_response = make_response(
-    "get_supporters", ns, fields.List(fields.Nested(support))
+    "get_supporters", ns, fields.List(fields.Nested(supporter_response))
 )
 
 
@@ -918,8 +919,13 @@ class GetSupporters(Resource):
         decoded_id = decode_with_abort(id, ns)
         args["user_id"] = decoded_id
         support = get_support_received_by_user(args)
-        support = list(map(extend_support, support))
+        support = list(map(extend_supporter, support))
         return success_response(support)
+
+
+get_supporting_response = make_response(
+    "get_supporting", ns, fields.List(fields.Nested(supporting_response))
+)
 
 
 @ns.route("/<string:id>/supporting")
@@ -930,12 +936,12 @@ class GetSupporting(Resource):
         params={"id": "A User ID"},
     )
     @ns.expect(pagination_parser)
-    @ns.marshal_with(get_supporters_response)
+    @ns.marshal_with(get_supporting_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
         args = pagination_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         args["user_id"] = decoded_id
         support = get_support_sent_by_user(args)
-        support = list(map(extend_support, support))
+        support = list(map(extend_supporting, support))
         return success_response(support)

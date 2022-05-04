@@ -289,10 +289,20 @@ def extend_undisbursed_challenge(undisbursed_challenge: UndisbursedChallengeResp
     return new_undisbursed_challenge
 
 
-def extend_support(support: SupportResponse):
-    new_support = support.copy()
-    new_support["user"] = extend_user(support["user"])
-    return new_support
+def extend_supporter(support: SupportResponse):
+    return {
+        "rank": support["rank"],
+        "amount": support["amount"],
+        "sender": extend_user(support["user"]),
+    }
+
+
+def extend_supporting(support: SupportResponse):
+    return {
+        "rank": support["rank"],
+        "amount": support["amount"],
+        "receiver": extend_user(support["user"]),
+    }
 
 
 def abort_bad_path_param(param, namespace):
