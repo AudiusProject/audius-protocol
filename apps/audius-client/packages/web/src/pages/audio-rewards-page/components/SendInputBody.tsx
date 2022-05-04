@@ -19,10 +19,9 @@ import {
   WalletAddress
 } from 'common/models/Wallet'
 import { FeatureFlags, IntKeys } from 'common/services/remote-config'
-import { convertFloatToWei } from 'common/utils/formatUtil'
 import { Nullable } from 'common/utils/typeUtils'
 import {
-  audioToWei,
+  parseAudioInputToWei,
   stringAudioToBN,
   stringWeiToBN,
   weiToAudio
@@ -164,19 +163,6 @@ const ErrorLabel = ({ text }: { text: string }) => {
       <IconValidationX /> {text}
     </div>
   )
-}
-
-const parseAudioInputToWei = (audio: StringAudio): Nullable<BNWei> => {
-  if (!audio.length) return null
-  // First try converting from float, in case audio has decimal value
-  const floatWei = convertFloatToWei(audio) as Nullable<BNWei>
-  if (floatWei) return floatWei
-  // Safe to assume no decimals
-  try {
-    return audioToWei(audio)
-  } catch {
-    return null
-  }
 }
 
 const SendInputBody = ({

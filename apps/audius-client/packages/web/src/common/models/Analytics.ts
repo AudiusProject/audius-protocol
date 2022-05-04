@@ -2,7 +2,11 @@ import FeedFilter from 'common/models/FeedFilter'
 import { ID, PlayableType } from 'common/models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
 import TimeRange from 'common/models/TimeRange'
-import { WalletAddress } from 'common/models/Wallet'
+import {
+  SolanaWalletAddress,
+  StringAudio,
+  WalletAddress
+} from 'common/models/Wallet'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -233,6 +237,12 @@ export enum Name {
   REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
   REWARDS_CLAIM_START_COGNITO_FLOW = 'Rewards Claim: Start Cognito Flow',
   REWARDS_CLAIM_FINISH_COGNITO_FLOW = 'Rewards Claim: Finish Cognito Flow',
+
+  // Tipping
+  TIP_AUDIO_REQUEST = 'TIP_AUDIO_REQUEST',
+  TIP_AUDIO_SUCCESS = 'TIP_AUDIO_SUCCESS',
+  TIP_AUDIO_FAILURE = 'TIP_AUDIO_FAILURE',
+  TIP_AUDIO_TWITTER_SHARE = 'TIP_AUDIO_TWITTER_SHARE',
 
   // Social Proof
   SOCIAL_PROOF_OPEN = 'Social Proof: Open',
@@ -1104,6 +1114,43 @@ type RewardsClaimUnknown = {
   error: string
 }
 
+type TipAudioRequest = {
+  eventName: Name.TIP_AUDIO_REQUEST
+  amount: StringAudio
+  senderWallet: SolanaWalletAddress
+  recipientWallet: SolanaWalletAddress
+  senderHandle: string
+  recipientHandle: string
+}
+
+type TipAudioSuccess = {
+  eventName: Name.TIP_AUDIO_SUCCESS
+  amount: StringAudio
+  senderWallet: SolanaWalletAddress
+  recipientWallet: SolanaWalletAddress
+  senderHandle: string
+  recipientHandle: string
+}
+
+type TipAudioFailure = {
+  eventName: Name.TIP_AUDIO_FAILURE
+  amount: StringAudio
+  senderWallet: SolanaWalletAddress
+  recipientWallet: SolanaWalletAddress
+  senderHandle: string
+  recipientHandle: string
+  error: string
+}
+
+type TipAudioTwitterShare = {
+  eventName: Name.TIP_AUDIO_TWITTER_SHARE
+  amount: StringAudio
+  senderWallet: SolanaWalletAddress
+  recipientWallet: SolanaWalletAddress
+  senderHandle: string
+  recipientHandle: string
+}
+
 type SocialProofOpen = {
   eventName: Name.SOCIAL_PROOF_OPEN
   kind: 'instagram' | 'twitter'
@@ -1267,6 +1314,10 @@ export type AllTrackingEvents =
   | RewardsClaimFailure
   | RewardsClaimRejection
   | RewardsClaimUnknown
+  | TipAudioRequest
+  | TipAudioSuccess
+  | TipAudioFailure
+  | TipAudioTwitterShare
   | SocialProofOpen
   | SocialProofSuccess
   | SocialProofError

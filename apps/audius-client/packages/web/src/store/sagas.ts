@@ -68,6 +68,7 @@ import queueSagas from 'store/queue/sagas'
 import routingSagas from 'store/routing/sagas'
 import socialSagas from 'store/social/sagas'
 import solanaSagas from 'store/solana/sagas'
+import tippingSagas from 'store/tipping/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 import walletSagas from 'store/wallet/sagas'
 
@@ -164,6 +165,9 @@ export default function* rootSaga() {
 
     // Solana
     solanaSagas(),
+
+    // Tipping
+    tippingSagas(),
 
     // Error
     errorSagas()
