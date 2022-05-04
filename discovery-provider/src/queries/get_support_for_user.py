@@ -5,52 +5,6 @@ from src.models import AggregateUserTips
 from src.queries.query_helpers import get_users_by_id
 from src.utils.db_session import get_db_read_replica
 
-sql_support_received = text(
-    """
-SELECT
-    RANK() OVER (ORDER BY amount DESC) AS rank
-    , sender_user_id
-    , receiver_user_id
-    , amount
-FROM aggregate_user_tips
-WHERE receiver_user_id = :receiver_user_id
-ORDER BY amount DESC
-LIMIT :limit
-OFFSET :offset;
-"""
-).columns(
-    column("rank", Integer),
-    AggregateUserTips.sender_user_id,
-    AggregateUserTips.receiver_user_id,
-    AggregateUserTips.amount,
-)
-
-
-sql_support_sent = text(
-    """
-SELECT rank, sender_user_id, receiver_user_id, amount 
-FROM (
-    SELECT 
-        B.sender_user_id
-        , B.receiver_user_id
-        , B.amount
-        , RANK() OVER (PARTITION BY B.receiver_user_id ORDER BY B.amount DESC) AS rank
-    FROM aggregate_user_tips A
-    JOIN aggregate_user_tips B ON A.receiver_user_id = B.receiver_user_id
-    WHERE A.sender_user_id = :sender_user_id
-) rankings
-WHERE sender_user_id = :sender_user_id
-ORDER BY amount DESC, receiver_user_id ASC
-LIMIT :limit
-OFFSET :offset;
-"""
-).columns(
-    column("rank", Integer),
-    AggregateUserTips.sender_user_id,
-    AggregateUserTips.receiver_user_id,
-    AggregateUserTips.amount,
-)
-
 
 class SupportResponse(TypedDict):
     rank: int
@@ -71,6 +25,27 @@ def query_result_to_support_response(
         }
         for row in results
     ]
+
+
+sql_support_received = text(
+    """
+SELECT
+    RANK() OVER (ORDER BY amount DESC) AS rank
+    , sender_user_id
+    , receiver_user_id
+    , amount
+FROM aggregate_user_tips
+WHERE receiver_user_id = :receiver_user_id
+ORDER BY amount DESC
+LIMIT :limit
+OFFSET :offset;
+"""
+).columns(
+    column("rank", Integer),
+    AggregateUserTips.sender_user_id,
+    AggregateUserTips.receiver_user_id,
+    AggregateUserTips.amount,
+)
 
 
 def get_support_received_by_user(args) -> List[SupportResponse]:
@@ -94,6 +69,32 @@ def get_support_received_by_user(args) -> List[SupportResponse]:
 
         support = query_result_to_support_response(rows, users, user_is_sender=True)
     return support
+
+
+sql_support_sent = text(
+    """
+SELECT rank, sender_user_id, receiver_user_id, amount 
+FROM (
+    SELECT
+        RANK() OVER (PARTITION BY B.receiver_user_id ORDER BY B.amount DESC) AS rank
+        , B.sender_user_id
+        , B.receiver_user_id
+        , B.amount
+    FROM aggregate_user_tips A
+    JOIN aggregate_user_tips B ON A.receiver_user_id = B.receiver_user_id
+    WHERE A.sender_user_id = :sender_user_id
+) rankings
+WHERE sender_user_id = :sender_user_id
+ORDER BY amount DESC, receiver_user_id ASC
+LIMIT :limit
+OFFSET :offset;
+"""
+).columns(
+    column("rank", Integer),
+    AggregateUserTips.sender_user_id,
+    AggregateUserTips.receiver_user_id,
+    AggregateUserTips.amount,
+)
 
 
 def get_support_sent_by_user(args) -> List[SupportResponse]:
