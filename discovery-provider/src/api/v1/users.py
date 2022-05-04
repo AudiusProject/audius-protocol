@@ -906,6 +906,7 @@ get_supporters_response = make_response(
 
 @ns.route("/<string:id>/supporters")
 class GetSupporters(Resource):
+    @record_metrics
     @ns.doc(
         id="""Get User Supporters""",
         description="""Gets the supporters of the given user""",
@@ -930,6 +931,7 @@ get_supporting_response = make_response(
 
 @ns.route("/<string:id>/supporting")
 class GetSupporting(Resource):
+    @record_metrics
     @ns.doc(
         id="""Get User Supporting""",
         description="""Gets the users that the given user supports""",
