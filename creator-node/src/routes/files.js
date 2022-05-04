@@ -174,8 +174,6 @@ const checkStoragePathForFile = async (storagePath) => {
  * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
  * 4. If not avail in CN network, respond with 400 server error
  */
-
-// notes: getStartTime() and logInfoWithDuration() reference in tracksComponentService.js
 const getCID = async (req, res) => {
   if (!req.params || !req.params.CID) {
     return sendResponse(
@@ -191,7 +189,7 @@ const getCID = async (req, res) => {
 
   const logPrefix = `[getCID] [CID=${CID}]`
 
-  const codeBlockTimeStart = getStartTime()
+  let codeBlockTimeStart = getStartTime()
   const isServable = await BlacklistManager.isServable(CID, trackId)
   logInfoWithDuration(
     { logger: req.logger, startTime: codeBlockTimeStart },
@@ -227,37 +225,28 @@ const getCID = async (req, res) => {
   }
 
   // Check file existence in storage paths. Exit for-loop immediately when file exists
+  const errors = []
   let checkStorageResponse
   for (const storagePath of storagePaths) {
     try {
       checkStorageResponse = await checkStoragePathForFile(storagePath)
       break
     } catch (e) {
-      req.logger.warn(`${logPrefix} ${e.message}`)
+      const errorMsg = `Failed attempt with path ${storagePath}: ${e.message}`
+      req.logger.warn(`${logPrefix} ${errorMsg}`)
+      errors.push(errorMsg)
     }
   }
 
-  const {
+  if (!errors.length > 0) {
+    return sendResponse(req, res, errorResponseBadRequest(errors.toString()))
+  }
+
+  let {
     fsStats,
     storagePath: storagePathWhereFileExists,
     fileIsEmpty
   } = checkStorageResponse
-
-  // let checkStorageResponse
-  // for (const storagePath of storagePaths) {
-  //   checkStorageResponse = await checkStoragePathForFile(storagePath)
-
-  //   if (!checkStorageResponse.error) {
-  //     fsStats = checkStorageResponse.fsStats
-  //     storagePathWhereFileExists = checkStorageResponse.storagePath
-  //     break
-  //   }
-
-  //   req.logger.warn(`${logPrefix} ${checkStorageResponse.errorMsg}`)
-  // }
-
-  // if (checkStorageResponse.error) {
-  // }
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query.filename) {
@@ -289,12 +278,17 @@ const getCID = async (req, res) => {
   // If found in DB, query the CN network for the content and serve. Else, respond with 404
 
   try {
+    codeBlockTimeStart = getStartTime()
     const queryResults = await models.File.findOne({
       where: {
         multihash: CID
       },
       order: [['clock', 'DESC']]
     })
+    logInfoWithDuration(
+      { logger: req.logger, startTime: codeBlockTimeStart },
+      `${logPrefix} Content query search duration`
+    )
 
     if (!queryResults) {
       return sendResponse(
@@ -320,7 +314,7 @@ const getCID = async (req, res) => {
   }
 
   try {
-    const codeBlockTimeStart = getStartTime()
+    codeBlockTimeStart = getStartTime()
     const found = await findCIDInNetwork(
       storagePathWhereFileExists,
       CID,
@@ -328,7 +322,6 @@ const getCID = async (req, res) => {
       req.app.get('audiusLibs'),
       trackId
     )
-
     logInfoWithDuration(
       { logger: req.logger, startTime: codeBlockTimeStart },
       `${logPrefix} Found cid: ${found}`
