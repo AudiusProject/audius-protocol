@@ -129,7 +129,7 @@ class SolanaClientManager:
     def get_block_height(
         self, retries=DEFAULT_MAX_RETRIES, encoding="json"
     ) -> Optional[int]:
-        def get_block_height(client: Client, index):
+        def _get_block_height(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
@@ -153,7 +153,7 @@ class SolanaClientManager:
 
         return _try_all(
             self.clients,
-            get_block_height,
+            _get_block_height,
             "solana_client_manager.py | get_block_height | All requests failed to fetch",
         )
 
