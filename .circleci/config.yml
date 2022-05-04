@@ -73,7 +73,7 @@ jobs:
               --storage-location=us
 
             # Delete GCP box
-            echo "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
+            # echo "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
@@ -894,10 +894,10 @@ workflows:
       - test-mad-dog-e2e:
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
-      - bake-gcp-dev-image:
-          context:
-            - GCP2
-          name: bake-gcp-dev-image-nightly
+      # - bake-gcp-dev-image: # TODO - add this back in
+      #     context:
+      #       - GCP2
+      #     name: bake-gcp-dev-image-nightly
     triggers:
       - schedule:
           cron: "0 * * * *" # TODO - revert back to 0 5 * * * 
