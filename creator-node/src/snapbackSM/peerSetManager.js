@@ -130,15 +130,15 @@ class PeerSetManager {
         asyncFnLabel: 'fetch all users with this node in replica',
         asyncFn: async () => {
           return axios({
-              method: 'get',
-              baseURL: this.discoveryProviderEndpoint,
-              url: `v1/full/users/content_node/all`,
-              params: {
-                creator_node_endpoint: this.creatorNodeEndpoint
-              },
-              timeout: 60_000 // 60s
-            })
-        },
+            method: 'get',
+            baseURL: this.discoveryProviderEndpoint,
+            url: `v1/full/users/content_node/all`,
+            params: {
+              creator_node_endpoint: this.creatorNodeEndpoint
+            },
+            timeout: 60_000 // 60s
+          })
+        }
       })
       nodeUsers = resp.data.data
     } catch (e) {
