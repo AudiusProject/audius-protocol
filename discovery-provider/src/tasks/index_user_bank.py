@@ -464,10 +464,10 @@ def process_user_bank_txs():
                 "timestamp": last_tx["blockTime"],
             },
         )
-    if latest_global_slot is not None:
-        redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
-    elif last_tx:
+    if last_tx:
         redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
 
 
 # ####### CELERY TASKS ####### #
