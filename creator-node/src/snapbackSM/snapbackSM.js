@@ -18,7 +18,7 @@ const { generateTimestampAndSignature } = require('../apiSigning')
 const SyncMonitoringRetryDelayMs = 15000
 
 // Max number of attempts to select new replica set in reconfig
-const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
+const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 5
 
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
