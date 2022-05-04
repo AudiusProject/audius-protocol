@@ -72,7 +72,7 @@ class AsyncProcessingQueue {
 
       if (!transcodeFilePath || !segmentFileNames) {
         this.logStatus(
-          'Failed to hand off transcode. Retrying upload to current node..'
+          'Failed to hand off transcode. Retrying upload to current node...'
         )
         await this.addTrackContentUploadTask({
           logContext,
