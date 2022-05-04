@@ -94,6 +94,7 @@ def index_rank_ups(
     ranks_after: List[AggregateTipRank],
     slot: int,
 ):
+    # Convert to a dict where { <receiver_user_id>: { <sender_user_id>: <rank> } }
     grouped_ranks_before = {
         key: {r["sender_user_id"]: r["rank"] for r in subiter}
         for key, subiter in itertools.groupby(
