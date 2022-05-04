@@ -1,4 +1,4 @@
-const ContractClient = require('../contracts/ContractClient')
+const { ContractClient } = require('../contracts/ContractClient')
 const { Utils } = require('../../utils')
 
 /**

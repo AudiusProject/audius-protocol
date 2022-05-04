@@ -1,4 +1,4 @@
-const ContractClient = require('./ContractClient')
+const { ContractClient } = require('./ContractClient')
 
 /**
  * Contract class that extends a ContractClient and provides an interface
