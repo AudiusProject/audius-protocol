@@ -8,6 +8,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 
+# Taken from https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#io-sql-method
 def psql_insert_copy(table, conn, keys, data_iter):
     """
     Execute SQL statement inserting data
@@ -38,6 +39,7 @@ def psql_insert_copy(table, conn, keys, data_iter):
         cur.copy_expert(sql=sql, file=s_buf)
 
 
+# inspired in part by https://towardsdatascience.com/generating-random-data-into-a-database-using-python-fd2f7d54024e
 def seed_aggregate_tips(args):
     aggregate_user_tips = defaultdict(list)
     current_receiver_id = args.offset
