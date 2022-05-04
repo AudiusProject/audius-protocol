@@ -52,7 +52,6 @@ jobs:
 
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-            # gcloud compute ssh --strict-host-key-checking=no --ssh-flag="-tt" ubuntu@$GCLOUD_VM_NAME \<< EOF
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               A run init-repos up;
               A up;
@@ -61,7 +60,7 @@ jobs:
             EOF
 
             # Stop GCP box, can't take an image from a running VM
-            gcloud compute instances start $GCLOUD_VM_NAME
+            gcloud compute instances stop $GCLOUD_VM_NAME
 
             # Delete image with the same name (if exists)
             gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
@@ -70,7 +69,7 @@ jobs:
             gcloud compute images create "$BAKE_IMAGE_NAME" \
               --project="$GOOGLE_PROJECT_ID" \
               --source-disk="$GCLOUD_VM_NAME" \
-              --source-disk-zone="GOOGLE_COMPUTE_ZONE" \
+              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
             # Delete GCP box
