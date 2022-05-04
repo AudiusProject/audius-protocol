@@ -27,19 +27,6 @@ const CHALLENGE_TTL_SECONDS = 120
 const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
-  app.get(
-    '/theo/enqueue',
-    handleResponse(async (req, res, next) => {
-      const serviceRegistry = app.get('serviceRegistry')
-      await serviceRegistry.snapbackSM.stateMachineQueue.add(
-        /** data */ { startTime: Date.now() },
-        /** opts */ {}
-      )
-
-      return successResponse()
-    })
-  )
-
   /**
    * Creates CNodeUser table entry if one doesn't already exist
    */

@@ -154,57 +154,14 @@ const Setters = {
 
 const Getters = {
   /**
-   * Given wallet and secondaries array, returns map from each secondary to successCount, failureCount, and successRate
-   *
-   * @param {String} wallet
-   * @param {Array} secondaries
-   * @returns {Object} { secondary1: { 'successCount' : _, 'failureCount': _, 'successRate': _ }, ... }
-   */
-  async computeUserSecondarySyncSuccessRates(wallet, secondaries) {
-    // Initialize sync success and failure counts for every secondary to 0
-    const secondarySyncMetrics = {}
-    secondaries.forEach((secondary) => {
-      secondarySyncMetrics[secondary] = { successCount: 0, failureCount: 0 }
-    })
-
-    // Retrieve map of all SyncRequestOutcome keys and daily counts for user from all secondaries
-    const userSecondarySyncHealthOutcomes =
-      await Getters.getSyncRequestOutcomeMetrics({ wallet })
-
-    // Aggregate all daily SyncRequest outcome counts by secondary
-    for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
-      count = parseInt(count)
-      const { secondary, outcome } = Utils._parseRedisKeyIntoComponents(key)
-
-      if (!(secondary in secondarySyncMetrics)) {
-        // This case can be hit for old secondaries that have been cycled out of user's replica set - these can be safely skipped
-        continue
-      }
-
-      if (outcome === Outcomes.SUCCESS) {
-        secondarySyncMetrics[secondary].successCount += count
-      } else if (outcome === Outcomes.FAILURE) {
-        secondarySyncMetrics[secondary].failureCount += count
-      }
-      // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
-    }
-
-    // For each secondary, compute and store successRate
-    Object.keys(secondarySyncMetrics).forEach((secondary) => {
-      const { successCount, failureCount } = secondarySyncMetrics[secondary]
-      secondarySyncMetrics[secondary].successRate =
-        failureCount === 0 ? 1 : successCount / (successCount + failureCount)
-    })
-
-    return secondarySyncMetrics
-  },
-
-  /**
-   * Given wallet and secondaries array, returns map from each secondary to successCount, failureCount, and successRate
+   * Given a mapping of wallet to secondaries arrays, returns mapping from wallet to
+   * sync metrics for that wallet, where sync metrics are a mapping of secondary endpoint
+   * to successCount, failureCount, and successRate
    *
    * @param {Object { <wallet (string)>: <secondary endpoints (string array)}} walletsToSecondariesMapping
+   * @returns {Object} { '0x...': { 'https://secondary1...': { 'successCount' : _, 'failureCount': _, 'successRate': _ }, ... } ... }
    */
-  async batchComputeUserSecondarySyncSuccessRates(walletsToSecondariesMapping) {
+  async computeUsersSecondarySyncSuccessRates(walletsToSecondariesMapping) {
     // Initialize sync success and failure counts for every secondary to 0
     const secondarySyncMetricsMap = {}
     const wallets = Object.keys(walletsToSecondariesMapping)
@@ -320,10 +277,8 @@ const SecondarySyncHealthTracker = {
   recordFailure: Setters.recordFailure,
 
   // Getters
-  batchComputeUserSecondarySyncSuccessRates:
-    Getters.batchComputeUserSecondarySyncSuccessRates,
-  computeUserSecondarySyncSuccessRates:
-    Getters.computeUserSecondarySyncSuccessRates,
+  computeUsersSecondarySyncSuccessRates:
+    Getters.computeUsersSecondarySyncSuccessRates,
   getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,
   getSecondaryUserSyncFailureCountForToday:
     Getters.getSecondaryUserSyncFailureCountForToday

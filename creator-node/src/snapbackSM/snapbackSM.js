@@ -235,16 +235,16 @@ class SnapbackSM {
     )
 
     // Enqueue stateMachineQueue jobs on a cron, after an initial delay
-    // await this.stateMachineQueue.add(
-    //   /** data */ { startTime: Date.now() },
-    //   /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
-    // )
-    // await this.stateMachineQueue.add(
-    //   /** data */ { startTime: Date.now() },
-    //   /** opts */ {
-    //     repeat: { every: this.snapbackJobInterval }
-    //   }
-    // )
+    await this.stateMachineQueue.add(
+      /** data */ { startTime: Date.now() },
+      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+    )
+    await this.stateMachineQueue.add(
+      /** data */ { startTime: Date.now() },
+      /** opts */ {
+        repeat: { every: this.snapbackJobInterval }
+      }
+    )
 
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; jobs will be enqueued every ${this.snapbackJobInterval}ms`
@@ -997,7 +997,6 @@ class SnapbackSM {
           'computeUserSecondarySyncSuccessRatesMap() Error',
           { error: e.message }
         )
-        console.log(e.stack) // TODO: Remove before publishing PR draft
         throw new Error(
           'processStateMachineOperation():computeUserSecondarySyncSuccessRatesMap() Error'
         )
@@ -1316,32 +1315,10 @@ class SnapbackSM {
       const secondariesInfo = replicaSetNodesToObserve.filter(
         (entry) => entry.endpoint
       )
-      const secondariesEndpoint = secondariesInfo.map((entry) => entry.endpoint)
 
       /**
        * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
        */
-      // TODO: Theo remove before submitting non-draft PR
-      const userSecondarySyncMetricsExpected =
-        await this._computeUserSecondarySyncSuccessRates(
-          nodeUser,
-          secondariesEndpoint
-        )
-      try {
-        if (
-          !_.isEqual(userSecondarySyncMetrics, userSecondarySyncMetricsExpected)
-        ) {
-          logger.error(`[theo] ERROR MISMATCHED METRICS`)
-          logger.error(
-            `[theo] expected: ${JSON.stringify(
-              userSecondarySyncMetricsExpected
-            )}, got: ${JSON.stringify(userSecondarySyncMetrics)}`
-          )
-          throw new Error('mismatched')
-        }
-      } catch (e) {
-        logger.error(`[theo] Mismatched redis results error: ${e}`)
-      }
       for (const secondaryInfo of secondariesInfo) {
         const secondary = secondaryInfo.endpoint
 
@@ -1453,19 +1430,11 @@ class SnapbackSM {
     }
 
     const userSecondarySyncMetricsMap =
-      await SecondarySyncHealthTracker.batchComputeUserSecondarySyncSuccessRates(
+      await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRates(
         walletsToSecondariesMapping
       )
 
     return userSecondarySyncMetricsMap
-  }
-
-  // Wrapper fn
-  async _computeUserSecondarySyncSuccessRates(nodeUser, secondaries) {
-    return SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
-      nodeUser.wallet,
-      secondaries
-    )
   }
 
   /**
