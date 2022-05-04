@@ -18,6 +18,11 @@ from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
 
+
+# How many users should be on the "leaderboard"
+LEADERBOARD_SIZE = 5
+
+
 # names of the aggregate tables to update
 AGGREGATE_TIPS = "aggregate_user_tips"
 
@@ -84,7 +89,11 @@ def _get_ranks(
         text(
             GET_AGGREGATE_USER_TIPS_RANKS_QUERY,
         ),
-        {"prev_slot": prev_slot, "current_slot": current_slot, "leaderboard_size": 5},
+        {
+            "prev_slot": prev_slot,
+            "current_slot": current_slot,
+            "leaderboard_size": LEADERBOARD_SIZE,
+        },
     ).fetchall()
 
 
