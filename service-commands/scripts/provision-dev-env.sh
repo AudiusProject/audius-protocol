@@ -12,22 +12,22 @@ function setup_linux_toolchains() {
     sudo apt update
     sudo apt-get -y upgrade
     sudo apt install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    software-properties-common \
-    build-essential \
-    python-is-python2 \
-    python3-pip \
-    git-secrets \
-    jq \
-    wget \
-    libpq-dev \
-    neovim \
-    net-tools \
-    zsh
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        software-properties-common \
+        build-essential \
+        python-is-python2 \
+        python3-pip \
+        git-secrets \
+        jq \
+        wget \
+        libpq-dev \
+        neovim \
+        net-tools \
+        zsh
     sudo apt autoremove
-    
+
     # install a faster grep
     sudo curl -L https://sift-tool.org/downloads/sift/sift_0.9.0_linux_amd64.tar.gz --output /tmp/sift.tar.gz
     (
@@ -59,17 +59,17 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
 
-    echo 'alias python=python3.9' >> $HOME/.bash_aliases
-    echo 'alias python3=python3.9' >> $HOME/.bash_aliases
-    echo 'alias pip=pip3.9' >> $HOME/.bash_aliases
-    echo 'alias pip3=pip3.9' >> $HOME/.bash_aliases
+    echo "alias python=python$PYTHON_VERSION" >> $HOME/.bash_aliases
+    echo "alias python3=python$PYTHON_VERSION" >> $HOME/.bash_aliases
+    echo "alias pip=pip$PYTHON_VERSION" >> $HOME/.bash_aliases
+    echo "alias pip3=pip$PYTHON_VERSION" >> $HOME/.bash_aliases
 
     pip install \
-    ipython \
-    pre-commit==2.16.0 \
-    wheel \
-    yq
-    
+        ipython \
+        pre-commit==2.16.0 \
+        wheel \
+        yq
+
     (
         cd $PROTOCOL_DIR/discovery-provider
         pip install -r requirements.txt
@@ -119,12 +119,12 @@ function setup_profile() {
     echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
     echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >> $HOME/.profile
     echo 'export TN_DIR=$HOME/trusted-notifier-service' >> $HOME/.profile
-        
-    if [ -d $PROTOCOL_DIR/service-commands/scripts/.env/.aliases ]; then
-        for f in $PROTOCOL_DIR/service-commands/scripts/.env/.aliases/*; do
-            tail -n +2 $f >> $HOME/.bash_aliases
-        done
-    fi
+    echo '
+if [ -d ~/.aliases ]; then
+  for f in ~/.aliases/*; do
+    source $f
+  done
+fi' >> $HOME/.profile
 }
 
 function silence_motd() {
@@ -139,24 +139,24 @@ function setup_solana_dev() {
 function setup_audius_repos() {
     source $HOME/.profile
     source $HOME/.bashrc
-    
+
     # set git refs
     bash $PROTOCOL_DIR/service-commands/scripts/set-git-refs.sh $1 $2
-    
+
     cd $PROTOCOL_DIR/service-commands
     npm install
     sudo chown $USER /etc/hosts
     node scripts/hosts.js add
-    
+
     # set up client
     cd $HOME
     git clone https://github.com/AudiusProject/audius-client.git
     cd audius-client
     npm link @audius/libs
-    
+
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
-    
+
     setup_solana_dev
 }
 
