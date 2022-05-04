@@ -1,14 +1,27 @@
+import itertools
 import logging
+import operator
+from typing import List, TypedDict
 
 from redis import Redis
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.orm.session import Session
-from src.models import UserTip
+from src.models import SupporterRankUp, UserTip
 from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table
 from src.tasks.celery_app import celery
+from src.utils.redis_constants import (
+    latest_sol_aggregate_tips_slot_key,
+    latest_sol_user_bank_slot_key,
+)
 from src.utils.session_manager import SessionManager
+from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
+
+
+# How many users should be on the "leaderboard"
+LEADERBOARD_SIZE = 5
+
 
 # names of the aggregate tables to update
 AGGREGATE_TIPS = "aggregate_user_tips"
@@ -21,26 +34,111 @@ INSERT INTO aggregate_user_tips (
         , amount
     )
     SELECT 
-            sender_user_id
-            , receiver_user_id
-            , SUM(amount) as amount
+        sender_user_id
+        , receiver_user_id
+        , SUM(amount) as amount
     FROM user_tips
     WHERE
-            slot > :prev_slot AND
-            slot <= :current_slot
+        slot > :prev_slot AND
+        slot <= :current_slot
     GROUP BY
-            sender_user_id
-            , receiver_user_id
+        sender_user_id
+        , receiver_user_id
     ON CONFLICT (sender_user_id, receiver_user_id)
     DO UPDATE
         SET amount = EXCLUDED.amount + aggregate_user_tips.amount
 """
 
 
-def _update_aggregate_tips(session: Session):
+GET_AGGREGATE_USER_TIPS_RANKS_QUERY = """
+SELECT 
+    rank
+    , sender_user_id
+    , receiver_user_id
+    , amount
+FROM (
+    SELECT
+        RANK() OVER (PARTITION BY receiver_user_id ORDER BY amount DESC) AS rank
+        , sender_user_id
+        , receiver_user_id
+        , amount
+    FROM aggregate_user_tips
+    WHERE receiver_user_id IN (
+        SELECT DISTINCT ON (receiver_user_id) receiver_user_id
+        FROM user_tips
+        WHERE
+            slot > :prev_slot AND
+            slot <= :current_slot
+    )
+) rankings
+WHERE rank <= :leaderboard_size
+"""
 
+
+class AggregateTipRank(TypedDict):
+    rank: int
+    sender_user_id: int
+    receiver_user_id: int
+    amount: int
+
+
+def _get_ranks(
+    session: Session, prev_slot: int, current_slot: int
+) -> List[AggregateTipRank]:
+    return session.execute(
+        text(
+            GET_AGGREGATE_USER_TIPS_RANKS_QUERY,
+        ),
+        {
+            "prev_slot": prev_slot,
+            "current_slot": current_slot,
+            "leaderboard_size": LEADERBOARD_SIZE,
+        },
+    ).fetchall()
+
+
+def index_rank_ups(
+    session: Session,
+    ranks_before: List[AggregateTipRank],
+    ranks_after: List[AggregateTipRank],
+    slot: int,
+):
+    # Convert to a dict where { <receiver_user_id>: { <sender_user_id>: <rank> } }
+    grouped_ranks_before = {
+        key: {r["sender_user_id"]: r["rank"] for r in subiter}
+        for key, subiter in itertools.groupby(
+            ranks_before, operator.itemgetter("receiver_user_id")
+        )
+    }
+    for row in ranks_after:
+        if (
+            # Receiver was not previously tipped
+            row["receiver_user_id"] not in grouped_ranks_before
+            # Sender was not previously on the leaderboard
+            or row["sender_user_id"]
+            not in grouped_ranks_before[row["receiver_user_id"]]
+            # Sender moved up the leaderboard
+            or row["rank"]
+            < grouped_ranks_before[row["receiver_user_id"]][row["sender_user_id"]]
+        ):
+            rank_up = SupporterRankUp(
+                slot=slot,
+                sender_user_id=row["sender_user_id"],
+                receiver_user_id=row["receiver_user_id"],
+                rank=row["rank"],
+            )
+            session.add(rank_up)
+            logger.info(f"index_aggregate_tips.py | Rank Up: {rank_up}")
+
+
+def _update_aggregate_tips(session: Session, redis: Redis):
+    latest_user_bank_slot = redis.get(latest_sol_user_bank_slot_key)
+    prev_slot = get_last_indexed_checkpoint(session, AGGREGATE_TIPS)
     max_slot_result = session.query(func.max(UserTip.slot)).one()
     max_slot = int(max_slot_result[0]) if max_slot_result[0] is not None else 0
+    if prev_slot == max_slot:
+        return
+    ranks_before = _get_ranks(session, prev_slot, max_slot)
     update_aggregate_table(
         logger,
         session,
@@ -49,6 +147,10 @@ def _update_aggregate_tips(session: Session):
         "slot",
         max_slot,
     )
+    ranks_after = _get_ranks(session, prev_slot, max_slot)
+    index_rank_ups(session, ranks_before, ranks_after, max_slot)
+    if latest_user_bank_slot is not None:
+        redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
 
 
 # ####### CELERY TASKS ####### #
