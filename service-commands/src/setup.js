@@ -125,6 +125,7 @@ const SetupCommand = Object.freeze({
   DEREGISTER: 'deregister',
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
   HEALTH_CHECK: 'health-check',
+  HEALTH_CHECK_RETRY: 'health-check-retry',
   UNSET_SHELL_ENV: 'unset-shell-env',
   UP_UM: 'up-um',
   UP_WEB_SERVER: 'up-web-server'
@@ -202,6 +203,11 @@ const runSetupCommand = async (
   }
 
   if (setupCommand === SetupCommand.HEALTH_CHECK) {
+    await performHealthCheck(service, serviceNumber)
+    return
+  }
+
+  if (setupCommand === SetupCommand.HEALTH_CHECK_RETRY) {
     await performHealthCheckWithRetry(service, serviceNumber)
     return
   }
@@ -274,15 +280,12 @@ const performHealthCheckWithRetry = async (
   let attempts = retries
   while (attempts > 0) {
     try {
+      await wait(10000)
       await performHealthCheck(service, serviceNumber)
-      console.log(
-        `Successful health check for ${service}${serviceNumber || ''}`.happy
-      )
       return
     } catch (e) {
       console.log(`${e}`)
     }
-    await wait(10000)
     attempts -= 1
   }
   const serviceNumberString = serviceNumber ? `, spId=${serviceNumber}` : ''
@@ -313,6 +316,9 @@ const performHealthCheck = async (service, serviceNumber) => {
 
   try {
     const resp = await axios(healthCheckRequestOptions)
+    console.log(
+      `Successful health check for ${service}${serviceNumber || ''}`.happy
+    )
     return resp
   } catch (e) {
     console.error(
@@ -344,7 +350,7 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
     [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   const inParallel = [
@@ -363,7 +369,7 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
     ],
     [
       Service.DISCOVERY_PROVIDER,
-      SetupCommand.HEALTH_CHECK,
+      SetupCommand.HEALTH_CHECK_RETRY,
       { serviceNumber: 1, ...options }
     ],
     [
@@ -403,7 +409,7 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
     [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   const inParallel = [
@@ -422,7 +428,7 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
     ],
     [
       Service.DISCOVERY_PROVIDER,
-      SetupCommand.HEALTH_CHECK,
+      SetupCommand.HEALTH_CHECK_RETRY,
       { serviceNumber: 1, ...options }
     ],
     [
@@ -468,7 +474,7 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
     ],
     [
       Service.CREATOR_NODE,
-      SetupCommand.HEALTH_CHECK,
+      SetupCommand.HEALTH_CHECK_RETRY,
       { serviceNumber, ...options }
     ],
     [Service.CREATOR_NODE, SetupCommand.REGISTER, { serviceNumber, ...options }]
@@ -557,7 +563,7 @@ const identityServiceUp = async (options = { verbose: false }) => {
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
     [Service.SOLANA_VALIDATOR, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   const inParallel = [
@@ -570,7 +576,7 @@ const identityServiceUp = async (options = { verbose: false }) => {
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   const start = Date.now()
@@ -620,7 +626,7 @@ const allUp = async ({
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
     [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.HEALTH_CHECK]
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   const ipfsAndContractsCommands = [
@@ -649,7 +655,7 @@ const allUp = async ({
         ],
         [
           Service.CREATOR_NODE,
-          SetupCommand.HEALTH_CHECK,
+          SetupCommand.HEALTH_CHECK_RETRY,
           { serviceNumber, ...options }
         ],
         [
@@ -671,7 +677,7 @@ const allUp = async ({
         ],
         [
           Service.DISCOVERY_PROVIDER,
-          SetupCommand.HEALTH_CHECK,
+          SetupCommand.HEALTH_CHECK_RETRY,
           { serviceNumber, ...options }
         ],
         [
@@ -689,7 +695,7 @@ const allUp = async ({
   ]
   const sequential2 = [
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
   if (withAAO) {
