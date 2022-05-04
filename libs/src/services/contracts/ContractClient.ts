@@ -1,7 +1,7 @@
 import { ProviderSelection } from './ProviderSelection'
 import Web3Manager from '../web3Manager'
 import retry from 'async-retry'
-import type { ContractABI, Nullable } from '../../utils'
+import type { ContractABI, Nullable, Logger } from '../../utils'
 import type { Contract } from 'web3-eth-contract'
 import type { HttpProvider } from 'web3-core'
 
@@ -26,18 +26,21 @@ export class ContractClient {
   _isInitializing: boolean
   _initAttempts: number
   providerSelector: Nullable<ProviderSelection>
+  logger: Logger
 
   constructor(
     web3Manager: Web3Manager,
     contractABI: ContractABI['abi'],
     contractRegistryKey: string,
     getRegistryAddress: (key: string) => Promise<string>,
+    logger: Logger = console,
     contractAddress: Nullable<string> = null
   ) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
+    this.logger = logger
 
     // Once initialized, contract address and contract are set up
     this._contractAddress = contractAddress
@@ -105,14 +108,14 @@ export class ContractClient {
       this._isInitialized = true
     } catch (e) {
       if (++this._initAttempts >= CONTRACT_INIT_MAX_ATTEMPTS) {
-        console.error(
+        this.logger.error(
           `Failed to initialize ${this.contractRegistryKey}. Max attempts exceeded.`
         )
         return
       }
 
       const selectNewEndpoint = !!this.providerSelector
-      console.error(
+      this.logger.error(
         `Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint}`
       )
       this._isInitializing = false
@@ -127,7 +130,7 @@ export class ContractClient {
       }
       await this.init()
     } catch (e: any) {
-      console.error(e?.message)
+      this.logger.error(e?.message)
     }
   }
 
@@ -144,7 +147,7 @@ export class ContractClient {
       this.providerSelector?.getUnhealthySize() ===
       this.providerSelector?.getServicesSize()
     ) {
-      console.log(
+      this.logger.log(
         'No healthy providers available - resetting ProviderSelection and selecting.'
       )
       this.providerSelector?.clearUnhealthy()
@@ -195,7 +198,7 @@ export class ContractClient {
           onRetry: (err) => {
             if (err) {
               // eslint-disable-next-line @typescript-eslint/no-base-to-string
-              console.log(`Retry error for ${methodName} : ${err}`)
+              this.logger.log(`Retry error for ${methodName} : ${err}`)
             }
           }
         }

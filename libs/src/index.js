@@ -312,6 +312,7 @@ class AudiusLibs {
     wormholeConfig,
     captchaConfig,
     isServer,
+    logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
@@ -331,6 +332,7 @@ class AudiusLibs {
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
+    this.logger = logger
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils
@@ -422,6 +424,7 @@ class AudiusLibs {
         (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
         (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
         this.isServer,
+        this.logger,
         this.isDebug
       )
       contractsToInit.push(this.ethContracts.init())
@@ -430,7 +433,8 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer
+        this.isServer,
+        this.logger
       )
       contractsToInit.push(this.contracts.init())
     }
@@ -511,7 +515,8 @@ class AudiusLibs {
       this.creatorNode,
       this.comstock,
       this.captcha,
-      this.isServer
+      this.isServer,
+      this.logger
     ]
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new User(
