@@ -282,9 +282,6 @@ const performHealthCheckWithRetry = async (
     try {
       await wait(10000)
       await performHealthCheck(service, serviceNumber)
-      console.log(
-        `Successful health check for ${service}${serviceNumber || ''}`.happy
-      )
       return
     } catch (e) {
       console.log(`${e}`)
@@ -319,6 +316,9 @@ const performHealthCheck = async (service, serviceNumber) => {
 
   try {
     const resp = await axios(healthCheckRequestOptions)
+    console.log(
+      `Successful health check for ${service}${serviceNumber || ''}`.happy
+    )
     return resp
   } catch (e) {
     console.error(
