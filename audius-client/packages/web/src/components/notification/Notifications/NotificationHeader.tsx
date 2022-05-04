@@ -1,9 +1,9 @@
-import React, { ReactElement, ReactNode } from 'react'
+import React, { ReactNode } from 'react'
 
 import styles from './NotificationHeader.module.css'
 
 type NotificationHeaderProps = {
-  icon: ReactElement
+  icon: ReactNode
   children: ReactNode
 }
 

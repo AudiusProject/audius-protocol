@@ -1,0 +1,5 @@
+.root {
+  font-size: var(--font-l);
+  font-weight: 800;
+  color: var(--secondary);
+}

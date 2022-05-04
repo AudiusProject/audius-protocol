@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Repost } from 'common/store/notifications/types'
+import { Favorite } from 'common/store/notifications/types'
 
 import { EntityLink, useGoToEntity } from './EntityLink'
 import { NotificationBody } from './NotificationBody'
@@ -10,7 +10,7 @@ import { NotificationTile } from './NotificationTile'
 import { TwitterShareButton } from './TwitterShareButton'
 import { UserNameLink } from './UserNameLink'
 import { UserProfileList } from './UserProfileList'
-import { IconRepost } from './icons'
+import { IconFavorite } from './icons'
 import { formatOthersCount } from './utils'
 
 const messages = {
@@ -18,11 +18,10 @@ const messages = {
   reposted: ' reposted your '
 }
 
-type RepostNotificationProps = {
-  notification: Repost
+type FavoriteNotificationProps = {
+  notification: Favorite
 }
-
-export const RepostNotification = (props: RepostNotificationProps) => {
+export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const { notification } = props
   const { users, entity, entityType, timeLabel, isRead } = notification
   const [firstUser, ...otherUsers] = users
@@ -32,7 +31,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={<IconRepost />}>
+      <NotificationHeader icon={<IconFavorite />}>
         <UserProfileList users={users} />
       </NotificationHeader>
       <NotificationBody>

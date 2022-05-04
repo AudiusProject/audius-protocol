@@ -1,5 +1,5 @@
-.root {
-  margin-right: 4px;
+.addMargin {
+  margin-inline-start: var(--unit-1);
 }
 
 .deactivated {
