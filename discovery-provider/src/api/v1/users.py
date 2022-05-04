@@ -931,8 +931,8 @@ get_supporting_response = make_response(
 @ns.route("/<string:id>/supporting")
 class GetSupporting(Resource):
     @ns.doc(
-        id="""Get User Supporters""",
-        description="""Gets the supporters of the given user""",
+        id="""Get User Supporting""",
+        description="""Gets the users that the given user supports""",
         params={"id": "A User ID"},
     )
     @ns.expect(pagination_parser)
