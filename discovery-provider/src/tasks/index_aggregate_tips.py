@@ -1,6 +1,7 @@
 import itertools
 import logging
 import operator
+from typing import List, TypedDict
 
 from redis import Redis
 from sqlalchemy import func, text
@@ -69,13 +70,55 @@ WHERE rank <= :leaderboard_size
 """
 
 
-def _get_ranks(session: Session, prev_slot: int, current_slot: int):
+class AggregateTipRank(TypedDict):
+    rank: int
+    sender_user_id: int
+    receiver_user_id: int
+    amount: int
+
+
+def _get_ranks(
+    session: Session, prev_slot: int, current_slot: int
+) -> List[AggregateTipRank]:
     return session.execute(
         text(
             GET_AGGREGATE_USER_TIPS_RANKS_QUERY,
         ),
         {"prev_slot": prev_slot, "current_slot": current_slot, "leaderboard_size": 5},
     ).fetchall()
+
+
+def index_rank_ups(
+    session: Session,
+    ranks_before: List[AggregateTipRank],
+    ranks_after: List[AggregateTipRank],
+    slot: int,
+):
+    grouped_ranks_before = {
+        key: {r["sender_user_id"]: r["rank"] for r in subiter}
+        for key, subiter in itertools.groupby(
+            ranks_before, operator.itemgetter("receiver_user_id")
+        )
+    }
+    for row in ranks_after:
+        if (
+            # Receiver was not previously tipped
+            row["receiver_user_id"] not in grouped_ranks_before
+            # Sender was not previously on the leaderboard
+            or row["sender_user_id"]
+            not in grouped_ranks_before[row["receiver_user_id"]]
+            # Sender moved up the leaderboard
+            or row["rank"]
+            < grouped_ranks_before[row["receiver_user_id"]][row["sender_user_id"]]
+        ):
+            rank_up = SupporterRankUp(
+                slot=slot,
+                sender_user_id=row["sender_user_id"],
+                receiver_user_id=row["receiver_user_id"],
+                rank=row["rank"],
+            )
+            session.add(rank_up)
+            logger.info(f"index_aggregate_tips.py | Rank Up: {rank_up}")
 
 
 def _update_aggregate_tips(session: Session, redis: Redis):
@@ -95,31 +138,7 @@ def _update_aggregate_tips(session: Session, redis: Redis):
         max_slot,
     )
     ranks_after = _get_ranks(session, prev_slot, max_slot)
-    grouped_ranks_before = {
-        key: {r["sender_user_id"]: r["rank"] for r in subiter}
-        for key, subiter in itertools.groupby(
-            ranks_before, operator.itemgetter("receiver_user_id")
-        )
-    }
-    for row in ranks_after:
-        if (
-            # Receiver was not previously tipped
-            row["receiver_user_id"] not in grouped_ranks_before
-            # Sender was not previously on the leaderboard
-            or row["sender_user_id"]
-            not in grouped_ranks_before[row["receiver_user_id"]]
-            # Sender moved up the leaderboard
-            or row["rank"]
-            < grouped_ranks_before[row["receiver_user_id"]][row["sender_user_id"]]
-        ):
-            rank_up = SupporterRankUp(
-                slot=max_slot,
-                sender_user_id=row["sender_user_id"],
-                receiver_user_id=row["receiver_user_id"],
-                rank=row["rank"],
-            )
-            session.add(rank_up)
-            logger.info(f"index_aggregate_tips.py | Rank Up: {rank_up}")
+    index_rank_ups(session, ranks_before, ranks_after, max_slot)
     if latest_user_bank_slot is not None:
         redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
 
