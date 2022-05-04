@@ -39,8 +39,8 @@ INSERT INTO aggregate_user_tips (
 
 def _update_aggregate_tips(session: Session):
 
-    max_slot_result = session.query(func.max(UserTip.slot)).one_or_none()
-    max_slot = int(max_slot_result[0]) if max_slot_result is not None else 0
+    max_slot_result = session.query(func.max(UserTip.slot)).one()
+    max_slot = int(max_slot_result[0]) if max_slot_result[0] is not None else 0
     update_aggregate_table(
         logger,
         session,
