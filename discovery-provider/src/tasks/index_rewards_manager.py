@@ -537,10 +537,10 @@ def process_solana_rewards_manager(
     last_tx = process_transaction_signatures(
         solana_client_manager, db, redis, transaction_signatures
     )
-    if latest_global_slot is not None:
-        redis.set(latest_sol_rewards_manager_slot_key, latest_global_slot)
-    elif last_tx:
+    if last_tx:
         redis.set(latest_sol_rewards_manager_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_rewards_manager_slot_key, latest_global_slot)
 
 
 # ####### CELERY TASKS ####### #
