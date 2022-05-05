@@ -229,7 +229,13 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `CID_CONFIRMED_FILE`
       })
-      fileFoundOnFS = true
+
+      if (fsStats.size === 0) {
+        // Remove file if it is empty and force fetch from CN network
+        await fs.unlink(storagePath)
+      } else {
+        fileFoundOnFS = true
+      }
     } else if (fsStats.isDirectory()) {
       decisionTree.push({
         stage: `CID_CONFIRMED_DIRECTORY`
@@ -302,7 +308,12 @@ const getCID = async (req, res) => {
         decisionTree.push({
           stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
         })
-        fileFoundOnFS = true
+        if (fsStats.size === 0) {
+          // Remove file if it is empty and force fetch from CN network
+          await fs.unlink(storagePath)
+        } else {
+          fileFoundOnFS = true
+        }
       } else if (fsStats.isDirectory()) {
         decisionTree.push({
           stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`
