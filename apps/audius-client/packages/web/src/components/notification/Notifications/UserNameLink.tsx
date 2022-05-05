@@ -21,13 +21,14 @@ const messages = {
 }
 
 type UserNameLinkProps = {
+  className?: string
   notification: Notification
   user: User
   addMargin?: boolean
 }
 
 export const UserNameLink = (props: UserNameLinkProps) => {
-  const { notification, user, addMargin } = props
+  const { className, notification, user, addMargin } = props
   const dispatch = useDispatch()
 
   const record = useRecord()
@@ -52,16 +53,22 @@ export const UserNameLink = (props: UserNameLinkProps) => {
     [dispatch, handle, record, type, profileLink]
   )
 
+  const rootClassName = cn(
+    styles.root,
+    { [styles.addMargin]: addMargin },
+    className
+  )
+
   if (is_deactivated) {
     return (
-      <span className={cn(styles.root, styles.deactivated)}>
+      <span className={cn(rootClassName, styles.deactivated)}>
         {name} [{messages.deactivated}]
       </span>
     )
   }
 
   let userNameElement = (
-    <span className={addMargin ? styles.addMargin : undefined}>
+    <span className={rootClassName}>
       <a onClick={handleClick} href={profileLink} className={styles.link}>
         {name}
       </a>

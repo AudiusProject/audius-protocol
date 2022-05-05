@@ -1,3 +1,8 @@
+.root {
+  font-size: var(--font-medium);
+  font-weight: var(--font-demi-bold);
+  line-height: 21px;
+}
 .addMargin {
   margin-inline-start: var(--unit-1);
 }
@@ -5,14 +10,13 @@
 .deactivated {
   color: var(--neutral-light-1);
   font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
-  line-height: 21px;
 }
 
 .link {
+  font-size: inherit;
+  font-weight: inherit;
+
   color: var(--secondary);
-  font-weight: var(--font-demi-bold);
-  line-height: 21px;
 }
 
 .link:hover {

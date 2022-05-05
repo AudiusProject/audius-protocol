@@ -17,7 +17,8 @@ export enum NotificationType {
   RemixCosign = 'RemixCosign',
   TrendingTrack = 'TrendingTrack',
   ChallengeReward = 'ChallengeReward',
-  TierChange = 'TierChange'
+  TierChange = 'TierChange',
+  TipReaction = 'TipReaction'
 }
 
 export enum Entity {
@@ -164,6 +165,13 @@ export type TierChange = BaseNotification & {
   tier: BadgeTier
 }
 
+export type TipReaction = BaseNotification & {
+  type: NotificationType.TipReaction
+  user: User
+  value: number
+  reaction: 'heart' | 'fire' | 'party' | 'explode'
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -176,6 +184,7 @@ export type Notification =
   | TrendingTrack
   | ChallengeReward
   | TierChange
+  | TipReaction
 
 export default interface NotificationState {
   notifications: {
