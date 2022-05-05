@@ -58,6 +58,7 @@ function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
+
     pip install \
         ipython \
         pre-commit==2.16.0 \
@@ -150,7 +151,7 @@ function setup_audius_repos() {
 
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
-    
+
     setup_solana_dev
 }
 
