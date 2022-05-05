@@ -232,7 +232,7 @@ const getCID = async (req, res) => {
 
       if (fsStats.size === 0) {
         // Remove file if it is empty and force fetch from CN network
-        req.logger.warn(`[new] File not found -- removing ${CID}`)
+        req.logger.warn(`[new] File is empty -- removing ${CID}`)
         await fs.unlink(storagePath)
       } else {
         fileFoundOnFS = true
@@ -311,7 +311,7 @@ const getCID = async (req, res) => {
         })
         if (fsStats.size === 0) {
           // Remove file if it is empty and force fetch from CN network
-          req.logger.warn(`[legacy] File not found -- removing ${CID}`)
+          req.logger.warn(`[legacy] File is empty -- removing ${CID}`)
           await fs.unlink(storagePath)
         } else {
           fileFoundOnFS = true
