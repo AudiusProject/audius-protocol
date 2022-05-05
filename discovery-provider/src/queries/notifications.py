@@ -1155,9 +1155,9 @@ def solana_notifications():
                 {
                     const.solana_notification_type: const.solana_notification_type_tip,
                     const.solana_notification_slot: user_tip.slot,
-                    const.solana_notification_initiator: user_tip.sender_user_id,
+                    const.solana_notification_initiator: user_tip.receiver_user_id,
                     const.solana_notification_metadata: {
-                        const.notification_entity_id: user_tip.receiver_user_id,
+                        const.notification_entity_id: user_tip.sender_user_id,
                         const.notification_entity_type: "user",
                         const.solana_notification_tip_amount: str(user_tip.amount),
                     },
