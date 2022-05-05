@@ -90,43 +90,17 @@ jobs:
       - run:
           name: Setup gcloud service account authentication
           command: |
-            # echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
-            # gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
-            # gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            # GIT_SHA=$(git rev-parse --short HEAD)
-            # GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH-$GIT_SHA-$(date +%s)
-            # echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
-
-            # # Find the IP of the new box and run A up and mad dog inside
-            # gcloud compute instances create $GCLOUD_VM_NAME --image-project=ci-audius-infra --image=ci-image-bake-latest --boot-disk-size 256 --machine-type n2-custom-12-24576  --provisioning-model=SPOT
-            # GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-            # gcloud compute ssh $GCLOUD_VM_NAME --quiet -- ls # super hack
-            # ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-            #   cd /home/ubuntu/audius-protocol/mad-dog;
-            #   A up;
-            #   npm run start << parameters.mad-dog-type >> verbose;
-            #   exit $?;
-            # EOF
-
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            GIT_SHA=$(git rev-parse --short HEAD)
             GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH-$GIT_SHA-$(date +%s)
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
-            # export PROTOCOL_DIR=/home/circleci/project
-            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
-            pwd "$PROTOCOL_DIR"
-            ls -la "$PROTOCOL_DIR"
-            cd "$PROTOCOL_DIR/service-commands/"
-            npm install --unsafe-perm
-
-            # run A setup on remote dev box to clone protocol and install the prerequisites for A
-            # A setup ... || true is necessary because exit code returns 141 by default
-            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast || true
-
-            # Run A up on remote box
+            # Find the IP of the new box and run A up and mad dog inside
+            gcloud compute instances create $GCLOUD_VM_NAME --image-project=ci-audius-infra --image=ci-image-bake-latest --boot-disk-size 256 --machine-type n2-custom-12-24576  --provisioning-model=SPOT
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+            gcloud compute ssh $GCLOUD_VM_NAME --quiet -- ls # super hack
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               cd /home/ubuntu/audius-protocol/mad-dog;
               A up;
