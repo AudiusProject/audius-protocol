@@ -86,7 +86,6 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
-      - add_ssh_keys
       - checkout
       - run:
           name: Setup gcloud service account authentication
