@@ -238,7 +238,7 @@ const getCID = async (req, res) => {
     }
   }
 
-  if (!errors.length > 0) {
+  if (errors.length > 0) {
     return sendResponse(req, res, errorResponseBadRequest(errors.toString()))
   }
 
