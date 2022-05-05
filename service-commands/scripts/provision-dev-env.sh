@@ -59,11 +59,6 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
 
-    echo "alias python=python$PYTHON_VERSION" | tee -a $HOME/.bash_aliases $HOME/.zshrc
-    echo "alias python3=python$PYTHON_VERSION" | tee -a $HOME/.bash_aliases $HOME/.zshrc
-    echo "alias pip=pip$PYTHON_VERSION" | tee -a $HOME/.bash_aliases $HOME/.zshrc
-    echo "alias pip3=pip$PYTHON_VERSION" | tee -a $HOME/.bash_aliases $HOME/.zshrc
-
     pip install \
         ipython \
         pre-commit==2.16.0 \
