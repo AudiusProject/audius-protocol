@@ -43,12 +43,10 @@
   },
   "contracts-predeployed": {
     "up": [
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-14c3e7f7b90dccded0e63fc390601d40d2e77fd3",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
-      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/libs/data-contracts/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
-      "cp $PROTOCOL_DIR/contracts/signature_schemas/signatureSchemas.js $PROTOCOL_DIR/libs/data-contracts/signatureSchemas.js",
       "docker cp audius_ganache_cli:/app/contract_config.ini $PROTOCOL_DIR/discovery-provider/contract_config.ini",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/discovery-provider/build/contracts",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/data-contracts/ABIs",
@@ -76,7 +74,7 @@
   },
   "eth-contracts-predeployed": {
     "up": [
-      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev audius/ganache:eth-contracts-predeployed-14c3e7f7b90dccded0e63fc390601d40d2e77fd3",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev audius/ganache:eth-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
       "docker cp audius_ganache_cli_eth_contracts:/app/migration-output.json $PROTOCOL_DIR/eth-contracts/migrations/migration-output.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/identity-service/eth-contract-config.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/creator-node/eth-contract-config.json",
@@ -85,8 +83,7 @@
       "docker cp audius_ganache_cli_eth_contracts:/app/aao-config.json ~/.audius/aao-config.json",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth_contract_config.ini $PROTOCOL_DIR/discovery-provider/eth_contract_config.ini",
       "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/discovery-provider/build/eth-contracts",
-      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/libs/eth-contracts/ABIs",
-      "docker cp audius_ganache_cli_eth_contracts:/app/build/contracts/. $PROTOCOL_DIR/eth-contracts/ABIs"
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/libs/eth-contracts/ABIs"
     ],
     "down": [
       "cd contracts/; npm run ganache-q"
