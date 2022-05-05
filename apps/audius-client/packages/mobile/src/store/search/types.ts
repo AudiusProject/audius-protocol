@@ -38,6 +38,8 @@ export type SearchUser = UserMultihash &
   }
 
 export type SearchTrack = TrackImage & {
+  _co_sign: undefined
+  _cover_art_sizes: null
   description: string | null
   genre: string
   mood: string
@@ -48,7 +50,7 @@ export type SearchTrack = TrackImage & {
   title: string
   user: SearchUser
   duration: number
-  play_count: null
+  play_count: undefined
   blocknumber: number
   create_date: null
   created_at: string
@@ -70,23 +72,26 @@ export type SearchTrack = TrackImage & {
     remixes: null
   }
   followee_reposts: Repost[]
-  has_current_user_reposted: null
+  has_current_user_reposted: undefined
   is_unlisted: boolean
-  has_current_user_saved: null
+  has_current_user_saved: undefined
   stem_of: null
   updated_at: string
   is_delete: boolean
   track_id: number
   owner_id: number
   followee_saves: []
-  save_count: null
+  save_count: undefined
   track_segments: TrackSegment[]
   followee_favorites: null
   user_id: number
   permalink: string
+  _remixes: undefined
+  _remixes_count: undefined
 }
 
 export type SearchPlaylist = CollectionImage & {
+  _cover_art_sizes: null
   description: string | null
   is_album: boolean
   playlist_name: string
@@ -96,8 +101,8 @@ export type SearchPlaylist = CollectionImage & {
   blocknumber: number
   created_at: string
   followee_reposts: []
-  has_current_user_reposted: null
-  has_current_user_saved: null
+  has_current_user_reposted: undefined
+  has_current_user_saved: undefined
   is_delete: boolean
   is_private: boolean
   updated_at: string
@@ -107,7 +112,7 @@ export type SearchPlaylist = CollectionImage & {
   playlist_id: number
   playlist_owner_id: number
   followee_saves: []
-  save_count: null
+  save_count: undefined
   playlist_contents: {
     track_ids: {
       track: number
