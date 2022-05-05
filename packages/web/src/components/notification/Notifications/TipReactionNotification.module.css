@@ -1,0 +1,20 @@
+.profileLink {
+  font-weight: var(--font-bold) !important;
+}
+
+.reactionRoot {
+  position: relative;
+}
+
+.profilePicture {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  height: 25px;
+  width: 25px;
+}
+
+.reactionTextRoot {
+  display: flex;
+  align-items: center;
+}

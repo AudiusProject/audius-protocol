@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
+import cn from 'classnames'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -48,13 +49,12 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   }, [dispatch, handle])
 
   const profilePictureElement = (
-    <div onClick={handleClick} className={className}>
-      <DynamicImage
-        wrapperClassName={styles.profilePictureWrapper}
-        className={styles.profilePicture}
-        image={profilePicture}
-      />
-    </div>
+    <DynamicImage
+      onClick={handleClick}
+      wrapperClassName={cn(styles.profilePictureWrapper, className)}
+      className={styles.profilePicture}
+      image={profilePicture}
+    />
   )
 
   if (disablePopover) return profilePictureElement
