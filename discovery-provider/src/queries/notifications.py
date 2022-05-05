@@ -11,6 +11,7 @@ from src.models import (
     Block,
     ChallengeDisbursement,
     Follow,
+    Milestone,
     Playlist,
     Remix,
     Repost,
@@ -20,8 +21,8 @@ from src.models import (
     SupporterRankUp,
     Track,
     UserBalanceChange,
+    UserTip,
 )
-from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.queries.get_sol_rewards_manager import (
@@ -1020,8 +1021,8 @@ def get_max_slot(redis: Redis):
         f"notifications.py | get_max_slot() | listen_milestone_slot:{listen_milestone_slot} rewards_manager_slot:{rewards_manager_slot} supporter_rank_up_slot:{supporter_rank_up_slot}"
     )
     if len(all_slots) == 0:
-        return None
-    return min(all_slots)
+        return 0
+    return max(all_slots)
 
 
 @bp.route("/solana_notifications", methods=("GET",))
@@ -1140,9 +1141,33 @@ def solana_notifications():
                 }
             )
 
+        user_tips_result: List[UserTip] = (
+            session.query(UserTip)
+            .filter(
+                UserTip.slot >= min_slot_number,
+                UserTip.slot <= max_slot_number,
+            )
+            .all()
+        )
+        tips = []
+        for user_tip in user_tips_result:
+            tips.append(
+                {
+                    const.solana_notification_type: const.solana_notification_type_tip,
+                    const.solana_notification_slot: user_tip.slot,
+                    const.solana_notification_initiator: user_tip.sender_user_id,
+                    const.solana_notification_metadata: {
+                        const.notification_entity_id: user_tip.receiver_user_id,
+                        const.notification_entity_type: "user",
+                        const.solana_notification_tip_amount: str(user_tip.amount),
+                    },
+                }
+            )
+
         notifications_unsorted.extend(challenge_reward_notifications)
         notifications_unsorted.extend(track_listen_milestones)
         notifications_unsorted.extend(supporter_rank_ups)
+        notifications_unsorted.extend(tips)
 
     # Final sort
     sorted_notifications = sorted(
