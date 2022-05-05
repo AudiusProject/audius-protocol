@@ -616,13 +616,6 @@ class SolanaWeb3Manager {
       seed
     )
 
-    console.log({
-      programId,
-      baseAuthorityAccount,
-      seed,
-      derivedAddressInfo
-    })
-
     const derivedAddress = derivedAddressInfo[0]
     const bumpSeed = derivedAddressInfo[1]
 

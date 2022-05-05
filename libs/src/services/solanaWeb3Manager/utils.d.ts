@@ -1,4 +1,3 @@
-// @ts-nocheck
 class SolanaUtils {
   static signBytes: (bytes: any, ethPrivateKey: any) => any
   static prepareInstructionForRelay: (instruction: any) => any
