@@ -195,7 +195,7 @@ const runSetupCommand = async (
   setupCommand,
   { serviceNumber, verbose = false, waitSec, retries } = { verbose: false }
 ) => {
-  console.log(`${service} - ${setupCommand}`.info)
+  console.log(`${service} ${serviceNumber || ''} - ${setupCommand}`.info)
   const start = Date.now()
   const commands = getServiceCommands(service, serviceNumber)
   if (!commands) {
@@ -232,7 +232,9 @@ const runSetupCommand = async (
       }
       const durationSeconds = Math.abs((Date.now() - start) / 1000)
       console.log(
-        `${service} - ${setupCommand} | executed in ${durationSeconds}s`.info
+        `${service} ${
+          serviceNumber || ''
+        } - ${setupCommand} | executed in ${durationSeconds}s`.info
       )
       return outputs
     } catch (err) {
@@ -280,12 +282,12 @@ const performHealthCheckWithRetry = async (
   let attempts = retries
   while (attempts > 0) {
     try {
-      await wait(10000)
       await performHealthCheck(service, serviceNumber)
       return
     } catch (e) {
       console.log(`${e}`)
     }
+    await wait(10000)
     attempts -= 1
   }
   const serviceNumberString = serviceNumber ? `, spId=${serviceNumber}` : ''
@@ -640,99 +642,130 @@ const allUp = async ({
     ipfsAndContractsCommands.push([Service.SOLANA_PROGRAMS, SetupCommand.UP])
   }
 
-  let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(
-    serviceNumber => {
-      return [
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.UPDATE_DELEGATE_WALLET,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.UP,
-          { serviceNumber, ...options, waitSec: 10 }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.HEALTH_CHECK_RETRY,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.REGISTER,
-          { serviceNumber, ...options }
-        ]
+  const nodeUpCommands = []
+  const nodeHealthCheckCommands = []
+  const nodeRegisterCommands = []
+  // for (
+  //   let serviceNumber = 1;
+  //   serviceNumber < numDiscoveryNodes + 1;
+  //   serviceNumber++
+  // ) {
+  //   nodeUpCommands.push([
+  //     [
+  //       Service.DISCOVERY_PROVIDER,
+  //       SetupCommand.UP,
+  //       { serviceNumber, ...options }
+  //     ]
+  //   ])
+  //   nodeHealthCheckCommands.push([
+  //     [
+  //       Service.DISCOVERY_PROVIDER,
+  //       SetupCommand.HEALTH_CHECK_RETRY,
+  //       { serviceNumber, ...options }
+  //     ]
+  //   ])
+  //   nodeRegisterCommands.push([
+  //     [
+  //       Service.DISCOVERY_PROVIDER,
+  //       SetupCommand.REGISTER,
+  //       { retries: 2, serviceNumber, ...options }
+  //     ]
+  //   ])
+  // }
+  for (
+    let serviceNumber = 1;
+    serviceNumber < numCreatorNodes + 1;
+    serviceNumber++
+  ) {
+    nodeUpCommands.push([
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.UPDATE_DELEGATE_WALLET,
+        { serviceNumber, ...options }
+      ],
+      [Service.CREATOR_NODE, SetupCommand.UP, { serviceNumber, ...options }]
+    ])
+    nodeHealthCheckCommands.push([
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.HEALTH_CHECK_RETRY,
+        { serviceNumber, ...options }
       ]
-    }
-  )
-
-  let discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(
-    serviceNumber => {
-      return [
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.UP,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.HEALTH_CHECK_RETRY,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.REGISTER,
-          { retries: 2, serviceNumber, ...options }
-        ]
+    ])
+    nodeRegisterCommands.push([
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.REGISTER,
+        { serviceNumber, ...options }
       ]
-    }
-  )
+    ])
+  }
 
-  const sequential1 = [
+  const prereqs = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
-    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP]
-  ]
-  const sequential2 = [
-    [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY],
+    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
-  if (withAAO) {
-    sequential2.push([Service.AAO, SetupCommand.REGISTER])
-    sequential2.push([Service.AAO, SetupCommand.UP])
-  }
+  // nodeUpCommands.push([[Service.IDENTITY_SERVICE, SetupCommand.UP]])
+  // nodeHealthCheckCommands.push([
+  //   [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY]
+  // ])
+  // if (withAAO) {
+  //   nodeUpCommands.push([Service.AAO, SetupCommand.UP])
+  //   nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
+  // }
 
   const start = Date.now()
 
   // Start up the docker network `audius_dev` and the Solana test validator
-  await runInSequence(setup, options)
+  // await runInSequence(setup, options)
   // Run parallel ops
-  await runInParallel(ipfsAndContractsCommands, options)
+  // await runInParallel(ipfsAndContractsCommands, options)
 
   // Run sequential ops
-  await runInSequence(sequential1, options)
+  // await runInSequence(prereqs, options)
 
   if (parallel) {
+    const startProv = Date.now()
+    console.log('Provisioning services in parallel'.info)
     await Promise.all(
-      discoveryNodesCommands.map(commandGroup =>
+      nodeUpCommands.map(commandGroup => runInSequence(commandGroup, options))
+    )
+    console.log(
+      `Services provisioned in ${Math.abs((Date.now() - startProv) / 1000.0)}s`
+    )
+    const startHealth = Date.now()
+    console.log('Health checking services'.info)
+    await Promise.all(
+      nodeHealthCheckCommands.map(commandGroup =>
         runInSequence(commandGroup, options)
       )
     )
+    console.log(
+      `Services health check complete in ${Math.abs(
+        (Date.now() - startHealth) / 1000.0
+      )}s`
+    )
+    const startRegister = Date.now()
+    console.log('Registering services'.info)
     await Promise.all(
-      creatorNodesCommands.map(commandGroup =>
+      nodeRegisterCommands.map(commandGroup =>
         runInSequence(commandGroup, options)
       )
+    )
+    console.log(
+      `Services registered in ${Math.abs(
+        (Date.now() - startRegister) / 1000.0
+      )}s`
     )
   } else {
-    console.log('Provisioning DNs and CNs in sequence.'.info)
-    creatorNodesCommands = creatorNodesCommands.flat()
-    discoveryNodesCommands = discoveryNodesCommands.flat()
-    await runInSequence(discoveryNodesCommands)
-    await runInSequence(creatorNodesCommands)
+    console.log('Provisioning services in sequence.'.info)
+    await runInSequence(nodeUpCommands.flat())
+    console.log('Health checking services'.info)
+    await runInSequence(nodeHealthCheckCommands.flat())
+    console.log('Registering services'.info)
+    await runInSequence(nodeRegisterCommands.flat())
   }
-
-  await runInSequence(sequential2, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`All services brought up in ${durationSeconds}s`.happy)
