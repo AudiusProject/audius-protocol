@@ -37,8 +37,7 @@ class RepresentableMixin:
     def __repr__(self):
         name = self.__class__.__name__
         attrs = self.__dict__.items()
-        strings = []
-        strings.append(f"<{name}(")
+        strings = [f"<{name}("]
         for i, (k, v) in enumerate(attrs):
             if k[0] == "_":
                 continue
@@ -48,8 +47,7 @@ class RepresentableMixin:
             else:
                 raw = f"{raw})>"
             strings.append(raw)
-        final = "".join(strings)
-        return f"{final}"
+        return "".join(strings)
 
 
 # Listen for instrumentation of attributes on the base class

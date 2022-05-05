@@ -4,6 +4,7 @@ from typing import List, TypedDict, Union
 
 import requests
 from redis import Redis
+from sqlalchemy.orm.session import Session
 from src.models.reaction import Reaction
 from src.tasks.aggregates import init_task_and_acquire_lock
 from src.tasks.celery_app import celery
@@ -48,8 +49,8 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
             sender_wallet=reaction["senderWallet"],
             entity_type=reaction["entityType"],
             entity_id=reaction["entityId"],
-            timestamp=reaction["createdAt"]  # this gonna work?
-            # no txid for now
+            timestamp=reaction["createdAt"],
+            txid=None,  # no txid for now
         )
         return reaction_model
     except Exception as e:
@@ -57,20 +58,24 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
         return None
 
 
-def index_identity_reactions(session):
+def fetch_reactions_from_identity(start_index) -> List[ReactionResponse]:
+    get_reactions_endpoint = (
+        f"{IDENTITY_GET_REACTIONS_ENDPOINT}?startIndex={start_index}"
+    )
+    new_reactions_response = requests.get(get_reactions_endpoint, timeout=10)
+    new_reactions_response.raise_for_status()
+    return new_reactions_response.json()["reactions"]
+
+
+def index_identity_reactions(session: Session, _):
     try:
         last_checkpoint = get_last_indexed_checkpoint(
             session, IDENTITY_INDEXING_CHECKPOINT_NAME
         )
-        get_reactions_endpoint = (
-            f"{IDENTITY_GET_REACTIONS_ENDPOINT}?startIndex={last_checkpoint}"
-        )
-        new_reactions_response = requests.get(get_reactions_endpoint, timeout=10)
-        new_reactions_response.raise_for_status()
-        new_reactions: List[ReactionResponse] = new_reactions_response.json()[
-            "reactions"
-        ]
 
+        new_reactions: List[ReactionResponse] = fetch_reactions_from_identity(
+            last_checkpoint
+        )
         if not len(new_reactions):
             return
 
