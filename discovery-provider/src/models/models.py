@@ -32,6 +32,26 @@ Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
 
+# Autogenerate __repr__ for models
+class RepresentableMixin:
+    def __repr__(self):
+        name = self.__class__.__name__
+        attrs = self.__dict__.items()
+        strings = []
+        strings.append(f"<{name}(")
+        for i, (k, v) in enumerate(attrs):
+            if k[0] == "_":
+                continue
+            raw = f"{k}={v}"
+            if i != len(attrs) - 1:
+                raw = f"{raw}, "
+            else:
+                raw = f"{raw})>"
+            strings.append(raw)
+        final = "".join(strings)
+        return f"{final}"
+
+
 # Listen for instrumentation of attributes on the base class
 # to add a listener on that attribute whenever it is set
 @event.listens_for(Base, "attribute_instrument")
