@@ -32,7 +32,7 @@ def celery_tasks_prometheus_exporter():
     for task in tasks:
         try:
             metric.save_time({"task_name": task["name"]}, start_time=task["time_start"])
-        except Exception as e:
+        except:
             logger.exception(f"Processing failed for task: {task}")
 
 

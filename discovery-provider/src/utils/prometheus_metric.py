@@ -79,5 +79,5 @@ class PrometheusMetric:
         for name, collector in enumerate(cls.registered_collectors):
             try:
                 collector()
-            except Exception as e:
+            except:
                 logger.exception(f"Failure to collect '{name}'")
