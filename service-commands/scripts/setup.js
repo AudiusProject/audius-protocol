@@ -61,7 +61,7 @@ program
     false
   )
   .option(
-    'parallel',
+    '--parallel',
     'Parallel provisioning - whether to provision CNs and DNs in parallel.',
     false
   )
