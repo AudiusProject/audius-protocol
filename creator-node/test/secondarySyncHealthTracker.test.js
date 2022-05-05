@@ -20,7 +20,7 @@ describe('test secondarySyncHealthTracker', function () {
   })
 
   it(
-    '[computeUsersSecondarySyncSuccessRates] should return 100% success rate for 1 success and 0 failures',
+    '[computeUsersSecondarySyncSuccessRatesForToday] should return 100% success rate for 1 success and 0 failures',
     async function () {
       const wallet = 'testWallet1'
       const secondary = 'http://secondary1.co'
@@ -32,7 +32,7 @@ describe('test secondarySyncHealthTracker', function () {
         [wallet]: [[secondary]]
       }
       const userSecondarySyncMetricsMap =
-        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRates(
+        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
           walletsToSecondariesMapping
         )
 
@@ -49,7 +49,7 @@ describe('test secondarySyncHealthTracker', function () {
   })
 
   it(
-    '[computeUsersSecondarySyncSuccessRates] should return 50% success rate for 1 success and 1 failure',
+    '[computeUsersSecondarySyncSuccessRatesForToday] should return 50% success rate for 1 success and 1 failure',
     async function () {
       const wallet = 'testWallet1'
       const secondary = 'http://secondary1.co'
@@ -62,7 +62,7 @@ describe('test secondarySyncHealthTracker', function () {
         [wallet]: [[secondary]]
       }
       const userSecondarySyncMetricsMap =
-        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRates(
+        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
           walletsToSecondariesMapping
         )
 
@@ -79,7 +79,7 @@ describe('test secondarySyncHealthTracker', function () {
   })
 
   it(
-    '[computeUsersSecondarySyncSuccessRates] should return 0% success rate for 0 successes and 1 failure',
+    '[computeUsersSecondarySyncSuccessRatesForToday] should return 0% success rate for 0 successes and 1 failure',
     async function () {
       const wallet = 'testWallet1'
       const secondary = 'http://secondary1.co'
@@ -91,7 +91,7 @@ describe('test secondarySyncHealthTracker', function () {
         [wallet]: [[secondary]]
       }
       const userSecondarySyncMetricsMap =
-        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRates(
+        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
           walletsToSecondariesMapping
         )
 
@@ -108,7 +108,7 @@ describe('test secondarySyncHealthTracker', function () {
   })
 
   it(
-    '[computeUsersSecondarySyncSuccessRates] only returns wallets and secondaries requested',
+    '[computeUsersSecondarySyncSuccessRatesForToday] only returns wallets and secondaries requested',
     async function () {
       const wallet = 'testWallet1'
       const wallet2 = 'testWallet2'
@@ -131,7 +131,7 @@ describe('test secondarySyncHealthTracker', function () {
         [wallet2]: [[secondary], [secondary3]]
       }
       const userSecondarySyncMetricsMap =
-        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRates(
+        await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
           walletsToSecondariesMapping
         )
 

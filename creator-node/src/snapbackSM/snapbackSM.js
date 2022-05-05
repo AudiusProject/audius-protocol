@@ -1413,24 +1413,16 @@ class SnapbackSM {
   }
 
   async computeUserSecondarySyncSuccessRatesMap(nodeUsers) {
-    let walletsToSecondariesMapping = {}
+    // Map each nodeUser to truthy secondaries (ignore empty secondaries that result from incomplete replica sets)
+    const walletsToSecondariesMapping = {}
     for (const nodeUser of nodeUsers) {
       const { wallet, secondary1, secondary2 } = nodeUser
-      const secondaries = [{ endpoint: secondary1 }, { endpoint: secondary2 }]
-
-      // Get only truthy secondaries (ignore empty secondary endpoints that result from incomplete replica sets)
-      const secondaryEndpoints = secondaries
-        .filter((secondary) => secondary.endpoint)
-        .map((secondary) => secondary.endpoint)
-
-      walletsToSecondariesMapping = {
-        ...walletsToSecondariesMapping,
-        [wallet]: secondaryEndpoints
-      }
+      const secondaries = [secondary1, secondary2].filter(Boolean)
+      walletsToSecondariesMapping[wallet] = secondaries
     }
 
     const userSecondarySyncMetricsMap =
-      await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRates(
+      await SecondarySyncHealthTracker.computeUsersSecondarySyncSuccessRatesForToday(
         walletsToSecondariesMapping
       )
 
