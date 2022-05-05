@@ -152,7 +152,7 @@ export class IdentityService {
       headers[AuthHeaders.SIGNATURE] = signDataResult.signature
     }
 
-    await this._makeRequest<{ email: string | undefined | null }>({
+    return await this._makeRequest<{ email: string | undefined | null }>({
       url: '/user/email',
       method: 'get',
       headers
