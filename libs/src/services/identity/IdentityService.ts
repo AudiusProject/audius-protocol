@@ -141,6 +141,24 @@ export class IdentityService {
     })
   }
 
+  async getUserEmail() {
+    const headers: {
+      [AuthHeaders.MESSAGE]?: string
+      [AuthHeaders.SIGNATURE]?: string
+    } = {}
+    const signDataResult = await this._signData()
+    if (signDataResult) {
+      headers[AuthHeaders.MESSAGE] = signDataResult.message
+      headers[AuthHeaders.SIGNATURE] = signDataResult.signature
+    }
+
+    await this._makeRequest<{ email: string | undefined | null }>({
+      url: '/user/email',
+      method: 'get',
+      headers
+    })
+  }
+
   /**
    * Associates a user with a twitter uuid.
    * @param uuid from the Twitter API
@@ -436,12 +454,10 @@ export class IdentityService {
       [AuthHeaders.MESSAGE]?: string
       [AuthHeaders.SIGNATURE]?: string
     } = {}
-    if (this.web3Manager) {
-      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-      const message = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager?.sign(message)
-      headers[AuthHeaders.MESSAGE] = message
-      headers[AuthHeaders.SIGNATURE] = signature
+    const signDataResult = await this._signData()
+    if (signDataResult) {
+      headers[AuthHeaders.MESSAGE] = signDataResult.message
+      headers[AuthHeaders.SIGNATURE] = signDataResult.signature
     }
 
     return await this._makeRequest({
@@ -522,6 +538,17 @@ export class IdentityService {
         )
       }
       throw error
+    }
+  }
+
+  async _signData() {
+    if (this.web3Manager) {
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const message = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager?.sign(message)
+      return { message, signature }
+    } else {
+      return null
     }
   }
 }
