@@ -894,13 +894,13 @@ workflows:
       - test-mad-dog-e2e:
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
-      # - bake-gcp-dev-image: # TODO - add this back in
-      #     context:
-      #       - GCP2
-      #     name: bake-gcp-dev-image-nightly
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image-nightly
     triggers:
       - schedule:
-          cron: "0 * * * *" # TODO - revert back to 0 5 * * * 
+          cron: "0 5 * * * "
           filters:
             branches:
-              only: /(^master|dm-run-mad-dog-gcp$)/ # TODO - revert back to just master
+              only: /(^master$)/
