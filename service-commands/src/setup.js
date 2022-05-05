@@ -645,33 +645,35 @@ const allUp = async ({
   const nodeUpCommands = []
   const nodeHealthCheckCommands = []
   const nodeRegisterCommands = []
-  // for (
-  //   let serviceNumber = 1;
-  //   serviceNumber < numDiscoveryNodes + 1;
-  //   serviceNumber++
-  // ) {
-  //   nodeUpCommands.push([
-  //     [
-  //       Service.DISCOVERY_PROVIDER,
-  //       SetupCommand.UP,
-  //       { serviceNumber, ...options }
-  //     ]
-  //   ])
-  //   nodeHealthCheckCommands.push([
-  //     [
-  //       Service.DISCOVERY_PROVIDER,
-  //       SetupCommand.HEALTH_CHECK_RETRY,
-  //       { serviceNumber, ...options }
-  //     ]
-  //   ])
-  //   nodeRegisterCommands.push([
-  //     [
-  //       Service.DISCOVERY_PROVIDER,
-  //       SetupCommand.REGISTER,
-  //       { retries: 2, serviceNumber, ...options }
-  //     ]
-  //   ])
-  // }
+  // Add discovery node commands
+  for (
+    let serviceNumber = 1;
+    serviceNumber < numDiscoveryNodes + 1;
+    serviceNumber++
+  ) {
+    nodeUpCommands.push([
+      [
+        Service.DISCOVERY_PROVIDER,
+        SetupCommand.UP,
+        { serviceNumber, ...options }
+      ]
+    ])
+    nodeHealthCheckCommands.push([
+      [
+        Service.DISCOVERY_PROVIDER,
+        SetupCommand.HEALTH_CHECK_RETRY,
+        { serviceNumber, ...options }
+      ]
+    ])
+    nodeRegisterCommands.push([
+      [
+        Service.DISCOVERY_PROVIDER,
+        SetupCommand.REGISTER,
+        { retries: 2, serviceNumber, ...options }
+      ]
+    ])
+  }
+  // Add creator node commands
   for (
     let serviceNumber = 1;
     serviceNumber < numCreatorNodes + 1;
@@ -706,24 +708,27 @@ const allUp = async ({
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
-  // nodeUpCommands.push([[Service.IDENTITY_SERVICE, SetupCommand.UP]])
-  // nodeHealthCheckCommands.push([
-  //   [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY]
-  // ])
-  // if (withAAO) {
-  //   nodeUpCommands.push([Service.AAO, SetupCommand.UP])
-  //   nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
-  // }
+  // Add Identity Service commands
+  nodeUpCommands.push([[Service.IDENTITY_SERVICE, SetupCommand.UP]])
+  nodeHealthCheckCommands.push([
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY]
+  ])
+
+  // Add AAO commands
+  if (withAAO) {
+    nodeUpCommands.push([Service.AAO, SetupCommand.UP])
+    nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
+  }
 
   const start = Date.now()
 
   // Start up the docker network `audius_dev` and the Solana test validator
-  // await runInSequence(setup, options)
+  await runInSequence(setup, options)
   // Run parallel ops
-  // await runInParallel(ipfsAndContractsCommands, options)
+  await runInParallel(ipfsAndContractsCommands, options)
 
   // Run sequential ops
-  // await runInSequence(prereqs, options)
+  await runInSequence(prereqs, options)
 
   if (parallel) {
     const startProv = Date.now()
