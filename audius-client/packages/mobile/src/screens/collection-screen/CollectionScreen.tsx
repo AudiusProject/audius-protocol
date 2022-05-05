@@ -31,7 +31,6 @@ import {
 } from 'audius-client/src/utils/route'
 import { getCollection, getUser } from 'common/store/pages/collection/selectors'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
-import { View } from 'react-native'
 
 import { Screen, VirtualizedScrollView } from 'app/components/core'
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
@@ -39,6 +38,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { SearchPlaylist, SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
@@ -46,9 +46,6 @@ import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     padding: spacing(3)
-  },
-  headerContainer: {
-    marginBottom: 240
   }
 }))
 
@@ -58,13 +55,18 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
 
-  const collection = useSelectorWeb(state =>
-    getCollection(state, params)
+  const { id, searchCollection } = params
+
+  const cachedCollection = useSelectorWeb(state =>
+    getCollection(state, { id })
   ) as Collection
 
-  const user = useSelectorWeb(state =>
-    getUser(state, { id: collection?.playlist_owner_id })
+  const cachedUser = useSelectorWeb(state =>
+    getUser(state, { id: cachedCollection?.playlist_owner_id })
   )
+
+  const collection = cachedCollection ?? searchCollection
+  const user = cachedUser ?? searchCollection?.user
 
   if (!collection || !user) {
     console.warn(
@@ -77,8 +79,8 @@ export const CollectionScreen = () => {
 }
 
 type CollectionScreenComponentProps = {
-  collection: Collection
-  user: User
+  collection: Collection | SearchPlaylist
+  user: User | SearchUser
 }
 
 const CollectionScreenComponent = ({
@@ -215,27 +217,25 @@ const CollectionScreenComponent = ({
         listKey={`playlist-${collection.playlist_id}`}
         style={styles.root}
       >
-        <View style={styles.headerContainer}>
-          <CollectionScreenDetailsTile
-            description={description ?? ''}
-            extraDetails={extraDetails}
-            hasReposted={has_current_user_reposted}
-            hasSaved={has_current_user_saved}
-            imageUrl={imageUrl}
-            isAlbum={is_album}
-            isPrivate={is_private}
-            onPressFavorites={handlePressFavorites}
-            onPressOverflow={handlePressOverflow}
-            onPressRepost={handlePressRepost}
-            onPressReposts={handlePressReposts}
-            onPressSave={handlePressSave}
-            onPressShare={handlePressShare}
-            repostCount={repost_count}
-            saveCount={save_count}
-            title={playlist_name}
-            user={user}
-          />
-        </View>
+        <CollectionScreenDetailsTile
+          description={description ?? ''}
+          extraDetails={extraDetails}
+          hasReposted={has_current_user_reposted}
+          hasSaved={has_current_user_saved}
+          imageUrl={imageUrl}
+          isAlbum={is_album}
+          isPrivate={is_private}
+          onPressFavorites={handlePressFavorites}
+          onPressOverflow={handlePressOverflow}
+          onPressRepost={handlePressRepost}
+          onPressReposts={handlePressReposts}
+          onPressSave={handlePressSave}
+          onPressShare={handlePressShare}
+          repostCount={repost_count}
+          saveCount={save_count}
+          title={playlist_name}
+          user={user}
+        />
       </VirtualizedScrollView>
     </Screen>
   )

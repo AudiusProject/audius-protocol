@@ -50,6 +50,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { getPlaying, getPlayingUid } from 'app/store/audio/selectors'
+import { SearchTrack } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { make, track as record } from 'app/utils/analytics'
 import { moodMap } from 'app/utils/moods'
@@ -65,7 +66,7 @@ const messages = {
 }
 
 type TrackScreenDetailsTileProps = {
-  track: Track
+  track: Track | SearchTrack
   user: User
   uid: UID
   isLineupLoading: boolean

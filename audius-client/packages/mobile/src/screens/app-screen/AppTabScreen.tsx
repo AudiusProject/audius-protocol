@@ -30,6 +30,7 @@ import {
   RepostsScreen,
   NotificationUsersScreen
 } from 'app/screens/user-list-screen'
+import { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
@@ -37,10 +38,10 @@ import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 import { useAppScreenOptions } from './useAppScreenOptions'
 
 export type AppTabScreenParamList = {
-  Track: { id: ID }
+  Track: { id: ID; searchTrack?: SearchTrack }
   TrackRemixes: { id: ID }
   Profile: { handle: string }
-  Collection: { id: ID }
+  Collection: { id: ID; searchCollection?: SearchPlaylist }
   EditPlaylist: { id: ID }
   Favorited: { id: ID; favoriteType: FavoriteType }
   Reposts: { id: ID; repostType: RepostType }
