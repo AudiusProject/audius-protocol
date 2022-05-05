@@ -165,12 +165,13 @@ async function findCIDInNetwork(
           logger.error(
             `findCIDInNetwork - File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
           )
+        } else {
+          found = true
+          logger.info(
+            `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+          )
+          break
         }
-        found = true
-        logger.info(
-          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
-        )
-        break
       }
     } catch (e) {
       logger.error(`findCIDInNetwork error - ${e.toString()}`)
@@ -241,6 +242,7 @@ async function getAllRegisteredCNodes(libs, logger) {
  * @param {String} filePath path of CID on the file system
  */
 async function getIfAttemptedStateFix(filePath) {
+  return false
   // key is `attempted_fs_fixes:<today's date>`
   // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
