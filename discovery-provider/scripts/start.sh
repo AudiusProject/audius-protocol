@@ -16,6 +16,8 @@ if [[ -z "$audius_loggly_disable" ]]; then
 
         if [[ "$audius_loggly_tags" != "" ]]; then
             audius_loggly_tags="tag=\\\"${audius_loggly_tags//,/\\\" tag=\\\"}\\\""
+            # ${audius_loggly_tags//,/\\\" tag=\\\"} replaces , with \" tag=\"
+            # then we add tag=\" to the start and \" to the end
         fi
 
         mkdir -p /var/spool/rsyslog
