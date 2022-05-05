@@ -97,7 +97,9 @@ jobs:
             GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH-$CIRCLE_TAG
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
-            gcloud compute instances create dm-remote-dev-17 --image-project=ci-audius-infra --image=ci-image-bake-latest --boot-disk-size 256 --machine-type n2-custom-12-24576 
+            # Find the IP of the new box and run A up and mad dog inside
+            gcloud compute instances create $GCLOUD_VM_NAME --image-project=ci-audius-infra --image=ci-image-bake-latest --boot-disk-size 256 --machine-type n2-custom-12-24576  --provisioning-model=SPOT
+            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               cd /home/ubuntu/audius-protocol/mad-dog;
               A up;
