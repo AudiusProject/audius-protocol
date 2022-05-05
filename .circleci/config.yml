@@ -694,10 +694,14 @@ workflows:
           repo: solana-programs
 
       - test-mad-dog-e2e:
+          context:
+            - GCP2
           mad-dog-type: test
       - hold-test-mad-dog-e2e-full:
           type: approval
       - test-mad-dog-e2e:
+          context:
+            - GCP2
           name: test-mad-dog-e2e-full
           mad-dog-type: test-nightly
           requires:
@@ -721,6 +725,8 @@ workflows:
       - test-solana-programs:
           name: test-solana-programs-nightly
       - test-mad-dog-e2e:
+          context:
+            - GCP2
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
       - bake-gcp-dev-image:
