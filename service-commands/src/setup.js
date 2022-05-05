@@ -144,6 +144,8 @@ const Service = Object.freeze({
   NETWORK: 'network',
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
+  CONTRACTS_PREDEPLOYED: 'contracts-predeployed',
+  ETH_CONTRACTS_PREDEPLOYED: 'eth-contracts-predeployed',
   SOLANA_VALIDATOR: 'solana-validator',
   SOLANA_VALIDATOR_PREDEPLOYED: 'solana-validator-predeployed',
   SOLANA_PROGRAMS: 'solana-programs',
@@ -604,7 +606,8 @@ const allUp = async ({
   withAAO = false,
   verbose = false,
   parallel = false,
-  buildSolana = false
+  buildSolana = false,
+  buildDataEthContracts = false
 }) => {
   if (verbose) {
     console.log('Running in verbose mode.')
@@ -632,8 +635,8 @@ const allUp = async ({
   const ipfsAndContractsCommands = [
     [Service.IPFS, SetupCommand.UP],
     [Service.IPFS_2, SetupCommand.UP],
-    [Service.CONTRACTS, SetupCommand.UP],
-    [Service.ETH_CONTRACTS, SetupCommand.UP]
+    [Service.CONTRACTS_PREDEPLOYED, SetupCommand.UP],
+    [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.UP]
   ]
 
   if (buildSolana) {
@@ -698,8 +701,11 @@ const allUp = async ({
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK_RETRY],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
+
   if (withAAO) {
-    sequential2.push([Service.AAO, SetupCommand.REGISTER])
+    if (buildDataEthContracts) {
+      sequential2.push([Service.AAO, SetupCommand.REGISTER])
+    }
     sequential2.push([Service.AAO, SetupCommand.UP])
   }
 
@@ -711,7 +717,9 @@ const allUp = async ({
   await runInParallel(ipfsAndContractsCommands, options)
 
   // Run sequential ops
-  await runInSequence(sequential1, options)
+  if (buildDataEthContracts) {
+    await runInSequence(sequential1, options)
+  }
 
   if (parallel) {
     await Promise.all(
