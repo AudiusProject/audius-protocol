@@ -1022,7 +1022,7 @@ def get_max_slot(redis: Redis):
     )
     if len(all_slots) == 0:
         return 0
-    return max(all_slots)
+    return min(all_slots)
 
 
 @bp.route("/solana_notifications", methods=("GET",))
