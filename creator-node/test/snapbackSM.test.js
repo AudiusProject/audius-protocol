@@ -668,7 +668,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
@@ -677,18 +678,6 @@ describe('test SnapbackSM', function () {
 
   it('[aggregateReconfigAndPotentialSyncOps] if the self node is the primary and a secondary spId is different from what is on chain, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    // Mock these as very nodes that completed only successful syncs
-    snapback._computeUserSecondarySyncSuccessRates = async () => {
-      return {
-        'http://cnWithSpId2.co': {
-          successRate: 100
-        },
-        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          successRate: 100
-        }
-      }
-    }
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -712,7 +701,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
@@ -721,18 +711,6 @@ describe('test SnapbackSM', function () {
 
   it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) is the same as the SP with a different spId, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    // Mock these as very nodes that completed only successful syncs
-    snapback._computeUserSecondarySyncSuccessRates = async () => {
-      return {
-        'http://cnWithSpId2.co': {
-          successRate: 100
-        },
-        'http://cnWithSpId3.co': {
-          successRate: 100
-        }
-      }
-    }
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -756,7 +734,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
@@ -790,7 +769,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
     assert.strictEqual(potentialSyncRequests.length, 0)
@@ -798,18 +778,6 @@ describe('test SnapbackSM', function () {
 
   it('[aggregateReconfigAndPotentialSyncOps] if any replica set node is not in the map, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    // Mock these as very nodes that completed only successful syncs
-    snapback._computeUserSecondarySyncSuccessRates = async () => {
-      return {
-        'http://cnWithSpId2.co': {
-          successRate: 100
-        },
-        'http://deregisteredCN.co': {
-          successRate: 100
-        }
-      }
-    }
 
     // Mock the deregistered node to not have any spId
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -832,7 +800,8 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://deregisteredCN.co')
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
