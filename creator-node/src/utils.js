@@ -97,6 +97,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 }
 
 /**
+ * Fetches a CID from the Content Node network
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
@@ -174,9 +175,8 @@ async function findCIDInNetwork(
         }
       }
     } catch (e) {
+      // Do not error and stop the flow of execution for functions that call it
       logger.error(`findCIDInNetwork error - ${e.toString()}`)
-      // since this is a function running in the background intended to fix state, don't error
-      // and stop the flow of execution for functions that call it
       continue
     }
   }
@@ -242,7 +242,6 @@ async function getAllRegisteredCNodes(libs, logger) {
  * @param {String} filePath path of CID on the file system
  */
 async function getIfAttemptedStateFix(filePath) {
-  return false
   // key is `attempted_fs_fixes:<today's date>`
   // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
