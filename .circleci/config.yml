@@ -39,7 +39,7 @@ jobs:
             BAKE_IMAGE_NAME=ci-image-bake-latest
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
-            # export PROTOCOL_DIR=/home/circleci/project
+            export PROTOCOL_DIR=/home/circleci/project
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
             pwd "$PROTOCOL_DIR"
             ls -la "$PROTOCOL_DIR"
@@ -96,7 +96,7 @@ jobs:
             BAKE_IMAGE_NAME=ci-image-bake-latest
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
-            # export PROTOCOL_DIR=/home/circleci/project
+            export PROTOCOL_DIR=/home/circleci/project
             git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
             pwd "$PROTOCOL_DIR"
             ls -la "$PROTOCOL_DIR"
