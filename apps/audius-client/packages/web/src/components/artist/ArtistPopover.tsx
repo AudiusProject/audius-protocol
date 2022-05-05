@@ -1,6 +1,13 @@
-import React, { useCallback, memo, ReactNode } from 'react'
+import React, {
+  useCallback,
+  memo,
+  ReactChild,
+  useRef,
+  MutableRefObject,
+  useState
+} from 'react'
 
-import Popover from 'antd/lib/popover'
+import { Popup, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -13,39 +20,22 @@ import { getUserId } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import * as socialActions from 'common/store/social/users/actions'
-import { MountPlacement } from 'components/types'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
+import zIndex from 'utils/zIndex'
 
 import ArtistCard from './ArtistCard'
 import styles from './ArtistPopover.module.css'
 
-enum Placement {
-  Top = 'top',
-  Left = 'left',
-  Right = 'right',
-  Bottom = 'bottom',
-  TopLeft = 'topLeft',
-  TopRight = 'topRight',
-  BottomLeft = 'bottomLeft',
-  BottomRight = 'bottomRight',
-  LeftTop = 'leftTop',
-  LeftBottom = 'leftBottom',
-  RightTop = 'rightTop',
-  RightBottom = 'rightBottom'
-}
-
 type ArtistPopoverProps = {
-  mount: MountPlacement
   handle: string
-  placement: Placement
   creator: any
   goToRoute: (route: string) => void
   onFollow: (userId: ID) => void
   onUnfollow: (userId: ID) => void
-  children: ReactNode
+  children: ReactChild
   mouseEnterDelay: number
 } & ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
@@ -55,13 +45,15 @@ const ArtistPopover = ({
   onFollow,
   onUnfollow,
   children,
-  placement,
   creator,
   userId,
   goToRoute,
-  mount,
   mouseEnterDelay
 }: ArtistPopoverProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const popupTimeout = useRef<NodeJS.Timeout | null>(null)
+  const [popupVisible, setPopupVisible] = useState(false)
+
   const getCoverPhoto = useUserCoverPhoto(
     creator ? creator.user_id : null,
     creator ? creator._cover_photo_sizes : null,
@@ -80,7 +72,15 @@ const ArtistPopover = ({
   const onMouseEnter = useCallback(() => {
     getCoverPhoto()
     getProfilePicture()
-  }, [getCoverPhoto, getProfilePicture])
+    popupTimeout.current = setTimeout(() => {
+      setPopupVisible(true)
+    }, mouseEnterDelay * 1000)
+  }, [getCoverPhoto, getProfilePicture, mouseEnterDelay])
+
+  const onMouseLeave = () => {
+    if (popupTimeout.current) clearTimeout(popupTimeout.current)
+    setPopupVisible(false)
+  }
 
   const onClickFollow = useCallback(() => {
     if (creator && creator.user_id) onFollow(creator.user_id)
@@ -118,33 +118,24 @@ const ArtistPopover = ({
       />
     ) : null
 
-  let popupContainer
-  switch (mount) {
-    case MountPlacement.PARENT:
-      popupContainer = (triggerNode: HTMLElement) =>
-        triggerNode.parentNode as HTMLElement
-      break
-    case MountPlacement.PAGE:
-      popupContainer = () => document.getElementById('page') || document.body
-      break
-    default:
-      popupContainer = undefined
-  }
-
   return (
     <div
       className={cn(styles.popoverContainer, 'artistPopover')}
       onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      ref={containerRef}
     >
-      <Popover
-        mouseEnterDelay={mouseEnterDelay}
-        content={content}
-        overlayClassName={styles.overlayStyle}
-        placement={placement}
-        getPopupContainer={popupContainer}
+      {children}
+      <Popup
+        isVisible={popupVisible}
+        anchorRef={containerRef as MutableRefObject<HTMLDivElement>}
+        onClose={() => {}}
+        className={styles.popup}
+        position={PopupPosition.TOP_CENTER}
+        zIndex={zIndex.ARTIST_POPOVER_POPUP}
       >
-        {children}
-      </Popover>
+        {content || <></>}
+      </Popup>
     </div>
   )
 }
@@ -165,9 +156,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 })
 
 ArtistPopover.defaultProps = {
-  mount: MountPlacement.PAGE,
   handle: '',
-  placement: Placement.RightBottom,
   mouseEnterDelay: 0.5
 }
 
