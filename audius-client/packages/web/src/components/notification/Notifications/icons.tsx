@@ -4,6 +4,7 @@ import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRemixBase } from 'assets/img/iconRemix.svg'
 import { ReactComponent as IconRepostBase } from 'assets/img/iconRepost.svg'
 import { ReactComponent as IconStars } from 'assets/img/iconStars.svg'
+import { ReactComponent as IconTipBase } from 'assets/img/iconTip.svg'
 import { ReactComponent as IconTrendingBase } from 'assets/img/iconTrending.svg'
 import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
@@ -44,4 +45,8 @@ export const IconTier = ({ children }: { children: ReactNode }) => {
 
 export const IconRemix = () => {
   return <IconRemixBase className={styles.iconRemix} />
+}
+
+export const IconTip = () => {
+  return <IconTipBase className={styles.iconRemix} />
 }

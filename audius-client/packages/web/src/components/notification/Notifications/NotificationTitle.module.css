@@ -1,5 +1,7 @@
 .root {
+  display: flex;
+  align-items: center;
   font-size: var(--font-l);
-  font-weight: 800;
+  font-weight: var(--font-bold);
   color: var(--secondary);
 }
