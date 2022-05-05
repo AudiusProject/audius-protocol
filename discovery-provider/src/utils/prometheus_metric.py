@@ -76,7 +76,7 @@ class PrometheusMetric:
 
     @classmethod
     def populate_collectors(cls):
-        for name, collector in enumerate(cls.registered_collectors):
+        for name, collector in cls.registered_collectors.items():
             try:
                 collector()
             except:
