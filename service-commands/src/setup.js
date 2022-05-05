@@ -738,6 +738,7 @@ const allUp = async ({
     )
     console.log(
       `Services provisioned in ${Math.abs((Date.now() - startProv) / 1000.0)}s`
+        .info
     )
     const startHealth = Date.now()
     console.log('Health checking services'.info)
@@ -749,7 +750,7 @@ const allUp = async ({
     console.log(
       `Services health check complete in ${Math.abs(
         (Date.now() - startHealth) / 1000.0
-      )}s`
+      )}s`.info
     )
     const startRegister = Date.now()
     console.log('Registering services'.info)
@@ -761,7 +762,7 @@ const allUp = async ({
     console.log(
       `Services registered in ${Math.abs(
         (Date.now() - startRegister) / 1000.0
-      )}s`
+      )}s`.info
     )
   } else {
     console.log('Provisioning services in sequence.'.info)
