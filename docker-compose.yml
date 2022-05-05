@@ -79,7 +79,43 @@ services:
   solana-deploy-programs:
     build: solana-programs
     environment:
-      - SOLANA_HOST=http://solana-test-validator:8899
+      SOLANA_HOST: "http://solana-test-validator:8899"
     depends_on:
       solana-test-validator:
         condition: service_healthy
+
+  # identity-service
+
+  identity-service-db:
+    image: postgres:11.1
+
+  identity-service-redis:
+    image: redis:5.0.4
+
+  identity-service:
+    build: identity-service
+    ports:
+      - "7000:7000"
+      - "9229:9229"
+    environment:
+      web3Provider: "http://poa-ganache:8545"
+      secondaryWeb3Provider: "http://poa-ganache:8545"
+      ethProviderUrl: "http://eth-ganache:8545"
+      solanaEndpoint: "http://solana-test-validator:8899"
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+      poa-deploy-contracts:
+        condition: service_completed_successfully
+      eth-ganache:
+        condition: service_healthy
+      eth-deploy-contracts:
+        condition: service_completed_successfully
+      solana-test-validator:
+        condition: service_healthy
+      solana-deploy-programs:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:7000" ]
+      interval: 5s
+      timeout: 5s
