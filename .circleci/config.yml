@@ -94,7 +94,8 @@ jobs:
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH-$CIRCLE_TAG
+            GIT_SHA=$(git rev-parse HEAD)
+            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH-$GIT_SHA
             echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             # Find the IP of the new box and run A up and mad dog inside
