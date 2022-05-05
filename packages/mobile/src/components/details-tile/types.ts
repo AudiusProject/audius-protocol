@@ -4,6 +4,7 @@ import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import { TextStyle } from 'react-native'
 
+import { SearchUser } from 'app/store/search/types'
 import { GestureResponderHandler } from 'app/types/gesture'
 
 export type DetailsTileDetail = {
@@ -106,5 +107,5 @@ export type DetailsTileProps = {
   title: string
 
   /** User associated with the item */
-  user?: User
+  user?: User | SearchUser
 }

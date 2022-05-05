@@ -98,7 +98,10 @@ const UserSearchResult = ({ isLast, item: user }: UserSearchResultProps) => {
     const userRoute = getUserRoute(user)
     dispatch(closeSearch())
     navigation.push({
-      native: { screen: 'Profile', params: { handle: user.handle } },
+      native: {
+        screen: 'Profile',
+        params: { handle: user.handle }
+      },
       web: { route: userRoute, fromPage: 'search' }
     })
   }, [user, dispatch, navigation, appendSearchItem])
@@ -132,7 +135,10 @@ const TrackSearchResult = ({ isLast, item: track }: TrackSearchResultProps) => {
     const trackRoute = getTrackRoute(track)
     dispatch(closeSearch())
     navigation.push({
-      native: { screen: 'Track', params: { id: track.track_id } },
+      native: {
+        screen: 'Track',
+        params: { id: track.track_id, searchTrack: track }
+      },
       web: { route: trackRoute, fromPage: 'search' }
     })
   }, [track, dispatch, navigation, appendSearchItem])
@@ -178,7 +184,10 @@ const PlaylistSearchResult = ({
     const collectionRoute = getCollectionRoute(playlist as any)
     dispatch(closeSearch())
     navigation.push({
-      native: { screen: 'Collection', params: { id: playlist.playlist_id } },
+      native: {
+        screen: 'Collection',
+        params: { id: playlist.playlist_id, searchCollection: playlist }
+      },
       web: { route: collectionRoute, fromPage: 'search' }
     })
   }, [playlist, dispatch, navigation, appendSearchItem])
@@ -205,10 +214,7 @@ const PlaylistSearchResult = ({
 }
 
 type AlbumSearchResultProps = { isLast: boolean; item: SearchPlaylist }
-const AlbumSearchResult = ({
-  isLast,
-  item: playlist
-}: AlbumSearchResultProps) => {
+const AlbumSearchResult = ({ isLast, item: album }: AlbumSearchResultProps) => {
   const nameStyle = useTheme(styles.name, { color: 'neutral' })
   const userNameStyle = useTheme(styles.name, { color: 'neutralLight4' })
   const squareImageStyles = useTheme(styles.squareImage, {
@@ -220,30 +226,33 @@ const AlbumSearchResult = ({
   const { appendSearchItem } = useSearchHistory()
 
   const handlePress = useCallback(() => {
-    appendSearchItem(playlist.playlist_name)
-    const collectionRoute = getCollectionRoute(playlist as any)
+    appendSearchItem(album.playlist_name)
+    const collectionRoute = getCollectionRoute(album as any)
     dispatch(closeSearch())
     navigation.push({
-      native: { screen: 'Collection', params: { id: playlist.playlist_id } },
+      native: {
+        screen: 'Collection',
+        params: { id: album.playlist_id, searchCollection: album }
+      },
       web: { route: collectionRoute, fromPage: 'search' }
     })
-  }, [playlist, dispatch, navigation, appendSearchItem])
+  }, [album, dispatch, navigation, appendSearchItem])
 
   return (
     <ItemContainer isLast={isLast} onPress={handlePress}>
       <PlaylistImage
-        playlist={playlist}
-        user={playlist.user}
+        playlist={album}
+        user={album.user}
         imageStyle={squareImageStyles}
       />
       <View style={styles.nameContainer}>
         <Text numberOfLines={1} style={nameStyle}>
-          {playlist.playlist_name}
+          {album.playlist_name}
         </Text>
         <UserBadges
           style={styles.badgeContainer}
           nameStyle={userNameStyle}
-          user={playlist.user}
+          user={album.user}
         />
       </View>
     </ItemContainer>
