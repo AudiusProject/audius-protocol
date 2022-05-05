@@ -1,0 +1,10 @@
+[workspace]
+members = [
+	"audius_eth_registry",
+	"claimable-tokens/cli",
+	"claimable-tokens/program",
+	"cli",
+	"reward-manager/cli",
+	"reward-manager/program",
+	"track_listen_count",
+]
