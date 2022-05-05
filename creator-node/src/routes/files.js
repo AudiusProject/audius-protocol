@@ -140,8 +140,9 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
  */
 const checkStoragePathForFile = async (storagePath) => {
   let fileIsEmpty = false
+  let fsStats
   try {
-    const fsStats = await fs.stat(storagePath)
+    fsStats = await fs.stat(storagePath)
 
     if (fsStats.isDirectory()) {
       throw new Error('this dag node is a directory')
@@ -154,25 +155,37 @@ const checkStoragePathForFile = async (storagePath) => {
     if (fsStats.size === 0) {
       // Remove file if it is empty and force fetch from CN network
       await fs.unlink(storagePath)
-      fileIsEmpty = true
-    }
 
-    // Is a valid, non-empty file
-    return { fsStats, storagePath, fileIsEmpty }
+      fileIsEmpty = true
+      fsStats = null
+    }
   } catch (e) {
     throw new Error(
       `Could not check file stat for ${storagePath}: ${e.message}`
     )
   }
+
+  return { fsStats, storagePath, fileIsEmpty }
+}
+
+const checkDbForStoragePath = async (CID) => {
+  const queryResults = await models.File.findOne({
+    where: {
+      multihash: CID
+    },
+    order: [['clock', 'DESC']]
+  })
+
+  return queryResults
 }
 
 /**
  * Given a CID, return the appropriate file
  * 1. Check if file exists at expected storage path (current and legacy)
- * 1. If found, stream from FS
- * 2. Else, check if CID exists in DB. If not, return 404 not found error
- * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
- * 4. If not avail in CN network, respond with 400 server error
+ * 2. If found and file is not empty, stream from FS
+ * 3. Else, check if CID exists in DB. If not, return 404 not found error
+ * 4. If exists in DB, fetch file from CN network, save to FS, and stream from FS
+ * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
   if (!req.params || !req.params.CID) {
@@ -207,22 +220,7 @@ const getCID = async (req, res) => {
   }
 
   // Check file existence on fs with new storage path pattern
-  const storagePaths = []
-  try {
-    const storagePath = DiskManager.computeFilePath(CID, false)
-    storagePaths.push(storagePath)
-  } catch (e) {
-    req.logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
-  }
-
-  try {
-    const storagePath = DiskManager.computeLegacyFilePath(CID)
-    storagePaths.push(storagePath)
-  } catch (e) {
-    req.logger.warn(
-      `${logPrefix} Could not compute legacy storage path: ${e.message}`
-    )
-  }
+  const storagePaths = getStoragePaths({ CID, logger: req.logger, logPrefix })
 
   // Check file existence in storage paths. Exit for-loop immediately when file exists
   const errors = []
@@ -248,6 +246,72 @@ const getCID = async (req, res) => {
     fileIsEmpty
   } = checkStorageResponse
 
+  // At this point, the file does not exist in the fs in the new nor legacy storage paths.
+  if (fileIsEmpty) {
+    req.logger.warn('File is empty. Attempting to fetch from CN network..')
+
+    // The DB existence is the source of truth whether content should live in in the node.
+    // If found in DB, query the CN network for the content and serve. Else, respond with 404
+
+    try {
+      codeBlockTimeStart = getStartTime()
+      const queryResults = await checkDbForStoragePath(CID)
+      logInfoWithDuration(
+        { logger: req.logger, startTime: codeBlockTimeStart },
+        `${logPrefix} Content query found: ${!!queryResults}${
+          queryResults && queryResults.type === 'dir'
+            ? ' and is a dir type'
+            : ''
+        }`
+      )
+
+      if (!queryResults) {
+        return sendResponse(
+          req,
+          res,
+          errorResponseNotFound('No valid file found for provided CID')
+        )
+      }
+
+      if (queryResults.type === 'dir') {
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('this dag node is a directory')
+        )
+      }
+
+      storagePathWhereFileExists = queryResults.storagePath
+    } catch (e) {
+      const errorMsg = `${logPrefix} DB query failed: ${e.message}`
+      req.logger.error(errorMsg)
+      return sendResponse(req, res, errorResponseServerError(errorMsg))
+    }
+
+    try {
+      codeBlockTimeStart = getStartTime()
+      const found = await findCIDInNetwork(
+        storagePathWhereFileExists,
+        CID,
+        req.logger,
+        req.app.get('audiusLibs'),
+        trackId
+      )
+      logInfoWithDuration(
+        { logger: req.logger, startTime: codeBlockTimeStart },
+        `${logPrefix} Found cid from network: ${found}`
+      )
+
+      if (!found) {
+        throw new Error('Not found in network')
+      }
+    } catch (e) {
+      const errorMsg = `${logPrefix} ${e.message}`
+      req.logger.error(errorMsg)
+      return sendResponse(req, res, errorResponseServerError(errorMsg))
+    }
+  }
+
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query.filename) {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
@@ -257,10 +321,6 @@ const getCID = async (req, res) => {
   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 
   try {
-    if (fileIsEmpty) {
-      throw new Error('File is empty. Attempting to fetch from CN network..')
-    }
-
     return streamFromFileSystem(
       req,
       res,
@@ -269,73 +329,7 @@ const getCID = async (req, res) => {
       fsStats
     )
   } catch (e) {
-    req.logger.warn(`${logPrefix} Could not stream file from fs: ${e.message}`)
-  }
-
-  // At this point, the file does not exist in the fs in the new nor legacy storage paths.
-
-  // The DB existence is the source of truth whether content should live in in the node.
-  // If found in DB, query the CN network for the content and serve. Else, respond with 404
-
-  try {
-    codeBlockTimeStart = getStartTime()
-    const queryResults = await models.File.findOne({
-      where: {
-        multihash: CID
-      },
-      order: [['clock', 'DESC']]
-    })
-    logInfoWithDuration(
-      { logger: req.logger, startTime: codeBlockTimeStart },
-      `${logPrefix} Content query found: ${!!queryResults}${
-        queryResults && queryResults.type === 'dir' ? ' and is a dir type' : ''
-      }`
-    )
-
-    if (!queryResults) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseNotFound('No valid file found for provided CID')
-      )
-    }
-
-    if (queryResults.type === 'dir') {
-      return sendResponse(
-        req,
-        res,
-        errorResponseBadRequest('this dag node is a directory')
-      )
-    }
-
-    storagePathWhereFileExists = queryResults.storagePath
-  } catch (e) {
-    const errorMsg = `${logPrefix} DB query failed: ${e.message}`
-    req.logger.error(errorMsg)
-    return sendResponse(req, res, errorResponseServerError(errorMsg))
-  }
-
-  try {
-    codeBlockTimeStart = getStartTime()
-    const found = await findCIDInNetwork(
-      storagePathWhereFileExists,
-      CID,
-      req.logger,
-      req.app.get('audiusLibs'),
-      trackId
-    )
-    logInfoWithDuration(
-      { logger: req.logger, startTime: codeBlockTimeStart },
-      `${logPrefix} Found cid from network: ${found}`
-    )
-
-    if (!found) {
-      throw new Error('Not found in network')
-    }
-
-    return streamFromFileSystem(req, res, storagePathWhereFileExists, false)
-  } catch (e) {
-    const errorMsg = `${logPrefix} ${e.message}`
+    const errorMsg = `${logPrefix} Could not stream file from fs: ${e.message}`
     req.logger.error(errorMsg)
     return sendResponse(req, res, errorResponseServerError(errorMsg))
   }
@@ -434,6 +428,34 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
     logger.error(errMsg)
     throw new Error(errMsg)
   }
+}
+
+/**
+ * Retrieves the new and legacy storage paths for a given CID
+ * @param {string} CID
+ * @param {Object} logger
+ * @param {string} logPrefix
+ * @returns array of storage paths
+ */
+function getStoragePaths({ CID, logger, logPrefix }) {
+  const storagePaths = []
+  try {
+    const storagePath = DiskManager.computeFilePath(CID, false)
+    storagePaths.push(storagePath)
+  } catch (e) {
+    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
+  }
+
+  try {
+    const storagePath = DiskManager.computeLegacyFilePath(CID)
+    storagePaths.push(storagePath)
+  } catch (e) {
+    logger.warn(
+      `${logPrefix} Could not compute legacy storage path: ${e.message}`
+    )
+  }
+
+  return storagePaths
 }
 
 /**
