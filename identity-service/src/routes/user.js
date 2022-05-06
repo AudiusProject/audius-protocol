@@ -84,7 +84,7 @@ module.exports = function (app) {
     return errorResponseBadRequest('Invalid route parameters')
   }))
 
-  /** 
+  /**
    * Retrieve authenticated user's email address
    */
   app.get('/user/email', authMiddleware, handleResponse(async (req, _res, _next) => {
@@ -94,7 +94,7 @@ module.exports = function (app) {
         blockchainUserId
       }
     })
-    
+
     return successResponse({
       email: userData.email
     })
