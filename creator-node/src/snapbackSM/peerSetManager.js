@@ -138,7 +138,8 @@ class PeerSetManager {
             },
             timeout: 60_000 // 60s
           })
-        }
+        },
+        logger
       })
       nodeUsers = resp.data.data
     } catch (e) {

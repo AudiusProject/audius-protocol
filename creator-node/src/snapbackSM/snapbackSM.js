@@ -226,14 +226,23 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor (aka consumer)
     this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
-      const jobId = job.id
-      await redis.set('stateMachineQueueLatestJobStart', Date.now())
+      this.log('StateMachineQueue: Consuming new job...')
+      const { id: jobId } = job || { id: 'unknownId' }
+
       try {
-        await this.processStateMachineOperation(jobId)
+        this.log(`StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
       } catch (e) {
-        this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
+        this.logError(`StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`)
       }
-      await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
+
+      try {
+        await redis.set('stateMachineQueueLatestJobStart', Date.now())
+        await this.processStateMachineOperation(jobId)
+        await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
+      } catch (e) {
+        this.logError(`StateMachineQueue: Processing error on jobId ${jobId}: ${e}`)
+      }
+
       return {}
     })
 
@@ -1183,7 +1192,7 @@ class SnapbackSM {
       )
 
       // Log decision tree
-      this._printStateMachineQueueDecisionTree(decisionTree)
+      this._printStateMachineQueueDecisionTree(decisionTree, jobId)
 
       // Increment and adjust current slice by this.moduloBase
       this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
@@ -1219,7 +1228,7 @@ class SnapbackSM {
     }
   }
 
-  _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
+  _printStateMachineQueueDecisionTree(decisionTree, jobId, msg = '') {
     // Compute and record `fullDuration`
     if (decisionTree.length > 2) {
       const startTime = decisionTree[0].time
@@ -1229,13 +1238,13 @@ class SnapbackSM {
     }
     try {
       this.log(
-        `processStateMachineOperation() Decision Tree${
+        `processStateMachineOperation() ${jobId} Decision Tree${
           msg ? ` - ${msg} - ` : ''
         }${JSON.stringify(decisionTree)}`
       )
     } catch (e) {
       this.logError(
-        `Error printing processStateMachineOperation() Decision Tree ${decisionTree}`
+        `Error printing processStateMachineOperation() ${jobId} Decision Tree ${decisionTree}`
       )
     }
   }
