@@ -3,9 +3,6 @@
   font-weight: var(--font-demi-bold);
   line-height: 21px;
 }
-.addMargin {
-  margin-inline-start: var(--unit-1);
-}
 
 .deactivated {
   color: var(--neutral-light-1);

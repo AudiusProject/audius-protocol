@@ -1,13 +1,16 @@
 import React, { ReactNode } from 'react'
 
+import cn from 'classnames'
+
 import styles from './NotificationBody.module.css'
 
 type NotificationBodyProps = {
+  className?: string
   children: ReactNode
 }
 
 export const NotificationBody = (props: NotificationBodyProps) => {
-  const { children } = props
+  const { className, children } = props
 
-  return <div className={styles.root}>{children}</div>
+  return <div className={cn(styles.root, className)}>{children}</div>
 }

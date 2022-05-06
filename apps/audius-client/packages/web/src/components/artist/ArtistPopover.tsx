@@ -37,6 +37,7 @@ type ArtistPopoverProps = {
   onUnfollow: (userId: ID) => void
   children: ReactChild
   mouseEnterDelay: number
+  component?: 'div' | 'span'
 } & ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
@@ -48,7 +49,8 @@ const ArtistPopover = ({
   creator,
   userId,
   goToRoute,
-  mouseEnterDelay
+  mouseEnterDelay,
+  component: Component = 'div'
 }: ArtistPopoverProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const popupTimeout = useRef<NodeJS.Timeout | null>(null)
@@ -119,7 +121,7 @@ const ArtistPopover = ({
     ) : null
 
   return (
-    <div
+    <Component
       className={cn(styles.popoverContainer, 'artistPopover')}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -136,7 +138,7 @@ const ArtistPopover = ({
       >
         {content || <></>}
       </Popup>
-    </div>
+    </Component>
   )
 }
 
