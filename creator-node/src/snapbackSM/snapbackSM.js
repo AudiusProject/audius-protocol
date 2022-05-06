@@ -213,7 +213,7 @@ class SnapbackSM {
    */
   async init() {
     // Empty all queues to minimize memory consumption
-    await this.stateMachineQueue.empty()
+    await this.stateMachineQueue.obliterate({ force: true })
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
 
