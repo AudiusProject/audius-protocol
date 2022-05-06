@@ -5,7 +5,7 @@ const contentDisposition = require('content-disposition')
 
 const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
-const { uploadTempDiskStorage } = require('../fileManager')
+const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
@@ -230,7 +230,7 @@ const getCID = async (req, res) => {
         stage: `CID_CONFIRMED_FILE`
       })
 
-      if (fsStats.size === 0) {
+      if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
         // Remove file if it is empty and force fetch from CN network
         req.logger.warn(`[new] File is empty -- removing ${CID}`)
         await fs.unlink(storagePath)
@@ -309,7 +309,7 @@ const getCID = async (req, res) => {
         decisionTree.push({
           stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
         })
-        if (fsStats.size === 0) {
+        if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
           // Remove file if it is empty and force fetch from CN network
           req.logger.warn(`[legacy] File is empty -- removing ${CID}`)
           await fs.unlink(storagePath)

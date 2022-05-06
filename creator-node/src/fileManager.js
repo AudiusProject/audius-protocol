@@ -707,5 +707,6 @@ module.exports = {
   checkFileMiddleware,
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
-  copyMultihashToFs
+  copyMultihashToFs,
+  EMPTY_FILE_CID
 }
