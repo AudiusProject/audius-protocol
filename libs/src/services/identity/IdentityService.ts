@@ -142,21 +142,16 @@ export class IdentityService {
   }
 
   async getUserEmail() {
-    const headers: {
-      [AuthHeaders.MESSAGE]?: string
-      [AuthHeaders.SIGNATURE]?: string
-    } = {}
-    const signDataResult = await this._signData()
-    if (signDataResult) {
-      headers[AuthHeaders.MESSAGE] = signDataResult.message
-      headers[AuthHeaders.SIGNATURE] = signDataResult.signature
+    const headers = await this._signData()
+    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
+      return await this._makeRequest<{ email: string | undefined | null }>({
+        url: '/user/email',
+        method: 'get',
+        headers
+      })
+    } else {
+      throw new Error('Cannot get user email - user is not authenticated')
     }
-
-    return await this._makeRequest<{ email: string | undefined | null }>({
-      url: '/user/email',
-      method: 'get',
-      headers
-    })
   }
 
   /**
@@ -450,15 +445,7 @@ export class IdentityService {
 
   // Relays tx data through the solana relay endpoint
   async solanaRelay(transactionData: TransactionData) {
-    const headers: {
-      [AuthHeaders.MESSAGE]?: string
-      [AuthHeaders.SIGNATURE]?: string
-    } = {}
-    const signDataResult = await this._signData()
-    if (signDataResult) {
-      headers[AuthHeaders.MESSAGE] = signDataResult.message
-      headers[AuthHeaders.SIGNATURE] = signDataResult.signature
-    }
+    const headers = await this._signData()
 
     return await this._makeRequest({
       url: '/solana/relay',
@@ -546,9 +533,12 @@ export class IdentityService {
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const message = `Click sign to authenticate with identity service: ${unixTs}`
       const signature = await this.web3Manager?.sign(message)
-      return { message, signature }
+      return { 
+        [AuthHeaders.MESSAGE]: message,
+        [AuthHeaders.SIGNATURE]: signature
+      } 
     } else {
-      return null
+      return {}
     }
   }
 }
