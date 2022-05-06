@@ -8,6 +8,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
   tableName = 'tracks'
   idColumn = 'track_id'
   indexName = indexNames.tracks
+  batchSize = 500
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,

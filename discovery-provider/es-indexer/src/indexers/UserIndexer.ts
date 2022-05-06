@@ -1,5 +1,5 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { groupBy } from 'lodash'
+import { groupBy, keyBy } from 'lodash'
 import { dialPg } from '../conn'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
@@ -56,17 +56,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     return `
     -- etl users
     select 
-      *,
-    
-      array(
-        select followee_user_id 
-        from follows
-        where follower_user_id = users.user_id
-        and is_current = true
-        and is_delete = false
-        order by created_at desc
-      ) as following_ids
-      
+      *
     from
       users
       join aggregate_user using (user_id)
@@ -92,15 +82,42 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
   async withBatch(rows: UserDoc[]) {
     // attach user's tracks
     const userIds = rows.map((r) => r.user_id)
-    const tracksByOwnerId = await this.userTracks(Array.from(userIds))
+    const [tracksByOwnerId, followMap] = await Promise.all([
+      this.userTracks(userIds),
+      this.userFollows(userIds),
+    ])
     for (let user of rows) {
       user.tracks = tracksByOwnerId[user.user_id] || []
       user.track_count = user.tracks.length
+      user.following_ids = followMap[user.user_id] || []
     }
   }
 
   withRow(row: UserDoc) {
     row.following_count = row.following_ids.length
+  }
+
+  private async userFollows(
+    userIds: number[]
+  ): Promise<Record<number, number[]>> {
+    if (!userIds.length) return {}
+    const idList = Array.from(userIds).join(',')
+    const q = `
+      select 
+        follower_user_id,
+        followee_user_id 
+      from follows
+      where is_current = true
+        and is_delete = false
+        and follower_user_id in (${idList})
+      order by created_at desc
+    `
+    const result = await dialPg().query(q)
+    const grouped = groupBy(result.rows, 'follower_user_id')
+    for (let [user_id, follow_rows] of Object.entries(grouped)) {
+      grouped[user_id] = follow_rows.map((r) => r.followee_user_id)
+    }
+    return grouped
   }
 
   private async userTracks(userIds: number[]) {
@@ -118,7 +135,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         and stem_of is null
         and owner_id in (${idList})
       order by created_at desc
-        `
+    `
     const allTracks = await pg.query(q)
     for (let t of allTracks.rows) {
       t.tags = t.tags?.split(',').filter(Boolean)

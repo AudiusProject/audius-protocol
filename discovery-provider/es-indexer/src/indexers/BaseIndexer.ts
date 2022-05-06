@@ -101,7 +101,7 @@ export abstract class BaseIndexer<RowType> {
     await this.indexRows(result.rows)
   }
 
-  async catchup(checkpoint: BlocknumberCheckpoint) {
+  async catchup(checkpoint?: BlocknumberCheckpoint) {
     let sql = this.baseSelect()
     if (checkpoint) {
       sql += this.checkpointSql(checkpoint)
@@ -136,11 +136,19 @@ export abstract class BaseIndexer<RowType> {
     for (let chunk of chunks) {
       // index to es
       const body = this.buildIndexOps(chunk)
-      const got = await es.bulk({ body })
 
-      if (got.errors) {
-        // todo: do a better job picking out error items
-        logger.error(got.items[0], `bulk indexing errors`)
+      for (let attempt = 1; attempt < 10; attempt++) {
+        const got = await es.bulk({ body })
+        if (got.errors) {
+          logger.error(
+            got.items[0],
+            `bulk indexing error.  Attempt #${attempt}`
+          )
+          // linear backoff 5s increments
+          await new Promise((r) => setTimeout(r, 5000 * attempt))
+        } else {
+          break
+        }
       }
 
       this.rowCounter += chunk.length
