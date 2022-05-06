@@ -88,7 +88,7 @@ solanaRouter.post(
 
     const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction({
       recentBlockhash,
-      signatures: (signatures || []).map(s => ({ ...s, signature: Buffer.from(s.signature.data)})),
+      signatures: (signatures || []).map(s => ({ ...s, signature: Buffer.from(s.signature.data) })),
       instructions,
       skipPreflight,
       feePayerOverride
