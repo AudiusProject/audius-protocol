@@ -84,6 +84,22 @@ module.exports = function (app) {
     return errorResponseBadRequest('Invalid route parameters')
   }))
 
+  /**
+   * Retrieve authenticated user's email address
+   */
+  app.get('/user/email', authMiddleware, handleResponse(async (req, _res, _next) => {
+    const { blockchainUserId } = req.user
+    const userData = await models.User.findOne({
+      where: {
+        blockchainUserId
+      }
+    })
+
+    return successResponse({
+      email: userData.email
+    })
+  }))
+
   /** DEPRECATED */
 
   app.post('/user/associate', handleResponse(async (req, res, next) => {
