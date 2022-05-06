@@ -24,3 +24,9 @@ alias tail_ui='tail -f ${PROTOCOL_DIR}/../audius-client.out'
 
 alias Ar='A run discovery-provider restart'
 alias fl='FIX_LINT=1 sh scripts/lint.sh'
+
+export PYTHON_VERSION="3.9"
+alias python=python$PYTHON_VERSION
+alias python3=python$PYTHON_VERSION
+alias pip=pip$PYTHON_VERSION
+alias pip3=pip$PYTHON_VERSION

@@ -109,6 +109,8 @@ notification_tier = "tier"
 solana_notification_type = "type"
 solana_notification_type_challenge_reward = "ChallengeReward"
 solana_notification_type_listen_milestone = "MilestoneListen"
+solana_notification_type_supporter_rank_up = "SupporterRankUp"
+solana_notification_type_tip = "Tip"
 
 solana_notification_slot = "slot"
 solana_notification_timestamp = "timestamp"
@@ -117,6 +119,8 @@ solana_notification_metadata = "metadata"
 
 solana_notification_challenge_id = "challenge_id"
 solana_notification_threshold = "threshold"
+solana_notification_tip_rank = "rank"
+solana_notification_tip_amount = "amount"
 
 # Trending
 owner_follower_count = "owner_follower_count"

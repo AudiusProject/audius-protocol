@@ -40,6 +40,7 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
+    latest_sol_user_bank_slot_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -287,11 +288,16 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
+        # The sender/receiver are index 1 and 2 respectfully in the instruction,
+        # but the transaction might list them in a different order in the pubKeys.
+        # The "accounts" field of the instruction has the mapping of accounts to pubKey index
+        sender_index = instruction["accounts"][1]
+        receiver_index = instruction["accounts"][2]
         process_transfer_instruction(
             session=session,
             redis=redis,
-            sender_account=account_keys[1],
-            receiver_account=account_keys[2],
+            sender_account=account_keys[sender_index],
+            receiver_account=account_keys[receiver_index],
             meta=meta,
             tx_sig=tx_sig,
             slot=result["slot"],
@@ -319,7 +325,7 @@ def parse_user_bank_transaction(
 
 
 def process_user_bank_txs():
-    solana_client_manager = index_user_bank.solana_client_manager
+    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
     db = index_user_bank.db
     redis = index_user_bank.redis
     logger.info("index_user_bank.py | Acquired lock")
@@ -339,6 +345,12 @@ def process_user_bank_txs():
 
     # Loop exit condition
     intersection_found = False
+
+    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    try:
+        latest_global_slot = solana_client_manager.get_block_height()
+    except:
+        logger.error("index_user_bank.py | Failed to get block height")
 
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
@@ -457,6 +469,10 @@ def process_user_bank_txs():
                 "timestamp": last_tx["blockTime"],
             },
         )
+    if last_tx:
+        redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
 
 
 # ####### CELERY TASKS ####### #

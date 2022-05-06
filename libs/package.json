@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.112",
+  "version": "1.2.114",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

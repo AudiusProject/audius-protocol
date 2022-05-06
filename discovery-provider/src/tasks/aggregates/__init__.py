@@ -43,7 +43,7 @@ def init_task_and_acquire_lock(
             start_time = time()
 
             with db.scoped_session() as session:
-                aggregate_func(session)
+                aggregate_func(session, redis)
 
             logger.info(
                 f"{task_name} | Finished updating \
