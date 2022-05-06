@@ -1,6 +1,7 @@
 import logging
 import operator as op
-from typing import List, TypedDict, Union
+from datetime import datetime
+from typing import List, TypedDict, Union, cast
 
 import requests
 from redis import Redis
@@ -49,7 +50,7 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
             sender_wallet=reaction["senderWallet"],
             entity_type=reaction["entityType"],
             entity_id=reaction["entityId"],
-            timestamp=reaction["createdAt"],
+            timestamp=cast(datetime, reaction["createdAt"]),
             tx_signature=None,  # no tx_signature for now
         )
         return reaction_model
