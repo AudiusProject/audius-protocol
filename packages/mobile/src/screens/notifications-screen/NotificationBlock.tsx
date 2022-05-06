@@ -98,7 +98,11 @@ const typeIconMap: Record<
   [NotificationType.TrendingTrack]: () => IconTrending,
   [NotificationType.ChallengeReward]: () => IconAudius,
   [NotificationType.TierChange]: (notification: TierChange) =>
-    tierInfoMap[notification.tier].icon
+    tierInfoMap[notification.tier].icon,
+  [NotificationType.TipReaction]: () => IconTrending,
+  [NotificationType.TipSent]: () => IconTrending,
+  [NotificationType.TopSupporter]: () => IconTrending,
+  [NotificationType.TopSupporting]: () => IconTrending
 }
 
 const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
@@ -113,7 +117,11 @@ const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
   [NotificationType.TrendingTrack]: () => 'TRENDING',
   [NotificationType.ChallengeReward]: () => "YOU'VE EARNED $AUDIO",
   [NotificationType.TierChange]: (notification: TierChange) =>
-    tierInfoMap[notification.tier].title
+    tierInfoMap[notification.tier].title,
+  [NotificationType.TipReaction]: () => '',
+  [NotificationType.TipSent]: () => '',
+  [NotificationType.TopSupporter]: () => '',
+  [NotificationType.TopSupporting]: () => ''
 }
 
 const styles = StyleSheet.create({

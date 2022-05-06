@@ -43,6 +43,8 @@ const NotificationContent = ({ notification }: NotificationContentProps) => {
       return <ChallengeReward notification={notification} />
     case NotificationType.TierChange:
       return <TierChange notification={notification} />
+    default:
+      return null
   }
 }
 
