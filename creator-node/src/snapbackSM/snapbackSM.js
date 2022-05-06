@@ -31,6 +31,9 @@ const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 // Number of users to process in each batch for this._aggregateOps
 const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 
+// Max number of completed and failed jobs to leave in the queue history
+const SNAPBACK_QUEUE_HISTORY = 500
+
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring:
@@ -318,8 +321,8 @@ class SnapbackSM {
       },
       defaultJobOptions: {
         // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: SNAPBACK_QUEUE_HISTORY,
+        removeOnFail: SNAPBACK_QUEUE_HISTORY
       },
       settings
     })

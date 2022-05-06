@@ -5,6 +5,7 @@ const EthereumWallet = require('ethereumjs-wallet')
 const { Keypair } = require('@solana/web3.js')
 
 const initializeApp = require('./app')
+const { setupBullMonitoring } = require('./app')
 const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
@@ -116,7 +117,13 @@ const startApp = async () => {
 
   // Some Services cannot start until server is up. Start them now
   // No need to await on this as this process can take a while and can run in the background
-  serviceRegistry.initServicesThatRequireServer()
+  serviceRegistry.initServicesThatRequireServer().then((_: any) => {
+    try {
+      setupBullMonitoring(serviceRegistry)
+    } catch (e: any) {
+      logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
+    }
+  })
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {

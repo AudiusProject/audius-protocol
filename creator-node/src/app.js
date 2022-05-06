@@ -1,8 +1,13 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const { createBullBoard } = require('@bull-board/api');
+const { BullAdapter } = require('@bull-board/api/bullAdapter');
+const { ExpressAdapter } = require('@bull-board/express');
 
 const DiskManager = require('./diskManager')
+const ImageProcessingQueue = require('./ImageProcessingQueue')
+const TranscodingQueue = require('./TranscodingQueue')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const {
@@ -24,6 +29,7 @@ const contentBlacklistRoutes = require('./components/contentBlacklist/contentBla
 const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
 
 const app = express()
+
 // middleware functions will be run in order they are added to the app below
 //  - loggingMiddleware must be first to ensure proper error handling
 app.use(loggingMiddleware)
@@ -92,4 +98,44 @@ const initializeApp = (port, serviceRegistry) => {
   return { app: app, server: server }
 }
 
+const setupBullMonitoring = (serviceRegistry) => {
+  logger.info('Setting up Bull queue monitoring...')
+  const serverAdapter = new ExpressAdapter();
+  const {
+    snapbackSM,
+    syncQueue: syncProcessingQueueClass,
+    asyncProcessingQueue: asyncProcessingQueueClass,
+    monitoringQueue: monitoringQueueClass,
+    sessionExpirationQueue: sessionExpirationQueueClass,
+    skippedCIDsRetryQueue: skippedCidsRetryQueueClass
+  } = serviceRegistry
+  const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } = snapbackSM
+  const { queue: syncProcessingQueue } = syncProcessingQueueClass
+  const { queue: asyncProcessingQueue } = asyncProcessingQueueClass
+  const { queue: imageProcessingQueue } = ImageProcessingQueue
+  const { queue: transcodingQueue } = TranscodingQueue
+  const { queue: monitoringQueue } = monitoringQueueClass
+  const { queue: sessionExpirationQueue } = sessionExpirationQueueClass
+  const { queue: skippedCidsRetryQueue } = skippedCidsRetryQueueClass
+  
+  createBullBoard({
+    queues: [
+      new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
+      new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
+      new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
+      new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
+      new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
+      new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
+      new BullAdapter(transcodingQueue, { readOnlyMode: true }),
+      new BullAdapter(monitoringQueue, { readOnlyMode: true }),
+      new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),
+      new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true })
+    ],
+    serverAdapter: serverAdapter
+  });
+  serverAdapter.setBasePath('/health/bull')  
+  app.use('/health/bull', serverAdapter.getRouter())
+}
+
 module.exports = initializeApp
+module.exports.setupBullMonitoring = setupBullMonitoring
