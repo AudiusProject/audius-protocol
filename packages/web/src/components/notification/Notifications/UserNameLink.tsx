@@ -24,11 +24,10 @@ type UserNameLinkProps = {
   className?: string
   notification: Notification
   user: User
-  addMargin?: boolean
 }
 
 export const UserNameLink = (props: UserNameLinkProps) => {
-  const { className, notification, user, addMargin } = props
+  const { className, notification, user } = props
   const dispatch = useDispatch()
 
   const record = useRecord()
@@ -53,11 +52,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
     [dispatch, handle, record, type, profileLink]
   )
 
-  const rootClassName = cn(
-    styles.root,
-    { [styles.addMargin]: addMargin },
-    className
-  )
+  const rootClassName = cn(styles.root, className)
 
   if (is_deactivated) {
     return (
@@ -83,7 +78,9 @@ export const UserNameLink = (props: UserNameLinkProps) => {
 
   if (!isMobile()) {
     userNameElement = (
-      <ArtistPopover handle={handle}>{userNameElement}</ArtistPopover>
+      <ArtistPopover handle={handle} component='span'>
+        {userNameElement}
+      </ArtistPopover>
     )
   }
 
