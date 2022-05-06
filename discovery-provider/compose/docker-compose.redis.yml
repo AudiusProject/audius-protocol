@@ -30,16 +30,6 @@ services:
       - esdata:/usr/share/elasticsearch/data
     networks:
       - audius_dev
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:8.1.0
-  #   container_name: kibana
-  #   environment:
-  #     ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-  #     SERVER_HOSTS: 0.0.0.0
-  #   ports:
-  #     - '5601:5601'
-  #   depends_on:
-  #     - elasticsearch
 
 volumes:
   esdata:
