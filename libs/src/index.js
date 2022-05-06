@@ -439,6 +439,7 @@ class AudiusLibs {
         this.solanaWeb3Manager,
         this.web3Manager
       )
+      await this.solanaAudiusData.init()
     }
 
     /** Contracts - Eth and Data Contracts */
