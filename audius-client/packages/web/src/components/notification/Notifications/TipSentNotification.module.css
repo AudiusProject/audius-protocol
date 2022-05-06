@@ -1,0 +1,7 @@
+.body {
+  align-items: unset;
+}
+
+.profilePicture {
+  margin-right: var(--unit-2);
+}
