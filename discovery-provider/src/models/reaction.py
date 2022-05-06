@@ -13,4 +13,4 @@ class Reaction(Base, RepresentableMixin):
     entity_type = Column(String, nullable=False)
     entity_id = Column(String, nullable=False)
     timestamp = Column(DateTime, nullable=False)
-    txid = Column(String, nullable=True)
+    tx_signature = Column(String, nullable=True)

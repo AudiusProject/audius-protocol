@@ -32,8 +32,17 @@ Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
 
-# Autogenerate __repr__ for models
 class RepresentableMixin:
+    """Autogenerate __repr__ for SQLAlchemy models. 
+
+    Usage:
+
+    ```
+    class MyNewModel(Base, RepresentableMixin):
+        ...
+    ```
+    """
+
     def __repr__(self):
         name = self.__class__.__name__
         attrs = self.__dict__.items()

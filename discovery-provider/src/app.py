@@ -589,6 +589,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
+    redis_inst.delete("update_aggregate_table:aggregate_user_tips")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
 
     logger.info("Redis instance initialized!")

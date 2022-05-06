@@ -25,7 +25,7 @@ def upgrade():
         sa.Column("entity_type", sa.String(), nullable=False),
         sa.Column("entity_id", sa.String(), nullable=False),
         sa.Column("timestamp", sa.DateTime(), nullable=False),
-        sa.Column("txid", sa.String(), nullable=True),
+        sa.Column("tx_signature", sa.String(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
         info={"if_not_exists": True},
     )

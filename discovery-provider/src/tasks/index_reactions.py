@@ -50,7 +50,7 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
             entity_type=reaction["entityType"],
             entity_id=reaction["entityId"],
             timestamp=reaction["createdAt"],
-            txid=None,  # no txid for now
+            tx_signature=None,  # no tx_signature for now
         )
         return reaction_model
     except Exception as e:
