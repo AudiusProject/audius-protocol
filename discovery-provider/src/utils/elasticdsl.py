@@ -8,7 +8,6 @@ esclient = None
 if es_url:
     esclient = Elasticsearch(es_url)
 
-
 # uses aliases
 ES_PLAYLISTS = "playlists"
 ES_REPOSTS = "reposts"
@@ -16,6 +15,7 @@ ES_SAVES = "saves"
 ES_TRACKS = "tracks"
 ES_USERS = "users"
 
+ES_INDEXES = [ES_PLAYLISTS, ES_REPOSTS, ES_SAVES, ES_TRACKS, ES_USERS]
 
 def listify(things):
     if isinstance(things, list):

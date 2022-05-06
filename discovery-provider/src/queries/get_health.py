@@ -37,6 +37,7 @@ from src.utils.redis_constants import (
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
+from src.utils.elasticdsl import ES_INDEXES, ES_TRACKS, ES_USERS, esclient
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -329,6 +330,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         health_results["meets_min_requirements"] = True
 
     if verbose:
+        # Elasticsearch health
+        if os.getenv("audius_elasticsearch_run_indexer") == "true":
+            health_results["elasticsearch"] = get_elasticsearch_health_info(
+                latest_indexed_block_num
+            )
+
         # DB connections check
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
@@ -468,6 +475,27 @@ def get_play_health_info(
         "time_diff_general": time_diff_general,
         "oldest_unarchived_play_created_at": oldest_unarchived_play,
     }
+
+
+class ElasticsearchHealthInfo(TypedDict):
+    elasticsearch_health: Dict[str, str]
+
+
+def get_elasticsearch_health_info(latest_indexed_block_num) -> ElasticsearchHealthInfo:
+    elasticsearch_health = {}
+    for index_name in ES_INDEXES:
+        resp = esclient.search(
+            index=index_name,
+            aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
+            size=0,
+        )
+        blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
+        elasticsearch_health[index_name] = {
+            "blocknumber": blocknumber,
+            "db_block_difference": latest_indexed_block_num - blocknumber,
+        }
+
+    return elasticsearch_health
 
 
 def get_user_bank_health_info(
