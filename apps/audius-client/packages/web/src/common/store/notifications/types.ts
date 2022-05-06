@@ -19,7 +19,9 @@ export enum NotificationType {
   ChallengeReward = 'ChallengeReward',
   TierChange = 'TierChange',
   TipReaction = 'TipReaction',
-  TipSent = 'TipSent'
+  TipSent = 'TipSent',
+  TopSupporter = 'TopSupporter',
+  TopSupporting = 'TopSupporting'
 }
 
 export enum Entity {
@@ -179,6 +181,18 @@ export type TipReaction = BaseNotification & {
   reaction: 'heart' | 'fire' | 'party' | 'explode'
 }
 
+export type TopSupporter = BaseNotification & {
+  type: NotificationType.TopSupporter
+  user: User
+  rank: number
+}
+
+export type TopSupporting = BaseNotification & {
+  type: NotificationType.TopSupporting
+  user: User
+  rank: number
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -193,6 +207,8 @@ export type Notification =
   | TierChange
   | TipReaction
   | TipSent
+  | TopSupporter
+  | TopSupporting
 
 export default interface NotificationState {
   notifications: {
