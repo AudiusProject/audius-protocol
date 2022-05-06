@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class RepresentableMixin:
-    """Autogenerate __repr__ for SQLAlchemy models. 
+    """Autogenerate __repr__ for SQLAlchemy models.
 
     Usage:
 
