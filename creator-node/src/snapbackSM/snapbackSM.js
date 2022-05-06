@@ -230,9 +230,15 @@ class SnapbackSM {
       const { id: jobId } = job || { id: 'unknownId' }
 
       try {
-        this.log(`StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
+        this.log(
+          `StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(
+            job
+          )}`
+        )
       } catch (e) {
-        this.logError(`StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`)
+        this.logError(
+          `StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`
+        )
       }
 
       try {
@@ -240,7 +246,9 @@ class SnapbackSM {
         await this.processStateMachineOperation(jobId)
         await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
-        this.logError(`StateMachineQueue: Processing error on jobId ${jobId}: ${e}`)
+        this.logError(
+          `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`
+        )
       }
 
       return {}
