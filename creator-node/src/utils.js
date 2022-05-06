@@ -164,7 +164,7 @@ async function findCIDInNetwork(
         if (cid !== expectedCID) {
           await fs.unlink(filePath)
           logger.error(
-            `findCIDInNetwork - File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+            `findCIDInNetwork - File contents from ${node.endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
           )
         } else {
           found = true
@@ -176,7 +176,9 @@ async function findCIDInNetwork(
       }
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
-      logger.error(`findCIDInNetwork error - ${e.toString()}`)
+      logger.error(
+        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
+      )
       continue
     }
   }
