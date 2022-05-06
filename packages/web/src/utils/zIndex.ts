@@ -22,13 +22,14 @@ export enum zIndex {
   CREATE_PLAYLIST_MODAL = 1000,
   EDIT_PLAYLIST_MODAL = 1001,
   IMAGE_SELECTION_POPUP = 1002,
-  ARTIST_POPOVER_POPUP = 1003,
 
   // Web3 wallet connect modal
   WEB3_WALLET_CONNECT_MODAL = 10001,
 
   // cognito flow modal
-  COGNITO_FLOW_MODAL = 10001
+  COGNITO_FLOW_MODAL = 10001,
+
+  ARTIST_POPOVER_POPUP = 20000
 }
 
 export default zIndex
