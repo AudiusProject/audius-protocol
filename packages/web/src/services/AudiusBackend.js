@@ -85,6 +85,11 @@ const REWARDS_MANAGER_PROGRAM_PDA =
 const REWARDS_MANAGER_TOKEN_PDA =
   process.env.REACT_APP_REWARDS_MANAGER_TOKEN_PDA
 
+// Solana Anchor Audius Data
+const REACT_APP_ANCHOR_PROGRAM_ID = process.env.REACT_APP_ANCHOR_PROGRAM_ID
+const REACT_APP_ANCHOR_ADMIN_ACCOUNT =
+  process.env.REACT_APP_ANCHOR_ADMIN_ACCOUNT
+
 // Wormhole Config
 const WORMHOLE_RPC_HOSTS = process.env.REACT_APP_WORMHOLE_RPC_HOSTS
 const ETH_BRIDGE_ADDRESS = process.env.REACT_APP_ETH_BRIDGE_ADDRESS
@@ -424,6 +429,7 @@ class AudiusBackend {
     const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
     const { ethWeb3Config } = AudiusBackend.getEthWeb3Config()
     const { solanaWeb3Config } = AudiusBackend.getSolanaWeb3Config()
+    const { solanaAudiusDataConfig } = AudiusBackend.getSolanaAudiusDataConfig()
     const { wormholeConfig } = AudiusBackend.getWormholeConfig()
 
     let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
@@ -452,6 +458,7 @@ class AudiusBackend {
         web3Config,
         ethWeb3Config,
         solanaWeb3Config,
+        solanaAudiusDataConfig,
         wormholeConfig,
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
           null,
@@ -583,6 +590,23 @@ class AudiusBackend {
         rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA,
         rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA,
         useRelay: true
+      })
+    }
+  }
+
+  static getSolanaAudiusDataConfig() {
+    if (!REACT_APP_ANCHOR_PROGRAM_ID || !REACT_APP_ANCHOR_ADMIN_ACCOUNT) {
+      console.error('Missing solana audius data config')
+      return {
+        error: true
+      }
+    }
+
+    return {
+      error: false,
+      solanaAudiusDataConfig: AudiusLibs.configSolanaAudiusData({
+        programId: REACT_APP_ANCHOR_PROGRAM_ID,
+        adminAccount: REACT_APP_ANCHOR_ADMIN_ACCOUNT
       })
     }
   }
