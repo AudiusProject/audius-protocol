@@ -1,7 +1,7 @@
 """index reactions
 
 Revision ID: 35198266d709
-Revises: 378ef6680606
+Revises: 5ea8fd4ae1fb
 Create Date: 2022-05-04 19:53:54.350351
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "35198266d709"
-down_revision = "378ef6680606"
+down_revision = "5ea8fd4ae1fb"
 branch_labels = None
 depends_on = None
 
