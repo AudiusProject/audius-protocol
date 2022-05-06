@@ -6,6 +6,7 @@ from flask_restx import reqparse
 from src import api_helpers
 from src.models import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
+from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -286,6 +287,22 @@ def extend_undisbursed_challenge(undisbursed_challenge: UndisbursedChallengeResp
         new_undisbursed_challenge["user_id"]
     )
     return new_undisbursed_challenge
+
+
+def extend_supporter(support: SupportResponse):
+    return {
+        "rank": support["rank"],
+        "amount": support["amount"],
+        "sender": extend_user(support["user"]),
+    }
+
+
+def extend_supporting(support: SupportResponse):
+    return {
+        "rank": support["rank"],
+        "amount": support["amount"],
+        "receiver": extend_user(support["user"]),
+    }
 
 
 def abort_bad_path_param(param, namespace):
