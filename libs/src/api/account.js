@@ -23,6 +23,7 @@ class Account extends Base {
     this.changePassword = this.changePassword.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
+    this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
     this.handleIsValid = this.handleIsValid.bind(this)
@@ -250,6 +251,15 @@ class Account extends Base {
   async checkIfEmailRegistered (email) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return this.identityService.checkIfEmailRegistered(email)
+  }
+
+  /**
+   * Get the current user's email address
+   * @returns {{email: string | undefined | null}}
+   */
+  async getUserEmail () {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return this.identityService.getUserEmail()
   }
 
   /**

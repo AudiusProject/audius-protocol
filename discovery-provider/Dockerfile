@@ -30,6 +30,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add docker && \
     apk add nodejs && \
     apk add npm && \
+    apk add curl && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
 
 COPY requirements.txt requirements.txt
@@ -86,7 +87,7 @@ COPY scripts/wait /wait
 RUN chmod +x /wait
 
 # Permission scripts directory
-RUN chmod +x scripts
+RUN chmod +x scripts/*
 
 RUN mkdir -p ./build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
@@ -105,5 +106,8 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
 RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
+
+HEALTHCHECK --interval=5s --timeout=5s \
+    CMD curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

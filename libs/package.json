@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.112",
+  "version": "1.2.115",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@audius/anchor-audius-data": "0.0.1",
+    "@audius/anchor-audius-data": "0.0.2",
     "@audius/hedgehog": "1.0.12",
     "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",

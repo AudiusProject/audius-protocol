@@ -18,6 +18,7 @@ import {
   createUser,
   createContentNode,
   updateAdmin,
+  updateTrack
 } from "../lib/lib";
 import {
   findDerivedPair,
@@ -214,8 +215,7 @@ async function timeManageEntity(
       let tx;
 
       console.log(
-        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${
-          args.id
+        `Transacting on entity with type=${JSON.stringify(entityType)}, id=${args.id
         }`
       );
 
@@ -236,6 +236,22 @@ async function timeManageEntity(
           userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
           authorityDelegationStatusAccount:
             args.authorityDelegationStatusAccount,
+        });
+        tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
+      } else if (manageAction == ManagementActions.update && entityType == EntityTypesEnumValues.track
+      ) {
+        const transaction = updateTrack({
+          id: args.id,
+          program: args.program,
+          baseAuthorityAccount: args.baseAuthorityAccount,
+          userAuthorityPublicKey: userAuthorityKeypair.publicKey,
+          userAccount: args.userAccount,
+          metadata: args.metadata,
+          userId: args.userId,
+          adminAccount: args.adminAccount,
+          bumpSeed: args.bumpSeed,
+          userAuthorityDelegateAccount: args.userAuthorityDelegateAccount,
+          authorityDelegationStatusAccount: args.authorityDelegationStatusAccount,
         });
         tx = await provider.sendAndConfirm(transaction, [userAuthorityKeypair]);
       } else if (
@@ -318,6 +334,7 @@ const functionTypes = Object.freeze({
   initUserSolPubkey: "initUserSolPubkey",
   createUser: "createUser",
   createTrack: "createTrack",
+  updateTrack: "updateTrack",
   getTrackId: "getTrackId",
   createPlaylist: "createPlaylist",
   updatePlaylist: "updatePlaylist",
@@ -615,7 +632,7 @@ const main = async () => {
         promises.push(
           timeManageEntity(
             {
-              id: randomId(),
+              id: new anchor.BN(options.id),
               baseAuthorityAccount,
               adminAccount: adminAccountKeypair.publicKey,
               userId: userId,
@@ -630,6 +647,53 @@ const main = async () => {
             },
             cliVars.provider,
             ManagementActions.create,
+            EntityTypesEnumValues.track,
+            userSolKeypair
+          )
+        );
+      }
+      const start = Date.now();
+      await Promise.all(promises);
+      console.log(`Processed ${numTracks} tracks in ${Date.now() - start}ms`);
+      break;
+    }
+    case functionTypes.updateTrack: {
+      if (!options.metadata) {
+        throw new Error("Missing metadata in createTrack!");
+      }
+
+      const numTracks = options.numTracks ?? 1;
+      console.log(
+        `Number of tracks = ${numTracks}, Target User = ${options.userAccount}`
+      );
+
+      const promises = [];
+      const { baseAuthorityAccount, bumpSeed, derivedAddress } =
+        await findDerivedPair(
+          cliVars.programID,
+          adminAccountKeypair.publicKey,
+          userIdSeed
+        );
+
+      for (let i = 0; i < numTracks; i++) {
+        promises.push(
+          timeManageEntity(
+            {
+              id: new anchor.BN(options.id),
+              baseAuthorityAccount,
+              adminAccount: adminAccountKeypair.publicKey,
+              userId: userId,
+              program: cliVars.program,
+              bumpSeed: bumpSeed,
+              metadata: options.metadata,
+              userAuthorityPublicKey: userSolKeypair.publicKey,
+              userAccount: derivedAddress,
+              userAuthorityDelegateAccount: userAuthorityDelegateAccount,
+              authorityDelegationStatusAccount:
+                authorityDelegationStatusAccountPDA,
+            },
+            cliVars.provider,
+            ManagementActions.update,
             EntityTypesEnumValues.track,
             userSolKeypair
           )
