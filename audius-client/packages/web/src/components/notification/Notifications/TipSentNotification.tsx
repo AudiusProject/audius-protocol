@@ -17,7 +17,6 @@ import { IconTip } from './icons'
 const messages = {
   title: 'Your Tip Was Sent!',
   sent: 'You successfully sent a tip of',
-  audio: '$AUDIO',
   to: 'to'
 }
 
