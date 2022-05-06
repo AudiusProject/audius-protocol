@@ -40,7 +40,7 @@ def setup(
             *(["-c", config] if config else []),
             *(["-r", protocol_git_ref] if protocol_git_ref else []),
             *(["-l", client_git_ref] if client_git_ref else []),
-            *(["-f"] if fast else []),
+            *(["-f", "true"] if fast else []),
             *(["-s", "true"] if spot_instance else []),
             service,
             name,
@@ -175,7 +175,7 @@ def main():
 
     try:
         args = parser.parse_args()
-        print(args)
+        print("args", args)
 
         if args.operation == "create-instance":
             create_instance(
