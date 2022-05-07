@@ -165,9 +165,6 @@ class SnapbackSM {
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
     // Add event handlers for state machine queue
-    this.stateMachineQueue.on('global:error', (error) => {
-      this.logError(`stateMachineQueue Job Error - ${error}`)
-    })
     this.stateMachineQueue.on('global:waiting', (jobId) => {
       this.log(`stateMachineQueue Job Waiting - ID ${jobId}`)
     })
@@ -179,13 +176,30 @@ class SnapbackSM {
         `stateMachineQueue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
       )
     })
+
+    // Re-queue state machine job when the current job fails or succeeds
+    this.stateMachineQueue.on('global:error', (error) => {
+      this.logError(`stateMachineQueue Job Error - ${error}`)
+      this.log(`stateMachineQueue adding another job after error`)
+      this.stateMachineQueue.add(
+        { startTime: Date.now() }
+      )
+    })
     this.stateMachineQueue.on('global:completed', (jobId, result) => {
       this.log(
         `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}`
       )
+      this.log(`stateMachineQueue adding another job after successful completion`)
+      this.stateMachineQueue.add(
+        { startTime: Date.now() }
+      )
     })
     this.stateMachineQueue.on('global:failed', (jobId, err) => {
       this.logError(`stateMachineQueue Job Failed - ID ${jobId} - Error ${err}`)
+      this.log(`stateMachineQueue adding another job after previous job failed`)
+      this.stateMachineQueue.add(
+        { startTime: Date.now() }
+      )
     })
 
     // Add stalled event handler for all queues
@@ -281,14 +295,10 @@ class SnapbackSM {
       }
     )
 
-    // Enqueue stateMachineQueue jobs on a cron, after an initial delay
+    // Enqueue initial after an initial delay. This job requeues itself upon completion
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
       /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
-    )
-    await this.stateMachineQueue.add(
-      /** data */ { startTime: Date.now() },
-      /** opts */ { repeat: { every: this.snapbackJobInterval } }
     )
 
     this.log(
@@ -1174,6 +1184,7 @@ class SnapbackSM {
           { numUpdateReplicaOpsIssued }
         )
       } catch (e) {
+        console.log(e.stack)
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
           jobId,
