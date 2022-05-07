@@ -309,6 +309,9 @@ def extend_tip(tip):
     new_tip = tip.copy()
     new_tip["sender"] = extend_user(tip["sender"])
     new_tip["receiver"] = extend_user(tip["receiver"])
+    new_tip["followee_supporters"] = [
+        {"user_id": encode_int_id(id)} for id in new_tip["followee_supporters"]
+    ]
     return new_tip
 
 

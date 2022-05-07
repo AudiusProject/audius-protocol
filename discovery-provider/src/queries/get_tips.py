@@ -1,14 +1,14 @@
 import logging
-from typing import List, Optional, TypedDict
+from datetime import datetime
+from typing import List, Optional, Tuple, TypedDict, Union, cast
 
-from sqlalchemy import or_
-from sqlalchemy.orm import aliased
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Query, aliased
 from sqlalchemy.orm.session import Session
-from src.models import AggregateUser, Follow, User, UserTip
+from src.models import AggregateUser, AggregateUserTips, Follow, User, UserTip
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import paginate_query, populate_user_metadata
 from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import query_result_to_list
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +24,26 @@ class GetTipsArgs(TypedDict):
     min_slot: int
 
 
+class TipResult(TypedDict):
+    amount: int
+    sender: str
+    receiver: str
+    slot: int
+    created_at: datetime
+    followee_supporters: List[str]
+    total_supporter_count: int
+
+
 def _get_tips(session: Session, args: GetTipsArgs):
-    query = session.query(UserTip)
-    if (
-        "user_id" in args
-        and args["user_id"] is not None
-        and args["current_user_follows"] is not None
-    ):
+    query: Query = (
+        session.query(UserTip, func.count(AggregateUserTips.sender_user_id))
+        .join(
+            AggregateUserTips,
+            AggregateUserTips.receiver_user_id == UserTip.receiver_user_id,
+        )
+        .group_by(UserTip)
+    )
+    if "user_id" in args and args["user_id"] is not None:
         followers_query = (
             session.query(Follow.followee_user_id)
             .filter(
@@ -40,28 +53,36 @@ def _get_tips(session: Session, args: GetTipsArgs):
             )
             .cte("followers")
         )
-        FollowSender = aliased(followers_query)
-        FollowReceiver = aliased(followers_query)
-        filter_cond = []
-        if (
-            args["current_user_follows"] == "receiver"
-            or args["current_user_follows"] == "sender_or_receiver"
-        ):
-            query = query.outerjoin(
-                FollowReceiver,
-                UserTip.receiver_user_id == FollowReceiver.c.followee_user_id,
-            )
-            filter_cond.append(FollowReceiver.c.followee_user_id != None)
-        if (
-            args["current_user_follows"] == "sender"
-            or args["current_user_follows"] == "sender_or_receiver"
-        ):
-            query = query.outerjoin(
-                FollowSender,
-                UserTip.sender_user_id == FollowSender.c.followee_user_id,
-            )
-            filter_cond.append(FollowSender.c.followee_user_id != None)
-        query = query.filter(or_(*filter_cond))
+        FollowersForAgg = aliased(followers_query, name="follows_for_agg_tips")
+        query = query.add_columns(
+            func.array_agg(FollowersForAgg.c.followee_user_id)
+        ).outerjoin(
+            FollowersForAgg,
+            FollowersForAgg.c.followee_user_id == AggregateUserTips.sender_user_id,
+        )
+        if "current_user_follows" in args and args["current_user_follows"] is not None:
+            FollowSender = aliased(followers_query, name="follows_for_sender")
+            FollowReceiver = aliased(followers_query, name="follows_for_receiver")
+            filter_cond = []
+            if (
+                args["current_user_follows"] == "receiver"
+                or args["current_user_follows"] == "sender_or_receiver"
+            ):
+                query = query.outerjoin(
+                    FollowReceiver,
+                    UserTip.receiver_user_id == FollowReceiver.c.followee_user_id,
+                )
+                filter_cond.append(FollowReceiver.c.followee_user_id != None)
+            if (
+                args["current_user_follows"] == "sender"
+                or args["current_user_follows"] == "sender_or_receiver"
+            ):
+                query = query.outerjoin(
+                    FollowSender,
+                    UserTip.sender_user_id == FollowSender.c.followee_user_id,
+                )
+                filter_cond.append(FollowSender.c.followee_user_id != None)
+            query = query.filter(or_(*filter_cond))
 
     if (
         "receiver_min_followers" in args
@@ -95,20 +116,20 @@ def _get_tips(session: Session, args: GetTipsArgs):
 
     query = query.order_by(UserTip.slot.desc())
     query = paginate_query(query)
-    logger.debug(f"get_tips.py | query: {query}")
     tips_results: List[UserTip] = query.all()
     return tips_results
 
 
-def get_tips(args: GetTipsArgs):
+def get_tips(args: GetTipsArgs) -> List[TipResult]:
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        logger.debug(f"get_tips.py | {args}")
-        tips_results = _get_tips(session, args)
+        tips_results: Union[
+            List[Tuple[UserTip, int, List[str]]], List[Tuple[UserTip, int]]
+        ] = _get_tips(session, args)
         user_ids = set()
-        for tip in tips_results:
-            user_ids.add(tip.sender_user_id)
-            user_ids.add(tip.receiver_user_id)
+        for result in tips_results:
+            user_ids.add(result[0].sender_user_id)
+            user_ids.add(result[0].receiver_user_id)
         users = get_unpopulated_users(session, user_ids)
         users = populate_user_metadata(
             session, user_ids, users, args["user_id"] if "user_id" in args else None
@@ -116,8 +137,26 @@ def get_tips(args: GetTipsArgs):
         users_map = {}
         for user in users:
             users_map[user["user_id"]] = user
-        tips = query_result_to_list(tips_results)
-        for tip in tips:
-            tip["sender"] = users_map[tip["sender_user_id"]]
-            tip["receiver"] = users_map[tip["receiver_user_id"]]
+
+        # Not using model_to_dictionary() here because TypedDict complains about dynamic keys
+        tips: List[TipResult] = [
+            {
+                "amount": result[0].amount,
+                "sender": users_map[result[0].sender_user_id],
+                "receiver": users_map[result[0].receiver_user_id],
+                "total_supporter_count": result[1],
+                "followee_supporters": list(
+                    filter(
+                        lambda id: id is not None,
+                        # Have to cast until https://github.com/python/mypy/issues/1178 is fixed
+                        cast(Tuple[UserTip, int, List[str]], result)[2],
+                    )
+                )
+                if len(result) > 2
+                else [],
+                "slot": result[0].slot,
+                "created_at": result[0].created_at,
+            }
+            for result in tips_results
+        ]
         return tips

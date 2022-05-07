@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     extend_tip,
+    make_full_response,
     make_response,
     pagination_with_current_user_parser,
     success_response,
@@ -61,13 +62,21 @@ tip_response = ns.model(
     },
 )
 
-full_tip_response = ns.clone(
+supporter_reference = full_ns.model(
+    "supporter_reference", {"user_id": fields.String(required=True)}
+)
+
+full_tip_response = full_ns.clone(
     "full_tip",
     tip_response,
     {
         "sender": fields.Nested(user_model_full, required=True),
         "receiver": fields.Nested(user_model_full, required=True),
         "slot": fields.Integer(required=True),
+        "followee_supporters": fields.List(
+            fields.Nested(supporter_reference), required=True
+        ),
+        "total_supporter_count": fields.Integer(required=True),
     },
 )
 
@@ -94,7 +103,7 @@ class Tips(Resource):
         return success_response(tips)
 
 
-full_get_tips_response = make_response(
+full_get_tips_response = make_full_response(
     "get_tips_response", full_ns, fields.List(fields.Nested(full_tip_response))
 )
 
