@@ -8,6 +8,8 @@ from src.api.v1.playlists import full_ns as full_playlists_ns
 from src.api.v1.playlists import ns as playlists_ns
 from src.api.v1.resolve import ns as resolve_ns
 from src.api.v1.search import full_ns as full_search_ns
+from src.api.v1.tips import full_ns as full_tips_ns
+from src.api.v1.tips import ns as tips_ns
 from src.api.v1.tracks import full_ns as full_tracks_ns
 from src.api.v1.tracks import ns as tracks_ns
 from src.api.v1.users import full_ns as full_users_ns
@@ -32,6 +34,7 @@ api_v1.add_namespace(users_ns)
 api_v1.add_namespace(playlists_ns)
 api_v1.add_namespace(tracks_ns)
 api_v1.add_namespace(challenges_ns)
+api_v1.add_namespace(tips_ns)
 api_v1.add_namespace(metrics_ns)
 api_v1.add_namespace(resolve_ns)
 
@@ -42,3 +45,4 @@ api_v1_full.add_namespace(full_tracks_ns)
 api_v1_full.add_namespace(full_playlists_ns)
 api_v1_full.add_namespace(full_users_ns)
 api_v1_full.add_namespace(full_search_ns)
+api_v1_full.add_namespace(full_tips_ns)

@@ -304,6 +304,13 @@ def extend_supporting(support: SupportResponse):
         "receiver": extend_user(support["user"]),
     }
 
+    
+def extend_tip(tip):
+    new_tip = tip.copy()
+    new_tip["sender"] = extend_user(tip["sender"])
+    new_tip["receiver"] = extend_user(tip["receiver"])
+    return new_tip
+
 
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
