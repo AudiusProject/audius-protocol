@@ -29,8 +29,9 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
+      # This has to be one large run block because CircleCI doesn't preserve state across run steps
       - run:
-          name: Setup gcloud service account authentication
+          name: Bake GCP Dev Image
           command: |
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -77,7 +78,7 @@ jobs:
               --storage-location=us
 
             # Delete GCP box
-            "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
+            gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
             # Delete GCP firewall
             gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
@@ -94,8 +95,9 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASS
     steps:
+      # This has to be one large run block because CircleCI doesn't preserve state across run steps
       - run:
-          name: Setup gcloud service account authentication
+          name: Test mad-dog on GCP
           command: |
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
@@ -131,7 +133,7 @@ jobs:
             gcloud compute instances stop $GCLOUD_VM_NAME
 
             # Delete GCP box
-            "gcloud compute instances delete $GCLOUD_VM_NAME --quiet"
+            gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
             # Delete GCP firewall
             gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
