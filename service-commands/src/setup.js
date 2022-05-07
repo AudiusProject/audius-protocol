@@ -647,7 +647,7 @@ const allUp = async ({
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP, { waitSec: 1 }],
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP, { waitSec: 3 }],
     [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
