@@ -1,6 +1,7 @@
 {
   "all": {
     "down": [
+      "A run libs down",
       "SERVICES=$(docker ps -aq); if [ \"$SERVICES\" != \"\" ]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
       "docker container prune -f",
       "docker volume prune -f",
@@ -299,6 +300,12 @@
       "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
       "echo 'Stopping TN...'",
       "cd $TN_DIR; . scripts/stop.sh dev"
+    ]
+  },
+  "libs": {
+    "up": ["echo 'Process spawned in background using Node.'"],
+    "down": [
+      "kill -9 $(ps x -o \"%r %a\" | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}')"
     ]
   }
 }

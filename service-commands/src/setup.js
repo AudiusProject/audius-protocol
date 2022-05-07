@@ -1,4 +1,4 @@
-const { exec } = require('child_process')
+const { exec, spawn } = require('child_process')
 const fs = require('fs')
 const colors = require('colors')
 const config = require('../config/config.js')
@@ -161,7 +161,8 @@ const Service = Object.freeze({
   INIT_REPOS: 'init-repos',
   USER_REPLICA_SET_MANAGER: 'user-replica-set-manager',
   AAO: 'aao',
-  TN: 'tn'
+  TN: 'tn',
+  LIBS: 'libs'
 })
 
 // gets a service command, interpolating service names
@@ -210,6 +211,25 @@ const runSetupCommand = async (
   if (setupCommand === SetupCommand.HEALTH_CHECK_RETRY) {
     await performHealthCheckWithRetry(service, serviceNumber)
     return
+  }
+
+  if (service === Service.LIBS && setupCommand === SetupCommand.UP) {
+    const libsLog = await fs.promises.open(
+      `${PROTOCOL_DIR}/service-commands/libs.log`,
+      'w'
+    )
+    const subprocess = await spawn(
+      `${PROTOCOL_DIR}/service-commands/scripts/run-libs.sh`,
+      [],
+      {
+        detached: true,
+        stdio: ['ignore', libsLog, libsLog],
+        cwd: `${PROTOCOL_DIR}/libs`
+      }
+    )
+    subprocess.unref()
+    console.log(`Spawned libs watcher. PID: ${subprocess.pid}`.info)
+    libsLog.close()
   }
 
   const command = commands[setupCommand]
@@ -627,7 +647,7 @@ const allUp = async ({
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.UP, { waitSec: 1 }],
     [Service.SOLANA_VALIDATOR_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
@@ -635,7 +655,8 @@ const allUp = async ({
     [Service.IPFS, SetupCommand.UP],
     [Service.IPFS_2, SetupCommand.UP],
     [Service.CONTRACTS, SetupCommand.UP],
-    [Service.ETH_CONTRACTS, SetupCommand.UP]
+    [Service.ETH_CONTRACTS, SetupCommand.UP],
+    [Service.LIBS, SetupCommand.UP]
   ]
 
   if (buildSolana) {
