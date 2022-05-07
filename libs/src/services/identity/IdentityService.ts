@@ -141,6 +141,19 @@ export class IdentityService {
     })
   }
 
+  async getUserEmail() {
+    const headers = await this._signData()
+    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
+      return await this._makeRequest<{ email: string | undefined | null }>({
+        url: '/user/email',
+        method: 'get',
+        headers
+      })
+    } else {
+      throw new Error('Cannot get user email - user is not authenticated')
+    }
+  }
+
   /**
    * Associates a user with a twitter uuid.
    * @param uuid from the Twitter API
@@ -432,17 +445,7 @@ export class IdentityService {
 
   // Relays tx data through the solana relay endpoint
   async solanaRelay(transactionData: TransactionData) {
-    const headers: {
-      [AuthHeaders.MESSAGE]?: string
-      [AuthHeaders.SIGNATURE]?: string
-    } = {}
-    if (this.web3Manager) {
-      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-      const message = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager?.sign(message)
-      headers[AuthHeaders.MESSAGE] = message
-      headers[AuthHeaders.SIGNATURE] = signature
-    }
+    const headers = await this._signData()
 
     return await this._makeRequest({
       url: '/solana/relay',
@@ -522,6 +525,20 @@ export class IdentityService {
         )
       }
       throw error
+    }
+  }
+
+  async _signData() {
+    if (this.web3Manager) {
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const message = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager?.sign(message)
+      return {
+        [AuthHeaders.MESSAGE]: message,
+        [AuthHeaders.SIGNATURE]: signature
+      }
+    } else {
+      return {}
     }
   }
 }

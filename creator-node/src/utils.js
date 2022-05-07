@@ -97,6 +97,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 }
 
 /**
+ * Fetches a CID from the Content Node network
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
@@ -163,19 +164,21 @@ async function findCIDInNetwork(
         if (cid !== expectedCID) {
           await fs.unlink(filePath)
           logger.error(
-            `findCIDInNetwork - File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+            `findCIDInNetwork - File contents from ${node.endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
           )
+        } else {
+          found = true
+          logger.info(
+            `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+          )
+          break
         }
-        found = true
-        logger.info(
-          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
-        )
-        break
       }
     } catch (e) {
-      logger.error(`findCIDInNetwork error - ${e.toString()}`)
-      // since this is a function running in the background intended to fix state, don't error
-      // and stop the flow of execution for functions that call it
+      // Do not error and stop the flow of execution for functions that call it
+      logger.error(
+        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
+      )
       continue
     }
   }

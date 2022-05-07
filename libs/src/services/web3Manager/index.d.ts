@@ -16,6 +16,7 @@ class Web3Manager {
   setWeb3(web3: Web3)
   web3Config: Web3Config
   web3: Web3
+  ownerWallet: any
 }
 
 export default Web3Manager

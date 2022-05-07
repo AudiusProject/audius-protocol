@@ -1,7 +1,10 @@
+import logging
 from time import time
 from typing import Callable, Dict
 
 from prometheus_client import Gauge, Histogram
+
+logger = logging.getLogger(__name__)
 
 
 class PrometheusType:
@@ -73,5 +76,8 @@ class PrometheusMetric:
 
     @classmethod
     def populate_collectors(cls):
-        for collector in cls.registered_collectors.values():
-            collector()
+        for name, collector in cls.registered_collectors.items():
+            try:
+                collector()
+            except:
+                logger.exception(f"Failure to collect '{name}'")
