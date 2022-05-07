@@ -1,9 +1,9 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const { createBullBoard } = require('@bull-board/api');
-const { BullAdapter } = require('@bull-board/api/bullAdapter');
-const { ExpressAdapter } = require('@bull-board/express');
+const { createBullBoard } = require('@bull-board/api')
+const { BullAdapter } = require('@bull-board/api/bullAdapter')
+const { ExpressAdapter } = require('@bull-board/express')
 
 const DiskManager = require('./diskManager')
 const ImageProcessingQueue = require('./ImageProcessingQueue')
@@ -100,7 +100,7 @@ const initializeApp = (port, serviceRegistry) => {
 
 const setupBullMonitoring = (serviceRegistry) => {
   logger.info('Setting up Bull queue monitoring...')
-  const serverAdapter = new ExpressAdapter();
+  const serverAdapter = new ExpressAdapter()
   const {
     snapbackSM,
     syncQueue: syncProcessingQueueClass,
@@ -117,7 +117,7 @@ const setupBullMonitoring = (serviceRegistry) => {
   const { queue: monitoringQueue } = monitoringQueueClass
   const { queue: sessionExpirationQueue } = sessionExpirationQueueClass
   const { queue: skippedCidsRetryQueue } = skippedCidsRetryQueueClass
-  
+
   createBullBoard({
     queues: [
       new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
@@ -132,8 +132,8 @@ const setupBullMonitoring = (serviceRegistry) => {
       new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true })
     ],
     serverAdapter: serverAdapter
-  });
-  serverAdapter.setBasePath('/health/bull')  
+  })
+  serverAdapter.setBasePath('/health/bull')
   app.use('/health/bull', serverAdapter.getRouter())
 }
 
