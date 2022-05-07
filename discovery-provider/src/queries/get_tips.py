@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional, TypedDict
 
-from sqlalchemy import and_, or_
+from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 from src.models import AggregateUser, Follow, User, UserTip
@@ -31,47 +31,37 @@ def _get_tips(session: Session, args: GetTipsArgs):
         and args["user_id"] is not None
         and args["current_user_follows"] is not None
     ):
-        FollowSender = aliased(Follow)
-        FollowReceiver = aliased(Follow)
+        followers_query = (
+            session.query(Follow.followee_user_id)
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
+                Follow.follower_user_id == args["user_id"],
+            )
+            .cte("followers")
+        )
+        FollowSender = aliased(followers_query)
+        FollowReceiver = aliased(followers_query)
+        filter_cond = []
         if (
             args["current_user_follows"] == "receiver"
             or args["current_user_follows"] == "sender_or_receiver"
         ):
             query = query.outerjoin(
                 FollowReceiver,
-                UserTip.receiver_user_id == FollowReceiver.followee_user_id,
+                UserTip.receiver_user_id == FollowReceiver.c.followee_user_id,
             )
+            filter_cond.append(FollowReceiver.c.followee_user_id != None)
         if (
             args["current_user_follows"] == "sender"
             or args["current_user_follows"] == "sender_or_receiver"
         ):
             query = query.outerjoin(
                 FollowSender,
-                UserTip.sender_user_id == FollowSender.followee_user_id,
+                UserTip.sender_user_id == FollowSender.c.followee_user_id,
             )
-        if args["current_user_follows"] == "sender":
-            query = query.filter(
-                FollowSender.follower_user_id == args["user_id"],
-                FollowSender.is_current == True,
-            )
-        elif args["current_user_follows"] == "receiver":
-            query = query.filter(
-                FollowReceiver.follower_user_id == args["user_id"],
-                FollowReceiver.is_current == True,
-            )
-        elif args["current_user_follows"] == "sender_or_receiver":
-            query = query.filter(
-                or_(
-                    and_(
-                        FollowReceiver.follower_user_id == args["user_id"],
-                        FollowReceiver.is_current == True,
-                    ),
-                    and_(
-                        FollowSender.follower_user_id == args["user_id"],
-                        FollowSender.is_current == True,
-                    ),
-                )
-            )
+            filter_cond.append(FollowSender.c.followee_user_id != None)
+        query = query.filter(or_(*filter_cond))
 
     if (
         "receiver_min_followers" in args
