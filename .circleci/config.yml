@@ -61,13 +61,13 @@ jobs:
               A run init-repos up;
               A up;
               A down;
-              exit $?;
+              exit;
             EOF
 
-            EXIT_CODE=$($?)
-            if [ EXIT_CODE -ne 0 ]; then
-              exit EXIT_CODE
-            fi
+            # EXIT_CODE=$($?)
+            # if [ EXIT_CODE -ne 0 ]; then
+            #   exit EXIT_CODE
+            # fi
 
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
@@ -131,13 +131,13 @@ jobs:
               cd /home/ubuntu/audius-protocol/mad-dog;
               A up;
               npm run start << parameters.mad-dog-type >> verbose;
-              exit $?;
+              exit;
             EOF
 
-            EXIT_CODE=$($?)
-            if [ EXIT_CODE -ne 0 ]; then
-              exit EXIT_CODE
-            fi
+            # EXIT_CODE=$($?)
+            # if [ EXIT_CODE -ne 0 ]; then
+            #   exit EXIT_CODE
+            # fi
 
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
