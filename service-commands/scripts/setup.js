@@ -92,9 +92,7 @@ program
     const numDiscoveryNodes = parseInt(opts.numDn)
     const { verbose, parallel, withAao: withAAO, withSolanaProgramsBuild: buildSolana } = opts
     if (parallel) {
-      // Trying to bring up services in parallel will cause potential problems as the Docker compose files
-      // for various services, CN in particular, requires ENV vars to be set. If they override each other due to race
-      // conditions, then the services will be misconfigured or conflict.
+      // TODO: Further testing to prove --parallel works before recommending it
       console.log('Warning: --parallel is not yet supported.'.error)
     }
     await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, buildSolana, opts })
