@@ -775,7 +775,7 @@ const allUp = async ({
   if (buildDataEthContracts) {
     await runInSequence(prereqs, options)
   }
-  await runInSequence([Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP])
+  await runInSequence([[Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]])
 
   if (parallel) {
     const startProv = Date.now()
