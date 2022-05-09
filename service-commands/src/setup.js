@@ -748,7 +748,7 @@ const allUp = async ({
 
   const prereqs = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
-    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
+    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP]
   ]
   // Add Identity Service commands
   nodeUpCommands.push([[Service.IDENTITY_SERVICE, SetupCommand.UP]])
@@ -762,6 +762,7 @@ const allUp = async ({
     if (buildDataEthContracts) {
       nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
     }
+  }
 
   const start = Date.now()
 
