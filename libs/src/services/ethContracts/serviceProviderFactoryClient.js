@@ -15,9 +15,10 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     audiusTokenClient,
     stakingProxyClient,
     governanceClient,
+    logger = console,
     isDebug = false
   ) {
-    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, governanceClient)
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, governanceClient, logger)
     this.audiusTokenClient = audiusTokenClient
     this.stakingProxyClient = stakingProxyClient
     this.isDebug = isDebug

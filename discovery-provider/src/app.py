@@ -36,6 +36,7 @@ from src.queries import (
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.utils import helpers
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -396,6 +397,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_spl_token",
             "src.tasks.index_solana_user_data",
             "src.tasks.index_aggregate_tips",
+            "src.tasks.index_reactions",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -520,6 +522,10 @@ def configure_celery(celery, test_config=None):
             "index_aggregate_tips": {
                 "task": "index_aggregate_tips",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_reactions": {
+                "task": "index_reactions",
+                "schedule": timedelta(seconds=5),
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
@@ -583,6 +589,8 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
+    redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete(INDEX_REACTIONS_LOCK)
 
     logger.info("Redis instance initialized!")
 

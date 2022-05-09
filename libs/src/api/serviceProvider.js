@@ -94,6 +94,7 @@ class ServiceProvider extends Base {
     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
+      logger: this.logger,
       numberOfNodes,
       whitelist,
       blacklist,

@@ -103,19 +103,20 @@ class TrackTranscodeHandoffManager {
             fileNameNoExtension: req.fileNameNoExtension
           })
 
-        resp = localFilePaths
-
         if (
-          !resp.transcodeFilePath ||
-          !resp.segmentFileNames ||
-          !resp.m3u8FilePath
+          !localFilePaths ||
+          !localFilePaths.transcodeFilePath ||
+          !localFilePaths.segmentFileNames ||
+          !localFilePaths.m3u8FilePath
         ) {
           throw new Error(
             `Missing fields from transcode fetching response. Actual response=${JSON.stringify(
-              resp
+              localFilePaths
             )}`
           )
         }
+
+        resp = localFilePaths
 
         // If the responses are what we expect them to be, break out of the loop as transcode hand off
         // was successful
@@ -126,7 +127,6 @@ class TrackTranscodeHandoffManager {
             decisionTree
           )} err=${e.toString()}`
         )
-        console.error(e)
       }
     }
 

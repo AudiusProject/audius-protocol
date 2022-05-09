@@ -1,8 +1,8 @@
 const { ContractClient } = require('../contracts/ContractClient')
 
 class StakingProxyClient extends ContractClient {
-  constructor (ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, audiusTokenClient) {
-    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress)
+  constructor (ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, audiusTokenClient, logger = console) {
+    super(ethWeb3Manager, contractABI, contractRegistryKey, getRegistryAddress, logger)
     this.audiusTokenClient = audiusTokenClient
     this.toBN = ethWeb3Manager.getWeb3().utils.toBN
   }

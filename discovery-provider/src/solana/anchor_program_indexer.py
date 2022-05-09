@@ -109,6 +109,17 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 )
                 for user in existing_users:
                     db_models["users"][user.user_id] = [user]
+            if entity_ids["tracks"]:
+                existing_tracks = (
+                    session.query(Track)
+                    .filter(
+                        Track.is_current,
+                        Track.track_id.in_(list(entity_ids["tracks"])),
+                    )
+                    .all()
+                )
+                for track in existing_tracks:
+                    db_models["tracks"][track.track_id] = [track]
 
             # TODO: Find all other track/playlist/etc. models
 
@@ -212,7 +223,10 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "update_is_verified":
                     pass
                 elif instruction_name == "manage_entity":
-                    pass
+                    id = instruction["data"]["id"]
+                    entity_type = instruction["data"]["entity_type"]
+                    if isinstance(entity_type, entity_type.Track):
+                        entities["tracks"].add(id)
                 elif instruction_name == "create_content_node":
                     pass
                 elif instruction_name == "public_create_or_update_content_node":
@@ -273,21 +287,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             ):
                 return False
 
-        # check create track
-        if parsed_instruction["instruction_name"] == "manage_entity":
-            entity_type = parsed_instruction["data"]["entity_type"]
-            if entity_type.Track == type(entity_type):
-                track_id = parsed_instruction["data"]["id"]
-                with self.db.scoped_session() as session:
-                    track_exists = (
-                        session.query(Track.track_id)
-                        .filter(Track.track_id == track_id)
-                        .first()
-                        is not None
-                    )
-                    if track_exists:
-                        return False
-
         # TODO update entity
         # check if user owns track
 
@@ -339,10 +338,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         blacklisted_cids.add(cid)
                     else:
                         cids_txhash_set.add((cid, transaction["tx_sig"]))
-                        if (
-                            "user"
-                            in self.instruction_type[instruction["instruction_name"]]
-                        ):
+                        if "user" in instruction["instruction_name"]:
                             cid_to_entity_type[cid] = "user"
                             # TODO add logic to use existing user records: account -> endpoint
                             user_id = instruction["data"]["user_id"]

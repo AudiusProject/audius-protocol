@@ -10,9 +10,10 @@ class GovernedContractClient extends ContractClient {
     contractABI,
     contractRegistryKey,
     getRegistryAddress,
-    governanceClient
+    governanceClient,
+    logger = console
   ) {
-    super(web3Manager, contractABI, contractRegistryKey, getRegistryAddress)
+    super(web3Manager, contractABI, contractRegistryKey, getRegistryAddress, logger)
     this.governanceClient = governanceClient
   }
 

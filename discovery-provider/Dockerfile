@@ -30,6 +30,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add docker && \
     apk add nodejs && \
     apk add npm && \
+    apk add curl && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
 
 COPY requirements.txt requirements.txt
@@ -56,19 +57,19 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     mkdir /usr/local/openresty/logs
 
 # versions
-# alpine-sdk 1.0-r0
-# linux-headers 5.7.8-r0
-# bash 5.1.0-r0
-# libffi-dev 3.3-r2
-# redis 6.0.14-r0
-# sudo 1.9.5p2-r0
-# go-ipfs 0.8.0-r0
-# python3 3.8.10-r0
-# python3-dev 3.8.10-r0
-# py3-pip 20.3.4-r0
-# py3-wheel 0.36.2-r0
+# alpine-sdk 1.0-r1
+# linux-headers 5.10.41-r0
+# bash 5.1.16-r0
+# libffi-dev 3.4.2-r1
+# redis 6.2.7-r0
+# sudo 1.9.8_p2-r1
+# go-ipfs 0.10.0-r2
+# python3 3.9.7-r4
+# python3-dev 3.9.7-r4	
+# py3-pip 20.3.4-r1
+# py3-wheel 0.36.2-r2
 
-# libpq 11.12-r0
+# libpq 14.2-r0
 # postgresql 11.12-r0
 # postgresql-client 11.12-r0
 # postgresql-contrib 11.12-r0
@@ -86,7 +87,7 @@ COPY scripts/wait /wait
 RUN chmod +x /wait
 
 # Permission scripts directory
-RUN chmod +x scripts
+RUN chmod +x scripts/*
 
 RUN mkdir -p ./build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
@@ -105,5 +106,8 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
 RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
+
+HEALTHCHECK --interval=5s --timeout=5s \
+    CMD curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

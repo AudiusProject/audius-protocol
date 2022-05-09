@@ -1,6 +1,7 @@
 const packageJSON = require('../package.json')
 
 const { EthWeb3Manager } = require('./services/ethWeb3Manager')
+const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
@@ -292,6 +293,22 @@ class AudiusLibs {
   }
 
   /**
+   * Configures a solana audius-data
+   * @param {Object} config
+   * @param {string} config.programId Program ID of the audius data program
+   * @param {string} config.adminAccount Public Key of admin account
+   */
+  static configSolanaAudiusData ({
+    programId,
+    adminAccount,
+  }) {
+    return {
+      programId,
+      adminAccount,
+    }
+  }
+
+  /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
    * @example
@@ -305,6 +322,7 @@ class AudiusLibs {
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
+    solanaAudiusDataConfig,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -312,6 +330,7 @@ class AudiusLibs {
     wormholeConfig,
     captchaConfig,
     isServer,
+    logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
@@ -323,6 +342,7 @@ class AudiusLibs {
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.solanaWeb3Config = solanaWeb3Config
+    this.solanaAudiusDataConfig = solanaAudiusDataConfig
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -331,6 +351,7 @@ class AudiusLibs {
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
+    this.logger = logger
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils
@@ -344,6 +365,7 @@ class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
+    this.anchorAudiusData = null
     this.contracts = null
     this.creatorNode = null
 
@@ -411,6 +433,14 @@ class AudiusLibs {
       )
       await this.solanaWeb3Manager.init()
     }
+    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
+      this.solanaAudiusData = new SolanaAudiusData(
+        this.solanaAudiusDataConfig,
+        this.solanaWeb3Manager,
+        this.web3Manager
+      )
+      await this.solanaAudiusData.init()
+    }
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
@@ -422,6 +452,7 @@ class AudiusLibs {
         (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
         (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
         this.isServer,
+        this.logger,
         this.isDebug
       )
       contractsToInit.push(this.ethContracts.init())
@@ -430,7 +461,8 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer
+        this.isServer,
+        this.logger
       )
       contractsToInit.push(this.contracts.init())
     }
@@ -507,11 +539,13 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
+      this.anchorAudiusData,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,
       this.captcha,
-      this.isServer
+      this.isServer,
+      this.logger
     ]
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new User(
