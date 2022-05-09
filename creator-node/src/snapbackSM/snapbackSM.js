@@ -181,25 +181,21 @@ class SnapbackSM {
     this.stateMachineQueue.on('global:error', (error) => {
       this.logError(`stateMachineQueue Job Error - ${error}`)
       this.log(`stateMachineQueue adding another job after error`)
-      this.stateMachineQueue.add(
-        { startTime: Date.now() }
-      )
+      this.stateMachineQueue.add({ startTime: Date.now() })
     })
     this.stateMachineQueue.on('global:completed', (jobId, result) => {
       this.log(
         `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}`
       )
-      this.log(`stateMachineQueue adding another job after successful completion`)
-      this.stateMachineQueue.add(
-        { startTime: Date.now() }
+      this.log(
+        `stateMachineQueue adding another job after successful completion`
       )
+      this.stateMachineQueue.add({ startTime: Date.now() })
     })
     this.stateMachineQueue.on('global:failed', (jobId, err) => {
       this.logError(`stateMachineQueue Job Failed - ID ${jobId} - Error ${err}`)
       this.log(`stateMachineQueue adding another job after previous job failed`)
-      this.stateMachineQueue.add(
-        { startTime: Date.now() }
-      )
+      this.stateMachineQueue.add({ startTime: Date.now() })
     })
 
     // Add stalled event handler for all queues
@@ -1184,7 +1180,6 @@ class SnapbackSM {
           { numUpdateReplicaOpsIssued }
         )
       } catch (e) {
-        console.log(e.stack)
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
           jobId,
