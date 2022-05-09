@@ -20,7 +20,7 @@ export const SearchBar = () => {
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
-  const [clearable, setClearable] = useState(false)
+  const [clearable, setClearable] = useState(query !== '')
   const inputRef = useRef<TextInput>(null)
 
   const handleChangeText = useCallback(
