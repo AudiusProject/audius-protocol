@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import create_autospec
+from unittest.mock import MagicMock, create_autospec
 
 import pytest
 from construct import Container, ListContainer
@@ -17,6 +17,108 @@ PROGRAM_ID = shared_config["solana"]["anchor_data_program_id"]
 ADMIN_STORAGE_PUBLIC_KEY = shared_config["solana"]["anchor_admin_storage_public_key"]
 
 LABEL = "test_indexer"
+
+
+def test_get_transaction_batches_to_process_single_batch(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+    anchor_program_indexer.is_tx_in_db = MagicMock(return_value=True)
+
+    mock_transactions_history = {
+        "result": [
+            {"slot": 3, "signature": "sig3"},
+            {"slot": 2, "signature": "sig2"},
+            {"slot": 1, "signature": "sig1"},
+            {"slot": 0, "signature": "intersection"},
+        ]
+    }
+    solana_client_manager_mock.get_signatures_for_address.return_value = (
+        mock_transactions_history
+    )
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [
+        list(map(lambda x: x["signature"], mock_transactions_history["result"][:-1]))
+    ]
+
+
+def test_get_transaction_batches_to_process_empty_batch(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+
+    mock_transactions_history = {"result": []}
+    solana_client_manager_mock.get_signatures_for_address.return_value = (
+        mock_transactions_history
+    )
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [[]]
+
+
+def test_get_transaction_batches_to_process_interslot_batch(app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    cid_metadata_client_mock = create_autospec(CIDMetadataClient)
+    anchor_program_indexer = AnchorProgramIndexer(
+        PROGRAM_ID,
+        ADMIN_STORAGE_PUBLIC_KEY,
+        LABEL,
+        redis,
+        db,
+        solana_client_manager_mock,
+        cid_metadata_client_mock,
+    )
+    anchor_program_indexer.get_latest_slot = MagicMock(return_value=0)
+    anchor_program_indexer.is_tx_in_db = MagicMock(return_value=True)
+
+    mock_first_transactions_history = {
+        "result": [{"slot": 3, "signature": "sig3"}] * 500
+        + [{"slot": 2, "signature": "sig2"}] * 500
+    }
+    mock_second_transactions_history = {
+        "result": [{"slot": 2, "signature": "sig2"}] * 500
+        + [{"slot": 1, "signature": "sig1"}]
+        + [{"slot": 0, "signature": "intersection"}]
+    }
+
+    solana_client_manager_mock.get_signatures_for_address.side_effect = [
+        mock_first_transactions_history,
+        mock_second_transactions_history,
+    ]
+
+    transaction_batches = anchor_program_indexer.get_transaction_batches_to_process()
+    assert transaction_batches == [["sig1"], ["sig2"] * 1000, ["sig3"] * 500]
 
 
 def test_exists_in_db_and_get_latest_slot(app):  # pylint: disable=W0621
@@ -69,12 +171,12 @@ def test_validate_and_save_parsed_tx_records(app):
         {
             "tx_sig": "test_sig1",
             "tx_metadata": {"instructions": []},
-            "result": {"slot": 1},
+            "result": {"slot": 1, "meta": {"err": None}},
         },
         {
             "tx_sig": "test_sig2",
             "tx_metadata": {"instructions": []},
-            "result": {"slot": 2},
+            "result": {"slot": 2, "meta": {"err": None}},
         },
     ]
     anchor_program_indexer.validate_and_save_parsed_tx_records(

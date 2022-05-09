@@ -96,7 +96,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             )
 
             # Find user ids in DB and create dictionary mapping
-            entity_ids = self.extract_ids(parsed_transactions)
+            entity_ids = self.extract_ids(session, parsed_transactions)
             db_models: Dict = defaultdict(lambda: defaultdict(lambda: []))
             if entity_ids["users"]:
                 existing_users = (
@@ -109,6 +109,17 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 )
                 for user in existing_users:
                     db_models["users"][user.user_id] = [user]
+            if entity_ids["tracks"]:
+                existing_tracks = (
+                    session.query(Track)
+                    .filter(
+                        Track.is_current,
+                        Track.track_id.in_(list(entity_ids["tracks"])),
+                    )
+                    .all()
+                )
+                for track in existing_tracks:
+                    db_models["tracks"][track.track_id] = [track]
 
             # TODO: Find all other track/playlist/etc. models
 
@@ -126,6 +137,15 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         records: List[Any] = []
         for transaction in processed_transactions:
             instructions = transaction["tx_metadata"]["instructions"]
+            meta = transaction["result"]["meta"]
+            error = meta["err"]
+
+            if error:
+                self.msg(
+                    f"Skipping error transaction from chain {transaction['tx_sig']}"
+                )
+                continue
+
             for instruction in instructions:
                 instruction_name = instruction.get("instruction_name")
                 if instruction_name in transaction_handlers:
@@ -139,6 +159,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     )
 
         self.invalidate_old_records(session, db_models)
+        self.msg(f"Saving {records}")
         session.bulk_save_objects(records)
 
     def invalidate_old_records(self, session: Session, db_models: Dict[str, Dict]):
@@ -150,8 +171,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 User.is_current == True, User.user_id.in_(user_ids)
             ).update({"is_current": False}, synchronize_session="fetch")
 
-    def extract_ids(self, processed_transactions: List[ParsedTx]):
+    def extract_ids(self, session, processed_transactions: List[ParsedTx]):
         entities: Dict[str, Set[str]] = defaultdict(lambda: set())
+        user_storage_to_id = {}
 
         for transaction in processed_transactions:
             instructions = transaction["tx_metadata"]["instructions"]
@@ -162,13 +184,32 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "update_admin":
                     pass
                 elif instruction_name == "init_user":
-                    # No action to be taken here
-                    pass
+                    user_id = instruction.get("data").get("user_id")
+                    user_storage_account = str(
+                        instruction.get("account_names_map").get("user")
+                    )
+                    user_storage_to_id[user_storage_account] = user_id
+                    entities["users"].add(user_id)
 
                 elif instruction_name == "init_user_sol":
-                    # TODO: parse the tx data for their user id and fetch
-                    # user_id = instruction.get("data").get("id")
-                    pass
+                    # Fetch user_id and embed in instruction
+                    user_storage_account = str(
+                        instruction.get("account_names_map").get("user")
+                    )
+                    if user_storage_account not in user_storage_to_id:
+                        user_id = (
+                            session.query(User.user_id)
+                            .filter(
+                                User.is_current == True,
+                                User.user_storage_account == user_storage_account,
+                            )
+                            .first()
+                        )[0]
+                    else:
+                        user_id = user_storage_to_id[user_storage_account]
+
+                    instruction["user_id"] = user_id
+                    entities["users"].add(user_id)
 
                 elif instruction_name == "create_user":
                     # TODO: parse the tx data for their user id and fetch
@@ -182,7 +223,10 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 elif instruction_name == "update_is_verified":
                     pass
                 elif instruction_name == "manage_entity":
-                    pass
+                    id = instruction["data"]["id"]
+                    entity_type = instruction["data"]["entity_type"]
+                    if isinstance(entity_type, entity_type.Track):
+                        entities["tracks"].add(id)
                 elif instruction_name == "create_content_node":
                     pass
                 elif instruction_name == "public_create_or_update_content_node":
@@ -243,21 +287,6 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
             ):
                 return False
 
-        # check create track
-        if parsed_instruction["instruction_name"] == "manage_entity":
-            entity_type = parsed_instruction["data"]["entity_type"]
-            if entity_type.Track == type(entity_type):
-                track_id = parsed_instruction["data"]["id"]
-                with self.db.scoped_session() as session:
-                    track_exists = (
-                        session.query(Track.track_id)
-                        .filter(Track.track_id == track_id)
-                        .first()
-                        is not None
-                    )
-                    if track_exists:
-                        return False
-
         # TODO update entity
         # check if user owns track
 
@@ -309,10 +338,7 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         blacklisted_cids.add(cid)
                     else:
                         cids_txhash_set.add((cid, transaction["tx_sig"]))
-                        if (
-                            "user"
-                            in self.instruction_type[instruction["instruction_name"]]
-                        ):
+                        if "user" in instruction["instruction_name"]:
                             cid_to_entity_type[cid] = "user"
                             # TODO add logic to use existing user records: account -> endpoint
                             user_id = instruction["data"]["user_id"]

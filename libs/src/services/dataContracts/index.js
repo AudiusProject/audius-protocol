@@ -31,10 +31,11 @@ const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
 const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 
 class AudiusContracts {
-  constructor (web3Manager, registryAddress, isServer) {
+  constructor (web3Manager, registryAddress, isServer, logger = console) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
     this.isServer = isServer
+    this.logger = logger
 
     this.RegistryClient = new RegistryClient(
       this.web3Manager,
@@ -47,42 +48,48 @@ class AudiusContracts {
       this.web3Manager,
       UserFactoryABI,
       UserFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.TrackFactoryClient = new TrackFactoryClient(
       this.web3Manager,
       TrackFactoryABI,
       TrackFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.SocialFeatureFactoryClient = new SocialFeatureFactoryClient(
       this.web3Manager,
       SocialFeatureFactoryABI,
       SocialFeatureFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.PlaylistFactoryClient = new PlaylistFactoryClient(
       this.web3Manager,
       PlaylistFactoryABI,
       PlaylistFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.UserLibraryFactoryClient = new UserLibraryFactoryClient(
       this.web3Manager,
       UserLibraryFactoryABI,
       UserLibraryFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.IPLDBlacklistFactoryClient = new IPLDBlacklistFactoryClient(
       this.web3Manager,
       IPLDBlacklistFactoryABI,
       IPLDBlacklistFactoryRegistryKey,
-      this.getRegistryAddressForContract
+      this.getRegistryAddressForContract,
+      this.logger
     )
 
     this.contractClients = [
@@ -118,7 +125,8 @@ class AudiusContracts {
         this.web3Manager,
         UserReplicaSetManagerABI,
         UserReplicaSetManagerRegistryKey,
-        this.getRegistryAddressForContract
+        this.getRegistryAddressForContract,
+        this.logger
       )
       await this.UserReplicaSetManagerClient.init(selectNewEndpointOnRetry)
       if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {

@@ -1,4 +1,5 @@
 from .aggregate_interval_play import AggregateIntervalPlay
+from .aggregate_user_tips import AggregateUserTips
 from .milestone import Milestone
 from .models import (
     AggregateDailyAppNameMetrics,
@@ -60,12 +61,14 @@ from .models import (
 from .related_artist import RelatedArtist
 from .reward_manager import RewardManagerTransaction
 from .spl_token_transaction import SPLTokenTransaction
+from .supporter_rank_up import SupporterRankUp
 from .track_route import TrackRoute
 from .track_trending_score import TrackTrendingScore
 from .trending_param import TrendingParam
 from .trending_result import TrendingResult
 from .user_bank import UserBankAccount, UserBankTransaction
 from .user_events import UserEvents
+from .user_tip import UserTip
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -79,6 +82,7 @@ __all__ = [
     "AggregateMonthlyPlays",
     "AggregateTrack",
     "AggregateUser",
+    "AggregateUserTips",
     "AggregateIntervalPlay",
     "AppMetricsAllTime",
     "AppMetricsTrailingMonth",
@@ -120,6 +124,7 @@ __all__ = [
     "SPLTokenTransaction",
     "Stem",
     "TagTrackUserMatview",
+    "SupporterRankUp",
     "Track",
     "TrackRoute",
     "TrackTrendingScore",
@@ -134,5 +139,6 @@ __all__ = [
     "UserBankAccount",
     "UserEvents",
     "UserListeningHistory",
+    "UserTip",
     "WalletChain",
 ]

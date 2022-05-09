@@ -36,7 +36,7 @@ def get_challenges_dicts():
 
     # If we're in stage environment, set up overrides
     env = shared_config["discprov"]["env"]
-    if env == "stage":
+    if env == "stage" or env == "dev":
         stage_challenges_path = path.join(
             pathlib.Path(__file__).parent, f"challenges.{env}.json"
         )

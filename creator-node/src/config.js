@@ -3,6 +3,7 @@ const convict = require('convict')
 const fs = require('fs')
 const process = require('process')
 const path = require('path')
+const os = require('os')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -617,11 +618,17 @@ const config = convict({
     env: 'reconfigNodeWhitelist',
     default: ''
   },
-  minimumTranscodingSlotsAvailable: {
-    doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
+  maximumTranscodingActiveJobs: {
+    doc: 'The maximum number of active jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
     format: 'nat',
-    env: 'minimumTranscodingSlotsAvailable',
-    default: 1
+    env: 'maximumTranscodingActiveJobs',
+    default: os.cpus().length
+  },
+  maximumTranscodingWaitingJobs: {
+    doc: 'The maximum number of waiting jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
+    format: 'nat',
+    env: 'maximumTranscodingWaitingJobs',
+    default: os.cpus().length
   },
   trustedNotifierID: {
     doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',

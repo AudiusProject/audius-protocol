@@ -8,8 +8,8 @@
 3. cd to `/service-commands` and run `npm i && npm link && npm link @audius/libs`
 4. cd to `/mad-dog` and run `npm i && npm link @audius/libs @audius/service-commands`
 5. Install Pumba (chaos testing tool for Docker -- some but not all tests use it):
-    1. `sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`  
-    2. `chmod +x /usr/local/bin/pumba`
+    1. `sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`
+    2. `sudo chmod +x /usr/local/bin/pumba`
 
 ### Running Tests
 **Run all the tests in test suite**: 

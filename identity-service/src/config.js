@@ -660,6 +660,12 @@ const config = convict({
     default: '60000',
     env: 'solanaConfirmationTimeout'
   },
+  solanaAudiusAnchorDataProgramId: {
+    doc: 'The address of the anchor audius data program',
+    format: String,
+    default: '',
+    env: 'solanaAudiusAnchorDataProgramId'
+  },
   rewardsQuorumSize: {
     doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
     format: Number,
@@ -820,7 +826,9 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
     solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount,
+
+    solanaAudiusAnchorDataProgramId: solanaContractConfig.anchorProgramId
   })
 }
 

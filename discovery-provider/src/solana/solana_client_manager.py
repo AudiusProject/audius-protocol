@@ -7,7 +7,7 @@ from typing import Optional, Union
 
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
-from solana.rpc.api import Client
+from solana.rpc.api import Client, Commitment
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResponse,
     ConfirmedTransaction,
@@ -41,7 +41,7 @@ class SolanaClientManager:
     ):
         """Fetches a solana transaction by signature with retries and a delay."""
 
-        def handle_get_sol_tx_info(client, index):
+        def handle_get_sol_tx_info(client: Client, index: int):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
@@ -84,11 +84,11 @@ class SolanaClientManager:
         before: Optional[str] = None,
         until: Optional[str] = None,
         limit: Optional[int] = None,
-        retries: Optional[int] = DEFAULT_MAX_RETRIES,
+        retries: int = DEFAULT_MAX_RETRIES,
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_signatures_for_address(client, index):
+        def handle_get_signatures_for_address(client: Client, index: int):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
@@ -97,7 +97,9 @@ class SolanaClientManager:
                         f"solana_client_manager.py | handle_get_signatures_for_address | Fetching {before} {endpoint}"
                     )
                     transactions: ConfirmedSignatureForAddressResponse = (
-                        client.get_signatures_for_address(account, before, until, limit)
+                        client.get_signatures_for_address(
+                            account, before, until, limit, Commitment("finalized")
+                        )
                     )
                     logger.info(
                         f"solana_client_manager.py | handle_get_signatures_for_address | Finished fetching {before} {endpoint}"
@@ -122,6 +124,37 @@ class SolanaClientManager:
             self.clients,
             handle_get_signatures_for_address,
             "solana_client_manager.py | get_signatures_for_address | All requests failed",
+        )
+
+    def get_block_height(
+        self, retries=DEFAULT_MAX_RETRIES, encoding="json"
+    ) -> Optional[int]:
+        def _get_block_height(client: Client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    logger.info("solana_client_manager.py | get_block_height")
+                    response = client.get_block_height()
+                    return response["result"]
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_block_height, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_block_height | Retrying with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_block_height | Failed with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            _get_block_height,
+            "solana_client_manager.py | get_block_height | All requests failed to fetch",
         )
 
 

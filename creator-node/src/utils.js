@@ -97,6 +97,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 }
 
 /**
+ * Fetches a CID from the Content Node network
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
@@ -163,19 +164,21 @@ async function findCIDInNetwork(
         if (cid !== expectedCID) {
           await fs.unlink(filePath)
           logger.error(
-            `findCIDInNetwork - File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+            `findCIDInNetwork - File contents from ${node.endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
           )
+        } else {
+          found = true
+          logger.info(
+            `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+          )
+          break
         }
-        found = true
-        logger.info(
-          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
-        )
-        break
       }
     } catch (e) {
-      logger.error(`findCIDInNetwork error - ${e.toString()}`)
-      // since this is a function running in the background intended to fix state, don't error
-      // and stop the flow of execution for functions that call it
+      // Do not error and stop the flow of execution for functions that call it
+      logger.error(
+        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
+      )
       continue
     }
   }
@@ -347,44 +350,32 @@ function currentNodeShouldHandleTranscode({
  *
  * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
+ * @param {Object} param.logger
  * @param {func} param.asyncFn the fn to asynchronously retry
- * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
- * @param {string} param.asyncFnTask the task label used to print on retry. used for debugging purposes
- * @param {number} param.factor the exponential factor
- * @param {number} [retries=5] the max number of retries. defaulted to 5
- * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
- * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
+ * @param {string} param.asyncFnLabel the task label used to print on retry. used for debugging purposes
+ * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
+ * @param {number} [param.options.factor=2] the exponential factor
+ * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
+ * @param {number} [param.options.minTimeout=1000] minimum number of ms to wait after first retry. defaulted to 1000ms
+ * @param {number} [param.options.maxTimeout=5000] maximum number of ms between two retries. defaulted to 5000ms
+ * @param {func} [param.options.onRetry] fn that gets called per retry
  * @returns the fn response if success, or throws an error
  */
-function asyncRetry({
-  asyncFn,
-  asyncFnParams,
-  asyncFnTask,
-  retries = 5,
-  factor = 2, // default for async-retry
-  minTimeout = 1000, // default for async-retry
-  maxTimeout = 5000
-}) {
-  return retry(
-    async () => {
-      if (asyncFnParams) {
-        return asyncFn(asyncFnParams)
+function asyncRetry({ logger, asyncFn, asyncFnLabel, options = {} }) {
+  options = {
+    retries: 5,
+    factor: 2,
+    minTimeout: 1000,
+    maxTimeout: 5000,
+    onRetry: (err, i) => {
+      if (err) {
+        logger.warn(`${asyncFnLabel} ${i} retry error: `, err)
       }
-
-      return asyncFn()
     },
-    {
-      retries,
-      factor,
-      minTimeout,
-      maxTimeout,
-      onRetry: (err, i) => {
-        if (err) {
-          console.log(`${asyncFnTask} ${i} retry error: `, err)
-        }
-      }
-    }
-  )
+    ...options
+  }
+
+  return retry(asyncFn, options)
 }
 
 module.exports = Utils

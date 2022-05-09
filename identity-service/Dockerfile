@@ -25,7 +25,8 @@ RUN apk update && \
     apk add rsyslog && \
     apk add python3 && \
     apk add python3-dev && \
-    apk add py3-pip
+    apk add py3-pip && \
+    apk add curl
 
 EXPOSE 7000
 
@@ -38,5 +39,8 @@ ENV GIT_SHA=$git_sha
 ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
+
+HEALTHCHECK --interval=5s --timeout=5s \
+    CMD curl -f http://localhost:7000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

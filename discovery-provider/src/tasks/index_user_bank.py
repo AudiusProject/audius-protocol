@@ -3,7 +3,7 @@ import datetime
 import logging
 import re
 import time
-from typing import List, Optional, Tuple, TypedDict
+from typing import List, Optional, TypedDict
 
 import base58
 from redis import Redis
@@ -11,9 +11,10 @@ from solana.publickey import PublicKey
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.models import User, UserBankAccount, UserBankTransaction
+from src.models.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
-    TX_SIGNATURES_BATCH_SIZE,
+    FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
 )
@@ -39,6 +40,7 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
+    latest_sol_user_bank_slot_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,30 +101,89 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
-    user_id: Optional[Tuple[int, None]] = (
-        session.query(User.user_id)
+def refresh_user_balances(session: Session, redis: Redis, accts=List[str]):
+    results = (
+        session.query(User.user_id, UserBankAccount.bank_account)
         .join(
             UserBankAccount,
             and_(
-                UserBankAccount.bank_account == user_bank_acct,
+                UserBankAccount.bank_account.in_(accts),
                 UserBankAccount.ethereum_address == User.wallet,
             ),
         )
         .filter(User.is_current == True)
-        .one_or_none()
+        .all()
     )
     # Only refresh if this is a known account within audius
-    if user_id:
-        logger.info(
-            f"index_user_bank.py | Refresh user_id = {user_id}, {user_bank_acct}"
-        )
-        enqueue_immediate_balance_refresh(redis, [user_id[0]])
+    if results:
+        user_ids = [user_id[0] for user_id in results]
+        logger.info(f"index_user_bank.py | Refresh user_ids = {user_ids}")
+        enqueue_immediate_balance_refresh(redis, user_ids)
+    return results
 
 
 create_token_account_instr: List[InstructionFormat] = [
     {"name": "eth_address", "type": SolanaInstructionType.EthereumAddress},
 ]
+
+
+def process_transfer_instruction(
+    session: Session,
+    redis: Redis,
+    sender_account: str,
+    receiver_account: str,
+    meta: ResultMeta,
+    tx_sig: str,
+    slot: int,
+):
+    # Accounts to refresh balance
+    logger.info(
+        f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
+    )
+    user_id_accounts = refresh_user_balances(
+        session, redis, [sender_account, receiver_account]
+    )
+
+    # If there are two userbanks to update, it was a transfer from user to user
+    # Index as a user_tip
+    if user_id_accounts and len(user_id_accounts) == 2:
+        sender_user_id: Optional[int] = None
+        receiver_user_id: Optional[int] = None
+        for user_id_account in user_id_accounts:
+            if user_id_account[1] == sender_account:
+                sender_user_id = user_id_account[0]
+            elif user_id_account[1] == receiver_account:
+                receiver_user_id = user_id_account[0]
+        if sender_user_id is None or receiver_user_id is None:
+            logger.error(
+                f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
+            )
+            return
+        pre_sender_balance = int(meta["preTokenBalances"][0]["uiTokenAmount"]["amount"])
+        post_sender_balance = int(
+            meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
+        )
+        pre_receiver_balance = int(
+            meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
+        )
+        post_receiver_balance = int(
+            meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
+        )
+        sent_amount = pre_sender_balance - post_sender_balance
+        received_amount = post_receiver_balance - pre_receiver_balance
+        if sent_amount != received_amount:
+            logger.error(
+                f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
+            )
+            return
+        user_tip = UserTip(
+            signature=tx_sig,
+            amount=sent_amount,
+            sender_user_id=sender_user_id,
+            receiver_user_id=receiver_user_id,
+            slot=slot,
+        )
+        session.add(user_tip)
 
 
 class CreateTokenAccount(TypedDict):
@@ -227,14 +288,20 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        # Accounts to refresh balance
-        acct_1 = account_keys[1]
-        acct_2 = account_keys[2]
-        logger.info(
-            f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
+        # The sender/receiver are index 1 and 2 respectfully in the instruction,
+        # but the transaction might list them in a different order in the pubKeys.
+        # The "accounts" field of the instruction has the mapping of accounts to pubKey index
+        sender_index = instruction["accounts"][1]
+        receiver_index = instruction["accounts"][2]
+        process_transfer_instruction(
+            session=session,
+            redis=redis,
+            sender_account=account_keys[sender_index],
+            receiver_account=account_keys[receiver_index],
+            meta=meta,
+            tx_sig=tx_sig,
+            slot=result["slot"],
         )
-        refresh_user_balance(session, redis, acct_1)
-        refresh_user_balance(session, redis, acct_2)
 
 
 def parse_user_bank_transaction(
@@ -258,7 +325,7 @@ def parse_user_bank_transaction(
 
 
 def process_user_bank_txs():
-    solana_client_manager = index_user_bank.solana_client_manager
+    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
     db = index_user_bank.db
     redis = index_user_bank.redis
     logger.info("index_user_bank.py | Acquired lock")
@@ -279,6 +346,12 @@ def process_user_bank_txs():
     # Loop exit condition
     intersection_found = False
 
+    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    try:
+        latest_global_slot = solana_client_manager.get_block_height()
+    except:
+        logger.error("index_user_bank.py | Failed to get block height")
+
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
@@ -287,7 +360,7 @@ def process_user_bank_txs():
             transactions_history = solana_client_manager.get_signatures_for_address(
                 USER_BANK_ADDRESS,
                 before=last_tx_signature,
-                limit=TX_SIGNATURES_BATCH_SIZE,
+                limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
@@ -396,6 +469,10 @@ def process_user_bank_txs():
                 "timestamp": last_tx["blockTime"],
             },
         )
+    if last_tx:
+        redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
 
 
 # ####### CELERY TASKS ####### #

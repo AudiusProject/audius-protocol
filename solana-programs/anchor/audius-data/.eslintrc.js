@@ -19,4 +19,5 @@ module.exports = {
   rules: {
     "mocha/no-setup-in-describe": "off",
   },
+  ignorePatterns: ["dist/**", "rollup.config.js"],
 };
