@@ -82,3 +82,20 @@ export const getEmptyPageRoute = (fullUrl = false) => {
 export const getAudioPageRoute = () => {
   return '/audio'
 }
+
+/**
+ * Generate a short base36 hash for a given string.
+ * Used to generate short hashes for for queries and urls.
+ */
+export const getHash = (str: string) =>
+  Math.abs(
+    str.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0)
+      return a & a
+    }, 0)
+  ).toString(36)
+
+export const getCollectiblesRoute = (handle: string, collectibleId?: string) =>
+  `${AUDIUS_URL}/${encodeUrlName(handle)}/collectibles${
+    collectibleId ? `/${getHash(collectibleId)}` : ''
+  }`

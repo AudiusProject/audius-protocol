@@ -1,21 +1,27 @@
-import { useRef } from 'react'
+import { useCallback, useContext, useRef } from 'react'
 
-import { View, Pressable, Text, FlatList as RNFlatList } from 'react-native'
+import Clipboard from '@react-native-clipboard/clipboard'
+import { getUserId } from 'audius-client/src/common/store/account/selectors'
+import { View, Text, FlatList as RNFlatList } from 'react-native'
 
 import IconShare from 'app/assets/images/iconShare.svg'
-import { Tile, GradientText, FlatList } from 'app/components/core'
+import { Tile, GradientText, FlatList, Button } from 'app/components/core'
+import { ToastContext } from 'app/components/toast/ToastContext'
+import UserBadges from 'app/components/user-badges'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import { getCollectiblesRoute } from 'app/utils/routes'
 
 import { CollectiblesCard } from './CollectiblesCard'
 import { getProfile } from './selectors'
 
 const messages = {
   title: 'Collectibles',
-  subtitle: (userName: string) =>
-    `A collection of NFT collectibles owned and created by ${userName}`
+  you: 'you',
+  share: 'Share',
+  subtitle: 'A collection of NFT collectibles owned and created by',
+  copyToast: (userName: string) => `Copied link to ${userName}'s collectibles`
 }
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
@@ -37,7 +43,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   headerContent: {
     padding: spacing(4)
   },
-
   title: {
     fontFamily: typography.fontByWeight.heavy,
     fontSize: 24,
@@ -51,25 +56,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     textAlign: 'center',
     marginBottom: spacing(4)
   },
-  shareButtonRoot: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: palette.neutralLight6,
-    borderWidth: 1,
-    borderRadius: 4,
-    height: spacing(8),
-    backgroundColor: palette.white
-  },
-  shareButtonText: {
-    ...typography.h2,
-    color: palette.neutralLight4,
-    textTransform: 'uppercase',
-    marginBottom: 0
-  },
   shareButtonIcon: {
-    marginRight: spacing(4)
+    marginRight: spacing(2)
   },
   collectibleListItem: {
     marginHorizontal: spacing(4),
@@ -79,10 +67,12 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
   const { profile } = useSelectorWeb(getProfile)
-
+  const accountId = useSelectorWeb(getUserId)
+  const isOwner = profile?.user_id === accountId
+  const { toast } = useContext(ToastContext)
   const ref = useRef<RNFlatList>(null)
+
   useScrollToTop(() => {
     ref.current?.scrollToOffset({
       offset: 0,
@@ -90,9 +80,17 @@ export const CollectiblesTab = () => {
     })
   }, true)
 
+  const handlePressShare = useCallback(() => {
+    if (profile) {
+      const { handle, name } = profile
+      Clipboard.setString(getCollectiblesRoute(handle))
+      toast({ content: messages.copyToast(name), type: 'info' })
+    }
+  }, [profile, toast])
+
   if (!profile) return null
 
-  const { collectibleList = [], solanaCollectibleList = [] } = profile
+  const { collectibleList = [], solanaCollectibleList = [], user_id } = profile
 
   const collectibles = [...collectibleList, ...solanaCollectibleList]
 
@@ -105,17 +103,27 @@ export const CollectiblesTab = () => {
           <GradientText accessibilityRole='header' style={styles.title}>
             {messages.title}
           </GradientText>
-          <Text style={styles.subtitle}>{messages.subtitle('you')}</Text>
-          <Pressable style={styles.shareButtonRoot}>
-            <IconShare fill={neutralLight4} style={styles.shareButtonIcon} />
-            <Text style={styles.shareButtonText}>Share</Text>
-          </Pressable>
+          <Text style={styles.subtitle}>
+            {messages.subtitle} {isOwner ? messages.you : profile.name}
+            <UserBadges user={profile} hideName />
+          </Text>
+          <Button
+            fullWidth
+            variant='commonAlt'
+            size='small'
+            title={messages.share}
+            icon={IconShare}
+            iconPosition='left'
+            IconProps={{ height: 15, width: 15 }}
+            styles={{ icon: styles.shareButtonIcon }}
+            onPress={handlePressShare}
+          />
         </Tile>
       }
       data={collectibles}
       renderItem={({ item }) => (
         <View style={styles.collectibleListItem}>
-          <CollectiblesCard collectible={item} />
+          <CollectiblesCard collectible={item} ownerId={user_id} />
         </View>
       )}
     />
