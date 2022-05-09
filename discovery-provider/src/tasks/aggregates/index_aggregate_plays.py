@@ -40,7 +40,7 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
     """
 
 
-def _update_aggregate_plays(session, _):
+def _update_aggregate_plays(session, _=None):
     current_id_checkpoint = (session.query(func.max(Play.id))).scalar()
 
     update_aggregate_table(
