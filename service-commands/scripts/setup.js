@@ -7,7 +7,7 @@ const {
   identityServiceUp,
   Service,
   SetupCommand,
-  runSetupCommand,
+  runSetupCommand
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
@@ -75,27 +75,41 @@ program
     'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
-  .option(
-    '-aao, --with-aao',
-    'whether to include AAO',
-    false
-  )
+  .option('-aao, --with-aao', 'whether to include AAO', false)
   .option(
     '-wspb, --with-solana-programs-build',
     'whether to build solana programs (as opposed to using cached)',
     false
   )
+  .option(
+    '-wdeb, --with-data-eth-build',
+    'whether to build data and eth contracts and deploy (as opposed to using cached)',
+    false
+  )
   .action(async opts => {
     console.log('Bringing up services...')
-    console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`)
+    console.log(
+      `See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`
+    )
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
-    const { verbose, parallel, withAao: withAAO, withSolanaProgramsBuild: buildSolana } = opts
-    if (parallel) {
-      // TODO: Further testing to prove --parallel works before recommending it
-      console.log('Warning: --parallel is not yet supported.'.error)
-    }
-    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, buildSolana, opts })
+    const {
+      verbose,
+      parallel,
+      withAao: withAAO,
+      withSolanaProgramsBuild: buildSolana,
+      withDataEthBuild: buildDataEthContracts
+    } = opts
+    await allUp({
+      numCreatorNodes,
+      numDiscoveryNodes,
+      withAAO,
+      verbose,
+      parallel,
+      buildSolana,
+      buildDataEthContracts,
+      opts
+    })
   })
 
 program
@@ -163,11 +177,7 @@ program
     'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
-  .option(
-    '-aao, --with-aao',
-    'whether to include AAO',
-    false
-  )
+  .option('-aao, --with-aao', 'whether to include AAO', false)
   .action(async (service, command, opts) => {
     try {
       if (!service || !command) {

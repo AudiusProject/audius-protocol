@@ -332,7 +332,7 @@ UPDATE_AGGREGATE_USER_QUERY = """
     """
 
 
-def _update_aggregate_user(session):
+def _update_aggregate_user(session, _=None):
     current_blocknumber = get_latest_blocknumber(session)
 
     update_aggregate_table(

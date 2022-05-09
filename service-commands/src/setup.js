@@ -144,6 +144,8 @@ const Service = Object.freeze({
   NETWORK: 'network',
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
+  CONTRACTS_PREDEPLOYED: 'contracts-predeployed',
+  ETH_CONTRACTS_PREDEPLOYED: 'eth-contracts-predeployed',
   SOLANA_VALIDATOR: 'solana-validator',
   SOLANA_VALIDATOR_PREDEPLOYED: 'solana-validator-predeployed',
   SOLANA_PROGRAMS: 'solana-programs',
@@ -331,6 +333,20 @@ const performHealthCheck = async (service, serviceNumber) => {
         jsonrpc: '2.0',
         id: 1,
         method: 'getClusterNodes'
+      },
+      url
+    }
+  }
+  if (
+    service === Service.CONTRACTS_PREDEPLOYED ||
+    service === Service.ETH_CONTRACTS_PREDEPLOYED
+  ) {
+    healthCheckRequestOptions = {
+      method: 'post',
+      data: {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_blockNumber'
       },
       url
     }
@@ -626,7 +642,8 @@ const allUp = async ({
   withAAO = false,
   verbose = false,
   parallel = false,
-  buildSolana = false
+  buildSolana = false,
+  buildDataEthContracts = false
 }) => {
   if (verbose) {
     console.log('Running in verbose mode.')
@@ -654,9 +671,14 @@ const allUp = async ({
   const ipfsAndContractsCommands = [
     [Service.IPFS, SetupCommand.UP],
     [Service.IPFS_2, SetupCommand.UP],
-    [Service.CONTRACTS, SetupCommand.UP],
-    [Service.ETH_CONTRACTS, SetupCommand.UP],
+    [Service.CONTRACTS_PREDEPLOYED, SetupCommand.UP],
+    [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.UP],
     [Service.LIBS, SetupCommand.UP]
+  ]
+
+  const contractHealthChecksCommands = [
+    [Service.CONTRACTS_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY],
+    [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
   ]
 
   if (buildSolana) {
@@ -727,7 +749,6 @@ const allUp = async ({
   const prereqs = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
   // Add Identity Service commands
   nodeUpCommands.push([[Service.IDENTITY_SERVICE, SetupCommand.UP]])
@@ -738,18 +759,22 @@ const allUp = async ({
   // Add AAO commands
   if (withAAO) {
     nodeUpCommands.push([Service.AAO, SetupCommand.UP])
-    nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
-  }
+    if (buildDataEthContracts) {
+      nodeRegisterCommands.push([Service.AAO, SetupCommand.REGISTER])
+    }
 
   const start = Date.now()
 
   // Start up the docker network `audius_dev` and the Solana test validator
   await runInSequence(setup, options)
+
   // Run parallel ops
   await runInParallel(ipfsAndContractsCommands, options)
-
-  // Run sequential ops
-  await runInSequence(prereqs, options)
+  await runInParallel(contractHealthChecksCommands, options)
+  if (buildDataEthContracts) {
+    await runInSequence(prereqs, options)
+  }
+  await runInSequence([Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP])
 
   if (parallel) {
     const startProv = Date.now()
