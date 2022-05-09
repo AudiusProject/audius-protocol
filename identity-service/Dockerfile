@@ -9,6 +9,12 @@ FROM node:14.16-alpine
 
 WORKDIR /usr/src/app
 
+# Handle unreachable Alpine repo, revert this eventually:
+# https://github.com/gliderlabs/docker-alpine/issues/155
+RUN sed -i -e 's/dl-cdn/dl-4/' /etc/apk/repositories
+
+RUN apk update && apk add rsyslog python3 python3-dev py3-pip curl
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
@@ -16,17 +22,6 @@ COPY . .
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
-
-# Handle unreachable Alpine repo, revert this eventually:
-# https://github.com/gliderlabs/docker-alpine/issues/155
-RUN sed -i -e 's/dl-cdn/dl-4/' /etc/apk/repositories
-
-RUN apk update && \
-    apk add rsyslog && \
-    apk add python3 && \
-    apk add python3-dev && \
-    apk add py3-pip && \
-    apk add curl
 
 EXPOSE 7000
 
