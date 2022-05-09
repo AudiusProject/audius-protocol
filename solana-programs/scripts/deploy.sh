@@ -1,0 +1,271 @@
+#!/bin/bash
+
+set -e
+
+function airdrop_till {
+    failed=0
+    while [[ "$(solana balance $1 | sed 's/\(\.\| \).*//')" < "$2" ]]; do
+        # NOTE: adjust number below if running against a diffrent endpoint
+        solana airdrop 20 $1
+
+        failed=$((failed+$?))
+        if [[ $failed == 5 ]]; then
+            echo "Failed to airdrop $2 to $1"
+            exit 1
+        fi
+
+        sleep 1
+    done
+}
+
+cd $(dirname "$(readlink -f "$0")")/..
+
+solana -V
+solana config set -u $SOLANA_HOST
+
+echo "-------------- Generating Accounts --------------"
+
+echo "Generating owner account"
+owner_keypair=$HOME/.config/solana/id.json
+if [[ "$owner_private_key" != "" ]]; then
+    echo "$owner_private_key" > $owner_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$owner_keypair"
+fi
+solana address
+echo
+
+echo "Generating feepayer account"
+feepayer_keypair=$HOME/.config/solana/keypair.json
+if [[ "$feepayer_private_key" != "" ]]; then
+    echo "$feepayer_private_key" > $feepayer_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$feepayer_keypair"
+fi
+solana address -k "$feepayer_keypair"
+echo
+
+echo "Generating token keypair"
+token_keypair=$HOME/.config/solana/token.json
+if [[ "$token_private_key" != "" ]]; then
+    echo "$token_private_key" > $token_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$token_keypair"
+fi
+solana address -k "$token_keypair"
+echo
+
+echo "Generating admin authority keypair"
+admin_authority_keypair=$HOME/.config/solana/admin-authority.json
+if [[ "$admin_authority_private_key" != "" ]]; then
+    echo "$admin_authority_private_key" > $admin_authority_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$admin_authority_keypair"
+fi
+solana address -k "$admin_authority_keypair"
+echo
+
+echo "Generating admin account keypair"
+admin_account_keypair=$HOME/.config/solana/admin.json
+if [[ "$admin_account_private_key" != "" ]]; then
+    echo "$admin_account_private_key" > $admin_account_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$admin_account_keypair"
+fi
+solana address -k "$admin_account_keypair"
+echo
+
+echo "Generating signer group keypair"
+signer_group_keypair=$HOME/.config/solana/signer-group.json
+if [[ "$signer_group_private_key" != "" ]]; then
+    echo "$signer_group_private_key" > $signer_group_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$signer_group_keypair"
+fi
+solana address -k "$signer_group_keypair"
+echo
+
+echo "Generating valid signer keypair"
+valid_signer_keypair=$HOME/.config/solana/valid-signer.json
+if [[ "$valid_signer_private_key" != "" ]]; then
+    echo "$valid_signer_private_key" > $valid_signer_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$valid_signer_keypair"
+fi
+solana address -k "$valid_signer_keypair"
+echo
+
+echo "Generating reward manager keypair"
+reward_manager_pda_keypair=$HOME/.config/solana/reward-manager.json
+if [[ "$reward_manager_pda_private_key" != "" ]]; then
+    echo "$reward_manager_pda_private_key" > $reward_manager_pda_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$reward_manager_pda_keypair"
+fi
+solana address -k "$reward_manager_pda_keypair"
+echo
+
+echo "Generating reward manager token keypair"
+reward_manager_token_pda_keypair=$HOME/.config/solana/reward-manager-token.json
+if [[ "$reward_manager_token_pda_private_key" != "" ]]; then
+    echo "$reward_manager_token_pda_private_key" > $reward_manager_token_pda_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$reward_manager_token_pda_keypair"
+fi
+solana address -k "$reward_manager_token_pda_keypair"
+echo
+
+echo "---------------- Airdrop solana -----------------"
+
+echo "Airdropping to owner account"
+airdrop_till "$owner_keypair" 20
+echo
+
+echo "Airdropping to feepayer account"
+airdrop_till "$feepayer_keypair" 20
+echo
+
+echo "------------- Deploying programs ----------------"
+
+echo "Deploying audius-eth-registry..."
+solana program deploy target/deploy/audius_eth_registry.so
+echo
+
+echo "Deploying audius-track-listen-count..."
+solana program deploy target/deploy/track_listen_count.so
+echo
+
+echo "Deploying audius-claimable-tokens..."
+solana program deploy target/deploy/claimable_tokens.so
+echo
+
+echo "Deploying audius-reward-manager..."
+solana program deploy target/deploy/audius_reward_manager.so
+echo
+
+echo "Deplyoing audius-data..."
+cd anchor/audius-data/
+anchor deploy --provider.cluster "$SOLANA_HOST"
+cd ../..
+echo
+
+echo "Deploying wAUDIO token..."
+spl-token create-token --decimals 8 -- "$token_keypair"
+echo
+
+echo "------------- Initialize programs ---------------"
+
+echo "Creating a signer group..."
+./target/debug/audius-eth-registry-cli create-signer-group "$signer_group_keypair"
+echo
+
+if [[ "$valid_signer_eth_address" != "" ]]; then
+    echo "Creating a valid signer..."
+    echo "$valid_signer_eth_address"
+    ./target/debug/audius-eth-registry-cli create-valid-signer \
+        "$(solana address -k "$signer_group_keypair")" \
+        "$(echo $valid_signer_eth_address | tail -c+3)" \
+        "$valid_signer_keypair"
+    echo
+fi
+
+echo "Creating wAUDIO token account..."
+spl-token create-account "$(solana address -k "$token_keypair")"
+echo
+
+echo "Minting 100,000,000 wAUDIO..."
+spl-token mint "$(solana address -k "$token_keypair")" 100000000
+echo
+
+echo "Initalizing claimable tokens..."
+./target/debug/claimable-tokens-cli generate-base-pda \
+    "$(solana address -k "$token_keypair")" \
+    "$(solana address -k target/deploy/claimable_tokens-keypair.json)"
+echo
+
+echo "Initalizing reward manager..."
+./target/debug/audius-reward-manager-cli init \
+    --keypair "$reward_manager_pda_keypair" \
+    --token-keypair "$reward_manager_token_pda_keypair" \
+    --min-votes 2 \
+    --token-mint "$(solana address -k $token_keypair)"
+echo
+
+echo "Transferring wAUDIO to reward manager..."
+spl-token transfer \
+    "$(solana address -k $token_keypair)" \
+    100000000 \
+    "$(solana address -k "$reward_manager_token_pda_keypair")"
+echo
+
+echo "Initializing audius admin account..."
+cd anchor/audius-data/
+yarn run ts-node cli/main.ts --function initAdmin \
+    --admin-authority-keypair "$admin_authority_keypair" \
+    --admin-account-keypair "$admin_account_keypair" \
+    --owner-keypair "$owner_keypair" \
+    --network "$SOLANA_HOST"
+cd ../..
+echo
+
+echo "Initializing Content/URSM nodes..."
+cd anchor/audius-data/
+# initialize Content/URSM nodes - initContentNode uses deterministic 
+# addresses and pkeys from eth-contracts ganache chain.
+yarn run ts-node cli/main.ts -function initContentNode \
+    --admin-authority-keypair "$admin_authority_keypair" \
+    --admin-account-keypair "$admin_account_keypair" \
+    --owner-keypair "$owner_keypair" \
+    --cn-sp-id 1 \
+    --network "$SOLANA_HOST"
+
+yarn run ts-node cli/main.ts --function initContentNode \
+    --admin-authority-keypair "$admin_authority_keypair" \
+    --admin-account-keypair "$admin_account_keypair" \
+    --owner-keypair "$owner_keypair" \
+    --cn-sp-id 2 \
+    --network "$SOLANA_HOST"
+
+yarn run ts-node cli/main.ts --function initContentNode \
+    --admin-authority-keypair "$admin_authority_keypair" \
+    --admin-account-keypair "$admin_account_keypair" \
+    --owner-keypair "$owner_keypair" \
+    --cn-sp-id 3 \
+    --network "$SOLANA_HOST"
+cd ../..
+echo
+
+# Back up 2 directories to audius-protocol/solana-programs
+cat <<EOF
+{
+    "endpoint": "$SOLANA_HOST",
+
+    "ownerWalletPubkey": "$(solana address -k "$owner_keypair")",
+    "ownerWallet": $(cat "$owner_keypair"),
+
+    "feePayerWalletPubkey": "$(solana address -k "$feepayer_keypair")",
+    "feePayerWallets": [{ "privateKey": $(cat "$feepayer_keypair") }],
+
+    "audiusEthRegistryAddress": "$(solana address -k target/deploy/audius_eth_registry-keypair.json)",
+    "trackListenCountAddress": "$(solana address -k target/deploy/track_listen_count-keypair.json)",
+    "claimableTokenAddress": "$(solana address -k target/deploy/claimable_tokens-keypair.json)",
+    "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
+    "anchorProgramId": "$(solana address -k anchor/audius-data/target/deploy/audius_data-keypair.json)",
+
+    "signerGroup": "$(solana address -k "$signer_group_keypair")",
+    "validSigner": "$(solana address -k "$valid_signer_keypair")",
+    "signerPrivateKey": "$eth_private_key",
+
+    "anchorAdminAuthorityPublicKey": "$(solana address -k "$admin_authority_keypair")",
+    "anchorAdminAuthorityPrivateKey": $(cat "$admin_authority_keypair"),
+
+    "anchorAdminAccountPublicKey": "$(solana address -k "$admin_account_keypair")",
+    "anchorAdminAccountPrivateKey": $(cat "$admin_account_keypair"),
+
+    "splToken": "$(solana address -k "$token_keypair")",
+    "splTokenAccount": "$(spl-token address --token "$token_keypair" --verbose --output json | jq -r '.associatedTokenAddress')",
+
+    "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",
+    "rewardsManagerTokenAccount": "$(solana address -k "$reward_manager_token_pda_keypair")",
+}
+EOF
