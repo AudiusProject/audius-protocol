@@ -175,7 +175,6 @@ def main():
 
     try:
         args = parser.parse_args()
-        print("args", args)
 
         if args.operation == "create-instance":
             create_instance(
