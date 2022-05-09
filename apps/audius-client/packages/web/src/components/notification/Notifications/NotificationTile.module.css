@@ -14,12 +14,12 @@
   transform: scale3d(1.015, 1.015, 1.015);
 }
 
-.root:active {
+.active:active {
   background-color: var(--neutral-light-9);
   box-shadow: unset;
   transform: scale3d(1, 1, 1);
 }
 
-.rootRead {
+.read {
   background-color: var(--white);
 }
