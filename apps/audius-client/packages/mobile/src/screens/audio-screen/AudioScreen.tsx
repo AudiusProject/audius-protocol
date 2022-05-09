@@ -56,7 +56,7 @@ const messages = {
   rewardsBody1: 'Complete tasks to earn $AUDIO tokens!',
   rewardsBody2:
     'Opportunities to earn $AUDIO will change, so check back often for more chances to earn!',
-  trending: 'Trending Competations',
+  trending: 'Trending Competitions',
   trendingBody1: 'Win contests to earn $AUDIO tokens!',
   vipTiers: '$AUDIO VIP Tiers',
   vipTiersBody1: 'Unlock $AUDIO VIP Tiers by simply holding more $AUDIO!',
@@ -365,7 +365,7 @@ export const AudioScreen = () => {
         />
         <Tier
           tierNumber={4}
-          title='bronze'
+          title='platinum'
           colors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
           minAmount={10000}
           image={<Image source={Platinum} />}
