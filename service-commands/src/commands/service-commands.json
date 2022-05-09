@@ -29,7 +29,7 @@
   "contracts": {
     "up": [
       "cd contracts/",
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5 --deterministic true",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json --networkId 1000000000001 -a 100 -b 5 --deterministic true --db ./db",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
@@ -41,11 +41,32 @@
       "cd contracts/; npm run ganache-q"
     ]
   },
+  "contracts-predeployed": {
+    "up": [
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/libs/data-contracts/config.json",
+      "docker cp audius_ganache_cli:/app/contract_config.ini $PROTOCOL_DIR/discovery-provider/contract_config.ini",
+      "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/discovery-provider/build/contracts",
+      "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/data-contracts/ABIs",
+      "docker cp audius_ganache_cli:/app/build/contracts/. $PROTOCOL_DIR/contracts/build"
+    ],
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8545,
+    "health_check_endpoint": "",
+    "down": [
+      "cd contracts/; npm run ganache-q"
+    ]
+  },
   "eth-contracts": {
     "path": "eth-contracts",
     "up": [
       "cd eth-contracts/; sudo rm -rf build",
-      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000 --deterministic true",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000 --networkId 1000000000000 --deterministic true --db ./db",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
@@ -55,6 +76,27 @@
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
+    ]
+  },
+  "eth-contracts-predeployed": {
+    "up": [
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev audius/ganache:eth-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
+      "docker cp audius_ganache_cli_eth_contracts:/app/migration-output.json $PROTOCOL_DIR/eth-contracts/migrations/migration-output.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/identity-service/eth-contract-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/creator-node/eth-contract-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/libs/eth-contracts/config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json ~/.audius/eth-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/aao-config.json ~/.audius/aao-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth_contract_config.ini $PROTOCOL_DIR/discovery-provider/eth_contract_config.ini",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/discovery-provider/build/eth-contracts",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/libs/eth-contracts/ABIs"
+    ],
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8546,
+    "health_check_endpoint": "",
+    "down": [
+      "cd contracts/; npm run ganache-q"
     ]
   },
   "solana-validator-predeployed": {
