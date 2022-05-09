@@ -47,6 +47,7 @@
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/config.json",
       "docker cp audius_ganache_cli:/app/contract_config.ini $PROTOCOL_DIR/discovery-provider/contract_config.ini",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/discovery-provider/build/contracts",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/data-contracts/ABIs",
