@@ -244,7 +244,7 @@ class SnapbackSM {
     // Initialize stateMachineQueue job processor (aka consumer)
     this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
       this.log('StateMachineQueue: Consuming new job...')
-      const { id: jobId } = job || { id: 'unknownId' }
+      const { id: jobId } = job
 
       try {
         this.log(

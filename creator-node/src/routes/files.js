@@ -5,7 +5,7 @@ const contentDisposition = require('content-disposition')
 
 const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
-const { uploadTempDiskStorage } = require('../fileManager')
+const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
@@ -229,7 +229,14 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `CID_CONFIRMED_FILE`
       })
-      fileFoundOnFS = true
+
+      if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
+        // Remove file if it is empty and force fetch from CN network
+        req.logger.warn(`[new path] File is empty -- removing ${CID}`)
+        await fs.unlink(storagePath)
+      } else {
+        fileFoundOnFS = true
+      }
     } else if (fsStats.isDirectory()) {
       decisionTree.push({
         stage: `CID_CONFIRMED_DIRECTORY`
@@ -302,7 +309,13 @@ const getCID = async (req, res) => {
         decisionTree.push({
           stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
         })
-        fileFoundOnFS = true
+        if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
+          // Remove file if it is empty and force fetch from CN network
+          req.logger.warn(`[legacy path] File is empty -- removing ${CID}`)
+          await fs.unlink(storagePath)
+        } else {
+          fileFoundOnFS = true
+        }
       } else if (fsStats.isDirectory()) {
         decisionTree.push({
           stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`
