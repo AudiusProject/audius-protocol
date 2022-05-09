@@ -27,6 +27,7 @@ import * as cacheActions from 'common/store/cache/actions'
 import {
   containsTempPlaylist,
   extractTempPlaylistsFromLibrary,
+  getPlaylistsNotInLibrary,
   removePlaylistLibraryDuplicates,
   replaceTempWithResolvedPlaylists
 } from 'common/store/playlist-library/helpers'
@@ -149,17 +150,7 @@ export function* addPlaylistsNotInLibrary() {
   const playlists: { [id: number]: AccountCollection } = yield select(
     getAccountNavigationPlaylists
   )
-  const notInLibrary = { ...playlists }
-  library.contents.forEach(
-    (identifier: PlaylistLibraryIdentifier | PlaylistLibraryFolder) => {
-      if (identifier.type === 'playlist') {
-        const playlist = playlists[identifier.playlist_id]
-        if (playlist) {
-          delete notInLibrary[identifier.playlist_id]
-        }
-      }
-    }
-  )
+  const notInLibrary = getPlaylistsNotInLibrary(library, playlists)
   if (Object.keys(notInLibrary).length > 0) {
     const newEntries = Object.values(notInLibrary).map(
       playlist =>

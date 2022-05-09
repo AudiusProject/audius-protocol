@@ -24,6 +24,7 @@ import {
   addPlaylistToFolder,
   containsTempPlaylist,
   findInPlaylistLibrary,
+  getPlaylistsNotInLibrary,
   isInsideFolder,
   reorderPlaylistLibrary
 } from 'common/store/playlist-library/helpers'
@@ -319,26 +320,7 @@ const PlaylistLibrary = ({
   /* if the user's library itself does not contain some of the playlists (for example, if a write failed).
   /* This computes those playlists that are attached to the user's account but are not in the user library. */
   const playlistsNotInLibrary = useMemo(() => {
-    const result = { ...playlists }
-    const helpComputePlaylistsNotInLibrary = (
-      libraryContentsLevel: PlaylistLibraryType['contents']
-    ) => {
-      libraryContentsLevel.forEach(content => {
-        if (content.type === 'temp_playlist' || content.type === 'playlist') {
-          const playlist = playlists[Number(content.playlist_id)]
-          if (playlist) {
-            delete result[Number(content.playlist_id)]
-          }
-        } else if (content.type === 'folder') {
-          helpComputePlaylistsNotInLibrary(content.contents)
-        }
-      })
-    }
-
-    if (library && playlists) {
-      helpComputePlaylistsNotInLibrary(library.contents)
-    }
-    return result
+    return getPlaylistsNotInLibrary(library, playlists)
   }, [library, playlists])
 
   /** Iterate over playlist library and render out available explore/smart

@@ -3,11 +3,13 @@ import isEmpty from 'lodash/isEmpty'
 import { ID } from 'common/models/Identifiers'
 import {
   PlaylistLibrary,
-  PlaylistLibraryFolder,
-  PlaylistLibraryIdentifier
+  PlaylistLibraryIdentifier,
+  PlaylistLibraryFolder
 } from 'common/models/PlaylistLibrary'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { uuid } from 'common/utils/uid'
+
+import { AccountCollection } from '../account/reducer'
 
 /**
  * Finds a playlist by id in the playlist library
@@ -549,4 +551,32 @@ export const replaceTempWithResolvedPlaylists = <
     }
   })
   return { ...library, contents: newContents }
+}
+
+/* Returns playlists in `playlists` that are not in the given playlist library `library`. */
+export const getPlaylistsNotInLibrary = (
+  library: PlaylistLibrary | null,
+  playlists: {
+    [id: number]: AccountCollection
+  }
+) => {
+  const result = { ...playlists }
+  const helpComputePlaylistsNotInLibrary = (
+    libraryContentsLevel: PlaylistLibrary['contents']
+  ) => {
+    libraryContentsLevel.forEach(content => {
+      if (content.type === 'temp_playlist' || content.type === 'playlist') {
+        const playlist = playlists[Number(content.playlist_id)]
+        if (playlist) {
+          delete result[Number(content.playlist_id)]
+        }
+      } else if (content.type === 'folder') {
+        helpComputePlaylistsNotInLibrary(content.contents)
+      }
+    })
+  }
+  if (library && playlists) {
+    helpComputePlaylistsNotInLibrary(library.contents)
+  }
+  return result
 }
