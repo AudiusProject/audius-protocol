@@ -1,10 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
 import { Chain } from 'audius-client/src/common/models/Chain'
-import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
-import { getCollectible } from 'audius-client/src/common/store/ui/collectible-details/selectors'
+import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
+import {
+  getCollectible,
+  getCollectibleOwnerId
+} from 'audius-client/src/common/store/ui/collectible-details/selectors'
 import { ScrollView, StyleSheet, View } from 'react-native'
-import Config from 'react-native-config'
 
 import IconShare from 'app/assets/images/iconShare.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
@@ -14,6 +16,7 @@ import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { getCollectiblesRoute } from 'app/utils/routes'
 import share from 'app/utils/share'
 import { useColor } from 'app/utils/theme'
 
@@ -22,10 +25,8 @@ import { ButtonType } from '../button/Button'
 import { CollectibleDate } from './CollectibleDate'
 import { CollectibleLink } from './CollectibleLink'
 import { CollectibleMedia } from './CollectibleMedia'
-import { getHash } from './helpers'
 
 const MODAL_NAME = 'CollectibleDetails'
-const AUDIUS_URL = Config.AUDIUS_URL
 
 export const messages = {
   owned: 'OWNED',
@@ -115,8 +116,9 @@ const getHostname = (url: string) => {
 }
 
 export const CollectibleDetailsDrawer = () => {
-  const handle = useSelectorWeb(getUserHandle)
   const collectible = useSelectorWeb(getCollectible)
+  const ownerId = useSelectorWeb(getCollectibleOwnerId)
+  const owner = useSelectorWeb(state => getUser(state, { id: ownerId }))
 
   const formattedLink = useMemo(() => {
     const url = collectible?.externalLink
@@ -124,13 +126,11 @@ export const CollectibleDetailsDrawer = () => {
   }, [collectible])
 
   const handleShare = useCallback(() => {
-    if (collectible) {
-      const url = `${AUDIUS_URL}/${handle}/collectibles/${getHash(
-        collectible.id
-      )}`
+    if (owner && collectible) {
+      const url = getCollectiblesRoute(owner.handle, collectible.id)
       share({ url })
     }
-  }, [handle, collectible])
+  }, [owner, collectible])
 
   const styles = useThemedStyles(createStyles)
 

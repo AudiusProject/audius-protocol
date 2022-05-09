@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { Collectible } from 'audius-client/src/common/models/Collectible'
+import { ID } from 'audius-client/src/common/models/Identifiers'
 import { setCollectible } from 'audius-client/src/common/store/ui/collectible-details/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { ImageBackground, StyleProp, Text, View, ViewStyle } from 'react-native'
@@ -66,19 +67,20 @@ const useStyles = makeStyles(
 
 type CollectiblesCardProps = {
   collectible: Collectible
+  ownerId: ID
   style?: StyleProp<ViewStyle>
 }
 
 export const CollectiblesCard = (props: CollectiblesCardProps) => {
-  const { collectible, style } = props
+  const { collectible, style, ownerId } = props
   const { name, frameUrl, isOwned, mediaType, gifUrl } = collectible
   const styles = useStyles({ isOwned })
   const dispatchWeb = useDispatchWeb()
 
   const handlePress = useCallback(() => {
-    dispatchWeb(setCollectible({ collectible }))
+    dispatchWeb(setCollectible({ collectible, ownerId }))
     dispatchWeb(setVisibility({ modal: 'CollectibleDetails', visible: true }))
-  }, [dispatchWeb, collectible])
+  }, [dispatchWeb, collectible, ownerId])
 
   const url = frameUrl ?? gifUrl
 
