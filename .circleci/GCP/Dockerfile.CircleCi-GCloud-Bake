@@ -1,5 +1,4 @@
-# Convenience image built with python, node, gcloud to use in CircleCI
-# to run commands with A
+# Convenience image pre-built with python, node, gcloud to use in CircleCI to run commands with A
 
 # Build this image with `docker build . -f Dockerfile.CircleCi-GCloud-Bake -t audius/circleci-gcloud-bake:latest`
 

@@ -64,11 +64,6 @@ jobs:
               exit;
             EOF
 
-            # EXIT_CODE=$($?)
-            # if [ EXIT_CODE -ne 0 ]; then
-            #   exit EXIT_CODE
-            # fi
-
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
@@ -133,11 +128,6 @@ jobs:
               npm run start << parameters.mad-dog-type >> verbose;
               exit;
             EOF
-
-            # EXIT_CODE=$($?)
-            # if [ EXIT_CODE -ne 0 ]; then
-            #   exit EXIT_CODE
-            # fi
 
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
@@ -773,7 +763,7 @@ workflows:
           name: bake-gcp-dev-image-nightly
     triggers:
       - schedule:
-          cron: "0 5 * * * "
+          cron: "0 5 * * *"
           filters:
             branches:
               only: /(^master$)/
