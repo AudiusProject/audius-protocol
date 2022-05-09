@@ -315,6 +315,20 @@ const performHealthCheck = async (service, serviceNumber) => {
       url
     }
   }
+  if (
+    service === Service.CONTRACTS_PREDEPLOYED ||
+    service === Service.ETH_CONTRACTS_PREDEPLOYED
+  ) {
+    healthCheckRequestOptions = {
+      method: 'post',
+      data: {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_blockNumber'
+      },
+      url
+    }
+  }
 
   try {
     const resp = await axios(healthCheckRequestOptions)
@@ -639,6 +653,11 @@ const allUp = async ({
     [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.UP]
   ]
 
+  const contractHealthChecksCommands = [
+    [Service.CONTRACTS_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY],
+    [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
+  ]
+
   if (buildSolana) {
     ipfsAndContractsCommands.push([Service.SOLANA_PROGRAMS, SetupCommand.UP])
   }
@@ -715,6 +734,7 @@ const allUp = async ({
   await runInSequence(setup, options)
   // Run parallel ops
   await runInParallel(ipfsAndContractsCommands, options)
+  await runInParallel(contractHealthChecksCommands, options)
 
   // Run sequential ops
   if (buildDataEthContracts) {
