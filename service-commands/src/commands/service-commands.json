@@ -305,7 +305,7 @@
   "libs": {
     "up": ["echo 'Process spawned in background using Node.'"],
     "down": [
-      "kill -9 $(ps x -o \"%r %a\" | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}')"
+      "ps x -o '%r %a' | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}' | xargs -r kill -- -9"
     ]
   }
 }
