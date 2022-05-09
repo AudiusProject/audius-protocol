@@ -11,7 +11,8 @@ import {
   addPlaylistToFolder,
   extractTempPlaylistsFromLibrary,
   replaceTempWithResolvedPlaylists,
-  removePlaylistLibraryTempPlaylists
+  removePlaylistLibraryTempPlaylists,
+  getPlaylistsNotInLibrary
 } from 'common/store/playlist-library/helpers'
 
 describe('findInPlaylistLibrary', () => {
@@ -2006,6 +2007,89 @@ describe('replaceTempWithResolvedPlaylists', () => {
           ]
         }
       ]
+    })
+  })
+})
+
+describe('getPlaylistsNotInLibrary', () => {
+  it('returns the playlists that are not already in the library', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
+        { type: 'temp_playlist', playlist_id: 'e' },
+        {
+          type: 'folder',
+          id: 'my id',
+          name: 'Favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 10 },
+            { type: 'playlist', playlist_id: 11 },
+            { type: 'temp_playlist', playlist_id: 'd' }
+          ]
+        }
+      ]
+    }
+    const playlists = {
+      1: {
+        id: 1,
+        is_album: false,
+        name: 'test',
+        user: {
+          handle: 'nikki',
+          id: 49408
+        }
+      },
+      2: {
+        id: 2,
+        is_album: false,
+        name: 'test',
+        user: {
+          handle: 'nikki',
+          id: 49408
+        }
+      },
+      10: {
+        id: 10,
+        is_album: false,
+        name: 'ten',
+        user: {
+          handle: 'nikki',
+          id: 49408
+        }
+      },
+      11: {
+        id: 11,
+        is_album: false,
+        name: 'eleven',
+        user: {
+          handle: 'nikki',
+          id: 49408
+        }
+      },
+      12: {
+        id: 12,
+        is_album: false,
+        name: 'twelve',
+        user: {
+          handle: 'nikki',
+          id: 49408
+        }
+      }
+    }
+
+    const ret = getPlaylistsNotInLibrary(library, playlists)
+    expect(ret).toEqual({
+      12: {
+        id: 12,
+        is_album: false,
+        name: 'twelve',
+        user: {
+          handle: 'nikki',
+          id: 49408
+        }
+      }
     })
   })
 })
