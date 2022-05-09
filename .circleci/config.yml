@@ -33,6 +33,17 @@ jobs:
       - run:
           name: Bake GCP Dev Image
           command: |
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
+
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
+
+            # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
@@ -77,12 +88,6 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
-            # Delete GCP box
-            gcloud compute instances delete $GCLOUD_VM_NAME --quiet
-
-            # Delete GCP firewall
-            gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
-
   test-mad-dog-e2e:
     parameters:
       mad-dog-type:
@@ -99,6 +104,17 @@ jobs:
       - run:
           name: Test mad-dog on GCP
           command: |
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
+
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
+
+            # authenticate into gcloud
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
@@ -128,15 +144,6 @@ jobs:
               npm run start << parameters.mad-dog-type >> verbose;
               exit;
             EOF
-
-            # Stop GCP box, can't take an image from a running VM
-            gcloud compute instances stop $GCLOUD_VM_NAME
-
-            # Delete GCP box
-            gcloud compute instances delete $GCLOUD_VM_NAME --quiet
-
-            # Delete GCP firewall
-            gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
 
   test-libs:
     docker:
