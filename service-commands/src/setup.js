@@ -211,7 +211,7 @@ const runSetupCommand = async (
   }
 
   if (setupCommand === SetupCommand.HEALTH_CHECK_RETRY) {
-    await performHealthCheckWithRetry(service, serviceNumber)
+    await performHealthCheckWithRetry(service, serviceNumber, retries, waitSec)
     return
   }
 
@@ -299,9 +299,13 @@ const getServiceURL = (service, serviceNumber) => {
 const performHealthCheckWithRetry = async (
   service,
   serviceNumber,
-  retries = 20
+  retries = 20,
+  waitSec = 0
 ) => {
   let attempts = retries
+  if (waitSec > 0) {
+    await wait(waitSec * 1000)
+  }
   while (attempts > 0) {
     try {
       await performHealthCheck(service, serviceNumber)
@@ -677,8 +681,16 @@ const allUp = async ({
   ]
 
   const contractHealthChecksCommands = [
-    [Service.CONTRACTS_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY],
-    [Service.ETH_CONTRACTS_PREDEPLOYED, SetupCommand.HEALTH_CHECK_RETRY]
+    [
+      Service.CONTRACTS_PREDEPLOYED,
+      SetupCommand.HEALTH_CHECK_RETRY,
+      { waitSec: 3 }
+    ],
+    [
+      Service.ETH_CONTRACTS_PREDEPLOYED,
+      SetupCommand.HEALTH_CHECK_RETRY,
+      { waitSec: 3 }
+    ]
   ]
 
   if (buildSolana) {
