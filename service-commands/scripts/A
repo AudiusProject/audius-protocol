@@ -25,59 +25,7 @@ def create_instance(provider, image, disk_size, machine_type, name):
         check=False,
     )
 
-
-def setup(
-    provider, service, user, config, fast, protocol_git_ref, client_git_ref, name
-):
-    """Setup a environment suitable for development on a remote machine"""
-    subprocess.run(
-        [
-            "bash",
-            f"{PROTOCOL_DIR}/service-commands/scripts/setup-instance.sh",
-            *(["-p", provider] if provider else []),
-            *(["-u", user] if user else []),
-            *(["-c", config] if config else []),
-            *(["-r", protocol_git_ref] if protocol_git_ref else []),
-            *(["-l", client_git_ref] if client_git_ref else []),
-            *(["-f"] if fast else []),
-            service,
-            name,
-        ],
-        check=False,
-    )
-
-
-def setup_js(options):
-    subprocess.run(
-        [
-            "node",
-            f"{PROTOCOL_DIR}/service-commands/scripts/setup.js",
-            *options,
-        ],
-        check=False,
-    )
-
-
-def seed(options):
-    subprocess.run(
-        [
-            "node",
-            f"{PROTOCOL_DIR}/service-commands/scripts/seed.js",
-            *options,
-        ],
-        check=False,
-    )
-
-
-def main():
-    parser = argparse.ArgumentParser(exit_on_error=False)
-
-    subparser = parser.add_subparsers(
-        title="operations",
-        dest="operation",
-        required=True,
-    )
-
+def create_instance_command_parser(subparser):
     parser_create_instance = subparser.add_parser(
         "create-instance",
         help="create instance on azure/gcp with specified options",
@@ -111,6 +59,28 @@ def main():
         help="name to assign to the created instance",
     )
 
+
+def setup(
+    provider, service, user, config, fast, protocol_git_ref, client_git_ref, name
+):
+    """Setup a environment suitable for development on a remote machine"""
+    subprocess.run(
+        [
+            "bash",
+            f"{PROTOCOL_DIR}/service-commands/scripts/setup-instance.sh",
+            *(["-p", provider] if provider else []),
+            *(["-u", user] if user else []),
+            *(["-c", config] if config else []),
+            *(["-r", protocol_git_ref] if protocol_git_ref else []),
+            *(["-l", client_git_ref] if client_git_ref else []),
+            *(["-f"] if fast else []),
+            service,
+            name,
+        ],
+        check=False,
+    )
+
+def setup_command_parser(subparser):
     parser_setup = subparser.add_parser(
         "setup",
         help="setup specified service on a remote machine",
@@ -159,7 +129,54 @@ def main():
         help="name of machine on which to setup the service",
     )
 
+
+def setup_js(options):
+    subprocess.run(
+        [
+            "node",
+            f"{PROTOCOL_DIR}/service-commands/scripts/setup.js",
+            *options,
+        ],
+        check=False,
+    )
+
+
+def seed(options):
+    subprocess.run(
+        [
+            "node",
+            f"{PROTOCOL_DIR}/service-commands/scripts/seed.js",
+            *options,
+        ],
+        check=False,
+    )
+
+def seed_command_parser(subparser):
+    parser_setup = subparser.add_parser(
+        "seed",
+        help="seed data to the local machine",
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(exit_on_error=False)
+
+    subparser = parser.add_subparsers(
+        title="operations",
+        dest="operation",
+        required=True,
+    )
+
+    create_instance_command_parser(subparser)
+    setup_command_parser(subparser)
+    # seed_command_parser(subparser)
+
     try:
+        # if no options are defined, print out the usage
+        if len(sys.argv) == 1:
+            parser.print_help()
+            exit(0)
+
         args = parser.parse_args()
 
         if args.operation == "create-instance":
@@ -181,6 +198,9 @@ def main():
                 args.client_git_ref,
                 args.name,
             )
+        # elif args.operation == "seed":
+        #     options = sys.argv[2:]
+        #     seed(options)
     except argparse.ArgumentError:
         if sys.argv[1] == "seed":
             options = sys.argv[2:]
