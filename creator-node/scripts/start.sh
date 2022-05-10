@@ -63,25 +63,12 @@ fi
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]
     then
-        # Create anchor data link
-        cd ../solana-programs/anchor/audius-data
-        npm run dev &
-        npm link
-        cd ../../
-
-        # Link anchor data to libs
         cd ../audius-libs
-        npm link @audius/anchor-audius-data
-
-        # Create libs link
         npm run dev &
         npm link
-
-        # Link libs to app
         cd ../app
         npm link @audius/libs
-
-        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ --watch ../solana-programs/anchor/audius-data | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
     else
         npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
     fi
