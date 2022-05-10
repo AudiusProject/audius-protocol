@@ -117,13 +117,7 @@ const startApp = async () => {
 
   // Some Services cannot start until server is up. Start them now
   // No need to await on this as this process can take a while and can run in the background
-  serviceRegistry.initServicesThatRequireServer().then((_: any) => {
-    try {
-      setupBullMonitoring(serviceRegistry)
-    } catch (e: any) {
-      logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
-    }
-  })
+  serviceRegistry.initServicesThatRequireServer(appInfo.app)
 
   // when app terminates, close down any open DB connections gracefully
   ON_DEATH((signal: any, error: any) => {

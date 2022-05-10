@@ -179,22 +179,21 @@ class SnapbackSM {
 
     // Re-queue state machine job when the current job fails or succeeds
     this.stateMachineQueue.on('global:error', (error) => {
-      this.logError(`stateMachineQueue Job Error - ${error}`)
-      this.log(`stateMachineQueue adding another job after error`)
+      this.logError(
+        `stateMachineQueue Job Error - ${error}.  Queuing another job...`
+      )
       this.stateMachineQueue.add({ startTime: Date.now() })
     })
     this.stateMachineQueue.on('global:completed', (jobId, result) => {
       this.log(
-        `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}`
-      )
-      this.log(
-        `stateMachineQueue adding another job after successful completion`
+        `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}.  Queuing another job...`
       )
       this.stateMachineQueue.add({ startTime: Date.now() })
     })
     this.stateMachineQueue.on('global:failed', (jobId, err) => {
-      this.logError(`stateMachineQueue Job Failed - ID ${jobId} - Error ${err}`)
-      this.log(`stateMachineQueue adding another job after previous job failed`)
+      this.logError(
+        `stateMachineQueue Job Failed - ID ${jobId} - Error ${err}. Queuing another job...`
+      )
       this.stateMachineQueue.add({ startTime: Date.now() })
     })
 

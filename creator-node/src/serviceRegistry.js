@@ -6,6 +6,9 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
+const { createBullBoard } = require('@bull-board/api')
+const { BullAdapter } = require('@bull-board/api/bullAdapter')
+const { ExpressAdapter } = require('@bull-board/express')
 
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -13,6 +16,8 @@ const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const SessionExpirationQueue = require('./services/SessionExpirationQueue')
 const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 const TrustedNotifierManager = require('./services/TrustedNotifierManager')
+const ImageProcessingQueue = require('./ImageProcessingQueue')
+const TranscodingQueue = require('./TranscodingQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -87,6 +92,41 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
+  setupBullMonitoring(app) {
+    logger.info('Setting up Bull queue monitoring...')
+
+    const serverAdapter = new ExpressAdapter()
+    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
+      this.snapbackSM
+    const { queue: syncProcessingQueue } = this.syncQueue
+    const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
+    const { queue: imageProcessingQueue } = ImageProcessingQueue
+    const { queue: transcodingQueue } = TranscodingQueue
+    const { queue: monitoringQueue } = this.monitoringQueue
+    const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
+    const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
+
+    // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
+    createBullBoard({
+      queues: [
+        new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
+        new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
+        new BullAdapter(transcodingQueue, { readOnlyMode: true }),
+        new BullAdapter(monitoringQueue, { readOnlyMode: true }),
+        new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),
+        new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true })
+      ],
+      serverAdapter: serverAdapter
+    })
+
+    serverAdapter.setBasePath('/health/bull')
+    app.use('/health/bull', serverAdapter.getRouter())
+  }
+
   /**
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
@@ -95,8 +135,9 @@ class ServiceRegistry {
    *  - construct SyncQueue (requires node L1 identity)
    *  - register node on L2 URSM contract (requires node L1 identity)
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
+   *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
-  async initServicesThatRequireServer() {
+  async initServicesThatRequireServer(app) {
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -124,6 +165,12 @@ class ServiceRegistry {
 
     this.servicesThatRequireServerInitialized = true
     this.logInfo(`All services that require server successfully initialized!`)
+
+    try {
+      this.setupBullMonitoring(app)
+    } catch (e) {
+      logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
+    }
   }
 
   logInfo(msg) {
