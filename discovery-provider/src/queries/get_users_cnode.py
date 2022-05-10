@@ -13,7 +13,12 @@ class ReplicaType(Enum):
     ALL = 3
 
 
-def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
+def get_users_cnode(
+    cnode_endpoint_string,
+    replica_type=ReplicaType.PRIMARY,
+    prev_user_id=0,
+    max_users=100000,
+):
     """
     Query all users with `cnode_endpoint_string` in replica set
     If replica_type=ReplicaType.PRIMARY -> returns users with `cnode_endpoint_string` as primary
@@ -67,7 +72,10 @@ def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
                     't.secondary1 = :cnode_endpoint_string OR '
                     't.secondary2 = :cnode_endpoint_string) AND'
             }
-            t.secondary1 is not NULL;
+            t.user_id > { prev_user_id } AND
+            t.secondary1 is not NULL
+            ORDER BY "user_id"
+            LIMIT { max_users };
             """
         )
         users = session.execute(

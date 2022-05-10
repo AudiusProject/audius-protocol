@@ -828,7 +828,28 @@ users_by_content_node_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
 users_by_content_node_route_parser.add_argument(
-    "creator_node_endpoint", required=True, type=str
+    "creator_node_endpoint",
+    required=False,
+    type=str,
+    description="DEPRECATED -- use content_node_endpoint",
+)
+users_by_content_node_route_parser.add_argument(
+    "content_node_endpoint",
+    required=False,
+    type=str,
+    description="Get users who have this Content Node endpoint as their primary/secondary",
+)
+users_by_content_node_route_parser.add_argument(
+    "prev_user_id",
+    required=False,
+    type=int,
+    description="Minimum user_id to return. Used for pagination as the offset after sorting in ascending order by user_id",
+)
+users_by_content_node_route_parser.add_argument(
+    "max_users",
+    required=False,
+    type=int,
+    description="Maximum number of users to return (SQL LIMIT)",
 )
 users_by_content_node_response = make_full_response(
     "users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set))
@@ -837,26 +858,41 @@ users_by_content_node_response = make_full_response(
 
 @full_ns.route("/content_node/<string:replica_type>", doc=False)
 class UsersByContentNode(Resource):
-    @full_ns.marshal_with(users_by_content_node_response)
-    # @cache(ttl_sec=30)
-    def get(self, replica_type):
-        """New route to call get_users_cnode with replica_type param (only consumed by content node)
-        - Leaving `/users/creator_node` above untouched for backwards-compatibility
-
+    @ns.doc(
+        id="""Get Users By Replica Type for Content Node""",
+        description="""
+        (Only consumed by Content Node) Gets users that have a given Content Node endpoint as
+        their primary, secondary, or either (depending on the replica_type passed).
         Response = array of objects of schema {
             user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID
         }
-        """
+        """,
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.marshal_with(users_by_content_node_response)
+    # @cache(ttl_sec=30)
+    def get(self, replica_type):
         args = users_by_content_node_route_parser.parse_args()
 
-        cnode_url = args.get("creator_node_endpoint")
+        # Endpoint that a user's primary/secondary/either must be set to for them to be included in the results
+        cnode_url = args.get("content_node_endpoint") or args.get(
+            "creator_node_endpoint"
+        )
+        # Offset after sorting user_id in ascending order (using > comparison in SQL query)
+        prev_user_id = args.get("prev_user_id") or 0
+        # LIMIT used in SQL query
+        max_users = args.get("max_users") or 100000
 
         if replica_type == "primary":
-            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
+            users = get_users_cnode(
+                cnode_url, ReplicaType.PRIMARY, prev_user_id, max_users
+            )
         elif replica_type == "secondary":
-            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
+            users = get_users_cnode(
+                cnode_url, ReplicaType.SECONDARY, prev_user_id, max_users
+            )
         else:
-            users = get_users_cnode(cnode_url, ReplicaType.ALL)
+            users = get_users_cnode(cnode_url, ReplicaType.ALL, prev_user_id, max_users)
 
         return success_response(users)
 
