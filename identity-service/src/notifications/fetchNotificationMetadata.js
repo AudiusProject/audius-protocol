@@ -239,11 +239,18 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
 
   const uniqueTrackIds = [...new Set(trackIdsToFetch)]
 
-  let tracks = await audius.Track.getTracks(
-    /** limit */ uniqueTrackIds.length,
-    /** offset */ 0,
-    /** idsArray */ uniqueTrackIds
-  )
+  let tracks = []
+  const trackBatchSize = 100
+  for (let trackBatchOffset = 0; trackBatchOffset < uniqueTrackIds.length; trackBatchOffset += trackBatchSize) {
+    const trackBatch = uniqueTrackIds.slice(trackBatchOffset, trackBatchOffset + trackBatchSize)
+    const tracksResponse = await audius.Track.getTracks(
+      /** limit */ trackBatch.length,
+      /** offset */ 0,
+      /** idsArray */ trackBatch
+    )
+    tracks.push(...tracksResponse)
+  }
+
   if (!Array.isArray(tracks)) {
     logger.error(`fetchNotificationMetadata | Unable to fetch track ids ${uniqueTrackIds.join(',')}`)
   }
