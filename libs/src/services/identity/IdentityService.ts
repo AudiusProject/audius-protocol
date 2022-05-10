@@ -385,7 +385,7 @@ export class IdentityService {
 
   async ethRelay(
     contractAddress: string,
-    senderAddress: Wallet,
+    senderAddress: Wallet | string,
     encodedABI: string,
     gasLimit: string
   ): Promise<RelayTransaction> {

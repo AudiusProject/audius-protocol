@@ -3,7 +3,6 @@ import type { ContractABI } from '../../utils'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { AudiusTokenClient } from './AudiusTokenClient'
 import type { Contract } from 'web3-eth-contract'
-import type Wallet from 'ethereumjs-wallet'
 import type BN from 'bn.js'
 
 export class WormholeClient {
@@ -44,7 +43,7 @@ export class WormholeClient {
 
   /* ------- SETTERS ------- */
 
-  async initialize(fromAcct: Wallet, wormholeAddress: string, relayer: Wallet) {
+  async initialize(fromAcct: string, wormholeAddress: string, relayer: string) {
     const method = this.WormholeContract.methods.initialize(
       this.audiusTokenClient.contractAddress,
       wormholeAddress
@@ -65,14 +64,14 @@ export class WormholeClient {
    * specifies a solana wallet to realized the tokens in SOL
    */
   async transferTokens(
-    fromAcct: Wallet,
+    fromAcct: string,
     amount: BN,
     chainId: number,
     solanaAccount: string,
     arbiterFee: string,
     deadline: string,
     signedDigest: { v: string; r: string; s: string },
-    relayer: Wallet
+    relayer: string
   ) {
     const method = this.WormholeContract.methods.transferTokens(
       fromAcct,

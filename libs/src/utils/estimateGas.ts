@@ -7,7 +7,7 @@ const GAS_LIMIT_MULTIPLIER = 1.05
 export interface ContractMethod {
   arguments: string[]
   estimateGas: (config: {
-    from: Wallet | undefined
+    from: Wallet | string | undefined
     gas: number | undefined
   }) => Promise<number>
   _method: {
@@ -24,7 +24,7 @@ export interface ContractMethod {
 
 interface EstimateGasConfig {
   method: ContractMethod
-  from?: Wallet
+  from?: Wallet | string
   gasLimitMaximum: number
   multiplier?: number
 }

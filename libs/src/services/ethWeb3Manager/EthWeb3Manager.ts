@@ -155,8 +155,8 @@ export class EthWeb3Manager {
   async relayTransaction(
     contractMethod: ContractMethod,
     contractAddress: string,
-    ownerWallet: Wallet,
-    relayerWallet?: Wallet,
+    ownerWallet: Wallet | string,
+    relayerWallet?: Wallet | string,
     txRetries = 5,
     txGasLimit: number | null = null
   ): Promise<Maybe<RelayTransaction['resp']>> {

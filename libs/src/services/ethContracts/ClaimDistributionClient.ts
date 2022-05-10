@@ -1,4 +1,3 @@
-import type Wallet from 'ethereumjs-wallet'
 import { ContractClient } from '../contracts/ContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 
@@ -23,7 +22,7 @@ export class ClaimDistributionClient extends ContractClient {
    */
   async claim(
     index: number,
-    account: Wallet,
+    account: string,
     amount: string,
     merkleProof: string[]
   ) {

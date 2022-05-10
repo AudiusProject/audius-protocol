@@ -2,7 +2,6 @@ import type Web3 from 'web3'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { Contract } from 'web3-eth-contract'
 import type { AbiItem } from 'web3-utils'
-import type Wallet from 'ethereumjs-wallet'
 
 export class AudiusTokenClient {
   ethWeb3Manager: EthWeb3Manager
@@ -54,7 +53,7 @@ export class AudiusTokenClient {
   }
 
   // Get the name of the contract
-  async nonces(wallet: Wallet) {
+  async nonces(wallet: string) {
     // Pass along a unique param so the nonce value is always not cached
     const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call({
       _audiusBustCache: Date.now()
@@ -75,9 +74,9 @@ export class AudiusTokenClient {
   }
 
   async transferFrom(
-    owner: Wallet,
+    owner: string,
     recipient: string,
-    relayer: Wallet,
+    relayer: string,
     amount: number
   ) {
     const method = this.AudiusTokenContract.methods.transferFrom(
@@ -97,8 +96,8 @@ export class AudiusTokenClient {
 
   // Permit meta transaction of balance transfer
   async permit(
-    owner: Wallet, // address
-    spender: Wallet, // address
+    owner: string, // address
+    spender: string, // address
     value: number, // uint
     deadline: number, // uint
     v: number, // uint8
@@ -145,10 +144,10 @@ export class AudiusTokenClient {
   }
 
   async approveProxyTokens(
-    owner: Wallet,
+    owner: string,
     spender: string,
     value: number,
-    relayer: Wallet
+    relayer: string
   ) {
     const method = this.AudiusTokenContract.methods.approve(spender, value)
     const tx = await this.ethWeb3Manager.relayTransaction(
