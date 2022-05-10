@@ -34,6 +34,9 @@ const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 // Max number of completed and failed jobs to leave in the queue history
 const SNAPBACK_QUEUE_HISTORY = 500
 
+// Max number of millis that a single Snapback job should run for
+const MAX_SNAPBACK_JOB_RUNTIME_MS = 1000 * 60 * 60 // 1 hour
+
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring:
@@ -146,13 +149,11 @@ class SnapbackSM {
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
-    this.stateMachineQueueJobMaxDuration = 1000 * 60 * 60 // 1 hour
-
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
     this.stateMachineQueue = this.createBullQueue('state-machine', {
       // Should be sufficiently larger than expected job runtime
-      lockDuration: this.stateMachineQueueJobMaxDuration,
+      lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
       // We never want to re-process stalled jobs
       maxStalledCount: 0
     })
