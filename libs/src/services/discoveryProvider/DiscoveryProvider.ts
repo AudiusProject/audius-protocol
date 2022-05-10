@@ -956,20 +956,32 @@ export class DiscoveryProvider {
     retry = true,
     attemptedRetries = 0
   ): Promise<Response | undefined | null> {
-    try {
-      const newDiscProvEndpoint =
-        await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
+    let hasEndpoint = false
+    do {
+      try {
+        const newDiscProvEndpoint =
+          await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
-      // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
-      if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
-        let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
-        updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
-        console.info(updateDiscProvEndpointMsg)
-        this.discoveryProviderEndpoint = newDiscProvEndpoint
-        attemptedRetries = 0
+        // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
+        if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
+          let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
+          updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
+          console.info(updateDiscProvEndpointMsg)
+          this.discoveryProviderEndpoint = newDiscProvEndpoint
+          attemptedRetries = 0
+        }
+        hasEndpoint = true
+      } catch (e) {
+        console.error(e)
       }
-    } catch (e) {
-      console.error(e)
+    } while (
+      !hasEndpoint &&
+      // eslint-disable-next-line no-unmodified-loop-condition
+      retry &&
+      attemptedRetries < this.selectionRequestRetries
+    )
+    if (!hasEndpoint || !this.discoveryProviderEndpoint) {
+      console.error('Failed to select Discovery Provider')
       return
     }
     let parsedResponse
