@@ -6,9 +6,9 @@ import axios, { AxiosRequestConfig } from 'axios'
 import { range } from 'lodash'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { GetRegistryAddress } from '../contracts/ContractClient'
-import type { AudiusTokenClient } from './audiusTokenClient'
-import type { StakingProxyClient } from './stakingProxyClient'
-import type { GovernanceClient } from './governanceClient'
+import type { AudiusTokenClient } from './AudiusTokenClient'
+import type { StakingProxyClient } from './StakingProxyClient'
+import type { GovernanceClient } from './GovernanceClient'
 import urlJoin from 'proper-url-join'
 
 type GetEvent = {

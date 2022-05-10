@@ -1,16 +1,16 @@
 import semver from 'semver'
-import { AudiusTokenClient } from './audiusTokenClient'
-import { RegistryClient } from './registryClient'
-import { GovernanceClient } from './governanceClient'
-import { ServiceTypeManagerClient } from './serviceTypeManagerClient'
-import { ServiceProviderFactoryClient } from './serviceProviderFactoryClient'
-import { StakingProxyClient } from './stakingProxyClient'
-import { DelegateManagerClient } from './delegateManagerClient'
-import { ClaimsManagerClient } from './claimsManagerClient'
-import { ClaimDistributionClient } from './claimDistributionClient'
+import { AudiusTokenClient } from './AudiusTokenClient'
+import { RegistryClient } from './RegistryClient'
+import { GovernanceClient } from './GovernanceClient'
+import { ServiceTypeManagerClient } from './ServiceTypeManagerClient'
+import { ServiceProviderFactoryClient } from './ServiceProviderFactoryClient'
+import { StakingProxyClient } from './StakingProxyClient'
+import { DelegateManagerClient } from './DelegateManagerClient'
+import { ClaimsManagerClient } from './ClaimsManagerClient'
+import { ClaimDistributionClient } from './ClaimDistributionClient'
 import { WormholeClient } from './wormholeClient'
-import { EthRewardsManagerClient } from './ethRewardsManagerClient'
-import { TrustedNotifierManagerClient } from './trustedNotifierManagerClient'
+import { EthRewardsManagerClient } from './EthRewardsManagerClient'
+import { TrustedNotifierManagerClient } from './TrustedNotifierManagerClient'
 import { Logger, Utils } from '../../utils'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
@@ -26,7 +26,7 @@ const ServiceProviderFactoryABI = Utils.importEthContractABI(
 ).abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI(
-  'DelegateManager.json'
+  'DelegateManagerV2.json'
 ).abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI(

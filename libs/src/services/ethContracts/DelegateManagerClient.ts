@@ -1,10 +1,11 @@
+import type BN from 'bn.js'
 import { ContractABI, Logger, Utils } from '../../utils'
 import type { GetRegistryAddress } from '../contracts/ContractClient'
 import { GovernedContractClient } from '../contracts/GovernedContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
-import type { AudiusTokenClient } from './audiusTokenClient'
-import type { GovernanceClient } from './governanceClient'
-import type { StakingProxyClient } from './stakingProxyClient'
+import type { AudiusTokenClient } from './AudiusTokenClient'
+import type { GovernanceClient } from './GovernanceClient'
+import type { StakingProxyClient } from './StakingProxyClient'
 
 type GetEvent = {
   delegator: string
@@ -431,6 +432,34 @@ export class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod('getStakingAddress')
     const info = await method.call()
     return info
+  }
+
+  async getSPMinDelegationAmount({
+    serviceProvider
+  }: {
+    serviceProvider: string
+  }) {
+    const method = await this.getMethod(
+      'getSPMinDelegationAmount',
+      serviceProvider
+    )
+    const info = await method.call()
+    return Utils.toBN(info)
+  }
+
+  async updateSPMinDelegationAmount({
+    serviceProvider,
+    amount
+  }: {
+    serviceProvider: string
+    amount: BN
+  }) {
+    const method = await this.getMethod(
+      'updateSPMinDelegationAmount',
+      serviceProvider,
+      amount
+    )
+    return this.web3Manager.sendTransaction(method)
   }
 
   async updateRemoveDelegatorLockupDuration(duration: string) {
