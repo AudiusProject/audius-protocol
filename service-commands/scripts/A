@@ -155,7 +155,16 @@ def seed(options):
 
 
 def main():
-    parser = argparse.ArgumentParser(exit_on_error=False)
+    parser = argparse.ArgumentParser(
+        exit_on_error=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=
+"""
+Other commands:
+    `seed` - seed user data eg `A seed <operation>` or `A seed --help` for options
+    all other commands will pass through to service-commands/scripts/setup.js
+"""
+    )
 
     subparser = parser.add_subparsers(
         title="operations",
