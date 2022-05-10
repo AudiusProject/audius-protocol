@@ -138,7 +138,8 @@ class PeerSetManager {
             },
             timeout: 60_000 // 60s
           })
-        }
+        },
+        logger
       })
       nodeUsers = resp.data.data
     } catch (e) {
@@ -148,6 +149,8 @@ class PeerSetManager {
         }]`
       )
     }
+
+    logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
 
     // Ensure every object in response array contains all required fields
     nodeUsers.forEach((nodeUser) => {

@@ -7,7 +7,8 @@ module.exports = {
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
     bootstrapSPOwnerWallets: [],
-    userReplicaSetBootstrapAddress: null
+    userReplicaSetBootstrapAddress: null,
+    registryAddress: null
   },
   audius_dev: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',

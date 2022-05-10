@@ -146,12 +146,14 @@ class SnapbackSM {
     // The interval when SnapbackSM is fired for state machine jobs
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
+    this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
+
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
     this.stateMachineQueue = this.createBullQueue('state-machine', {
       // Should be sufficiently larger than expected job runtime
-      lockDuration: this.snapbackJobInterval * 2,
-      // we never want to re-process stalled job
+      lockDuration: this.stateMachineQueueJobMaxDuration,
+      // We never want to re-process stalled jobs
       maxStalledCount: 0
     })
 
@@ -159,15 +161,39 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
-    // Add stalled event handlers for all queues
-    this.stateMachineQueue.on('global:stalled', (job) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${job.id}}`)
+    // Add event handlers for state machine queue
+    this.stateMachineQueue.on('global:error', (error) => {
+      this.logError(`stateMachineQueue Job Error - ${error}`)
     })
-    this.manualSyncQueue.on('global:stalled', (job) => {
-      this.logError(`manualSyncQueue Job Stalled - ID ${job.id}}`)
+    this.stateMachineQueue.on('global:waiting', (jobId) => {
+      this.log(`stateMachineQueue Job Waiting - ID ${jobId}`)
     })
-    this.recurringSyncQueue.on('global:stalled', (job) => {
-      this.logError(`recurringSyncQueue Job Stalled - ID ${job.id}}`)
+    this.stateMachineQueue.on('global:active', (jobId, jobPromise) => {
+      this.log(`stateMachineQueue Job Active - ID ${jobId}`)
+    })
+    this.stateMachineQueue.on('global:lock-extension-failed', (jobId, err) => {
+      this.logError(
+        `stateMachineQueue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
+      )
+    })
+    this.stateMachineQueue.on('global:completed', (jobId, result) => {
+      this.log(
+        `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}`
+      )
+    })
+    this.stateMachineQueue.on('global:failed', (jobId, err) => {
+      this.logError(`stateMachineQueue Job Failed - ID ${jobId} - Error ${err}`)
+    })
+
+    // Add stalled event handler for all queues
+    this.stateMachineQueue.on('global:stalled', (jobId) => {
+      this.logError(`stateMachineQueue Job Stalled - ID ${jobId}`)
+    })
+    this.manualSyncQueue.on('global:stalled', (jobId) => {
+      this.logError(`manualSyncQueue Job Stalled - ID ${jobId}`)
+    })
+    this.recurringSyncQueue.on('global:stalled', (jobId) => {
+      this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}`)
     })
 
     // PeerSetManager instance to determine the peer set and its health state
@@ -187,7 +213,7 @@ class SnapbackSM {
    */
   async init() {
     // Empty all queues to minimize memory consumption
-    await this.stateMachineQueue.empty()
+    await this.stateMachineQueue.obliterate({ force: true })
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
 
@@ -198,16 +224,34 @@ class SnapbackSM {
      * Initialize all queue processors
      */
 
-    // Initialize stateMachineQueue job processor
+    // Initialize stateMachineQueue job processor (aka consumer)
     this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
-      const jobId = job.id
-      await redis.set('stateMachineQueueLatestJobStart', Date.now())
+      this.log('StateMachineQueue: Consuming new job...')
+      const { id: jobId } = job
+
       try {
-        await this.processStateMachineOperation()
+        this.log(
+          `StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(
+            job
+          )}`
+        )
+      } catch (e) {
+        this.logError(
+          `StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`
+        )
+      }
+
+      try {
+        await redis.set('stateMachineQueueLatestJobStart', Date.now())
+        await this.processStateMachineOperation(jobId)
         await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
-        this.logError(`StateMachineQueue processing error jobId ${jobId}: ${e}`)
+        this.logError(
+          `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`
+        )
       }
+
+      return {}
     })
 
     // Initialize manualSyncQueue job processor
@@ -241,13 +285,11 @@ class SnapbackSM {
     )
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
-      /** opts */ {
-        repeat: { every: this.snapbackJobInterval }
-      }
+      /** opts */ { repeat: { every: this.snapbackJobInterval } }
     )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; jobs will be enqueued every ${this.snapbackJobInterval}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; jobs will be enqueued every ${this.snapbackJobInterval}ms`
     )
   }
 
@@ -856,11 +898,12 @@ class SnapbackSM {
    * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
    * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
    */
-  async processStateMachineOperation() {
+  async processStateMachineOperation(jobId) {
     // Record all stages of this function along with associated information for use in logging
     const decisionTree = []
     this._addToStateMachineQueueDecisionTree(
       decisionTree,
+      jobId,
       'BEGIN processStateMachineOperation()',
       {
         currentModuloSlice: this.currentModuloSlice,
@@ -876,12 +919,14 @@ class SnapbackSM {
 
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'getNodeUsers() and sliceUsers() Success',
           { nodeUsersLength: nodeUsers.length }
         )
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'getNodeUsers() or sliceUsers() Error',
           { error: e.message }
         )
@@ -895,6 +940,7 @@ class SnapbackSM {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'getUnhealthyPeers() Success',
           {
             unhealthyPeerSetLength: unhealthyPeers.size,
@@ -904,6 +950,7 @@ class SnapbackSM {
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'processStateMachineOperation():getUnhealthyPeers() Error',
           { error: e.message }
         )
@@ -917,6 +964,7 @@ class SnapbackSM {
         this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
+        jobId,
         'buildReplicaSetNodesToUserWalletsMap() Success',
         {
           numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)
@@ -935,6 +983,7 @@ class SnapbackSM {
 
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'updateEndpointToSpIdMap() Success',
           {
             endpointToSPIdMapSize: Object.keys(
@@ -949,6 +998,7 @@ class SnapbackSM {
         )
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'updateEndpointToSpIdMap() Error',
           { error: e.message }
         )
@@ -964,11 +1014,13 @@ class SnapbackSM {
           )
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'retrieveClockStatusesForUsersAcrossReplicaSet() Success'
         )
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
           { error: e.message }
         )
@@ -984,6 +1036,7 @@ class SnapbackSM {
           await this.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'computeUserSecondarySyncSuccessRatesMap() Success',
           {
             userSecondarySyncMetricsMapLength: Object.keys(
@@ -994,6 +1047,7 @@ class SnapbackSM {
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'computeUserSecondarySyncSuccessRatesMap() Error',
           { error: e.message }
         )
@@ -1011,6 +1065,7 @@ class SnapbackSM {
         )
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
+        jobId,
         'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
         {
           requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
@@ -1038,6 +1093,7 @@ class SnapbackSM {
 
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'issueSyncRequestsToSecondaries() Success',
           {
             numSyncRequestsRequired,
@@ -1049,6 +1105,7 @@ class SnapbackSM {
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'issueSyncRequestsToSecondaries() Error',
           {
             error: e.message,
@@ -1109,12 +1166,14 @@ class SnapbackSM {
 
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'issueUpdateReplicaSetOp() Success',
           { numUpdateReplicaOpsIssued }
         )
       } catch (e) {
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
+          jobId,
           'issueUpdateReplicaSetOp() Error',
           { error: e.message }
         )
@@ -1125,12 +1184,14 @@ class SnapbackSM {
     } catch (e) {
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
+        jobId,
         'processStateMachineOperation() Error',
         { error: e.message }
       )
     } finally {
       this._addToStateMachineQueueDecisionTree(
         decisionTree,
+        jobId,
         'END processStateMachineOperation()',
         {
           currentModuloSlice: this.currentModuloSlice,
@@ -1139,15 +1200,25 @@ class SnapbackSM {
       )
 
       // Log decision tree
-      this._printStateMachineQueueDecisionTree(decisionTree)
+      this._printStateMachineQueueDecisionTree(decisionTree, jobId)
 
       // Increment and adjust current slice by this.moduloBase
       this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
     }
   }
 
-  _addToStateMachineQueueDecisionTree(decisionTree, stage, data = {}) {
+  _addToStateMachineQueueDecisionTree(
+    decisionTree,
+    jobId,
+    stage,
+    data = {},
+    log = true
+  ) {
     const obj = { stage, data, time: Date.now() }
+
+    let logStr = `processStateMachineOperation() ${jobId} ${stage} - Data ${JSON.stringify(
+      data
+    )}`
 
     if (decisionTree.length > 0) {
       // Set duration if both objs have time field
@@ -1155,12 +1226,17 @@ class SnapbackSM {
       if (lastObj && lastObj.time) {
         const duration = obj.time - lastObj.time
         obj.duration = duration
+        logStr += ` - Duration ${duration}ms`
       }
     }
     decisionTree.push(obj)
+
+    if (log) {
+      this.log(logStr)
+    }
   }
 
-  _printStateMachineQueueDecisionTree(decisionTree, msg = '') {
+  _printStateMachineQueueDecisionTree(decisionTree, jobId, msg = '') {
     // Compute and record `fullDuration`
     if (decisionTree.length > 2) {
       const startTime = decisionTree[0].time
@@ -1170,13 +1246,13 @@ class SnapbackSM {
     }
     try {
       this.log(
-        `processStateMachineOperation() Decision Tree${
+        `processStateMachineOperation() ${jobId} Decision Tree${
           msg ? ` - ${msg} - ` : ''
         }${JSON.stringify(decisionTree)}`
       )
     } catch (e) {
       this.logError(
-        `Error printing processStateMachineOperation() Decision Tree ${decisionTree}`
+        `Error printing processStateMachineOperation() ${jobId} Decision Tree ${decisionTree}`
       )
     }
   }

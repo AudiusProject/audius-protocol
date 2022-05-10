@@ -20,8 +20,13 @@ module.exports = (deployer, network, accounts) => {
     let registry
     let registryAddress
     if (network === 'test_local' || network === 'development' || network === 'audius_dev') {
-      registry = await Registry.deployed()
-      registryAddress = registry.address
+      if (!config.registryAddress) {
+        registry = await Registry.deployed()
+        registryAddress = registry.address
+      } else {
+        registryAddress = config.registryAddress
+        registry = await Registry.at(registryAddress)
+      }
     } else {
       if (!config.registryAddress) {
         throw new Error('Invalid configuration, expected registry address to be configured')
