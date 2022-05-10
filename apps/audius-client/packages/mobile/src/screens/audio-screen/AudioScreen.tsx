@@ -359,7 +359,7 @@ export const AudioScreen = () => {
           tierNumber={3}
           title='gold'
           colors={['rgb(236, 173, 11)', 'rgb(236, 173, 11)']}
-          minAmount={1000}
+          minAmount={10_000}
           image={<Image source={Gold} />}
           isCurrentTier={tierNumber === 2}
         />
@@ -367,7 +367,7 @@ export const AudioScreen = () => {
           tierNumber={4}
           title='platinum'
           colors={['rgb(179, 236, 249)', 'rgb(87, 194, 215)']}
-          minAmount={10000}
+          minAmount={100_000}
           image={<Image source={Platinum} />}
           isCurrentTier={tierNumber === 3}
         />
