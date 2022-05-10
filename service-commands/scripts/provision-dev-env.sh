@@ -59,15 +59,16 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
 
-    pip install \
+    python$PYTHON_VERSION -m pip install \
         ipython \
         pre-commit==2.16.0 \
+        pip==22.0.4 \
         wheel \
         yq
 
     (
         cd $PROTOCOL_DIR/discovery-provider
-        pip install -r requirements.txt
+        python$PYTHON_VERSION -m pip install -r requirements.txt
     )
 }
 
