@@ -978,7 +978,7 @@ export class DiscoveryProvider {
       !hasEndpoint &&
       // eslint-disable-next-line no-unmodified-loop-condition
       retry &&
-      attemptedRetries < this.selectionRequestRetries
+      attemptedRetries++ < this.selectionRequestRetries
     )
     if (!hasEndpoint || !this.discoveryProviderEndpoint) {
       console.error('Failed to select Discovery Provider')
