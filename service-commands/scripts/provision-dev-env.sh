@@ -59,11 +59,10 @@ function setup_python() {
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
 
-    python$PYTHON_VERSION -m pip install --upgrade pip
-
     python$PYTHON_VERSION -m pip install \
         ipython \
         pre-commit==2.16.0 \
+        pip==22.0.4 \
         wheel \
         yq
 
