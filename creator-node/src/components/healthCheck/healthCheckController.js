@@ -109,7 +109,7 @@ const healthCheckController = async (req) => {
 
   const { stateMachineQueueLatestJobSuccess } = response
   if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
-    const healthyThresholdMs = 5 * config.get('snapbackJobInterval')
+    const healthyThresholdMs = 1000 * 60 * 60 // 1 hour
 
     const delta =
       Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()

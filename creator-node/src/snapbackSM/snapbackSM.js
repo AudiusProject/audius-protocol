@@ -139,17 +139,14 @@ class SnapbackSM {
       throw new Error('SnapbackSM: Missing required configs - cannot start')
     }
 
-    // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
-    // ex: 1/<24> users are handled over <3600000> ms (1 hour)
+    // 1/<moduloBase> users are handled in each job
+    // ex: 1/<24> users are handled in a job that takes a variable length of time (depends on errors and # of users)
     this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
 
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
-    // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
-
-    this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
+    this.stateMachineQueueJobMaxDuration = 1000 * 60 * 60 // 1 hour
 
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
@@ -290,14 +287,14 @@ class SnapbackSM {
       }
     )
 
-    // Enqueue initial after an initial delay. This job requeues itself upon completion
+    // Enqueue first job after a delay. This job requeues itself upon completion or failure
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
       /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
     )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; jobs will be enqueued every ${this.snapbackJobInterval}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; a new will be enqueued after each previous job finishes`
     )
   }
 
