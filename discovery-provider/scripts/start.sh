@@ -61,17 +61,6 @@ EOF
     fi
 fi
 
-if [ -z "$audius_ipfs_host" ]; then
-    if [ -z "$(ls -A /root/.ipfs)" ]; then
-        ipfs init --profile server
-    fi
-
-    ipfs daemon &
-    export audius_ipfs_host=localhost
-    export WAIT_HOSTS="localhost:5001"
-    /wait
-fi
-
 if [ -z "$audius_redis_url" ]; then
     redis-server --daemonize yes
     export audius_redis_url="redis://localhost:6379/00"
