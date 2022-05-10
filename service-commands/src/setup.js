@@ -697,30 +697,30 @@ const allUp = async ({
     ipfsAndContractsCommands.push([Service.SOLANA_PROGRAMS, SetupCommand.UP])
   }
 
-  const nodeUpCommands = []
-  const nodeHealthCheckCommands = []
-  const nodeRegisterCommands = []
+  const discoveryNodeUpCommands = []
+  const discoveryNodeHealthCheckCommands = []
+  const discoveryNodeRegisterCommands = []
   // Add discovery node commands
   for (
     let serviceNumber = 1;
     serviceNumber < numDiscoveryNodes + 1;
     serviceNumber++
   ) {
-    nodeUpCommands.push([
+    discoveryNodeUpCommands.push([
       [
         Service.DISCOVERY_PROVIDER,
         SetupCommand.UP,
         { serviceNumber, ...options }
       ]
     ])
-    nodeHealthCheckCommands.push([
+    discoveryNodeHealthCheckCommands.push([
       [
         Service.DISCOVERY_PROVIDER,
         SetupCommand.HEALTH_CHECK_RETRY,
         { serviceNumber, ...options }
       ]
     ])
-    nodeRegisterCommands.push([
+    discoveryNodeRegisterCommands.push([
       [
         Service.DISCOVERY_PROVIDER,
         SetupCommand.REGISTER,
@@ -728,6 +728,9 @@ const allUp = async ({
       ]
     ])
   }
+  const nodeUpCommands = []
+  const nodeHealthCheckCommands = []
+  const nodeRegisterCommands = []
   // Add creator node commands
   for (
     let serviceNumber = 1;
@@ -790,40 +793,56 @@ const allUp = async ({
   await runInSequence([[Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]])
 
   if (parallel) {
-    const startProv = Date.now()
-    console.log('Provisioning services in parallel'.info)
-    await Promise.all(
-      nodeUpCommands.map(commandGroup => runInSequence(commandGroup, options))
-    )
-    console.log(
-      `Services provisioned in ${Math.abs((Date.now() - startProv) / 1000.0)}s`
-        .info
-    )
-    const startHealth = Date.now()
-    console.log('Health checking services'.info)
-    await Promise.all(
-      nodeHealthCheckCommands.map(commandGroup =>
-        runInSequence(commandGroup, options)
+    const runParallel = async (up, healthCheck, register) => {
+      const startProv = Date.now()
+      await Promise.all(
+        up.map(commandGroup => runInSequence(commandGroup, options))
       )
-    )
-    console.log(
-      `Services health check complete in ${Math.abs(
-        (Date.now() - startHealth) / 1000.0
-      )}s`.info
-    )
-    const startRegister = Date.now()
-    console.log('Registering services'.info)
-    await Promise.all(
-      nodeRegisterCommands.map(commandGroup =>
-        runInSequence(commandGroup, options)
+      console.log(
+        `Services provisioned in ${Math.abs(
+          (Date.now() - startProv) / 1000.0
+        )}s`.info
       )
+      const startHealth = Date.now()
+      console.log('Health checking services'.info)
+      await Promise.all(
+        healthCheck.map(commandGroup => runInSequence(commandGroup, options))
+      )
+      console.log(
+        `Services health check complete in ${Math.abs(
+          (Date.now() - startHealth) / 1000.0
+        )}s`.info
+      )
+      const startRegister = Date.now()
+      console.log('Registering services'.info)
+      await Promise.all(
+        register.map(commandGroup => runInSequence(commandGroup, options))
+      )
+      console.log(
+        `Services registered in ${Math.abs(
+          (Date.now() - startRegister) / 1000.0
+        )}s`.info
+      )
+    }
+    console.log('Provisioning DNs in parallel'.info)
+    await runParallel(
+      discoveryNodeUpCommands,
+      discoveryNodeHealthCheckCommands,
+      discoveryNodeRegisterCommands
     )
-    console.log(
-      `Services registered in ${Math.abs(
-        (Date.now() - startRegister) / 1000.0
-      )}s`.info
+    console.log('Provisioning CNs, identity, etc in parallel'.info)
+    await runParallel(
+      nodeUpCommands,
+      nodeHealthCheckCommands,
+      nodeRegisterCommands
     )
   } else {
+    console.log('Provisioning DNs in sequence.'.info)
+    await runInSequence(discoveryNodeUpCommands.flat())
+    console.log('Health checking DNs'.info)
+    await runInSequence(discoveryNodeHealthCheckCommands.flat())
+    console.log('Registering DNs'.info)
+    await runInSequence(discoveryNodeRegisterCommands.flat())
     console.log('Provisioning services in sequence.'.info)
     await runInSequence(nodeUpCommands.flat())
     console.log('Health checking services'.info)
