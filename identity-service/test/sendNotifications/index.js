@@ -302,7 +302,7 @@ describe('Test Send Notifications', function () {
   })
 
   it('should batch track metadata fetches', async function () {
-    // User 1 creates tracks 500 tracks
+    // User 1 creates 500 tracks
 
     // ======================================= Set subscribers for create notifications =======================================
     await models.Subscription.bulkCreate([

@@ -239,8 +239,9 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
 
   const uniqueTrackIds = [...new Set(trackIdsToFetch)]
 
-  let tracks = []
-  const trackBatchSize = 100
+  const tracks = []
+  // Batch track fetches to avoid large request lines
+  const trackBatchSize = 100 // use default limit
   for (let trackBatchOffset = 0; trackBatchOffset < uniqueTrackIds.length; trackBatchOffset += trackBatchSize) {
     const trackBatch = uniqueTrackIds.slice(trackBatchOffset, trackBatchOffset + trackBatchSize)
     const tracksResponse = await audius.Track.getTracks(
