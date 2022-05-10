@@ -25,6 +25,7 @@ def create_instance(provider, image, disk_size, machine_type, name):
         check=False,
     )
 
+
 def create_instance_command_parser(subparser):
     parser_create_instance = subparser.add_parser(
         "create-instance",
@@ -79,6 +80,7 @@ def setup(
         ],
         check=False,
     )
+
 
 def setup_command_parser(subparser):
     parser_setup = subparser.add_parser(
@@ -151,12 +153,6 @@ def seed(options):
         check=False,
     )
 
-def seed_command_parser(subparser):
-    parser_setup = subparser.add_parser(
-        "seed",
-        help="seed data to the local machine",
-    )
-
 
 def main():
     parser = argparse.ArgumentParser(exit_on_error=False)
@@ -169,7 +165,6 @@ def main():
 
     create_instance_command_parser(subparser)
     setup_command_parser(subparser)
-    # seed_command_parser(subparser)
 
     try:
         # if no options are defined, print out the usage
@@ -198,9 +193,6 @@ def main():
                 args.client_git_ref,
                 args.name,
             )
-        # elif args.operation == "seed":
-        #     options = sys.argv[2:]
-        #     seed(options)
     except argparse.ArgumentError:
         if sys.argv[1] == "seed":
             options = sys.argv[2:]
