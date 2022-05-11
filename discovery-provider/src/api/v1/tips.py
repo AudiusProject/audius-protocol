@@ -10,7 +10,6 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.tips import tip_model, tip_model_full
 from src.queries.get_tips import get_tips
-from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
