@@ -247,17 +247,18 @@ args = parser.parse_args()
 
 
 seeder = Seeder()
-start = time.time()
 if args.clear_existing:
     seeder.clear_seeds(
         user_id_offset=args.user_id_offset, blocknumber_offset=args.blocknumber_offset
     )
-seeder.seed_blocks(args.num_blocks, blocknumber_offset=args.blocknumber_offset)
-seeder.seed_users(
-    args.num_users,
-    user_id_offset=args.user_id_offset,
-)
-seeder.seed_follows(args.num_follows)
-seeder.seed_user_tips(args.num_user_tips, slot_offset=args.slot_offset)
-seeder.seed_aggregate_user_tips(args.num_aggregate_user_tips)
-print(f"Seeder finished in {time.time() - start}")
+else:
+    start = time.time()
+    seeder.seed_blocks(args.num_blocks, blocknumber_offset=args.blocknumber_offset)
+    seeder.seed_users(
+        args.num_users,
+        user_id_offset=args.user_id_offset,
+    )
+    seeder.seed_follows(args.num_follows)
+    seeder.seed_user_tips(args.num_user_tips, slot_offset=args.slot_offset)
+    seeder.seed_aggregate_user_tips(args.num_aggregate_user_tips)
+    print(f"Seeder finished in {time.time() - start}")
