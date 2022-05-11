@@ -9,9 +9,11 @@ import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
 import { User } from 'common/models/User'
+import { FeatureFlags } from 'common/services/remote-config'
 import { open as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
+import { useFlag } from 'hooks/useRemoteConfig'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { useRecord, make } from 'store/analytics/actions'
@@ -135,6 +137,9 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
   const [, setIsTikTokModalOpen] = useModalState('ShareSoundToTikTok')
+  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+    FeatureFlags.SHARE_SOUND_TO_TIKTOK
+  )
 
   const onClickTwitter = useCallback(async () => {
     const { url, text } = await getShareTextUrl(type, user, upload)
@@ -177,7 +182,11 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
   }, [type, user, upload, record])
 
   const shouldShowShareToTikTok = () => {
-    return type === 'Track' && !upload.tracks[0]?.metadata.is_unlisted
+    return (
+      type === 'Track' &&
+      isShareSoundToTikTokEnabled &&
+      !upload.tracks[0]?.metadata.is_unlisted
+    )
   }
 
   const continuePage = getContinuePage(type)

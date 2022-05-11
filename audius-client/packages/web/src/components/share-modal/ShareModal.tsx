@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
+import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { shareCollection } from 'common/store/social/collections/actions'
 import { shareTrack } from 'common/store/social/tracks/actions'
@@ -11,6 +12,7 @@ import { shareUser } from 'common/store/social/users/actions'
 import { getShareState } from 'common/store/ui/share-modal/selectors'
 import { requestOpen as requestOpenTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { make, useRecord } from 'store/analytics/actions'
 import { isMobile } from 'utils/clientUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
@@ -31,6 +33,10 @@ export const ShareModal = () => {
   const record = useRecord()
   const { content, source } = useSelector(getShareState)
   const account = useSelector(getAccountUser)
+
+  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+    FeatureFlags.SHARE_SOUND_TO_TIKTOK
+  )
 
   const isOwner =
     content?.type === 'track' && account?.user_id === content.artist.user_id
@@ -85,6 +91,7 @@ export const ShareModal = () => {
     onClose: handleClose,
     showTikTokShareAction: Boolean(
       content?.type === 'track' &&
+        isShareSoundToTikTokEnabled &&
         isOwner &&
         !content.track.is_unlisted &&
         !content.track.is_delete
