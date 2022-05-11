@@ -1230,7 +1230,8 @@ class SnapbackSM {
 
       if (useModulo) {
         // Increment and adjust current slice by this.moduloBase
-        this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
+        this.currentModuloSlice =
+          (this.currentModuloSlice + 1) % this.moduloBase
       } else {
         // The next job should start processing where this one ended or loop back around to the first user
         const lastProcessedUser = nodeUsers.pop() || { user_id: 0 }
