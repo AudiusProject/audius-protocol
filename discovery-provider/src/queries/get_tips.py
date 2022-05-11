@@ -171,27 +171,33 @@ def _get_tips(session: Session, args: GetTipsArgs):
         if "current_user_follows" in args and args["current_user_follows"] is not None:
             FolloweesSender = aliased(followees_query, name="followees_for_sender")
             FolloweesReceiver = aliased(followees_query, name="followees_for_receiver")
-            filter_cond = []
-            if (
-                args["current_user_follows"] == "receiver"
-                or args["current_user_follows"] == "sender_or_receiver"
-            ):
+            if args["current_user_follows"] == "receiver":
+                query = query.join(
+                    FolloweesReceiver,
+                    UserTipAlias.receiver_user_id
+                    == FolloweesReceiver.c.followee_user_id,
+                )
+            elif args["current_user_follows"] == "sender":
+                query = query.join(
+                    FolloweesSender,
+                    UserTipAlias.receiver_user_id == FolloweesSender.c.followee_user_id,
+                )
+            elif args["current_user_follows"] == "sender_or_receiver":
+                query = query.outerjoin(
+                    FolloweesSender,
+                    UserTipAlias.sender_user_id == FolloweesSender.c.followee_user_id,
+                )
                 query = query.outerjoin(
                     FolloweesReceiver,
                     UserTipAlias.receiver_user_id
                     == FolloweesReceiver.c.followee_user_id,
                 )
-                filter_cond.append(FolloweesReceiver.c.followee_user_id != None)
-            if (
-                args["current_user_follows"] == "sender"
-                or args["current_user_follows"] == "sender_or_receiver"
-            ):
-                query = query.outerjoin(
-                    FolloweesSender,
-                    UserTipAlias.sender_user_id == FolloweesSender.c.followee_user_id,
+                query = query.filter(
+                    or_(
+                        FolloweesSender.c.followee_user_id != None,
+                        FolloweesReceiver.c.followee_user_id != None,
+                    )
                 )
-                filter_cond.append(FolloweesSender.c.followee_user_id != None)
-            query = query.filter(or_(*filter_cond))
 
         # Order and paginate before adding follower filters/aggregates
         query = query.order_by(UserTipAlias.slot.desc())
