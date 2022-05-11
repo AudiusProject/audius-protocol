@@ -7,7 +7,6 @@ import { NotificationBody } from './NotificationBody'
 import { NotificationFooter } from './NotificationFooter'
 import { NotificationHeader } from './NotificationHeader'
 import { NotificationTile } from './NotificationTile'
-import { TwitterShareButton } from './TwitterShareButton'
 import { UserNameLink } from './UserNameLink'
 import { UserProfileList } from './UserProfileList'
 import { IconFavorite } from './icons'
@@ -41,7 +40,6 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         {entityType.toLowerCase()}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>
-      <TwitterShareButton />
       <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
     </NotificationTile>
   )
