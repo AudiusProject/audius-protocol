@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
+    abort_bad_request_param,
+    decode_with_abort,
     extend_tip,
     make_full_response,
     make_response,
@@ -67,7 +69,12 @@ class Tips(Resource):
     def get(self):
         args = tips_parser.parse_args()
         if args.get("user_id"):
-            args["user_id"] = decode_string_id(args["user_id"])
+            args["user_id"] = decode_with_abort(args["user_id"], full_ns)
+        elif args.get("current_user_follows"):
+            abort_bad_request_param(
+                "current_user_follows. Missing user_id",
+                full_ns,
+            )
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))
@@ -91,7 +98,7 @@ full_tips_parser.add_argument(
     "transaction_signatures",
     required=False,
     description="A list of transaction signatures of tips to fetch",
-    action="split"
+    action="split",
 )
 
 
@@ -107,7 +114,12 @@ class FullTips(Resource):
     def get(self):
         args = full_tips_parser.parse_args()
         if args.get("user_id"):
-            args["user_id"] = decode_string_id(args["user_id"])
+            args["user_id"] = decode_with_abort(args["user_id"], full_ns)
+        elif args.get("current_user_follows"):
+            abort_bad_request_param(
+                "current_user_follows. Missing user_id",
+                full_ns,
+            )
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))
