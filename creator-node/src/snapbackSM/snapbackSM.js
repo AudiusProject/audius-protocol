@@ -101,6 +101,13 @@ class SnapbackSM {
     // Toggle to switch logs
     this.debug = true
 
+    // Start at a random userId to avoid biased processing of early users
+    this.lastProcessedUserId = this.randomIntFromIntervalInclusive(
+      0,
+      10_000_000
+    )
+    this.usersPerJob = this.nodeConfig.get('snapbackUsersPerJob')
+
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
     this.delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
@@ -214,6 +221,10 @@ class SnapbackSM {
     })
 
     this.updateEnabledReconfigModesSet()
+  }
+
+  randomIntFromIntervalInclusive(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min)
   }
 
   /**
@@ -913,15 +924,21 @@ class SnapbackSM {
       'BEGIN processStateMachineOperation()',
       {
         currentModuloSlice: this.currentModuloSlice,
-        moduloBase: this.moduloBase
+        moduloBase: this.moduloBase,
+        lastProcessedUserId: this.lastProcessedUserId
       }
     )
 
+    let nodeUsers = []
     try {
-      let nodeUsers
       try {
-        nodeUsers = await this.peerSetManager.getNodeUsers()
-        nodeUsers = this.sliceUsers(nodeUsers)
+        nodeUsers = await this.peerSetManager.getNodeUsers(
+          this.lastProcessedUserId,
+          this.usersPerJob
+        )
+
+        // TODO: Fall back to this if releasing to prod
+        // nodeUsers = this.sliceUsers(nodeUsers)
 
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1208,8 +1225,13 @@ class SnapbackSM {
       // Log decision tree
       this._printStateMachineQueueDecisionTree(decisionTree, jobId)
 
+      // The next job should start processing where this one ended or loop back around to the first user
+      const lastProcessedUser = nodeUsers.pop() || { user_id: 0 }
+      this.lastProcessedUserId = lastProcessedUser.user_id
+
+      // TODO: Fall back to this before releasing to prod
       // Increment and adjust current slice by this.moduloBase
-      this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
+      // this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
     }
   }
 
