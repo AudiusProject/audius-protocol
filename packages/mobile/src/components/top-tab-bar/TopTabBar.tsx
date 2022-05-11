@@ -66,6 +66,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 
   tabText: {
     ...typography.label,
+    fontSize: 9,
     letterSpacing: 0.2,
     color: palette.neutral,
     textTransform: 'uppercase'

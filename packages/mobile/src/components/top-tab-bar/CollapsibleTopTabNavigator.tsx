@@ -6,15 +6,8 @@ import { createMaterialCollapsibleTopTabNavigator } from 'react-native-collapsib
 import { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
-import { makeStyles } from 'app/styles'
 
 const Tab = createMaterialCollapsibleTopTabNavigator()
-
-const useStyles = makeStyles(({ palette }) => ({
-  root: { backgroundColor: palette.white },
-  label: { fontSize: 12 },
-  indicator: { backgroundColor: palette.primary, height: 3 }
-}))
 
 type CollapsibleTabNavigatorContextProps = {
   sceneName?: string
@@ -78,7 +71,6 @@ export const CollapsibleTabNavigator = ({
   children,
   screenOptions
 }: CollapsibleTabNavigatorProps) => {
-  const styles = useStyles()
   return (
     <Tab.Navigator
       collapsibleOptions={{
@@ -89,9 +81,6 @@ export const CollapsibleTabNavigator = ({
       initialRouteName={initialScreenName}
       tabBar={props => <TopTabBar {...props} />}
       screenOptions={{
-        tabBarStyle: styles.root,
-        tabBarLabelStyle: styles.label,
-        tabBarIndicatorStyle: styles.indicator,
         ...screenOptions
       }}
     >
