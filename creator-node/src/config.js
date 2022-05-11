@@ -496,6 +496,12 @@ const config = convict({
     env: 'snapbackModuloBase',
     default: 48
   },
+  snapbackUsersPerJob: {
+    doc: 'Maximum number of users to process in each SnapbackSM job',
+    format: 'nat',
+    env: 'snapbackUsersPerJob',
+    default: 1000
+  },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
