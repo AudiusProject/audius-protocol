@@ -12,4 +12,4 @@ COPY . .
 RUN npm install ganache --global
 RUN ./scripts/setup-predeployed-ganache.sh /usr/db
 
-CMD ["ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50", "--miner.blockTime", "1"]
+CMD ["ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50"]
