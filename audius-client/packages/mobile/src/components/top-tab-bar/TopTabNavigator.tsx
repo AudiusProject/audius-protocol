@@ -7,15 +7,8 @@ import {
 import { SvgProps } from 'react-native-svg'
 
 import { TopTabBar } from 'app/components/top-tab-bar'
-import { makeStyles } from 'app/styles'
 
 const Tab = createMaterialTopTabNavigator()
-
-const useStyles = makeStyles(({ palette }) => ({
-  root: { backgroundColor: palette.white },
-  label: { fontSize: 12 },
-  indicator: { backgroundColor: palette.primary, height: 3 }
-}))
 
 type TabNavigatorProps = {
   initialScreenName?: string
@@ -28,16 +21,11 @@ export const TabNavigator = ({
   children,
   screenOptions
 }: TabNavigatorProps) => {
-  const styles = useStyles()
-
   return (
     <Tab.Navigator
       initialRouteName={initialScreenName}
       tabBar={props => <TopTabBar {...props} />}
       screenOptions={{
-        tabBarStyle: styles.root,
-        tabBarLabelStyle: styles.label,
-        tabBarIndicatorStyle: styles.indicator,
         ...screenOptions
       }}
     >
