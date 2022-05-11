@@ -80,3 +80,12 @@
 .iconRemix g path {
   fill: var(--secondary);
 }
+
+.iconTip {
+  composes: icon;
+  height: 24px;
+}
+
+.iconTip g path {
+  fill: var(--secondary);
+}

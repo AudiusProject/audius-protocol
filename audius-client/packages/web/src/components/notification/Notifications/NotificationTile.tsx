@@ -1,7 +1,14 @@
-import React, { ReactEventHandler, ReactNode } from 'react'
+import React, {
+  MouseEventHandler,
+  ReactEventHandler,
+  ReactNode,
+  useCallback
+} from 'react'
 
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
+import { toggleNotificationPanel } from 'common/store/notifications/actions'
 import { Notification } from 'common/store/notifications/types'
 
 import styles from './NotificationTile.module.css'
@@ -12,11 +19,24 @@ type NotificationTileProps = {
   onClick?: ReactEventHandler
   // When `true` disable :active transforms
   disabled?: boolean
+  // When `true` do not close notification panel onClick
+  disableClosePanel?: boolean
 }
 
 export const NotificationTile = (props: NotificationTileProps) => {
-  const { notification, onClick, children, disabled } = props
+  const { notification, onClick, children, disabled, disableClosePanel } = props
   const { isRead } = notification
+  const dispatch = useDispatch()
+
+  const handleClick: MouseEventHandler = useCallback(
+    event => {
+      onClick?.(event)
+      if (!disableClosePanel) {
+        dispatch(toggleNotificationPanel())
+      }
+    },
+    [onClick, disableClosePanel, dispatch]
+  )
 
   return (
     <div
@@ -26,7 +46,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
       })}
       tabIndex={0}
       role='button'
-      onClick={onClick}
+      onClick={handleClick}
     >
       {children}
     </div>

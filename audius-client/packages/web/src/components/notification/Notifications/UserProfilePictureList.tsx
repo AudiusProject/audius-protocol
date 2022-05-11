@@ -6,12 +6,11 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import { ProfilePicture } from './ProfilePicture'
 import styles from './UserProfilePictureList.module.css'
+import { USER_LENGTH_LIMIT } from './utils'
 
 const messages = {
   viewAllTooltip: 'View All'
 }
-
-const USER_LENGTH_LIMIT = 8
 
 type UserProfileListProps = {
   users: Array<User>

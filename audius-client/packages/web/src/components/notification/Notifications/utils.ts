@@ -40,3 +40,5 @@ export const getTwitterHandleByUserHandle = async (userHandle: string) => {
   )
   return twitterHandle || ''
 }
+
+export const USER_LENGTH_LIMIT = 9

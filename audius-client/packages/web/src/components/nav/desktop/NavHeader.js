@@ -10,7 +10,7 @@ import { StringKeys } from 'common/services/remote-config'
 import { formatCount } from 'common/utils/formatUtil'
 import NavButton from 'components/nav/desktop/NavButton'
 import NavPopupMenu from 'components/nav/desktop/NavPopupMenu'
-import NotificationPanel from 'components/notification/NotificationPanel'
+import { NotificationPanel } from 'components/notification/NotificationPanel'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { HOME_PAGE, BASE_URL, stripBaseUrl } from 'utils/route'
 import { getTheme } from 'utils/theme/theme'
@@ -74,11 +74,7 @@ const NavHeader = ({
               {formatCount(notificationCount)}
             </div>
           ) : null}
-          <NotificationPanel
-            anchorRef={notificationPanelAnchorRef}
-            isElectron={isElectron}
-            toggleNotificationPanel={toggleNotificationPanel}
-          />
+          <NotificationPanel anchorRef={notificationPanelAnchorRef} />
         </div>
       ) : null}
     </div>
