@@ -110,8 +110,7 @@ class PeerSetManager {
    * Retrieve users with this node as replica (primary or secondary).
    * Makes single request to discovery node to retrieve all users, optionally paginated
    *
-   * @notice Discovery Nodes will ignore these params if they're updated to the version which added pagination
-   *
+   * @notice Discovery Nodes will ignore these params if they're not updated to the version which added pagination
    * @param prevUserId user_id is used for pagination, where each paginated request returns
    *                   maxUsers number of users starting at a user with id=user_id
    * @param maxUsers the maximum number of users to fetch
@@ -156,7 +155,7 @@ class PeerSetManager {
     logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
 
     // Ensure every object in response array contains all required fields
-    nodeUsers.forEach((nodeUser) => {
+    for (const nodeUser of nodeUsers) {
       const requiredFields = [
         'user_id',
         'wallet',
@@ -176,7 +175,7 @@ class PeerSetManager {
           'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
         )
       }
-    })
+    }
 
     return nodeUsers
   }
