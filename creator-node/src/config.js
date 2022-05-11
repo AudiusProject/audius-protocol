@@ -496,12 +496,6 @@ const config = convict({
     env: 'snapbackModuloBase',
     default: 48
   },
-  snapbackJobInterval: {
-    doc: 'Interval [ms] that snapbackSM jobs are fired',
-    format: 'nat',
-    env: 'snapbackJobInterval',
-    default: 1800000 // 30min
-  },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
