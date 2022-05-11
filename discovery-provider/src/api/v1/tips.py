@@ -94,7 +94,7 @@ full_tips_parser.add_argument(
     description="The minimum Solana slot to pull tips from",
 )
 full_tips_parser.add_argument(
-    "transaction_signatures",
+    "tx_signatures",
     required=False,
     description="A list of transaction signatures of tips to fetch",
     action="split",

@@ -27,6 +27,6 @@ tip_model_full = ns.clone(
         "followee_supporters": fields.List(
             fields.Nested(supporter_reference), required=True
         ),
-        "transaction_signature": fields.String(required=True),
+        "tx_signature": fields.String(required=True),
     },
 )

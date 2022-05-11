@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Tuple, TypedDict, Union, cast
+from typing import List, Tuple, TypedDict, Union, cast
 
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Query, aliased
@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 class GetTipsArgs(TypedDict):
     limit: int
     offset: int
-    user_id: Optional[int]
-    receiver_min_followers: Optional[int]
-    receiver_is_verified: Optional[bool]
-    current_user_follows: Optional[str]
-    unique_by: Optional[str]
+    user_id: int
+    receiver_min_followers: int
+    receiver_is_verified: bool
+    current_user_follows: str
+    unique_by: str
     min_slot: int
-    transaction_signatures: List[int]
+    tx_signatures: List[int]
 
 
 class TipResult(TypedDict):
@@ -32,7 +32,7 @@ class TipResult(TypedDict):
     slot: int
     created_at: datetime
     followee_supporters: List[str]
-    transaction_signature: str
+    tx_signature: str
 
 
 # Example of query with inputs:
@@ -114,24 +114,20 @@ class TipResult(TypedDict):
 def _get_tips(session: Session, args: GetTipsArgs):
     UserTipAlias = aliased(UserTip)
     query: Query = session.query(UserTipAlias)
-    if "transaction_signatures" in args and args["transaction_signatures"]:
-        query = query.filter(UserTipAlias.signature.in_(args["transaction_signatures"]))
-    if (
-        "receiver_min_followers" in args
-        and args["receiver_min_followers"] is not None
-        and args["receiver_min_followers"] > 0
-    ):
+    if args.get("tx_signatures"):
+        query = query.filter(UserTipAlias.signature.in_(args["tx_signatures"]))
+    if args.get("receiver_min_followers", 0) > 0:
         query = query.join(
             AggregateUser, AggregateUser.user_id == UserTipAlias.receiver_user_id
         ).filter(AggregateUser.follower_count >= args["receiver_min_followers"])
 
-    if "receiver_is_verified" in args and args["receiver_is_verified"] == True:
+    if args.get("receiver_is_verified", False):
         query = query.join(User, User.user_id == UserTipAlias.receiver_user_id).filter(
             User.is_current == True, User.is_verified == True
         )
-    if "min_slot" in args and args["min_slot"] > 0:
+    if args.get("min_slot", 0) > 0:
         query = query.filter(UserTipAlias.slot >= args["min_slot"])
-    if "unique_by" in args and args["unique_by"] is not None:
+    if args.get("unique_by"):
         if args["unique_by"] == "sender":
             distinct_inner = (
                 query.order_by(
@@ -153,7 +149,7 @@ def _get_tips(session: Session, args: GetTipsArgs):
             UserTipAlias = aliased(UserTip, distinct_inner, name="user_tips_uniqued")
             query = session.query(UserTipAlias)
 
-    if "user_id" in args and args["user_id"] is not None:
+    if args.get("user_id"):
         # We have to get the other users that this user follows for three potential uses:
         # 1) To filter tips to recipients the user follows (if necessary)
         # 2) To filter tips to senders the user follows (if necessary)
@@ -168,7 +164,7 @@ def _get_tips(session: Session, args: GetTipsArgs):
             .cte("followees")
         )
         # First, filter the senders/receivers as necessary
-        if "current_user_follows" in args and args["current_user_follows"] is not None:
+        if args.get("current_user_follows"):
             FolloweesSender = aliased(followees_query, name="followees_for_sender")
             FolloweesReceiver = aliased(followees_query, name="followees_for_receiver")
             if args["current_user_follows"] == "receiver":
@@ -285,7 +281,7 @@ def get_tips(args: GetTipsArgs) -> List[TipResult]:
                 ),
                 "slot": result[0].slot,
                 "created_at": result[0].created_at,
-                "transaction_signature": result[0].signature,
+                "tx_signature": result[0].signature,
             }
             for result in tips_results
         ]
