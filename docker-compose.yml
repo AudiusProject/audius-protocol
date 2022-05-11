@@ -4,8 +4,9 @@ services:
   # contracts
 
   poa-ganache:
-    image: trufflesuite/ganache:v7.1.0
-    command: --wallet.deterministic --wallet.totalAccounts 50
+    build:
+      context: contracts
+      dockerfile: Dockerfile.dev
     ports:
       - "8545:8545"
     healthcheck:
@@ -51,18 +52,12 @@ services:
       poa-ganache:
         condition: service_healthy
 
-  poa-deploy-contracts:
-    build: contracts
-    command: npx truffle migrate --to 4 --network audius_dev
-    depends_on:
-      poa-ganache:
-        condition: service_healthy
-
   # eth-contracts
 
   eth-ganache:
-    image: trufflesuite/ganache:v7.1.0
-    command: --wallet.deterministic --wallet.totalAccounts 50 --miner.blockTime 1
+    build:
+      context: eth-contracts
+      dockerfile: Dockerfile.dev
     ports:
       - "8546:8545"
     healthcheck:
@@ -108,13 +103,6 @@ services:
       eth-ganache:
         condition: service_healthy
 
-  eth-deploy-contracts:
-    build: eth-contracts
-    command: npx truffle migrate --to 12 --network audius_dev
-    depends_on:
-      eth-ganache:
-        condition: service_healthy
-
   # solana-programs
 
   solana-test-validator:
@@ -137,6 +125,7 @@ services:
           "balance",
           "CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU"
         ]
+      start_period: 1m
       interval: 5s
       timeout: 5s
     deploy:
@@ -247,12 +236,8 @@ services:
         condition: service_healthy
       poa-ganache:
         condition: service_healthy
-      poa-deploy-contracts:
-        condition: service_completed_successfully
       eth-ganache:
         condition: service_healthy
-      eth-deploy-contracts:
-        condition: service_completed_successfully
       solana-test-validator:
         condition: service_healthy
       solana-deploy-programs:
