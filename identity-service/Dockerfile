@@ -9,10 +9,6 @@ FROM node:14.16-alpine
 
 WORKDIR /usr/src/app
 
-# Handle unreachable Alpine repo, revert this eventually:
-# https://github.com/gliderlabs/docker-alpine/issues/155
-RUN sed -i -e 's/dl-cdn/dl-4/' /etc/apk/repositories
-
 RUN apk update && apk add rsyslog python3 python3-dev py3-pip curl
 
 COPY --from=builder /app/node_modules ./node_modules
