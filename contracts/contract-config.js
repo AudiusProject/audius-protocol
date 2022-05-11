@@ -10,7 +10,7 @@ module.exports = {
     userReplicaSetBootstrapAddress: null,
     registryAddress: null
   },
-  audius_dev: {
+  predeploy: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     blacklisterAddress: null,
     bootstrapSPIds: [],

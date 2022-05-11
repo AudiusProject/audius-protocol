@@ -19,7 +19,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     let registry
     let registryAddress
-    if (network === 'test_local' || network === 'development' || network === 'audius_dev') {
+    if (network === 'test_local' || network === 'development' || network === 'predeploy') {
       if (!config.registryAddress) {
         registry = await Registry.deployed()
         registryAddress = registry.address
@@ -48,7 +48,7 @@ module.exports = (deployer, network, accounts) => {
     const bootstrapSPOwnerWallets = config.bootstrapSPOwnerWallets
     const invalidBootstrapConfiguration = (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length === 0 || bootstrapSPOwnerWallets.length === 0)
     if (
-        (network !== 'test_local' && network !== 'development' && network !== 'audius_dev') &&
+        (network !== 'test_local' && network !== 'development' && network !== 'predeploy') &&
         (invalidBootstrapConfiguration)
       ) {
       throw new Error(
