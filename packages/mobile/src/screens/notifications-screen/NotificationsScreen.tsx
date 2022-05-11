@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
  */
 export const NotificationsScreen = memo(() => {
   const dispatchWeb = useDispatchWeb()
-  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
+  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
   const isDrawerOpen = useDrawerStatus() === 'open'
   const wasDrawerOpen = usePrevious(isDrawerOpen)
   useEffect(() => {
@@ -37,8 +37,8 @@ export const NotificationsScreen = memo(() => {
   }, [isDrawerOpen, wasDrawerOpen, dispatchWeb])
 
   const onClickTopBarClose = useCallback(() => {
-    drawerNavigation?.closeDrawer()
-  }, [drawerNavigation])
+    drawerHelpers?.closeDrawer()
+  }, [drawerHelpers])
 
   const containerStyle = useTheme(styles.container, {
     backgroundColor: 'background'

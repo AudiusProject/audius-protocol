@@ -201,10 +201,10 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
     fromNotifications: true
   })
   const notificationRoute = getNotificationRoute(notification)
-  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
+  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
   const navigation = useNavigation<
     AppTabScreenParamList & ProfileTabScreenParamList
-  >({ customNativeNavigation: drawerNavigation })
+  >({ customNativeNavigation: drawerHelpers })
 
   const onPress = useCallback(() => {
     if (notificationRoute && notificationScreen) {

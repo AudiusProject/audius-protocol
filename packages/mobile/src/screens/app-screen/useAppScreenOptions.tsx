@@ -76,12 +76,12 @@ export const useAppScreenOptions = () => {
   const navigation = useNavigation<
     AppScreenParamList & AppTabScreenParamList['Search']
   >()
-  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
+  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
 
   const handlePressNotification = useCallback(() => {
-    drawerNavigation?.openDrawer()
+    drawerHelpers?.openDrawer()
     dispatchWeb(markAllAsViewed())
-  }, [dispatchWeb, drawerNavigation])
+  }, [dispatchWeb, drawerHelpers])
 
   const handlePressHome = useCallback(() => {
     navigation.navigate({
@@ -135,7 +135,7 @@ export const useAppScreenOptions = () => {
                   {...other}
                   onPress={() => {
                     if (isFromNotifs) {
-                      drawerNavigation?.openDrawer()
+                      drawerHelpers?.openDrawer()
                     }
 
                     navigation.goBack()
@@ -199,7 +199,7 @@ export const useAppScreenOptions = () => {
       }
     },
     [
-      drawerNavigation,
+      drawerHelpers,
       handlePressNotification,
       handlePressHome,
       handlePressSearch,
