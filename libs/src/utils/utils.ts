@@ -47,11 +47,11 @@ export class Utils {
     return Web3.utils.keccak256(utf8Str)
   }
 
-  static isBN(number: number) {
+  static isBN(number: number | string) {
     return Web3.utils.isBN(number)
   }
 
-  static toBN(number: number, base: number) {
+  static toBN(number: number, base?: number) {
     return new Web3.utils.BN(number, base)
   }
 

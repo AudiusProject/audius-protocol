@@ -2,8 +2,8 @@ const packageJSON = require('../package.json')
 
 const { EthWeb3Manager } = require('./services/ethWeb3Manager')
 const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
-const Web3Manager = require('./services/web3Manager/index')
-const EthContracts = require('./services/ethContracts/index')
+const { Web3Manager } = require('./services/web3Manager')
+const { EthContracts } = require('./services/ethContracts')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
 const AudiusContracts = require('./services/dataContracts/index')
 const { IdentityService } = require('./services/identity')
@@ -30,7 +30,9 @@ const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
 const { PublicKey } = require('@solana/web3.js')
-const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
+const {
+  RewardsAttester
+} = require('./services/solanaWeb3Manager/rewardsAttester')
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
@@ -105,7 +107,13 @@ class AudiusLibs {
     blockList = null,
     monitoringCallbacks = {}
   ) {
-    return { fallbackUrl, lazyConnect, passList, blockList, monitoringCallbacks }
+    return {
+      fallbackUrl,
+      lazyConnect,
+      passList,
+      blockList,
+      monitoringCallbacks
+    }
   }
 
   /**
@@ -116,7 +124,12 @@ class AudiusLibs {
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
    * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
-  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
+  static async configExternalWeb3 (
+    registryAddress,
+    web3Provider,
+    networkId,
+    walletOverride = null
+  ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
       throw new Error('External web3 incorrectly configured')
@@ -146,7 +159,9 @@ class AudiusLibs {
     } else if (Array.isArray(providers)) {
       providerList = providers
     } else {
-      throw new Error('Providers must be of type string, Array, or Web3 instance')
+      throw new Error(
+        'Providers must be of type string, Array, or Web3 instance'
+      )
     }
 
     return {
@@ -184,7 +199,9 @@ class AudiusLibs {
     } else if (Array.isArray(providers)) {
       providerList = providers
     } else {
-      throw new Error('Providers must be of type string, Array, or Web3 instance')
+      throw new Error(
+        'Providers must be of type string, Array, or Web3 instance'
+      )
     }
 
     return {
@@ -268,7 +285,9 @@ class AudiusLibs {
     audiusDataIdl
   }) {
     if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(audiusDataAdminStorageKeypairPublicKey)
+      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
+        audiusDataAdminStorageKeypairPublicKey
+      )
     }
     if (audiusDataProgramId instanceof String) {
       audiusDataProgramId = new PublicKey(audiusDataProgramId)
@@ -284,7 +303,9 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
+      feePayerKeypairs: feePayerSecretKeys
+        ? feePayerSecretKeys.map((key) => Keypair.fromSecretKey(key))
+        : null,
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
@@ -298,13 +319,10 @@ class AudiusLibs {
    * @param {string} config.programId Program ID of the audius data program
    * @param {string} config.adminAccount Public Key of admin account
    */
-  static configSolanaAudiusData ({
-    programId,
-    adminAccount,
-  }) {
+  static configSolanaAudiusData ({ programId, adminAccount }) {
     return {
       programId,
-      adminAccount,
+      adminAccount
     }
   }
 
@@ -399,8 +417,14 @@ class AudiusLibs {
 
     /** Identity Service */
     if (this.identityServiceConfig) {
-      this.identityService = new IdentityService(this.identityServiceConfig.url, this.captcha)
-      this.hedgehog = new Hedgehog(this.identityService, this.identityServiceConfig.useHedgehogLocalStorage)
+      this.identityService = new IdentityService(
+        this.identityServiceConfig.url,
+        this.captcha
+      )
+      this.hedgehog = new Hedgehog(
+        this.identityService,
+        this.identityServiceConfig.useHedgehogLocalStorage
+      )
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
     }
@@ -449,8 +473,11 @@ class AudiusLibs {
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
-        (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
-        (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
+        (this.ethWeb3Config &&
+          this.ethWeb3Config.claimDistributionContractAddress) ||
+          null,
+        (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) ||
+          null,
         this.isServer,
         this.logger,
         this.isDebug
@@ -467,7 +494,12 @@ class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
-    if (this.wormholeConfig && this.ethWeb3Manager && this.ethContracts && this.solanaWeb3Manager) {
+    if (
+      this.wormholeConfig &&
+      this.ethWeb3Manager &&
+      this.ethContracts &&
+      this.solanaWeb3Manager
+    ) {
       this.wormholeClient = new Wormhole(
         this.hedgehog,
         this.ethWeb3Manager,
@@ -506,7 +538,8 @@ class AudiusLibs {
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
-        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) || this.creatorNodeConfig.fallbackUrl
+        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ||
+          this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
       this.creatorNode = new CreatorNode(

@@ -7,7 +7,7 @@ import {
   trackSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
-import type Web3Manager from '../web3Manager'
+import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
 const { wait } = Utils
@@ -862,8 +862,7 @@ export class CreatorNode {
 
   /**
    * Create headers and formData for file upload
-   * @param {Object} file the file to upload
-   * @param {boolean} [isTrackUpload] flag to determine if uploading track. If true, add track upload headers
+   * @param file the file to upload
    * @returns headers and formData in an object
    */
   createFormDataAndUploadHeaders(

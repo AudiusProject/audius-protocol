@@ -9,6 +9,10 @@ from src.models import Milestone
 from src.models.models import AggregatePlays
 from src.tasks.celery_app import celery
 from src.utils.redis_cache import get_json_cached_key
+from src.utils.redis_constants import (
+    latest_sol_listen_count_milestones_slot_key,
+    latest_sol_plays_slot_key,
+)
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
@@ -75,6 +79,7 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
     logger.info(
         "index_listen_count_milestones.py | Start calculating listen count milestones"
     )
+    latest_plays_slot = redis.get(latest_sol_plays_slot_key)
     job_start = time.time()
     with db.scoped_session() as session:
         current_play_indexing = get_json_cached_key(redis, CURRENT_PLAY_INDEXING)
@@ -144,6 +149,8 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
         f"index_listen_count_milestones.py | Finished calculating trending in {job_total} seconds",
         extra={"job": "index_listen_count_milestones", "total_time": job_total},
     )
+    if latest_plays_slot is not None:
+        redis.set(latest_sol_listen_count_milestones_slot_key, int(latest_plays_slot))
 
 
 # ####### CELERY TASKS ####### #

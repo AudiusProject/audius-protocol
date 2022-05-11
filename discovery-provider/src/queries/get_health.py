@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
+from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models import Block, IPLDBlacklistBlock
@@ -20,6 +21,7 @@ from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
+from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 from src.utils.redis_constants import (
@@ -329,6 +331,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         health_results["meets_min_requirements"] = True
 
     if verbose:
+        # Elasticsearch health
+        if esclient:
+            health_results["elasticsearch"] = get_elasticsearch_health_info(
+                esclient, latest_indexed_block_num
+            )
+
         # DB connections check
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
@@ -369,6 +377,25 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     return health_results, is_unhealthy
+
+
+def get_elasticsearch_health_info(
+    esclient: Elasticsearch, latest_indexed_block_num: int
+) -> Dict[str, Dict[str, int]]:
+    elasticsearch_health = {}
+    for index_name in ES_INDEXES:
+        resp = esclient.search(
+            index=index_name,
+            aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
+            size=0,
+        )
+        blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
+        elasticsearch_health[index_name] = {
+            "blocknumber": blocknumber,
+            "db_block_difference": latest_indexed_block_num - blocknumber,
+        }
+
+    return elasticsearch_health
 
 
 def health_check_prometheus_exporter():
