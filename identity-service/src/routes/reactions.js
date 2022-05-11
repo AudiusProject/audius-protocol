@@ -5,17 +5,17 @@ const { logger } = require('../logging')
 
 const MAX_REACTIONS_PER_FETCH = 100
 
-const handleReaction = async ({ senderWallet, entityType, entityId, libs, reaction }) => {
+const handleReaction = async ({ senderWallet, reactionType, reactedTo, libs, reactionValue }) => {
   const { solanaWeb3Manager } = libs
   const currentSlot = await solanaWeb3Manager.getSlot()
 
   const now = Date.now()
   await models.Reactions.create({
     slot: currentSlot,
-    reaction,
+    reactionValue,
     senderWallet,
-    entityId,
-    entityType,
+    reactionType,
+    reactedTo,
     createdAt: now,
     updatedAt: now
   })
@@ -34,26 +34,26 @@ const getReactions = async ({ startIndex, limit }) => {
 
 module.exports = function (app) {
   /**
-   * POST a new reaction, represented by a numeric ID (reaction) and entityId (entity being reacted upon)
+   * POST a new reaction, represented by a numeric ID (reaction) and reactedTo (entity being reacted upon)
    */
   app.post('/reactions', authMiddleware, handleResponse(async (req, res, next) => {
     // Validation
     const senderWallet = req.user.walletAddress
-    const { entityId, reaction } = req.body
+    const { reactedTo,reactionValue } = req.body
 
-    if (!(senderWallet && entityId && reaction)) return errorResponseBadRequest(`Missing argument: ${JSON.stringify({ senderWallet, entityId, reaction })}`)
+    if (!(senderWallet && reactedTo && reactionValue)) return errorResponseBadRequest(`Missing argument: ${JSON.stringify({ senderWallet, reactedTo, reactionValue })}`)
 
-    const parsedReaction = parseInt(reaction)
+    const parsedReaction = parseInt(reactionValue)
     if (!parsedReaction) return errorResponseBadRequest('Invalid reaction type')
 
     const libs = req.app.get('audiusLibs')
 
     try {
-      logger.info(`Creating reaction ${reaction} for entityId: ${entityId}`)
-      await handleReaction({ senderWallet, entityId, reaction: parsedReaction, entityType: 'tip', libs })
+      logger.info(`Creating reaction ${reactionValue} for reactedTo: ${reactedTo}`)
+      await handleReaction({ senderWallet, reactedTo, reactionValue: parsedReaction, reactionType: 'tip', libs })
       return successResponse()
     } catch (e) {
-      logger.error(`Caught error trying to create reaction ${reaction} for id: ${entityId}: ${e}`)
+      logger.error(`Caught error trying to create reaction ${reactionValue} for id: ${reactedTo}: ${e}`)
       return errorResponseServerError('Something went wrong')
     }
   }))
