@@ -3,7 +3,7 @@ const { Web3Manager } = require('../web3Manager')
 const { ProviderSelection } = require('../contracts/ProviderSelection')
 
 class RegistryClient {
-  constructor(web3Manager, contractABI, contractAddress) {
+  constructor (web3Manager, contractABI, contractAddress) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractAddress = contractAddress
@@ -23,7 +23,7 @@ class RegistryClient {
     }
   }
 
-  async getContract(contractRegistryKey) {
+  async getContract (contractRegistryKey) {
     try {
       Utils.checkStrLen(contractRegistryKey, 32)
       const contract = await this.Registry.methods
@@ -44,7 +44,7 @@ class RegistryClient {
     }
   }
 
-  async retryInit(contractRegistryKey) {
+  async retryInit (contractRegistryKey) {
     try {
       await this.selectNewEndpoint()
       const web3 = this.web3Manager.getWeb3()
@@ -58,7 +58,7 @@ class RegistryClient {
     }
   }
 
-  async selectNewEndpoint() {
+  async selectNewEndpoint () {
     this.providerSelector.addUnhealthy(
       this.web3Manager.getWeb3().currentProvider.host
     )
