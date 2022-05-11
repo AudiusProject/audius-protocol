@@ -7,7 +7,7 @@ import {
   getCount
 } from 'audius-client/src/common/store/pages/remixes/selectors'
 import { pluralize } from 'audius-client/src/common/utils/formatUtil'
-import { Pressable, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
 import { Screen } from 'app/components/core'
 import { Header } from 'app/components/header'
@@ -36,13 +36,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     ...flexRowCentered()
   },
   text: {
-    ...typography.body
+    ...typography.body,
+    textAlign: 'center',
+    lineHeight: 20
   },
   link: {
     color: palette.secondary
-  },
-  user: {
-    ...flexRowCentered()
   }
 }))
 
@@ -76,6 +75,9 @@ export const TrackRemixesScreen = () => {
     })
   }
 
+  const remixesText = pluralize(messages.remix, count, 'es', !count)
+  const remixesCountText = `${count || ''} ${remixesText} ${messages.of}`
+
   return (
     <Screen>
       <Header text={messages.header} />
@@ -85,26 +87,19 @@ export const TrackRemixesScreen = () => {
         header={
           track && user ? (
             <View style={styles.header}>
+              <Text style={styles.text}>{remixesCountText}</Text>
               <Text style={styles.text}>
-                {`${count || ''} ${pluralize(
-                  messages.remix,
-                  count,
-                  'es',
-                  !count
-                )} ${messages.of}`}
-              </Text>
-              <View style={styles.track}>
-                <Pressable onPress={handlePressTrack}>
-                  <Text style={[styles.text, styles.link]}>{track.title}</Text>
-                </Pressable>
-                <Text style={styles.text}>&nbsp;{messages.by}&nbsp;</Text>
-                <Pressable style={styles.user} onPress={handlePressArtistName}>
-                  <Text style={[styles.text, styles.link]}>{user.name}</Text>
+                <Text style={styles.link} onPress={handlePressTrack}>
+                  {track.title}
+                </Text>{' '}
+                <Text>{messages.by}</Text>{' '}
+                <Text onPress={handlePressArtistName}>
+                  <Text style={styles.link}>{user.name}</Text>
                   {user ? (
                     <UserBadges user={user} badgeSize={10} hideName />
                   ) : null}
-                </Pressable>
-              </View>
+                </Text>
+              </Text>
             </View>
           ) : null
         }
