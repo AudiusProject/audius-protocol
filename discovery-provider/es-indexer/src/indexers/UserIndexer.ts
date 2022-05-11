@@ -17,6 +17,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
+        refresh_interval: '5s',
       },
     },
     mappings: {
@@ -56,10 +57,22 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     return `
     -- etl users
     select 
-      *
+      users.*,
+      user_balances.balance,
+      user_balances.associated_wallets_balance,
+      user_balances.waudio,
+      user_balances.associated_sol_wallets_balance,
+      coalesce(track_count, 0) as track_count,
+      coalesce(playlist_count, 0) as playlist_count,
+      coalesce(album_count, 0) as album_count,
+      coalesce(follower_count, 0) as follower_count,
+      coalesce(following_count, 0) as following_count,
+      coalesce(repost_count, 0) as repost_count,
+      coalesce(track_save_count, 0) as track_save_count
     from
       users
-      join aggregate_user using (user_id)
+      left join aggregate_user on users.user_id = aggregate_user.user_id
+      left join user_balances on users.user_id = user_balances.user_id
     where 
       is_current = true
     `

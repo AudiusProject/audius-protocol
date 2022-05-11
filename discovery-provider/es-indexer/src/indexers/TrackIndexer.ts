@@ -16,6 +16,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
+        refresh_interval: '5s',
 
         analysis: {
           normalizer: {
@@ -48,6 +49,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         mood: { type: 'keyword' },
         is_delete: { type: 'boolean' },
         is_unlisted: { type: 'boolean' },
+        is_downloadable: { type: 'boolean' },
 
         // saves
         saved_by: { type: 'keyword' },
@@ -62,6 +64,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
             location: { type: 'keyword' },
             name: { type: 'text' }, // should it be keyword with a `searchable` treatment?
             follower_count: { type: 'integer' },
+            is_verified: { type: 'boolean' },
           },
         },
 
@@ -82,13 +85,17 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     -- etl tracks
     select 
       tracks.*,
-      aggregate_plays.count as play_count,
+      (tracks.download->>'is_downloadable')::boolean as is_downloadable,
+      coalesce(aggregate_plays.count, 0) as play_count,
   
       json_build_object(
         'handle', users.handle,
         'name', users.name,
         'location', users.location,
-        'follower_count', follower_count
+        'follower_count', coalesce(follower_count, 0),
+        'is_verified', is_verified,
+        'balance', balance,
+        'associated_wallets_balance', associated_wallets_balance
       ) as artist,
   
       array(
@@ -122,11 +129,12 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       ) as saved_by
     
     from tracks
-    join users on owner_id = user_id 
-    join aggregate_user on users.user_id = aggregate_user.user_id
-    join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
-      WHERE tracks.is_current = true 
-        AND users.is_current = true
+      join users on owner_id = user_id 
+      left join aggregate_user on users.user_id = aggregate_user.user_id
+      left join user_balances on users.user_id = user_balances.user_id
+      left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
+    WHERE tracks.is_current = true 
+      AND users.is_current = true
     `
   }
 
