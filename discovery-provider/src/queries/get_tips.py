@@ -137,11 +137,13 @@ def _get_tips(session: Session, args: GetTipsArgs):
                 .from_self()
             )
         elif args["unique_by"] == "receiver":
-            query = (
+            distinct_inner = (
                 query.order_by(UserTip.receiver_user_id.asc(), UserTip.slot.desc())
                 .distinct(UserTip.receiver_user_id)
-                .from_self()
+                .subquery()
             )
+            distinct_inner_aliased = aliased(UserTip, distinct_inner)
+            query = session.query(distinct_inner_aliased)
     if "min_slot" in args and args["min_slot"] > 0:
         query = query.filter(UserTip.slot >= args["min_slot"])
 
@@ -184,46 +186,49 @@ def _get_tips(session: Session, args: GetTipsArgs):
                 filter_cond.append(FolloweesSender.c.followee_user_id != None)
             query = query.filter(or_(*filter_cond))
 
-            # Order and paginate before adding follower filters/aggregates
-            query = query.order_by(UserTip.slot.desc())
-            query = paginate_query(query)
+        # Order and paginate before adding follower filters/aggregates
+        query = query.order_by(UserTip.slot.desc())
+        query = paginate_query(query)
 
-            # Get the tips for the user as a subquery
-            # because now we need to get the other users that tipped that receiver
-            # and joining on this already paginated/limited result will be much faster
-            Tips = query.cte("tips")
-            FolloweesAggregate = aliased(
-                followees_query, name="followees_for_aggregate"
-            )
+        # Get the tips for the user as a subquery
+        # because now we need to get the other users that tipped that receiver
+        # and joining on this already paginated/limited result will be much faster
+        Tips = query.cte("tips")
+        FolloweesAggregate = aliased(followees_query, name="followees_for_aggregate")
 
-            # Get all of the followees joined on their aggregate user tips first
-            # rather than joining each on the tips separately to help with speed
-            FolloweeTippers = (
-                session.query(
-                    AggregateUserTips.sender_user_id,
-                    AggregateUserTips.receiver_user_id,
-                    FolloweesAggregate.c.followee_user_id,
-                )
-                .select_from(FolloweesAggregate)
-                .outerjoin(
-                    AggregateUserTips,
-                    AggregateUserTips.sender_user_id
-                    == FolloweesAggregate.c.followee_user_id,
-                )
-                .cte("followee_tippers")
+        # Get all of the followees joined on their aggregate user tips first
+        # rather than joining each on the tips separately to help with speed
+        FolloweeTippers = (
+            session.query(
+                AggregateUserTips.sender_user_id,
+                AggregateUserTips.receiver_user_id,
+                FolloweesAggregate.c.followee_user_id,
             )
+            .select_from(FolloweesAggregate)
+            .outerjoin(
+                AggregateUserTips,
+                AggregateUserTips.sender_user_id
+                == FolloweesAggregate.c.followee_user_id,
+            )
+            .cte("followee_tippers")
+        )
 
-            # Now we have the tips listed multiple times, one for each followee sender.
-            # So group by the tip and aggregate up the followee sender IDs into a list
-            query = (
-                session.query(UserTip, func.array_agg(FolloweeTippers.c.sender_user_id))
-                .select_entity_from(Tips)
-                .outerjoin(
-                    FolloweeTippers,
-                    FolloweeTippers.c.receiver_user_id == Tips.c.receiver_user_id,
-                )
-                .group_by(Tips)
+        # When using the DISTINCT wrapper (for unique_by), SQL Alchemy gives the column a disambiguated name
+        if "receiver_user_id" in Tips.c:
+            key = "receiver_user_id"
+        else:
+            key = "user_tips_receiver_user_id"
+        # Now we have the tips listed multiple times, one for each followee sender.
+        # So group by the tip and aggregate up the followee sender IDs into a list
+        query = (
+            session.query(UserTip, func.array_agg(FolloweeTippers.c.sender_user_id))
+            .select_entity_from(Tips)
+            .outerjoin(
+                FolloweeTippers,
+                FolloweeTippers.c.receiver_user_id == Tips.c[key],
             )
+            .group_by(Tips)
+        )
 
     query = query.order_by(UserTip.slot.desc())
     query = paginate_query(query)
