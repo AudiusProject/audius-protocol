@@ -12,6 +12,7 @@ if [[ -z "$logglyDisable" ]]; then
         logglyTags=$(echo $logglyTags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
         mkdir -p /var/spool/rsyslog
         mkdir -p /etc/rsyslog.d
+        sed -i '1s|^|$MaxMessageSize 64k\n|' /etc/rsyslog.conf
         cat >/etc/rsyslog.d/22-loggly.conf <<EOF
 \$WorkDirectory /var/spool/rsyslog # where to place spool files
 \$ActionQueueFileName fwdRule1   # unique name prefix for spool files
