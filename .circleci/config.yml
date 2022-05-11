@@ -118,7 +118,11 @@ jobs:
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            GCLOUD_VM_NAME=mad-dog-test-${CIRCLE_BRANCH,,}-$GIT_SHA-$(date +%s)
+
+            # pick first ten characters and lowercase all of them
+            CIRCLE_BRANCH_CLEANED="${CIRCLE_BRANCH:0:10}" | awk '{print tolower($0)}
+            CIRCLE_SHA_CLEANED="${CIRCLE_SHA1:0:10}" | awk '{print tolower($0)} 
+            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH_CLEANED-$CIRCLE_SHA_CLEANED-$(date +%s)
             echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
