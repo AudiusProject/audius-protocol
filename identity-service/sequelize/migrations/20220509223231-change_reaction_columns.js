@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -12,5 +12,4 @@ module.exports = {
       .then(() => queryInterface.renameColumn('Reactions', 'reactionType', 'entityType'))
       .then(() => queryInterface.renameColumn('Reactions', 'reactionValue', 'reaction'))
   }
-};
-
+}

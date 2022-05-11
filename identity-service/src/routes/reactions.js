@@ -39,7 +39,7 @@ module.exports = function (app) {
   app.post('/reactions', authMiddleware, handleResponse(async (req, res, next) => {
     // Validation
     const senderWallet = req.user.walletAddress
-    const { reactedTo,reactionValue } = req.body
+    const { reactedTo, reactionValue } = req.body
 
     if (!(senderWallet && reactedTo && reactionValue)) return errorResponseBadRequest(`Missing argument: ${JSON.stringify({ senderWallet, reactedTo, reactionValue })}`)
 
