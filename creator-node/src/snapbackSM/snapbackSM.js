@@ -936,8 +936,8 @@ class SnapbackSM {
           this.usersPerJob
         )
 
-        // Backwards compatibility -- if DN hasn't updated to support pagination,
-        // then we have to manually paginate the full set of users
+        // Backwards compatibility -- DN will return all users if it doesn't have pagination.
+        // In that case, we have to manually paginate the full set of users
         if (nodeUsers.length > this.usersPerJob) {
           useModulo = true
           nodeUsers = this.sliceUsers(nodeUsers)
