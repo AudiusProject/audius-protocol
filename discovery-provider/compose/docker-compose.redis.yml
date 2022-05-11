@@ -17,7 +17,6 @@ services:
       - discovery.type=single-node
       - cluster.name=docker-cluster
       - node.name=cluster1-node1
-      - xpack.license.self_generated.type=basic
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
@@ -30,6 +29,19 @@ services:
       - esdata:/usr/share/elasticsearch/data
     networks:
       - audius_dev
+  # UNCOMMENT below to run Elasticsearch with Kibana
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.0.0
+  #   container_name: kibana
+  #   environment:
+  #     ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  #     SERVER_HOSTS: 0.0.0.0
+  #   ports:
+  #     - '5601:5601'
+  #   networks:
+  #     - audius_dev
+  #   depends_on:
+  #     - elasticsearch
 
 volumes:
   esdata:
