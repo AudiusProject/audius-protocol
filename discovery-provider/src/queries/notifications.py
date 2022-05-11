@@ -23,6 +23,7 @@ from src.models import (
     UserBalanceChange,
     UserTip,
 )
+from src.models.reaction import Reaction
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.queries.query_helpers import (
@@ -1030,7 +1031,7 @@ def solana_notifications():
 
     Response - Json object w/ the following fields
         notifications: Array of notifications of shape:
-            type: 'ChallengeReward' | 'MilestoneListen' | 'SupporterRankUp'
+            type: 'ChallengeReward' | 'MilestoneListen' | 'SupporterRankUp' | 'Reaction'
             slot: (int) slot number of notification
             initiator: (int) the user id that caused this notification
             metadata?: (any) additional information about the notification
@@ -1158,10 +1159,30 @@ def solana_notifications():
                 }
             )
 
+        reaction_results: List[Reaction] = (
+            session.query(Reaction)
+            .filter(Reaction.slot >= min_slot_number, Reaction.slot <= max_slot_number)
+            .all()
+        )
+        reactions = []
+        for reaction in reaction_results:
+            reactions.append(
+                {
+                    const.solana_notification_type: const.solana_notification_type_reaction,
+                    const.solana_notification_slot: reaction.slot,
+                    const.notification_initiator: reaction.sender_wallet,
+                    const.solana_notification_metadata: {
+                        const.solana_notification_reaction_type: reaction.reaction_type,
+                        const.solana_notification_reaction_reaction_value: reaction.reaction_value,
+                        const.solana_notification_reaction_reacted_to: reaction.reacted_to,
+                    },
+                }
+            )
         notifications_unsorted.extend(challenge_reward_notifications)
         notifications_unsorted.extend(track_listen_milestones)
         notifications_unsorted.extend(supporter_rank_ups)
         notifications_unsorted.extend(tips)
+        notifications_unsorted.extend(reactions)
 
     # Final sort
     sorted_notifications = sorted(
