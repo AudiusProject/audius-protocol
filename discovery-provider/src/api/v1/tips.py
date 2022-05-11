@@ -76,7 +76,6 @@ full_tip_response = full_ns.clone(
         "followee_supporters": fields.List(
             fields.Nested(supporter_reference), required=True
         ),
-        "total_supporter_count": fields.Integer(required=True),
         "transaction_signature": fields.String(required=True),
     },
 )
