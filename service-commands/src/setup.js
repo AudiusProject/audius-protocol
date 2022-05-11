@@ -814,9 +814,7 @@ const allUp = async ({
       )
       const startRegister = Date.now()
       console.log('Registering services'.info)
-      await Promise.all(
-        register.map(commandGroup => runInSequence(commandGroup, options))
-      )
+      await runInSequence(register.flat())
       console.log(
         `Services registered in ${Math.abs(
           (Date.now() - startRegister) / 1000.0
