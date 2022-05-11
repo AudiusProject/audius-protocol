@@ -7,13 +7,49 @@ services:
     image: trufflesuite/ganache:v7.1.0
     command: --wallet.deterministic --wallet.totalAccounts 50
     ports:
-      - "8546:8545"
+      - "8545:8545"
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').request('http://localhost:8545').end()"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').request('http://localhost:8545').end()"
+        ]
       interval: 5s
       timeout: 5s
     deploy:
       mode: global
+
+  poa-blockscout-db:
+    image: postgres:13.6
+    environment:
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    deploy:
+      mode: global
+
+  poa-blockscout:
+    image: blockscout/blockscout:latest
+    command: 'mix do ecto.create, ecto.migrate, phx.server'
+    environment:
+      ETHEREUM_JSONRPC_VARIANT: 'ganache'
+      ETHEREUM_JSONRPC_HTTP_URL: 'http://poa-ganache:8545'
+      ETHEREUM_JSONRPC_WS_URL: 'ws://poa-ganache:8545'
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+      DATABASE_URL: 'postgresql://postgres:postgres@poa-blockscout-db:5432/postgres?ssl=false'
+      ECTO_USE_SSL: false
+    ports:
+      - "9545:4000"
+    depends_on:
+      poa-blockscout-db:
+        condition: service_healthy
+      poa-ganache:
+        condition: service_healthy
 
   poa-deploy-contracts:
     build: contracts
@@ -28,9 +64,15 @@ services:
     image: trufflesuite/ganache:v7.1.0
     command: --wallet.deterministic --wallet.totalAccounts 50 --miner.blockTime 1
     ports:
-      - "8545:8545"
+      - "8546:8545"
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').request('http://localhost:8545').end()"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').request('http://localhost:8545').end()"
+        ]
       interval: 5s
       timeout: 5s
     deploy:
@@ -42,7 +84,7 @@ services:
       POSTGRES_PASSWORD: 'postgres'
       POSTGRES_USER: 'postgres'
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     deploy:
@@ -59,7 +101,7 @@ services:
       DATABASE_URL: 'postgresql://postgres:postgres@eth-blockscout-db:5432/postgres?ssl=false'
       ECTO_USE_SSL: false
     ports:
-      - "9545:4000"
+      - "9546:4000"
     depends_on:
       eth-blockscout-db:
         condition: service_healthy
@@ -86,7 +128,15 @@ services:
       - "8902:8902"
     healthcheck:
       # NOTE: The address used below does not matter
-      test: ["CMD", "solana", "--url", "localhost", "balance", "CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU"]
+      test:
+        [
+          "CMD",
+          "solana",
+          "--url",
+          "localhost",
+          "balance",
+          "CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU"
+        ]
       interval: 5s
       timeout: 5s
     deploy:
@@ -123,7 +173,7 @@ services:
     image: postgres:11.4
     user: postgres
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     deploy:
@@ -132,7 +182,7 @@ services:
   identity-service-redis:
     image: redis:5.0.5
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     deploy:
