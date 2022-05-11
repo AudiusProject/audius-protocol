@@ -75,6 +75,8 @@ user_model_full = ns.clone(
         "metadata_multihash": fields.String,
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
+        "does_support_current_user": fields.Boolean(required=True),
+        "does_current_user_support": fields.Boolean(required=True),
     },
 )
 

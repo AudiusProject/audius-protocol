@@ -12,6 +12,7 @@ from src.models import (
     AggregatePlays,
     AggregateTrack,
     AggregateUser,
+    AggregateUserTips,
     Follow,
     Playlist,
     Remix,
@@ -179,6 +180,8 @@ def populate_user_metadata(
     track_blocknumber_dict = dict(track_blocknumbers)
 
     follows_current_user_set = set()
+    supports_current_user_set = set()
+    current_user_supports_set = set()
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
@@ -232,6 +235,29 @@ def populate_user_metadata(
         current_user_followee_follow_count_dict = dict(
             current_user_followee_follow_counts
         )
+
+        supports_current_user_rows = (
+            session.query(
+                AggregateUserTips.sender_user_id, AggregateUserTips.receiver_user_id
+            )
+            .filter(
+                AggregateUserTips.receiver_user_id == current_user_id,
+                AggregateUserTips.sender_user_id.in_(user_ids),
+            )
+            .all()
+        )
+        current_user_supports_rows = (
+            session.query(
+                AggregateUserTips.receiver_user_id, AggregateUserTips.sender_user_id
+            )
+            .filter(
+                AggregateUserTips.sender_user_id == current_user_id,
+                AggregateUserTips.receiver_user_id.in_(user_ids),
+            )
+            .all()
+        )
+        supports_current_user_set = set([row[0] for row in supports_current_user_rows])
+        current_user_supports_set = set([row[0] for row in current_user_supports_rows])
 
     balance_dict = get_balances(session, redis, user_ids)
 
@@ -294,7 +320,15 @@ def populate_user_metadata(
         user[response_name_constants.spl_wallet] = user_banks_dict.get(
             user["wallet"], None
         )
-        user["does_follow_current_user"] = user_id in follows_current_user_set
+        user[response_name_constants.does_follow_current_user] = (
+            user_id in follows_current_user_set
+        )
+        user[response_name_constants.does_support_current_user] = (
+            user_id in supports_current_user_set
+        )
+        user[response_name_constants.does_current_user_support] = (
+            user_id in current_user_supports_set
+        )
 
     return users
 

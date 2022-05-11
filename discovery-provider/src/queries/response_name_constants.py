@@ -19,11 +19,6 @@ has_remix_author_reposted = "has_remix_author_reposted"
 # boolean - does the remix track author favorite the track
 has_remix_author_saved = "has_remix_author_saved"
 
-# boolean - does current user follow given user
-does_current_user_follow = "does_current_user_follow"
-# integer - number of followees of current user that also follow given user
-current_user_followee_follow_count = "current_user_followee_follow_count"
-
 # user metadata
 user_id = "user_id"  # integer - unique id of a user
 follower_count = "follower_count"  # integer - total follower count of given user
@@ -54,8 +49,14 @@ supporting_count = "supporting_count"
 # current user specific
 # boolean - does current user follow given user
 does_current_user_follow = "does_current_user_follow"
+# boolean - does given user follow current user
+does_follow_current_user = "does_follow_current_user"
 # integer - number of followees of current user that also follow given user
 current_user_followee_follow_count = "current_user_followee_follow_count"
+# boolean - has current user tipped given user
+does_current_user_support = "does_current_user_support"
+# boolean - has given user tipped current user
+does_support_current_user = "does_support_current_user"
 
 # feed
 # string - timestamp of relevant activity on underlying object, used for sorting
