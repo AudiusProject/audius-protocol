@@ -1,15 +1,20 @@
 from typing import List, Tuple, TypedDict
+
 from sqlalchemy.orm.session import Session
 from src.models.models import User
 from src.models.reaction import Reaction
 
-class ReactionResponse(TypedDict):
-  reaction_value: str
-  reaction_type: str
-  reacted_to: str
-  sender_user_id: int
 
-def get_reactions(session: Session, transaction_ids: List[str], type: str) -> List[ReactionResponse]:
+class ReactionResponse(TypedDict):
+    reaction_value: str
+    reaction_type: str
+    reacted_to: str
+    sender_user_id: int
+
+
+def get_reactions(
+    session: Session, transaction_ids: List[str], type: str
+) -> List[ReactionResponse]:
     results: List[Tuple[Reaction, int]] = (
         session.query(Reaction, User.user_id)
         .join(User, User.wallet == Reaction.sender_wallet)

@@ -305,10 +305,12 @@ def extend_supporting(support: SupportResponse):
         "receiver": extend_user(support["user"]),
     }
 
+
 def extend_reaction(reaction: ReactionResponse):
     new_reaction = reaction.copy()
     new_reaction["sender_user_id"] = encode_int_id(reaction["sender_user_id"])
     return new_reaction
+
 
 def extend_tip(tip):
     new_tip = tip.copy()
