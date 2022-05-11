@@ -112,40 +112,46 @@ class TipResult(TypedDict):
 
 
 def _get_tips(session: Session, args: GetTipsArgs):
-    query: Query = session.query(UserTip)
+    UserTipAlias = aliased(UserTip)
+    query: Query = session.query(UserTipAlias)
     if "transaction_signatures" in args and args["transaction_signatures"]:
-        query = query.filter(UserTip.signature.in_(args["transaction_signatures"]))
+        query = query.filter(UserTipAlias.signature.in_(args["transaction_signatures"]))
     if (
         "receiver_min_followers" in args
         and args["receiver_min_followers"] is not None
         and args["receiver_min_followers"] > 0
     ):
         query = query.join(
-            AggregateUser, AggregateUser.user_id == UserTip.receiver_user_id
+            AggregateUser, AggregateUser.user_id == UserTipAlias.receiver_user_id
         ).filter(AggregateUser.follower_count >= args["receiver_min_followers"])
 
     if "receiver_is_verified" in args and args["receiver_is_verified"] == True:
-        query = query.join(User, User.user_id == UserTip.receiver_user_id).filter(
+        query = query.join(User, User.user_id == UserTipAlias.receiver_user_id).filter(
             User.is_current == True, User.is_verified == True
         )
-
+    if "min_slot" in args and args["min_slot"] > 0:
+        query = query.filter(UserTipAlias.slot >= args["min_slot"])
     if "unique_by" in args and args["unique_by"] is not None:
         if args["unique_by"] == "sender":
-            query = (
-                query.order_by(UserTip.sender_user_id.asc(), UserTip.slot.desc())
-                .distinct(UserTip.sender_user_id)
-                .from_self()
-            )
-        elif args["unique_by"] == "receiver":
             distinct_inner = (
-                query.order_by(UserTip.receiver_user_id.asc(), UserTip.slot.desc())
-                .distinct(UserTip.receiver_user_id)
+                query.order_by(
+                    UserTipAlias.sender_user_id.asc(), UserTipAlias.slot.desc()
+                )
+                .distinct(UserTipAlias.sender_user_id)
                 .subquery()
             )
-            distinct_inner_aliased = aliased(UserTip, distinct_inner)
-            query = session.query(distinct_inner_aliased)
-    if "min_slot" in args and args["min_slot"] > 0:
-        query = query.filter(UserTip.slot >= args["min_slot"])
+            UserTipAlias = aliased(UserTip, distinct_inner, name="user_tips_uniqued")
+            query = session.query(UserTipAlias)
+        elif args["unique_by"] == "receiver":
+            distinct_inner = (
+                query.order_by(
+                    UserTipAlias.receiver_user_id.asc(), UserTipAlias.slot.desc()
+                )
+                .distinct(UserTipAlias.receiver_user_id)
+                .subquery()
+            )
+            UserTipAlias = aliased(UserTip, distinct_inner, name="user_tips_uniqued")
+            query = session.query(UserTipAlias)
 
     if "user_id" in args and args["user_id"] is not None:
         # We have to get the other users that this user follows for three potential uses:
@@ -172,7 +178,8 @@ def _get_tips(session: Session, args: GetTipsArgs):
             ):
                 query = query.outerjoin(
                     FolloweesReceiver,
-                    UserTip.receiver_user_id == FolloweesReceiver.c.followee_user_id,
+                    UserTipAlias.receiver_user_id
+                    == FolloweesReceiver.c.followee_user_id,
                 )
                 filter_cond.append(FolloweesReceiver.c.followee_user_id != None)
             if (
@@ -181,13 +188,13 @@ def _get_tips(session: Session, args: GetTipsArgs):
             ):
                 query = query.outerjoin(
                     FolloweesSender,
-                    UserTip.sender_user_id == FolloweesSender.c.followee_user_id,
+                    UserTipAlias.sender_user_id == FolloweesSender.c.followee_user_id,
                 )
                 filter_cond.append(FolloweesSender.c.followee_user_id != None)
             query = query.filter(or_(*filter_cond))
 
         # Order and paginate before adding follower filters/aggregates
-        query = query.order_by(UserTip.slot.desc())
+        query = query.order_by(UserTipAlias.slot.desc())
         query = paginate_query(query)
 
         # Get the tips for the user as a subquery
@@ -212,12 +219,6 @@ def _get_tips(session: Session, args: GetTipsArgs):
             )
             .cte("followee_tippers")
         )
-
-        # When using the DISTINCT wrapper (for unique_by), SQL Alchemy gives the column a disambiguated name
-        if "receiver_user_id" in Tips.c:
-            key = "receiver_user_id"
-        else:
-            key = "user_tips_receiver_user_id"
         # Now we have the tips listed multiple times, one for each followee sender.
         # So group by the tip and aggregate up the followee sender IDs into a list
         query = (
@@ -225,12 +226,12 @@ def _get_tips(session: Session, args: GetTipsArgs):
             .select_entity_from(Tips)
             .outerjoin(
                 FolloweeTippers,
-                FolloweeTippers.c.receiver_user_id == Tips.c[key],
+                FolloweeTippers.c.receiver_user_id == Tips.c.receiver_user_id,
             )
             .group_by(Tips)
         )
 
-    query = query.order_by(UserTip.slot.desc())
+    query = query.order_by(UserTipAlias.slot.desc())
     query = paginate_query(query)
 
     tips_results: List[UserTip] = query.all()
