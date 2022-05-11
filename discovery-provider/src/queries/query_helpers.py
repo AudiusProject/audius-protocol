@@ -110,7 +110,7 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 
 
 # given list of user ids and corresponding users, populates each user object with:
-#   track_count, playlist_count, album_count, follower_count, followee_count, repost_count
+#   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
@@ -138,7 +138,7 @@ def populate_user_metadata(
     ).filter(UserBankAccount.ethereum_address.in_(user["wallet"] for user in users))
     user_banks_dict = dict(user_banks)
 
-    # build dict of user id --> track/playlist/album/follower/followee/repost/track save counts
+    # build dict of user id --> track/playlist/album/follower/followee/repost/track save/supporting/supporter counts
     count_dict = {
         user_id: {
             response_name_constants.track_count: track_count,
