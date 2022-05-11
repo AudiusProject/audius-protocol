@@ -1,3 +1,4 @@
+import { EntityType } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
 import AudiusBackend from 'services/AudiusBackend'
 import {
@@ -7,8 +8,6 @@ import {
   fullTrackPage,
   playlistPage
 } from 'utils/route'
-
-import { EntityType } from './types'
 
 export const getEntityLink = (entity: EntityType, fullRoute = false) => {
   if ('track_id' in entity) {

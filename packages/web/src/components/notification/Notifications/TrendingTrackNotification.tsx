@@ -1,5 +1,8 @@
 import React, { useCallback } from 'react'
 
+import { push } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
+
 import { Name } from 'common/models/Analytics'
 import { TrendingTrack } from 'common/store/notifications/types'
 import { make, useRecord } from 'store/analytics/actions'
@@ -36,6 +39,7 @@ export const TrendingTrackNotification = (
   const { notification } = props
   const { entity, entityType, rank, timeLabel, isRead } = notification
   const rankSuffix = getRankSuffix(rank)
+  const dispatch = useDispatch()
   const record = useRecord()
 
   const handleShare = useCallback(() => {
@@ -50,8 +54,12 @@ export const TrendingTrackNotification = (
     )
   }, [notification, record])
 
+  const handleClick = useCallback(() => {
+    dispatch(push(getEntityLink(entity)))
+  }, [dispatch, entity])
+
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconTrending />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
