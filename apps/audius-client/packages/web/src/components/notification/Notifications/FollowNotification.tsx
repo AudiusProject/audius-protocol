@@ -7,7 +7,6 @@ import { NotificationBody } from './NotificationBody'
 import { NotificationFooter } from './NotificationFooter'
 import { NotificationHeader } from './NotificationHeader'
 import { NotificationTile } from './NotificationTile'
-import { TwitterShareButton } from './TwitterShareButton'
 import { UserNameLink } from './UserNameLink'
 import { UserProfilePictureList } from './UserProfilePictureList'
 import { IconFollow } from './icons'
@@ -38,7 +37,6 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.followed}
       </NotificationBody>
-      <TwitterShareButton />
       <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
     </NotificationTile>
   )

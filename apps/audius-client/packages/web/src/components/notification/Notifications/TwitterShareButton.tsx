@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { MouseEventHandler } from 'react'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
 
@@ -8,9 +8,15 @@ const messages = {
   share: 'Share'
 }
 
-export const TwitterShareButton = () => {
+type TwitterShareButtonProps = {
+  onClick?: MouseEventHandler
+}
+
+export const TwitterShareButton = (props: TwitterShareButtonProps) => {
+  const { onClick } = props
+
   return (
-    <button className={styles.root}>
+    <button className={styles.root} onClick={onClick}>
       <IconTwitterBird className={styles.icon} />
       {messages.share}
     </button>
