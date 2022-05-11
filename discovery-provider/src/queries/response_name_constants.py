@@ -48,6 +48,8 @@ associated_sol_wallets_balance = "associated_sol_wallets_balance"
 waudio_balance = "waudio_balance"
 erc_wallet = "erc_wallet"
 spl_wallet = "spl_wallet"
+supporter_count = "supporter_count"
+supporting_count = "supporting_count"
 
 # current user specific
 # boolean - does current user follow given user

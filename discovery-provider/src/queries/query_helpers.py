@@ -21,8 +21,8 @@ from src.models import (
     SaveType,
     Track,
     User,
+    UserBankAccount,
 )
-from src.models.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
@@ -125,6 +125,8 @@ def populate_user_metadata(
             AggregateUser.following_count,
             AggregateUser.repost_count,
             AggregateUser.track_save_count,
+            AggregateUser.supporter_count,
+            AggregateUser.supporting_count,
         )
         .filter(AggregateUser.user_id.in_(user_ids))
         .all()
@@ -146,6 +148,8 @@ def populate_user_metadata(
             response_name_constants.followee_count: following_count,
             response_name_constants.repost_count: repost_count,
             response_name_constants.track_save_count: track_save_count,
+            response_name_constants.supporter_count: supporter_count,
+            response_name_constants.supporting_count: supporting_count,
         }
         for (
             user_id,
@@ -156,6 +160,8 @@ def populate_user_metadata(
             following_count,
             repost_count,
             track_save_count,
+            supporter_count,
+            supporting_count,
         ) in aggregate_user
     }
 
@@ -257,6 +263,12 @@ def populate_user_metadata(
             user[response_name_constants.track_save_count] = count_dict.get(
                 user_id, {}
             ).get(response_name_constants.track_save_count, 0)
+        user[response_name_constants.supporter_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.supporter_count, 0
+        )
+        user[response_name_constants.supporting_count] = count_dict.get(
+            user_id, {}
+        ).get(response_name_constants.supporting_count, 0)
         # current user specific
         user[
             response_name_constants.does_current_user_follow
