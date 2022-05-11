@@ -89,14 +89,12 @@ def _add_if_not_exists(element, compiler, **kw):
         output = compiler.visit_create_table(element, **kw)
     elif isinstance(element, AddColumn):
         output = visit_add_column(element, compiler, **kw)
-    if not hasattr(element, "element") or element.element.info.get("if_not_exists"):
-        output = re.sub(
+    return re.sub(
             "(CREATE|ADD) (TABLE|INDEX|COLUMN)",
             r"\g<1> \g<2> IF NOT EXISTS",
             output,
             re.S,
         )
-    return output
 
 
 @compiles(DropIndex)
@@ -111,11 +109,9 @@ def _add_if_exists(element, compiler, **kw):
         output = compiler.visit_drop_table(element, **kw)
     elif isinstance(element, DropColumn):
         output = visit_drop_column(element, compiler, **kw)
-    if not hasattr(element, "element") or element.element.info.get("if_exists"):
-        output = re.sub(
-            "DROP (TABLE|INDEX|COLUMN)", r"DROP \g<1> IF EXISTS", output, re.S
-        )
-    return output
+    return re.sub(
+        "DROP (TABLE|INDEX|COLUMN)", r"DROP \g<1> IF EXISTS", output, re.S
+    )
 
 
 if context.is_offline_mode():
