@@ -64,7 +64,6 @@ if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]
     then
         cd ../audius-libs
-        npm run dev &
         npm link
         cd ../app
         npm link @audius/libs
