@@ -13,7 +13,6 @@ import {
   Platform,
   NativeSyntheticEvent,
   Linking,
-  BackHandler,
   StatusBar,
   StyleSheet
 } from 'react-native'
@@ -270,37 +269,6 @@ const WebApp = ({
   useEffect(() => {
     resetServerInterval()
   }, [resetServerInterval])
-
-  const backHandler = useCallback(() => {
-    if (webRef.current) {
-      if (isOnFirstPage && Platform.OS === 'android') {
-        BackHandler.exitApp()
-      } else {
-        if (Platform.OS === 'android') {
-          postMessage(webRef.current, {
-            type: MessageType.GO_BACK,
-            isAction: true
-          })
-        } else {
-          webRef.current.goBack()
-        }
-      }
-      // Prevent default (exit app)
-      return true
-    }
-    return false
-  }, [webRef, isOnFirstPage])
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      BackHandler.addEventListener('hardwareBackPress', backHandler)
-    }
-    return () => {
-      if (Platform.OS === 'android') {
-        BackHandler.removeEventListener('hardwareBackPress', backHandler)
-      }
-    }
-  }, [backHandler])
 
   const pushRoute = useCallback(
     (routeUrl: string) => {
