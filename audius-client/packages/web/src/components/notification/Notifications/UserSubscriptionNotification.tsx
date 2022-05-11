@@ -8,7 +8,6 @@ import { NotificationFooter } from './NotificationFooter'
 import { NotificationHeader } from './NotificationHeader'
 import { NotificationTile } from './NotificationTile'
 import { NotificationTitle } from './NotificationTitle'
-import { TwitterShareButton } from './TwitterShareButton'
 import { UserNameLink } from './UserNameLink'
 import { IconRelease } from './icons'
 
@@ -46,7 +45,6 @@ export const UserSubscriptionNotification = (
           <EntityLink entity={entities[0]} entityType={entityType} />
         ) : null}
       </NotificationBody>
-      <TwitterShareButton />
       <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
     </NotificationTile>
   )

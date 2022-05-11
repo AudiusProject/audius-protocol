@@ -1,4 +1,5 @@
 import { formatCount } from 'common/utils/formatUtil'
+import AudiusBackend from 'services/AudiusBackend'
 import {
   albumPage,
   fullAlbumPage,
@@ -32,4 +33,11 @@ export const getRankSuffix = (rank: number) => {
   if (rank === 2) return 'nd'
   if (rank === 3) return 'rd'
   return 'th'
+}
+
+export const getTwitterHandleByUserHandle = async (userHandle: string) => {
+  const { twitterHandle } = await AudiusBackend.getCreatorSocialHandle(
+    userHandle
+  )
+  return twitterHandle || ''
 }

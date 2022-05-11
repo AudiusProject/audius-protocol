@@ -5,6 +5,7 @@ import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
+import { EntityType } from 'components/notification/Notifications/types'
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -114,15 +115,15 @@ export type Milestone = BaseNotification & { user: User } & (
         type: NotificationType.Milestone
         entityType: Entity
         entityId: ID
-        entity: Track | Collection
+        entity: EntityType
         achievement: Exclude<Achievement, Achievement.Followers>
-        value?: number
+        value: number
       }
     | {
         type: NotificationType.Milestone
         entityId: ID
         achievement: Achievement.Followers
-        value?: number
+        value: number
       }
   )
 
@@ -166,6 +167,7 @@ export type ChallengeReward = BaseNotification & {
 export type TierChange = BaseNotification & {
   type: NotificationType.TierChange
   tier: BadgeTier
+  user: User
 }
 
 export type TipSent = BaseNotification & {
