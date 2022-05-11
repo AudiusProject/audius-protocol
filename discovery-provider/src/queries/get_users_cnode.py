@@ -90,11 +90,12 @@ def get_users_cnode(
             """
         )
         users = session.execute(
-            users_res, {
-              "cnode_endpoint_string": cnode_endpoint_string,
-              "prev_user_id": prev_user_id,
-              "max_users": max_users
-              }
+            users_res,
+            {
+                "cnode_endpoint_string": cnode_endpoint_string,
+                "prev_user_id": prev_user_id,
+                "max_users": max_users,
+            },
         ).fetchall()
         users_dict = [dict(row) for row in users]
     return users_dict
