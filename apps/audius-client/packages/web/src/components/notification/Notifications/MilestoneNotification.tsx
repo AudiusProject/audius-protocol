@@ -1,10 +1,13 @@
 import React, { useCallback } from 'react'
 
+import { push } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
+
 import { Name } from 'common/models/Analytics'
 import { Achievement, Milestone } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
 import { make, useRecord } from 'store/analytics/actions'
-import { fullProfilePage } from 'utils/route'
+import { fullProfilePage, profilePage } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
 
 import { EntityLink } from './EntityLink'
@@ -71,7 +74,8 @@ type MilestoneNotificationProps = {
 
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
-  const { timeLabel, isRead } = notification
+  const { timeLabel, isRead, user } = notification
+  const dispatch = useDispatch()
   const record = useRecord()
 
   const renderBody = () => {
@@ -104,8 +108,17 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     )
   }, [notification, record])
 
+  const handleClick = useCallback(() => {
+    if (notification.achievement === Achievement.Followers) {
+      dispatch(push(profilePage(user.handle)))
+    } else {
+      const { entity } = notification
+      dispatch(push(getEntityLink(entity)))
+    }
+  }, [notification, user.handle, dispatch])
+
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconMilestone />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>

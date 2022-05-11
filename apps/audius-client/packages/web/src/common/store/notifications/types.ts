@@ -5,7 +5,6 @@ import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
-import { EntityType } from 'components/notification/Notifications/types'
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -32,6 +31,12 @@ export enum Entity {
   User = 'User'
 }
 
+export type TrackEntity = Track & { user: User }
+
+export type CollectionEntity = Collection & { user: User }
+
+export type EntityType = TrackEntity | CollectionEntity
+
 export type BaseNotification = {
   id: string
   isRead: boolean
@@ -56,11 +61,11 @@ export type UserSubscription = BaseNotification & {
 } & (
     | {
         entityType: Entity.Track
-        entities: Array<Track & { user: User }>
+        entities: Array<TrackEntity>
       }
     | {
         entityType: Entity.Playlist | Entity.Album
-        entities: Array<Collection & { user: User }>
+        entities: Array<CollectionEntity>
       }
   )
 
@@ -78,11 +83,11 @@ export type Repost = BaseNotification & {
 } & (
     | {
         entityType: Entity.Playlist | Entity.Album
-        entity: Collection & { user: User }
+        entity: CollectionEntity
       }
     | {
         entityType: Entity.Track
-        entity: Track & { user: User }
+        entity: TrackEntity
       }
   )
 
@@ -94,11 +99,11 @@ export type Favorite = BaseNotification & {
 } & (
     | {
         entityType: Entity.Playlist | Entity.Album
-        entity: Collection & { user: User }
+        entity: CollectionEntity
       }
     | {
         entityType: Entity.Track
-        entity: Track & { user: User }
+        entity: TrackEntity
       }
   )
 
@@ -135,7 +140,7 @@ export type RemixCreate = BaseNotification & {
   entityType: Entity.Track
   entityIds: ID[]
   user: User
-  entities: Array<Track & { user: User }>
+  entities: Array<TrackEntity>
 }
 
 export type RemixCosign = BaseNotification & {
@@ -146,7 +151,7 @@ export type RemixCosign = BaseNotification & {
   entityType: Entity.Track
   entityIds: ID[]
   user: User
-  entities: Array<Track & { user: User }>
+  entities: Array<TrackEntity>
 }
 
 export type TrendingTrack = BaseNotification & {
@@ -156,7 +161,7 @@ export type TrendingTrack = BaseNotification & {
   time: 'week' | 'month' | 'year'
   entityType: Entity.Track
   entityId: ID
-  entity: Track & { user: User }
+  entity: TrackEntity
 }
 
 export type ChallengeReward = BaseNotification & {

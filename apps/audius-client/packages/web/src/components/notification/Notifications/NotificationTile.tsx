@@ -17,6 +17,7 @@ type NotificationTileProps = {
 export const NotificationTile = (props: NotificationTileProps) => {
   const { notification, onClick, children, disabled } = props
   const { isRead } = notification
+
   return (
     <div
       className={cn(styles.root, {
