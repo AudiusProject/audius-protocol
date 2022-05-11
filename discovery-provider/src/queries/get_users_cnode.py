@@ -13,11 +13,12 @@ class ReplicaType(Enum):
     ALL = 3
 
 
+# TODO: Enforce default max_users after all CNs are updated to a version with this PR: https://github.com/AudiusProject/audius-protocol/pull/3064
 def get_users_cnode(
     cnode_endpoint_string,
-    replica_type=ReplicaType.PRIMARY,
-    prev_user_id=0,
-    max_users=100000,
+    replica_type,
+    prev_user_id,
+    max_users,
 ):
     """
     Query all users with `cnode_endpoint_string` in replica set
@@ -72,14 +73,28 @@ def get_users_cnode(
                     't.secondary1 = :cnode_endpoint_string OR '
                     't.secondary2 = :cnode_endpoint_string) AND'
             }
-            t.user_id > { prev_user_id } AND
             t.secondary1 is not NULL
-            ORDER BY "user_id"
-            LIMIT { max_users };
+            {
+                ""
+                if prev_user_id is None
+                else
+                "AND t.user_id > :prev_user_id"
+            }
+            {
+                ""
+                if max_users is None
+                else
+                "LIMIT :max_users"
+            }
+            ;
             """
         )
         users = session.execute(
-            users_res, {"cnode_endpoint_string": cnode_endpoint_string}
+            users_res, {
+              "cnode_endpoint_string": cnode_endpoint_string,
+              "prev_user_id": prev_user_id,
+              "max_users": max_users
+              }
         ).fetchall()
         users_dict = [dict(row) for row in users]
     return users_dict

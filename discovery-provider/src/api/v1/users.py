@@ -829,13 +829,7 @@ users_by_content_node_route_parser = reqparse.RequestParser(
 )
 users_by_content_node_route_parser.add_argument(
     "creator_node_endpoint",
-    required=False,
-    type=str,
-    description="DEPRECATED -- use content_node_endpoint",
-)
-users_by_content_node_route_parser.add_argument(
-    "content_node_endpoint",
-    required=False,
+    required=True,
     type=str,
     description="Get users who have this Content Node endpoint as their primary/secondary",
 )
@@ -870,7 +864,7 @@ class UsersByContentNode(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(users_by_content_node_response)
-    # @cache(ttl_sec=30)
+    @cache(ttl_sec=30)
     def get(self, replica_type):
         args = users_by_content_node_route_parser.parse_args()
 
@@ -879,9 +873,9 @@ class UsersByContentNode(Resource):
             "creator_node_endpoint"
         )
         # Offset after sorting user_id in ascending order (using > comparison in SQL query)
-        prev_user_id = args.get("prev_user_id") or 0
+        prev_user_id = args.get("prev_user_id")
         # LIMIT used in SQL query
-        max_users = args.get("max_users") or 100000
+        max_users = args.get("max_users")
 
         if replica_type == "primary":
             users = get_users_cnode(
