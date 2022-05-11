@@ -1,3 +1,4 @@
+import type BN from 'bn.js'
 import { ContractClient } from '../contracts/ContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 
@@ -23,7 +24,7 @@ export class ClaimDistributionClient extends ContractClient {
   async claim(
     index: number,
     account: string,
-    amount: string,
+    amount: BN,
     merkleProof: string[]
   ) {
     const method = await this.getMethod(

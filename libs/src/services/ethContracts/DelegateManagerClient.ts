@@ -39,7 +39,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     this.stakingProxyClient = stakingProxyClient
   }
 
-  async delegateStake(targetSP: string, amount: number) {
+  async delegateStake(targetSP: string, amount: BN) {
     // Approve token transfer operation
     const contractAddress = await this.stakingProxyClient.getAddress()
     const tx0 = await this.audiusTokenClient.approve(contractAddress, amount)
@@ -236,7 +236,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     }))
   }
 
-  async requestUndelegateStake(targetSP: string, amount: number) {
+  async requestUndelegateStake(targetSP: string, amount: BN) {
     const method = await this.getMethod(
       'requestUndelegateStake',
       targetSP,

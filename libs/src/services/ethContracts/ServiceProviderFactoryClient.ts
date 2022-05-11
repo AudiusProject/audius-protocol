@@ -10,6 +10,7 @@ import type { AudiusTokenClient } from './AudiusTokenClient'
 import type { StakingProxyClient } from './StakingProxyClient'
 import type { GovernanceClient } from './GovernanceClient'
 import urlJoin from 'proper-url-join'
+import type BN from 'bn.js'
 
 type GetEvent = {
   serviceType: string
@@ -51,7 +52,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
   async registerWithDelegate(
     serviceType: string,
     endpoint: string,
-    amount: number,
+    amount: number | string | BN,
     delegateOwnerWallet: string
   ) {
     const sanitizedEndpoint = endpoint.replace(/\/$/, '')
@@ -63,7 +64,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     if (!this.isDebug && !Utils.isFQDN(sanitizedEndpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
-    if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
+    if (!Number.isInteger(amount) && !Utils.isBN(amount as string)) {
       throw new Error('Invalid amount')
     }
 
@@ -84,7 +85,10 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
 
     // Approve token transfer operation
     const contractAddress = await this.stakingProxyClient.getAddress()
-    const tx0 = await this.audiusTokenClient.approve(contractAddress, amount)
+    const tx0 = await this.audiusTokenClient.approve(
+      contractAddress,
+      amount as BN
+    )
 
     // Register and stake
     const method = await this.getMethod(
@@ -107,7 +111,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async register(serviceType: string, endpoint: string, amount: number) {
+  async register(serviceType: string, endpoint: string, amount: BN) {
     return await this.registerWithDelegate(
       serviceType,
       endpoint,
@@ -337,7 +341,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     return service
   }
 
-  async increaseStake(amount: number) {
+  async increaseStake(amount: BN) {
     const contractAddress = await this.stakingProxyClient.getAddress()
     const tx0 = await this.audiusTokenClient.approve(contractAddress, amount)
     const method = await this.getMethod('increaseStake', amount)
@@ -354,7 +358,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
    * @param amount
    * @returns decrease stake lockup expiry block
    */
-  async requestDecreaseStake(amount: number) {
+  async requestDecreaseStake(amount: BN) {
     const requestDecreaseMethod = await this.getMethod(
       'requestDecreaseStake',
       amount

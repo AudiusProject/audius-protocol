@@ -2,6 +2,7 @@ import type Web3 from 'web3'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { Contract } from 'web3-eth-contract'
 import type { AbiItem } from 'web3-utils'
+import type BN from 'bn.js'
 
 export class AudiusTokenClient {
   ethWeb3Manager: EthWeb3Manager
@@ -64,7 +65,7 @@ export class AudiusTokenClient {
 
   /* ------- SETTERS ------- */
 
-  async transfer(recipient: string, amount: number) {
+  async transfer(recipient: string, amount: BN) {
     const contractMethod = this.AudiusTokenContract.methods.transfer(
       recipient,
       amount
@@ -77,7 +78,7 @@ export class AudiusTokenClient {
     owner: string,
     recipient: string,
     relayer: string,
-    amount: number
+    amount: BN
   ) {
     const method = this.AudiusTokenContract.methods.transferFrom(
       owner,
@@ -98,11 +99,11 @@ export class AudiusTokenClient {
   async permit(
     owner: string, // address
     spender: string, // address
-    value: number, // uint
+    value: BN, // uint
     deadline: number, // uint
     v: number, // uint8
-    r: BinaryData, // bytes32
-    s: BinaryData // bytes32
+    r: Uint8Array | Buffer, // bytes32
+    s: Uint8Array | Buffer // bytes32
   ) {
     const contractMethod = this.AudiusTokenContract.methods.permit(
       owner,
@@ -125,7 +126,7 @@ export class AudiusTokenClient {
 
   // Allow spender to withdraw from calling account up to value amount
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
-  async approve(spender: string, value: number, privateKey = null) {
+  async approve(spender: string, value: BN, privateKey = null) {
     const contractMethod = this.AudiusTokenContract.methods.approve(
       spender,
       value
@@ -146,7 +147,7 @@ export class AudiusTokenClient {
   async approveProxyTokens(
     owner: string,
     spender: string,
-    value: number,
+    value: BN,
     relayer: string
   ) {
     const method = this.AudiusTokenContract.methods.approve(spender, value)

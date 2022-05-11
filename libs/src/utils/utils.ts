@@ -47,7 +47,7 @@ export class Utils {
     return Web3.utils.keccak256(utf8Str)
   }
 
-  static isBN(number: number) {
+  static isBN(number: number | string) {
     return Web3.utils.isBN(number)
   }
 
