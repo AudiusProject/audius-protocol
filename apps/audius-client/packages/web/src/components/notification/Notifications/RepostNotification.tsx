@@ -14,7 +14,7 @@ import { formatOthersCount } from './utils'
 
 const messages = {
   others: formatOthersCount,
-  reposted: ' reposted your '
+  reposted: 'reposted your'
 }
 
 type RepostNotificationProps = {
@@ -30,15 +30,18 @@ export const RepostNotification = (props: RepostNotificationProps) => {
   const handleClick = useGoToEntity(entity, entityType)
 
   return (
-    <NotificationTile notification={notification} onClick={handleClick}>
+    <NotificationTile
+      notification={notification}
+      onClick={handleClick}
+      disableClosePanel={otherUsersCount > 0}
+    >
       <NotificationHeader icon={<IconRepost />}>
         <UserProfileList users={users} />
       </NotificationHeader>
       <NotificationBody>
         <UserNameLink user={firstUser} notification={notification} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.reposted}
-        {entityType.toLowerCase()}
+        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
+        {messages.reposted} {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isRead={isRead} />

@@ -1,9 +1,7 @@
 .link {
   color: var(--secondary);
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--font-medium);
   line-height: 21px;
-  margin-left: var(--unit-1);
-  margin-right: var(--unit-1);
 }
 
 .link:hover {
