@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
 from sqlalchemy.orm.session import Session
-from src.models.models import Track, User
+from src.models.models import Playlist, Track, User
 from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.solana_transaction_types import TransactionInfoResult
 from src.utils import helpers
@@ -208,7 +208,7 @@ def handle_create_user(
     )
 
     user_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
-    update_user_model_metadata(session, user, user_metadata)
+    update_user_model_metadata(user, user_metadata)
     records.append(user)
     db_models["users"][user_id].append(user)
 
@@ -243,6 +243,113 @@ class ManageEntityData(TypedDict):
     user_id_seed_bump: Any
 
 
+def create_track_model(instruction_data, slot, txhash, created_at, updated_at):
+    new_track = Track(
+        slot=slot,
+        txhash=txhash,
+        track_id=instruction_data["id"],
+        owner_id=instruction_data["user_id_seed_bump"].user_id,
+        metadata_multihash=instruction_data.get("metadata"),
+        is_current=True,
+        is_delete=False,
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+    return new_track
+
+
+def create_playlist_model(instruction_data, slot, txhash, created_at, updated_at):
+    new_playlist = Playlist(
+        slot=slot,
+        txhash=txhash,
+        playlist_id=instruction_data["id"],
+        playlist_owner_id=instruction_data["user_id_seed_bump"].user_id,
+        metadata_multihash=instruction_data.get("metadata"),
+        is_current=True,
+        is_delete=False,
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+    return new_playlist
+
+
+def create_entity(entity_type, instruction_data, transaction):
+    ENTITY_TYPE_TO_CREATE_MODEL_HANDLER = {
+        entity_type.Playlist: create_playlist_model,
+        entity_type.Track: create_track_model,
+    }
+
+    slot = transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
+    created_at = datetime.utcfromtimestamp(transaction["result"]["blockTime"])
+    updated_at = datetime.utcfromtimestamp(transaction["result"]["blockTime"])
+
+    create_model_handler = ENTITY_TYPE_TO_CREATE_MODEL_HANDLER[type(entity_type)]
+    created_entity = create_model_handler(
+        instruction_data, slot, txhash, created_at, updated_at
+    )
+    return created_entity
+
+
+def update_entity_metadata(entity_type, instance, metadata):
+    ENTITY_TYPE_TO_METADATA_UPDATE_HANDLER = {
+        entity_type.Playlist: update_playlist_model_metadata,
+        entity_type.Track: update_track_model_metadata,
+    }
+    update_model_handler = ENTITY_TYPE_TO_METADATA_UPDATE_HANDLER[type(entity_type)]
+    updated_model = update_model_handler(instance, metadata)
+    return updated_model
+
+
+def validate_entity_existence(tablename, entity_id, db_models, entity_should_exist):
+    entity_exists = entity_id in db_models[tablename]
+    if entity_exists != entity_should_exist:
+        logger.info(
+            f"Skipping create {tablename} id {entity_id} because it exists: {entity_exists} when we expected: {entity_exists}."
+        )
+        raise EntityExistenceException
+
+
+def get_tablename(entity_type):
+    ENTITY_TYPE_TO_TABLENAME = {
+        entity_type.Playlist: "playlists",
+        entity_type.Track: "tracks",
+        entity_type.User: "users",
+    }
+    tablename = ENTITY_TYPE_TO_TABLENAME[type(entity_type)]
+    return tablename
+
+
+def invalidate_prior_records(db_models, tablename, entity_id):
+    for prior_record in db_models[tablename][entity_id]:
+        prior_record.is_current = False
+    return db_models
+
+
+def clone_record_for_update(
+    existing_record, entity_type, instruction_data, transaction
+):
+    ENTITY_TYPE_TO_ID_FIELD_NAME = {
+        entity_type.Playlist: "playlist_id",
+        entity_type.Track: "track_id",
+    }
+    entity_id = instruction_data["id"]
+    id_field_name = ENTITY_TYPE_TO_ID_FIELD_NAME[type(entity_type)]
+    slot = transaction["result"]["slot"]
+    txhash = transaction["tx_sig"]
+    updated_at = datetime.utcfromtimestamp(transaction["result"]["blockTime"])
+
+    new_record = clone_model(existing_record)
+    setattr(new_record, id_field_name, entity_id)
+    new_record.txhash = txhash
+    new_record.slot = slot
+    new_record.is_current = True
+    new_record.updated_at = updated_at
+    new_record.metadata_multihash = instruction_data["metadata"]
+
+    return new_record
+
+
 def handle_manage_entity(
     session: Session,
     transaction: ParsedTx,
@@ -251,64 +358,51 @@ def handle_manage_entity(
     metadata_dictionary: Dict,
     records: List[Any],
 ):
-    # create track
+    record_to_save = None
+
     instruction_data: ManageEntityData = instruction["data"]
-    management_action = instruction_data["management_action"]
     entity_type = instruction_data["entity_type"]
-    slot = transaction["result"]["slot"]
-    txhash = transaction["tx_sig"]
-    track_id = instruction_data["id"]
+    entity_id = instruction_data["id"]
+    management_action = instruction_data["management_action"]
+    tablename = get_tablename(entity_type)
 
-    if isinstance(management_action, management_action.Create) and isinstance(
-        entity_type, entity_type.Track
-    ):
+    try:
+        if isinstance(management_action, management_action.Create):
+            entity_should_already_exist = False
+            validate_entity_existence(
+                tablename, entity_id, db_models, entity_should_already_exist
+            )
+            new_record = create_entity(entity_type, instruction_data, transaction)
 
-        if track_id in db_models["tracks"]:
-            logger.info(f"Skipping create track {track_id} because it already exists.")
-            return
+            metadata = metadata_dictionary.get(instruction_data["metadata"], {})
+            full_model = update_entity_metadata(entity_type, new_record, metadata)
 
-        track = Track(
-            slot=transaction["result"]["slot"],
-            txhash=transaction["tx_sig"],
-            track_id=instruction_data["id"],
-            owner_id=instruction_data["user_id_seed_bump"].user_id,
-            metadata_multihash=instruction_data.get("metadata"),
-            is_current=True,
-            is_delete=False,
-            created_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
-            updated_at=datetime.utcfromtimestamp(transaction["result"]["blockTime"]),
-        )
-        track_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
-        update_track_model_metadata(session, track, track_metadata)
-        # TODO update stems, remixes, challenge
-        records.append(track)
-        db_models["tracks"][track_id].append(track)
-    elif isinstance(management_action, management_action.Update) and isinstance(
-        entity_type, entity_type.Track
-    ):
-        if track_id not in db_models["tracks"]:
-            logger.info(f"Skipping update track {track_id} because it doesn't exist.")
-            return
-        track_record = db_models["tracks"].get(track_id)[-1]
+            record_to_save = full_model
 
-        # Clone new record
-        new_track_record = clone_model(track_record)
+        elif isinstance(management_action, management_action.Update):
+            entity_should_already_exist = True
+            validate_entity_existence(
+                tablename, entity_id, db_models, entity_should_already_exist
+            )
+            existing_record = db_models[tablename].get(entity_id)[-1]
 
-        for prior_record in db_models["tracks"][track_id]:
-            prior_record.is_current = False
-        new_track_record.track_id = track_id
-        new_track_record.txhash = txhash
-        new_track_record.slot = slot
-        new_track_record.is_current = True
-        new_track_record.metadata_multihash = instruction_data["metadata"]
-        track_metadata = metadata_dictionary.get(instruction_data["metadata"], {})
-        update_track_model_metadata(session, new_track_record, track_metadata)
+            new_record = clone_record_for_update(
+                existing_record, entity_type, instruction_data, transaction
+            )
 
-        # Append record to save
-        records.append(new_track_record)
+            metadata = metadata_dictionary.get(instruction_data["metadata"], {})
+            full_model = update_entity_metadata(entity_type, new_record, metadata)
 
-        # Append most recent record
-        db_models["tracks"][track_id].append(new_track_record)
+            db_models = invalidate_prior_records(db_models, tablename, entity_id)
+            record_to_save = full_model
+    except EntityExistenceException:
+        pass
+    except MetadataValidationException as e:
+        raise e
+
+    if record_to_save:
+        records.append(record_to_save)
+        db_models[tablename][entity_id].append(record_to_save)
 
 
 def handle_create_content_node(
@@ -422,9 +516,7 @@ def handle_remove_user_authority_delegate(
 
 
 # Metadata updater
-def update_user_model_metadata(
-    session: Session, user_record: User, metadata_dict: Dict
-):
+def update_user_model_metadata(user_record: User, metadata_dict: Dict):
     if "profile_picture" in metadata_dict and metadata_dict["profile_picture"]:
         user_record.profile_picture = metadata_dict["profile_picture"]
 
@@ -506,9 +598,7 @@ def update_user_model_metadata(
         user_record.creator_node_endpoint = metadata_dict["creator_node_endpoint"]
 
 
-def update_track_model_metadata(
-    session: Session, track_record: Track, track_metadata: Dict
-):
+def update_track_model_metadata(track_record: Track, track_metadata: Dict):
     track_record.title = track_metadata["title"]
     track_record.length = track_metadata["length"] or 0
     track_record.cover_art_sizes = track_metadata["cover_art_sizes"]
@@ -555,6 +645,45 @@ def update_track_model_metadata(
     track_record.route_id = helpers.create_track_route_id(
         track_metadata["title"], "handle"
     )  # TODO use handle from upstream user fetch
+    # TODO update stems, remixes, challenge
+    return track_record
+
+
+def update_playlist_model_metadata(playlist_record: Playlist, playlist_metadata: Dict):
+    required_fields = ["is_album", "is_private", "playlist_contents"]
+    playlist_record.is_album = playlist_metadata["is_album"]
+    playlist_record.is_private = playlist_metadata["is_private"]
+    playlist_record.playlist_name = playlist_metadata["playlist_name"]
+    playlist_record.playlist_image_multihash = playlist_metadata[
+        "playlist_image_multihash"
+    ]
+    playlist_record.playlist_image_sizes_multihash = playlist_metadata[
+        "playlist_image_sizes_multihash"
+    ]
+    playlist_record.description = playlist_metadata["description"]
+    playlist_record.upc = playlist_metadata["upc"]
+    playlist_record.last_added_to = playlist_metadata["last_added_to"]
+
+    if is_valid_json_field(playlist_metadata, "playlist_contents"):
+        playlist_record.playlist_contents = playlist_metadata["playlist_contents"]
+    else:
+        raise MetadataValidationException(
+            f"Required field playlist_contents \
+                on {playlist_record} was in an invalid format"
+        )
+
+    # validation
+    for field in required_fields:
+        if field_is_null(playlist_record, field):
+            raise MetadataValidationException(
+                f"Required field {field} on {playlist_record} was null"
+            )
+
+    return playlist_record
+
+
+def field_is_null(model, field):
+    return model.get(field) == None or model.get(field) == ""
 
 
 def is_valid_json_field(metadata, field):
@@ -583,3 +712,12 @@ transaction_handlers = {
     "add_user_authority_delegate": handle_add_user_authority_delegate,
     "remove_user_authority_delegate": handle_remove_user_authority_delegate,
 }
+
+
+# Custom error classes
+class EntityExistenceException(Exception):
+    pass
+
+
+class MetadataValidationException(Exception):
+    pass

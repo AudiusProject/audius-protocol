@@ -299,7 +299,7 @@ class Track(Base):
     genre = Column(String, nullable=True)
     mood = Column(String, nullable=True)
     credits_splits = Column(String, nullable=True)
-    remix_of = Column(postgresql.JSONB, nullable=True)
+    remix_of = Column(JSONB, nullable=True)
     create_date = Column(String, nullable=True)
     release_date = Column(String, nullable=True)
     file_type = Column(String, nullable=True)
@@ -307,14 +307,14 @@ class Track(Base):
     license = Column(String, nullable=True)
     isrc = Column(String, nullable=True)
     iswc = Column(String, nullable=True)
-    track_segments = Column(postgresql.JSONB, nullable=False)
+    track_segments = Column(JSONB, nullable=False)
     metadata_multihash = Column(String, nullable=True)
-    download = Column(postgresql.JSONB, nullable=True)
+    download = Column(JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
     is_unlisted = Column(Boolean, nullable=False)
-    field_visibility = Column(postgresql.JSONB, nullable=True)
-    stem_of = Column(postgresql.JSONB, nullable=True)
+    field_visibility = Column(JSONB, nullable=True)
+    stem_of = Column(JSONB, nullable=True)
 
     _routes = relationship(  # type: ignore
         "TrackRoute",
@@ -402,14 +402,15 @@ class Playlist(Base):
     txhash = Column(String, default="", nullable=False)
     playlist_id = Column(Integer, nullable=False)
     playlist_owner_id = Column(Integer, nullable=False)
-    is_album = Column(Boolean, nullable=False)
-    is_private = Column(Boolean, nullable=False)
-    playlist_name = Column(String)
-    playlist_contents = Column(JSONB, nullable=False)
-    playlist_image_multihash = Column(String)
-    playlist_image_sizes_multihash = Column(String)
-    description = Column(String)
-    upc = Column(String)
+    metadata_multihash = Column(String, nullable=True)
+    is_album = Column(Boolean, nullable=True)
+    is_private = Column(Boolean, nullable=True)
+    playlist_name = Column(String, nullable=True)
+    playlist_contents = Column(JSONB, nullable=True)
+    playlist_image_multihash = Column(String, nullable=True)
+    playlist_image_sizes_multihash = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    upc = Column(String, nullable=True)
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     last_added_to = Column(DateTime, nullable=True)
@@ -435,6 +436,7 @@ slot={self.slot},\
 txhash={self.txhash},\
 playlist_id={self.playlist_id},\
 playlist_owner_id={self.playlist_owner_id},\
+metadata_multihash={self.metadata_multihash},\
 is_album={self.is_album},\
 is_private={self.is_private},\
 playlist_name={self.playlist_name},\

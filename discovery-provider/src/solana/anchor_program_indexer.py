@@ -8,7 +8,7 @@ from redis import Redis
 from solana.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models.models import AudiusDataTx, Track, URSMContentNode, User
+from src.models.models import AudiusDataTx, Playlist, Track, URSMContentNode, User
 from src.solana.anchor_parser import AnchorParser
 from src.solana.audius_data_transaction_handlers import ParsedTx, transaction_handlers
 from src.solana.solana_client_manager import SolanaClientManager
@@ -120,6 +120,17 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 )
                 for track in existing_tracks:
                     db_models["tracks"][track.track_id] = [track]
+            if entity_ids["playlists"]:
+                existing_playlists = (
+                    session.query(Playlist)
+                    .filter(
+                        Playlist.is_current,
+                        Playlist.playlist_id.in_(list(entity_ids["playlists"])),
+                    )
+                    .all()
+                )
+                for playlist in existing_playlists:
+                    db_models["playlists"][playlist.playlist_id] = [playlist]
 
             # TODO: Find all other track/playlist/etc. models
 
@@ -227,6 +238,8 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                     entity_type = instruction["data"]["entity_type"]
                     if isinstance(entity_type, entity_type.Track):
                         entities["tracks"].add(id)
+                    if isinstance(entity_type, entity_type.Playlist):
+                        entities["playlists"].add(id)
                 elif instruction_name == "create_content_node":
                     pass
                 elif instruction_name == "public_create_or_update_content_node":
@@ -305,13 +318,36 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                 asyncio.run(self.process_txs_batch(tx_sig_batch_records))
         self.msg("Finished processing indexing task")
 
+    def get_entity_type_from_ix(self, instruction):
+        entity_type = instruction["data"]["entity_type"]
+        ENTITY_TYPE_TO_NAME = {
+            entity_type.Track: "track",
+            entity_type.Playlist: "playlist",
+        }
+        type_name = ENTITY_TYPE_TO_NAME[type(entity_type)]
+        return type_name
+
+    def is_parseable_ix(self, instruction):
+        ix_has_name = instruction["instruction_name"] != ""
+        ix_has_data = "data" in instruction and instruction["data"] is not None
+        ix_has_metadata = "metadata" in instruction["data"]
+        return ix_has_name and ix_has_data and ix_has_metadata
+
+    def get_ursm_endpoints(self, cnode_endpoint_dict, endpoints):
+        endpoints = []
+        for sp_id in endpoints:
+            endpoints.append(cnode_endpoint_dict[sp_id])
+        return ",".join(endpoints)
+
     # TODO existing user records will be passed in
     async def fetch_cid_metadata(
         self, parsed_transactions: List[ParsedTx]
     ) -> Tuple[Dict[str, Dict], Set[str]]:
         cid_to_user_id: Dict[str, int] = {}
         cids_txhash_set: Set[Tuple[str, str]] = set()
-        cid_to_entity_type: Dict[str, str] = {}  # cid -> entity type track / user
+        cid_to_entity_type: Dict[
+            str, str
+        ] = {}  # cid -> entity type track / user / playlist
         blacklisted_cids: Set[str] = set()
         user_replica_set: Dict[int, str] = {}
 
@@ -327,13 +363,9 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
         # any instructions with  metadata
         for transaction in parsed_transactions:
             for instruction in transaction["tx_metadata"]["instructions"]:
-                if (
-                    instruction["instruction_name"] != ""
-                    and "data" in instruction
-                    and instruction["data"] is not None
-                    and "metadata" in instruction["data"]
-                ):
-                    cid = instruction["data"]["metadata"]
+                if self.is_parseable_ix(instruction):
+                    instruction_data = instruction["data"]
+                    cid = instruction_data["metadata"]
                     if is_blacklisted_ipld(session, cid):
                         blacklisted_cids.add(cid)
                     else:
@@ -341,22 +373,18 @@ class AnchorProgramIndexer(SolanaProgramIndexer):
                         if "user" in instruction["instruction_name"]:
                             cid_to_entity_type[cid] = "user"
                             # TODO add logic to use existing user records: account -> endpoint
-                            user_id = instruction["data"]["user_id"]
+                            user_id = instruction_data["user_id"]
                             cid_to_user_id[cid] = user_id
                             # new user case
-                            if "replica_set" in instruction["data"]:
-                                endpoints = []
-                                for sp_id in instruction["data"]["replica_set"]:
-                                    endpoints.append(cnode_endpoint_dict[sp_id])
-                                user_replica_set[user_id] = ",".join(endpoints)
+                            if "replica_set" in instruction_data:
+                                user_replica_set[user_id] = self.get_ursm_endpoints(
+                                    cnode_endpoint_dict, instruction_data["replica_set"]
+                                )
                         elif instruction["instruction_name"] == "manage_entity":
-                            entity_type = instruction["data"]["entity_type"]
-                            if entity_type.Track == type(entity_type):
-                                cid_to_entity_type[cid] = "track"
-                                user_id = instruction["data"][
-                                    "user_id_seed_bump"
-                                ].user_id
-                                cid_to_user_id[cid] = user_id
+                            entity_type = self.get_entity_type_from_ix(instruction)
+                            cid_to_entity_type[cid] = entity_type
+                            user_id = instruction_data["user_id_seed_bump"].user_id
+                            cid_to_user_id[cid] = user_id
 
             # TODO use existing user records instead of querying here
             user_replica_set.update(
