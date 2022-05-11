@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-import pprint
 
 from flask import Blueprint, request
 from src.api_helpers import success_response
