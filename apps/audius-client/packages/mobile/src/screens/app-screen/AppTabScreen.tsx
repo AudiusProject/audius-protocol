@@ -1,10 +1,6 @@
-import { useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 
-import {
-  EventArg,
-  NavigationState,
-  useNavigation
-} from '@react-navigation/native'
+import { EventArg, NavigationState } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { FavoriteType } from 'audius-client/src/common/models/Favorite'
 import { ID } from 'audius-client/src/common/models/Identifiers'
@@ -33,6 +29,7 @@ import {
 import { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
+import { NotificationsDrawerNavigationContext } from '../notifications-screen/NotificationsDrawerNavigationContext'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
@@ -83,8 +80,7 @@ type AppTabScreenProps = {
 export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const dispatchWeb = useDispatchWeb()
   const screenOptions = useAppScreenOptions()
-  const navigation = useNavigation()
-  const drawerNavigation = navigation.getParent()?.getParent()
+  const { drawerNavigation } = useContext(NotificationsDrawerNavigationContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
 
   useEffect(() => {
@@ -106,7 +102,12 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             // If coming from notifs allow swipe to open notifs drawer
             drawerNavigation?.setOptions({ swipeEnabled: !!isFromNotifs })
           } else {
-            drawerNavigation?.setOptions({ swipeEnabled: true })
+            // If on the first tab (or the first stack screen isn't a tab navigator),
+            // enable the drawer
+            const isOnFirstTab = !e?.data?.state.routes[0].state?.index
+            drawerNavigation?.setOptions({
+              swipeEnabled: isOnFirstTab
+            })
           }
         },
         beforeRemove: e => {

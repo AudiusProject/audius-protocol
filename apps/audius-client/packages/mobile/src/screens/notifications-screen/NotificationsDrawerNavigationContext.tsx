@@ -1,24 +1,32 @@
 import { createContext, ReactNode } from 'react'
 
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
+import { NavigationProp } from '@react-navigation/native'
 
 type NotificationsDrawerNavigationContextValue =
-  | DrawerNavigationHelpers
-  | undefined
+  | {
+      drawerHelpers: DrawerNavigationHelpers
+      drawerNavigation?: NavigationProp<any>
+    }
+  | Record<string, never>
 
 export const NotificationsDrawerNavigationContext = createContext<
   NotificationsDrawerNavigationContextValue
->(undefined)
+>({})
 
 export const NotificationsDrawerNavigationContextProvider = ({
+  drawerHelpers,
   drawerNavigation,
   children
 }: {
-  drawerNavigation: DrawerNavigationHelpers
+  drawerHelpers: DrawerNavigationHelpers
+  drawerNavigation?: NavigationProp<any>
   children: ReactNode
 }) => {
   return (
-    <NotificationsDrawerNavigationContext.Provider value={drawerNavigation}>
+    <NotificationsDrawerNavigationContext.Provider
+      value={{ drawerHelpers, drawerNavigation }}
+    >
       {children}
     </NotificationsDrawerNavigationContext.Provider>
   )

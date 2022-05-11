@@ -24,8 +24,8 @@ type UserProps = {
 
 const User = ({ user }: UserProps) => {
   const dispatch = useDispatch()
-  const drawerNavigation = useContext(NotificationsDrawerNavigationContext)
-  const navigation = useNavigation({ customNativeNavigation: drawerNavigation })
+  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
+  const navigation = useNavigation({ customNativeNavigation: drawerHelpers })
 
   const onPress = useCallback(() => {
     navigation.navigate({

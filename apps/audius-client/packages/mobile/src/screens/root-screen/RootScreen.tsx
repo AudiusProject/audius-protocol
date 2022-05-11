@@ -3,7 +3,7 @@ import {
   DrawerContentComponentProps
 } from '@react-navigation/drawer'
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
-import { NavigatorScreenParams } from '@react-navigation/native'
+import { NavigatorScreenParams, useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -48,9 +48,17 @@ const SignOnStack = () => {
 /**
  * The main stack after signing up or signing in
  */
-const MainStack = ({ navigation }: { navigation: DrawerNavigationHelpers }) => {
+const MainStack = ({
+  navigation: drawerHelpers
+}: {
+  navigation: DrawerNavigationHelpers
+}) => {
+  const drawerNavigation = useNavigation()
   return (
-    <NotificationsDrawerNavigationContextProvider drawerNavigation={navigation}>
+    <NotificationsDrawerNavigationContextProvider
+      drawerNavigation={drawerNavigation}
+      drawerHelpers={drawerHelpers}
+    >
       <Stack.Navigator
         screenOptions={{ gestureEnabled: false, headerShown: false }}
       >
@@ -64,10 +72,10 @@ const MainStack = ({ navigation }: { navigation: DrawerNavigationHelpers }) => {
  * The contents of the notifications drawer, which swipes in
  */
 const NotificationsDrawerContents = ({
-  navigation
+  navigation: drawerHelpers
 }: DrawerContentComponentProps) => {
   return (
-    <NotificationsDrawerNavigationContextProvider drawerNavigation={navigation}>
+    <NotificationsDrawerNavigationContextProvider drawerHelpers={drawerHelpers}>
       <NotificationsScreen />
     </NotificationsDrawerNavigationContextProvider>
   )
