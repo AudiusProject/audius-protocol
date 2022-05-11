@@ -121,8 +121,7 @@ jobs:
 
             # pick first ten characters and lowercase all of them
             CIRCLE_BRANCH_CLEANED="${CIRCLE_BRANCH:0:10}" | awk '{print tolower($0)}
-            CIRCLE_SHA_CLEANED="${CIRCLE_SHA1:0:10}" | awk '{print tolower($0)} 
-            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH_CLEANED-$CIRCLE_SHA_CLEANED-$(date +%s)
+            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH_CLEANED-$(date +%s)
             echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
