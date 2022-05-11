@@ -40,6 +40,7 @@ case "$provider" in
 	gcp)
 		image=${image:-$DEFAULT_GCP_IMAGE}
 		machine_type=${machine_type:-$DEFAULT_GCP_MACHINE_TYPE}
+		disk_type=${disk_type:-$DEFAULT_GCP_DISK_TYPE}
 		;;
 	*)
 		echo "Unknown Provider:" $provider
@@ -100,13 +101,27 @@ fi
 # Create the instance
 case "$provider" in
 	azure)
-		az vm create --name $name --image $image --os-disk-size-gb $disk_size --size $machine_type --public-ip-sku Basic --ssh-key-values ~/.ssh/audius-azure
+		az vm create \
+			--name $name \
+			--image $image \
+			--os-disk-size-gb $disk_size \
+			--size $machine_type \
+			--public-ip-sku Basic \
+			--ssh-key-values ~/.ssh/audius-azure
 		;;
 	gcp)
 		if [[ "$spot_instance" == true ]]; then
-			gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type --provisioning-model=SPOT 2> /dev/null
-		else
-			gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type 2> /dev/null
+			spot_flag=--provisioning-model=SPOT
+		fi
+		gcloud compute instances create \
+			$name $(gcp_image_to_flags $image) \
+			--boot-disk-size $disk_size \
+			--boot-disk-type $disk_type \
+			--machine-type $machine_type \
+			$spot_flag \
+			2> /dev/null
+		if [[ "$image" = "$GCP_DEV_IMAGE" ]]; then
+			gcloud compute instances add-tags $name --tags=fast
 		fi
 		;;
 esac
