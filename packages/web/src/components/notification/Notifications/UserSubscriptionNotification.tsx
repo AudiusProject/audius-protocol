@@ -14,7 +14,9 @@ import { NotificationFooter } from './NotificationFooter'
 import { NotificationHeader } from './NotificationHeader'
 import { NotificationTile } from './NotificationTile'
 import { NotificationTitle } from './NotificationTitle'
+import { ProfilePicture } from './ProfilePicture'
 import { UserNameLink } from './UserNameLink'
+import styles from './UserSubscriptionNotification.module.css'
 import { IconRelease } from './icons'
 import { getEntityLink } from './utils'
 
@@ -58,13 +60,18 @@ export const UserSubscriptionNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <UserNameLink user={user} notification={notification} />
-        {messages.posted} {singleEntity ? 'a' : entitiesCount} {messages.new}{' '}
-        {entityType.toLowerCase()}
-        {singleEntity ? '' : 's'}
-        {singleEntity ? (
-          <EntityLink entity={entities[0]} entityType={entityType} />
-        ) : null}
+        <div className={styles.body}>
+          <ProfilePicture className={styles.profilePicture} user={user} />
+          <span>
+            <UserNameLink user={user} notification={notification} />{' '}
+            {messages.posted} {singleEntity ? 'a' : entitiesCount}{' '}
+            {messages.new} {entityType.toLowerCase()}
+            {singleEntity ? '' : 's'}{' '}
+            {singleEntity ? (
+              <EntityLink entity={entities[0]} entityType={entityType} />
+            ) : null}
+          </span>
+        </div>
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
     </NotificationTile>

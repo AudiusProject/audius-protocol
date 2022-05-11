@@ -86,11 +86,11 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       const { entity, entityType, achievement, value, user } = notification
       const entityWithUser = { ...entity, user }
       const achievementText =
-        achievement === Achievement.Listens ? 'Plays' : achievement
+        achievement === Achievement.Listens ? 'plays' : achievement
 
       return (
         <span>
-          {messages.your} {entityType}
+          {messages.your} {entityType}{' '}
           <EntityLink entity={entityWithUser} entityType={entityType} />{' '}
           {messages.reached} {formatCount(value)} {achievementText}
         </span>
@@ -115,7 +115,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       const { entity } = notification
       dispatch(push(getEntityLink(entity)))
     }
-  }, [notification, user.handle, dispatch])
+  }, [notification, user, dispatch])
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

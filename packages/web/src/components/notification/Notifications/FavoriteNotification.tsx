@@ -37,7 +37,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         <UserNameLink user={firstUser} notification={notification} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.reposted}
-        {entityType.toLowerCase()}
+        {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
