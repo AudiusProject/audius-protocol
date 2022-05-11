@@ -1,7 +1,7 @@
 import logging
-import pytz
-
 from datetime import datetime
+
+import pytz
 from src.monitors import monitor_names, monitors
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 
