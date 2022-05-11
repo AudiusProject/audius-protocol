@@ -68,9 +68,9 @@ export class DiscoveryProviderSelection extends ServiceSelection {
        * the list of registered providers from chain
        */
       getServices: async ({ verbose = false } = {}) => {
-        this.currentVersion = await ethContracts.getCurrentVersion(
+        this.currentVersion = (await ethContracts.getCurrentVersion(
           DISCOVERY_SERVICE_NAME
-        )
+        )) as string
         const services = await this.ethContracts.getServiceProviderList(
           DISCOVERY_SERVICE_NAME
         )
