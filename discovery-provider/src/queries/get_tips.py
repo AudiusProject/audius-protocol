@@ -113,7 +113,7 @@ class TipResult(TypedDict):
 
 def _get_tips(session: Session, args: GetTipsArgs):
     query: Query = session.query(UserTip)
-    if "transaction_signatures" in args and len(args["transaction_signatures"]) > 0:
+    if "transaction_signatures" in args and args["transaction_signatures"]:
         query = query.filter(UserTip.signature.in_(args["transaction_signatures"]))
     if (
         "receiver_min_followers" in args
