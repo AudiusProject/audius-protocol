@@ -1103,6 +1103,8 @@ class AggregateUser(Base):
     following_count = Column(Integer, nullable=False)
     repost_count = Column(Integer, nullable=False)
     track_save_count = Column(Integer, nullable=False)
+    supporter_count = Column(Integer, nullable=False, server_default="0")
+    supporting_count = Column(Integer, nullable=False, server_default="0")
 
     Index("aggregate_user_idx", "user_id", unique=True)
 

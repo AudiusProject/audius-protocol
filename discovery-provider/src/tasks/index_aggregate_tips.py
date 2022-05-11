@@ -28,25 +28,83 @@ AGGREGATE_TIPS = "aggregate_user_tips"
 
 
 UPDATE_AGGREGATE_USER_TIPS_QUERY = """
+-- Update aggregate_tips table:
 INSERT INTO aggregate_user_tips (
         sender_user_id
         , receiver_user_id
         , amount
     )
-    SELECT 
-        sender_user_id
-        , receiver_user_id
-        , SUM(amount) as amount
+SELECT
+    sender_user_id
+    , receiver_user_id
+    , SUM(amount) as amount
+FROM user_tips
+WHERE
+    slot > :prev_slot AND
+    slot <= :current_slot
+GROUP BY
+    sender_user_id
+    , receiver_user_id
+ON CONFLICT (sender_user_id, receiver_user_id)
+DO UPDATE
+    SET amount = EXCLUDED.amount + aggregate_user_tips.amount;
+
+-- Update aggregate_user supporter/supporting counts:
+WITH recent_tips AS (
+    SELECT
+            sender_user_id
+            , receiver_user_id
     FROM user_tips
     WHERE
-        slot > :prev_slot AND
-        slot <= :current_slot
+            slot > :prev_slot AND
+            slot <= :current_slot
     GROUP BY
-        sender_user_id
-        , receiver_user_id
-    ON CONFLICT (sender_user_id, receiver_user_id)
-    DO UPDATE
-        SET amount = EXCLUDED.amount + aggregate_user_tips.amount
+            sender_user_id
+            , receiver_user_id
+)
+, user_ids AS (
+    SELECT sender_user_id AS user_id FROM recent_tips
+    UNION SELECT receiver_user_id AS user_id FROM recent_tips
+), supporting AS (
+    SELECT receiver_user_id AS user_id, COUNT(sender_user_id) AS total_supporting
+    FROM aggregate_user_tips
+    WHERE receiver_user_id IN (SELECT user_id FROM user_ids)
+    GROUP BY receiver_user_id
+), supporters AS (
+    SELECT sender_user_id AS user_id, COUNT(receiver_user_id) AS total_supporters
+    FROM aggregate_user_tips
+    WHERE sender_user_id IN (SELECT user_id FROM user_ids)
+    GROUP BY sender_user_id
+)
+INSERT INTO aggregate_user (
+    user_id,
+    track_count,
+    playlist_count,
+    album_count,
+    follower_count,
+    following_count,
+    repost_count,
+    track_save_count,
+    supporter_count,
+    supporting_count
+)
+SELECT
+    supporting.user_id AS user_id,
+    0 AS track_count,
+    0 AS playlist_count,
+    0 AS album_count, 0 AS follower_count,
+    0 AS following_count,
+    0 AS repost_count,
+    0 AS track_save_count,
+    total_supporting AS supporting_count,
+    total_supporters AS supporter_count
+FROM supporting
+FULL OUTER JOIN supporters ON supporting.user_id = supporters.user_id
+ON CONFLICT (user_id)
+DO
+    UPDATE SET
+        supporting_count = EXCLUDED.supporting_count, 
+        supporter_count = EXCLUDED.supporter_count
 """
 
 
