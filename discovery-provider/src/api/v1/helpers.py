@@ -304,7 +304,7 @@ def extend_supporting(support: SupportResponse):
         "receiver": extend_user(support["user"]),
     }
 
-    
+
 def extend_tip(tip):
     new_tip = tip.copy()
     new_tip["sender"] = extend_user(tip["sender"])
