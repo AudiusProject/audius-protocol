@@ -459,7 +459,7 @@ export class DelegateManagerClient extends GovernedContractClient {
       serviceProvider,
       amount
     )
-    return this.web3Manager.sendTransaction(method)
+    return await this.web3Manager.sendTransaction(method)
   }
 
   async updateRemoveDelegatorLockupDuration(duration: string) {

@@ -7,7 +7,7 @@ import {
   trackSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
-import type { Web3Manager }from '../web3Manager'
+import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
 const { wait } = Utils
