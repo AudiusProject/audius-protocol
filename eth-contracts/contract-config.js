@@ -12,7 +12,7 @@ module.exports = {
     initialNotifierEndpoint: null,
     initialNotifierEmail: null
   },
-  'audius_dev': {
+  'predeploy': {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,
     guardianAddress: null,

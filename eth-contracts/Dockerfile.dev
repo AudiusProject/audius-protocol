@@ -1,0 +1,15 @@
+FROM node:10.16 as builder
+COPY package*.json ./
+RUN npm install --loglevel verbose
+
+FROM node:10.16-alpine
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /node_modules ./node_modules
+COPY . .
+
+RUN npm install ganache --global
+RUN ./scripts/setup-predeployed-ganache.sh /usr/db
+
+CMD ["ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50", "--miner.blockTime", "1"]
