@@ -120,8 +120,8 @@ jobs:
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
             # pick first ten characters and lowercase all of them
-            CIRCLE_BRANCH_CLEANED="${CIRCLE_BRANCH:0:10}" | awk '{print tolower($0)}
-            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH_CLEANED-$(date +%s)
+            CIRCLE_BRANCH_CLEANED="${CIRCLE_BRANCH:0:10}" | awk '{print tolower($0)}'
+            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH_CLEANED$(date +%s)
             echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
