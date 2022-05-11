@@ -29,6 +29,7 @@ export const TabNavigator = ({
   screenOptions
 }: TabNavigatorProps) => {
   const styles = useStyles()
+
   return (
     <Tab.Navigator
       initialRouteName={initialScreenName}
