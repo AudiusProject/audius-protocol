@@ -108,6 +108,6 @@ ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
 RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
-    CMD-SHELL pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
+    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
