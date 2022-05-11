@@ -1,6 +1,7 @@
 import argparse
 import csv
 import random
+import time
 from datetime import datetime
 from io import StringIO
 from typing import Dict, List
@@ -64,6 +65,7 @@ class Seeder:
             cur.copy_expert(sql=sql, file=s_buf)
 
     def seed_blocks(self, count, blocknumber_offset=0):
+        print(f"blocks: Generating {count}...")
         blocks = []
         for i in range(count):
             blocks.append(FakeGenerator.generate_block(blocknumber_offset + i))
@@ -71,6 +73,7 @@ class Seeder:
         self.blocknumbers = [block["number"] for block in blocks]
 
     def seed_users(self, count, user_id_offset=0):
+        print(f"users: Generating {count}...")
         users = []
         for i in range(count):
             [blocknumber] = random.sample(self.blocknumbers, 1)
@@ -82,6 +85,7 @@ class Seeder:
         return users
 
     def seed_aggregate_user_tips(self, count):
+        print(f"aggregate_user_tips: Generating {count}...")
         aggregate_user_tips = []
         picked_user_ids = set()
         while len(picked_user_ids) < count:
@@ -96,6 +100,7 @@ class Seeder:
         self.seed("aggregate_user_tips", aggregate_user_tips)
 
     def seed_follows(self, count):
+        print(f"follows: Generating {count}...")
         follows = []
         picked_user_ids = set()
         while len(picked_user_ids) < count:
@@ -109,6 +114,7 @@ class Seeder:
         self.seed("follows", follows)
 
     def seed_user_tips(self, count, slot_offset=0):
+        print(f"user_tips: Generating {count}...")
         user_tips = []
         slot = slot_offset
         for _ in range(count):
@@ -241,6 +247,7 @@ args = parser.parse_args()
 
 
 seeder = Seeder()
+start = time.time()
 if args.clear_existing:
     seeder.clear_seeds(
         user_id_offset=args.user_id_offset, blocknumber_offset=args.blocknumber_offset
@@ -253,3 +260,4 @@ seeder.seed_users(
 seeder.seed_follows(args.num_follows)
 seeder.seed_user_tips(args.num_user_tips, slot_offset=args.slot_offset)
 seeder.seed_aggregate_user_tips(args.num_aggregate_user_tips)
+print(f"Seeder finished in {time.time() - start}")
