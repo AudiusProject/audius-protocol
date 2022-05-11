@@ -31,6 +31,12 @@ const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 // Number of users to process in each batch for this._aggregateOps
 const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
 
+// Max number of completed and failed jobs to leave in the queue history
+const SNAPBACK_QUEUE_HISTORY = 500
+
+// Max number of millis that a single Snapback job should run for
+const MAX_SNAPBACK_JOB_RUNTIME_MS = 1000 * 60 * 60 // 1 hour
+
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring:
@@ -136,23 +142,18 @@ class SnapbackSM {
       throw new Error('SnapbackSM: Missing required configs - cannot start')
     }
 
-    // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
-    // ex: 1/<24> users are handled over <3600000> ms (1 hour)
+    // 1/<moduloBase> users are handled in each job
+    // ex: 1/<24> users are handled in a job that takes a variable length of time (depends on errors and # of users)
     this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
 
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
-    // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
-
-    this.stateMachineQueueJobMaxDuration = this.snapbackJobInterval * 5
-
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
     this.stateMachineQueue = this.createBullQueue('state-machine', {
       // Should be sufficiently larger than expected job runtime
-      lockDuration: this.stateMachineQueueJobMaxDuration,
+      lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
       // We never want to re-process stalled jobs
       maxStalledCount: 0
     })
@@ -162,9 +163,6 @@ class SnapbackSM {
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
     // Add event handlers for state machine queue
-    this.stateMachineQueue.on('global:error', (error) => {
-      this.logError(`stateMachineQueue Job Error - ${error}`)
-    })
     this.stateMachineQueue.on('global:waiting', (jobId) => {
       this.log(`stateMachineQueue Job Waiting - ID ${jobId}`)
     })
@@ -176,13 +174,25 @@ class SnapbackSM {
         `stateMachineQueue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
       )
     })
+
+    // Re-queue state machine job when the current job fails or succeeds
+    this.stateMachineQueue.on('global:error', (error) => {
+      this.logError(
+        `stateMachineQueue Job Error - ${error}.  Queuing another job...`
+      )
+      this.stateMachineQueue.add({ startTime: Date.now() })
+    })
     this.stateMachineQueue.on('global:completed', (jobId, result) => {
       this.log(
-        `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}`
+        `stateMachineQueue Job Completed - ID ${jobId} - Result ${result}.  Queuing another job...`
       )
+      this.stateMachineQueue.add({ startTime: Date.now() })
     })
     this.stateMachineQueue.on('global:failed', (jobId, err) => {
-      this.logError(`stateMachineQueue Job Failed - ID ${jobId} - Error ${err}`)
+      this.logError(
+        `stateMachineQueue Job Failed - ID ${jobId} - Error ${err}. Queuing another job...`
+      )
+      this.stateMachineQueue.add({ startTime: Date.now() })
     })
 
     // Add stalled event handler for all queues
@@ -278,18 +288,14 @@ class SnapbackSM {
       }
     )
 
-    // Enqueue stateMachineQueue jobs on a cron, after an initial delay
+    // Enqueue first job after a delay. This job requeues itself upon completion or failure
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
       /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
     )
-    await this.stateMachineQueue.add(
-      /** data */ { startTime: Date.now() },
-      /** opts */ { repeat: { every: this.snapbackJobInterval } }
-    )
 
     this.log(
-      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; jobs will be enqueued every ${this.snapbackJobInterval}ms`
+      `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; a new will be enqueued after each previous job finishes`
     )
   }
 
@@ -318,8 +324,8 @@ class SnapbackSM {
       },
       defaultJobOptions: {
         // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
-        removeOnComplete: true,
-        removeOnFail: true
+        removeOnComplete: SNAPBACK_QUEUE_HISTORY,
+        removeOnFail: SNAPBACK_QUEUE_HISTORY
       },
       settings
     })

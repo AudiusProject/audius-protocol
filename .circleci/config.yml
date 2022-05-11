@@ -4,9 +4,6 @@
 #
 version: 2.1
 orbs:
-  aws-eks: circleci/aws-eks@0.1.0
-  helm: circleci/helm@0.1.2
-  kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
 commands:
   diff-if-necessary:
@@ -25,206 +22,129 @@ commands:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
 
 jobs:
+  bake-gcp-dev-image:
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
+    steps:
+      # This has to be one large run block because CircleCI doesn't preserve state across run steps
+      - run:
+          name: Bake GCP Dev Image
+          command: |
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
+
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
+
+            # authenticate into gcloud
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
+            GCLOUD_VM_NAME=audius-bake-nightly-$(date +%s)
+            BAKE_IMAGE_NAME=ci-image-bake-latest
+            echo "$GCLOUD_VM_NAME" $GCLOUD_VM_NAME
+
+            export PROTOCOL_DIR=/home/circleci/project
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+            pwd "$PROTOCOL_DIR"
+            ls -la "$PROTOCOL_DIR"
+            cd "$PROTOCOL_DIR/service-commands/"
+            npm install --unsafe-perm
+
+            # add IP to firewall
+            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
+            gcloud compute firewall-rules create $GCLOUD_VM_NAME --source-ranges "$CIRCLECI_IP" --action allow --rules all
+
+            # run A setup on remote dev box to clone protocol and install the prerequisites for A
+            # A setup ... || true is necessary because exit code returns 141 by default
+            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME || true
+
+            # Run A up on remote box
+            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              A run init-repos up;
+              A up;
+              A down;
+              exit;
+            EOF
+
+            # Stop GCP box, can't take an image from a running VM
+            gcloud compute instances stop $GCLOUD_VM_NAME
+
+            # Delete image with the same name (if exists)
+            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+
+            # Create the new CI bake image
+            gcloud compute images create "$BAKE_IMAGE_NAME" \
+              --project="$GOOGLE_PROJECT_ID" \
+              --source-disk="$GCLOUD_VM_NAME" \
+              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
+              --storage-location=us
+
   test-mad-dog-e2e:
-    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
-    # 1 is default; leaving this here for quick modification
-    parallelism: 1
     parameters:
       mad-dog-type:
         description: "test, test-nightly"
         default: "test"
         type: string
-    # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
-    # uses medium (2vcpu/4gb) by default
-    resource_class: large # 4vcpu/8gb
-    machine:
-      image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
-      docker_layer_caching: false
+    docker:
+      - image: audius/circleci-gcloud-bake:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASS
     steps:
-      - add_ssh_keys
-      - checkout
+      # This has to be one large run block because CircleCI doesn't preserve state across run steps
       - run:
-          name: clone tooling and mad dog
+          name: Test mad-dog on GCP
           command: |
-            cd ../
-            mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+            # cleanup code setup before starting actual execution
+            cleanup() {
+              # Delete GCP box
+              gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
-      # Download and cache dependencies
+              # Delete GCP firewall
+              gcloud compute firewall-rules delete $GCLOUD_VM_NAME --quiet
+            }
+            trap cleanup EXIT
 
-      # libs
-      - restore_cache:
-          name: Restore libs cache
-          keys:
-            - v1-libs-{{ checksum "libs/package-lock.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-libs-
-      - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
-      - run:
-          name: libs repo init
-          command: |
-            cd libs
-            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
-            source ~/.bash_profile
-            nvm install 14
-            npm install
-      - save_cache:
-          name: Save libs cache
-          key: v1-libs-{{ checksum "libs/package-lock.json" }}
-          paths:
-            - libs/node_modules
+            # authenticate into gcloud
+            echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
+            gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+            gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
 
-      # data contracts
-      - restore_cache:
-          name: Restore contracts cache
-          keys:
-            - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
-            - v1-data-contracts-
-      - run:
-          name: contract repo init
-          command: |
-            cd contracts/
-            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
-            source ~/.bash_profile
-            nvm install 14
-            npm install
-      - save_cache:
-          name: Save contracts cache
-          paths:
-            - contracts/node_modules
-          key: v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
+            GCLOUD_VM_NAME=mad-dog-test-$(date +%s)
+            echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
-      # eth contracts
-      - restore_cache:
-          name: Restore eth-contracts cache
-          keys:
-            - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
-            - v1-eth-contracts-
-      - run:
-          name: eth-contracts repo init
-          command: |
-            cd eth-contracts/
-            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
-            source ~/.bash_profile
-            nvm install 14
-            npm install
-      - save_cache:
-          name: Save eth-contracts cache
-          paths:
-            - eth-contracts/node_modules
-          key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
-
-      # content node
-      - restore_cache:
-          name: Restore content-node cache
-          keys:
-            - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
-            - v1-content-node-
-      - run:
-          name: content-node repo init
-          command: |
-            source ~/.bash_profile
-            nvm install v14.17.5
-            cd creator-node/
-            npm install
-      - save_cache:
-          name: Save content-node cache
-          paths:
-            - creator-node/node_modules
-          key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
-
-      # identity
-      - restore_cache:
-          name: Restore identity-service cache
-          keys:
-            - v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
-            - v1-identity-service-
-      - run:
-          name: identity-service repo init
-          command: |
-            source ~/.bash_profile
-            nvm install v14.17.5
-            cd identity-service/
-            npm install
-      - save_cache:
-          name: Save identity-service cache
-          paths:
-            - identity-service/node_modules
-          key: v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
-
-      # mad-dog
-      - restore_cache:
-          name: Restore mad-dog cache
-          keys:
-            - v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
-            - v1-mad-dog-
-      - run:
-          name: mad-dog repo init
-          command: |
-            source ~/.bash_profile
-            cd mad-dog/
-            nvm install v14.17.5
-            npm install
-      - save_cache:
-          name: Save mad-dog cache
-          paths:
-            - mad-dog/node_modules
-          key: v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
-
-      # service commands
-      - restore_cache:
-          name: Restore service-commands cache
-          keys:
-            - v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
-            - v1-service-commands-
-      - run:
-          name: service-commands repo init
-          command: |
-            source ~/.bash_profile
-            nvm install v14.17.5
-            cd service-commands/
-            npm install
-      - save_cache:
-          name: Save service-commands cache
-          paths:
-            - service-commands/node_modules
-          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
-
-      - run:
-          name: execute
-          # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
-          no_output_timeout: 30m
-          command: |
-            sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
-            sudo chmod +x /usr/local/bin/pumba
-            set -e
             export PROTOCOL_DIR=/home/circleci/project
-            source ~/.bash_profile
-            nvm install v14.17.5
-            nvm use 14
-            cd /home/circleci/project/service-commands/scripts/
-            cd /home/circleci/project/libs/
-            npm rebuild
-            npm run build
-            npm link
-            cd /home/circleci/project/service-commands/
-            npm link
-            npm link @audius/libs
-            cd /home/circleci/project/mad-dog/
-            npm link @audius/libs
-            npm link @audius/service-commands
-            cd /home/circleci/project/service-commands/scripts/
-            sudo "$(which node)" hosts.js add
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 4 --verbose
-            cd /home/circleci/project/mad-dog/
-            docker ps
-            export ipfsHost="localhost"
-            export ipfsPort=6001
-            npm run start << parameters.mad-dog-type >> verbose
-      - store_artifacts:
-          path: /home/circleci/project/service-commands/output.log
-      - store_artifacts:
-          path: /home/circleci/project/service-commands/error.log
+            git clone --branch "$CIRCLE_BRANCH" https://github.com/AudiusProject/audius-protocol.git "$PROTOCOL_DIR"
+            pwd "$PROTOCOL_DIR"
+            ls -la "$PROTOCOL_DIR"
+            cd "$PROTOCOL_DIR/service-commands/"
+            npm install --unsafe-perm
+
+            # add IP to firewall
+            CIRCLECI_IP=$(curl https://checkip.amazonaws.com)
+            gcloud compute firewall-rules create $GCLOUD_VM_NAME --source-ranges "$CIRCLECI_IP" --action allow --rules all
+
+            # run A setup on remote dev box to clone protocol and install the prerequisites for A
+            # A setup ... || true is necessary because exit code returns 141 by default
+            yes | $PROTOCOL_DIR/service-commands/scripts/A setup remote-dev $GCLOUD_VM_NAME --fast --spot-instance || true
+
+            # Run A up on remote box
+            GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+            ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              cd /home/ubuntu/audius-protocol/mad-dog;
+              A up;
+              npm run start << parameters.mad-dog-type >> verbose;
+              exit;
+            EOF
 
   test-libs:
     docker:
@@ -810,10 +730,14 @@ workflows:
           repo: solana-programs
 
       - test-mad-dog-e2e:
+          context:
+            - GCP2
           mad-dog-type: test
       - hold-test-mad-dog-e2e-full:
           type: approval
       - test-mad-dog-e2e:
+          context:
+            - GCP2
           name: test-mad-dog-e2e-full
           mad-dog-type: test-nightly
           requires:
@@ -837,8 +761,14 @@ workflows:
       - test-solana-programs:
           name: test-solana-programs-nightly
       - test-mad-dog-e2e:
+          context:
+            - GCP2
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image-nightly
     triggers:
       - schedule:
           cron: "0 5 * * *"

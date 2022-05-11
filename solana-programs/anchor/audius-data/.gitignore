@@ -10,3 +10,4 @@ adminStorageKeypair.json
 adminAccountKeypair.json
 userKeypair.json
 dist
+yarn-error.log

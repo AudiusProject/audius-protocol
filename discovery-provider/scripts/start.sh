@@ -61,17 +61,6 @@ EOF
     fi
 fi
 
-if [ -z "$audius_ipfs_host" ]; then
-    if [ -z "$(ls -A /root/.ipfs)" ]; then
-        ipfs init --profile server
-    fi
-
-    ipfs daemon &
-    export audius_ipfs_host=localhost
-    export WAIT_HOSTS="localhost:5001"
-    /wait
-fi
-
 if [ -z "$audius_redis_url" ]; then
     redis-server --daemonize yes
     export audius_redis_url="redis://localhost:6379/00"
@@ -117,11 +106,14 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         echo "Finished running migrations"
     fi
 
-    # filter tail to server logs with `docker exec -it <disc-prov container> tail -f /var/log/discprov-server.log`
+    # filter tail to server/worker/beat logs with
+    # docker exec -it <container> tail -f /var/log/discprov-server.log
+    # docker exec -it <container> tail -f /var/log/discprov-worker.log
+    # docker exec -it <container> tail -f /var/log/discprov-beat.log
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) & # docker exec -it <disc-prov container> tail -f /var/log/discprov-worker.log
-        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &                                                                         # docker exec -it <disc-prov container> tail -f /var/log/discprov-beat.log
+        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
     ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
