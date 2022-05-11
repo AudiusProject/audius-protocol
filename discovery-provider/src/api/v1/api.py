@@ -6,6 +6,7 @@ from src.api.v1.metrics import ns as metrics_ns
 from src.api.v1.models.users import ns as models_ns
 from src.api.v1.playlists import full_ns as full_playlists_ns
 from src.api.v1.playlists import ns as playlists_ns
+from src.api.v1.reactions import ns as reactions_ns
 from src.api.v1.resolve import ns as resolve_ns
 from src.api.v1.search import full_ns as full_search_ns
 from src.api.v1.tips import full_ns as full_tips_ns
@@ -37,6 +38,7 @@ api_v1.add_namespace(challenges_ns)
 api_v1.add_namespace(tips_ns)
 api_v1.add_namespace(metrics_ns)
 api_v1.add_namespace(resolve_ns)
+api_v1.add_namespace(reactions_ns)
 
 bp_full = Blueprint("api_v1_full", __name__, url_prefix="/v1/full")
 api_v1_full = ApiWithHTTPS(bp_full, version="1.0")

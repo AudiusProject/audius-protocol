@@ -8,6 +8,7 @@ from src.models import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
+from src.queries.reactions import ReactionResponse
 from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
 
@@ -304,6 +305,10 @@ def extend_supporting(support: SupportResponse):
         "receiver": extend_user(support["user"]),
     }
 
+def extend_reaction(reaction: ReactionResponse):
+    new_reaction = reaction.copy()
+    new_reaction["sender_user_id"] = encode_int_id(reaction["sender_user_id"])
+    return new_reaction
 
 def extend_tip(tip):
     new_tip = tip.copy()
