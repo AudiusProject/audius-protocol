@@ -9,7 +9,7 @@ DEFAULT_GCP_COMPUTE_REGION='us-central1'
 DEFAULT_GCP_COMPUTE_ZONE='us-central1-a'
 DEFAULT_GCP_IMAGE="project=ubuntu-os-cloud,family=ubuntu-2004-lts"
 DEFAULT_GCP_MACHINE_TYPE="n2-custom-12-24576"
-DEFAULT_GCP_DISK_TYPE="pd-balanced"
+DEFAULT_GCP_DISK_TYPE="pd-ssd"
 DEFAULT_PROVIDER="gcp"
 DEFAULT_USER="ubuntu"
 GCP_DEV_IMAGE="project=ci-audius-infra,image=ci-image-bake-latest"
