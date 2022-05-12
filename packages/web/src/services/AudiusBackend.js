@@ -1013,6 +1013,12 @@ class AudiusBackend {
     )
   }
 
+  static async getUserEmail() {
+    await waitForLibsInit()
+    const { email } = await audiusLibs.Account.getUserEmail()
+    return email
+  }
+
   /**
    * Takes an array of [{metadataMultihash, metadataFileUUID}, {}, ]
    * Adds tracks to chain for this user
@@ -2100,10 +2106,15 @@ class AudiusBackend {
     return { data, signature }
   }
 
-  static async signDiscoveryNodeRequest() {
+  static async signDiscoveryNodeRequest(input) {
     await waitForLibsInit()
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with discovery node: ${unixTs}`
+    let data
+    if (input) {
+      data = input
+    } else {
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      data = `Click sign to authenticate with discovery node: ${unixTs}`
+    }
     const signature = await audiusLibs.Account.web3Manager.sign(data)
     return { data, signature }
   }
