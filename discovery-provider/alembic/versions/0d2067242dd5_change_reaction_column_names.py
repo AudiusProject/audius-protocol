@@ -16,24 +16,31 @@ depends_on = None
 
 
 def upgrade():
-    op.alter_column("reactions", "entity_id", new_column_name="reacted_to")
-    op.alter_column("reactions", "entity_type", new_column_name="reaction_type")
-    op.alter_column("reactions", "reaction", new_column_name="reaction_value")
-    op.create_index(
-        op.f("ix_reactions_reacted_to_reaction_type"),
-        "reactions",
-        ["reacted_to", "reaction_type"],
-        unique=False,
-        info={"if_not_exists": True},
-    )
+    # Handle lack of idempotency for this migration
+    try:
+        op.alter_column("reactions", "entity_id", new_column_name="reacted_to")
+        op.alter_column("reactions", "entity_type", new_column_name="reaction_type")
+        op.alter_column("reactions", "reaction", new_column_name="reaction_value")
+        op.create_index(
+            op.f("ix_reactions_reacted_to_reaction_type"),
+            "reactions",
+            ["reacted_to", "reaction_type"],
+            unique=False,
+            info={"if_not_exists": True},
+        )
+    except BaseException as e:
+        pass
 
 
 def downgrade():
-    op.alter_column("reactions", "reacted_to", new_column_name="entity_id")
-    op.alter_column("reactions", "reaction_type", new_column_name="entity_type")
-    op.alter_column("reactions", "reaction_value", new_column_name="reaction")
-    op.drop_index(
-        op.f("ix_reactions_reacted_to_reaction_type"),
-        table_name="reaction",
-        info={"if_not_exists": True},
-    )
+    try:
+        op.alter_column("reactions", "reacted_to", new_column_name="entity_id")
+        op.alter_column("reactions", "reaction_type", new_column_name="entity_type")
+        op.alter_column("reactions", "reaction_value", new_column_name="reaction")
+        op.drop_index(
+            op.f("ix_reactions_reacted_to_reaction_type"),
+            table_name="reaction",
+            info={"if_exists": True},
+        )
+    except BaseException as e:
+        pass
