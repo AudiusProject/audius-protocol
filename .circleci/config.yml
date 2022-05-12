@@ -72,6 +72,8 @@ jobs:
               A run init-repos up;
               A up;
               A down;
+              cd "$PROTOCOL_DIR";
+              git checkout -f;
               exit;
             EOF
 
