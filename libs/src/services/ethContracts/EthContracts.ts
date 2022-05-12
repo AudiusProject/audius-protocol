@@ -1,32 +1,44 @@
-const semver = require('semver')
-let urlJoin = require('proper-url-join')
-
-const AudiusTokenClient = require('./audiusTokenClient')
-const RegistryClient = require('./registryClient')
-const { GovernanceClient } = require('./governanceClient')
-const ServiceTypeManagerClient = require('./serviceTypeManagerClient')
-const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
-const StakingProxyClient = require('./stakingProxyClient')
-const DelegateManagerClient = require('./delegateManagerClient')
-const ClaimsManagerClient = require('./claimsManagerClient')
-const ClaimDistributionClient = require('./claimDistributionClient')
-const WormholeClient = require('./wormholeClient')
-const EthRewardsManagerClient = require('./ethRewardsManagerClient')
-const TrustedNotifierManagerClient = require('./trustedNotifierManagerClient')
-const { Utils } = require('../../utils')
+import semver from 'semver'
+import { AudiusTokenClient } from './AudiusTokenClient'
+import { RegistryClient } from './RegistryClient'
+import { GovernanceClient } from './GovernanceClient'
+import { ServiceTypeManagerClient } from './ServiceTypeManagerClient'
+import { ServiceProviderFactoryClient } from './ServiceProviderFactoryClient'
+import { StakingProxyClient } from './StakingProxyClient'
+import { DelegateManagerClient } from './DelegateManagerClient'
+import { ClaimsManagerClient } from './ClaimsManagerClient'
+import { ClaimDistributionClient } from './ClaimDistributionClient'
+import { WormholeClient } from './WormholeClient'
+import { EthRewardsManagerClient } from './EthRewardsManagerClient'
+import { TrustedNotifierManagerClient } from './TrustedNotifierManagerClient'
+import { Logger, Utils } from '../../utils'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+import type { ContractClient } from '../contracts/ContractClient'
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi
 const GovernanceABI = Utils.importEthContractABI('Governance.json').abi
-const ServiceTypeManagerABI = Utils.importEthContractABI('ServiceTypeManager.json').abi
-const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFactory.json').abi
+const ServiceTypeManagerABI = Utils.importEthContractABI(
+  'ServiceTypeManager.json'
+).abi
+const ServiceProviderFactoryABI = Utils.importEthContractABI(
+  'ServiceProviderFactory.json'
+).abi
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
-const DelegateManagerABI = Utils.importEthContractABI('DelegateManagerV2.json').abi
+const DelegateManagerABI = Utils.importEthContractABI(
+  'DelegateManagerV2.json'
+).abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
-const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
+const ClaimDistributionABI = Utils.importEthContractABI(
+  'AudiusClaimDistributor.json'
+).abi
 const WormholeClientABI = Utils.importEthContractABI('WormholeClient.json').abi
-const EthRewardsManagerABI = Utils.importEthContractABI('EthRewardsManager.json').abi
-const TrustedNotifierManagerABI = Utils.importEthContractABI('TrustedNotifierManager.json').abi
+const EthRewardsManagerABI = Utils.importEthContractABI(
+  'EthRewardsManager.json'
+).abi
+const TrustedNotifierManagerABI = Utils.importEthContractABI(
+  'TrustedNotifierManager.json'
+).abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -40,21 +52,46 @@ const TrustedNotifierManagerProxyKey = 'TrustedNotifierManagerProxy'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
-const serviceType = Object.freeze({
+export const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-node',
   CREATOR_NODE: 'content-node'
 })
 const serviceTypeList = Object.values(serviceType)
-if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-class EthContracts {
-  constructor (
-    ethWeb3Manager,
-    tokenContractAddress,
-    registryAddress,
-    claimDistributionContractAddress,
-    wormholeContractAddress,
-    isServer,
+export class EthContracts {
+  ethWeb3Manager: EthWeb3Manager
+  tokenContractAddress: string
+  claimDistributionContractAddress: string
+  wormholeContractAddress: string
+  registryAddress: string
+  isServer: boolean
+  logger: Logger
+  isDebug: boolean
+  expectedServiceVersions: null | string[]
+  AudiusTokenClient: AudiusTokenClient
+  RegistryClient: RegistryClient
+  StakingProxyClient: StakingProxyClient
+  GovernanceClient: GovernanceClient
+  ClaimsManagerClient: ClaimsManagerClient
+  EthRewardsManagerClient: EthRewardsManagerClient
+  ServiceTypeManagerClient: ServiceTypeManagerClient
+  ServiceProviderFactoryClient: ServiceProviderFactoryClient
+  DelegateManagerClient: DelegateManagerClient
+  ClaimDistributionClient: ClaimDistributionClient | undefined
+  WormholeClient: WormholeClient
+  TrustedNotifierManagerClient: TrustedNotifierManagerClient
+  contractClients: ContractClient[]
+  _regressedMode: boolean
+  contracts: Record<string, string> | undefined
+  contractAddresses: Record<string, string> | undefined
+
+  constructor(
+    ethWeb3Manager: EthWeb3Manager,
+    tokenContractAddress: string,
+    registryAddress: string,
+    claimDistributionContractAddress: string,
+    wormholeContractAddress: string,
+    isServer: boolean,
     logger = console,
     isDebug = false
   ) {
@@ -78,7 +115,8 @@ class EthContracts {
       RegistryABI,
       this.registryAddress
     )
-    this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
+    this.getRegistryAddressForContract =
+      this.getRegistryAddressForContract.bind(this)
 
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
@@ -186,18 +224,25 @@ class EthContracts {
     this._regressedMode = false
   }
 
-  async init () {
-    if (!this.ethWeb3Manager || !this.tokenContractAddress || !this.registryAddress) throw new Error('Failed to initialize EthContracts')
+  async init() {
+    if (
+      !this.ethWeb3Manager ||
+      !this.tokenContractAddress ||
+      !this.registryAddress
+    )
+      throw new Error('Failed to initialize EthContracts')
 
     if (this.isServer) {
-      await Promise.all(this.contractClients.map(client => client.init()))
+      await Promise.all(
+        this.contractClients.map(async (client) => await client.init())
+      )
     }
   }
 
   /**
    * Estabilishes that connection to discovery providers has regressed
    */
-  enterRegressedMode () {
+  enterRegressedMode() {
     console.info('Entering regressed mode')
     this._regressedMode = true
     setTimeout(() => {
@@ -206,40 +251,49 @@ class EthContracts {
     }, TWO_MINUTES)
   }
 
-  isInRegressedMode () {
+  isInRegressedMode() {
     return this._regressedMode
   }
 
-  async getRegistryAddressForContract (contractName) {
+  async getRegistryAddressForContract(contractName: string) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
-    this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
-    this.contractAddresses = this.contractAddresses || { registry: this.registryAddress }
+    this.contracts = this.contracts ?? { [this.registryAddress]: 'registry' }
+    this.contractAddresses = this.contractAddresses ?? {
+      registry: this.registryAddress
+    }
     if (!this.contractAddresses[contractName]) {
       const address = await this.RegistryClient.getContract(contractName)
       this.contracts[address] = contractName
       this.contractAddresses[contractName] = address
     }
-    return this.contractAddresses[contractName]
+
+    return this.contractAddresses[contractName] as string
   }
 
-  async getCurrentVersion (serviceType) {
+  async getCurrentVersion(serviceType: string) {
     try {
-      const version = await this.ServiceTypeManagerClient.getCurrentVersion(serviceType)
+      const version = await this.ServiceTypeManagerClient.getCurrentVersion(
+        serviceType
+      )
       return version
     } catch (e) {
       console.log(`Error retrieving version for ${serviceType}`)
-      return null
+      return ''
     }
   }
 
   /*
    * Determine the latest version for deployed services such as discovery provider and cache
    */
-  async getExpectedServiceVersions () {
+  async getExpectedServiceVersions() {
     const versions = await Promise.all(
-      serviceTypeList.map(serviceType => this.getCurrentVersion(serviceType))
+      serviceTypeList.map(
+        async (serviceType) => await this.getCurrentVersion(serviceType)
+      )
     )
-    const expectedVersions = serviceTypeList.reduce((map, serviceType, i) => {
+    const expectedVersions = serviceTypeList.reduce<
+      Record<string, string | null | undefined>
+    >((map, serviceType, i) => {
       if (versions[i]) {
         map[serviceType] = versions[i]
       }
@@ -248,13 +302,13 @@ class EthContracts {
     return expectedVersions
   }
 
-  /*
+  /**
    * Determine whether major and minor versions match for two version strings
    * Version string 2 must have equivalent major/minor versions and a patch >= version1
-   * @param {string} version string 1
-   * @param {string} version string 2
+   * @param version1 string 1
+   * @param version2 string 2
    */
-  isValidSPVersion (version1, version2) {
+  isValidSPVersion(version1: string, version2: string) {
     return (
       semver.major(version1) === semver.major(version2) &&
       semver.minor(version1) === semver.minor(version2) &&
@@ -264,32 +318,31 @@ class EthContracts {
 
   /**
    * Determines whether the major and minor versions are equal
-   * @param {string} version string 1
-   * @param {string} version string 2
+   * @param version1 string 1
+   * @param version2 string 2
    */
-  hasSameMajorAndMinorVersion (version1, version2) {
+  hasSameMajorAndMinorVersion(version1: string, version2: string) {
     return (
       semver.major(version1) === semver.major(version2) &&
       semver.minor(version1) === semver.minor(version2)
     )
   }
 
-  async getServiceProviderList (spType) {
-    return this.ServiceProviderFactoryClient.getServiceProviderList(spType)
+  async getServiceProviderList(spType: string) {
+    return await this.ServiceProviderFactoryClient.getServiceProviderList(
+      spType
+    )
   }
 
-  async getNumberOfVersions (spType) {
-    return this.ServiceTypeManagerClient.getNumberOfVersions(spType)
+  async getNumberOfVersions(spType: string) {
+    return await this.ServiceTypeManagerClient.getNumberOfVersions(spType)
   }
 
-  async getVersion (spType, queryIndex) {
-    return this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
+  async getVersion(spType: string, queryIndex: number) {
+    return await this.ServiceTypeManagerClient.getVersion(spType, queryIndex)
   }
 
-  async getServiceTypeInfo (spType) {
-    return this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
+  async getServiceTypeInfo(spType: string) {
+    return await this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
   }
 }
-
-module.exports = EthContracts
-module.exports.serviceType = serviceType

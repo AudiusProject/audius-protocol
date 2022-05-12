@@ -107,16 +107,16 @@ class PeerSetManager {
   }
 
   /**
-   * Retrieve users with this node as replica (primary or secondary)
-   *  - Makes single request to discovery node to retrieve all users
+   * Retrieve users with this node as replica (primary or secondary).
+   * Makes single request to discovery node to retrieve all users, optionally paginated
    *
-   * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
-   *    It will throw if the route doesn't exist
-   * @returns {Object[]} array of objects
-   *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID },
-   * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
+   * @notice Discovery Nodes will ignore these params if they're not updated to the version which added pagination
+   * @param prevUserId user_id is used for pagination, where each paginated request returns
+   *                   maxUsers number of users starting at a user with id=user_id
+   * @param maxUsers the maximum number of users to fetch
+   * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
    */
-  async getNodeUsers() {
+  async getNodeUsers(prevUserId = 0, maxUsers = 100000) {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -134,7 +134,9 @@ class PeerSetManager {
             baseURL: this.discoveryProviderEndpoint,
             url: `v1/full/users/content_node/all`,
             params: {
-              creator_node_endpoint: this.creatorNodeEndpoint
+              creator_node_endpoint: this.creatorNodeEndpoint,
+              prev_user_id: prevUserId,
+              max_users: maxUsers
             },
             timeout: 60_000 // 60s
           })
@@ -153,13 +155,16 @@ class PeerSetManager {
     logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
 
     // Ensure every object in response array contains all required fields
-    nodeUsers.forEach((nodeUser) => {
+    for (const nodeUser of nodeUsers) {
       const requiredFields = [
         'user_id',
         'wallet',
         'primary',
         'secondary1',
-        'secondary2'
+        'secondary2',
+        'primarySpID',
+        'secondary1SpID',
+        'secondary2SpID'
       ]
       const responseFields = Object.keys(nodeUser)
       const allRequiredFieldsPresent = requiredFields.every((requiredField) =>
@@ -170,7 +175,7 @@ class PeerSetManager {
           'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
         )
       }
-    })
+    }
 
     return nodeUsers
   }

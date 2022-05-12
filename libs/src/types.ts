@@ -1,3 +1,3 @@
 export { Utils } from './utils'
-export * from './services/creatorNode'
+export { CreatorNode } from './services/creatorNode'
 export * from './sanityChecks'

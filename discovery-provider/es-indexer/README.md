@@ -38,9 +38,13 @@ When program boots it does the following:
 
 ## Debugging
 
-Need to add some "blocknumber" info to the health endpoint, but in the meantime:
+Check "elasticsearch" health info in `/health_check?verbose=true` endpoint.
 
 (instructions for sandbox3... subject to change):
+
+Use Kibana:
+Uncomment the kibana container and restart discovery-provider. 
+
 
 List indices:
 

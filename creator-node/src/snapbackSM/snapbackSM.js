@@ -3,7 +3,7 @@ const axios = require('axios')
 const _ = require('lodash')
 const retry = require('async-retry')
 
-const utils = require('../utils')
+const Utils = require('../utils')
 const models = require('../models')
 const { logger } = require('../logging')
 const redis = require('../redis.js')
@@ -100,6 +100,13 @@ class SnapbackSM {
 
     // Toggle to switch logs
     this.debug = true
+
+    // Start at a random userId to avoid biased processing of early users
+    this.lastProcessedUserId = Utils.randomIntFromIntervalInclusive(
+      0,
+      10_000_000
+    )
+    this.usersPerJob = this.nodeConfig.get('snapbackUsersPerJob')
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
@@ -913,15 +920,28 @@ class SnapbackSM {
       'BEGIN processStateMachineOperation()',
       {
         currentModuloSlice: this.currentModuloSlice,
-        moduloBase: this.moduloBase
+        moduloBase: this.moduloBase,
+        lastProcessedUserId: this.lastProcessedUserId
       }
     )
 
+    let nodeUsers = []
+    // New DN versions support pagination, so we fall back to modulo slicing for old versions
+    // TODO: Remove modulo supports once all DNs update to include https://github.com/AudiusProject/audius-protocol/pull/3071
+    let useModulo = false
     try {
-      let nodeUsers
       try {
-        nodeUsers = await this.peerSetManager.getNodeUsers()
-        nodeUsers = this.sliceUsers(nodeUsers)
+        nodeUsers = await this.peerSetManager.getNodeUsers(
+          this.lastProcessedUserId,
+          this.usersPerJob
+        )
+
+        // Backwards compatibility -- DN will return all users if it doesn't have pagination.
+        // In that case, we have to manually paginate the full set of users
+        if (nodeUsers.length > this.usersPerJob) {
+          useModulo = true
+          nodeUsers = this.sliceUsers(nodeUsers)
+        }
 
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
@@ -1208,8 +1228,15 @@ class SnapbackSM {
       // Log decision tree
       this._printStateMachineQueueDecisionTree(decisionTree, jobId)
 
-      // Increment and adjust current slice by this.moduloBase
-      this.currentModuloSlice = (this.currentModuloSlice + 1) % this.moduloBase
+      if (useModulo) {
+        // Increment and adjust current slice by this.moduloBase
+        this.currentModuloSlice =
+          (this.currentModuloSlice + 1) % this.moduloBase
+      } else {
+        // The next job should start processing where this one ended or loop back around to the first user
+        const lastProcessedUser = nodeUsers.pop() || { user_id: 0 }
+        this.lastProcessedUserId = lastProcessedUser.user_id
+      }
     }
   }
 
@@ -1564,7 +1591,7 @@ class SnapbackSM {
       }
 
       // Delay between retries
-      await utils.timeout(SyncMonitoringRetryDelayMs, false)
+      await Utils.timeout(SyncMonitoringRetryDelayMs, false)
     }
 
     const monitoringTimeMs = Date.now() - startTimeMs
@@ -1792,7 +1819,7 @@ class SnapbackSM {
 
         // Give secondary some time to process ongoing or newly enqueued sync
         // NOTE - we might want to make this timeout longer
-        await utils.timeout(500)
+        await Utils.timeout(500)
       } catch (e) {
         // do nothing and let while loop continue
       }

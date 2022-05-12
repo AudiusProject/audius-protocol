@@ -21,8 +21,8 @@ from src.models import (
     SaveType,
     Track,
     User,
+    UserBankAccount,
 )
-from src.models.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
@@ -110,7 +110,7 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 
 
 # given list of user ids and corresponding users, populates each user object with:
-#   track_count, playlist_count, album_count, follower_count, followee_count, repost_count
+#   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
@@ -125,6 +125,8 @@ def populate_user_metadata(
             AggregateUser.following_count,
             AggregateUser.repost_count,
             AggregateUser.track_save_count,
+            AggregateUser.supporter_count,
+            AggregateUser.supporting_count,
         )
         .filter(AggregateUser.user_id.in_(user_ids))
         .all()
@@ -136,7 +138,7 @@ def populate_user_metadata(
     ).filter(UserBankAccount.ethereum_address.in_(user["wallet"] for user in users))
     user_banks_dict = dict(user_banks)
 
-    # build dict of user id --> track/playlist/album/follower/followee/repost/track save counts
+    # build dict of user id --> track/playlist/album/follower/followee/repost/track save/supporting/supporter counts
     count_dict = {
         user_id: {
             response_name_constants.track_count: track_count,
@@ -146,6 +148,8 @@ def populate_user_metadata(
             response_name_constants.followee_count: following_count,
             response_name_constants.repost_count: repost_count,
             response_name_constants.track_save_count: track_save_count,
+            response_name_constants.supporter_count: supporter_count,
+            response_name_constants.supporting_count: supporting_count,
         }
         for (
             user_id,
@@ -156,6 +160,8 @@ def populate_user_metadata(
             following_count,
             repost_count,
             track_save_count,
+            supporter_count,
+            supporting_count,
         ) in aggregate_user
     }
 
@@ -257,6 +263,12 @@ def populate_user_metadata(
             user[response_name_constants.track_save_count] = count_dict.get(
                 user_id, {}
             ).get(response_name_constants.track_save_count, 0)
+        user[response_name_constants.supporter_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.supporter_count, 0
+        )
+        user[response_name_constants.supporting_count] = count_dict.get(
+            user_id, {}
+        ).get(response_name_constants.supporting_count, 0)
         # current user specific
         user[
             response_name_constants.does_current_user_follow
@@ -282,7 +294,9 @@ def populate_user_metadata(
         user[response_name_constants.spl_wallet] = user_banks_dict.get(
             user["wallet"], None
         )
-        user["does_follow_current_user"] = user_id in follows_current_user_set
+        user[response_name_constants.does_follow_current_user] = (
+            user_id in follows_current_user_set
+        )
 
     return users
 
