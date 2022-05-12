@@ -13,18 +13,22 @@ function setup_linux_toolchains() {
     sudo apt-get -y upgrade
     sudo apt install -y \
         apt-transport-https \
+        build-essential \
         ca-certificates \
         curl \
-        software-properties-common \
-        build-essential \
-        python-is-python2 \
-        python3-pip \
         git-secrets \
+        glances \
+        iotop \
         jq \
-        wget \
         libpq-dev \
         neovim \
         net-tools \
+        ntp \
+        python-is-python2 \
+        python3-pip \
+        software-properties-common \
+        sysstat \
+        wget \
         zsh
     sudo apt autoremove
 
