@@ -7,6 +7,8 @@ services:
     build:
       context: contracts
       dockerfile: Dockerfile.dev
+    volumes:
+      - poa-contracts-abis:/usr/src/app/build/contracts
     ports:
       - "8545:8545"
     healthcheck:
@@ -61,6 +63,8 @@ services:
       args:
         CONTENT_NODE_VERSION: 0.3.57
         DISCOVERY_NODE_VERSION: 0.3.57
+    volumes:
+      - eth-contracts-abis:/usr/src/app/build/contracts
     ports:
       - "8546:8545"
     healthcheck:
@@ -231,6 +235,8 @@ services:
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_ADDRESS}"
     volumes:
       - ./libs:/usr/src/audius-libs
+      - poa-contracts-abis:/usr/src/audius-libs/data-contracts/ABIs
+      - eth-contracts-abis:/usr/src/audius-libs/eth-contracts/ABIs
       - ./solana-programs:/usr/src/solana-programs
     depends_on:
       identity-service-db:
@@ -247,3 +253,7 @@ services:
         condition: service_completed_successfully
     deploy:
       mode: global
+
+volumes:
+  poa-contracts-abis:
+  eth-contracts-abis:
