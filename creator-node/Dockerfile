@@ -87,7 +87,7 @@ ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
 
-HEALTHCHECK --interval=5s --timeout=5s \
+HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
     CMD curl -f http://localhost:4000/health_check || exit 1
 
 # CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
