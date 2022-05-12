@@ -6,6 +6,7 @@ from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
 from src import api_helpers
+from src.api.v1.users import User
 from src.models import (
     AggregateUser,
     Block,
@@ -1160,17 +1161,23 @@ def solana_notifications():
             )
 
         reaction_results: List[Reaction] = (
-            session.query(Reaction)
-            .filter(Reaction.slot >= min_slot_number, Reaction.slot <= max_slot_number)
+            session.query(Reaction, User.user_id)
+            .join(User, User.wallet == Reaction.sender_wallet)
+            .filter(
+                Reaction.slot >= min_slot_number,
+                Reaction.slot <= max_slot_number,
+                User.is_current == True,
+            )
             .all()
         )
+
         reactions = []
-        for reaction in reaction_results:
+        for (reaction, user_id) in reaction_results:
             reactions.append(
                 {
                     const.solana_notification_type: const.solana_notification_type_reaction,
                     const.solana_notification_slot: reaction.slot,
-                    const.notification_initiator: reaction.sender_wallet,
+                    const.notification_initiator: user_id,
                     const.solana_notification_metadata: {
                         const.solana_notification_reaction_type: reaction.reaction_type,
                         const.solana_notification_reaction_reaction_value: reaction.reaction_value,

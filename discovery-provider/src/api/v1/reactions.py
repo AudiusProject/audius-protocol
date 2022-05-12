@@ -15,12 +15,12 @@ ns = Namespace("reactions", description="Reaction related operations")
 
 get_reactions_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 get_reactions_parser.add_argument(
-    "type", required=True, description="The type of reactions for which to query."
+    "type", required=False, description="The type of reactions for which to query."
 )
 get_reactions_parser.add_argument(
-    "tx_id",
+    "tx_signatures",
     required=True,
-    action="append",
+    action="split",
     description="The `reacted_to` transaction id(s) of the reactions in question.",
 )
 
@@ -29,7 +29,7 @@ get_reactions_response = make_response(
 )
 
 
-@ns.route("", doc=False)
+@ns.route("")
 class BulkReactions(Resource):
     @record_metrics
     @ns.doc(
@@ -42,7 +42,7 @@ class BulkReactions(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = get_reactions_parser.parse_args()
-        tx_ids, type = args.get("tx_id"), args.get("type")
+        tx_ids, type = args.get("tx_signatures"), args.get("type")
         db = get_db_read_replica()
         with db.scoped_session() as session:
             reactions = get_reactions(session, tx_ids, type)
