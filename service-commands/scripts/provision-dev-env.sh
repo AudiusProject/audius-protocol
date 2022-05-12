@@ -46,6 +46,23 @@ function setup_ssh_timeouts() {
     sudo /etc/init.d/ssh restart
 }
 
+function setup_system_limits() {
+    # nofile - max number of open file descriptors https://stackoverflow.com/a/1213069
+    # nproc - max number of processes
+    # as - address space limit (KB)
+    echo "root - nofile $(cat /proc/sys/fs/nr_open)" | sudo tee -a /etc/security/limits.d/10-audius.conf
+    echo "root - nproc 96118" | sudo tee -a /etc/security/limits.d/10-audius.conf
+    echo "root - as unlimited" | sudo tee -a /etc/security/limits.d/10-audius.conf
+    echo "* - nofile $(cat /proc/sys/fs/nr_open)" | sudo tee -a /etc/security/limits.d/10-audius.conf
+    echo "* - nproc 96118" | sudo tee -a /etc/security/limits.d/10-audius.conf
+    echo "* - as unlimited" | sudo tee -a /etc/security/limits.d/10-audius.conf
+    sudo sysctl -p
+
+    # https://www.suse.com/support/kb/doc/?id=000016692
+    echo "vm.max_map_count = 1048575" | sudo tee -a /etc/sysctl.conf
+    sudo sysctl -p
+}
+
 function setup_vscode() {
     # allow VSCode to monitor multiple files on remote machines for changes
     cat /proc/sys/fs/inotify/max_user_watches
@@ -166,6 +183,7 @@ function setup() {
         setup_linux_toolchains
         install_zsh_tooling
         setup_ssh_timeouts
+        setup_system_limits
         setup_vscode
         setup_python
         setup_docker
