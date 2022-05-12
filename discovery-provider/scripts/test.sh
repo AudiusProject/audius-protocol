@@ -71,7 +71,6 @@ up -d
 sleep 5
 
 if [ -z ${SKIP_TESTS+x} ]; then
-    export audius_elasticsearch_url="http://localhost:9200"
     # Unit tests
     pytest src
     

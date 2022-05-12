@@ -3,15 +3,15 @@ import subprocess
 import time
 
 import pytest
+from elasticsearch import Elasticsearch
 from integration_tests.conftest import DB_URL
 from integration_tests.utils import populate_mock_db
 from src.utils.db_session import get_db
-from src.utils.elasticdsl import ES_INDEXES, esclient
 
-env = os.environ
-env["audius_db_url"] = DB_URL
-env["audius_elasticsearch_url"] = "http://localhost:9200"
-env["audius_elasticsearch_run_indexer"] = "true"
+os.environ["audius_db_url"] = DB_URL
+os.environ["audius_elasticsearch_url"] = "http://localhost:9200"
+os.environ["audius_elasticsearch_run_indexer"] = "true"
+esclient = Elasticsearch("http://localhost:9200")
 
 basic_entities = {
     "aggregate_plays": [{"play_item_id": 1, "count": 1}],
@@ -49,9 +49,10 @@ basic_entities = {
 }
 
 
-@pytest.fixture(scope="module", autouse=True)
-def my_fixture():
-    esclient.delete_by_query(index=ES_INDEXES, query={"match_all": {}})
+@pytest.fixture(autouse=True)
+def clean_up_es():
+    esclient.delete_by_query(index="*", query={"match_all": {}})
+    yield
 
 
 def test_es_indexer_catchup(app):
@@ -63,7 +64,7 @@ def test_es_indexer_catchup(app):
     try:
         subprocess.run(
             ["npm", "run", "dev"],
-            env=env,
+            env=os.environ,
             capture_output=True,
             text=True,
             cwd="es-indexer",
@@ -84,7 +85,7 @@ def test_es_indexer_processing(app):
     try:
         proc = subprocess.Popen(
             ["npm", "run", "dev"],
-            env=env,
+            env=os.environ,
             cwd="es-indexer",
             text=True,
             stdout=subprocess.PIPE,
