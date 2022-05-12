@@ -17,6 +17,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
+        refresh_interval: '5s',
       },
     },
     mappings: {
@@ -150,11 +151,13 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         title,
         length,
         created_at,
-        aggregate_plays.count as play_count
+        coalesce(aggregate_track.repost_count, 0) as repost_count,
+        coalesce(aggregate_track.save_count, 0) as save_count,
+        coalesce(aggregate_plays.count, 0) as play_count
   
       from tracks
-      join aggregate_track using (track_id)
-      join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
+      left join aggregate_track using (track_id)
+      left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
       where 
         is_current 
         and not is_delete 

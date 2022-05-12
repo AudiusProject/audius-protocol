@@ -1,5 +1,6 @@
 import Web3 from 'web3'
 import { ServiceSelection } from '../../service-selection'
+import type { Web3Manager } from '../web3Manager'
 import type { ContractClient } from './ContractClient'
 
 /**
@@ -24,13 +25,14 @@ export class ProviderSelection extends ServiceSelection {
    * @param client object used for making transaction calls
    */
   override async select(client: ContractClient) {
-    const web3Manager = client.web3Manager
+    const web3Manager = client.web3Manager as Web3Manager
     const filteredServices = this.filterOutKnownUnhealthy(
       await this.getServices()
     )
     const web3 = new Web3(
       web3Manager.provider(filteredServices[0] as string, 10000)
     )
+
     web3Manager.setWeb3(web3)
   }
 

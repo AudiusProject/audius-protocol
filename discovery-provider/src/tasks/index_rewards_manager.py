@@ -41,6 +41,7 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,
     latest_sol_rewards_manager_program_tx_key,
+    latest_sol_rewards_manager_slot_key,
 )
 from src.utils.session_manager import SessionManager
 
@@ -500,6 +501,7 @@ def process_transaction_signatures(
                 "timestamp": last_tx["timestamp"],
             },
         )
+    return last_tx
 
 
 def process_solana_rewards_manager(
@@ -514,6 +516,13 @@ def process_solana_rewards_manager(
     if not REWARDS_MANAGER_ACCOUNT:
         logger.error("index_rewards_manager.py | reward manager account missing")
         return
+
+    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    try:
+        latest_global_slot = solana_client_manager.get_block_height()
+    except:
+        logger.error("index_rewards_manager.py | Failed to get block height")
+
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(
         solana_client_manager,
@@ -525,9 +534,13 @@ def process_solana_rewards_manager(
     )
     logger.info(f"index_rewards_manager.py | {transaction_signatures}")
 
-    process_transaction_signatures(
+    last_tx = process_transaction_signatures(
         solana_client_manager, db, redis, transaction_signatures
     )
+    if last_tx:
+        redis.set(latest_sol_rewards_manager_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_rewards_manager_slot_key, latest_global_slot)
 
 
 # ####### CELERY TASKS ####### #

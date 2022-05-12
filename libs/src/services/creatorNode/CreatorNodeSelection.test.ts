@@ -4,31 +4,33 @@ import semver from 'semver'
 
 import { CREATOR_NODE_SERVICE_NAME } from './constants'
 import { CreatorNodeSelection } from './CreatorNodeSelection'
+import type { EthContracts } from '../ethContracts'
 
 const mockEthContracts = (
   urls: string[],
   currrentVersion: string,
   previousVersions: string[] | null = null
-) => ({
-  getCurrentVersion: async () => currrentVersion,
-  getNumberOfVersions: async () => 2,
-  getVersion: async (_: string, queryIndex: number) => {
-    if (previousVersions) {
-      return previousVersions[queryIndex] as string
+): EthContracts =>
+  ({
+    getCurrentVersion: async () => currrentVersion,
+    getNumberOfVersions: async () => 2,
+    getVersion: async (_: string, queryIndex: number) => {
+      if (previousVersions) {
+        return previousVersions[queryIndex] as string
+      }
+      return ['1.2.2', '1.2.3'][queryIndex] as string
+    },
+    getServiceProviderList: async () => urls.map((u) => ({ endpoint: u })),
+    hasSameMajorAndMinorVersion: (version1: string, version2: string) => {
+      return (
+        semver.major(version1) === semver.major(version2) &&
+        semver.minor(version1) === semver.minor(version2)
+      )
+    },
+    isInRegressedMode: () => {
+      return false
     }
-    return ['1.2.2', '1.2.3'][queryIndex] as string
-  },
-  getServiceProviderList: async () => urls.map((u) => ({ endpoint: u })),
-  hasSameMajorAndMinorVersion: (version1: string, version2: string) => {
-    return (
-      semver.major(version1) === semver.major(version2) &&
-      semver.minor(version1) === semver.minor(version2)
-    )
-  },
-  isInRegressedMode: () => {
-    return false
-  }
-})
+  } as unknown as EthContracts)
 
 const mockCreatorNode = {
   getSyncStatus: async () => {

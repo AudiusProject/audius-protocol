@@ -45,6 +45,8 @@ user_model = ns.model(
         "is_deactivated": fields.Boolean(required=True),
         "erc_wallet": fields.String(requred=True),
         "spl_wallet": fields.String(required=True),
+        "supporter_count": fields.Integer(required=True),
+        "supporting_count": fields.Integer(required=True),
     },
 )
 
