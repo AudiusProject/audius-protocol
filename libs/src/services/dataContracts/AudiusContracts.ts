@@ -148,7 +148,7 @@ export class AudiusContracts {
   // Special case initialization flow for UserReplicaSetManagerClient backwards compatibility
   // Until the contract is deployed and added to the data contract registry, replica set
   // operations will flow through the existing UserFactory
-  async initUserReplicaSetManagerClient(selectNewEndpointOnRetry = false) {
+  async initUserReplicaSetManagerClient() {
     try {
       if (
         this.UserReplicaSetManagerClient &&
@@ -165,8 +165,7 @@ export class AudiusContracts {
         this.getRegistryAddressForContract,
         this.logger
       )
-      // @ts-expect-error -- TODO: this looks like a missed bug
-      await this.UserReplicaSetManagerClient.init(selectNewEndpointOnRetry)
+      await this.UserReplicaSetManagerClient.init()
       if (
         this.UserReplicaSetManagerClient._contractAddress ===
         '0x0000000000000000000000000000000000000000'
