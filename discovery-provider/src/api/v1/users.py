@@ -864,15 +864,13 @@ class UsersByContentNode(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(users_by_content_node_response)
-    @cache(ttl_sec=30)
+    @cache(ttl_sec=5 * 60)
     def get(self, replica_type):
         args = users_by_content_node_route_parser.parse_args()
 
         # Endpoint that a user's primary/secondary/either must be set to for them to be included in the results
-        cnode_url = args.get("content_node_endpoint") or args.get(
-            "creator_node_endpoint"
-        )
-        # Offset after sorting user_id in ascending order (using > comparison in SQL query)
+        cnode_url = args.get("creator_node_endpoint")
+        # Used for pagination with ">" comparison in SQL query. See https://ivopereira.net/efficient-pagination-dont-use-offset-limit
         prev_user_id = args.get("prev_user_id")
         # LIMIT used in SQL query
         max_users = args.get("max_users")
