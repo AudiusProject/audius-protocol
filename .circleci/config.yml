@@ -118,7 +118,8 @@ jobs:
             echo $GCLOUD_SERVICE_KEY | gcloud auth activate-service-account $GCLOUD_SERVICE_ACCOUNT_EMAIL --key-file=-
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            GCLOUD_VM_NAME=mad-dog-test-$CIRCLE_BRANCH-$GIT_SHA-$(date +%s)
+
+            GCLOUD_VM_NAME=mad-dog-test-$(date +%s)
             echo "GCLOUD_VM_NAME" $GCLOUD_VM_NAME
 
             export PROTOCOL_DIR=/home/circleci/project
@@ -140,6 +141,8 @@ jobs:
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               cd /home/ubuntu/audius-protocol/mad-dog;
+              git pull;
+              git checkout $CIRCLE_BRANCH;
               A up;
               npm run start << parameters.mad-dog-type >> verbose;
               exit;

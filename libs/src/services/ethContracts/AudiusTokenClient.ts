@@ -1,38 +1,60 @@
-class AudiusTokenClient {
-  constructor (ethWeb3Manager, contractABI, contractAddress) {
+import type Web3 from 'web3'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+import type { Contract } from 'web3-eth-contract'
+import type { AbiItem } from 'web3-utils'
+import type BN from 'bn.js'
+
+export class AudiusTokenClient {
+  ethWeb3Manager: EthWeb3Manager
+  contractABI: AbiItem[]
+  contractAddress: string
+  web3: Web3
+  AudiusTokenContract: Contract
+  bustCacheNonce: number
+
+  constructor(
+    ethWeb3Manager: EthWeb3Manager,
+    contractABI: AbiItem[],
+    contractAddress: string
+  ) {
     this.ethWeb3Manager = ethWeb3Manager
     this.contractABI = contractABI
     this.contractAddress = contractAddress
 
     this.web3 = this.ethWeb3Manager.getWeb3()
-    this.AudiusTokenContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
+    this.AudiusTokenContract = new this.web3.eth.Contract(
+      this.contractABI,
+      this.contractAddress
+    )
 
     this.bustCacheNonce = 0
   }
 
   /* ------- GETTERS ------- */
 
-  async bustCache () {
+  async bustCache() {
     this.bustCacheNonce += 1
   }
 
-  async balanceOf (account) {
+  async balanceOf(account: string) {
     let args
     if (this.bustCacheNonce > 0) {
       args = { _audiusBustCache: this.bustCacheNonce }
     }
-    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call(args)
+    const balance = await this.AudiusTokenContract.methods
+      .balanceOf(account)
+      .call(args)
     return this.web3.utils.toBN(balance)
   }
 
   // Get the name of the contract
-  async name () {
+  async name() {
     const name = await this.AudiusTokenContract.methods.name().call()
     return name
   }
 
   // Get the name of the contract
-  async nonces (wallet) {
+  async nonces(wallet: string) {
     // Pass along a unique param so the nonce value is always not cached
     const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call({
       _audiusBustCache: Date.now()
@@ -43,14 +65,26 @@ class AudiusTokenClient {
 
   /* ------- SETTERS ------- */
 
-  async transfer (recipient, amount) {
-    const contractMethod = this.AudiusTokenContract.methods.transfer(recipient, amount)
+  async transfer(recipient: string, amount: BN) {
+    const contractMethod = this.AudiusTokenContract.methods.transfer(
+      recipient,
+      amount
+    )
     const tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
     return { txReceipt: tx }
   }
 
-  async transferFrom (owner, recipient, relayer, amount) {
-    const method = this.AudiusTokenContract.methods.transferFrom(owner, recipient, amount)
+  async transferFrom(
+    owner: string,
+    recipient: string,
+    relayer: string,
+    amount: BN
+  ) {
+    const method = this.AudiusTokenContract.methods.transferFrom(
+      owner,
+      recipient,
+      amount
+    )
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
@@ -62,14 +96,14 @@ class AudiusTokenClient {
   }
 
   // Permit meta transaction of balance transfer
-  async permit (
-    owner, // address
-    spender, // address
-    value, // uint
-    deadline, // uint
-    v, // uint8
-    r, // bytes32
-    s // bytes32
+  async permit(
+    owner: string, // address
+    spender: string, // address
+    value: BN, // uint
+    deadline: number, // uint
+    v: number, // uint8
+    r: Uint8Array | Buffer, // bytes32
+    s: Uint8Array | Buffer // bytes32
   ) {
     const contractMethod = this.AudiusTokenContract.methods.permit(
       owner,
@@ -92,8 +126,11 @@ class AudiusTokenClient {
 
   // Allow spender to withdraw from calling account up to value amount
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
-  async approve (spender, value, privateKey = null) {
-    const contractMethod = this.AudiusTokenContract.methods.approve(spender, value)
+  async approve(spender: string, value: BN, privateKey = null) {
+    const contractMethod = this.AudiusTokenContract.methods.approve(
+      spender,
+      value
+    )
     let tx
     if (privateKey === null) {
       tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
@@ -107,7 +144,12 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
-  async approveProxyTokens (owner, spender, value, relayer) {
+  async approveProxyTokens(
+    owner: string,
+    spender: string,
+    value: BN,
+    relayer: string
+  ) {
     const method = this.AudiusTokenContract.methods.approve(spender, value)
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
@@ -119,5 +161,3 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 }
-
-module.exports = AudiusTokenClient

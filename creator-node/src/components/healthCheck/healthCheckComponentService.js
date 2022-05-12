@@ -44,7 +44,7 @@ const healthCheck = async (
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
   // SnapbackSM information
-  const snapbackJobInterval = config.get('snapbackJobInterval')
+  const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
   const snapbackModuloBase = config.get('snapbackModuloBase')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
 
@@ -155,7 +155,7 @@ const healthCheck = async (
     currentSnapbackReconfigMode,
     manualSyncsDisabled,
     snapbackModuloBase,
-    snapbackJobInterval,
+    snapbackUsersPerJob,
     transcodeActive,
     transcodeWaiting,
     transcodeQueueIsAvailable: isAvailable,
