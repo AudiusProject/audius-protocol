@@ -330,6 +330,23 @@ export const addServiceType = async (serviceType, typeMin, typeMax, governance, 
   )
 }
 
+export const setServiceVersion = async (serviceType, serviceVersion, governance, guardianAddress, serviceTypeManagerRegKey) => {
+  const setServiceVersionSignature = 'setServiceVersion(bytes32,bytes32)'
+  const callValue0 = toBN(0)
+
+  const callData = abiEncode(
+    ['bytes32', 'bytes32'],
+    [serviceType, serviceVersion]
+  )
+  return governance.guardianExecuteTransaction(
+    serviceTypeManagerRegKey,
+    callValue0,
+    setServiceVersionSignature,
+    callData,
+    { from: guardianAddress }
+  )
+}
+
 export const slash = async (slashAmount, slashAccount, governance, delegateManagerRegKey, guardianAddress) => {
   const callValue0 = toBN(0)
   const signature = 'slash(uint256,address)'

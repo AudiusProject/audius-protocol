@@ -58,6 +58,9 @@ services:
     build:
       context: eth-contracts
       dockerfile: Dockerfile.dev
+      args:
+        CONTENT_NODE_VERSION: 0.3.57
+        DISCOVERY_NODE_VERSION: 0.3.57
     ports:
       - "8546:8545"
     healthcheck:

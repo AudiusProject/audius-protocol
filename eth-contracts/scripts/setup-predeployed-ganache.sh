@@ -2,6 +2,8 @@
 
 set -e
 
+cd $(dirname "$(readlink -f "$0")")/..
+
 dbPath=$1
 if [ -z "$dbPath" ]; then
   echo "Usage: $0 <dbPath>"
@@ -13,5 +15,6 @@ ganache --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbP
 ganache_pid=$!
 
 npx truffle migrate --to 12 --network predeploy
+npx truffle exec --network predeploy scripts/setup-dev.js
 
 kill $ganache_pid
