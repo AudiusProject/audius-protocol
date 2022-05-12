@@ -76,7 +76,7 @@ def test_es_indexer_catchup(app):
             raise Exception("Elasticsearch failed to index")
     esclient.indices.refresh(index="*")
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
-    assert len(search_res) == 5
+    assert len(search_res) == 6
 
 
 def test_es_indexer_processing(app):
@@ -98,4 +98,4 @@ def test_es_indexer_processing(app):
             raise Exception("Elasticsearch failed to process updates")
         esclient.indices.refresh(index="*")
         search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
-        assert len(search_res) == 5
+        assert len(search_res) == 6
