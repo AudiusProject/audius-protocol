@@ -141,7 +141,6 @@ jobs:
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               cd /home/ubuntu/audius-protocol/mad-dog;
-              git branch;
               git pull;
               git checkout $CIRCLE_BRANCH;
               A up;
