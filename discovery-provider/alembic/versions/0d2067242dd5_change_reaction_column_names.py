@@ -1,24 +1,28 @@
 """Change reaction column names
 
 Revision ID: 0d2067242dd5
-Revises: 35198266d709
+Revises: f11f9e83b28b
 Create Date: 2022-05-09 22:03:16.838837
 
 """
-import sqlalchemy as sa, inspect
+import inspect
+
+import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "0d2067242dd5"
-down_revision = "35198266d709"
+down_revision = "f11f9e83b28b"
 branch_labels = None
 depends_on = None
+
 
 def column_exists(table_name, column_name):
     bind = op.get_context().bind
     insp = inspect(bind)
     columns = insp.get_columns(table_name)
     return any(c["name"] == column_name for c in columns)
+
 
 def upgrade():
     # Handle lack of idempotency for this migration
