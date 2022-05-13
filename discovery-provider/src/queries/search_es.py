@@ -15,6 +15,13 @@ def search_es_full(args: dict):
 
     mdsl: Any = []
 
+    should_saved_or_reposted = []
+    if current_user_id:
+        should_saved_or_reposted = [
+            {"term": {"saved_by": {"value": current_user_id}}},
+            {"term": {"reposted_by": {"value": current_user_id}}},
+        ]
+
     # tracks
     mdsl.extend(
         [
@@ -41,12 +48,7 @@ def search_es_full(args: dict):
                                     {"term": {"is_unlisted": {"value": False}}},
                                 ],
                                 "should": [
-                                    {"term": {"saved_by": {"value": current_user_id}}},
-                                    {
-                                        "term": {
-                                            "reposted_by": {"value": current_user_id}
-                                        }
-                                    },
+                                    *should_saved_or_reposted,
                                 ],
                             }
                         },
@@ -137,12 +139,7 @@ def search_es_full(args: dict):
                                     {"term": {"is_private": {"value": False}}},
                                 ],
                                 "should": [
-                                    {"term": {"saved_by": {"value": current_user_id}}},
-                                    {
-                                        "term": {
-                                            "reposted_by": {"value": current_user_id}
-                                        }
-                                    },
+                                    *should_saved_or_reposted,
                                 ],
                             }
                         },
