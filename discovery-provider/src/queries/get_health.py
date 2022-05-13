@@ -384,16 +384,19 @@ def get_elasticsearch_health_info(
 ) -> Dict[str, Dict[str, int]]:
     elasticsearch_health = {}
     for index_name in ES_INDEXES:
-        resp = esclient.search(
-            index=index_name,
-            aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
-            size=0,
-        )
-        blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
-        elasticsearch_health[index_name] = {
-            "blocknumber": blocknumber,
-            "db_block_difference": latest_indexed_block_num - blocknumber,
-        }
+        try:
+            resp = esclient.search(
+                index=index_name,
+                aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
+                size=0,
+            )
+            blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
+            elasticsearch_health[index_name] = {
+                "blocknumber": blocknumber,
+                "db_block_difference": latest_indexed_block_num - blocknumber,
+            }
+        except Exception:
+            pass
 
     return elasticsearch_health
 
