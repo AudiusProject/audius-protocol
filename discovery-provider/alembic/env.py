@@ -3,9 +3,9 @@ from __future__ import with_statement
 import os
 import re
 
-from alembic import context
+from alembic import context, op
 from alembic.ddl.base import AddColumn, DropColumn, visit_add_column, visit_drop_column
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, inspect
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 
@@ -113,6 +113,12 @@ def _add_if_exists(element, compiler, **kw):
         "DROP (TABLE|INDEX|COLUMN)", r"DROP \g<1> IF EXISTS", output, re.S
     )
 
+
+def column_exists(table_name, column_name):
+    bind = op.get_context().bind
+    insp = inspect(bind)
+    columns = insp.get_columns(table_name)
+    return any(c["name"] == column_name for c in columns)
 
 if context.is_offline_mode():
     run_migrations_offline()
