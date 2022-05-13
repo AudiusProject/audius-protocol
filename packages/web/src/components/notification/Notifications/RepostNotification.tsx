@@ -1,6 +1,13 @@
-import React from 'react'
+import React, { MouseEventHandler, useCallback } from 'react'
+
+import { useDispatch } from 'react-redux'
 
 import { Repost } from 'common/store/notifications/types'
+import {
+  setUsers as setUserListUsers,
+  setVisibility as openUserListModal
+} from 'store/application/ui/userListModal/slice'
+import { UserListType } from 'store/application/ui/userListModal/types'
 
 import { EntityLink, useGoToEntity } from './EntityLink'
 import { NotificationBody } from './NotificationBody'
@@ -8,9 +15,9 @@ import { NotificationFooter } from './NotificationFooter'
 import { NotificationHeader } from './NotificationHeader'
 import { NotificationTile } from './NotificationTile'
 import { UserNameLink } from './UserNameLink'
-import { UserProfileList } from './UserProfileList'
+import { UserProfilePictureList } from './UserProfilePictureList'
 import { IconRepost } from './icons'
-import { formatOthersCount } from './utils'
+import { entityToUserListEntity, formatOthersCount } from './utils'
 
 const messages = {
   others: formatOthersCount,
@@ -23,11 +30,39 @@ type RepostNotificationProps = {
 
 export const RepostNotification = (props: RepostNotificationProps) => {
   const { notification } = props
-  const { users, entity, entityType, timeLabel, isRead } = notification
-  const [firstUser, ...otherUsers] = users
-  const otherUsersCount = otherUsers.length
+  const {
+    users,
+    userIds,
+    entity,
+    entityId,
+    entityType,
+    timeLabel,
+    isRead
+  } = notification
+  const [firstUser] = users
+  const otherUsersCount = userIds.length - 1
+  const isMultiUser = userIds.length > 1
+  const dispatch = useDispatch()
 
-  const handleClick = useGoToEntity(entity, entityType)
+  const handleGoToEntity = useGoToEntity(entity, entityType)
+
+  const handleClick: MouseEventHandler = useCallback(
+    event => {
+      if (isMultiUser) {
+        dispatch(
+          setUserListUsers({
+            userListType: UserListType.REPOST,
+            entityType: entityToUserListEntity[entityType],
+            id: entityId
+          })
+        )
+        dispatch(openUserListModal(true))
+      } else {
+        handleGoToEntity(event)
+      }
+    },
+    [isMultiUser, dispatch, entityType, entityId, handleGoToEntity]
+  )
 
   return (
     <NotificationTile
@@ -36,7 +71,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
       disableClosePanel={otherUsersCount > 0}
     >
       <NotificationHeader icon={<IconRepost />}>
-        <UserProfileList users={users} />
+        <UserProfilePictureList users={users} userIds={userIds} />
       </NotificationHeader>
       <NotificationBody>
         <UserNameLink user={firstUser} notification={notification} />

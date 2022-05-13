@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { formatCount } from 'common/utils/formatUtil'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -13,12 +14,14 @@ const messages = {
 }
 
 type UserProfileListProps = {
-  users: Array<User>
+  users: User[]
+  userIds: ID[]
 }
 
-export const UserProfilePictureList = ({ users }: UserProfileListProps) => {
-  const showUserListModal = users.length > USER_LENGTH_LIMIT
-  const remainingUsersCount = users.length - USER_LENGTH_LIMIT
+export const UserProfilePictureList = (props: UserProfileListProps) => {
+  const { users, userIds } = props
+  const showUserListModal = userIds.length > USER_LENGTH_LIMIT
+  const remainingUsersCount = userIds.length - USER_LENGTH_LIMIT
 
   return (
     <div className={styles.root}>
@@ -34,11 +37,11 @@ export const UserProfilePictureList = ({ users }: UserProfileListProps) => {
         ))}
       {showUserListModal ? (
         <Tooltip text={messages.viewAllTooltip}>
-          <div style={{ position: 'relative' }}>
+          <div className={styles.profilePictureExtraRoot}>
             <ProfilePicture
               disablePopover
               className={styles.profilePictureExtra}
-              user={users[users.length - 1]}
+              user={users[USER_LENGTH_LIMIT]}
             />
             <span className={styles.profilePictureCount}>
               {`+${formatCount(remainingUsersCount)}`}
