@@ -16,6 +16,7 @@ seed-audio () {
     userBank=$(get-user-bank $user_id)
     echo "Configuring ownerWallet..."
     jq .ownerWallet < ~/.audius/solana-program-config.json > ~/.audius/owner-wallet.json
+    solana config set -k ~/.audius/owner-wallet.json
     echo "Minting Audio..."
     mint=$(jq -rc .splToken < ~/.audius/solana-program-config.json)
     echo "spl-token mint $mint $amount"

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    reaction: {
+    reactionValue: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -19,11 +19,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    entityId: {
+    reactedTo: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    entityType: {
+    reactionType: {
       type: DataTypes.STRING,
       allowNull: false
     },
