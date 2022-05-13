@@ -30,10 +30,10 @@ import { Nullable } from 'common/utils/typeUtils'
 import { getIsOpen as getIsUserListOpen } from 'store/application/ui/userListModal/selectors'
 import zIndex from 'utils/zIndex'
 
+import { EmptyNotifications } from './EmptyNotifications'
+import { Notification } from './Notification'
+import { NotificationModal } from './NotificationModal'
 import styles from './NotificationPanel.module.css'
-import { Notification } from './Notifications'
-import EmptyNotifications from './components/EmptyNotifications'
-import { NotificationModal } from './components/desktop/NotificationModal'
 
 const getNotifications = makeGetAllNotifications()
 
@@ -50,11 +50,9 @@ const messages = {
   readMore: 'Read More'
 }
 
-type OwnProps = {
+type NotificationPanelProps = {
   anchorRef: React.MutableRefObject<HTMLElement>
 }
-
-type NotificationPanelProps = OwnProps
 
 // The threshold of distance from the bottom of the scroll container in the
 // notification panel before requesting `loadMore` for more notifications

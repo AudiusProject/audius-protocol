@@ -32,7 +32,7 @@ import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
 import Navigator from 'components/nav/Navigator'
-import NotificationPage from 'components/notification/NotificationPage'
+import { NotificationPage } from 'components/notification'
 import PinnedTrackConfirmation from 'components/pin-track-confirmation/PinTrackConfirmation'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import ConnectedReachabilityBar from 'components/reachability-bar/ReachabilityBar'

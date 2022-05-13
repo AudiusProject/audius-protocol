@@ -2,19 +2,26 @@ import React, { useEffect, useCallback, useContext } from 'react'
 
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
+import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
-import { Notification } from 'common/store/notifications/types'
+import { fetchNotifications } from 'common/store/notifications/actions'
+import {
+  getNotificationHasMore,
+  getNotificationStatus,
+  makeGetAllNotifications
+} from 'common/store/notifications/selectors'
+import { Notification as Notifications } from 'common/store/notifications/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
 import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
 
+import { EmptyNotifications } from './EmptyNotifications'
+import { Notification } from './Notification'
 import styles from './NotificationPage.module.css'
-import NotificationProvider from './NotificationProvider'
-import EmptyNotifications from './components/EmptyNotifications'
-import ConnectedNotification from './components/mobile/ConnectedNotification'
+
+const getNotifications = makeGetAllNotifications()
 
 const messages = {
   documentTitle: 'Notifications',
@@ -24,24 +31,6 @@ const messages = {
   readMore: 'Read More'
 }
 
-type OwnProps = {
-  status: Status
-  hasMore: boolean
-  notifications: any
-  modalIsOpen: boolean
-  panelIsOpen: boolean
-
-  setNotificationUsers: (userIds: ID[], limit: number) => void
-  goToRoute: (route: string) => void
-  hideNotification: (notificationId: string) => void
-  markAsRead: (notificationId: string) => void
-  markAllAsViewed: () => void
-  unsubscribeUser: (userId: ID) => void
-  fetchNotifications: (limit?: number) => void
-}
-
-type NotificationPageProps = OwnProps
-
 // The threshold of distance from the bottom of the scroll container in the
 // notification panel before requesting `loadMore` for more notifications
 const SCROLL_THRESHOLD = 300
@@ -49,26 +38,23 @@ const SCROLL_THRESHOLD = 300
 /** The notification panel displays the list of notifications w/ a
  * summary of each notification and a link to open the full
  * notification in a modal  */
-const NotificationPage = ({
-  notifications,
-  goToRoute,
-  markAllAsViewed,
-  markAsRead,
-  hasMore,
-  status,
-  unsubscribeUser,
-  fetchNotifications,
-  setNotificationUsers,
-  hideNotification
-}: NotificationPageProps) => {
-  useEffect(() => {
-    markAllAsViewed()
-  }, [markAllAsViewed])
+export const NotificationPage = () => {
+  const notifications = useSelector(getNotifications)
+  const hasMore = useSelector(getNotificationHasMore)
+  const status = useSelector(getNotificationStatus)
+  const dispatch = useDispatch()
 
   const loadMore = useCallback(() => {
     if (!hasMore || status === Status.LOADING || status === Status.ERROR) return
-    fetchNotifications()
-  }, [hasMore, status, fetchNotifications])
+    dispatch(fetchNotifications())
+  }, [hasMore, status, dispatch])
+
+  const { setLeft, setCenter, setRight } = useContext(NavContext)!
+  useEffect(() => {
+    setLeft(LeftPreset.CLOSE)
+    setRight(null)
+    setCenter(messages.title)
+  }, [setLeft, setCenter, setRight])
 
   return (
     <NetworkConnectivityMonitor pageDidLoad={status !== Status.LOADING}>
@@ -91,16 +77,11 @@ const NotificationPage = ({
               <div className={styles.content}>
                 {notifications
                   .filter(({ isHidden }: any) => !isHidden)
-                  .map((notification: Notification, key: number) => {
+                  .map((notification: Notifications) => {
                     return (
-                      <ConnectedNotification
-                        key={key}
-                        goToRoute={goToRoute}
-                        setNotificationUsers={setNotificationUsers}
+                      <Notification
+                        key={notification.id}
                         notification={notification}
-                        markAsRead={markAsRead}
-                        unsubscribeUser={unsubscribeUser}
-                        hideNotification={hideNotification}
                       />
                     )
                   })}
@@ -125,19 +106,3 @@ const NotificationPage = ({
     </NetworkConnectivityMonitor>
   )
 }
-
-const NotificationPageWrapped = (props: any) => {
-  // Set Nav-Bar Menu
-  const { setLeft, setCenter, setRight } = useContext(NavContext)!
-  useEffect(() => {
-    setLeft(LeftPreset.CLOSE)
-    setRight(null)
-    setCenter(messages.title)
-  }, [setLeft, setCenter, setRight])
-
-  return (
-    <NotificationProvider {...props}>{NotificationPage}</NotificationProvider>
-  )
-}
-
-export default NotificationPageWrapped
