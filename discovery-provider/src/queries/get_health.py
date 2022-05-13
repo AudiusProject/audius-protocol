@@ -397,7 +397,6 @@ def get_elasticsearch_health_info(
             }
         except Exception:
             pass
-
     return elasticsearch_health
 
 
