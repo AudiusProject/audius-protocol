@@ -13,6 +13,7 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.search import search_model
+from src.queries.search_es import search_es_full
 from src.queries.search_queries import search
 from src.utils.redis_cache import cache
 
@@ -75,6 +76,11 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
         }
+
+        # wip: es search
+        resp = search_es_full(search_args)
+        return success_response(resp)
+
         resp = search(search_args)
         resp = extend_search(resp)
 
