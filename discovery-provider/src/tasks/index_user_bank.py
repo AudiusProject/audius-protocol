@@ -53,6 +53,8 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
+
+# Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
 
@@ -161,6 +163,9 @@ def process_transfer_instruction(
                 f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
             )
             return
+
+        # Find the right pre/post balances using the account indexes
+        # for the sender/receiver accounts since they aren't necessarily given in order
         pre_sender_balance_dict = next(
             (
                 balance
@@ -329,8 +334,7 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        # The sender/receiver are index 1 and 2 respectfully in the instruction,
-        # but the transaction might list them in a different order in the pubKeys.
+        # The transaction might list sender/receiver in a different order in the pubKeys.
         # The "accounts" field of the instruction has the mapping of accounts to pubKey index
         sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
         receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
