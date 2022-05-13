@@ -88,8 +88,6 @@ def test_es_indexer_processing(app):
     with app.app_context():
         db = get_db()
     try:
-        logger.info(f"isaac os.environ {os.environ}")
-
         proc = subprocess.Popen(
             ["npm", "run", "dev"],
             env=os.environ,
