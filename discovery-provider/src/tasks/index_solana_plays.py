@@ -532,6 +532,9 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     # Current batch
     page_count = 0
 
+    # The last transaction processed
+    last_tx = None
+
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
         latest_global_slot = solana_client_manager.get_block_height()
