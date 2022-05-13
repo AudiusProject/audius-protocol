@@ -47,8 +47,8 @@ function setup_ssh_timeouts() {
 }
 
 function setup_system_limits() {
-    # nofile - max number of open file descriptors https://stackoverflow.com/a/1213069
-    # nproc - max number of processes
+    # nofile - max number of open file descriptors: https://stackoverflow.com/a/1213069
+    # nproc - max number of processes: keep gcp's non-default
     # as - address space limit (KB)
     echo "root - nofile $(cat /proc/sys/fs/nr_open)" | sudo tee -a /etc/security/limits.d/10-audius.conf
     echo "root - nproc 96118" | sudo tee -a /etc/security/limits.d/10-audius.conf
