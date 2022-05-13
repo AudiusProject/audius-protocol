@@ -19,7 +19,7 @@ depends_on = None
 
 def column_exists(table_name, column_name):
     bind = op.get_context().bind
-    insp = inspect(bind)
+    insp = sa.inspect(bind)
     columns = insp.get_columns(table_name)
     return any(c["name"] == column_name for c in columns)
 
