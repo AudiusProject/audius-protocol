@@ -10,7 +10,10 @@ from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import User, UserBankAccount, UserBankTransaction
+from src.models.models import Challenge
 from src.models.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
@@ -139,6 +142,7 @@ def process_transfer_instruction(
     meta: ResultMeta,
     tx_sig: str,
     slot: int,
+    challenge_event_bus: ChallengeEventBus,
 ):
     # Accounts to refresh balance
     logger.info(
@@ -230,6 +234,7 @@ def process_transfer_instruction(
             slot=slot,
         )
         session.add(user_tip)
+        challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
 
 
 class CreateTokenAccount(TypedDict):
@@ -275,7 +280,12 @@ def get_valid_instruction(
 
 
 def process_user_bank_tx_details(
-    session: Session, redis: Redis, tx_info, tx_sig, timestamp
+    session: Session,
+    redis: Redis,
+    tx_info,
+    tx_sig,
+    timestamp,
+    challenge_event_bus: ChallengeEventBus,
 ):
     result: TransactionInfoResult = tx_info["result"]
     meta = result["meta"]
@@ -346,11 +356,16 @@ def process_user_bank_tx_details(
             meta=meta,
             tx_sig=tx_sig,
             slot=result["slot"],
+            challenge_event_bus=challenge_event_bus,
         )
 
 
 def parse_user_bank_transaction(
-    session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis
+    session: Session,
+    solana_client_manager: SolanaClientManager,
+    tx_sig,
+    redis,
+    challenge_event_bus: ChallengeEventBus,
 ):
     tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
     tx_slot = tx_info["result"]["slot"]
@@ -362,7 +377,9 @@ def parse_user_bank_transaction(
     {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
     )
 
-    process_user_bank_tx_details(session, redis, tx_info, tx_sig, parsed_timestamp)
+    process_user_bank_tx_details(
+        session, redis, tx_info, tx_sig, parsed_timestamp, challenge_event_bus
+    )
     session.add(
         UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
     )
@@ -371,6 +388,7 @@ def parse_user_bank_transaction(
 
 def process_user_bank_txs():
     solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
+    challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
     db = index_user_bank.db
     redis = index_user_bank.redis
     logger.info("index_user_bank.py | Acquired lock")
@@ -484,6 +502,7 @@ def process_user_bank_txs():
                         solana_client_manager,
                         tx_sig,
                         redis,
+                        challenge_bus,
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
