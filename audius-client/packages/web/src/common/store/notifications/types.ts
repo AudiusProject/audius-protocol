@@ -19,6 +19,7 @@ export enum NotificationType {
   ChallengeReward = 'ChallengeReward',
   TierChange = 'TierChange',
   TipReaction = 'TipReaction',
+  TipReceived = 'TipReceived',
   TipSent = 'TipSent',
   TopSupporter = 'TopSupporter',
   TopSupporting = 'TopSupporting'
@@ -175,17 +176,23 @@ export type TierChange = BaseNotification & {
   user: User
 }
 
-export type TipSent = BaseNotification & {
-  type: NotificationType.TipSent
-  user: User
-  value: number
-}
-
 export type TipReaction = BaseNotification & {
   type: NotificationType.TipReaction
   user: User
   value: number
   reaction: 'heart' | 'fire' | 'party' | 'explode'
+}
+
+export type TipReceived = BaseNotification & {
+  type: NotificationType.TipReceived
+  user: User
+  value: number
+}
+
+export type TipSent = BaseNotification & {
+  type: NotificationType.TipSent
+  user: User
+  value: number
 }
 
 export type TopSupporter = BaseNotification & {
@@ -213,6 +220,7 @@ export type Notification =
   | ChallengeReward
   | TierChange
   | TipReaction
+  | TipReceived
   | TipSent
   | TopSupporter
   | TopSupporting

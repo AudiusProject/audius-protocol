@@ -5,6 +5,7 @@
 
 .bodyText {
   display: flex;
+  align-items: center;
 }
 
 .profilePicture {
