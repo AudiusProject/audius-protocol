@@ -562,7 +562,9 @@ def index_user_bank(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            process_user_bank_txs()
+            challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
+            with challenge_bus.use_scoped_dispatch_queue():
+                process_user_bank_txs()
         else:
             logger.info("index_user_bank.py | Failed to acquire lock")
 
