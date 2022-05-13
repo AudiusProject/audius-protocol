@@ -1,4 +1,11 @@
-import React, { memo, ReactNode, useEffect, useRef, RefObject } from 'react'
+import React, {
+  memo,
+  ReactNode,
+  useEffect,
+  useRef,
+  RefObject,
+  MouseEventHandler
+} from 'react'
 
 import cn from 'classnames'
 
@@ -32,7 +39,7 @@ export type DynamicImageProps = {
   usePlaceholder?: boolean
 
   children?: ReactNode
-  onClick?: () => void
+  onClick?: MouseEventHandler
 }
 
 const moveBehind = (ref: RefObject<HTMLDivElement>) => {

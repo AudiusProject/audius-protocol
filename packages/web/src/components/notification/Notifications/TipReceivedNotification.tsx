@@ -1,6 +1,6 @@
 import React, { ComponentType, useCallback, useState } from 'react'
 
-import { TipSent } from 'common/store/notifications/types'
+import { TipReceived } from 'common/store/notifications/types'
 
 import { AudioText } from './AudioText'
 import { NotificationBody } from './NotificationBody'
@@ -29,7 +29,7 @@ const messages = {
 }
 
 type TipReceivedNotificationProps = {
-  notification: TipSent
+  notification: TipReceived
 }
 
 export const TipReceivedNotification = (
@@ -46,7 +46,11 @@ export const TipReceivedNotification = (
   const handleMouseLeave = useCallback(() => setIsTileDisabled(false), [])
 
   return (
-    <NotificationTile notification={notification} disabled={isTileDisabled}>
+    <NotificationTile
+      notification={notification}
+      disabled={isTileDisabled}
+      disableClosePanel
+    >
       <NotificationHeader icon={<IconTip />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
@@ -58,7 +62,7 @@ export const TipReceivedNotification = (
             {messages.sent} <AudioText value={value} />
           </span>
         </div>
-        <span className={styles.sayThanks}>
+        <div className={styles.sayThanks}>
           {activeReaction ? (
             <>
               <i className='emoji small white-heavy-check-mark' />{' '}
@@ -67,7 +71,7 @@ export const TipReceivedNotification = (
           ) : (
             messages.sayThanks
           )}
-        </span>
+        </div>
         <div
           className={styles.reactionList}
           onMouseEnter={handleMouseEnter}
