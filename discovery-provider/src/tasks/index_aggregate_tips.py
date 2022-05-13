@@ -89,21 +89,22 @@ INSERT INTO aggregate_user (
     supporting_count
 )
 SELECT
-    supporting.user_id AS user_id,
+    user_ids.user_id,
     0 AS track_count,
     0 AS playlist_count,
     0 AS album_count, 0 AS follower_count,
     0 AS following_count,
     0 AS repost_count,
     0 AS track_save_count,
-    total_supporting AS supporting_count,
-    total_supporters AS supporter_count
-FROM supporting
-FULL OUTER JOIN supporters ON supporting.user_id = supporters.user_id
+    COALESCE(total_supporting, 0) AS supporting_count,
+    COALESCE(total_supporters, 0) AS supporter_count
+FROM user_ids
+FULL OUTER JOIN supporting ON supporting.user_id = user_ids.user_id
+FULL OUTER JOIN supporters ON supporters.user_id = user_ids.user_id
 ON CONFLICT (user_id)
 DO
     UPDATE SET
-        supporting_count = EXCLUDED.supporting_count, 
+        supporting_count = EXCLUDED.supporting_count,
         supporter_count = EXCLUDED.supporter_count
 """
 
