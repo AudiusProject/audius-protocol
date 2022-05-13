@@ -103,6 +103,7 @@
     "prettier-config-standard": "^5.0.0",
     "rollup": "2.70.1",
     "rollup-plugin-dts": "4.2.0",
+    "rollup-plugin-terser": "7.0.2",
     "sinon": "9.0.2",
     "standard": "16.0.4",
     "ts-mocha": "9.0.2",
