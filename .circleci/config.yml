@@ -353,6 +353,11 @@ jobs:
           POSTGRES_DB: audius_discovery
       - image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
         environment:
+          - network.host=0.0.0.0
+          - discovery.type=single-node
+          - cluster.name=docker-cluster
+          - node.name=cluster1-node1
+          - xpack.security.enabled=false
           - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - image: ipfs/go-ipfs:release
         # Bring up ganache
