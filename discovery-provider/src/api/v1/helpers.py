@@ -10,6 +10,7 @@ from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
+from src.utils.spl_audio import to_wei_string
 
 from .models.common import full_response
 
@@ -292,7 +293,7 @@ def extend_undisbursed_challenge(undisbursed_challenge: UndisbursedChallengeResp
 def extend_supporter(support: SupportResponse):
     return {
         "rank": support["rank"],
-        "amount": support["amount"],
+        "amount": to_wei_string(support["amount"]),
         "sender": extend_user(support["user"]),
     }
 
@@ -307,6 +308,7 @@ def extend_supporting(support: SupportResponse):
 
 def extend_tip(tip):
     new_tip = tip.copy()
+    new_tip["amount"] = to_wei_string(tip["amount"])
     new_tip["sender"] = extend_user(tip["sender"])
     new_tip["receiver"] = extend_user(tip["receiver"])
     new_tip["followee_supporters"] = [
