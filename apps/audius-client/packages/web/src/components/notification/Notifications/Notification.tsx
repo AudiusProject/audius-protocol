@@ -24,6 +24,7 @@ import { RemixCreateNotification } from './RemixCreateNotification'
 import { RepostNotification } from './RepostNotification'
 import { TierChangeNotification } from './TierChangeNotification'
 import { TipReactionNotification } from './TipReactionNotification'
+import { TipReceivedNotification } from './TipReceivedNotification'
 import { TipSentNotification } from './TipSentNotification'
 import { TopSupporterNotification } from './TopSupporterNotification'
 import { TopSupportingNotification } from './TopSupportingNotification'
@@ -93,6 +94,9 @@ export const Notification = (props: NotificationProps) => {
     }
     case NotificationType.TipReaction: {
       return <TipReactionNotification notification={notification} />
+    }
+    case NotificationType.TipReceived: {
+      return <TipReceivedNotification notification={notification} />
     }
     case NotificationType.TipSent: {
       return <TipSentNotification notification={notification} />

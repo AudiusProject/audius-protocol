@@ -1,5 +1,11 @@
+.body {
+  display: flex;
+  align-items: center;
+}
+
 .profileLink {
   font-weight: var(--font-bold) !important;
+  margin-right: var(--unit-1);
 }
 
 .reactionRoot {

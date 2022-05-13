@@ -47,7 +47,7 @@ export const TipReactionNotification = (
           {userLinkElement} {messages.reacted}
         </NotificationTitle>
       </NotificationHeader>
-      <NotificationBody>
+      <NotificationBody className={styles.body}>
         <div className={styles.reactionRoot}>
           <Reaction />
           <ProfilePicture
