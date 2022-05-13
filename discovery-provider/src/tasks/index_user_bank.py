@@ -54,6 +54,10 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 
+# Used to find the correct accounts for sender/receiver in the transaction
+TRANSFER_SENDER_ACCOUNT_INDEX = 1
+TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
+
 
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
@@ -159,15 +163,57 @@ def process_transfer_instruction(
                 f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
             )
             return
-        pre_sender_balance = int(meta["preTokenBalances"][0]["uiTokenAmount"]["amount"])
-        post_sender_balance = int(
-            meta["postTokenBalances"][0]["uiTokenAmount"]["amount"]
+
+        # Find the right pre/post balances using the account indexes
+        # for the sender/receiver accounts since they aren't necessarily given in order
+        pre_sender_balance_dict = next(
+            (
+                balance
+                for balance in meta["preTokenBalances"]
+                if balance["accountIndex"] == TRANSFER_SENDER_ACCOUNT_INDEX
+            ),
+            None,
         )
-        pre_receiver_balance = int(
-            meta["preTokenBalances"][1]["uiTokenAmount"]["amount"]
+        pre_receiver_balance_dict = next(
+            (
+                balance
+                for balance in meta["preTokenBalances"]
+                if balance["accountIndex"] == TRANSFER_RECEIVER_ACCOUNT_INDEX
+            ),
+            None,
         )
+        post_sender_balance_dict = next(
+            (
+                balance
+                for balance in meta["postTokenBalances"]
+                if balance["accountIndex"] == TRANSFER_SENDER_ACCOUNT_INDEX
+            ),
+            None,
+        )
+        post_receiver_balance_dict = next(
+            (
+                balance
+                for balance in meta["postTokenBalances"]
+                if balance["accountIndex"] == TRANSFER_RECEIVER_ACCOUNT_INDEX
+            ),
+            None,
+        )
+        if (
+            pre_sender_balance_dict is None
+            or pre_receiver_balance_dict is None
+            or post_sender_balance_dict is None
+            or post_receiver_balance_dict is None
+        ):
+            logger.error(
+                "index_user_bank.py | ERROR: Sender or Receiver balance missing!"
+            )
+            return
+
+        pre_sender_balance = int(pre_sender_balance_dict["uiTokenAmount"]["amount"])
+        post_sender_balance = int(post_sender_balance_dict["uiTokenAmount"]["amount"])
+        pre_receiver_balance = int(pre_receiver_balance_dict["uiTokenAmount"]["amount"])
         post_receiver_balance = int(
-            meta["postTokenBalances"][1]["uiTokenAmount"]["amount"]
+            post_receiver_balance_dict["uiTokenAmount"]["amount"]
         )
         sent_amount = pre_sender_balance - post_sender_balance
         received_amount = post_receiver_balance - pre_receiver_balance
@@ -288,11 +334,10 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        # The sender/receiver are index 1 and 2 respectfully in the instruction,
-        # but the transaction might list them in a different order in the pubKeys.
+        # The transaction might list sender/receiver in a different order in the pubKeys.
         # The "accounts" field of the instruction has the mapping of accounts to pubKey index
-        sender_index = instruction["accounts"][1]
-        receiver_index = instruction["accounts"][2]
+        sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
+        receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
         process_transfer_instruction(
             session=session,
             redis=redis,
