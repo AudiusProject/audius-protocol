@@ -33,7 +33,7 @@ import zIndex from 'utils/zIndex'
 import styles from './NotificationPanel.module.css'
 import { Notification } from './Notifications'
 import EmptyNotifications from './components/EmptyNotifications'
-import NotificationModal from './components/desktop/NotificationModal'
+import { NotificationModal } from './components/desktop/NotificationModal'
 
 const getNotifications = makeGetAllNotifications()
 
@@ -98,13 +98,13 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
 
   const handleCheckClickInside = useCallback(
     (target: EventTarget) => {
-      if (isUserListOpen) return true
+      if (isUserListOpen || isNotificationModalOpen) return true
       if (target instanceof Element) {
         return anchorRef?.current.contains(target)
       }
       return false
     },
-    [isUserListOpen, anchorRef]
+    [isUserListOpen, isNotificationModalOpen, anchorRef]
   )
 
   useEffect(() => {
@@ -114,17 +114,17 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   }, [openNotifications, handleToggleNotificationPanel])
 
   return (
-    <Popup
-      anchorRef={anchorRef}
-      className={styles.popup}
-      isVisible={panelIsOpen}
-      checkIfClickInside={handleCheckClickInside}
-      onClose={handleToggleNotificationPanel}
-      position={PopupPosition.BOTTOM_RIGHT}
-      wrapperClassName={styles.popupWrapper}
-      zIndex={zIndex.NAVIGATOR_POPUP}
-    >
-      <>
+    <>
+      <Popup
+        anchorRef={anchorRef}
+        className={styles.popup}
+        isVisible={panelIsOpen}
+        checkIfClickInside={handleCheckClickInside}
+        onClose={handleToggleNotificationPanel}
+        position={PopupPosition.BOTTOM_RIGHT}
+        wrapperClassName={styles.popupWrapper}
+        zIndex={zIndex.NAVIGATOR_POPUP}
+      >
         <div className={styles.panelContainer} ref={panelRef}>
           <div className={styles.header}>
             <IconNotification className={styles.iconNotification} />
@@ -186,12 +186,12 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
             <EmptyNotifications />
           ) : null}
         </div>
-        <NotificationModal
-          isOpen={isNotificationModalOpen}
-          notification={modalNotification}
-          onClose={handleCloseNotificationModal}
-        />
-      </>
-    </Popup>
+      </Popup>
+      <NotificationModal
+        isOpen={isNotificationModalOpen}
+        notification={modalNotification}
+        onClose={handleCloseNotificationModal}
+      />
+    </>
   )
 }
