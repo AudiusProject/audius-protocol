@@ -5,9 +5,8 @@ Revises: 35198266d709
 Create Date: 2022-05-09 22:03:16.838837
 
 """
-import sqlalchemy as sa
+import sqlalchemy as sa, inspect
 from alembic import op
-from alembic.env import column_exists
 
 # revision identifiers, used by Alembic.
 revision = "0d2067242dd5"
@@ -15,6 +14,11 @@ down_revision = "35198266d709"
 branch_labels = None
 depends_on = None
 
+def column_exists(table_name, column_name):
+    bind = op.get_context().bind
+    insp = inspect(bind)
+    columns = insp.get_columns(table_name)
+    return any(c["name"] == column_name for c in columns)
 
 def upgrade():
     # Handle lack of idempotency for this migration
