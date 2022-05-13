@@ -399,6 +399,11 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - disc-prov-contracts-
       - run:
+          name: es-indexer init
+          command: |
+            cd discovery-provider/es-indexer
+            npm install
+      - run:
           name: contract repo init
           command: |
             cd contracts
