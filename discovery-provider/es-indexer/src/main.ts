@@ -8,6 +8,7 @@ import { PendingUpdates, startListener, takePending } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getBlocknumberCheckpoints, waitForHealthyCluster } from './conn'
+import { createNotificationIndex, materializeNotifications } from './notif'
 
 export const indexer = {
   playlists: new PlaylistIndexer(),
@@ -25,6 +26,8 @@ async function processPending(pending: PendingUpdates) {
 
     indexer.reposts.indexRows(pending.reposts as RepostDoc[]),
     indexer.saves.indexRows(pending.saves as SaveDoc[]),
+
+    materializeNotifications(pending),
   ])
 }
 
@@ -35,6 +38,9 @@ async function start() {
   // create indexes
   const indexers = Object.values(indexer)
   await Promise.all(indexers.map((ix) => ix.createIndex({ drop: false })))
+
+  // wip notification index
+  await createNotificationIndex()
 
   // setup postgres trigger + listeners
   await setupTriggers()

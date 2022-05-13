@@ -6,4 +6,6 @@ export const indexNames = {
   saves: 'saves2',
   tracks: 'tracks2',
   users: 'users2',
+
+  notifications: 'notifications0',
 }

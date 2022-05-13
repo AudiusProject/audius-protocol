@@ -140,8 +140,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
     if (!trackIds.length) return {}
     const pg = dialPg()
     const idList = Array.from(trackIds).join(',')
-    // do we want artist name from users
-    // or save + repost counts from aggregate_track?
+    // do we need to index track.artist.*?
     const q = `
       select 
         track_id,
