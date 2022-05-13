@@ -56,6 +56,7 @@ MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
 
+
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
 # EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]
