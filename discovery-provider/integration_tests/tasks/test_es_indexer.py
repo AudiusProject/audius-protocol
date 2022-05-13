@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 import time
@@ -7,6 +8,8 @@ from elasticsearch import Elasticsearch
 from integration_tests.conftest import DB_URL
 from integration_tests.utils import populate_mock_db
 from src.utils.db_session import get_db
+
+logger = logging.getLogger(__name__)
 
 os.environ["audius_db_url"] = DB_URL
 os.environ["audius_elasticsearch_url"] = "http://localhost:9200"
@@ -62,7 +65,7 @@ def test_es_indexer_catchup(app):
     populate_mock_db(db, basic_entities)
 
     try:
-        subprocess.run(
+        output = subprocess.run(
             ["npm", "run", "dev"],
             env=os.environ,
             capture_output=True,
@@ -70,7 +73,9 @@ def test_es_indexer_catchup(app):
             cwd="es-indexer",
             timeout=5,
         )
-        raise Exception("Elasticsearch indexing stopped")
+        raise Exception(
+            f"Elasticsearch indexing stopped: {output.stderr}. With env: {os.environ}"
+        )
     except subprocess.TimeoutExpired as timeout:
         if "catchup done" not in timeout.output.decode("utf-8"):
             raise Exception("Elasticsearch failed to index")
@@ -83,6 +88,8 @@ def test_es_indexer_processing(app):
     with app.app_context():
         db = get_db()
     try:
+        logger.info(f"isaac os.environ {os.environ}")
+
         proc = subprocess.Popen(
             ["npm", "run", "dev"],
             env=os.environ,
