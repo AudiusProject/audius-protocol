@@ -21,6 +21,10 @@
   margin-right: calc(var(--unit-2) * -1);
 }
 
+.profilePictureExtraRoot {
+  position: relative;
+}
+
 .profilePictureExtra {
   composes: profilePicture;
   position: absolute;

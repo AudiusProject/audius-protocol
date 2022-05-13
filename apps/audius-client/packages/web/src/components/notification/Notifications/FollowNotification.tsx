@@ -37,10 +37,10 @@ type FollowNotificationProps = {
 
 export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
-  const { users, timeLabel, isRead } = notification
-  const [firstUser, ...otherUsers] = users
-  const otherUsersCount = otherUsers.length
-  const isMultiUser = users.length > 1
+  const { users, userIds, timeLabel, isRead } = notification
+  const [firstUser] = users
+  const otherUsersCount = userIds.length - 1
+  const isMultiUser = userIds.length > 1
   const dispatch = useDispatch()
   const accountId = useSelector(getUserId) as ID
 
@@ -66,7 +66,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
       disableClosePanel={isMultiUser}
     >
       <NotificationHeader icon={<IconFollow />}>
-        <UserProfilePictureList users={users} />
+        <UserProfilePictureList users={users} userIds={userIds} />
       </NotificationHeader>
       <NotificationBody>
         <UserNameLink user={firstUser} notification={notification} />

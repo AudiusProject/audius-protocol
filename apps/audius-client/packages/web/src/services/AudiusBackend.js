@@ -103,7 +103,7 @@ const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
 const IMAGE_CACHE_MAX_SIZE = 200
 
-const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE === 'true'
 const AUDIUS_ORIGIN = `${process.env.REACT_APP_PUBLIC_PROTOCOL}//${process.env.REACT_APP_PUBLIC_HOSTNAME}`
 
 export const AuthHeaders = Object.freeze({

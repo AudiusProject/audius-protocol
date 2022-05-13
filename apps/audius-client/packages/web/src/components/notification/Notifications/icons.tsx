@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 
+import { ReactComponent as IconAudius } from 'assets/img/iconAudius.svg'
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRemixBase } from 'assets/img/iconRemix.svg'
 import { ReactComponent as IconRepostBase } from 'assets/img/iconRepost.svg'
@@ -49,4 +50,8 @@ export const IconRemix = () => {
 
 export const IconTip = () => {
   return <IconTipBase className={styles.iconTip} />
+}
+
+export const IconAnnouncement = () => {
+  return <IconAudius className={styles.iconAnnouncement} />
 }

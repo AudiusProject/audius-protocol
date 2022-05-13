@@ -1,19 +1,28 @@
 import React from 'react'
 
 import AntModal from 'antd/lib/modal'
-import PropTypes from 'prop-types'
 import ReactMarkdown from 'react-markdown'
 import SimpleBar from 'simplebar-react'
 
-import { ReactComponent as IconAnnouncementUnread } from 'assets/img/iconAnnouncementUnread.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import { Announcement } from 'common/store/notifications/types'
+import { IconAnnouncement } from 'components/notification/Notifications/icons'
 
 import styles from './NotificationModal.module.css'
 
+type NotificationModalProps = {
+  isOpen?: boolean
+  onClose: () => void
+  notification: Announcement | null
+}
+
 /** The NotificationModal is a modal that renders the
  * full notification with markdown */
-const NotificationModal = ({ isOpen, onClose, notification }) => {
+export const NotificationModal = (props: NotificationModalProps) => {
+  const { isOpen, onClose, notification } = props
+
   if (!notification) return null
+
   return (
     <AntModal
       wrapClassName={styles.modalContainerWrapper}
@@ -29,7 +38,7 @@ const NotificationModal = ({ isOpen, onClose, notification }) => {
       <div className={styles.panelContainer}>
         <div className={styles.header}>
           <IconRemove className={styles.iconRemove} onClick={onClose} />
-          <IconAnnouncementUnread className={styles.iconAnnouncement} />
+          <IconAnnouncement />
           <div className={styles.title}>
             <ReactMarkdown source={notification.title} escapeHtml={false} />
           </div>
@@ -46,11 +55,3 @@ const NotificationModal = ({ isOpen, onClose, notification }) => {
     </AntModal>
   )
 }
-
-NotificationModal.propTypes = {
-  isOpen: PropTypes.bool,
-  notification: PropTypes.object,
-  onClose: PropTypes.func
-}
-
-export default NotificationModal
