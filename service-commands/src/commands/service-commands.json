@@ -347,5 +347,9 @@
     "down": [
       "ps x -o '%r %a' | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}' | xargs -r kill -- -9"
     ]
+  },
+  "logging": {
+    "up": ["./logging/start.sh"],
+    "down": ["./logging/stop.sh"]
   }
 }

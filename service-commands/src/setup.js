@@ -164,7 +164,8 @@ const Service = Object.freeze({
   USER_REPLICA_SET_MANAGER: 'user-replica-set-manager',
   AAO: 'aao',
   TN: 'tn',
-  LIBS: 'libs'
+  LIBS: 'libs',
+  LOGGING: 'logging'
 })
 
 // gets a service command, interpolating service names
