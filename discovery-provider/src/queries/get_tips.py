@@ -22,6 +22,7 @@ class GetTipsArgs(TypedDict):
     current_user_follows: str
     unique_by: str
     min_slot: int
+    max_slot: int
     tx_signatures: List[int]
 
 
@@ -114,6 +115,8 @@ class TipResult(TypedDict):
 def _get_tips(session: Session, args: GetTipsArgs):
     UserTipAlias = aliased(UserTip)
     query: Query = session.query(UserTipAlias)
+    has_pagination = False  # Keeps track if we already paginated
+
     if args.get("tx_signatures"):
         query = query.filter(UserTipAlias.signature.in_(args["tx_signatures"]))
     if args.get("receiver_min_followers", 0) > 0:
@@ -127,6 +130,8 @@ def _get_tips(session: Session, args: GetTipsArgs):
         )
     if args.get("min_slot", 0) > 0:
         query = query.filter(UserTipAlias.slot >= args["min_slot"])
+    if args.get("max_slot", 0) > 0:
+        query = query.filter(UserTipAlias.slot <= args["max_slot"])
     if args.get("unique_by"):
         if args["unique_by"] == "sender":
             distinct_inner = (
@@ -232,9 +237,11 @@ def _get_tips(session: Session, args: GetTipsArgs):
             )
             .group_by(Tips)
         )
+        has_pagination = True
 
-    query = query.order_by(UserTipAlias.slot.desc())
-    query = paginate_query(query)
+    if not has_pagination:
+        query = query.order_by(UserTipAlias.slot.desc())
+        query = paginate_query(query)
 
     tips_results: List[UserTip] = query.all()
     return tips_results
@@ -248,7 +255,7 @@ def get_tips(args: GetTipsArgs) -> List[TipResult]:
         )
         tips_results: List[Tuple[UserTip, List[str]]] = []
         # Wrap in tuple for consistency
-        if isinstance(results[0], UserTip):
+        if results and isinstance(results[0], UserTip):
             tips_results = [(cast(UserTip, tip), []) for tip in results]
         else:
             # MyPy doesn't seem smart enough to figure this out, help it with a cast

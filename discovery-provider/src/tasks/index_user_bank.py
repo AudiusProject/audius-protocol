@@ -142,6 +142,7 @@ def process_transfer_instruction(
     tx_sig: str,
     slot: int,
     challenge_event_bus: ChallengeEventBus,
+    timestamp: datetime.datetime,
 ):
     # Accounts to refresh balance
     logger.info(
@@ -231,6 +232,7 @@ def process_transfer_instruction(
             sender_user_id=sender_user_id,
             receiver_user_id=receiver_user_id,
             slot=slot,
+            created_at=timestamp,
         )
         session.add(user_tip)
         challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
@@ -356,6 +358,7 @@ def process_user_bank_tx_details(
             tx_sig=tx_sig,
             slot=result["slot"],
             challenge_event_bus=challenge_event_bus,
+            timestamp=timestamp,
         )
 
 
