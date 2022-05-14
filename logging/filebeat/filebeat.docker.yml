@@ -4,19 +4,45 @@ filebeat.config:
     reload.enabled: false
 
 filebeat.inputs:
-- input_type: log
+- type: container
   paths:
-    - /var/lib/docker/containers/*/*.log
-  document_type: docker
-  json.message_key: log
+    - "/var/lib/docker/containers/*/*.log"
+  # fields:
+  #   app_id: query_engine_12
 
 filebeat.autodiscover:
   providers:
     - type: docker
       hints.enabled: true
 
+# processors:
+#   # decode the log field (sub JSON document) if JSON encoded, then maps it's fields to elasticsearch fields
+#   - decode_json_fields:
+#     fields: ["log", "message"]
+#     process_array: false
+#     max_depth: 3
+#     target: ""
+#     # overwrite existing target elasticsearch fields while decoding json fields
+#     overwrite_keys: true
+#   # - add_docker_metadata:
+#   #     host: "unix:///var/run/docker.sock"
+#   - rename:
+#       fields:
+#       - from: "host"
+#         to: "host.name"
 processors:
-- add_cloud_metadata: ~
+  - decode_json_fields:
+      fields: ["log", "message"]
+      process_array: false
+      max_depth: 3
+      target: ""
+      overwrite_keys: true
+  - rename:
+      fields:
+      - from: "service"
+        to: "service.name"
+  - drop_fields:
+      fields: ["host"]
 
 output.elasticsearch:
   hosts: '${ELASTIC_ENDPOINT}'
