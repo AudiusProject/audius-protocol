@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -75,6 +75,7 @@
     "query-string": "7.0.1",
     "react": "17.0.2",
     "react-native": "0.66.3",
+    "react-native-android-navbar-height": "github:ConnectyCube/react-native-android-navbar-height.git#3b04b4b66ce1bcc1b316fd44b368575cf8b3432d",
     "react-native-autolink": "4.0.0",
     "react-native-collapsible-tab-view": "2.0.2",
     "react-native-config": "1.4.5",
@@ -89,7 +90,6 @@
     "react-native-markdown-display": "7.0.0-alpha.2",
     "react-native-modal": "11.5.4",
     "react-native-music-control": "1.4.0",
-    "react-native-android-navbar-height": "github:ConnectyCube/react-native-android-navbar-height.git#3b04b4b66ce1bcc1b316fd44b368575cf8b3432d",
     "react-native-pager-view": "5.4.6",
     "react-native-permissions": "3.0.5",
     "react-native-push-notification": "7.4.0",
