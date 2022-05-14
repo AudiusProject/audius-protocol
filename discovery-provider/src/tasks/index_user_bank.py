@@ -234,6 +234,7 @@ def process_transfer_instruction(
             slot=slot,
             created_at=timestamp,
         )
+        logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
         session.add(user_tip)
         challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
 
