@@ -957,7 +957,7 @@ class GetSupporters(Resource):
         return success_response(support)
 
 
-full_get_supporters_response = make_response(
+full_get_supporters_response = make_full_response(
     "full_get_supporters", full_ns, fields.List(fields.Nested(supporter_response_full))
 )
 
@@ -1009,7 +1009,7 @@ class GetSupporting(Resource):
         return success_response(support)
 
 
-full_get_supporting_response = make_response(
+full_get_supporting_response = make_full_response(
     "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
 )
 
