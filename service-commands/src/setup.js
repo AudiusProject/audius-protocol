@@ -165,7 +165,8 @@ const Service = Object.freeze({
   AAO: 'aao',
   TN: 'tn',
   LIBS: 'libs',
-  MONITORING: 'monitoring'
+  MONITORING: 'monitoring',
+  LOGGING: 'logging'
 })
 
 // gets a service command, interpolating service names

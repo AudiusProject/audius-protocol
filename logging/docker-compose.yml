@@ -1,0 +1,35 @@
+services:
+  metricbeat:
+    build: metricbeat
+    container_name: metricbeat
+    user: root
+    restart: always
+    environment:
+      - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
+      - ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID}
+      - ELASTIC_USER=${ELASTIC_USER}
+      - ELASTIC_PASS=${ELASTIC_PASS}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "PING"]
+    #   interval: 10s
+    #   timeout: 5s
+
+  filebeat:
+    build: 
+      context: filebeat
+      args:
+          - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
+          - ELASTIC_USER=${ELASTIC_USER}
+          - ELASTIC_PASS=${ELASTIC_PASS}
+    container_name: filebeat
+    user: root
+    restart: always
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "PING"]
+    #   interval: 10s
+    #   timeout: 5s

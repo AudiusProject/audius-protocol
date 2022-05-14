@@ -325,5 +325,9 @@
     "down": [
       "cd monitoring; scripts/down.sh"
     ]
+  },
+  "logging": {
+    "up": ["./logging/start.sh"],
+    "down": ["./logging/stop.sh"]
   }
 }
