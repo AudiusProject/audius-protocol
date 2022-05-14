@@ -58,9 +58,9 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
 
-        artist: {
+        user: {
           properties: {
-            handle: { type: 'keyword' },
+            handle: { type: 'keyword' }, // should it be text so we can search on it?
             location: { type: 'keyword' },
             name: { type: 'text' }, // should it be keyword with a `searchable` treatment?
             follower_count: { type: 'integer' },
@@ -89,15 +89,36 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       coalesce(aggregate_plays.count, 0) as play_count,
   
       json_build_object(
+        'user_id', users.user_id,
         'handle', users.handle,
+        'handle_lc', users.handle_lc,
         'name', users.name,
+        'bio', users.bio,
         'location', users.location,
         'follower_count', coalesce(follower_count, 0),
-        'is_verified', is_verified,
-        'balance', balance,
-        'associated_wallets_balance', associated_wallets_balance
-      ) as artist,
-  
+        'is_creator', users.is_creator,
+        'is_verified', users.is_verified,
+        'is_deactivated', users.is_deactivated,
+        'wallet', users.wallet,
+        'erc_wallet', users.wallet,
+        'spl_wallet', user_bank_accounts.bank_account,
+        'balance', user_balances.balance,
+        'waudio_balance', user_balances.waudio,
+        'associated_wallets_balance', user_balances.associated_wallets_balance,
+        'associated_sol_wallets_balance', user_balances.associated_sol_wallets_balance,
+        'has_collectibles', users.has_collectibles,
+        'track_count', track_count,
+        'playlist_count', playlist_count,
+        'album_count', album_count,
+        'follower_count', follower_count,
+        'followee_count', following_count,
+        'repost_count', repost_count,
+        'supporter_count', supporter_count,
+        'supporting_count', supporting_count,
+        'blocknumber', users.blocknumber,
+        'created_at', users.created_at,
+        'updated_at', users.updated_at
+      ) as user,
       array(
         select slug 
         from track_routes r
@@ -132,6 +153,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join user_balances on users.user_id = user_balances.user_id
+      left join user_bank_accounts on users.wallet = user_bank_accounts.ethereum_address
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
     WHERE tracks.is_current = true 
       AND users.is_current = true
@@ -153,16 +175,15 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
   }
 
   withRow(row: TrackDoc) {
-    row.tags = row.tags ? row.tags.split(',') : []
+    row.tags = row.tags
     row.repost_count = row.reposted_by.length
-    row.save_count = row.saved_by.length
-
+    row.favorite_count = row.saved_by.length
     row.length = Math.ceil(
       row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
     )
 
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]
-    row.permalink = `/${row.artist.handle}/${currentRoute}`
+    row.permalink = `/${row.user.handle}/${currentRoute}`
   }
 }
