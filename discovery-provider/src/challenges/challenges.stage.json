@@ -48,5 +48,12 @@
 		"id": "tp",
 		"active": true,
 		"starting_block": 0
+	},
+	{
+		"id": "send-first-tip",
+		"type": "boolean",
+		"amount": 3,
+		"active": true,
+		"starting_block": 0
 	}
 ]
