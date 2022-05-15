@@ -25,6 +25,7 @@ def listify(things):
 
 
 def pluck_hits(found):
+    # TODO don't assume hits
     return [h["_source"] for h in found["hits"]["hits"]]
 
 

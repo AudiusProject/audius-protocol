@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from src.api.v1.helpers import add_track_artwork, extend_track, extend_user
 from src.utils.elasticdsl import ES_PLAYLISTS, ES_TRACKS, ES_USERS, esclient, pluck_hits
 from src.utils.helpers import encode_int_id
 from src.utils.spl_audio import to_wei
@@ -32,7 +33,7 @@ def search_es_full(args: dict):
     if search_type == "all" or search_type == "tracks":
         mdsl.extend(
             [
-                {"index": ES_TRACKS},
+                {"index": "tracks2"},
                 {
                     "size": limit,
                     "from": offset,
@@ -173,8 +174,10 @@ def search_es_full(args: dict):
 
 def transform_tracks(tracks):
     for track in tracks:
-        track["id"] = encode_int_id(track.pop("track_id"))
-        track["user"]["id"] = encode_int_id(track["user"].pop("user_id"))
+        # track["id"] = encode_int_id(track.pop("track_id"))
+        # track["user"]["id"] = encode_int_id(track["user"].pop("user_id"))
+        # track["user_id"] = track["user"]["id"]
+
         track["user"]["total_balance"] = str(
             int(track["user"]["balance"])
             + int(track["user"]["associated_wallets_balance"])
@@ -185,7 +188,17 @@ def transform_tracks(tracks):
         track["user"][
             "does_follow_current_user"
         ] = False  # TODO get user following and set
-        track["current_user_followee_follow_count"] = 0  # same
-        track["does_current_user_follow"] = False
+    
+        track["user"]["current_user_followee_follow_count"] = 0  # same
+        track["user"]["does_current_user_follow"] = False
+        track["followee_reposts"] = [] 
+        track["has_current_user_reposted"] = False 
+        track["has_current_user_saved"] = False 
+        track["followee_favorites"] = [] 
+        
+        track = extend_track(track)
+        
+        # TODO format date correctly to yyyy/mm/dd hh:mm:ss
+        
 
     return tracks

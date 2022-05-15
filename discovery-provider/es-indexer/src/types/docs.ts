@@ -38,6 +38,8 @@ export type TrackDoc = TrackRow & {
     name: string
     location: string
     follower_count: number
+    created_at: Date
+    updated_at: Date
   }
 }
 

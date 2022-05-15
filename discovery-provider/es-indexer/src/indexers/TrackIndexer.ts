@@ -35,6 +35,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         blocknumber: { type: 'integer' },
         owner_id: { type: 'keyword' },
         created_at: { type: 'date' },
+        updated_at: { type: 'date' },
         permalink: { type: 'keyword' },
         route_id: { type: 'keyword' },
         routes: { type: 'keyword' },
@@ -65,6 +66,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
             name: { type: 'text' }, // should it be keyword with a `searchable` treatment?
             follower_count: { type: 'integer' },
             is_verified: { type: 'boolean' },
+            created_at: { type: 'date' },
+            updated_at: { type: 'date' },
           },
         },
 
@@ -85,7 +88,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     -- etl tracks
     select 
       tracks.*,
-      (tracks.download->>'is_downloadable')::boolean as is_downloadable,
+      (tracks.download->>'is_downloadable')::boolean as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
   
       json_build_object(
@@ -95,6 +98,12 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         'name', users.name,
         'bio', users.bio,
         'location', users.location,
+        'creator_node_endpoint', users.creator_node_endpoint,
+        'cover_photo', users.cover_photo,
+        'cover_photo_sizes', users.cover_photo_sizes,
+        'profile_picture', users.profile_picture,
+        'profile_picture_sizes', users.profile_picture_sizes,
+        'metadata_multihash', users.metadata_multihash,
         'follower_count', coalesce(follower_count, 0),
         'is_creator', users.is_creator,
         'is_verified', users.is_verified,
@@ -178,7 +187,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.tags = row.tags
     row.repost_count = row.reposted_by.length
     row.favorite_count = row.saved_by.length
-    row.length = Math.ceil(
+    row.duration = Math.ceil(
       row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
     )
 
