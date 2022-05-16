@@ -28,6 +28,7 @@ from src.solana.solana_parser import (
     parse_instruction_data,
 )
 from src.solana.solana_transaction_types import (
+    ConfirmedTransaction,
     ResultMeta,
     TransactionInfoResult,
     TransactionMessage,
@@ -136,13 +137,19 @@ create_token_account_instr: List[InstructionFormat] = [
 def process_transfer_instruction(
     session: Session,
     redis: Redis,
-    sender_account: str,
-    receiver_account: str,
+    instruction: TransactionMessageInstruction,
+    account_keys: List[str],
     meta: ResultMeta,
     tx_sig: str,
     slot: int,
     challenge_event_bus: ChallengeEventBus,
 ):
+    # The transaction might list sender/receiver in a different order in the pubKeys.
+    # The "accounts" field of the instruction has the mapping of accounts to pubKey index
+    sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
+    receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
+    sender_account = account_keys[sender_index]
+    receiver_account = account_keys[receiver_index]
     # Accounts to refresh balance
     logger.info(
         f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
@@ -173,7 +180,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_SENDER_ACCOUNT_INDEX
+                if balance["accountIndex"] == sender_index
             ),
             None,
         )
@@ -181,7 +188,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_RECEIVER_ACCOUNT_INDEX
+                if balance["accountIndex"] == receiver_index
             ),
             None,
         )
@@ -189,7 +196,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_SENDER_ACCOUNT_INDEX
+                if balance["accountIndex"] == sender_index
             ),
             None,
         )
@@ -197,7 +204,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_RECEIVER_ACCOUNT_INDEX
+                if balance["accountIndex"] == receiver_index
             ),
             None,
         )
@@ -281,7 +288,7 @@ def get_valid_instruction(
 def process_user_bank_tx_details(
     session: Session,
     redis: Redis,
-    tx_info,
+    tx_info: ConfirmedTransaction,
     tx_sig,
     timestamp,
     challenge_event_bus: ChallengeEventBus,
@@ -343,15 +350,11 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        # The transaction might list sender/receiver in a different order in the pubKeys.
-        # The "accounts" field of the instruction has the mapping of accounts to pubKey index
-        sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
-        receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
         process_transfer_instruction(
             session=session,
             redis=redis,
-            sender_account=account_keys[sender_index],
-            receiver_account=account_keys[receiver_index],
+            instruction=instruction,
+            account_keys=account_keys,
             meta=meta,
             tx_sig=tx_sig,
             slot=result["slot"],
