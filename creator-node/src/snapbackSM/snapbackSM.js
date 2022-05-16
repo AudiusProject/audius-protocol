@@ -101,13 +101,6 @@ class SnapbackSM {
     // Toggle to switch logs
     this.debug = true
 
-    // Start at a random userId to avoid biased processing of early users
-    this.lastProcessedUserId = Utils.randomIntFromIntervalInclusive(
-      0,
-      10_000_000
-    )
-    this.usersPerJob = this.nodeConfig.get('snapbackUsersPerJob')
-
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
     this.delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
@@ -295,6 +288,11 @@ class SnapbackSM {
       }
     )
 
+    // Start at a random userId to avoid biased processing of early users
+    const latestUserId = await this.getLatestUserId()
+    this.lastProcessedUserId = _.random(0, latestUserId)
+    this.usersPerJob = this.nodeConfig.get('snapbackUsersPerJob')
+
     // Enqueue first job after a delay. This job requeues itself upon completion or failure
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
@@ -442,7 +440,12 @@ class SnapbackSM {
       startTime: Date.now()
     }
 
+    const startTimeMs = Date.now()
     const jobInfo = await queue.add(jobProps)
+    const timeElapsedMs = Date.now() - startTimeMs
+    this.log(
+      `enqueueSync waited ${timeElapsedMs}ms for sync type ${syncType} Bull job to be added to queue for user wallet ${userWallet}`
+    )
 
     // Record sync in syncDeDuplicator
     this.syncDeDuplicator.recordSync(
@@ -484,7 +487,6 @@ class SnapbackSM {
       `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] numHealthyNodes=${healthyNodes.length}`
     )
 
-    const unhealthyReplicasSet = new Set(unhealthyReplicas)
     const response = { errorMsg: null, issuedReconfig: false }
     let newReplicaSetEndpoints = []
     const newReplicaSetSPIds = []
@@ -503,7 +505,7 @@ class SnapbackSM {
         secondary1,
         secondary2,
         primary,
-        unhealthyReplicasSet,
+        unhealthyReplicas,
         healthyNodes,
         replicaSetNodesToUserClockStatusesMap
       })
@@ -531,10 +533,15 @@ class SnapbackSM {
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
       }
 
+      const startTimeMs = Date.now()
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
         newReplicaSetSPIds[0], // primary
         newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
+      )
+      const timeElapsedMs = Date.now() - startTimeMs
+      this.log(
+        `[issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
       )
 
       response.issuedReconfig = true
@@ -610,7 +617,7 @@ class SnapbackSM {
     secondary1,
     secondary2,
     wallet,
-    unhealthyReplicasSet,
+    unhealthyReplicasSet = new Set(),
     healthyNodes,
     replicaSetNodesToUserClockStatusesMap
   }) {
@@ -1234,7 +1241,9 @@ class SnapbackSM {
           (this.currentModuloSlice + 1) % this.moduloBase
       } else {
         // The next job should start processing where this one ended or loop back around to the first user
-        const lastProcessedUser = nodeUsers.pop() || { user_id: 0 }
+        const lastProcessedUser = nodeUsers[nodeUsers.length - 1] || {
+          user_id: 0
+        }
         this.lastProcessedUserId = lastProcessedUser.user_id
       }
     }
@@ -1398,7 +1407,7 @@ class SnapbackSM {
   async _aggregateOps(nodeUser, unhealthyPeers, userSecondarySyncMetrics) {
     const requiredUpdateReplicaSetOps = []
     const potentialSyncRequests = []
-    const unhealthyReplicas = []
+    const unhealthyReplicas = new Set()
 
     const {
       wallet,
@@ -1442,14 +1451,14 @@ class SnapbackSM {
           this.logError(
             `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${this.peerSetManager.endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`
           )
-          unhealthyReplicas.push(secondary)
+          unhealthyReplicas.add(secondary)
 
           // Error case 2 - already marked unhealthy
         } else if (unhealthyPeers.has(secondary)) {
           this.logError(
             `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
           )
-          unhealthyReplicas.push(secondary)
+          unhealthyReplicas.add(secondary)
 
           // Error case 3 - low user sync success rate
         } else if (
@@ -1459,7 +1468,7 @@ class SnapbackSM {
           this.logError(
             `processStateMachineOperation(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
           )
-          unhealthyReplicas.push(secondary)
+          unhealthyReplicas.add(secondary)
 
           // Success case
         } else {
@@ -1470,7 +1479,7 @@ class SnapbackSM {
       /**
        * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
        */
-      if (unhealthyReplicas.length > 0) {
+      if (unhealthyReplicas.size > 0) {
         requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
       }
 
@@ -1496,7 +1505,7 @@ class SnapbackSM {
           this.peerSetManager.endpointToSPIdMap[replica.endpoint] !==
           replica.spId
         ) {
-          unhealthyReplicas.push(replica.endpoint)
+          unhealthyReplicas.add(replica.endpoint)
         } else if (unhealthyPeers.has(replica.endpoint)) {
           // Else, continue with conducting extra health check if the current observed node is a primary, and
           // add to `unhealthyReplicas` if observed node is a secondary
@@ -1508,12 +1517,12 @@ class SnapbackSM {
           }
 
           if (addToUnhealthyReplicas) {
-            unhealthyReplicas.push(replica.endpoint)
+            unhealthyReplicas.add(replica.endpoint)
           }
         }
       }
 
-      if (unhealthyReplicas.length > 0) {
+      if (unhealthyReplicas.size > 0) {
         requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
       }
     }
@@ -1876,6 +1885,43 @@ class SnapbackSM {
     // Update class variables for external access
     this.highestEnabledReconfigMode = highestEnabledReconfigMode
     this.enabledReconfigModesSet = enabledReconfigModesSet
+  }
+
+  /**
+   *
+   * @returns the ID of the newest user on Audius
+   */
+  async getLatestUserId() {
+    const discoveryNodeEndpoint =
+      this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    if (!discoveryNodeEndpoint) {
+      throw new Error('No discovery provider currently selected, exiting')
+    }
+
+    // Will throw error on non-200 response
+    let latestUserId = 0
+    try {
+      // Request all users that have this node as a replica (either primary or secondary)
+      const resp = await Utils.asyncRetry({
+        asyncFnLabel: 'fetch all users with this node in replica',
+        asyncFn: async () => {
+          return axios({
+            method: 'get',
+            baseURL: discoveryNodeEndpoint,
+            url: `latest/user`,
+            timeout: 10_000 // 10s
+          })
+        },
+        logger
+      })
+      latestUserId = resp.data.data
+    } catch (e) {
+      throw new Error(
+        `getLatestUserId() Error: ${e.toString()} - connected discovery node: [${discoveryNodeEndpoint}]`
+      )
+    }
+
+    return latestUserId
   }
 }
 
