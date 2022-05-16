@@ -557,6 +557,9 @@ describe('test SnapbackSM', function () {
     // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
     snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
 
+    // Mock `getLatestUserId` to return userId=0
+    snapback.getLatestUserId = async () => { return 0 }
+
     // Mark primary as unhealthy
     nock(constants.primaryEndpoint)
       .persist()
