@@ -4,9 +4,13 @@ filebeat.config:
     reload.enabled: false
 
 filebeat.inputs:
-- type: container
+- type: log
   paths:
     - "/var/lib/docker/containers/*/*.log"
+  json.message_key: log
+  json.keys_under_root: true
+  processors:
+  - add_docker_metadata: ~
   # fields:
   #   app_id: query_engine_12
 
