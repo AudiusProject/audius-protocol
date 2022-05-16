@@ -340,11 +340,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # DB connections check
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
-        health_results["country"] = shared_config["serviceLocation"]["serviceCountry"]
-        health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
-        health_results["longitude"] = shared_config["serviceLocation"][
-            "serviceLongitude"
-        ]
+        location = get_location()
+        health_results.update(location)
 
         if db_connections_error:
             return health_results, db_connections_error
@@ -377,6 +374,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     return health_results, is_unhealthy
+
+
+class LocationResponse(TypedDict):
+    country: str
+    latitude: str
+    longitude: str
+
+
+def get_location() -> LocationResponse:
+    return {
+        "country": shared_config["serviceLocation"]["serviceCountry"],
+        "latitude": shared_config["serviceLocation"]["serviceLatitude"],
+        "longitude": shared_config["serviceLocation"]["serviceLongitude"],
+    }
 
 
 def get_elasticsearch_health_info(
