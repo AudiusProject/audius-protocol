@@ -6,7 +6,7 @@ from src.utils import db_session
 logger = logging.getLogger(__name__)
 
 
-def get_user_with_wallet(wallet: str) -> int:
+def get_user_with_wallet(wallet: str) -> int or None:
     """
     Returns id of user to which the given wallet belongs
 
