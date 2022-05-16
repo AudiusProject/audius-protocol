@@ -487,7 +487,6 @@ class SnapbackSM {
       `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] numHealthyNodes=${healthyNodes.length}`
     )
 
-    const unhealthyReplicasSet = new Set(unhealthyReplicas)
     const response = { errorMsg: null, issuedReconfig: false }
     let newReplicaSetEndpoints = []
     const newReplicaSetSPIds = []
@@ -506,7 +505,7 @@ class SnapbackSM {
         secondary1,
         secondary2,
         primary,
-        unhealthyReplicasSet,
+        unhealthyReplicas,
         healthyNodes,
         replicaSetNodesToUserClockStatusesMap
       })
