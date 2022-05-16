@@ -16,7 +16,15 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("user_tips", sa.Column("updated_at", sa.DateTime(), nullable=False))
+    op.add_column(
+        "user_tips",
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            nullable=False,
+            server_default=sa.func.current_timestamp(),
+        ),
+    )
 
 
 def downgrade():
