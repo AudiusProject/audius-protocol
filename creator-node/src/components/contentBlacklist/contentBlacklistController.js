@@ -25,7 +25,25 @@ const TYPES_SET = new Set([types.cid, types.user, types.track])
 // Controllers
 
 const contentBlacklistGetAllController = async (req) => {
-  const blacklistedContent = await getAllContentBlacklist()
+  const type = parseContentType(req.query.type)
+
+  if (!type) {
+    return errorResponseBadRequest(
+      'Content type not specified or is not proper'
+    )
+  }
+
+  const { limit, offset } = parsePagination({
+    limit: req.query.limit,
+    offset: req.query.offset
+  })
+
+  const blacklistedContent = await getAllContentBlacklist({
+    type,
+    limit,
+    offset
+  })
+
   return successResponse(blacklistedContent)
 }
 
@@ -261,6 +279,30 @@ const filterNonexistantIds = async (libs, type, ids) => {
   }
 
   return ids
+}
+
+const parseContentType = async (inputType) => {
+  if (!inputType) return null
+
+  const type = inputType.toUpperCase()
+  if (!TYPES_SET.has(type)) return null
+
+  return type
+}
+
+const parsePagination = async ({ limit: inputLimit, offset: inputOffset }) => {
+  let limit = parseInt(inputLimit)
+  let offset = parseInt(inputOffset)
+
+  if (limit < 0) {
+    limit = 100
+  }
+
+  if (offset < 0) {
+    offset = 0
+  }
+
+  return { offset, limit }
 }
 
 // Routes
