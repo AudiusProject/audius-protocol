@@ -617,7 +617,7 @@ class SnapbackSM {
     secondary1,
     secondary2,
     wallet,
-    unhealthyReplicasSet,
+    unhealthyReplicasSet = new Set(),
     healthyNodes,
     replicaSetNodesToUserClockStatusesMap
   }) {

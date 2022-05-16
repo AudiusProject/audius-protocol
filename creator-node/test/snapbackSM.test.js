@@ -602,7 +602,7 @@ describe('test SnapbackSM', function () {
       constants.primaryEndpoint,
       constants.secondary1Endpoint,
       constants.secondary2Endpoint,
-      [constants.primaryEndpoint] /* unhealthyReplicas */,
+      new Set([constants.primaryEndpoint]) /* unhealthyReplicas */,
       healthyNodes /* healthyNodes */,
       replicaSetNodesToUserClockStatusesMapCopy
     )
