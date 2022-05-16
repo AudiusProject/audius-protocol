@@ -6,7 +6,6 @@ from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
 from src import api_helpers
-from src.api.v1.users import User
 from src.models import (
     AggregateUser,
     Block,
@@ -21,6 +20,7 @@ from src.models import (
     SaveType,
     SupporterRankUp,
     Track,
+    User,
     UserBalanceChange,
     UserTip,
 )
