@@ -85,7 +85,6 @@ export const OAuthLoginPage = () => {
       verified: account?.is_verified,
       // TODO(nkang): Get profile pic URL
       // imageURL: account?._profile_picture_sizes,
-      state,
       sub: account?.user_id,
       iat: timestamp
     }
