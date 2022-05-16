@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from src.models.models import User
 from src.utils import db_session
@@ -6,7 +7,7 @@ from src.utils import db_session
 logger = logging.getLogger(__name__)
 
 
-def get_user_with_wallet(wallet: str) -> int or None:
+def get_user_with_wallet(wallet: str) -> Optional[int]:
     """
     Returns id of user to which the given wallet belongs
 
