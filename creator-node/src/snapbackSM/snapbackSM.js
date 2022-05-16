@@ -292,7 +292,7 @@ class SnapbackSM {
     const latestUserId = await this.getLatestUserId()
     this.lastProcessedUserId = _.random(0, latestUserId)
     this.usersPerJob = this.nodeConfig.get('snapbackUsersPerJob')
-    
+
     // Enqueue first job after a delay. This job requeues itself upon completion or failure
     await this.stateMachineQueue.add(
       /** data */ { startTime: Date.now() },
