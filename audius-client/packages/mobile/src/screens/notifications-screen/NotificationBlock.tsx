@@ -100,6 +100,7 @@ const typeIconMap: Record<
   [NotificationType.TierChange]: (notification: TierChange) =>
     tierInfoMap[notification.tier].icon,
   [NotificationType.TipReaction]: () => IconTrending,
+  [NotificationType.TipReceived]: () => IconTrending,
   [NotificationType.TipSent]: () => IconTrending,
   [NotificationType.TopSupporter]: () => IconTrending,
   [NotificationType.TopSupporting]: () => IconTrending
@@ -119,6 +120,7 @@ const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
   [NotificationType.TierChange]: (notification: TierChange) =>
     tierInfoMap[notification.tier].title,
   [NotificationType.TipReaction]: () => '',
+  [NotificationType.TipReceived]: () => '',
   [NotificationType.TipSent]: () => '',
   [NotificationType.TopSupporter]: () => '',
   [NotificationType.TopSupporting]: () => ''
