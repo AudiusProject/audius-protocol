@@ -22,6 +22,7 @@ class GetTipsArgs(TypedDict):
     current_user_follows: str
     unique_by: str
     min_slot: int
+    max_slot: int
     tx_signatures: List[int]
 
 
@@ -36,7 +37,14 @@ class TipResult(TypedDict):
 
 
 # Example of query with inputs:
-# limit=100, offset=0, user_id=1, current_user_follows=sender_or_receiver
+# limit=100
+# offset=0
+# user_id=8
+# current_user_follows="sender_or_receiver"
+# receiver_is_verified=True,
+# receiver_min_followers=10
+# min_slot=185524
+# max_slot=185673
 # ---------------------------------------------------------
 # WITH followees AS
 # (
@@ -47,31 +55,46 @@ class TipResult(TypedDict):
 #     WHERE
 #         follows.is_current = true
 #         AND follows.is_delete = false
-#         AND follows.follower_user_id = 1
+#         AND follows.follower_user_id = 8
 # )
 # ,
 # tips AS
 # (
 #     SELECT
-#         user_tips.signature AS signature,
-#         user_tips.slot AS slot,
-#         user_tips.sender_user_id AS sender_user_id,
-#         user_tips.receiver_user_id AS receiver_user_id,
-#         user_tips.amount AS amount,
-#         user_tips.created_at AS created_at
+#         user_tips_1.signature AS signature,
+#         user_tips_1.slot AS slot,
+#         user_tips_1.sender_user_id AS sender_user_id,
+#         user_tips_1.receiver_user_id AS receiver_user_id,
+#         user_tips_1.amount AS amount,
+#         user_tips_1.created_at AS created_at,
+#         user_tips_1.updated_at AS updated_at
 #     FROM
-#         user_tips
-#         LEFT OUTER JOIN
-#             followees AS followees_for_receiver
-#             ON user_tips.receiver_user_id = followees_for_receiver.followee_user_id
+#         user_tips AS user_tips_1
+#         JOIN
+#             aggregate_user
+#             ON aggregate_user.user_id = user_tips_1.receiver_user_id
+#         JOIN
+#             users
+#             ON users.user_id = user_tips_1.receiver_user_id
 #         LEFT OUTER JOIN
 #             followees AS followees_for_sender
-#             ON user_tips.sender_user_id = followees_for_sender.followee_user_id
+#             ON user_tips_1.sender_user_id = followees_for_sender.followee_user_id
+#         LEFT OUTER JOIN
+#             followees AS followees_for_receiver
+#             ON user_tips_1.receiver_user_id = followees_for_receiver.followee_user_id
 #     WHERE
-#         followees_for_receiver.followee_user_id IS NOT NULL
-#         OR followees_for_sender.followee_user_id IS NOT NULL
+#         aggregate_user.follower_count >= 10
+#         AND users.is_current = true
+#         AND users.is_verified = true
+#         AND user_tips_1.slot >= 185524
+#         AND user_tips_1.slot <= 185673
+#         AND
+#         (
+#             followees_for_sender.followee_user_id IS NOT NULL
+#             OR followees_for_receiver.followee_user_id IS NOT NULL
+#         )
 #     ORDER BY
-#         user_tips.slot DESC LIMIT 100 OFFSET 0
+#         user_tips_1.slot DESC LIMIT 100 OFFSET 0
 # )
 # ,
 # followee_tippers AS
@@ -87,12 +110,13 @@ class TipResult(TypedDict):
 #             ON aggregate_user_tips.sender_user_id = followees_for_aggregate.followee_user_id
 # )
 # SELECT
-#     tips.signature AS tips_signature,
-#     tips.slot AS tips_slot,
-#     tips.sender_user_id AS tips_sender_user_id,
-#     tips.receiver_user_id AS tips_receiver_user_id,
-#     tips.amount AS tips_amount,
-#     tips.created_at AS tips_created_at,
+#     tips.signature,
+#     tips.slot,
+#     tips.sender_user_id,
+#     tips.receiver_user_id,
+#     tips.amount,
+#     tips.created_at,
+#     tips.updated_at,
 #     array_agg(followee_tippers.sender_user_id) AS array_agg_1
 # FROM
 #     tips
@@ -105,15 +129,17 @@ class TipResult(TypedDict):
 #     tips.sender_user_id,
 #     tips.receiver_user_id,
 #     tips.amount,
-#     tips.created_at
+#     tips.created_at,
+#     tips.updated_at
 # ORDER BY
-#     tips.slot DESC LIMIT 100 OFFSET 0;
-#
+#     tips.slot DESC
 
 
 def _get_tips(session: Session, args: GetTipsArgs):
     UserTipAlias = aliased(UserTip)
     query: Query = session.query(UserTipAlias)
+    has_pagination = False  # Keeps track if we already paginated
+
     if args.get("tx_signatures"):
         query = query.filter(UserTipAlias.signature.in_(args["tx_signatures"]))
     if args.get("receiver_min_followers", 0) > 0:
@@ -127,6 +153,8 @@ def _get_tips(session: Session, args: GetTipsArgs):
         )
     if args.get("min_slot", 0) > 0:
         query = query.filter(UserTipAlias.slot >= args["min_slot"])
+    if args.get("max_slot", 0) > 0:
+        query = query.filter(UserTipAlias.slot <= args["max_slot"])
     if args.get("unique_by"):
         if args["unique_by"] == "sender":
             distinct_inner = (
@@ -232,9 +260,11 @@ def _get_tips(session: Session, args: GetTipsArgs):
             )
             .group_by(Tips)
         )
+        has_pagination = True
 
     query = query.order_by(UserTipAlias.slot.desc())
-    query = paginate_query(query)
+    if not has_pagination:
+        query = paginate_query(query)
 
     tips_results: List[UserTip] = query.all()
     return tips_results
@@ -248,7 +278,7 @@ def get_tips(args: GetTipsArgs) -> List[TipResult]:
         )
         tips_results: List[Tuple[UserTip, List[str]]] = []
         # Wrap in tuple for consistency
-        if isinstance(results[0], UserTip):
+        if results and isinstance(results[0], UserTip):
             tips_results = [(cast(UserTip, tip), []) for tip in results]
         else:
             # MyPy doesn't seem smart enough to figure this out, help it with a cast

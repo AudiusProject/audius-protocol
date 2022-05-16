@@ -143,6 +143,7 @@ def process_transfer_instruction(
     tx_sig: str,
     slot: int,
     challenge_event_bus: ChallengeEventBus,
+    timestamp: datetime.datetime,
 ):
     # The transaction might list sender/receiver in a different order in the pubKeys.
     # The "accounts" field of the instruction has the mapping of accounts to pubKey index
@@ -238,7 +239,9 @@ def process_transfer_instruction(
             sender_user_id=sender_user_id,
             receiver_user_id=receiver_user_id,
             slot=slot,
+            created_at=timestamp,
         )
+        logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
         session.add(user_tip)
         challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
 
@@ -359,6 +362,7 @@ def process_user_bank_tx_details(
             tx_sig=tx_sig,
             slot=result["slot"],
             challenge_event_bus=challenge_event_bus,
+            timestamp=timestamp,
         )
 
 
