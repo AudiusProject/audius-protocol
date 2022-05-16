@@ -1092,9 +1092,13 @@ class GetTokenVerification(Resource):
                 signature=signature,
             )
         except Exception:
-            ns.abort(404, "The JWT signature is invalid - wallet could not be recovered.")
+            ns.abort(
+                404, "The JWT signature is invalid - wallet could not be recovered."
+            )
         if not wallet:
-            ns.abort(404, "The JWT signature is invalid - wallet could not be recovered.")
+            ns.abort(
+                404, "The JWT signature is invalid - wallet could not be recovered."
+            )
 
         # 4. Check that user from payload matches the user from the wallet from the signature
         try:
@@ -1105,7 +1109,10 @@ class GetTokenVerification(Resource):
 
         wallet_user_id = get_user_with_wallet(wallet)
         if not wallet_user_id or wallet_user_id != payload["userId"]:
-            ns.abort(404, "The JWT signature is invalid - the wallet does not match the user.")
+            ns.abort(
+                404,
+                "The JWT signature is invalid - the wallet does not match the user.",
+            )
 
         # 5. Send back the decoded payload
         return success_response(payload)
