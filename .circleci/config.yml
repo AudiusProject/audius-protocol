@@ -44,6 +44,8 @@ workflows:
           mapping: |
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
           name: trigger-relevant-workflows
           filters:
             branches:
