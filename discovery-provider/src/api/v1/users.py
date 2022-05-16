@@ -1066,9 +1066,6 @@ class GetTokenVerification(Resource):
     def get(self):
         args = verify_token_parser.parse_args()
         # 1. Break JWT into parts
-        raw_token = args["token"]
-        if not raw_token:
-            abort_bad_request_param("token", ns)
         token_parts = args["token"].split(".")
         if not len(token_parts) == 3:
             abort_bad_request_param("token", ns)
@@ -1077,7 +1074,7 @@ class GetTokenVerification(Resource):
         try:
             signature = base64.urlsafe_b64decode(token_parts[2] + "==")
         except Exception:
-            ns.abort(400, "JWT signature could not be decoded.")
+            ns.abort(400, "The JWT signature could not be decoded.")
 
         signature = signature.decode()
         base64_header = token_parts[0]
@@ -1095,9 +1092,9 @@ class GetTokenVerification(Resource):
                 signature=signature,
             )
         except Exception:
-            ns.abort(404, "The JWT signature is invalid.")
+            ns.abort(404, "The JWT signature is invalid - wallet could not be recovered.")
         if not wallet:
-            ns.abort(404, "The JWT signature is invalid.")
+            ns.abort(404, "The JWT signature is invalid - wallet could not be recovered.")
 
         # 4. Check that user from payload matches the user from the wallet from the signature
         try:
@@ -1108,7 +1105,7 @@ class GetTokenVerification(Resource):
 
         wallet_user_id = get_user_with_wallet(wallet)
         if not wallet_user_id or wallet_user_id != payload["userId"]:
-            ns.abort(404, "The JWT signature is invalid.")
+            ns.abort(404, "The JWT signature is invalid - the wallet does not match the user.")
 
         # 5. Send back the decoded payload
         return success_response(payload)
