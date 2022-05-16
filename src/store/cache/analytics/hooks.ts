@@ -122,10 +122,7 @@ export const getTopApps = (state: AppState, { bucket }: { bucket: Bucket }) =>
 
 // -------------------------------- Thunk Actions  ---------------------------------
 
-async function fetchRoutesTimeSeries(
-  bucket: Bucket,
-  nodes: DiscoveryProvider[]
-) {
+async function fetchRoutesTimeSeries(bucket: Bucket) {
   let error = false
   let metric: TimeSeriesRecord[] = []
   try {
@@ -146,11 +143,11 @@ async function fetchRoutesTimeSeries(
 }
 
 export function fetchApiCalls(
-  bucket: Bucket,
-  nodes: DiscoveryProvider[]
+  bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
-    const metric = await fetchRoutesTimeSeries(bucket, nodes)
+  return async (dispatch, _, aud) => {
+    await aud.awaitSetup()
+    const metric = await fetchRoutesTimeSeries(bucket)
     dispatch(setApiCalls({ metric, bucket }))
   }
 }
@@ -158,7 +155,6 @@ export function fetchApiCalls(
 async function fetchTimeSeries(
   route: string,
   bucket: Bucket,
-  nodes: DiscoveryProvider[],
   clampDays: boolean = true
 ) {
   const startTime = getStartTime(bucket, clampDays)
@@ -183,11 +179,11 @@ async function fetchTimeSeries(
 }
 
 export function fetchPlays(
-  bucket: Bucket,
-  nodes: DiscoveryProvider[]
+  bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
-    let metric = await fetchTimeSeries('plays', bucket, nodes, true)
+  return async (dispatch, _, aud) => {
+    await aud.awaitSetup()
+    let metric = await fetchTimeSeries('plays', bucket, true)
     if (metric !== MetricError.ERROR) {
       metric = metric.filter(
         m => m.timestamp !== '1620345600' && m.timestamp !== '1620259200'
@@ -202,7 +198,8 @@ export function fetchTotalStaked(
   averageBlockTime: number,
   currentBlockNumber: number
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
+  return async (dispatch, _, aud) => {
+    await aud.awaitSetup()
     let timeSliceMs: number
     switch (bucket) {
       case Bucket.ALL_TIME:
@@ -255,7 +252,7 @@ export function fetchTotalStaked(
   }
 }
 
-const getTrailingAPI = async (nodes: DiscoveryProvider[]) => {
+const getTrailingAPI = async () => {
   const data = await fetchWithLibs({
     endpoint: 'v1/metrics/aggregates/routes/trailing/month'
   })
@@ -267,14 +264,14 @@ const getTrailingAPI = async (nodes: DiscoveryProvider[]) => {
 }
 
 export function fetchTrailingApiCalls(
-  bucket: Bucket,
-  nodes: DiscoveryProvider[]
+  bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
+  return async (dispatch, _, aud) => {
+    await aud.awaitSetup()
     let error = false
     let metric = {}
     try {
-      metric = await getTrailingAPI(nodes)
+      metric = await getTrailingAPI()
     } catch (e) {
       console.error(e)
       error = true
@@ -287,11 +284,7 @@ export function fetchTrailingApiCalls(
   }
 }
 
-const getTrailingTopApps = async (
-  nodes: DiscoveryProvider[],
-  bucket: Bucket,
-  limit: number
-) => {
+const getTrailingTopApps = async (bucket: Bucket, limit: number) => {
   const data = await fetchWithLibs({
     endpoint: `v1/metrics/aggregates/apps/${bucket}`,
     queryParams: { limit }
@@ -301,14 +294,14 @@ const getTrailingTopApps = async (
 
 export function fetchTopApps(
   bucket: Bucket,
-  nodes: DiscoveryProvider[],
   limit: number = 500
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
+  return async (dispatch, _, aud) => {
+    await aud.awaitSetup()
     let error = false
     let metric: CountRecord = {}
     try {
-      const res = await getTrailingTopApps(nodes, bucket, limit)
+      const res = await getTrailingTopApps(bucket, limit)
       if (res) {
         let apps: CountRecord = {}
         res.forEach((app: { name: string; count: number }) => {
@@ -344,10 +337,10 @@ export function fetchTopApps(
 }
 
 export function fetchTrailingTopGenres(
-  bucket: Bucket,
-  nodes: DiscoveryProvider[]
+  bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async dispatch => {
+  return async (dispatch, _, aud) => {
+    await aud.awaitSetup()
     try {
       const startTime = getStartTime(bucket)
       const data = await fetchWithLibs({
@@ -390,18 +383,13 @@ export const useApiCalls = (bucket: Bucket) => {
   const apiCalls = useSelector(state =>
     getApiCalls(state as AppState, { bucket })
   )
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
-    if (
-      doOnce !== bucket &&
-      nodes.length &&
-      (apiCalls === null || apiCalls === undefined)
-    ) {
+    if (doOnce !== bucket && (apiCalls === null || apiCalls === undefined)) {
       setDoOnce(bucket)
-      dispatch(fetchApiCalls(bucket, nodes))
+      dispatch(fetchApiCalls(bucket))
     }
-  }, [dispatch, apiCalls, bucket, nodes, doOnce])
+  }, [dispatch, apiCalls, bucket, doOnce])
 
   useEffect(() => {
     if (apiCalls) {
@@ -451,18 +439,13 @@ export const useTotalStaked = (bucket: Bucket) => {
 export const usePlays = (bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
   const plays = useSelector(state => getPlays(state as AppState, { bucket }))
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
-    if (
-      doOnce !== bucket &&
-      nodes.length &&
-      (plays === null || plays === undefined)
-    ) {
+    if (doOnce !== bucket && (plays === null || plays === undefined)) {
       setDoOnce(bucket)
-      dispatch(fetchPlays(bucket, nodes))
+      dispatch(fetchPlays(bucket))
     }
-  }, [dispatch, plays, bucket, nodes, doOnce])
+  }, [dispatch, plays, bucket, doOnce])
 
   useEffect(() => {
     if (plays) {
@@ -478,18 +461,13 @@ export const useTrailingApiCalls = (bucket: Bucket) => {
   const apiCalls = useSelector(state =>
     getTrailingApiCalls(state as AppState, { bucket })
   )
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
-    if (
-      doOnce !== bucket &&
-      nodes.length &&
-      (apiCalls === null || apiCalls === undefined)
-    ) {
+    if (doOnce !== bucket && (apiCalls === null || apiCalls === undefined)) {
       setDoOnce(bucket)
-      dispatch(fetchTrailingApiCalls(bucket, nodes))
+      dispatch(fetchTrailingApiCalls(bucket))
     }
-  }, [dispatch, apiCalls, bucket, nodes, doOnce])
+  }, [dispatch, apiCalls, bucket, doOnce])
 
   useEffect(() => {
     if (apiCalls) {
@@ -505,18 +483,13 @@ export const useTrailingTopGenres = (bucket: Bucket) => {
   const topGenres = useSelector(state =>
     getTrailingTopGenres(state as AppState, { bucket })
   )
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
-    if (
-      doOnce !== bucket &&
-      nodes.length &&
-      (topGenres === null || topGenres === undefined)
-    ) {
+    if (doOnce !== bucket && (topGenres === null || topGenres === undefined)) {
       setDoOnce(bucket)
-      dispatch(fetchTrailingTopGenres(bucket, nodes))
+      dispatch(fetchTrailingTopGenres(bucket))
     }
-  }, [dispatch, topGenres, bucket, nodes, doOnce])
+  }, [dispatch, topGenres, bucket, doOnce])
 
   useEffect(() => {
     if (topGenres) {
@@ -564,20 +537,18 @@ export const useTopApps = (
 ) => {
   const [hasFetched, setHasFetched] = useState<boolean>(false)
   let topApps = useSelector(state => getTopApps(state as AppState, { bucket }))
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
     if (
       !hasFetched &&
-      nodes.length &&
       (topApps === null ||
         topApps === undefined ||
         limit === undefined ||
         Object.keys(topApps).length < limit)
     ) {
-      dispatch(fetchTopApps(bucket, nodes, limit))
+      dispatch(fetchTopApps(bucket, limit))
     }
-  }, [dispatch, topApps, bucket, nodes, hasFetched, limit])
+  }, [dispatch, topApps, bucket, hasFetched, limit])
 
   useEffect(() => {
     setHasFetched(!!topApps)
