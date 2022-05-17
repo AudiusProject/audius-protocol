@@ -44,3 +44,7 @@ latest_sol_aggregate_tips_slot_key = "latest_sol_slot:aggregate_tips"
 latest_sol_plays_slot_key = "latest_sol_slot:plays"
 latest_sol_listen_count_milestones_slot_key = "latest_sol_slot:listen_count_milestones"
 latest_sol_rewards_manager_slot_key = "latest_sol_slot:rewards_manager"
+
+# Reactions
+LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
+LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
