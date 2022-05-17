@@ -1,7 +1,14 @@
 import logging
 from typing import Any
 
-from src.api.v1.helpers import extend_playlist, extend_track, extend_user
+from src.api.v1.helpers import (
+    extend_favorite,
+    extend_playlist,
+    extend_repost,
+    extend_track,
+    extend_user,
+)
+from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_TRACKS,
@@ -174,14 +181,15 @@ def search_es_full(args: dict):
     tracks_response = []
     users_response = []
     playlists_response = []
+    item_keys = []
     user_ids = set()
     if current_user_id:
         user_ids.add(current_user_id)
 
     if do_tracks:
         tracks_response = pluck_hits(mfound["responses"].pop(0))
-
         for track in tracks_response:
+            item_keys.append(item_key(track))
             user_ids.add(track["owner_id"])
 
     if do_users:
@@ -190,9 +198,10 @@ def search_es_full(args: dict):
     if do_playlists:
         playlists_response = pluck_hits(mfound["responses"].pop(0))
         for playlist in playlists_response:
+            item_keys.append(item_key(playlist))
             user_ids.add(playlist["playlist_owner_id"])
 
-    # fetch user records
+    # fetch users
     users_mget = esclient.mget(index=ES_USERS, ids=list(user_ids))
     users_by_id = {d["_id"]: d["_source"] for d in users_mget["docs"] if d["found"]}
     current_user = None
@@ -201,14 +210,25 @@ def search_es_full(args: dict):
     for id, user in users_by_id.items():
         users_by_id[id] = popuate_user_metadata_es(user, current_user)
 
-    # hydrate users
+    # fetch followed saves + reposts
+    # TODO: instead of limit param (20) should do an agg to get 3 saves / reposts per item_key
+    (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
+        current_user_id, item_keys, 20
+    )
+
+    # tracks: finalize
     hydrate_user(tracks_response, users_by_id)
     tracks_response = transform_tracks(tracks_response, users_by_id, current_user)
+    hydrate_saves_reposts(tracks_response, follow_saves, follow_reposts)
+
+    # users: finalize
     users_response = [
         extend_user(popuate_user_metadata_es(user, current_user))
         for user in users_response
     ]
 
+    # playlists: finalize
+    hydrate_saves_reposts(playlists_response, follow_saves, follow_reposts)
     hydrate_user(playlists_response, users_by_id)
     playlists_response = [
         extend_playlist(populate_track_or_playlist_metadata_es(item, current_user))
@@ -231,13 +251,16 @@ def hydrate_user(items, users_by_id):
             item["user"] = user
 
 
+def hydrate_saves_reposts(items, follow_saves, follow_reposts):
+    for item in items:
+        ik = item_key(item)
+        item["followee_reposts"] = [extend_repost(r) for r in follow_reposts[ik]]
+        item["followee_favorites"] = [extend_favorite(x) for x in follow_saves[ik]]
+
+
 def transform_tracks(tracks, users_by_id, current_user):
     tracks_out = []
     for track in tracks:
-        # TODO: get_feed_es populates these... try to reuse that code
-        track["followee_reposts"] = []
-        track["followee_favorites"] = []
-
         track = populate_track_or_playlist_metadata_es(track, current_user)
         track = extend_track(track)
         tracks_out.append(track)

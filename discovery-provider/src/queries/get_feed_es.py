@@ -22,21 +22,6 @@ def get_feed_es(args, limit=10):
 
     mdsl = []
 
-    def following_ids_terms_lookup(field):
-        """
-        does a "terms lookup" to query a field
-        with the user_ids that the current user follows
-        """
-        return {
-            "terms": {
-                field: {
-                    "index": ES_USERS,
-                    "id": current_user_id,
-                    "path": "following_ids",
-                },
-            }
-        }
-
     if load_reposts:
         mdsl.extend(
             [
@@ -45,7 +30,7 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup("user_id"),
+                                following_ids_terms_lookup(current_user_id, "user_id"),
                                 {"term": {"is_delete": False}},
                                 {"range": {"created_at": {"gte": "now-30d"}}},
                             ]
@@ -74,7 +59,7 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup("owner_id"),
+                                following_ids_terms_lookup(current_user_id, "owner_id"),
                                 {"term": {"is_unlisted": False}},
                                 {"term": {"is_delete": False}},
                             ],
@@ -89,7 +74,9 @@ def get_feed_es(args, limit=10):
                     "query": {
                         "bool": {
                             "must": [
-                                following_ids_terms_lookup("playlist_owner_id"),
+                                following_ids_terms_lookup(
+                                    current_user_id, "playlist_owner_id"
+                                ),
                                 {"term": {"is_private": False}},
                                 {"term": {"is_delete": False}},
                             ]
@@ -229,11 +216,46 @@ def get_feed_es(args, limit=10):
     # really it should use an aggregation with top hits
     # to bucket ~3 saves / reposts per item
     item_keys = [i["item_key"] for i in sorted_feed]
+
+    (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
+        current_user_id, item_keys, limit * 20
+    )
+
+    for item in sorted_feed:
+        item["followee_reposts"] = follow_reposts[item["item_key"]]
+        item["followee_saves"] = follow_saves[item["item_key"]]
+
+    # populate metadata + remove extra fields from items
+    sorted_feed = [
+        populate_track_or_playlist_metadata_es(item, current_user)
+        for item in sorted_feed
+    ]
+
+    return sorted_feed[0:limit]
+
+
+def following_ids_terms_lookup(current_user_id, field):
+    """
+    does a "terms lookup" to query a field
+    with the user_ids that the current user follows
+    """
+    return {
+        "terms": {
+            field: {
+                "index": ES_USERS,
+                "id": str(current_user_id),
+                "path": "following_ids",
+            },
+        }
+    }
+
+
+def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
     save_repost_query = {
         "query": {
             "bool": {
                 "must": [
-                    following_ids_terms_lookup("user_id"),
+                    following_ids_terms_lookup(current_user_id, "user_id"),
                     {"terms": {"item_key": item_keys}},
                     {"term": {"is_delete": False}},
                 ]
@@ -260,17 +282,7 @@ def get_feed_es(args, limit=10):
     for s in saves:
         follow_saves[s["item_key"]].append(s)
 
-    for item in sorted_feed:
-        item["followee_reposts"] = follow_reposts[item["item_key"]]
-        item["followee_saves"] = follow_saves[item["item_key"]]
-
-    # populate metadata + remove extra fields from items
-    sorted_feed = [
-        populate_track_or_playlist_metadata_es(item, current_user)
-        for item in sorted_feed
-    ]
-
-    return sorted_feed[0:limit]
+    return (follow_saves, follow_reposts)
 
 
 def item_key(item):
