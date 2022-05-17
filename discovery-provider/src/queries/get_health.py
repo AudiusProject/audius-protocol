@@ -1,8 +1,7 @@
 import logging
 import os
 import time
-from datetime import date, datetime
-from optparse import Option
+from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
 from elasticsearch import Elasticsearch
@@ -172,9 +171,6 @@ class GetHealthArgs(TypedDict):
 
     # Number of seconds play counts are allowed to drift
     plays_count_max_drift: Optional[int]
-
-    # Userbank max drift
-    userbank_max_drift: Optional[int]
 
     # Reactions max drift
     reactions_max_indexing_drift: Optional[int]
