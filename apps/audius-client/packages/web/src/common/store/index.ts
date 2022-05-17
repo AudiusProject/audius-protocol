@@ -86,6 +86,8 @@ import followersUserListReducer from 'common/store/user-list/followers/reducers'
 import followingUserListReducer from 'common/store/user-list/following/reducers'
 import notificationsUserListReducer from 'common/store/user-list/notifications/reducers'
 import repostsUserListReducer from 'common/store/user-list/reposts/reducers'
+import supportingUserListReducer from 'common/store/user-list/supporting/reducers'
+import topSupportersUserListReducer from 'common/store/user-list/top-supporters/reducers'
 import wallet from 'common/store/wallet/slice'
 
 // In the future, these state slices will live in packages/common.
@@ -145,7 +147,9 @@ export const reducers = (ctx: CommonStoreContext) => ({
       following: followingUserListReducer,
       reposts: repostsUserListReducer,
       favorites: favoritesUserListReducer,
-      notifications: notificationsUserListReducer
+      notifications: notificationsUserListReducer,
+      topSupporters: topSupportersUserListReducer,
+      supporting: supportingUserListReducer
     }),
     theme
   }),
@@ -223,6 +227,8 @@ export const sagas = (ctx: CommonStoreContext) => ({
   // pages/user-list/following/sagas.ts
   // pages/user-list/reposts/sagas.ts
   // pages/user-list/favorites/sagas.ts
+  // pages/user-list/supporting/sagas.ts
+  // pages/user-list/top-supporters/sagas.ts
   // pages/explore-page/store/sagas.ts
   // pages/explore-page/store/exploreCollections/sagas.ts
   // store/solana/sagas.ts
@@ -284,6 +290,8 @@ export type CommonState = {
       reposts: ReturnType<typeof repostsUserListReducer>
       favorites: ReturnType<typeof favoritesUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>
+      topSupporters: ReturnType<typeof topSupportersUserListReducer>
+      supporting: ReturnType<typeof supportingUserListReducer>
     }
     theme: ThemeState
   }

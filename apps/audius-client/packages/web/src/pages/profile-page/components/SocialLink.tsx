@@ -56,10 +56,16 @@ const singleLinkTypes = [
 type SocialLinkProps = {
   type: Type
   link: string
-  onClick: () => void
+  onClick: (event?: any) => void
+  iconOnly?: boolean
 }
 
-const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
+const SocialLink = ({
+  type,
+  link,
+  onClick,
+  iconOnly = false
+}: SocialLinkProps) => {
   const isHandle = useMemo(() => handleTypes.includes(type), [type])
   const isSingleLink = useMemo(() => singleLinkTypes.includes(type), [type])
 
@@ -75,13 +81,25 @@ const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
   let icon: ReactNode
   switch (type) {
     case Type.TWITTER:
-      icon = <IconTwitterBird className={styles.icon} />
+      icon = (
+        <IconTwitterBird
+          className={cn(styles.icon, { [styles.iconOnly]: iconOnly })}
+        />
+      )
       break
     case Type.INSTAGRAM:
-      icon = <IconInstagram className={styles.icon} />
+      icon = (
+        <IconInstagram
+          className={cn(styles.icon, { [styles.iconOnly]: iconOnly })}
+        />
+      )
       break
     case Type.TIKTOK:
-      icon = <IconTikTokInverted className={styles.icon} />
+      icon = (
+        <IconTikTokInverted
+          className={cn(styles.icon, { [styles.iconOnly]: iconOnly })}
+        />
+      )
       break
     case Type.WEBSITE:
       icon = <IconLink className={styles.icon} />
@@ -122,7 +140,7 @@ const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
         })}
       >
         {icon}
-        <div className={styles.text}>{text}</div>
+        {!iconOnly && <div className={styles.text}>{text}</div>}
       </div>
     </div>
   )

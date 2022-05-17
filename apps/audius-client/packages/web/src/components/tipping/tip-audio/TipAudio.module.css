@@ -28,6 +28,10 @@
   align-items: center;
 }
 
+.textCenter {
+  text-align: center;
+}
+
 .profileUser {
   margin-top: 32px;
   margin-bottom: 24px;
@@ -102,12 +106,12 @@
   cursor: pointer;
 }
 
-.buttonContainer {
-  margin-bottom: 24px;
+.tipAudioButton {
+  width: 100%;
 }
 
-.buttonContainer .disabled:hover {
-  background: var(--neutral-light-7);
+.buttonContainer {
+  margin-bottom: 24px;
 }
 
 .buttonText {
@@ -210,10 +214,14 @@
   transition: all 0.07s ease-in-out;
 }
 
-.areYouSure {
+.info {
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
   margin-bottom: 24px;
+}
+
+.empty {
+  height: 16px;
 }
 
 .goBackContainer {
@@ -341,8 +349,10 @@
 .button:hover {
   background: var(--primary-light-1) !important;
 }
-
 .button:active {
   background: var(--primary-dark-1) !important;
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
+}
+.buttonContainer .disabled:hover {
+  background: var(--neutral-light-7) !important;
 }
