@@ -533,18 +533,26 @@ class SnapbackSM {
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
       }
 
+      // Submit chain tx to update replica set
       const startTimeMs = Date.now()
-      await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
-        userId,
-        newReplicaSetSPIds[0], // primary
-        newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
-      )
-      const timeElapsedMs = Date.now() - startTimeMs
-      this.log(
-        `[issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
-      )
+      try {
+        await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+          userId,
+          newReplicaSetSPIds[0], // primary
+          newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
+        )
+        const timeElapsedMs = Date.now() - startTimeMs
+        this.log(
+          `[issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
+        )
 
-      response.issuedReconfig = true
+        response.issuedReconfig = true
+      } catch (e) {
+        const timeElapsedMs = Date.now() - startTimeMs
+        throw new Error(
+          `UserReplicaSetManagerClient.updateReplicaSet() Failed in ${timeElapsedMs}ms - Error ${e.message}`
+        )
+      }
 
       // Enqueue a sync for new primary to new secondaries. If there is no diff, then this is a no-op.
       // TODO: this fn performs a web request to enqueue a sync. this is not necessary for enqueuing syncs for the local node.
@@ -567,9 +575,7 @@ class SnapbackSM {
         `[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
       )
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}\n${
-        e.stack
-      }`
+      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
       response.errorMsg = errorMsg
       this.logError(response.errorMsg)
       return response
