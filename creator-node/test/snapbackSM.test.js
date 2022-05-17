@@ -1,9 +1,10 @@
 const nock = require('nock')
 const assert = require('assert')
+const proxyquire = require('proxyquire')
 
-const { SnapbackSM, SyncType, RECONFIG_MODES } = require('../src/snapbackSM/snapbackSM')
 const models = require('../src/models')
 const { getLibsMock } = require('./lib/libsMock')
+const { SnapbackSM, SyncType, RECONFIG_MODES } = require('../src/snapbackSM/snapbackSM')
 const utils = require('../src/utils')
 const { getApp } = require('./lib/app')
 const nodeConfig = require('../src/config')
@@ -809,5 +810,276 @@ describe('test SnapbackSM', function () {
 
     assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://deregisteredCN.co'))
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) and 1 secondary are healthy but not the other secondary, issue reconfig for the unhealthy secondary', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://unhealthyCnWithSpId3.co': 3
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://unhealthyCnWithSpId3.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set(['http://unhealthyCnWithSpId3.co'])
+
+    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
+
+    // Make sure that the unhealthy secondary put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 1)
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas.size, 1)
+    assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://unhealthyCnWithSpId3.co'))
+    assert.strictEqual(potentialSyncRequests.length, 1)
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) and and secondaries are healthy but sync success rate is low, issue reconfig', async function () {
+    nodeConfig.set('minimumFailedSyncRequestsBeforeReconfig', 5)
+    nodeConfig.set('minimumSecondaryUserSyncSuccessPercent', 25)
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnWithSpId3.co': 3
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnWithSpId3.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set()
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 1,
+          failureCount: 0
+        },
+        'http://cnWithSpId3.co': {
+          successRate: 0.1,
+          successCount: 1,
+          failureCount: 9
+        }
+      }
+    }
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
+
+    // Make sure that the CN with low sync success put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 1)
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas.size, 1)
+    assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://cnWithSpId3.co'))
+    assert.strictEqual(potentialSyncRequests.length, 1)
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+  })
+
+  it('[selectRandomReplicaSetNodes] replace 1 unhealthy replica', async function () {
+    const { SnapbackSM: mockSnapback } = proxyquire(
+      '../src/snapbackSM/snapbackSM.js',
+      {
+        './StateMachineConstants': {
+          MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: 10_000
+        }
+      }
+    )
+    const snapback = new mockSnapback(nodeConfig, getLibsMock())
+
+    const healthyReplicaSet = new Set([
+      'http://healthyCn1.co',
+      'http://healthyCn2.co'
+    ])
+    const numberOfUnhealthyReplicas = 1
+    const healthyNodes = [
+      'http://healthyCn1.co',
+      'http://healthyCn2.co',
+      'http://healthyCn4.co',
+    ]
+    const wallet = '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d'
+
+    // Mock the user having no state on any of the healthy nodes
+    snapback._retrieveClockValueForUserFromReplica = async (_, __) => -1
+
+    const newReplicaSetNodes = await snapback.selectRandomReplicaSetNodes(
+      healthyReplicaSet,
+      numberOfUnhealthyReplicas,
+      healthyNodes,
+      wallet
+    )
+
+    // The missing node in healthyReplicaSet should've been replaced with a node from healthyNodes
+    assert.strictEqual(newReplicaSetNodes.length, 1)
+    assert.ok(healthyNodes.includes(newReplicaSetNodes[0]))
+    assert.ok(!healthyReplicaSet.has(newReplicaSetNodes[0]))
+  })
+
+  it('[selectRandomReplicaSetNodes] replace 2 unhealthy replicas and ignore healthy node with state', async function () {
+    const { SnapbackSM: mockSnapback } = proxyquire(
+      '../src/snapbackSM/snapbackSM.js',
+      {
+        './StateMachineConstants': {
+          MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: 10_000
+        }
+      }
+    )
+    const snapback = new mockSnapback(nodeConfig, getLibsMock())
+
+    const healthyReplicaSet = new Set([
+      'http://healthyCn1.co'
+    ])
+    const numberOfUnhealthyReplicas = 2
+    const healthyNodes = [
+      'http://healthyCn1.co',
+      'http://healthyNodeWithUserState.co',
+      'http://healthyCn4.co',
+      'http://healthyCn5.co',
+    ]
+    const wallet = '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d'
+
+    // Mock the user having no state on any of the healthy nodes
+    snapback._retrieveClockValueForUserFromReplica = async (node, _) => {
+      return node === 'http://healthyNodeWithUserState.co' ? 1 : -1
+    }
+
+    const newReplicaSetNodes = await snapback.selectRandomReplicaSetNodes(
+      healthyReplicaSet,
+      numberOfUnhealthyReplicas,
+      healthyNodes,
+      wallet
+    )
+
+    // The missing nodes in healthyReplicaSet should've been replaced with 2 node from healthyNodes but not the node with user state
+    assert.strictEqual(newReplicaSetNodes.length, 2)
+    assert.ok(newReplicaSetNodes.every((newReplicaSetNode) => healthyNodes.includes(newReplicaSetNode)))
+    assert.ok(newReplicaSetNodes.every((newReplicaSetNode) => !healthyReplicaSet.has(newReplicaSetNode)))
+    assert.ok(newReplicaSetNodes.every((newReplicaSetNode) => newReplicaSetNode !== 'http://healthyNodeWithUserState.co'))
+  })
+
+  it('[selectRandomReplicaSetNodes] throw if insufficient number of new replica sets exist', async function () {
+    const { SnapbackSM: mockSnapback } = proxyquire(
+      '../src/snapbackSM/snapbackSM.js',
+      {
+        './StateMachineConstants': {
+          MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: 100
+        }
+      }
+    )
+    const snapback = new mockSnapback(nodeConfig, getLibsMock())
+
+    const healthyReplicaSet = new Set([
+      'http://healthyCn1.co'
+    ])
+    const numberOfUnhealthyReplicas = 2
+    const healthyNodes = [
+      'http://healthyCn1.co',
+      'http://healthyNodeWithUserState.co',
+      'http://healthyCn4.co',
+    ]
+    const wallet = '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d'
+
+    // Mock the user having no state on any of the healthy nodes
+    snapback._retrieveClockValueForUserFromReplica = async (node, _) => {
+      return node === 'http://healthyNodeWithUserState.co' ? 1 : -1
+    }
+
+    // Only 1 node is healthy and doesn't have user state, so it should throw when it can't find a second node
+    await assert.rejects(async () => {
+      await snapback.selectRandomReplicaSetNodes(
+        healthyReplicaSet,
+        numberOfUnhealthyReplicas,
+        healthyNodes,
+        wallet
+      )
+    }, /.*Not enough healthy nodes found to issue new replica set.*100 attempts.*/
+    ).catch((reason) => {
+      assert.ok(false, reason)
+    })
+  })
+
+  it('[retrieveClockStatusesForUsersAcrossReplicaSet] returns expected clock values and updates unhealthyPeers', async function () {
+    nodeConfig.set('maxBatchClockStatusBatchSize', 2)
+
+    const expectedReplicaToClockValueMap = {
+      'http://healthyCn1.co': {
+        'wallet1': 1,
+        'wallet2': 2,
+        'wallet3': 3,
+        'wallet4': 4,
+        'wallet5': 5
+      },
+      'http://healthyCn2.co': {
+        'wallet1': 10,
+        'wallet2': 20
+      }
+    }
+
+    const { SnapbackSM: mockSnapback } = proxyquire(
+      '../src/snapbackSM/snapbackSM.js',
+      {
+        'axios': async (params) => {
+          const { baseURL: replica, data } = params
+          if (replica === 'http://unhealthyCn.co') {
+            return { data: {} }
+          }
+          const { walletPublicKeys } = data
+          const users = walletPublicKeys.map((walletPublicKey) => {
+            return {
+              walletPublicKey,
+              clock: expectedReplicaToClockValueMap[replica][walletPublicKey]
+            }
+          })
+          return { data: { data: { users } } }
+        },
+        './StateMachineConstants': {
+          MAX_USER_BATCH_CLOCK_FETCH_RETRIES: 1
+        }
+      }
+    )
+    const snapback = new mockSnapback(nodeConfig, getLibsMock())
+
+    const replicasToWalletsMap = {
+      'http://healthyCn1.co': ['wallet1', 'wallet2', 'wallet3', 'wallet4', 'wallet5'],
+      'http://healthyCn2.co': ['wallet1', 'wallet2'],
+      'http://unhealthyCn.co': ['wallet1', 'wallet2']
+    }
+    const unhealthyPeers = new Set()
+    const replicaToClockValueMap = await snapback.retrieveClockStatusesForUsersAcrossReplicaSet(
+      replicasToWalletsMap,
+      unhealthyPeers
+    )
+
+    // Each wallet should have the expected clock value
+    assert.strictEqual(Object.keys(replicaToClockValueMap).length, 3)
+    assert.ok(Object.keys(replicaToClockValueMap).every((replica) => {
+      const actualClockValues = Object.keys(replicaToClockValueMap[replica])
+      const expectedClockValues = Object.keys(expectedReplicaToClockValueMap[replica] || {})
+      console.log(`actualWallets.length=${actualClockValues.length} expectedWallets.length=${expectedClockValues.length}`)
+      assert.deepStrictEqual(actualClockValues, expectedClockValues)
+      return true
+    }))
+    assert.strictEqual(unhealthyPeers.size, 1)
+    assert.ok(unhealthyPeers.has('http://unhealthyCn.co'))
   })
 })
