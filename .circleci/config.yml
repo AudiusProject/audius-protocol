@@ -11,10 +11,6 @@ jobs:
 
       - run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc
 
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
-
       # Download and cache dependencies
       - restore_cache:
           keys:
