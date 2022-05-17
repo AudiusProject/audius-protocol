@@ -6,6 +6,8 @@ import * as followerActions from 'common/store/user-list/followers/actions'
 import * as followingActions from 'common/store/user-list/following/actions'
 import * as repostActions from 'common/store/user-list/reposts/actions'
 import { RepostType } from 'common/store/user-list/reposts/types'
+import * as supportingActions from 'common/store/user-list/supporting/actions'
+import * as topSupporterActions from 'common/store/user-list/top-supporters/actions'
 
 import { setUsers } from './slice'
 import { UserListType, UserListEntityType } from './types'
@@ -43,6 +45,12 @@ function* watchSetUsers() {
         yield put(followingActions.setFollowing(id))
         break
       case UserListType.MUTUAL_FOLLOWER:
+        break
+      case UserListType.SUPPORTER:
+        yield put(topSupporterActions.setTopSupporters(id))
+        break
+      case UserListType.SUPPORTING:
+        yield put(supportingActions.setSupporting(id))
         break
       default:
         break

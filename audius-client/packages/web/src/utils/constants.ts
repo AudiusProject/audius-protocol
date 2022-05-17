@@ -4,3 +4,5 @@ export const NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS = 3000
 export const CLAIM_REWARD_TOAST_TIMEOUT_MILLIS = 3000
 
 export const COGNITO_SCRIPT_URL = 'https://cdn.cognitohq.com/flow.js'
+
+export const TIPPING_TOP_RANK_THRESHOLD = 5

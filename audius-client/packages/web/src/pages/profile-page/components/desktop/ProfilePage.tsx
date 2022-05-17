@@ -631,7 +631,7 @@ const ProfilePage = ({
       <div className={styles.headerWrapper}>
         <ProfileWrapping
           userId={userId}
-          isDeactivated={profile?.is_deactivated}
+          isDeactivated={!!profile?.is_deactivated}
           loading={status === Status.LOADING}
           verified={verified}
           profilePictureSizes={profilePictureSizes}
@@ -652,8 +652,8 @@ const ProfilePage = ({
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
-          twitterVerified={twitterVerified}
-          instagramVerified={instagramVerified}
+          twitterVerified={!!twitterVerified}
+          instagramVerified={!!instagramVerified}
           website={website}
           donation={donation}
           created={created}

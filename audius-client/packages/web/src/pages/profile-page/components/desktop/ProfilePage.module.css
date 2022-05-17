@@ -74,6 +74,7 @@
 
 .info > .about {
   margin-left: 17px;
+  margin-right: 5px;
   padding-right: 16px;
   padding-bottom: 80px;
 }
@@ -102,6 +103,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* truncates the content at a maximum of 4 lines */
+/* works on modern browsers */
+.truncated {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* number of lines to show */
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
 .info .description > a {
   color: var(--primary);
 }
@@ -109,21 +120,41 @@
 .info .socials {
   padding-bottom: 8px;
 }
-
-.info .joined,
-.info .tags {
-  padding-bottom: 24px;
-}
-
-.info .tags > .tagsContent {
+.info .socialsTruncated {
   display: flex;
-  flex-wrap: wrap;
-}
-.info .tags > .tagsContent > .tag {
-  margin: 0 8px 8px 0;
+  align-items: center;
+  flex-flow: wrap;
+  height: 24px;
 }
 
-.info .tags,
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+.titleContainer .tipIcon path {
+  fill: var(--neutral) !important;
+}
+.titleText {
+  margin-left: 6px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+}
+
+.followingIcon {
+  width: 32px;
+}
+.viewAll path {
+  fill: var(--neutral-light-4);
+}
+.viewAll {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}
+
 .info .followers {
   user-select: none;
   padding-top: 24px;
@@ -214,4 +245,27 @@
 
 .badge {
   margin-bottom: 16px !important;
+}
+
+.truncateContainer {
+  display: flex;
+  align-items: center;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+  margin-top: 16px;
+}
+.truncateContainer:hover {
+  cursor: pointer;
+}
+.truncateContainer svg {
+  margin-left: 8px;
+}
+
+.socialsTruncated div {
+  margin-right: 16px;
+}
+
+.tipAudioButtonContainer {
+  margin-top: 32px;
 }

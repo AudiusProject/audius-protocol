@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
 
-import { Modal } from '@audius/stems'
+import { Modal, IconFollowing, IconUser } from '@audius/stems'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
@@ -16,6 +16,10 @@ import ArtistChip from 'components/artist/ArtistChip'
 import FollowButton from 'components/follow-button/FollowButton'
 
 import styles from './UserListModal.module.css'
+
+const messages = {
+  mutuals: 'Mutuals'
+}
 
 const SCROLL_THRESHOLD = 400
 
@@ -36,6 +40,7 @@ type UserListModalProps = {
   visible?: boolean
 }
 
+// todo: Use /components/user-list-modal/components/UserListModal.Tsx instead of this one
 export const UserListModal = forwardRef<HTMLDivElement, UserListModalProps>(
   (
     {
@@ -76,7 +81,16 @@ export const UserListModal = forwardRef<HTMLDivElement, UserListModalProps>(
         ref={ref}
         showDismissButton
         showTitleHeader
-        title={title}
+        title={
+          <div className={styles.titleContainer}>
+            {title === messages.mutuals ? (
+              <IconFollowing className={styles.icon} />
+            ) : (
+              <IconUser className={styles.icon} />
+            )}
+            <span>{title}</span>
+          </div>
+        }
         titleClassName={styles.modalTitle}
       >
         <SimpleBar
@@ -94,13 +108,18 @@ export const UserListModal = forwardRef<HTMLDivElement, UserListModalProps>(
           >
             {users
               .filter(user => !user.is_deactivated)
-              .map(user => (
-                <div key={user.user_id} className={styles.user}>
+              .map((user, index) => (
+                <div
+                  key={user.user_id}
+                  className={cn(styles.user, {
+                    [styles.notLastUser]: index !== users.length - 1
+                  })}
+                >
                   <ArtistChip
+                    userId={user.user_id}
                     name={user.name}
                     handle={user.handle}
                     profilePictureSizes={user._profile_picture_sizes}
-                    userId={user.user_id}
                     followers={user.follower_count}
                     onClickArtistName={() => {
                       onClose()
@@ -110,11 +129,11 @@ export const UserListModal = forwardRef<HTMLDivElement, UserListModalProps>(
                   {user.user_id !== userId ? (
                     <FollowButton
                       size='small'
-                      showIcon={false}
                       className={styles.followButton}
                       following={user.does_current_user_follow}
                       onFollow={() => onFollow(user.user_id)}
                       onUnfollow={() => onUnfollow(user.user_id)}
+                      showIcon
                     />
                   ) : null}
                 </div>

@@ -31,6 +31,7 @@ import {
 } from 'common/store/pages/profile/selectors'
 import { FollowType } from 'common/store/pages/profile/types'
 import { getIsReachable } from 'common/store/reachability/selectors'
+import { refreshSupport } from 'common/store/tipping/slice'
 import * as artistRecommendationsActions from 'common/store/ui/artist-recommendations/slice'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { makeUid, makeKindId } from 'common/utils/uid'
@@ -138,6 +139,15 @@ export function* fetchSolanaCollectibles(user) {
   )
 }
 
+function* fetchSupportersAndSupporting(userId) {
+  yield put(
+    refreshSupport({
+      senderUserId: userId,
+      receiverUserId: userId
+    })
+  )
+}
+
 function* fetchProfileAsync(action) {
   try {
     let user
@@ -172,6 +182,10 @@ function* fetchProfileAsync(action) {
     // Fetch user socials and collections after fetching the user itself
     yield fork(fetchUserSocials, action.handle)
     yield fork(fetchUserCollections, user.user_id)
+
+    // todo: comment until ready to release tipping
+    yield fork(fetchSupportersAndSupporting, user.user_id)
+
     yield fork(fetchProfileCustomizedCollectibles, user)
     yield fork(fetchOpenSeaAssets, user)
     yield fork(fetchSolanaCollectibles, user)

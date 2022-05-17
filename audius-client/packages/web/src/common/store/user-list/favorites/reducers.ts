@@ -11,7 +11,10 @@ import { FavoritesOwnState } from './types'
 
 type FavoriteActions = ActionType<typeof actions>
 
-const userListReducer = UserListReducerFactory.createReducer(USER_LIST_TAG, 15)
+const userListReducer = UserListReducerFactory.createReducer({
+  tag: USER_LIST_TAG,
+  pageSize: 15
+})
 
 const initialState = {
   id: null,

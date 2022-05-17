@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
@@ -24,7 +25,7 @@ export const TipAudioButton = () => {
 
   return (
     <Button
-      className={styles.button}
+      className={cn(styles.button, styles.tipAudioButton)}
       type={ButtonType.PRIMARY}
       text={
         <div className={styles.tipIconTextContainer}>

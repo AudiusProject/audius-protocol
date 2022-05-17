@@ -86,6 +86,8 @@ export const REPOSTING_USERS_ROUTE = '/reposting_users'
 export const FAVORITING_USERS_ROUTE = '/favoriting_users'
 export const FOLLOWING_USERS_ROUTE = '/following'
 export const FOLLOWERS_USERS_ROUTE = '/followers'
+export const SUPPORTING_USERS_ROUTE = '/supporting'
+export const TOP_SUPPORTERS_USERS_ROUTE = '/top-supporters'
 export const ACCOUNT_SETTINGS_PAGE = '/settings/account'
 export const ACCOUNT_VERIFICATION_SETTINGS_PAGE =
   '/settings/account/verification'
@@ -162,6 +164,8 @@ export const orderedRoutes = [
   FAVORITING_USERS_ROUTE,
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
+  SUPPORTING_USERS_ROUTE,
+  TOP_SUPPORTERS_USERS_ROUTE,
   PROFILE_PAGE,
   PROFILE_PAGE_COLLECTIBLES,
   PROFILE_PAGE_COLLECTIBLE_DETAILS
@@ -192,6 +196,8 @@ export const staticRoutes = new Set([
   FAVORITING_USERS_ROUTE,
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
+  SUPPORTING_USERS_ROUTE,
+  TOP_SUPPORTERS_USERS_ROUTE,
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,

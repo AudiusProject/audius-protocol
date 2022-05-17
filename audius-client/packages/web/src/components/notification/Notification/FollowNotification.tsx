@@ -66,7 +66,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
       disableClosePanel={isMultiUser}
     >
       <NotificationHeader icon={<IconFollow />}>
-        <UserProfilePictureList users={users} userIds={userIds} />
+        <UserProfilePictureList users={users} totalUserCount={userIds.length} />
       </NotificationHeader>
       <NotificationBody>
         <UserNameLink user={firstUser} notification={notification} />

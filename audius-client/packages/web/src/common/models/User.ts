@@ -17,6 +17,8 @@ export type UserMetadata = {
   does_current_user_follow: boolean
   followee_count: number
   follower_count: number
+  supporter_count: number
+  supporting_count: number
   handle: string
   handle_lc: string
   is_deactivated: boolean
