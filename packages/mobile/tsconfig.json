@@ -15,6 +15,7 @@
       "audio/*": ["./node_modules/audius-client/src/audio/*"],
       "common/*": ["./node_modules/audius-client/src/common/*"],
       "components/*": ["./node_modules/audius-client/src/components/*"],
+      "hooks/*": ["./node_modules/audius-client/src/hooks/*"],
       "pages/*": ["./node_modules/audius-client/src/pages/*"],
       "models/*": ["./node_modules/audius-client/src/models/*"],
       "services/*": ["./node_modules/audius-client/src/services/*"],

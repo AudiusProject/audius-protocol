@@ -141,6 +141,7 @@ function* refreshSupportAsync({
     senderUserId: number
     receiverUserId: number
   }
+  type: string
 }) {
   const encodedSenderUserId = encodeHashId(senderUserId)
   const encodedReceiverUserId = encodeHashId(receiverUserId)
@@ -168,7 +169,7 @@ function* refreshSupportAsync({
 
     // todo: probs just cache users returned from tipping support api
     // todo: also, should maybe poll here?
-    yield call(fetchUsers, userIds, new Set(), true)
+    yield* call(fetchUsers, userIds, new Set(), true)
 
     const supportingForSenderMap: Record<string, Supporting> = {}
     supportingForSenderList.forEach(supporting => {
@@ -209,11 +210,11 @@ function* refreshSupportAsync({
 }
 
 function* watchRefreshSupport() {
-  yield takeEvery(refreshSupport.type, refreshSupportAsync)
+  yield* takeEvery(refreshSupport.type, refreshSupportAsync)
 }
 
 function* watchConfirmSendTip() {
-  yield takeEvery(confirmSendTip.type, sendTipAsync)
+  yield* takeEvery(confirmSendTip.type, sendTipAsync)
 }
 
 const sagas = () => {

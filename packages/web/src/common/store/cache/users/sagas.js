@@ -84,7 +84,9 @@ export function* upgradeToCreator() {
 }
 
 /**
- * @param {Array<number>} userIds array of user ids to fetch
+ * @param {Nullable<Array<number>>} userIds array of user ids to fetch
+ * @param {Set<any>} requiredFields
+ * @param {boolean} forceRetrieveFromSource
  */
 export function* fetchUsers(
   userIds,
