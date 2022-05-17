@@ -64,6 +64,7 @@ genre_allowlist = {
     "Jungle",
     "Kids",
     "Latin",
+    "Lo-Fi",
     "Metal",
     "Moombahton",
     "Podcasts",
