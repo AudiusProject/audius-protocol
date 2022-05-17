@@ -47,6 +47,12 @@ def health_check():
             "challenge_events_age_max_drift", type=int
         ),
         "plays_count_max_drift": request.args.get("plays_count_max_drift", type=int),
+        "reactions_max_indexing_drift": request.args.get(
+            "reactions_max_indexing_drift", type=int
+        ),
+        "reactions_max_last_reaction_drift": request.args.get(
+            "reactions_max_last_reaction_drift", type=int
+        ),
     }
 
     (health_results, error) = get_health(args)

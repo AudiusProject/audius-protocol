@@ -10,6 +10,10 @@ from src.models.reaction import Reaction
 from src.tasks.aggregates import init_task_and_acquire_lock
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
+from src.utils.redis_constants import (
+    LAST_REACTIONS_INDEX_TIME_KEY,
+    LAST_SEEN_NEW_REACTION_TIME_KEY,
+)
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
@@ -68,7 +72,7 @@ def fetch_reactions_from_identity(start_index) -> List[ReactionResponse]:
     return new_reactions_response.json()["reactions"]
 
 
-def index_identity_reactions(session: Session, _):
+def index_identity_reactions(session: Session, redis: Redis):
     try:
         last_checkpoint = get_last_indexed_checkpoint(
             session, IDENTITY_INDEXING_CHECKPOINT_NAME
@@ -77,6 +81,8 @@ def index_identity_reactions(session: Session, _):
         new_reactions: List[ReactionResponse] = fetch_reactions_from_identity(
             last_checkpoint
         )
+        redis.set(LAST_REACTIONS_INDEX_TIME_KEY, int(datetime.now().timestamp()))
+
         if not len(new_reactions):
             return
 
@@ -92,6 +98,7 @@ def index_identity_reactions(session: Session, _):
         logger.info(
             f"Indexed {len(reaction_models)} reactions, new checkpoint: {new_checkpoint}"
         )
+        redis.set(LAST_SEEN_NEW_REACTION_TIME_KEY, int(datetime.now().timestamp()))
     except Exception as e:
         logger.error(f"index_reactions: error {e}")
 
