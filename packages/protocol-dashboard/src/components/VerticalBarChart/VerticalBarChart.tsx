@@ -107,7 +107,6 @@ const getOptions = (id: string, max: number) => ({
     yAlign: 'bottom',
     position: 'nearest',
     custom: function(tooltipModel: any) {
-      console.log({ tooltipModel })
       // Tooltip Element
       let tooltipEl = document.getElementById(`chartjs-tooltip-${id}`)
 
@@ -162,7 +161,6 @@ const getOptions = (id: string, max: number) => ({
     },
     callbacks: {
       title: (tooltipItem: any, data: any) => {
-        console.log({ tooltipItem })
         return { value: parseInt(tooltipItem[0].value) }
       }
     }

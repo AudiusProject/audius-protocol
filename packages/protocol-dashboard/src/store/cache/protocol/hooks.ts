@@ -88,12 +88,14 @@ export function fetchEthBlockNumber(): ThunkAction<
   Action<string>
 > {
   return async (dispatch, getState, aud) => {
-    setInterval(async () => {
+    const updateEthBlockNumber = async () => {
       if (isWindowActive) {
         const ethBlockNumber = await aud.getEthBlockNumber()
         dispatch(setEthBlockNumber(ethBlockNumber))
       }
-    }, 10000)
+    }
+    await updateEthBlockNumber()
+    setInterval(updateEthBlockNumber, 10000)
   }
 }
 

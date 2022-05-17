@@ -26,11 +26,15 @@ export const getTopAlbums = (state: AppState) => state.cache.music.topAlbums
 
 // -------------------------------- Thunk Actions  ---------------------------------
 
-export function fetchTopTracks(
-  nodes: DiscoveryProvider[]
-): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
+export function fetchTopTracks(): ThunkAction<
+  void,
+  AppState,
+  Audius,
+  Action<string>
+> {
+  return async (dispatch, _, aud) => {
     try {
+      await aud.awaitSetup()
       const data = await fetchWithLibs({
         endpoint: '/v1/tracks/trending',
         queryParams: { limit: 4 }
@@ -50,11 +54,15 @@ export function fetchTopTracks(
   }
 }
 
-export function fetchTopPlaylists(
-  nodes: DiscoveryProvider[]
-): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
+export function fetchTopPlaylists(): ThunkAction<
+  void,
+  AppState,
+  Audius,
+  Action<string>
+> {
+  return async (dispatch, _, aud) => {
     try {
+      await aud.awaitSetup()
       const limit = 5
       const data = await fetchWithLibs({
         endpoint: '/v1/full/playlists/trending'
@@ -74,11 +82,15 @@ export function fetchTopPlaylists(
   }
 }
 
-export function fetchTopAlbums(
-  nodes: DiscoveryProvider[]
-): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
+export function fetchTopAlbums(): ThunkAction<
+  void,
+  AppState,
+  Audius,
+  Action<string>
+> {
+  return async (dispatch, _, aud) => {
     try {
+      await aud.awaitSetup()
       const data = await fetchWithLibs({
         endpoint: '/v1/playlists/top',
         queryParams: { type: 'album', limit: 5 }
@@ -103,15 +115,14 @@ export function fetchTopAlbums(
 export const useTopTracks = () => {
   const [doOnce, setDoOnce] = useState(false)
   const topTracks = useSelector(getTopTracks)
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!doOnce && nodes[0] && !topTracks) {
+    if (!doOnce && !topTracks) {
       setDoOnce(true)
-      dispatch(fetchTopTracks(nodes))
+      dispatch(fetchTopTracks())
     }
-  }, [doOnce, topTracks, dispatch, nodes])
+  }, [doOnce, topTracks, dispatch])
 
   useEffect(() => {
     if (topTracks) {
@@ -125,15 +136,14 @@ export const useTopTracks = () => {
 export const useTopPlaylists = () => {
   const [doOnce, setDoOnce] = useState(false)
   const topPlaylists = useSelector(getTopPlaylists)
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!doOnce && nodes[0] && !topPlaylists) {
+    if (!doOnce && !topPlaylists) {
       setDoOnce(true)
-      dispatch(fetchTopPlaylists(nodes))
+      dispatch(fetchTopPlaylists())
     }
-  }, [topPlaylists, dispatch, nodes, doOnce])
+  }, [topPlaylists, dispatch, doOnce])
 
   useEffect(() => {
     if (topPlaylists) {
@@ -147,15 +157,14 @@ export const useTopPlaylists = () => {
 export const useTopAlbums = () => {
   const [doOnce, setDoOnce] = useState(false)
   const topAlbums = useSelector(getTopAlbums)
-  const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
 
   useEffect(() => {
-    if (!doOnce && nodes[0] && !topAlbums) {
+    if (!doOnce && !topAlbums) {
       setDoOnce(true)
-      dispatch(fetchTopAlbums(nodes))
+      dispatch(fetchTopAlbums())
     }
-  }, [topAlbums, dispatch, nodes, doOnce])
+  }, [topAlbums, dispatch, doOnce])
 
   useEffect(() => {
     if (topAlbums) {
