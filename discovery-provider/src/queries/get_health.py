@@ -579,9 +579,6 @@ def get_reactions_health_info(
     is_unhealthy_reaction = bool(
         reaction_delta and max_reaction_drift and reaction_delta > max_reaction_drift
     )
-    logger.info(
-        f"reactions | {indexing_delta} {max_indexing_drift} {is_unhealthy_indexing}"
-    )
 
     is_unhealthy = is_unhealthy_indexing or is_unhealthy_reaction
 
