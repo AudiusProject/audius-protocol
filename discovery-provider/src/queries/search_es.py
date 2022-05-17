@@ -1,10 +1,16 @@
 import logging
 from typing import Any
 
-from src.api.v1.helpers import add_track_artwork, extend_track, extend_user
-from src.utils.elasticdsl import ES_PLAYLISTS, ES_TRACKS, ES_USERS, esclient, pluck_hits
-from src.utils.helpers import encode_int_id
-from src.utils.spl_audio import to_wei
+from src.api.v1.helpers import extend_playlist, extend_track, extend_user
+from src.utils.elasticdsl import (
+    ES_PLAYLISTS,
+    ES_TRACKS,
+    ES_USERS,
+    esclient,
+    pluck_hits,
+    popuate_user_metadata_es,
+    populate_track_or_playlist_metadata_es,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +25,9 @@ def search_es_full(args: dict):
     limit = args.get("limit")
     offset = args.get("offset")
     search_type = args.get("kind")
+    do_tracks = search_type == "all" or search_type == "tracks"
+    do_users = search_type == "all" or search_type == "users"
+    do_playlists = search_type == "all" or search_type == "playlists"
 
     mdsl: Any = []
 
@@ -30,10 +39,10 @@ def search_es_full(args: dict):
         ]
 
     # tracks
-    if search_type == "all" or search_type == "tracks":
+    if do_tracks:
         mdsl.extend(
             [
-                {"index": "tracks2"},
+                {"index": ES_TRACKS},
                 {
                     "size": limit,
                     "from": offset,
@@ -70,7 +79,7 @@ def search_es_full(args: dict):
                 },
             ]
         )
-    if search_type == "users":
+    if do_users:
         mdsl.extend(
             [
                 {"index": ES_USERS},
@@ -121,7 +130,7 @@ def search_es_full(args: dict):
                 },
             ]
         )
-    if search_type == "playlists":
+    if do_playlists:
         mdsl.extend(
             [
                 {"index": ES_PLAYLISTS},
@@ -162,43 +171,75 @@ def search_es_full(args: dict):
         )
 
     mfound = esclient.msearch(searches=mdsl)
-    plucked_tracks = pluck_hits(mfound["responses"].pop(0))
-    tracks_response = transform_tracks(plucked_tracks)
+    tracks_response = []
+    users_response = []
+    playlists_response = []
+    user_ids = set()
+    if current_user_id:
+        user_ids.add(current_user_id)
+
+    if do_tracks:
+        tracks_response = pluck_hits(mfound["responses"].pop(0))
+
+        for track in tracks_response:
+            user_ids.add(track["owner_id"])
+
+    if do_users:
+        users_response = pluck_hits(mfound["responses"].pop(0))
+
+    if do_playlists:
+        playlists_response = pluck_hits(mfound["responses"].pop(0))
+        for playlist in playlists_response:
+            user_ids.add(playlist["playlist_owner_id"])
+
+    # fetch user records
+    users_mget = esclient.mget(index=ES_USERS, ids=list(user_ids))
+    users_by_id = {d["_id"]: d["_source"] for d in users_mget["docs"] if d["found"]}
+    current_user = None
+    if current_user_id:
+        current_user = users_by_id.pop(str(current_user_id))
+    for id, user in users_by_id.items():
+        users_by_id[id] = popuate_user_metadata_es(user, current_user)
+
+    # hydrate users
+    hydrate_user(tracks_response, users_by_id)
+    tracks_response = transform_tracks(tracks_response, users_by_id, current_user)
+    users_response = [
+        extend_user(popuate_user_metadata_es(user, current_user))
+        for user in users_response
+    ]
+
+    hydrate_user(playlists_response, users_by_id)
+    playlists_response = [
+        extend_playlist(populate_track_or_playlist_metadata_es(item, current_user))
+        for item in playlists_response
+    ]
+
     return {
         "tracks": tracks_response,
         "saved_tracks": [],
-        # "users": pluck_hits(found_users),
-        # "playlists": pluck_hits(found_playlists),
+        "users": users_response,
+        "playlists": playlists_response,
     }
 
 
-def transform_tracks(tracks):
+def hydrate_user(items, users_by_id):
+    for item in items:
+        uid = str(item.get("owner_id", item.get("playlist_owner_id")))
+        user = users_by_id.get(uid)
+        if user:
+            item["user"] = user
+
+
+def transform_tracks(tracks, users_by_id, current_user):
+    tracks_out = []
     for track in tracks:
-        # track["id"] = encode_int_id(track.pop("track_id"))
-        # track["user"]["id"] = encode_int_id(track["user"].pop("user_id"))
-        # track["user_id"] = track["user"]["id"]
+        # TODO: get_feed_es populates these... try to reuse that code
+        track["followee_reposts"] = []
+        track["followee_favorites"] = []
 
-        track["user"]["total_balance"] = str(
-            int(track["user"]["balance"])
-            + int(track["user"]["associated_wallets_balance"])
-            + to_wei(track["user"]["associated_sol_wallets_balance"])
-            + to_wei(track["user"]["waudio_balance"])
-        )
-
-        track["user"][
-            "does_follow_current_user"
-        ] = False  # TODO get user following and set
-    
-        track["user"]["current_user_followee_follow_count"] = 0  # same
-        track["user"]["does_current_user_follow"] = False
-        track["followee_reposts"] = [] 
-        track["has_current_user_reposted"] = False 
-        track["has_current_user_saved"] = False 
-        track["followee_favorites"] = [] 
-        
+        track = populate_track_or_playlist_metadata_es(track, current_user)
         track = extend_track(track)
-        
-        # TODO format date correctly to yyyy/mm/dd hh:mm:ss
-        
+        tracks_out.append(track)
 
-    return tracks
+    return tracks_out

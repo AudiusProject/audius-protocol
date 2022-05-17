@@ -2,6 +2,7 @@ import copy
 import os
 
 from elasticsearch import Elasticsearch
+from src.utils.spl_audio import to_wei
 
 es_url = os.getenv("audius_elasticsearch_url")
 esclient = None
@@ -45,17 +46,36 @@ def hits_by_id(found):
 
 
 def popuate_user_metadata_es(user, current_user):
-    user_following = user.get("following_ids", [])
-    current_user_following = current_user.get("following_ids", [])
-    user["does_current_user_follow"] = user["user_id"] in current_user_following
-    user["does_follow_current_user"] = current_user["user_id"] in user_following
+
+    user["total_balance"] = str(
+        int(user.get("balance", 0))
+        + int(user.get("associated_wallets_balance", 0))
+        + to_wei(user.get("associated_sol_wallets_balance", 0))
+        + to_wei(user.get("waudio", 0))
+    )
+
+    # TODO: how to compute this?
+    user["current_user_followee_follow_count"] = 0
+
+    if current_user:
+        user_following = user.get("following_ids", [])
+        current_user_following = current_user.get("following_ids", [])
+        user["does_current_user_follow"] = user["user_id"] in current_user_following
+        user["does_follow_current_user"] = current_user["user_id"] in user_following
+    else:
+        user["does_current_user_follow"] = False
+        user["does_follow_current_user"] = False
     return omit_indexed_fields(user)
 
 
 def populate_track_or_playlist_metadata_es(item, current_user):
-    my_id = current_user["user_id"]
-    item["has_current_user_reposted"] = my_id in item["reposted_by"]
-    item["has_current_user_saved"] = my_id in item["saved_by"]
+    if current_user:
+        my_id = current_user["user_id"]
+        item["has_current_user_reposted"] = my_id in item["reposted_by"]
+        item["has_current_user_saved"] = my_id in item["saved_by"]
+    else:
+        item["has_current_user_reposted"] = False
+        item["has_current_user_saved"] = False
     return omit_indexed_fields(item)
 
 

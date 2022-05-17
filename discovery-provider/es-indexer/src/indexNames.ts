@@ -5,5 +5,5 @@ export const indexNames = {
   reposts: 'reposts2',
   saves: 'saves2',
   tracks: 'tracks2',
-  users: 'users2',
+  users: 'users3',
 }

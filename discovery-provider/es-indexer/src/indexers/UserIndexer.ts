@@ -61,18 +61,23 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
       user_balances.balance,
       user_balances.associated_wallets_balance,
       user_balances.waudio,
+      user_balances.waudio as waudio_balance, -- do we need both waudio and waudio_balance
       user_balances.associated_sol_wallets_balance,
+      user_bank_accounts.bank_account as spl_wallet,
       coalesce(track_count, 0) as track_count,
       coalesce(playlist_count, 0) as playlist_count,
       coalesce(album_count, 0) as album_count,
       coalesce(follower_count, 0) as follower_count,
       coalesce(following_count, 0) as following_count,
       coalesce(repost_count, 0) as repost_count,
-      coalesce(track_save_count, 0) as track_save_count
+      coalesce(track_save_count, 0) as track_save_count,
+      coalesce(supporter_count, 0) as supporter_count,
+      coalesce(supporting_count, 0) as supporting_count
     from
       users
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join user_balances on users.user_id = user_balances.user_id
+      left join user_bank_accounts on users.wallet = user_bank_accounts.ethereum_address
     where 
       is_current = true
     `
