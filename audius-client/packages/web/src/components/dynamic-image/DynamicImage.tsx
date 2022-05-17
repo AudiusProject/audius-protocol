@@ -111,7 +111,7 @@ const DynamicImage = ({
   if (usePlaceholder) {
     displayImage = image || placeholder
   } else {
-    displayImage = image || transparentPlaceholderImg
+    displayImage = image || (transparentPlaceholderImg as string)
   }
 
   useEffect(() => {

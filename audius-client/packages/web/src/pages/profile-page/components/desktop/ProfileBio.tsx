@@ -1,6 +1,7 @@
 import React, { MutableRefObject, useCallback } from 'react'
 
 import cn from 'classnames'
+import { Options } from 'linkifyjs'
 import Linkify from 'linkifyjs/react'
 import { animated } from 'react-spring'
 
@@ -186,10 +187,13 @@ export const ProfileBio = ({
     </animated.div>
   )
 
+  const linkifyOptions = ({
+    attributes: { onClick: onExternalLinkClick }
+  } as unknown) as Options
+
   return (
     <div>
-      {/* @ts-ignore */}
-      <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
+      <Linkify options={linkifyOptions}>
         <div
           className={cn(styles.description, {
             [styles.truncated]: isCollapsed

@@ -1,7 +1,7 @@
 import { put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
-import { User } from 'common/models/User'
+import { User, UserMetadata } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { getSupportingError } from 'common/store/user-list/supporting/actions'
@@ -47,7 +47,7 @@ const provider = createUserListProvider<User>({
         return amount1BN.gte(amount2BN) ? -1 : 1
       })
       .map(s => adapter.makeUser(s.receiver))
-      .filter(Boolean)
+      .filter((user): user is UserMetadata => !!user)
   },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>

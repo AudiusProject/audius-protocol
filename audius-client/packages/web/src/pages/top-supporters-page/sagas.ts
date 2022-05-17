@@ -1,7 +1,7 @@
 import { put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
-import { User } from 'common/models/User'
+import { User, UserMetadata } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { getTopSupportersError } from 'common/store/user-list/top-supporters/actions'
@@ -42,7 +42,7 @@ const provider = createUserListProvider<User>({
     return supporters
       .sort((s1, s2) => s1.rank - s2.rank)
       .map(s => adapter.makeUser(s.sender))
-      .filter(Boolean)
+      .filter((user): user is UserMetadata => !!user)
   },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
