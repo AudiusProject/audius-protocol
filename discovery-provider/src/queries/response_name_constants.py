@@ -125,5 +125,12 @@ solana_notification_threshold = "threshold"
 solana_notification_tip_rank = "rank"
 solana_notification_tip_amount = "amount"
 
+solana_notification_type_reaction = "reaction"
+solana_notification_reaction_type = "reaction_type"
+solana_notification_reaction_type_tip = "tip"
+solana_notification_reaction_reacted_to = "reacted_to"
+solana_notification_reaction_reaction_value = "reaction_value"
+
+
 # Trending
 owner_follower_count = "owner_follower_count"

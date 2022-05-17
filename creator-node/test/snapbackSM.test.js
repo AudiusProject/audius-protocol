@@ -114,6 +114,10 @@ describe('test SnapbackSM', function () {
     }
 
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock `getLatestUserId` to return userId=0
+    snapback.getLatestUserId = async () => { return 0 }
+    
     await snapback.init()
 
     // Enqueue recurring requestSync jobs
@@ -598,7 +602,7 @@ describe('test SnapbackSM', function () {
       constants.primaryEndpoint,
       constants.secondary1Endpoint,
       constants.secondary2Endpoint,
-      [constants.primaryEndpoint] /* unhealthyReplicas */,
+      new Set([constants.primaryEndpoint]) /* unhealthyReplicas */,
       healthyNodes /* healthyNodes */,
       replicaSetNodesToUserClockStatusesMapCopy
     )
@@ -672,7 +676,7 @@ describe('test SnapbackSM', function () {
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
+    assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://cnOriginallySpId3ReregisteredAsSpId4.co'))
     assert.strictEqual(potentialSyncRequests.length, 0)
   })
 
@@ -705,7 +709,7 @@ describe('test SnapbackSM', function () {
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
+    assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://cnOriginallySpId3ReregisteredAsSpId4.co'))
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
 
@@ -803,7 +807,7 @@ describe('test SnapbackSM', function () {
     const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
-    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://deregisteredCN.co')
+    assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://deregisteredCN.co'))
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
 })

@@ -32,10 +32,10 @@ INDEX_REACTIONS_LOCK = "index_reactions_lock"
 class ReactionResponse(TypedDict):
     id: int
     slot: int
-    reaction: int
+    reactionValue: int
     senderWallet: str
-    entityId: str
-    entityType: str
+    reactedTo: str
+    reactionType: str
     createdAt: str
     updatedAt: str
 
@@ -46,10 +46,10 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
     try:
         reaction_model = Reaction(
             slot=reaction["slot"],
-            reaction=reaction["reaction"],
+            reaction_value=reaction["reactionValue"],
             sender_wallet=reaction["senderWallet"],
-            entity_type=reaction["entityType"],
-            entity_id=reaction["entityId"],
+            reaction_type=reaction["reactionType"],
+            reacted_to=reaction["reactedTo"],
             timestamp=cast(datetime, reaction["createdAt"]),
             tx_signature=None,  # no tx_signature for now
         )

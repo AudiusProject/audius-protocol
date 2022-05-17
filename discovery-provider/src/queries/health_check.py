@@ -4,9 +4,13 @@ from datetime import datetime
 from flask import Blueprint, request
 from src.api_helpers import success_response
 from src.queries.get_alembic_version import get_alembic_version
-from src.queries.get_celery_tasks import get_celery_tasks
+from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
-from src.queries.get_health import get_health, get_latest_ipld_indexed_block
+from src.queries.get_health import (
+    get_health,
+    get_latest_ipld_indexed_block,
+    get_location,
+)
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.queries import parse_bool_param
@@ -145,6 +149,11 @@ def es_health():
 @bp.route("/celery_tasks_check", methods=["GET"])
 def celery_tasks_check():
     tasks = get_celery_tasks()
+
+    for task in tasks.get("celery_tasks", []):
+        task["started_at_est_timestamp"] = convert_epoch_to_datetime(
+            task.get("started_at")
+        )
     return success_response(tasks, sign_response=False)
 
 
@@ -153,3 +162,9 @@ def db_seed_restore_check():
     has_restored, seed_hash = get_db_seed_restore_status()
     response = {"has_restored": has_restored, "seed_hash": seed_hash}
     return success_response(response, sign_response=False)
+
+
+@bp.route("/location", methods=["GET"])
+def location():
+    location = get_location()
+    return success_response(location, sign_response=False)
