@@ -133,6 +133,9 @@ type NodeMetadata = {
   country: string
 }
 
+/**
+ * @deprecated Replaced with methods below. Can be removed after all nodes update to version 0.3.58
+ */
 export async function getNodeMetadata(endpoint: string): Promise<NodeMetadata> {
   try {
     const { data } = await fetchWithTimeout(
@@ -144,5 +147,34 @@ export async function getNodeMetadata(endpoint: string): Promise<NodeMetadata> {
     console.error(e)
     // Return no version if we couldn't find one, so we don't hold everything up
     return { version: '', country: '' }
+  }
+}
+
+export async function getDiscoveryNodeMetadata(
+  endpoint: string
+): Promise<NodeMetadata> {
+  try {
+    const {
+      data: { country },
+      version: { version }
+    } = await fetchWithTimeout(`${endpoint}/location?verbose=true`)
+    return { version, country }
+  } catch (e) {
+    // Try legacy method:
+    return await getNodeMetadata(endpoint)
+  }
+}
+
+export async function getContentNodeMetadata(
+  endpoint: string
+): Promise<NodeMetadata> {
+  try {
+    const {
+      data: { country, version }
+    } = await fetchWithTimeout(`${endpoint}/version`)
+    return { version, country }
+  } catch (e) {
+    // Try legacy method:
+    return await getNodeMetadata(endpoint)
   }
 }
