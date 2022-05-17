@@ -18,7 +18,8 @@ import {
   displayShortAud,
   getAud,
   getWei,
-  getNodeMetadata,
+  getDiscoveryNodeMetadata,
+  getContentNodeMetadata,
   getEthWallet,
   getBlock,
   getBlockNearTimestamp,
@@ -86,7 +87,8 @@ export class AudiusClient {
   static displayShortAud = displayShortAud
   static getAud = getAud
   static getWei = getWei
-  static getNodeMetadata = getNodeMetadata
+  static getDiscoveryNodeMetadata = getDiscoveryNodeMetadata
+  static getContentNodeMetadata = getContentNodeMetadata
 }
 
 window.AudiusClient = AudiusClient
