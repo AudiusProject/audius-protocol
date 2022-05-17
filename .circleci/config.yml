@@ -18,7 +18,7 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - dependency-cache-
 
-      - run: npm install
+      - run: npm ci
 
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
