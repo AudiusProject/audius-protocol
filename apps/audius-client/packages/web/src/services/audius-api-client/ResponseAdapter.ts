@@ -52,6 +52,8 @@ export const makeUser = (
       : 0
   const does_current_user_follow =
     'does_current_user_follow' in user ? user.does_current_user_follow : false
+  const supporter_count = user.supporter_count ?? 0
+  const supporting_count = user.supporting_count ?? 0
 
   const newUser = {
     ...user,
@@ -69,7 +71,9 @@ export const makeUser = (
     cover_photo: user.cover_photo_sizes || user.cover_photo_legacy,
     profile_picture: user.profile_picture_sizes || user.profile_picture_legacy,
     metadata_multihash: user.metadata_multihash || null,
-    id: undefined
+    id: undefined,
+    supporter_count,
+    supporting_count
   }
 
   delete newUser.id

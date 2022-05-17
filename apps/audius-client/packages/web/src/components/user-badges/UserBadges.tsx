@@ -30,10 +30,10 @@ export const audioTierMapPng: {
   [tier in BadgeTier]: Nullable<ReactElement>
 } = {
   none: null,
-  bronze: <img draggable={false} alt='' src={IconBronzeBadge} />,
-  silver: <img draggable={false} alt='' src={IconSilverBadge} />,
-  gold: <img draggable={false} alt='' src={IconGoldBadge} />,
-  platinum: <img draggable={false} alt='' src={IconPlatinumBadge} />
+  bronze: <img draggable={false} alt='' src={IconBronzeBadge as string} />,
+  silver: <img draggable={false} alt='' src={IconSilverBadge as string} />,
+  gold: <img draggable={false} alt='' src={IconGoldBadge as string} />,
+  platinum: <img draggable={false} alt='' src={IconPlatinumBadge as string} />
 }
 
 type UserBadgesProps = {

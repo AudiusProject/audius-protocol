@@ -48,6 +48,8 @@ export type APIUser = {
   metadata_multihash: Nullable<CID>
   spl_wallet: SolanaWalletAddress
   has_collectibles: boolean
+  supporter_count: number
+  supporting_count: number
 }
 
 export type APISearchUser = Omit<
