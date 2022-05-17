@@ -45,6 +45,8 @@ import searchPageSagas from 'pages/search-page/store/sagas'
 import settingsSagas from 'pages/settings-page/store/sagas'
 import signOnSaga from 'pages/sign-on/store/sagas'
 import smartCollectionPageSagas from 'pages/smart-collection/store/sagas'
+import supportingPageSagas from 'pages/supporting-page/sagas'
+import topSupportersPageSagas from 'pages/top-supporters-page/sagas'
 import trackSagas from 'pages/track-page/store/sagas'
 import trendingPageSagas from 'pages/trending-page/store/sagas'
 import trendingPlaylistSagas from 'pages/trending-playlists/store/sagas'
@@ -144,6 +146,8 @@ export default function* rootSaga() {
     firstUploadModalSagas(),
     followersPageSagas(),
     followingPageSagas(),
+    supportingPageSagas(),
+    topSupportersPageSagas(),
     notificationUsersPageSagas(),
     remixesSagas(),
     remixSettingsModalSagas(),

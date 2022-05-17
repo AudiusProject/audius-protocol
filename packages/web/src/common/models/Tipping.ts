@@ -1,15 +1,14 @@
-import { User } from './User'
+import { ID } from './Identifiers'
+import { StringWei } from './Wallet'
 
 export type Supporter = {
-  supporter: User
-  amount: number
+  sender_id: ID
+  amount: StringWei
   rank: number
-  updated_at: string
 }
 
 export type Supporting = {
-  supporting: User
-  amount: number
+  receiver_id: ID
+  amount: StringWei
   rank: number
-  updated_at: string
 }

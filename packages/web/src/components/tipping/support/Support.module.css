@@ -1,0 +1,183 @@
+.container {
+  margin-top: 32px;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+.titleContainer .tipIcon path {
+  fill: var(--neutral) !important;
+}
+.titleText {
+  margin-left: 6px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+}
+
+.line {
+  margin-left: 12px;
+  background: var(--neutral-light-7);
+  width: 100%;
+  height: 1px;
+}
+.topSupportersLine {
+  width: 68px;
+}
+
+.tile {
+  margin-top: 16px;
+}
+
+.seeMore {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}
+.seeMore:hover {
+  cursor: pointer;
+  transform: scale3d(1.01, 1.01, 1.01);
+}
+.seeMore:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.tipIcon {
+  width: 32px;
+  height: 18px;
+}
+.trophyIcon {
+  width: 18px;
+  height: 18px;
+}
+.arrowIcon {
+  width: 20px;
+  height: 20px;
+}
+.arrowIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.tileContainer {
+  height: 122px;
+  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
+    0px 0px 1px var(--tile-shadow-1);
+}
+.tileContainer:hover,
+.topSupportersContainer:hover {
+  box-shadow: 1px 5px 1px var(--tile-shadow-1-alt),
+    0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
+  transform: scale3d(1.005, 1.005, 1.005);
+  cursor: pointer;
+}
+.tileContainer:active,
+.topSupportersContainer:active {
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+    0 2px 3px -2px var(--tile-shadow-3);
+  transform: scale3d(0.995, 0.995, 0.995);
+}
+
+.tileBackground {
+  height: 90px;
+}
+
+.tileHeader {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  color: var(--neutral-light-4);
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  padding: 8px 18px;
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.tileHeader .trophyIcon,
+.tileHeader .tokenBadgeIcon {
+  margin-right: 8px;
+}
+.tileHeader .trophyIcon path {
+  fill: var(--secondary);
+}
+.tileHeader .tipIcon {
+  width: 14px;
+}
+.tileHeader .tipIcon path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.badge {
+  margin-left: 4px;
+}
+
+.topFive {
+  color: var(--secondary);
+}
+
+.coverPhoto {
+  width: 100%;
+  height: 100%;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+}
+
+.profilePictureContainer {
+  position: relative;
+  top: -74px;
+  left: 8px;
+}
+
+.profilePicture {
+  margin-bottom: 4px;
+  height: 40px;
+  border-radius: 40px;
+  border: 1px solid var(--white);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.name {
+  color: var(--white);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  padding-bottom: 4px;
+  padding-right: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.topSupportersContainer {
+  margin-top: 16px;
+  padding: 16px 8px 8px;
+  background: var(--white);
+  border-radius: 4px;
+  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
+    0px 0px 1px var(--tile-shadow-1);
+}
+
+.viewAll {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}
+
+.topSupportersContainer:hover .viewAll {
+  cursor: pointer;
+  color: var(--secondary);
+}
+
+.topSupportersContainer:hover .viewAll path {
+  fill: var(--secondary);
+}

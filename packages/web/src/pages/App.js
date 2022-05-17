@@ -145,7 +145,9 @@ import {
   CHECK_PAGE,
   getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
-  DEACTIVATE_PAGE
+  DEACTIVATE_PAGE,
+  SUPPORTING_USERS_ROUTE,
+  TOP_SUPPORTERS_USERS_ROUTE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -162,6 +164,8 @@ import FollowingPage from './following-page/FollowingPage'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
+import SupportingPage from './supporting-page/SupportingPage'
+import TopSupportersPage from './top-supporters-page/TopSupportersPage'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -852,6 +856,18 @@ class App extends Component {
                 path={FOLLOWERS_USERS_ROUTE}
                 isMobile={isMobileClient}
                 component={FollowersPage}
+              />
+              <MobileRoute
+                exact
+                path={SUPPORTING_USERS_ROUTE}
+                isMobile={isMobileClient}
+                component={SupportingPage}
+              />
+              <MobileRoute
+                exact
+                path={TOP_SUPPORTERS_USERS_ROUTE}
+                isMobile={isMobileClient}
+                component={TopSupportersPage}
               />
               <MobileRoute
                 exact

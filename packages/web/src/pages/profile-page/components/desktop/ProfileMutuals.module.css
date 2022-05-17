@@ -1,0 +1,57 @@
+.mutualsContainer {
+  margin-top: 32px;
+}
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+.titleContainer .tipIcon path {
+  fill: var(--neutral) !important;
+}
+.titleText {
+  margin-left: 6px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+}
+.line {
+  margin-left: 12px;
+  background: var(--neutral-light-7);
+  width: 100%;
+  height: 1px;
+}
+
+.contentContainer {
+  margin-top: 16px;
+  padding: 16px 8px 8px;
+  background: var(--white);
+  border-radius: 4px;
+  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
+    0px 0px 1px var(--tile-shadow-1);
+}
+.contentContainer:hover {
+  cursor: pointer;
+}
+.contentContainer:hover .viewAll {
+  color: var(--secondary);
+}
+.contentContainer:hover .viewAll path {
+  fill: var(--secondary);
+}
+.followingIcon {
+  width: 32px;
+}
+.arrowIcon {
+  width: 20px;
+  height: 20px;
+}
+.viewAll path {
+  fill: var(--neutral-light-4);
+}
+.viewAll {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}

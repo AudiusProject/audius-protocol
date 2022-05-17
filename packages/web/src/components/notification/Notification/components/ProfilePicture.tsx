@@ -1,4 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {
+  MouseEventHandler,
+  useCallback,
+  useEffect,
+  useState
+} from 'react'
 
 import cn from 'classnames'
 import { push } from 'connected-react-router'
@@ -18,10 +23,18 @@ type ProfilePictureProps = {
   user: User
   className?: string
   disablePopover?: boolean
+  disableClick?: boolean
+  stopPropagation?: boolean
 }
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
-  const { user, className, disablePopover } = props
+  const {
+    user,
+    className,
+    disablePopover,
+    disableClick,
+    stopPropagation
+  } = props
   const { user_id, _profile_picture_sizes, handle } = user
   const [loadImage, setLoadImage] = useState(false)
   const dispatch = useDispatch()
@@ -44,9 +57,17 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     }
   }, [loadImage])
 
-  const handleClick = useCallback(() => {
-    dispatch(push(`/${handle}`))
-  }, [dispatch, handle])
+  const handleClick: MouseEventHandler = useCallback(
+    e => {
+      if (stopPropagation) {
+        e.stopPropagation()
+      }
+      if (!disableClick) {
+        dispatch(push(`/${handle}`))
+      }
+    },
+    [stopPropagation, disableClick, dispatch, handle]
+  )
 
   const profilePictureElement = (
     <DynamicImage

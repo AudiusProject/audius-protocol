@@ -6,43 +6,58 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { SquareSizes } from 'common/models/ImageSizes'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { getSendAmount, getSendStatus } from 'common/store/tipping/selectors'
 import { confirmSendTip, beginTip } from 'common/store/tipping/slice'
 import { formatWei } from 'common/utils/wallet'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './TipAudio.module.css'
+import { TipProfilePicture } from './TipProfilePicture'
 
 const messages = {
   sending: 'SENDING',
   areYouSure: 'Are you sure? This cannot be reversed.',
   confirmTip: 'Confirm Tip',
   goBack: 'Go Back',
-  somethingWrong: 'Something’s gone wrong. Wait a little while and try again.'
+  somethingWrong: 'Something’s gone wrong. Wait a little while and try again.',
+  maintenance: 'We’re performing some necessary one-time maintenence.',
+  fewMinutes: 'This may take a few minutes.',
+  holdOn: 'Don’t close this window or refresh the page.'
 }
+
+const EmptyContainer = () => (
+  <div className={cn(styles.flexCenter, styles.info, styles.empty)} />
+)
+
+const ConfirmInfo = () => (
+  <div className={cn(styles.flexCenter, styles.info)}>
+    {messages.areYouSure}
+  </div>
+)
+
+const ConvertingInfo = () => (
+  <div>
+    <div className={cn(styles.flexCenter, styles.info)}>
+      {messages.maintenance}
+    </div>
+    <div className={cn(styles.flexCenter, styles.textCenter, styles.info)}>
+      {messages.fewMinutes}
+      <br />
+      {messages.holdOn}
+    </div>
+  </div>
+)
 
 export const ConfirmSendTip = () => {
   const dispatch = useDispatch()
   const sendStatus = useSelector(getSendStatus)
   const sendAmount = useSelector(getSendAmount)
   const profile = useSelector(getProfileUser)
-  const profileImage = useUserProfilePicture(
-    profile?.user_id ?? null,
-    profile?._profile_picture_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
   const [isDisabled, setIsDisabled] = useState(false)
-  const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
     setIsDisabled(sendStatus !== 'CONFIRM' && sendStatus !== 'ERROR')
-    if (sendStatus === 'ERROR') {
-      setHasError(true)
-    }
   }, [sendStatus])
 
   const handleConfirmSendClick = useCallback(() => {
@@ -70,48 +85,27 @@ export const ConfirmSendTip = () => {
     </>
   )
 
-  const renderProfilePicture = () =>
-    profile ? (
-      <div className={styles.profileUser}>
-        <div className={styles.accountWrapper}>
-          <img className={styles.dynamicPhoto} src={profileImage} />
-          <div className={styles.userInfoWrapper}>
-            <div className={styles.name}>
-              {profile.name}
-              <UserBadges
-                userId={profile?.user_id}
-                badgeSize={12}
-                className={styles.badge}
-              />
-            </div>
-            <div className={styles.handleContainer}>
-              <span className={styles.handle}>{`@${profile.handle}`}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : null
+  const renderError = () => (
+    <div className={cn(styles.flexCenter, styles.error)}>
+      {messages.somethingWrong}
+    </div>
+  )
 
   return profile ? (
     <div className={styles.container}>
       {renderSendingAudio()}
-      {renderProfilePicture()}
-      {hasError ? (
-        <div className={cn(styles.flexCenter, styles.error)}>
-          {messages.somethingWrong}
-        </div>
-      ) : (
-        <div className={cn(styles.flexCenter, styles.areYouSure)}>
-          {messages.areYouSure}
-        </div>
-      )}
+      <TipProfilePicture user={profile} />
+      {sendStatus === 'SENDING' && <EmptyContainer />}
+      {sendStatus === 'CONFIRM' && <ConfirmInfo />}
+      {sendStatus === 'CONVERTING' && <ConvertingInfo />}
+      {sendStatus === 'ERROR' && renderError()}
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
           type={ButtonType.PRIMARY}
           text={messages.confirmTip}
           onClick={handleConfirmSendClick}
           rightIcon={
-            sendStatus === 'SENDING' ? (
+            sendStatus === 'SENDING' || sendStatus === 'CONVERTING' ? (
               <LoadingSpinner className={styles.loadingSpinner} />
             ) : (
               <IconCheck />
@@ -121,15 +115,17 @@ export const ConfirmSendTip = () => {
           className={cn(styles.button, { [styles.disabled]: isDisabled })}
         />
       </div>
-      <div
-        className={cn(styles.flexCenter, styles.goBackContainer, {
-          [styles.disabled]: isDisabled
-        })}
-        onClick={handleGoBackClick}
-      >
-        <IconCaretLeft />
-        <span className={styles.goBack}>{messages.goBack}</span>
-      </div>
+      {sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING' ? (
+        <div
+          className={cn(styles.flexCenter, styles.goBackContainer, {
+            [styles.disabled]: isDisabled
+          })}
+          onClick={handleGoBackClick}
+        >
+          <IconCaretLeft />
+          <span className={styles.goBack}>{messages.goBack}</span>
+        </div>
+      ) : null}
     </div>
   ) : null
 }

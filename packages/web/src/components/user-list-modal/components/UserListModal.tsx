@@ -1,18 +1,23 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 
-import { Modal } from '@audius/stems'
+import { Modal, IconTrophy, IconUser } from '@audius/stems'
 import SimpleBar from 'simplebar-react-legacy'
 
+import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { getUserList as favoritesSelector } from 'common/store/user-list/favorites/selectors'
 import { getUserList as followersSelector } from 'common/store/user-list/followers/selectors'
 import { getUserList as followingSelector } from 'common/store/user-list/following/selectors'
 import { getUserList as repostsSelector } from 'common/store/user-list/reposts/selectors'
+import { getUserList as supportingSelector } from 'common/store/user-list/supporting/selectors'
+import { getUserList as topSupportersSelector } from 'common/store/user-list/top-supporters/selectors'
 import { UserListStoreState } from 'common/store/user-list/types'
 import UserList from 'components/user-list/UserList'
 import { USER_LIST_TAG as FAVORITES_TAG } from 'pages/favorites-page/sagas'
 import { USER_LIST_TAG as FOLLOWER_TAG } from 'pages/followers-page/sagas'
 import { USER_LIST_TAG as FOLLOWING_TAG } from 'pages/following-page/sagas'
 import { USER_LIST_TAG as REPOST_TAG } from 'pages/reposts-page/sagas'
+import { USER_LIST_TAG as SUPPORTING_TAG } from 'pages/supporting-page/sagas'
+import { USER_LIST_TAG as SUPPORTER_TAG } from 'pages/top-supporters-page/sagas'
 import { UserListType } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 
@@ -27,10 +32,12 @@ type UserListModalProps = {
 }
 
 const messages = {
-  reposts: 'REPOSTS',
-  favorites: 'FAVORITES',
-  followers: 'FOLLOWERS',
-  following: 'FOLLOWING'
+  reposts: 'Reposts',
+  favorites: 'Favorites',
+  followers: 'Followers',
+  following: 'Following',
+  topSupporters: 'Top Supporters',
+  supporting: 'Supporting'
 }
 
 const getScrollParent = () => {
@@ -45,7 +52,8 @@ const UserListModal = ({
 }: UserListModalProps) => {
   let tag: string
   let selector: (state: AppState) => UserListStoreState
-  let title: string
+  let title: ReactElement | string
+
   switch (userListType) {
     case UserListType.FAVORITE:
       tag = FAVORITES_TAG
@@ -60,12 +68,42 @@ const UserListModal = ({
     case UserListType.FOLLOWER:
       tag = FOLLOWER_TAG
       selector = followersSelector
-      title = messages.followers
+      title = (
+        <div className={styles.titleContainer}>
+          <IconUser className={styles.icon} />
+          <span>{messages.followers}</span>
+        </div>
+      )
       break
     case UserListType.FOLLOWING:
       tag = FOLLOWING_TAG
       selector = followingSelector
-      title = messages.following
+      title = (
+        <div className={styles.titleContainer}>
+          <IconUser className={styles.icon} />
+          <span>{messages.following}</span>
+        </div>
+      )
+      break
+    case UserListType.SUPPORTER:
+      tag = SUPPORTER_TAG
+      selector = topSupportersSelector
+      title = (
+        <div className={styles.titleContainer}>
+          <IconTrophy className={styles.icon} />
+          <span>{messages.topSupporters}</span>
+        </div>
+      )
+      break
+    case UserListType.SUPPORTING:
+      tag = SUPPORTING_TAG
+      selector = supportingSelector
+      title = (
+        <div className={styles.titleContainer}>
+          <IconTip className={styles.icon} />
+          <span>{messages.supporting}</span>
+        </div>
+      )
       break
     // Should not happen but typescript doesn't seem to be
     // smart enough to pass props to components below

@@ -1,0 +1,229 @@
+import React, { MutableRefObject, useCallback } from 'react'
+
+import cn from 'classnames'
+import Linkify from 'linkifyjs/react'
+import { animated } from 'react-spring'
+
+import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
+import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
+import { Name } from 'common/models/Analytics'
+import { squashNewLines } from 'common/utils/formatUtil'
+import { Nullable } from 'common/utils/typeUtils'
+import { OpacityTransition } from 'components/transition-container/OpacityTransition'
+import { make, useRecord } from 'store/analytics/actions'
+
+import SocialLink, { Type } from '../SocialLink'
+
+import styles from './ProfilePage.module.css'
+
+const messages = {
+  seeMore: 'See More',
+  seeLess: 'See Less'
+}
+
+type ProfileBioProps = {
+  forwardRef: MutableRefObject<Nullable<HTMLDivElement>>
+  isCollapsible: boolean
+  isCollapsed: boolean
+  handleToggleCollapse: () => void
+  handle: string
+  bio: string
+  location: string
+  website: string
+  donation: string
+  created: string
+  twitterHandle: string
+  instagramHandle: string
+  tikTokHandle: string
+}
+
+export const ProfileBio = ({
+  forwardRef,
+  isCollapsible,
+  isCollapsed,
+  handleToggleCollapse,
+  handle,
+  bio,
+  location,
+  website,
+  donation,
+  created,
+  twitterHandle,
+  instagramHandle,
+  tikTokHandle
+}: ProfileBioProps) => {
+  const hasSocial = twitterHandle || instagramHandle || tikTokHandle
+
+  const record = useRecord()
+
+  const onExternalLinkClick = useCallback(
+    event => {
+      record(
+        make(Name.LINK_CLICKING, {
+          url: event.target.href,
+          source: 'profile page'
+        })
+      )
+    },
+    [record]
+  )
+
+  const onClickTwitter = useCallback(() => {
+    record(
+      make(Name.PROFILE_PAGE_CLICK_TWITTER, {
+        handle: handle.replace('@', ''),
+        twitterHandle
+      })
+    )
+  }, [record, handle, twitterHandle])
+  const onClickInstagram = useCallback(() => {
+    record(
+      make(Name.PROFILE_PAGE_CLICK_INSTAGRAM, {
+        handle: handle.replace('@', ''),
+        instagramHandle
+      })
+    )
+  }, [record, handle, instagramHandle])
+  const onClickTikTok = useCallback(() => {
+    record(
+      make(Name.PROFILE_PAGE_CLICK_TIKTOK, {
+        handle: handle.replace('@', ''),
+        tikTokHandle
+      })
+    )
+  }, [record, handle, tikTokHandle])
+  const onClickWebsite = useCallback(() => {
+    record(
+      make(Name.PROFILE_PAGE_CLICK_WEBSITE, {
+        handle: handle.replace('@', ''),
+        website
+      })
+    )
+  }, [record, handle, website])
+  const onClickDonation = useCallback(
+    event => {
+      record(
+        make(Name.PROFILE_PAGE_CLICK_DONATION, {
+          handle: handle.replace('@', ''),
+          donation: event.target.href
+        })
+      )
+    },
+    [record, handle]
+  )
+
+  const renderCollapsedContent = (_: any, style: object) =>
+    hasSocial ? (
+      <animated.div className={styles.socialsTruncated} style={style}>
+        {twitterHandle && (
+          <SocialLink
+            type={Type.TWITTER}
+            link={twitterHandle}
+            onClick={onClickTwitter}
+            iconOnly
+          />
+        )}
+        {instagramHandle && (
+          <SocialLink
+            type={Type.INSTAGRAM}
+            link={instagramHandle}
+            onClick={onClickInstagram}
+            iconOnly
+          />
+        )}
+        {tikTokHandle && (
+          <SocialLink
+            type={Type.TIKTOK}
+            link={tikTokHandle}
+            onClick={onClickTikTok}
+            iconOnly
+          />
+        )}
+      </animated.div>
+    ) : (
+      <></>
+    )
+
+  const renderExpandedContent = (_: any, style: object) => (
+    <animated.div className={styles.socials} style={style}>
+      {twitterHandle && (
+        <SocialLink
+          type={Type.TWITTER}
+          link={twitterHandle}
+          onClick={onClickTwitter}
+        />
+      )}
+      {instagramHandle && (
+        <SocialLink
+          type={Type.INSTAGRAM}
+          link={instagramHandle}
+          onClick={onClickInstagram}
+        />
+      )}
+      {tikTokHandle && (
+        <SocialLink
+          type={Type.TIKTOK}
+          link={tikTokHandle}
+          onClick={onClickTikTok}
+        />
+      )}
+      {website && (
+        <SocialLink
+          type={Type.WEBSITE}
+          link={website}
+          onClick={onClickWebsite}
+        />
+      )}
+      {donation && (
+        <SocialLink
+          type={Type.DONATION}
+          link={donation}
+          onClick={onClickDonation}
+        />
+      )}
+      <div className={styles.location}>{location}</div>
+      <div className={styles.joined}>Joined {created}</div>
+    </animated.div>
+  )
+
+  return (
+    <div>
+      {/* @ts-ignore */}
+      <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
+        <div
+          className={cn(styles.description, {
+            [styles.truncated]: isCollapsed
+          })}
+          ref={forwardRef}
+        >
+          {squashNewLines(bio)}
+        </div>
+      </Linkify>
+      {isCollapsed ? (
+        <div>
+          <OpacityTransition render={renderCollapsedContent} duration={300} />
+          <div
+            className={styles.truncateContainer}
+            onClick={handleToggleCollapse}
+          >
+            <span>{messages.seeMore}</span>
+            <IconCaretDownLine />
+          </div>
+        </div>
+      ) : (
+        <div>
+          <OpacityTransition render={renderExpandedContent} duration={300} />
+          {isCollapsible ? (
+            <div
+              className={styles.truncateContainer}
+              onClick={handleToggleCollapse}
+            >
+              <span>{messages.seeLess}</span>
+              <IconCaretUpLine />
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
+  )
+}

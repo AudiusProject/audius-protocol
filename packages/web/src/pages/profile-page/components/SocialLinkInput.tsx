@@ -40,20 +40,20 @@ const sanitizeHandle = (handle: string) => {
 
 type SocialLinkInputProps = {
   type: Type
-  isDisabled: boolean
   className: string
-  textLimitMinusLinks: number
   defaultValue: string
   onChange: (value: string) => void
+  isDisabled?: boolean
+  textLimitMinusLinks?: number
 }
 
 const SocialLinkInput = ({
   type,
-  isDisabled,
   className,
-  textLimitMinusLinks,
   defaultValue,
-  onChange
+  onChange,
+  isDisabled = false,
+  textLimitMinusLinks
 }: SocialLinkInputProps) => {
   const [value, setValue] = useState(defaultValue)
   const [focused, setFocused] = useState(false)
