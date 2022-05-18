@@ -2,9 +2,10 @@
 
 set -ex
 
-cd ${PROTOCOL_DIR}/logging
-. .env
 cd /tmp
+
+ELASTIC_AGENT_URL=$(echo dXNlcgo= | base64 --decode)
+ELASTIC_AGENT_TOKEN=$(echo cGFzcwo= | base64 --decode)
 
 # install Elastic Agent
 ELASTIC_AGENT_VERSION=elastic-agent-8.2.0-linux-x86_64
