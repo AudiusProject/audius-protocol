@@ -37,3 +37,16 @@ services:
     #   test: ["CMD", "redis-cli", "PING"]
     #   interval: 10s
     #   timeout: 5s
+
+  logspout:
+    image: gliderlabs/logspout:v3.2.14
+    container_name: logspout
+    environment:
+      - SYSLOG_STRUCTURED_DATA=${LOGGLY_TOKEN}@41058 tag="logspout"
+    command: multiline+syslog+tcp://logs-01.loggly.com:514
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "PING"]
+    #   interval: 10s
+    #   timeout: 5s

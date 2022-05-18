@@ -127,6 +127,10 @@ if [ -d ~/.aliases ]; then
 fi' >> $HOME/.profile
 }
 
+function setup_elastic_agent() {
+    $PROTOCOL_DIR/logging/install-elastic-agent.sh
+}
+
 function silence_motd() {
     touch ~/.hushlogin
 }
@@ -176,6 +180,7 @@ function setup() {
         setup_mad_dog
         setup_node
         setup_profile
+        setup_elastic_agent
         silence_motd
     fi
     setup_audius_repos $1 $2
