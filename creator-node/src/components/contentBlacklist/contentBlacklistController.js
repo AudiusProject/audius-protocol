@@ -37,7 +37,7 @@ const getTracksController = async (req) => {
     return errorResponseServerError(`Could not fetch tracks`)
   }
 
-  return successResponse(trackIds)
+  return successResponse({ values: trackIds })
 }
 
 const contentBlacklistGetAllController = async (req) => {
