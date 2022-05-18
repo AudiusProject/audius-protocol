@@ -1,15 +1,25 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
-import { useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
-import { Supporting } from 'common/models/Tipping'
+import { useSelector } from 'common/hooks/useSelector'
+import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
+import { getSupporting } from 'common/store/tipping/selectors'
+import { stringWeiToBN } from 'common/utils/wallet'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
-import { AppState } from 'store/types'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListEntityType,
+  UserListType
+} from 'store/application/ui/userListModal/types'
 
-import styles from './ArtistCard.module.css'
+import styles from './ArtistSupporting.module.css'
 
 const messages = {
   supporting: 'Supporting'
@@ -18,25 +28,47 @@ const messages = {
 const MAX_TOP_SUPPORTING = 7
 
 type ArtistSupportingProps = {
-  supportingList: Supporting[]
-  supportingCount: number
-  handleClick: () => void
+  artist: User
 }
-export const ArtistSupporting = ({
-  supportingList,
-  supportingCount,
-  handleClick
-}: ArtistSupportingProps) => {
-  const rankedSupporting = useSelector<AppState, User[]>(state => {
-    const usersMap = getUsers(state, {
-      ids: supportingList.map(supporting => supporting.receiver_id)
+export const ArtistSupporting = (props: ArtistSupportingProps) => {
+  const { artist } = props
+  const { user_id, supporting_count } = artist
+  const dispatch = useDispatch()
+
+  const supportingMap = useSelector(getSupporting)
+  const supportingForArtist = supportingMap[user_id] ?? {}
+  const supportingForArtistIds = (Object.keys(
+    supportingForArtist
+  ) as unknown) as ID[]
+  const rankedSupportingList = supportingForArtistIds
+    .sort((k1, k2) => {
+      const amount1BN = stringWeiToBN(supportingForArtist[k1].amount)
+      const amount2BN = stringWeiToBN(supportingForArtist[k2].amount)
+      return amount1BN.gte(amount2BN) ? -1 : 1
     })
-    return supportingList
+    .map(k => supportingForArtist[k])
+
+  const rankedSupporting = useSelector(state => {
+    const usersMap = getUsers(state, {
+      ids: rankedSupportingList.map(supporting => supporting.receiver_id)
+    })
+    return rankedSupportingList
       .sort((s1, s2) => s1.rank - s2.rank)
       .map(s => usersMap[s.receiver_id])
   })
 
-  return supportingList.length > 0 ? (
+  const handleClick = useCallback(() => {
+    dispatch(
+      setUsers({
+        userListType: UserListType.SUPPORTING,
+        entityType: UserListEntityType.USER,
+        id: user_id
+      })
+    )
+    dispatch(setVisibility(true))
+  }, [dispatch, user_id])
+
+  return rankedSupportingList.length > 0 ? (
     <div className={styles.supportingContainer} onClick={handleClick}>
       <div className={styles.supportingTitleContainer}>
         <IconTip className={styles.supportingIcon} />
@@ -46,7 +78,7 @@ export const ArtistSupporting = ({
       <UserProfilePictureList
         limit={MAX_TOP_SUPPORTING}
         users={rankedSupporting}
-        totalUserCount={supportingCount}
+        totalUserCount={supporting_count}
         disableProfileClick
         disablePopover
       />

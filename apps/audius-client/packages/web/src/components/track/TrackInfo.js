@@ -4,7 +4,7 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 

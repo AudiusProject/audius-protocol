@@ -6,7 +6,7 @@ import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHoriz
 import { UID, ID } from 'common/models/Identifiers'
 import { EnhancedCollectionTrack } from 'common/store/cache/collections/selectors'
 import { formatSeconds } from 'common/utils/timeUtil'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import Skeleton from 'components/skeleton/Skeleton'

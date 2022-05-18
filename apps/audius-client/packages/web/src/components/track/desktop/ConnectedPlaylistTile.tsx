@@ -36,7 +36,7 @@ import {
   undoRepostCollection
 } from 'common/store/social/collections/actions'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'

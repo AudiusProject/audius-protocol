@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
