@@ -54,7 +54,7 @@ export const RemixCreateNotification = (
     entities,
     entityType,
     timeLabel,
-    isRead,
+    isViewed,
     childTrackId
   } = notification
   const dispatch = useDispatch()
@@ -89,7 +89,7 @@ export const RemixCreateNotification = (
         <UserNameLink user={user} notification={notification} />
       </NotificationBody>
       <TwitterShareButton onClick={handleShare} />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

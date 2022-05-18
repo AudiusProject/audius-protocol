@@ -32,8 +32,8 @@ export const getModalNotificationId = (state: CommonState) =>
   getBaseState(state).modalNotificationId
 export const getModalNotificationIds = (state: CommonState) =>
   getBaseState(state).allIds
-export const getNotificationUnreadCount = (state: CommonState) =>
-  getBaseState(state).totalUnread
+export const getNotificationUnviewedCount = (state: CommonState) =>
+  getBaseState(state).totalUnviewed
 export const getNotificationStatus = (state: CommonState) =>
   getBaseState(state).status
 export const getNotificationHasMore = (state: CommonState) =>
@@ -74,15 +74,6 @@ export const makeGetAllNotifications = () => {
       )
     }
   )
-}
-
-export const makeGetNotificationsUnreadCount = () => {
-  return createSelector([getAllNotifications], notifications => {
-    return Object.values(notifications).reduce(
-      (count, notification) => count + (notification.isRead ? 0 : 1),
-      0
-    )
-  })
 }
 
 export const getNotificationUser = (

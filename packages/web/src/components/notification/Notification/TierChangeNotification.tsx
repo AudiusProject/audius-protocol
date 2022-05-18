@@ -42,7 +42,7 @@ type TierChangeNotificationProps = {
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
 
-  const { tier, timeLabel, isRead, user } = notification
+  const { tier, timeLabel, isViewed, user } = notification
 
   const tierInfo = badgeTiers.find(info => info.tier === tier) as BadgeTierInfo
 
@@ -67,7 +67,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         {messages.audio} {messages.accessInfo}
       </NotificationBody>
       <TwitterShareButton onClick={handleShare} />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

@@ -36,10 +36,9 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
     users,
     userIds,
     entity,
-    entityId,
     entityType,
     timeLabel,
-    isRead
+    isViewed
   } = notification
   const [firstUser] = users
   const otherUsersCount = userIds.length - 1
@@ -67,7 +66,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, entityId, handleGoToEntity]
+    [isMultiUser, dispatch, entityType, id, handleGoToEntity]
   )
 
   return (
@@ -86,7 +85,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
         {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }
