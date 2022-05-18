@@ -22,7 +22,7 @@ import {
   undoRepostTrack
 } from 'common/store/social/tracks/actions'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
