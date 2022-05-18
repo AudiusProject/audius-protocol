@@ -67,7 +67,13 @@ export const UserNameLink = (props: UserNameLinkProps) => {
       <a onClick={handleClick} href={profileLink} className={styles.link}>
         {name}
       </a>
-      <UserBadges inline userId={user_id} badgeSize={12} />
+      <UserBadges
+        inline
+        userId={user_id}
+        badgeSize={12}
+        className={styles.badges}
+        noContentClassName={styles.badgesNoContent}
+      />
     </span>
   )
 
