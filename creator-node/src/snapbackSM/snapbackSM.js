@@ -15,11 +15,9 @@ const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 const {
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
-  MAX_USER_BATCH_CLOCK_FETCH_RETRIES
+  MAX_USER_BATCH_CLOCK_FETCH_RETRIES,
+  SYNC_MONITORING_RETRY_DELAY_MS
 } = require('./StateMachineConstants')
-
-// Retry delay between requests during monitoring
-const SyncMonitoringRetryDelayMs = 15000
 
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
@@ -1607,7 +1605,7 @@ class SnapbackSM {
       }
 
       // Delay between retries
-      await Utils.timeout(SyncMonitoringRetryDelayMs, false)
+      await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
     }
 
     const monitoringTimeMs = Date.now() - startTimeMs
