@@ -63,8 +63,8 @@ def search_es_full(args: dict):
                                                 "query": search_str,
                                                 "fields": [
                                                     "title^2",
-                                                    "artist.name",
-                                                    "artist.handle",
+                                                    "user.name",
+                                                    "user.handle",
                                                 ],
                                                 "type": "cross_fields",
                                             }
@@ -176,7 +176,6 @@ def search_es_full(args: dict):
                 },
             ]
         )
-
     mfound = esclient.msearch(searches=mdsl)
     tracks_response = []
     users_response = []
@@ -236,6 +235,7 @@ def search_es_full(args: dict):
     ]
 
     return {
+        "elasticsearch_took": mfound["took"],
         "tracks": tracks_response,
         "saved_tracks": [],
         "users": users_response,

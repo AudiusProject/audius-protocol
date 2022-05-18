@@ -50,7 +50,7 @@ search_full_response = make_full_response(
 )
 
 
-@full_ns.route("/full")
+@full_ns.route("/full_old")
 class FullSearch(Resource):
     @full_ns.doc(
         id="Search",
@@ -83,7 +83,7 @@ class FullSearch(Resource):
         return success_response(resp)
 
 
-@full_ns.route("/full_es")
+@full_ns.route("/full")
 class FullElasticsearch(Resource):
     @full_ns.doc(
         id="Search",
@@ -112,7 +112,6 @@ class FullElasticsearch(Resource):
 
         # wip: es search
         resp = search_es_full(search_args)
-
         return success_response(resp)
 
 
