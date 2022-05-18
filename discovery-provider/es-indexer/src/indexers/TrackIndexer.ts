@@ -13,20 +13,26 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
     settings: {
+      analysis: {
+        tokenizer: {
+          comma_tokenizer: {
+            // @ts-ignore - es client typings lagging
+            type: 'simple_pattern_split',
+            pattern: ',',
+          },
+        },
+        analyzer: {
+          // @ts-ignore - es client typings lagging
+          comma_analyzer: {
+            tokenizer: 'comma_tokenizer',
+            filter: ['lowercase', 'asciifolding'],
+          },
+        },
+      },
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
         refresh_interval: '5s',
-
-        analysis: {
-          normalizer: {
-            lower_ascii: {
-              type: 'custom',
-              char_filter: [],
-              filter: ['lowercase', 'asciifolding'],
-            },
-          },
-        },
       },
     },
     mappings: {
@@ -43,8 +49,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         description: { type: 'text' },
         length: { type: 'integer' },
         tags: {
-          type: 'keyword',
-          normalizer: 'lower_ascii',
+          type: 'text',
+          analyzer: 'comma_analyzer',
         },
         genre: { type: 'keyword' },
         mood: { type: 'keyword' },
@@ -62,8 +68,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         user: {
           properties: {
             handle: { type: 'keyword' }, // should it be text so we can search on it?
-            location: { type: 'keyword' },
             name: { type: 'text' }, // should it be keyword with a `searchable` treatment?
+            location: { type: 'keyword' },
             follower_count: { type: 'integer' },
             is_verified: { type: 'boolean' },
             created_at: { type: 'date' },
@@ -92,42 +98,15 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       coalesce(aggregate_plays.count, 0) as play_count,
   
       json_build_object(
-        'user_id', users.user_id,
         'handle', users.handle,
-        'handle_lc', users.handle_lc,
         'name', users.name,
-        'bio', users.bio,
         'location', users.location,
-        'creator_node_endpoint', users.creator_node_endpoint,
-        'cover_photo', users.cover_photo,
-        'cover_photo_sizes', users.cover_photo_sizes,
-        'profile_picture', users.profile_picture,
-        'profile_picture_sizes', users.profile_picture_sizes,
-        'metadata_multihash', users.metadata_multihash,
-        'follower_count', coalesce(follower_count, 0),
-        'is_creator', users.is_creator,
-        'is_verified', users.is_verified,
-        'is_deactivated', users.is_deactivated,
-        'wallet', users.wallet,
-        'erc_wallet', users.wallet,
-        'spl_wallet', user_bank_accounts.bank_account,
-        'balance', user_balances.balance,
-        'waudio_balance', user_balances.waudio,
-        'associated_wallets_balance', user_balances.associated_wallets_balance,
-        'associated_sol_wallets_balance', user_balances.associated_sol_wallets_balance,
-        'has_collectibles', users.has_collectibles,
-        'track_count', track_count,
-        'playlist_count', playlist_count,
-        'album_count', album_count,
         'follower_count', follower_count,
-        'followee_count', following_count,
-        'repost_count', repost_count,
-        'supporter_count', supporter_count,
-        'supporting_count', supporting_count,
-        'blocknumber', users.blocknumber,
+        'is_verified', users.is_verified,
         'created_at', users.created_at,
         'updated_at', users.updated_at
       ) as user,
+
       array(
         select slug 
         from track_routes r
@@ -161,8 +140,6 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     from tracks
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id
-      left join user_balances on users.user_id = user_balances.user_id
-      left join user_bank_accounts on users.wallet = user_bank_accounts.ethereum_address
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
     WHERE tracks.is_current = true 
       AND users.is_current = true
