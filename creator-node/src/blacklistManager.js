@@ -371,7 +371,7 @@ class BlacklistManager {
   static async _addToRedisChunkHelper(redisKey, data) {
     const redisAddMaxItemsSize = 100000
     try {
-      logger.error(
+      logger.info(
         `About to call _addToRedisChunkHelper for ${redisKey} with data of length ${data.length}`
       )
       for (let i = 0; i < data.length; i += redisAddMaxItemsSize) {
