@@ -126,9 +126,7 @@ class SolanaClientManager:
             "solana_client_manager.py | get_signatures_for_address | All requests failed",
         )
 
-    def get_slot(
-        self, retries=DEFAULT_MAX_RETRIES, encoding="json"
-    ) -> Optional[int]:
+    def get_slot(self, retries=DEFAULT_MAX_RETRIES, encoding="json") -> Optional[int]:
         def _get_slot(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
