@@ -421,7 +421,7 @@ class BlacklistManager {
           for (const cid of cids) {
             const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
             try {
-              await this._addToRedisChunkHelper(redisCIDKey, trackId)
+              await this._addToRedisChunkHelper(redisCIDKey, [trackId])
             } catch (e) {
               errors.push(
                 `Unable to add ${redisCIDKey}:${trackId}: ${e.toString()}`
