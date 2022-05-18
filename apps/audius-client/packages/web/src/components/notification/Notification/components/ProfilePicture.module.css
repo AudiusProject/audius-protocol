@@ -3,10 +3,6 @@
   width: var(--unit-10);
 }
 
-.profilePictureWrapper:hover {
-  opacity: 0.8;
-}
-
 .profilePicture {
   border-radius: 50%;
   border: 2px solid var(--white);
