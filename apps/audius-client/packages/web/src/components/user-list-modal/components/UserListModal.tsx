@@ -4,9 +4,15 @@ import { Modal, IconTrophy, IconUser } from '@audius/stems'
 import SimpleBar from 'simplebar-react-legacy'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import { useSelector } from 'common/hooks/useSelector'
 import { getUserList as favoritesSelector } from 'common/store/user-list/favorites/selectors'
 import { getUserList as followersSelector } from 'common/store/user-list/followers/selectors'
 import { getUserList as followingSelector } from 'common/store/user-list/following/selectors'
+import {
+  getPageTitle,
+  getUserList as notificationSelector
+} from 'common/store/user-list/notifications/selectors'
+import { USER_LIST_TAG as NOTIFICATION_TAG } from 'common/store/user-list/notifications/types'
 import { getUserList as repostsSelector } from 'common/store/user-list/reposts/selectors'
 import { getUserList as supportingSelector } from 'common/store/user-list/supporting/selectors'
 import { getUserList as topSupportersSelector } from 'common/store/user-list/top-supporters/selectors'
@@ -53,6 +59,7 @@ const UserListModal = ({
   let tag: string
   let selector: (state: AppState) => UserListStoreState
   let title: ReactElement | string
+  const notificationTitle = useSelector(getPageTitle)
 
   switch (userListType) {
     case UserListType.FAVORITE:
@@ -82,6 +89,16 @@ const UserListModal = ({
         <div className={styles.titleContainer}>
           <IconUser className={styles.icon} />
           <span>{messages.following}</span>
+        </div>
+      )
+      break
+    case UserListType.NOTIFICATION:
+      tag = NOTIFICATION_TAG
+      selector = notificationSelector
+      title = (
+        <div className={styles.titleContainer}>
+          <IconUser className={styles.icon} />
+          <span>{notificationTitle}</span>
         </div>
       )
       break

@@ -1,5 +1,6 @@
 import React, { MouseEventHandler, useCallback } from 'react'
 
+import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Repost } from 'common/store/notifications/types'
@@ -8,6 +9,7 @@ import {
   setVisibility as openUserListModal
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
+import { isMobile } from 'utils/clientUtil'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -31,10 +33,10 @@ type RepostNotificationProps = {
 export const RepostNotification = (props: RepostNotificationProps) => {
   const { notification } = props
   const {
+    id,
     users,
     userIds,
     entity,
-    entityId,
     entityType,
     timeLabel,
     isRead
@@ -51,17 +53,21 @@ export const RepostNotification = (props: RepostNotificationProps) => {
       if (isMultiUser) {
         dispatch(
           setUserListUsers({
-            userListType: UserListType.REPOST,
+            userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: entityId
+            id: (id as unknown) as number
           })
         )
-        dispatch(openUserListModal(true))
+        if (isMobile()) {
+          dispatch(push(`notification/${id}/users`))
+        } else {
+          dispatch(openUserListModal(true))
+        }
       } else {
         handleGoToEntity(event)
       }
     },
-    [isMultiUser, dispatch, entityType, entityId, handleGoToEntity]
+    [isMultiUser, dispatch, entityType, id, handleGoToEntity]
   )
 
   return (

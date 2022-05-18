@@ -1,5 +1,6 @@
 import React, { MouseEventHandler, useCallback } from 'react'
 
+import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { Favorite } from 'common/store/notifications/types'
@@ -8,6 +9,7 @@ import {
   setVisibility as openUserListModal
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
+import { isMobile } from 'utils/clientUtil'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -30,6 +32,7 @@ type FavoriteNotificationProps = {
 export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const { notification } = props
   const {
+    id,
     users,
     userIds,
     entity,
@@ -50,12 +53,16 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
       if (isMultiUser) {
         dispatch(
           setUserListUsers({
-            userListType: UserListType.FAVORITE,
+            userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: entityId
+            id: (id as unknown) as number
           })
         )
-        dispatch(openUserListModal(true))
+        if (isMobile()) {
+          dispatch(push(`notification/${id}/users`))
+        } else {
+          dispatch(openUserListModal(true))
+        }
       } else {
         handleGoToEntity(event)
       }
