@@ -15,11 +15,9 @@ const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 const {
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
-  MAX_USER_BATCH_CLOCK_FETCH_RETRIES
+  MAX_USER_BATCH_CLOCK_FETCH_RETRIES,
+  SYNC_MONITORING_RETRY_DELAY_MS
 } = require('./StateMachineConstants')
-
-// Retry delay between requests during monitoring
-const SyncMonitoringRetryDelayMs = 15000
 
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
@@ -506,7 +504,7 @@ class SnapbackSM {
         secondary1,
         secondary2,
         primary,
-        unhealthyReplicas,
+        unhealthyReplicasSet: unhealthyReplicas,
         healthyNodes,
         replicaSetNodesToUserClockStatusesMap
       })
@@ -527,8 +525,8 @@ class SnapbackSM {
         // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
         // selected as part of the new replica set, do not issue reconfig
         if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
+          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${this.peerSetManager.endpointToSPIdMap} | endpt=${endpt}. Skipping reconfig.`
           this.logError(response.errorMsg)
-          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}]. Skipping reconfig.`
           return response
         }
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
@@ -1607,7 +1605,7 @@ class SnapbackSM {
       }
 
       // Delay between retries
-      await Utils.timeout(SyncMonitoringRetryDelayMs, false)
+      await Utils.timeout(SYNC_MONITORING_RETRY_DELAY_MS, false)
     }
 
     const monitoringTimeMs = Date.now() - startTimeMs
