@@ -7,6 +7,7 @@ const stream = require('stream')
 const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
+const { logger: genericLogger } = require('./logging.js')
 
 const models = require('./models')
 const redis = require('./redis')
@@ -361,14 +362,14 @@ function currentNodeShouldHandleTranscode({
  * @param {func} [param.options.onRetry] fn that gets called per retry
  * @returns the fn response if success, or throws an error
  */
-function asyncRetry({ logger, asyncFn, asyncFnLabel, options = {} }) {
+function asyncRetry({ asyncFn, asyncFnLabel, options = {}, logger = genericLogger, log = true }) {
   options = {
     retries: 5,
     factor: 2,
     minTimeout: 1000,
     maxTimeout: 5000,
     onRetry: (err, i) => {
-      if (err) {
+      if (err && log) {
         logger.warn(`${asyncFnLabel} ${i} retry error: `, err)
       }
     },
