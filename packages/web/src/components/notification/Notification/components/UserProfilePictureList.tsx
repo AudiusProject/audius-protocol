@@ -62,7 +62,7 @@ export const UserProfilePictureList = ({
             <ProfilePicture
               disablePopover
               className={styles.profilePictureExtra}
-              user={users[USER_LENGTH_LIMIT]}
+              user={users[limit]}
             />
             <span className={styles.profilePictureCount}>
               {`+${formatCount(remainingUsersCount)}`}
