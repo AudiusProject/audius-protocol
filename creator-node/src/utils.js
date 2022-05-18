@@ -353,7 +353,7 @@ function currentNodeShouldHandleTranscode({
  * @param {Object} param
  * @param {Object} param.logger
  * @param {func} param.asyncFn the fn to asynchronously retry
- * @param {string} param.asyncFnLabel the task label used to print on retry. used for debugging purposes
+ * @param {string} param.logLabel used for debugging purposes
  * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
  * @param {number} [param.options.factor=2] the exponential factor
  * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
@@ -362,7 +362,13 @@ function currentNodeShouldHandleTranscode({
  * @param {func} [param.options.onRetry] fn that gets called per retry
  * @returns the fn response if success, or throws an error
  */
-function asyncRetry({ asyncFn, asyncFnLabel, options = {}, logger = genericLogger, log = true }) {
+function asyncRetry({
+  asyncFn,
+  options = {},
+  logger = genericLogger,
+  log = true,
+  logLabel = null
+}) {
   options = {
     retries: 5,
     factor: 2,
@@ -370,7 +376,9 @@ function asyncRetry({ asyncFn, asyncFnLabel, options = {}, logger = genericLogge
     maxTimeout: 5000,
     onRetry: (err, i) => {
       if (err && log) {
-        logger.warn(`${asyncFnLabel} ${i} retry error: `, err)
+        const logPrefix =
+          (logLabel ? `[${logLabel}] ` : '') + `[asyncRetry] [attempt #${i}]`
+        logger.warn(`${logPrefix}: `, err)
       }
     },
     ...options
