@@ -662,10 +662,8 @@ class BlacklistManager {
   }
 
   // Retrieves all track ids in redis
-  static async getAllTrackIds({ offset = 0, limit = 100 }) {
-    const allTrackIds = await redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
-
-    return allTrackIds.slice(offset, limit)
+  static async getAllTrackIds() {
+    return redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
   }
 
   static async getAllInvalidTrackIds() {
