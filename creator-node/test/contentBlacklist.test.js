@@ -75,6 +75,49 @@ describe('test ContentBlacklist', function () {
     await redis.flushall()
   })
 
+  it('should expose the proper tracks if added', async function () {
+    const expectedIds = [1, 2, 3, 4, 5, 6, 7]
+    const addTrackData = generateTimestampAndSignature(
+      {
+        type: BlacklistManager.getTypes().track,
+        values: expectedIds
+      },
+      DELEGATE_PRIVATE_KEY
+    )
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({
+        type: BlacklistManager.getTypes().track,
+        'values[]': expectedIds,
+        signature: addTrackData.signature,
+        timestamp: addTrackData.timestamp
+      })
+      .expect(200)
+
+    await request(app)
+      .get('/blacklist/tracks')
+      .expect(200)
+      .expect((resp) => {
+        const actualIds = resp.body.data.values
+        assert.deepStrictEqual(actualIds.length, expectedIds.length)
+
+        actualIds.forEach((id, i) => {
+          assert.ok(id, expectedIds[i])
+        })
+      })
+  })
+
+  it('should expose empty list if no tracks are added', async function () {
+    await request(app)
+      .get('/blacklist/tracks')
+      .expect(200)
+      .expect((resp) => {
+        const actualIds = resp.body.data.values
+        assert.deepStrictEqual(actualIds, [])
+      })
+  })
+
   it('should return the proper userIds, trackIds, and segments', async () => {
     ids = [43021]
     const addUserData = generateTimestampAndSignature(
