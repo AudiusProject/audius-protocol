@@ -483,7 +483,9 @@ class SnapbackSM {
     replicaSetNodesToUserClockStatusesMap
   ) {
     this.log(
-      `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] numHealthyNodes=${healthyNodes.length}`
+      `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=${JSON.stringify(
+        unhealthyReplicas
+      )} numHealthyNodes=${healthyNodes.length}`
     )
 
     const response = { errorMsg: null, issuedReconfig: false }

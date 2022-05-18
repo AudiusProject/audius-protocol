@@ -673,7 +673,20 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        },
+        'http://cnWithSpId3.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        }
+      }
+    }
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
@@ -706,7 +719,20 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        },
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        }
+      }
+    }
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
@@ -739,7 +765,20 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        },
+        'http://cnWithSpId3.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        }
+      }
+    }
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
@@ -774,7 +813,20 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        },
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        }
+      }
+    }
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
@@ -805,7 +857,20 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set()
 
-    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        },
+        'http://deregisteredCN.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        }
+      }
+    }
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     assert.ok(requiredUpdateReplicaSetOps[0].unhealthyReplicas.has('http://deregisteredCN.co'))
@@ -836,7 +901,20 @@ describe('test SnapbackSM', function () {
 
     const unhealthyPeers = new Set(['http://unhealthyCnWithSpId3.co'])
 
-    const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+    const userSecondarySyncMetricsMap = {
+      [nodeUsers[0].wallet]: {
+        'http://cnWithSpId2.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        },
+        'http://unhealthyCnWithSpId3.co': {
+          successRate: 1,
+          successCount: 0,
+          failureCount: 0
+        }
+      }
+    }
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers, userSecondarySyncMetricsMap)
 
     // Make sure that the unhealthy secondary put into `requiredUpdateReplicaSetOps`
@@ -958,7 +1036,7 @@ describe('test SnapbackSM', function () {
     ]
     const wallet = '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d'
 
-    // Mock the user having no state on any of the healthy nodes
+    // Mock the user having state on only one node (that node should be ignored during selection)
     snapback._retrieveClockValueForUserFromReplica = async (node, _) => {
       return node === 'http://healthyNodeWithUserState.co' ? 1 : -1
     }
@@ -999,7 +1077,7 @@ describe('test SnapbackSM', function () {
     ]
     const wallet = '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d'
 
-    // Mock the user having no state on any of the healthy nodes
+    // Mock the user having state on only one node (that node should be ignored during selection)
     snapback._retrieveClockValueForUserFromReplica = async (node, _) => {
       return node === 'http://healthyNodeWithUserState.co' ? 1 : -1
     }
