@@ -1106,7 +1106,6 @@ class SnapbackSM {
           'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
           { error: e.message }
         )
-        console.log(e.stack)
         throw new Error(
           'processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error'
         )
