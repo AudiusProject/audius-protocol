@@ -34,7 +34,7 @@ export const AnnouncementNotification = (
     shortDescription,
     longDescription,
     timeLabel,
-    isRead
+    isViewed
   } = notification
   const dispatch = useDispatch()
   const record = useRecord()
@@ -72,7 +72,7 @@ export const AnnouncementNotification = (
           </button>
         ) : null}
       </NotificationBody>
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

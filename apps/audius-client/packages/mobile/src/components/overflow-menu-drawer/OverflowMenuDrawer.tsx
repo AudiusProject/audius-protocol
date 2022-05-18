@@ -26,7 +26,6 @@ const rowMessageMap = {
   [OverflowAction.VIEW_PLAYLIST_PAGE]: 'View Playlist Page',
   [OverflowAction.VIEW_ALBUM_PAGE]: 'View Album Page',
   [OverflowAction.UNSUBSCRIBER_USER]: 'Unsubscribe',
-  [OverflowAction.HIDE_NOTIFICATION]: 'Hide',
   [OverflowAction.FOLLOW_ARTIST]: 'Follow Artist',
   [OverflowAction.UNFOLLOW_ARTIST]: 'Unfollow Artist',
   [OverflowAction.FOLLOW]: 'Follow',

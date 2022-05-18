@@ -26,7 +26,7 @@ type TipSentNotificationProps = {
 
 export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { notification } = props
-  const { user, value, timeLabel, isRead } = notification
+  const { user, value, timeLabel, isViewed } = notification
 
   return (
     <NotificationTile notification={notification}>
@@ -41,7 +41,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
         </span>
       </NotificationBody>
       <TwitterShareButton />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

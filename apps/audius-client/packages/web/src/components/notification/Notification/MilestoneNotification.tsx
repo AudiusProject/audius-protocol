@@ -74,7 +74,7 @@ type MilestoneNotificationProps = {
 
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
-  const { timeLabel, isRead, user } = notification
+  const { timeLabel, isViewed, user } = notification
   const dispatch = useDispatch()
   const record = useRecord()
 
@@ -124,7 +124,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       </NotificationHeader>
       <NotificationBody>{renderBody()}</NotificationBody>
       <TwitterShareButton onClick={handleShare} />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

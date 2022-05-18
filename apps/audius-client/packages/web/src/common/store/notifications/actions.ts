@@ -23,11 +23,10 @@ export const FETCH_NOTIFICATIONS_USERS_FAILED =
   'NOTIFICATION/FETCH_NOTIFICATIONS_USERS_FAILED'
 export const SET_NOTIFICATION_USERS = 'NOTIFICATION/SET_NOTIFICATION_USERS'
 
-export const MARK_AS_READ = 'NOTIFICATION/MARK_AS_READ'
-export const MARK_ALL_AS_READ = 'NOTIFICATION/MARK_ALL_AS_READ'
+export const SET_TOTAL_UNVIEWED_TO_ZERO =
+  'NOTIFICATION/SET_TOTAL_UNVIEWED_TO_ZERO'
 export const MARK_ALL_AS_VIEWED = 'NOTIFICATION/MARK_ALL_AS_VIEWED'
 
-export const HIDE_NOTIFICATION = 'NOTIFICATION/HIDE_NOTIFICATION'
 export const TOGGLE_NOTIFICATION_PANEL =
   'NOTIFICATION/TOGGLE_NOTIFICATION_PANEL'
 export const SET_NOTIFICATION_MODAL = 'NOTIFICATION/SET_NOTIFICATION_MODAL'
@@ -56,13 +55,13 @@ export const fetchNotificationsFailed = (
 })
 export const fetchNotificationSucceeded = (
   notifications: Notification[],
-  totalUnread: number,
+  totalUnviewed: number,
   hasMore: boolean
 ) => ({
   type: FETCH_NOTIFICATIONS_SUCCEEDED,
   notifications,
   hasMore,
-  totalUnread
+  totalUnviewed
 })
 
 export const refreshNotifications = () => ({
@@ -71,13 +70,13 @@ export const refreshNotifications = () => ({
 
 export const setNotifications = (
   notifications: Notification[],
-  totalUnread: number,
+  totalUnviewed: number,
   hasMore: boolean
 ) => ({
   type: SET_NOTIFICATIONS,
   notifications,
   hasMore,
-  totalUnread
+  totalUnviewed
 })
 
 export const setNotificationUsers = (userIds: ID[] = [], limit = 0) => {
@@ -107,17 +106,10 @@ export const fetchNotificationUsersSucceeded = (limit: number) => ({
   limit
 })
 
-export const markAsRead = (notificationId: string) => ({
-  type: MARK_AS_READ,
-  notificationId
+export const setTotalUnviewedToZero = () => ({
+  type: SET_TOTAL_UNVIEWED_TO_ZERO
 })
 
-export const hideNotification = (notificationId: string) => ({
-  type: HIDE_NOTIFICATION,
-  notificationId
-})
-
-export const markAllAsRead = () => ({ type: MARK_ALL_AS_READ })
 export const markAllAsViewed = () => ({ type: MARK_ALL_AS_VIEWED })
 
 export const setNotificationModal = (
@@ -171,9 +163,7 @@ export type FetchNotificationUsersFailed = ReturnType<
 export type FetchNotificationUsersSucceeded = ReturnType<
   typeof fetchNotificationUsersSucceeded
 >
-export type MarkAsRead = ReturnType<typeof markAsRead>
-export type HideNotification = ReturnType<typeof hideNotification>
-export type MarkAllAsRead = ReturnType<typeof markAllAsRead>
+export type SetTotalUnviewedToZero = ReturnType<typeof setTotalUnviewedToZero>
 export type MarkAllAsViewed = ReturnType<typeof markAllAsViewed>
 export type SetNotificationModal = ReturnType<typeof setNotificationModal>
 export type ToggleNotificationPanel = ReturnType<typeof toggleNotificationPanel>
@@ -196,9 +186,7 @@ export type NotificationAction =
   | FetchNotificationUsersRequested
   | FetchNotificationUsersFailed
   | FetchNotificationUsersSucceeded
-  | MarkAsRead
-  | HideNotification
-  | MarkAllAsRead
+  | SetTotalUnviewedToZero
   | MarkAllAsViewed
   | SetNotificationModal
   | ToggleNotificationPanel

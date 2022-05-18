@@ -29,7 +29,7 @@ import {
 } from 'common/store/notifications/actions'
 import {
   getNotificationPanelIsOpen,
-  getNotificationUnreadCount
+  getNotificationUnviewedCount
 } from 'common/store/notifications/selectors'
 import {
   addFolderToLibrary,
@@ -507,7 +507,7 @@ const makeMapStateToProps = () => {
       account: getAccountUser(state),
       accountStatus: getAccountStatus(state),
       dragging: getIsDragging(state),
-      notificationCount: getNotificationUnreadCount(state),
+      notificationCount: getNotificationUnviewedCount(state),
       notificationPanelIsOpen: getNotificationPanelIsOpen(state),
       upload: state.upload,
       library: getPlaylistLibrary(state),

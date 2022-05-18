@@ -1911,50 +1911,6 @@ class AudiusBackend {
     }
   }
 
-  static async markNotificationAsRead(notificationId, notificationType) {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
-    try {
-      const { data, signature } = await AudiusBackend.signData()
-      return fetch(`${IDENTITY_SERVICE}/notifications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({
-          notificationId,
-          notificationType,
-          isRead: true
-        })
-      }).then(res => res.json())
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  static async markAllNotificationAsRead() {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
-    try {
-      const { data, signature } = await AudiusBackend.signData()
-      return fetch(`${IDENTITY_SERVICE}/notifications/all`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({ isRead: true })
-      }).then(res => res.json())
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
   static async markAllNotificationAsViewed() {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
@@ -2030,30 +1986,6 @@ class AudiusBackend {
         body: JSON.stringify({ settings: { emailFrequency } })
       }).then(res => res.json())
       return res
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  static async markNotificationAsHidden(notificationId, notificationType) {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
-    try {
-      const { data, signature } = await AudiusBackend.signData()
-      return fetch(`${IDENTITY_SERVICE}/notifications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({
-          notificationId,
-          notificationType,
-          isHidden: true
-        })
-      }).then(res => res.json())
     } catch (e) {
       console.error(e)
     }
