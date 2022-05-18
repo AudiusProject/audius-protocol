@@ -576,50 +576,8 @@ describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
     healthyNode1Endpoint: 'http://healthy1_cn.co',
     healthyNode2Endpoint: 'http://healthy2_cn.co',
     healthyNode3Endpoint: 'http://healthy3_cn.co',
-    primaryClockVal: 1,
     wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5',
     userId: 1
-  }
-  const replicaSetNodesToUserClockStatusesMap = {}
-  replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint] = {}
-  replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint][constants.wallet] = 10
-  replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint] = {}
-  replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint][constants.wallet] = 10
-  replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint] = {}
-  replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint][constants.wallet] = 10
-  const healthyNodes = [constants.healthyNode1Endpoint, constants.healthyNode2Endpoint, constants.healthyNode3Endpoint]
-  const healthCheckVerboseResponse = {
-    'version': '0.3.38',
-    'service': 'content-node',
-    'healthy': true,
-    'git': '',
-    'selectedDiscoveryProvider': 'http://dn1_web-server_1:5000',
-    'creatorNodeEndpoint': 'http://cn1_creator-node_1:4000',
-    'spID': 1,
-    'spOwnerWallet': '0x18a1a15f7b63f48532233ee3dd6de4f48f0c35f3',
-    'isRegisteredOnURSM': true,
-    'country': 'US',
-    'latitude': '41.2619',
-    'longitude': '-95.8608',
-    'databaseConnections': 5,
-    'databaseSize': 9137151,
-    'totalMemory': 25219547136,
-    'usedMemory': 7504482304,
-    'usedTCPMemory': 244,
-    'storagePathSize': 259975987200,
-    'storagePathUsed': 66959749120,
-    'maxFileDescriptors': 9223372036854776000,
-    'allocatedFileDescriptors': 13984,
-    'receivedBytesPerSec': 12910.976260336089,
-    'transferredBytesPerSec': 163500,
-    'maxStorageUsedPercent': 95,
-    'numberOfCPUs': 12,
-    'thirtyDayRollingSyncSuccessCount': 7,
-    'thirtyDayRollingSyncFailCount': 0,
-    'dailySyncSuccessCount': 0,
-    'dailySyncFailCount': 0,
-    'latestSyncSuccessTimestamp': '',
-    'latestSyncFailTimestamp': ''
   }
 
   let server
@@ -636,22 +594,27 @@ describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
 
   afterEach(async function () {
     await server.close()
-    nock.cleanAll()
   })
 
   it('when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
-    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    // Clear the map to mock the inability to map an endpoint to its SP id
-    snapback.endpointToSPIdMap = {}
-    // Return default response
-    snapback.determineNewReplicaSet = async () => {
-      return {
-        newPrimary: constants.primaryEndpoint,
-        newSecondary1: constants.secondary1Endpoint,
-        newSecondary2: constants.healthyNode1Endpoint,
-        issueReconfig: true
+    const { SnapbackSM: mockSnapback } = proxyquire(
+      '../src/snapbackSM/snapbackSM.js',
+      {
+        './peerSetManager': sinon.stub().callsFake(() => {
+          return {
+            // Clear the map to mock the inability to map an endpoint to its SP id
+            endpointToSPIdMap: {}
+          }
+        })
       }
+    )
+    const snapback = new mockSnapback(nodeConfig, getLibsMock())
+    
+    const newReplicaSet = {
+      newPrimary: constants.primaryEndpoint,
+      newSecondary1: constants.secondary1Endpoint,
+      newSecondary2: constants.healthyNode1Endpoint,
+      issueReconfig: true
     }
 
     const { errorMsg, issuedReconfig } = await snapback.issueUpdateReplicaSetOp(
@@ -660,57 +623,25 @@ describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
       constants.primaryEndpoint,
       constants.secondary1Endpoint,
       constants.secondary2Endpoint,
-      [constants.secondary1Endpoint] /* unhealthyReplicas */,
-      healthyNodes /* healthyNodes */,
-      replicaSetNodesToUserClockStatusesMap
+      newReplicaSet
     )
 
     // Check to make sure that issueReconfig is false and the error is the expected error
-    assert.ok(errorMsg.includes('unable to find valid SPs from new replica set'))
-    assert.strictEqual(issuedReconfig, false)
+    expect(errorMsg).to.include('unable to find valid SPs from new replica set')
+    expect(issuedReconfig).to.be.false
   })
 
   it('if the reconfig type is not in the enabled modes, do not issue reconfig', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.ONE_SECONDARY.key)
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
-    // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
-    snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
-
-    // Mark primary as unhealthy
-    nock(constants.primaryEndpoint)
-      .persist()
-      .get(() => true)
-      .reply(500)
-
-    nock(constants.secondary1Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: { clockValue: 10 } })
-
-    nock(constants.secondary2Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: { clockValue: 10 } })
-
-    nock(constants.healthyNode1Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: healthCheckVerboseResponse })
-
-    nock(constants.healthyNode2Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: healthCheckVerboseResponse })
-
-    nock(constants.healthyNode3Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: healthCheckVerboseResponse })
-
-    // Mock as unhealthy
-    const replicaSetNodesToUserClockStatusesMapCopy = { ...replicaSetNodesToUserClockStatusesMap }
-    replicaSetNodesToUserClockStatusesMapCopy[constants.primaryEndpoint][constants.wallet] = undefined
+    const newReplicaSet = {
+      newPrimary: constants.secondary1Endpoint,
+      newSecondary1: constants.secondary2Endpoint,
+      newSecondary2: constants.healthyNode1Endpoint,
+      issueReconfig: false,
+      reconfigType: "PRIMARY_AND_OR_SECONDARIES"
+    }
 
     const { errorMsg, issuedReconfig } = await snapback.issueUpdateReplicaSetOp(
       constants.userId,
@@ -718,15 +649,13 @@ describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
       constants.primaryEndpoint,
       constants.secondary1Endpoint,
       constants.secondary2Endpoint,
-      new Set([constants.primaryEndpoint]) /* unhealthyReplicas */,
-      healthyNodes /* healthyNodes */,
-      replicaSetNodesToUserClockStatusesMapCopy
+      newReplicaSet
     )
 
     // Check to make sure that issueReconfig is false and the error is the expected error
     // Should log "SnapbackSM: [issueUpdateReplicaSetOp] userId=1 wallet=0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5 phase=DETERMINE_NEW_REPLICA_SET issuing reconfig disabled=false. Skipping reconfig."
-    assert.strictEqual(errorMsg, null)
-    assert.strictEqual(issuedReconfig, false)
+    expect(errorMsg).to.be.null
+    expect(issuedReconfig).to.be.false
   })
 })
 
@@ -1626,7 +1555,8 @@ describe('test SnapbackSM -- processStateMachineOperation', function () {
     snapback.retrieveClockStatusesForUsersAcrossReplicaSet = retrieveClockStatusesForUsersAcrossReplicaSetStub
     snapback.computeUserSecondarySyncSuccessRatesMap = computeUserSecondarySyncSuccessRatesMapStub
 
-    await snapback.processStateMachineOperation(1)
+    const jobId = 1
+    await snapback.processStateMachineOperation(jobId)
 
     sinon.assert.calledOnce(getNodeUsersStub)
     sinon.assert.calledOnceWithExactly(getUnhealthyPeersStub, nodeUsers)
