@@ -16,67 +16,66 @@ const SecondarySyncHealthTracker = require('../src/snapbackSM/secondarySyncHealt
 const { expect } = chai
 chai.use(sinonChai)
 
-const constants = {
-  primaryEndpoint: 'http://test_cn_primary.co',
-  secondary1Endpoint: 'http://test_cn_secondary1.co',
-  secondary2Endpoint: 'http://test_cn_secondary2.co',
-  healthyNode1Endpoint: 'http://healthy1_cn.co',
-  healthyNode2Endpoint: 'http://healthy2_cn.co',
-  healthyNode3Endpoint: 'http://healthy3_cn.co',
-  primaryClockVal: 1,
-  wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5',
-  userId: 1
-}
-
-const replicaSetNodesToUserClockStatusesMap = {}
-replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint] = {}
-replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint][constants.wallet] = 10
-replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint] = {}
-replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint][constants.wallet] = 10
-replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint] = {}
-replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint][constants.wallet] = 10
-
-const healthCheckVerboseResponse = {
-  'version': '0.3.38',
-  'service': 'content-node',
-  'healthy': true,
-  'git': '',
-  'selectedDiscoveryProvider': 'http://dn1_web-server_1:5000',
-  'creatorNodeEndpoint': 'http://cn1_creator-node_1:4000',
-  'spID': 1,
-  'spOwnerWallet': '0x18a1a15f7b63f48532233ee3dd6de4f48f0c35f3',
-  'isRegisteredOnURSM': true,
-  'country': 'US',
-  'latitude': '41.2619',
-  'longitude': '-95.8608',
-  'databaseConnections': 5,
-  'databaseSize': 9137151,
-  'totalMemory': 25219547136,
-  'usedMemory': 7504482304,
-  'usedTCPMemory': 244,
-  'storagePathSize': 259975987200,
-  'storagePathUsed': 66959749120,
-  'maxFileDescriptors': 9223372036854776000,
-  'allocatedFileDescriptors': 13984,
-  'receivedBytesPerSec': 12910.976260336089,
-  'transferredBytesPerSec': 163500,
-  'maxStorageUsedPercent': 95,
-  'numberOfCPUs': 12,
-  'thirtyDayRollingSyncSuccessCount': 7,
-  'thirtyDayRollingSyncFailCount': 0,
-  'dailySyncSuccessCount': 0,
-  'dailySyncFailCount': 0,
-  'latestSyncSuccessTimestamp': '',
-  'latestSyncFailTimestamp': ''
-}
-
-const healthyNodes = [constants.healthyNode1Endpoint, constants.healthyNode2Endpoint, constants.healthyNode3Endpoint]
-
-describe('test SnapbackSM', function () {
+describe('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconfig mode', function () {
+  const constants = {
+    primaryEndpoint: 'http://test_cn_primary.co',
+    secondary1Endpoint: 'http://test_cn_secondary1.co',
+    secondary2Endpoint: 'http://test_cn_secondary2.co',
+    healthyNode1Endpoint: 'http://healthy1_cn.co',
+    healthyNode2Endpoint: 'http://healthy2_cn.co',
+    healthyNode3Endpoint: 'http://healthy3_cn.co',
+    primaryClockVal: 1,
+    wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5',
+    userId: 1
+  }
+  
+  const replicaSetNodesToUserClockStatusesMap = {}
+  replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint] = {}
+  replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint][constants.wallet] = 10
+  replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint] = {}
+  replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint][constants.wallet] = 10
+  replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint] = {}
+  replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint][constants.wallet] = 10
+  
+  const healthCheckVerboseResponse = {
+    'version': '0.3.38',
+    'service': 'content-node',
+    'healthy': true,
+    'git': '',
+    'selectedDiscoveryProvider': 'http://dn1_web-server_1:5000',
+    'creatorNodeEndpoint': 'http://cn1_creator-node_1:4000',
+    'spID': 1,
+    'spOwnerWallet': '0x18a1a15f7b63f48532233ee3dd6de4f48f0c35f3',
+    'isRegisteredOnURSM': true,
+    'country': 'US',
+    'latitude': '41.2619',
+    'longitude': '-95.8608',
+    'databaseConnections': 5,
+    'databaseSize': 9137151,
+    'totalMemory': 25219547136,
+    'usedMemory': 7504482304,
+    'usedTCPMemory': 244,
+    'storagePathSize': 259975987200,
+    'storagePathUsed': 66959749120,
+    'maxFileDescriptors': 9223372036854776000,
+    'allocatedFileDescriptors': 13984,
+    'receivedBytesPerSec': 12910.976260336089,
+    'transferredBytesPerSec': 163500,
+    'maxStorageUsedPercent': 95,
+    'numberOfCPUs': 12,
+    'thirtyDayRollingSyncSuccessCount': 7,
+    'thirtyDayRollingSyncFailCount': 0,
+    'dailySyncSuccessCount': 0,
+    'dailySyncFailCount': 0,
+    'latestSyncSuccessTimestamp': '',
+    'latestSyncFailTimestamp': ''
+  }
+  
+  const healthyNodes = [constants.healthyNode1Endpoint, constants.healthyNode2Endpoint, constants.healthyNode3Endpoint]
+  
   let server
 
   beforeEach(async function () {
-    // init app to run migrations
     const appInfo = await getApp(getLibsMock())
     server = appInfo.server
     const app = appInfo.app
@@ -209,7 +208,41 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(recurringWaitingJobIDs.length, 0)
   })
 
-  it('[determineNewReplicaSet] if config has an unrecognizable mode, default to `RECONFIG_DISABLED`', async function () {
+  it('depending on the reconfig mode enabled, reflect changes in the enabled modes', async function () {
+    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
+    let snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+
+    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
+    snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+
+    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.ONE_SECONDARY.key)
+    snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.ONE_SECONDARY.key)
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+
+    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.RECONFIG_DISABLED.key)
+    snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.RECONFIG_DISABLED.key)
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+  })
+
+  it('if config has an unrecognizable mode, default to `RECONFIG_DISABLED`', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', 'pizza')
 
     // Create SnapbackSM instance
@@ -222,7 +255,7 @@ describe('test SnapbackSM', function () {
     assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
   })
 
-  it('[determineNewReplicaSet] if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
+  it('if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.RECONFIG_DISABLED.key)
 
     // Create SnapbackSM instance
@@ -279,7 +312,7 @@ describe('test SnapbackSM', function () {
     assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key))
   })
 
-  it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set', async function () {
+  it('if entire replica set is unhealthy, return falsy replica set', async function () {
     // Create SnapbackSM instance
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
@@ -304,7 +337,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(issueReconfig, false)
   })
 
-  it('[determineNewReplicaSet] if one secondary is unhealthy, return new secondary', async function () {
+  it('if one secondary is unhealthy, return new secondary', async function () {
     // Set `snapbackHighestReconfigMode` to 'ONE_SECONDARY'
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.ONE_SECONDARY.key)
 
@@ -359,7 +392,7 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
   })
 
-  it('[determineNewReplicaSet] if both secondaries are unhealthy, return two new secondaries ', async function () {
+  it('if both secondaries are unhealthy, return two new secondaries ', async function () {
     // Set `snapbackHighestReconfigMode` to 'MULTIPLE_SECONDARIES'
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
 
@@ -415,7 +448,7 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
   })
 
-  it('[determineNewReplicaSet] if one primary is unhealthy, return a secondary promoted to primary, existing secondary1, and new secondary2', async function () {
+  it('if one primary is unhealthy, return a secondary promoted to primary, existing secondary1, and new secondary2', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
 
     // Create SnapbackSM instance
@@ -475,7 +508,7 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
   })
 
-  it('[determineNewReplicaSet] if primary+secondary are unhealthy, return a secondary promoted to a primary, and 2 new secondaries', async function () {
+  it('if primary+secondary are unhealthy, return a secondary promoted to a primary, and 2 new secondaries', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
 
     // Create SnapbackSM instance
@@ -533,8 +566,80 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
     assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
   })
+})
 
-  it('[issueUpdateReplicaSetOp] if when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
+describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
+  const constants = {
+    primaryEndpoint: 'http://test_cn_primary.co',
+    secondary1Endpoint: 'http://test_cn_secondary1.co',
+    secondary2Endpoint: 'http://test_cn_secondary2.co',
+    healthyNode1Endpoint: 'http://healthy1_cn.co',
+    healthyNode2Endpoint: 'http://healthy2_cn.co',
+    healthyNode3Endpoint: 'http://healthy3_cn.co',
+    primaryClockVal: 1,
+    wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5',
+    userId: 1
+  }
+  const replicaSetNodesToUserClockStatusesMap = {}
+  replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint] = {}
+  replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint][constants.wallet] = 10
+  replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint] = {}
+  replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint][constants.wallet] = 10
+  replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint] = {}
+  replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint][constants.wallet] = 10
+  const healthyNodes = [constants.healthyNode1Endpoint, constants.healthyNode2Endpoint, constants.healthyNode3Endpoint]
+  const healthCheckVerboseResponse = {
+    'version': '0.3.38',
+    'service': 'content-node',
+    'healthy': true,
+    'git': '',
+    'selectedDiscoveryProvider': 'http://dn1_web-server_1:5000',
+    'creatorNodeEndpoint': 'http://cn1_creator-node_1:4000',
+    'spID': 1,
+    'spOwnerWallet': '0x18a1a15f7b63f48532233ee3dd6de4f48f0c35f3',
+    'isRegisteredOnURSM': true,
+    'country': 'US',
+    'latitude': '41.2619',
+    'longitude': '-95.8608',
+    'databaseConnections': 5,
+    'databaseSize': 9137151,
+    'totalMemory': 25219547136,
+    'usedMemory': 7504482304,
+    'usedTCPMemory': 244,
+    'storagePathSize': 259975987200,
+    'storagePathUsed': 66959749120,
+    'maxFileDescriptors': 9223372036854776000,
+    'allocatedFileDescriptors': 13984,
+    'receivedBytesPerSec': 12910.976260336089,
+    'transferredBytesPerSec': 163500,
+    'maxStorageUsedPercent': 95,
+    'numberOfCPUs': 12,
+    'thirtyDayRollingSyncSuccessCount': 7,
+    'thirtyDayRollingSyncFailCount': 0,
+    'dailySyncSuccessCount': 0,
+    'dailySyncFailCount': 0,
+    'latestSyncSuccessTimestamp': '',
+    'latestSyncFailTimestamp': ''
+  }
+
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+    nock.cleanAll()
+  })
+
+  it('when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     // Clear the map to mock the inability to map an endpoint to its SP id
@@ -565,7 +670,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(issuedReconfig, false)
   })
 
-  it('[issueUpdateReplicaSetOp] if the reconfig type is not in the enabled modes, do not issue reconfig', async function () {
+  it('if the reconfig type is not in the enabled modes, do not issue reconfig', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.ONE_SECONDARY.key)
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
@@ -623,42 +728,26 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(errorMsg, null)
     assert.strictEqual(issuedReconfig, false)
   })
+})
 
-  it('depending on the reconfig mode enabled, reflect changes in the enabled modes', async function () {
-    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
-    let snapback = new SnapbackSM(nodeConfig, getLibsMock())
+describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () {
+  let server
 
-    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
-    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
 
-    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
-    snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    await app.get('redisClient').flushdb()
 
-    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
-    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
-
-    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.ONE_SECONDARY.key)
-    snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.ONE_SECONDARY.key)
-    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
-
-    nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.RECONFIG_DISABLED.key)
-    snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.RECONFIG_DISABLED.key)
-    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    nodeConfig.set('spID', 1)
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if the self node is the secondary and a primary spId is different from what is on chain, issue reconfig', async function () {
+  afterEach(async function () {
+    await server.close()
+  })
+
+  it('if the self node is the secondary and a primary spId is different from what is on chain, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
@@ -704,7 +793,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests.length, 0)
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if the self node is the primary and a secondary spId is different from what is on chain, issue reconfig', async function () {
+  it('if the self node is the primary and a secondary spId is different from what is on chain, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
@@ -750,7 +839,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) is the same as the SP with a different spId, do not issue reconfig', async function () {
+  it('if the self node (primary) is the same as the SP with a different spId, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
@@ -798,7 +887,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests[1].endpoint, 'http://cnWithSpId3.co')
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if the self node (secondary) is the same as the SP with a different spId, do not issue reconfig', async function () {
+  it('if the self node (secondary) is the same as the SP with a different spId, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
@@ -843,7 +932,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests.length, 0)
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if any replica set node is not in the map, issue reconfig', async function () {
+  it('if any replica set node is not in the map, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     // Mock the deregistered node to not have any spId
@@ -887,7 +976,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) and 1 secondary are healthy but not the other secondary, issue reconfig for the unhealthy secondary', async function () {
+  it('if the self node (primary) and 1 secondary are healthy but not the other secondary, issue reconfig for the unhealthy secondary', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -935,7 +1024,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
 
-  it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) and and secondaries are healthy but sync success rate is low, issue reconfig', async function () {
+  it('if the self node (primary) and and secondaries are healthy but sync success rate is low, issue reconfig', async function () {
     nodeConfig.set('minimumFailedSyncRequestsBeforeReconfig', 5)
     nodeConfig.set('minimumSecondaryUserSyncSuccessPercent', 25)
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
@@ -983,8 +1072,26 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(potentialSyncRequests.length, 1)
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
+})
 
-  it('[selectRandomReplicaSetNodes] replace 1 unhealthy replica', async function () {
+describe('test SnapbackSM -- selectRandomReplicaSetNodes', function () {
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+  })
+
+  it('replace 1 unhealthy replica', async function () {
     const { SnapbackSM: mockSnapback } = proxyquire(
       '../src/snapbackSM/snapbackSM.js',
       {
@@ -1023,7 +1130,7 @@ describe('test SnapbackSM', function () {
     assert.ok(!healthyReplicaSet.has(newReplicaSetNodes[0]))
   })
 
-  it('[selectRandomReplicaSetNodes] replace 2 unhealthy replicas and ignore healthy node with state', async function () {
+  it('replace 2 unhealthy replicas and ignore healthy node with state', async function () {
     const { SnapbackSM: mockSnapback } = proxyquire(
       '../src/snapbackSM/snapbackSM.js',
       {
@@ -1065,7 +1172,7 @@ describe('test SnapbackSM', function () {
     assert.ok(newReplicaSetNodes.every((newReplicaSetNode) => newReplicaSetNode !== 'http://healthyNodeWithUserState.co'))
   })
 
-  it('[selectRandomReplicaSetNodes] throw if insufficient number of new replica sets exist', async function () {
+  it('throw if insufficient number of new replica sets exist', async function () {
     const { SnapbackSM: mockSnapback } = proxyquire(
       '../src/snapbackSM/snapbackSM.js',
       {
@@ -1105,8 +1212,26 @@ describe('test SnapbackSM', function () {
       assert.ok(false, reason)
     })
   })
+})
 
-  it('[retrieveClockStatusesForUsersAcrossReplicaSet] returns expected clock values and updates unhealthyPeers', async function () {
+describe('test SnapbackSM -- retrieveClockStatusesForUsersAcrossReplicaSet', function () {
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+  })
+
+  it('returns expected clock values and updates unhealthyPeers', async function () {
     nodeConfig.set('maxBatchClockStatusBatchSize', 2)
 
     const expectedReplicaToClockValueMap = {
@@ -1169,8 +1294,26 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(unhealthyPeers.size, 1)
     assert.ok(unhealthyPeers.has('http://unhealthyCn.co'))
   })
+})
 
-  it("[issueSyncRequestsToSecondaries] doesn't sync when endpoint clock value is >= than primary", async function () {
+describe('test SnapbackSM -- issueSyncRequestsToSecondaries', function () {
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+  })
+
+  it("doesn't sync when endpoint clock value is >= than primary", async function () {
     const userReplicaSets = [
       {
         'user_id': 1,
@@ -1229,7 +1372,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(enqueueSyncRequestErrors.length, 0)
   })
 
-  it('[issueSyncRequestsToSecondaries] syncs when endpoint clock value is lower than primary', async function () {
+  it('syncs when endpoint clock value is lower than primary', async function () {
     const userReplicaSets = [
       {
         'user_id': 1,
@@ -1307,7 +1450,7 @@ describe('test SnapbackSM', function () {
     )
   })
 
-  it("[issueSyncRequestsToSecondaries] short circuit when our node (snapback.endpoint) is not the user's primary", async function () {
+  it("short circuit when our node (snapback.endpoint) is not the user's primary", async function () {
     const userReplicaSets = [
       {
         'user_id': 1,
@@ -1367,7 +1510,7 @@ describe('test SnapbackSM', function () {
     sinon.assert.notCalled(enqueueSyncStub)
   })
 
-  it('[issueSyncRequestsToSecondaries] catch and log when enqueueSync throws error', async function () {
+  it('catch and log when enqueueSync throws error', async function () {
     const userReplicaSets = [
       {
         'user_id': 1,
@@ -1426,8 +1569,26 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(enqueueSyncRequestErrors.length, 2)
     sinon.assert.calledTwice(enqueueSyncStub)
   })
+})
 
-  it('[processStateMachineOperation] runs all steps without throwing', async function () {
+describe('test SnapbackSM -- processStateMachineOperation', function () {
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+  })
+
+  it('runs all steps without throwing', async function () {
     // Make dummy data
     const nodeUsers = [{ 'testUser': 'testUser' }]
     const unhealthyPeers = ['testUnhealthyPeer']
@@ -1478,8 +1639,26 @@ describe('test SnapbackSM', function () {
     )
     sinon.assert.calledOnceWithExactly(computeUserSecondarySyncSuccessRatesMapStub, nodeUsers)
   })
+})
 
-  it('[additionalSyncIsRequired] additional sync is required when secondary updates clock value but clock value is still behind primary', async function () {
+describe('test SnapbackSM -- additionalSyncIsRequired', function () {
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+  })
+
+  it('additional sync is required when secondary updates clock value but clock value is still behind primary', async function () {
     const userWallet = 'wallet1'
     const primaryClockValue = 5
     const initialSecondaryClockValue = 2
@@ -1526,7 +1705,7 @@ describe('test SnapbackSM', function () {
     expect(recordFailureStub).to.have.not.been.called
   })
 
-  it("[additionalSyncIsRequired] additional sync is required when secondary doesn't update clock during sync", async function () {
+  it("additional sync is required when secondary doesn't update clock during sync", async function () {
     const userWallet = 'wallet1'
     const primaryClockValue = 5
     const finalSecondaryClockValue = 2
@@ -1569,6 +1748,24 @@ describe('test SnapbackSM', function () {
       syncType
     )
     expect(recordSuccessStub).to.have.not.been.called
+  })
+})
+
+describe('test SnapbackSM -- computeUserSecondarySyncSuccessRatesMap', function () {
+  let server
+
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    server = appInfo.server
+    const app = appInfo.app
+
+    await app.get('redisClient').flushdb()
+
+    nodeConfig.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
   })
 
   it("[computeUserSecondarySyncSuccessRatesMap] ", async function () {
