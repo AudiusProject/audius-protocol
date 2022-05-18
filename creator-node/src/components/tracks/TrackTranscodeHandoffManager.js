@@ -238,7 +238,7 @@ class TrackTranscodeHandoffManager {
           return resp
         }
       },
-      asyncFnLabel: 'polling transcode',
+      logLabel: 'polling transcode',
       options: {
         retries: POLLING_TRANSCODE_AND_SEGMENTS_RETRIES,
         minTimeout: POLLING_TRANSCODE_AND_SEGMENTS_MIN_TIMEOUT,
@@ -373,7 +373,7 @@ class TrackTranscodeHandoffManager {
           timeout: SEND_TRANSCODE_AND_SEGMENT_REQUEST_TIMEOUT_MS
         })
       },
-      asyncFnLabel: 'transcode and segment'
+      logLabel: 'transcode and segment'
     })
 
     return resp.data.data.uuid
@@ -431,7 +431,7 @@ class TrackTranscodeHandoffManager {
             timeout: FETCH_PROCESSING_STATUS_TIMEOUT_MS
           })
         },
-        asyncFnLabel: 'fetch track content processing status'
+        logLabel: 'fetch track content processing status'
       })
 
     return body.data
@@ -467,7 +467,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         })
       },
-      asyncFnLabel: 'fetch segment'
+      logLabel: 'fetch segment'
     })
   }
 
@@ -501,7 +501,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         })
       },
-      asyncFnLabel: 'fetch transcode'
+      logLabel: 'fetch transcode'
     })
   }
 
@@ -535,7 +535,7 @@ class TrackTranscodeHandoffManager {
           timeout: FETCH_STREAM_TIMEOUT_MS
         })
       },
-      asyncFnLabel: 'fetch m3u8'
+      logLabel: 'fetch m3u8'
     })
   }
 
@@ -560,7 +560,7 @@ class TrackTranscodeHandoffManager {
    * @param {Object} param
    * @param {Object} param.logger
    * @param {func} param.asyncFn the fn to asynchronously retry
-   * @param {string} param.asyncFnLabel the task label used to print on retry. used for debugging purposes
+   * @param {string} param.logLabel the task label used to print on retry. used for debugging purposes
    * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
    * @param {number} [param.options.factor=2] the exponential factor
    * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
@@ -572,7 +572,7 @@ class TrackTranscodeHandoffManager {
   static asyncRetryNotOn404({
     logger,
     asyncFn: inputAsyncFn,
-    asyncFnLabel,
+    logLabel,
     options = {}
   }) {
     const asyncFn = async (bail) => {
@@ -593,7 +593,7 @@ class TrackTranscodeHandoffManager {
       return resp
     }
 
-    return Utils.asyncRetry({ logger, asyncFn, asyncFnLabel, options })
+    return Utils.asyncRetry({ logger, asyncFn, logLabel, options })
   }
 }
 

@@ -1910,7 +1910,7 @@ class SnapbackSM {
     try {
       // Request all users that have this node as a replica (either primary or secondary)
       const resp = await Utils.asyncRetry({
-        asyncFnLabel: 'fetch all users with this node in replica',
+        logLabel: 'fetch all users with this node in replica',
         asyncFn: async () => {
           return axios({
             method: 'get',
