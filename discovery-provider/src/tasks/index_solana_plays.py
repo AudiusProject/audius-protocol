@@ -537,7 +537,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
-        latest_global_slot = solana_client_manager.get_block_height()
+        latest_global_slot = solana_client_manager.get_slot()
     except:
         logger.error("index_solana_plays.py | Failed to get block height")
 

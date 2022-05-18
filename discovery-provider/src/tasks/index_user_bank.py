@@ -417,7 +417,7 @@ def process_user_bank_txs():
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
-        latest_global_slot = solana_client_manager.get_block_height()
+        latest_global_slot = solana_client_manager.get_slot()
     except:
         logger.error("index_user_bank.py | Failed to get block height")
 
