@@ -15,6 +15,14 @@
   color: var(--secondary);
 }
 
+.badges {
+  margin-left: var(--unit-1);
+}
+
+.badgesNoContent {
+  margin-left: 0;
+}
+
 .link:hover {
   color: var(--secondary);
   text-decoration: underline !important;
