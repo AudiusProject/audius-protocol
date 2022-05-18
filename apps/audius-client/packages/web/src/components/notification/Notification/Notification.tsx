@@ -13,6 +13,7 @@ import {
   Notification as Notifications,
   NotificationType
 } from 'common/store/notifications/types'
+import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
@@ -64,57 +65,66 @@ export const Notification = (props: NotificationProps) => {
     entities
   } as unknown) as Notifications
 
-  switch (notification.type) {
-    case NotificationType.Announcement: {
-      return <AnnouncementNotification notification={notification} />
-    }
-    case NotificationType.ChallengeReward: {
-      return <ChallengeRewardNotification notification={notification} />
-    }
-    case NotificationType.Favorite: {
-      return <FavoriteNotification notification={notification} />
-    }
-    case NotificationType.Follow: {
-      return <FollowNotification notification={notification} />
-    }
-    case NotificationType.Milestone: {
-      return <MilestoneNotification notification={notification} />
-    }
-    case NotificationType.RemixCosign: {
-      return <RemixCosignNotification notification={notification} />
-    }
-    case NotificationType.RemixCreate: {
-      return <RemixCreateNotification notification={notification} />
-    }
-    case NotificationType.Repost: {
-      return <RepostNotification notification={notification} />
-    }
-    case NotificationType.TierChange: {
-      return <TierChangeNotification notification={notification} />
-    }
-    case NotificationType.TipReaction: {
-      return <TipReactionNotification notification={notification} />
-    }
-    case NotificationType.TipReceived: {
-      return <TipReceivedNotification notification={notification} />
-    }
-    case NotificationType.TipSent: {
-      return <TipSentNotification notification={notification} />
-    }
-    case NotificationType.TopSupporter: {
-      return <TopSupporterNotification notification={notification} />
-    }
-    case NotificationType.TopSupporting: {
-      return <TopSupportingNotification notification={notification} />
-    }
-    case NotificationType.TrendingTrack: {
-      return <TrendingTrackNotification notification={notification} />
-    }
-    case NotificationType.UserSubscription: {
-      return <UserSubscriptionNotification notification={notification} />
-    }
-    default: {
-      return null
+  const getNotificationElement = () => {
+    switch (notification.type) {
+      case NotificationType.Announcement: {
+        return <AnnouncementNotification notification={notification} />
+      }
+      case NotificationType.ChallengeReward: {
+        return <ChallengeRewardNotification notification={notification} />
+      }
+      case NotificationType.Favorite: {
+        return <FavoriteNotification notification={notification} />
+      }
+      case NotificationType.Follow: {
+        return <FollowNotification notification={notification} />
+      }
+      case NotificationType.Milestone: {
+        return <MilestoneNotification notification={notification} />
+      }
+      case NotificationType.RemixCosign: {
+        return <RemixCosignNotification notification={notification} />
+      }
+      case NotificationType.RemixCreate: {
+        return <RemixCreateNotification notification={notification} />
+      }
+      case NotificationType.Repost: {
+        return <RepostNotification notification={notification} />
+      }
+      case NotificationType.TierChange: {
+        return <TierChangeNotification notification={notification} />
+      }
+      case NotificationType.TipReaction: {
+        return <TipReactionNotification notification={notification} />
+      }
+      case NotificationType.TipReceived: {
+        return <TipReceivedNotification notification={notification} />
+      }
+      case NotificationType.TipSent: {
+        return <TipSentNotification notification={notification} />
+      }
+      case NotificationType.TopSupporter: {
+        return <TopSupporterNotification notification={notification} />
+      }
+      case NotificationType.TopSupporting: {
+        return <TopSupportingNotification notification={notification} />
+      }
+      case NotificationType.TrendingTrack: {
+        return <TrendingTrackNotification notification={notification} />
+      }
+      case NotificationType.UserSubscription: {
+        return <UserSubscriptionNotification notification={notification} />
+      }
+      default: {
+        return null
+      }
     }
   }
+  return (
+    <ErrorWrapper
+      errorMessage={`Could not render notification ${notification.id}`}
+    >
+      {getNotificationElement()}
+    </ErrorWrapper>
+  )
 }
