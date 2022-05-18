@@ -43,7 +43,6 @@ const SyncType = Object.freeze({
 
 // Phases in `issueUpdateReplicaSetOp`. Used for debugging if method fails
 const issueUpdateReplicaSetOpPhases = Object.freeze({
-  DETERMINE_NEW_REPLICA_SET: 'DETERMINE_NEW_REPLICA_SET',
   ENQUEUE_SYNCS: 'ENQUEUE_SYNCS',
   UPDATE_URSM_REPLICA_SET: 'UPDATE_URSM_REPLICA_SET'
 })
@@ -456,19 +455,15 @@ class SnapbackSM {
   }
 
   /**
-   * Depending on the size of `unhealthyReplicas`:
-   * 1. Determine a new replica set
-   * 2. Write new replica set to URSM
-   * 3. Sync data to new replica set
+   * 1. Write new replica set to URSM
+   * 2. Sync data to new replica set
    *
    * @param {number} userId user id to issue a reconfiguration for
    * @param {string} wallet wallet address of user id
    * @param {string} primary endpoint of the current primary node on replica set
    * @param {string} secondary1 endpoint of the current first secondary node on replica set
    * @param {string} secondary2 endpoint of the current second secondary node on replica set
-   * @param {string[]} unhealthyReplicas array of endpoints of current replica set nodes that are unhealthy
-   * @param {string[]} healthyNodes array of healthy Content Node endpoints used for selecting new replica set
-   * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+   * @param {Object} newReplicaSet {newPrimary, newSecondary1, newSecondary2, issueReconfig, reconfigType}
    */
   async issueUpdateReplicaSetOp(
     userId,
@@ -476,39 +471,20 @@ class SnapbackSM {
     primary,
     secondary1,
     secondary2,
-    unhealthyReplicas,
-    healthyNodes,
-    replicaSetNodesToUserClockStatusesMap
+    newReplicaSet
   ) {
-    this.log(
-      `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=${JSON.stringify(
-        unhealthyReplicas
-      )} numHealthyNodes=${healthyNodes.length}`
-    )
-
     const response = { errorMsg: null, issuedReconfig: false }
     let newReplicaSetEndpoints = []
     const newReplicaSetSPIds = []
     let phase = ''
     try {
-      // Generate new replica set
-      phase = issueUpdateReplicaSetOpPhases.DETERMINE_NEW_REPLICA_SET
       const {
         newPrimary,
         newSecondary1,
         newSecondary2,
         issueReconfig,
         reconfigType
-      } = await this.determineNewReplicaSet({
-        wallet,
-        secondary1,
-        secondary2,
-        primary,
-        unhealthyReplicasSet: unhealthyReplicas,
-        healthyNodes,
-        replicaSetNodesToUserClockStatusesMap
-      })
-
+      } = newReplicaSet
       newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
       // If snapback is not enabled, Log reconfig op without issuing.
@@ -525,7 +501,9 @@ class SnapbackSM {
         // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
         // selected as part of the new replica set, do not issue reconfig
         if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
-          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${this.peerSetManager.endpointToSPIdMap} | endpt=${endpt}. Skipping reconfig.`
+          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
+            this.peerSetManager.endpointToSPIdMap
+          )} | endpt=${endpt}. Skipping reconfig.`
           this.logError(response.errorMsg)
           return response
         }
@@ -574,8 +552,7 @@ class SnapbackSM {
         `[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
       )
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
-      response.errorMsg = errorMsg
+      response.errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
       this.logError(response.errorMsg)
       return response
     }
@@ -1182,20 +1159,40 @@ class SnapbackSM {
 
         let numIssueUpdateReplicaSetOpErrors = 0
         for await (const userInfo of requiredUpdateReplicaSetOps) {
-          const { errorMsg, issuedReconfig } =
-            await this.issueUpdateReplicaSetOp(
-              userInfo.user_id,
-              userInfo.wallet,
-              userInfo.primary,
-              userInfo.secondary1,
-              userInfo.secondary2,
-              userInfo.unhealthyReplicas,
+          try {
+            const newReplicaSet = await this.determineNewReplicaSet({
+              wallet: userInfo.wallet,
+              secondary1: userInfo.secondary1,
+              secondary2: userInfo.secondary2,
+              primary: userInfo.primary,
+              unhealthyReplicasSet: userInfo.unhealthyReplicas,
               healthyNodes,
-              replicaSetNodesToUserWalletsMap
-            )
+              replicaSetNodesToUserClockStatusesMap:
+                replicaSetNodesToUserWalletsMap
+            })
+            const { errorMsg, issuedReconfig } =
+              await this.issueUpdateReplicaSetOp(
+                userInfo.user_id,
+                userInfo.wallet,
+                userInfo.primary,
+                userInfo.secondary1,
+                userInfo.secondary2,
+                newReplicaSet
+              )
 
-          if (errorMsg) numIssueUpdateReplicaSetOpErrors++
-          if (issuedReconfig) numUpdateReplicaOpsIssued++
+            if (errorMsg) numIssueUpdateReplicaSetOpErrors++
+            if (issuedReconfig) numUpdateReplicaOpsIssued++
+          } catch (e) {
+            this.logError(
+              `ERROR issuing update replica set op: userId=${
+                userInfo.user_id
+              } wallet=${userInfo.wallet} old replica set=[${
+                userInfo.primary
+              },${userInfo.secondary1},${
+                userInfo.secondary2
+              }] | Error: ${e.toString()}`
+            )
+          }
         }
         if (numIssueUpdateReplicaSetOpErrors > 0)
           throw new Error(
