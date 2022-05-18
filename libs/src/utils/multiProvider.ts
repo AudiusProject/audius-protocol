@@ -11,12 +11,7 @@ const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
   return provider.send
 }
 
-export type Providers = [
-  HttpProvider,
-  ...Array<HttpProvider | AbstractProvider>
-]
-
-type StringProviders = [string, ...string[]]
+type Providers = [HttpProvider, ...Array<HttpProvider | AbstractProvider>]
 
 /**
  * web3 consumes a provider object on initialization
@@ -31,21 +26,24 @@ export class MultiProvider extends Web3.providers.HttpProvider {
    * Creates a MultiProvider
    * @param {Array<string | Provider> | string} - The providers to use.
    */
-  constructor(providers: Providers | string) {
-    let web3Providers: Providers | StringProviders
+  constructor(providers: string[] | string) {
+    let web3Providers: string[]
     if (typeof providers === 'string') {
-      web3Providers = providers.split(',') as StringProviders
+      web3Providers = providers.split(',')
     } else if (!Array.isArray(providers)) {
       web3Providers = [providers]
     } else {
       web3Providers = providers
     }
 
+    console.log('PROVIDERS', web3Providers, providers)
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
     const web3ProviderInstances = web3Providers.map(
       (provider) => new Web3(provider).eth.currentProvider
     ) as Providers
     super(web3ProviderInstances[0]?.host)
+
+    console.log('PROVIDERS 2', web3ProviderInstances)
 
     if (!web3ProviderInstances.every(getSendMethod)) {
       throw new Error('Some providers do not have a send method to use.')

@@ -58,6 +58,17 @@ export const serviceType = Object.freeze({
 })
 const serviceTypeList = Object.values(serviceType)
 
+export type EthContractsConfig = {
+  ethWeb3Manager: EthWeb3Manager
+  tokenContractAddress: string
+  registryAddress: string
+  claimDistributionContractAddress: string
+  wormholeContractAddress: string
+  isServer?: boolean
+  logger?: Logger
+  isDebug?: boolean
+}
+
 export class EthContracts {
   ethWeb3Manager: EthWeb3Manager
   tokenContractAddress: string
@@ -85,16 +96,16 @@ export class EthContracts {
   contracts: Record<string, string> | undefined
   contractAddresses: Record<string, string> | undefined
 
-  constructor(
-    ethWeb3Manager: EthWeb3Manager,
-    tokenContractAddress: string,
-    registryAddress: string,
-    claimDistributionContractAddress: string,
-    wormholeContractAddress: string,
-    isServer: boolean,
+  constructor({
+    ethWeb3Manager,
+    tokenContractAddress,
+    registryAddress,
+    claimDistributionContractAddress,
+    wormholeContractAddress,
+    isServer = false,
     logger = console,
     isDebug = false
-  ) {
+  }: EthContractsConfig) {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
     this.claimDistributionContractAddress = claimDistributionContractAddress
