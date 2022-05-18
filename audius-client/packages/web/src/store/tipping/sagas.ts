@@ -145,12 +145,7 @@ function* refreshSupportAsync({
 }) {
   const encodedSenderUserId = encodeHashId(senderUserId)
   const encodedReceiverUserId = encodeHashId(receiverUserId)
-  console.log({
-    senderUserId,
-    receiverUserId,
-    encodedSenderUserId,
-    encodedReceiverUserId
-  })
+
   if (encodedSenderUserId && encodedReceiverUserId) {
     const supportingForSenderList = yield* call(fetchSupporting, {
       encodedUserId: encodedSenderUserId
