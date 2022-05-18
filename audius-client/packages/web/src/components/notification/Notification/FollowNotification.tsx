@@ -1,10 +1,8 @@
 import React, { useCallback } from 'react'
 
 import { push } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import { ID } from 'common/models/Identifiers'
-import { getUserId } from 'common/store/account/selectors'
 import { Follow } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
 import {
@@ -15,6 +13,7 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import { NotificationBody } from './components/NotificationBody'
@@ -37,27 +36,30 @@ type FollowNotificationProps = {
 
 export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
-  const { users, userIds, timeLabel, isRead } = notification
+  const { id, users, userIds, timeLabel, isRead } = notification
   const [firstUser] = users
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
   const dispatch = useDispatch()
-  const accountId = useSelector(getUserId) as ID
 
   const handleClick = useCallback(() => {
     if (isMultiUser) {
       dispatch(
         setUserListUsers({
-          userListType: UserListType.FOLLOWER,
+          userListType: UserListType.NOTIFICATION,
           entityType: UserListEntityType.USER,
-          id: accountId
+          id: (id as unknown) as number
         })
       )
-      dispatch(openUserListModal(true))
+      if (isMobile()) {
+        dispatch(push(`notification/${id}/users`))
+      } else {
+        dispatch(openUserListModal(true))
+      }
     } else {
       dispatch(push(profilePage(firstUser.handle)))
     }
-  }, [isMultiUser, dispatch, accountId, firstUser.handle])
+  }, [isMultiUser, dispatch, id, firstUser.handle])
 
   return (
     <NotificationTile

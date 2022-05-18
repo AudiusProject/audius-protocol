@@ -8,10 +8,10 @@ import {
   getUserList
 } from 'common/store/user-list/notifications/selectors'
 import UserListSagaFactory from 'common/store/user-list/sagas'
-import { USER_LIST_TAG } from 'pages/notification-users-page/NotificationUsersPage'
 
 import { getNotificationError } from './actions'
 import { watchRepostsError } from './errorSagas'
+import { USER_LIST_TAG } from './types'
 
 function* errorDispatcher(error: Error) {
   const id = yield select(getId)
