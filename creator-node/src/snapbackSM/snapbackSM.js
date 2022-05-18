@@ -487,7 +487,7 @@ class SnapbackSM {
       } = newReplicaSet
       newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
-      console.log(
+      this.log(
         `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} newReplicaSetEndpoints=${JSON.stringify(
           newReplicaSetEndpoints
         )}`
