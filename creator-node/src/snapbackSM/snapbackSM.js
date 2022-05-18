@@ -13,20 +13,19 @@ const PeerSetManager = require('./peerSetManager')
 const { CreatorNode } = require('@audius/libs')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
+const {
+  MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
+  MAX_USER_BATCH_CLOCK_FETCH_RETRIES
+} = require('./StateMachineConstants')
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
-
-// Max number of attempts to select new replica set in reconfig
-const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 5
 
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
 
 // Timeout for fetching a clock value for a singular user
 const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
-
-const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 
 // Number of users to process in each batch for this._aggregateOps
 const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500
@@ -484,7 +483,9 @@ class SnapbackSM {
     replicaSetNodesToUserClockStatusesMap
   ) {
     this.log(
-      `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] numHealthyNodes=${healthyNodes.length}`
+      `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=${JSON.stringify(
+        unhealthyReplicas
+      )} numHealthyNodes=${healthyNodes.length}`
     )
 
     const response = { errorMsg: null, issuedReconfig: false }
@@ -639,12 +640,12 @@ class SnapbackSM {
     const healthyReplicaSet = new Set(
       currentReplicaSet.filter((node) => !unhealthyReplicasSet.has(node))
     )
-    const newReplicaNodes = await this.selectRandomReplicaSetNodes({
+    const newReplicaNodes = await this.selectRandomReplicaSetNodes(
       healthyReplicaSet,
-      numberOfUnhealthyReplicas: unhealthyReplicasSet.size,
+      unhealthyReplicasSet.size,
       healthyNodes,
       wallet
-    })
+    )
 
     let newPrimary
     if (unhealthyReplicasSet.size === 1) {
@@ -708,19 +709,18 @@ class SnapbackSM {
    * searching for a node that has no state.
    *
    * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
-   * @param {Object} param
-   * @param {Set<string>} param.healthyReplicasSet a set of the healthy replica set endpoints
-   * @param {Set<string>} param.numberOfUnhealthyReplicas the number of unhealthy replica set endpoints
-   * @param {string[]} param.healthyNodes an array of all the healthy nodes available on the network
-   * @param {string} param.wallet the wallet of the current user
-   * @returns a string[] of the new replica set nodes
+   * @param {Set<string>} healthyReplicaSet a set of the healthy replica set endpoints
+   * @param {number} numberOfUnhealthyReplicas the number of unhealthy replica set endpoints
+   * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
+   * @param {string} wallet the wallet of the current user
+   * @returns {string[]} a string[] of the new replica set nodes
    */
-  async selectRandomReplicaSetNodes({
+  async selectRandomReplicaSetNodes(
     healthyReplicaSet,
     numberOfUnhealthyReplicas,
     healthyNodes,
     wallet
-  }) {
+  ) {
     const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
       ...healthyReplicaSet
     ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${
@@ -771,6 +771,7 @@ class SnapbackSM {
     return Array.from(newReplicaNodesSet)
   }
 
+  // TODO: We should not do this pattern of passing a param for the sole purpose of modifying it (will revisit during refactor)
   /**
    * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
@@ -824,7 +825,7 @@ class SnapbackSM {
             errorMsg = e
           }
 
-          // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
+          // If failed to get response after all attempts, add replica to `unhealthyPeers` set for reconfig
           if (errorMsg) {
             this.logError(
               `[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${walletsOnReplica} on replica=${replica} ${errorMsg.toString()}`
