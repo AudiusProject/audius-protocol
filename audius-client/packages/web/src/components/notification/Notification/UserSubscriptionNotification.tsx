@@ -34,7 +34,7 @@ export const UserSubscriptionNotification = (
   props: UserSubscriptionNotificationProps
 ) => {
   const { notification } = props
-  const { user, entities, entityType, timeLabel, isRead, type } = notification
+  const { user, entities, entityType, timeLabel, isViewed, type } = notification
   const dispatch = useDispatch()
   const record = useRecord()
 
@@ -73,7 +73,7 @@ export const UserSubscriptionNotification = (
           </span>
         </div>
       </NotificationBody>
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

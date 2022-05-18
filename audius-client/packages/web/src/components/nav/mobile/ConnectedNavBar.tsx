@@ -11,7 +11,7 @@ import {
   getAccountUser,
   getAccountStatus
 } from 'common/store/account/selectors'
-import { getNotificationUnreadCount } from 'common/store/notifications/selectors'
+import { getNotificationUnviewedCount } from 'common/store/notifications/selectors'
 import { getSearchStatus } from 'common/store/pages/search-results/selectors'
 import {
   RouterContext,
@@ -106,7 +106,7 @@ function mapStateToProps(state: AppState) {
     account: getAccountUser(state),
     accountStatus: getAccountStatus(state),
     searchStatus: getSearchStatus(state),
-    notificationCount: getNotificationUnreadCount(state)
+    notificationCount: getNotificationUnviewedCount(state)
   }
 }
 

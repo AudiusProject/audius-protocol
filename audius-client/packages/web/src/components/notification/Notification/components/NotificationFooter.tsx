@@ -8,15 +8,15 @@ const messages = {
 
 type NotificationFooterProps = {
   timeLabel?: string
-  isRead: boolean
+  isViewed: boolean
 }
 
 export const NotificationFooter = (props: NotificationFooterProps) => {
-  const { timeLabel, isRead } = props
+  const { timeLabel, isViewed } = props
   return (
     <div className={styles.root}>
       <span className={styles.timeLabel}>{timeLabel}</span>
-      {isRead ? null : (
+      {isViewed ? null : (
         <span className={styles.unreadPill}>{messages.unread}</span>
       )}
     </div>

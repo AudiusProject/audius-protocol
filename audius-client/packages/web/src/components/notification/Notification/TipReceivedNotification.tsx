@@ -40,7 +40,7 @@ export const TipReceivedNotification = (
     null
   )
   const { notification } = props
-  const { user, value, timeLabel, isRead } = notification
+  const { user, value, timeLabel, isViewed } = notification
 
   const handleMouseEnter = useCallback(() => setIsTileDisabled(true), [])
   const handleMouseLeave = useCallback(() => setIsTileDisabled(false), [])
@@ -92,7 +92,7 @@ export const TipReceivedNotification = (
         </div>
       </NotificationBody>
       <TwitterShareButton />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

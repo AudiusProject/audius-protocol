@@ -26,7 +26,6 @@ type MobileOverflowModalProps = {
   onVisitArtistPage?: () => void
   onVisitCollectionPage?: () => void
   onUnsubscribeUser?: () => void
-  onHideNotification?: () => void
   onFollow?: () => void
   onUnfollow?: () => void
 }
@@ -46,7 +45,6 @@ const rowMessageMap = {
   [OverflowAction.VIEW_PLAYLIST_PAGE]: 'View Playlist Page',
   [OverflowAction.VIEW_ALBUM_PAGE]: 'View Album Page',
   [OverflowAction.UNSUBSCRIBER_USER]: 'Unsubscribe',
-  [OverflowAction.HIDE_NOTIFICATION]: 'Hide',
   [OverflowAction.FOLLOW_ARTIST]: 'Follow Artist',
   [OverflowAction.UNFOLLOW_ARTIST]: 'Unfollow Artist',
   [OverflowAction.FOLLOW]: 'Follow',
@@ -73,7 +71,6 @@ const MobileOverflowModal = ({
   onVisitArtistPage,
   onVisitCollectionPage,
   onUnsubscribeUser,
-  onHideNotification,
   onFollow,
   onUnfollow
 }: MobileOverflowModalProps) => {
@@ -93,7 +90,6 @@ const MobileOverflowModal = ({
     [OverflowAction.VIEW_PLAYLIST_PAGE]: onVisitCollectionPage,
     [OverflowAction.VIEW_ALBUM_PAGE]: onVisitCollectionPage,
     [OverflowAction.UNSUBSCRIBER_USER]: onUnsubscribeUser,
-    [OverflowAction.HIDE_NOTIFICATION]: onHideNotification,
     [OverflowAction.FOLLOW_ARTIST]: onFollow,
     [OverflowAction.UNFOLLOW_ARTIST]: onUnfollow,
     [OverflowAction.FOLLOW]: onFollow,

@@ -33,7 +33,7 @@ export const ChallengeRewardNotification = (
   props: ChallengeRewardNotificationProps
 ) => {
   const { notification } = props
-  const { challengeId, timeLabel, isRead, type } = notification
+  const { challengeId, timeLabel, isViewed, type } = notification
   const dispatch = useDispatch()
   const record = useRecord()
 
@@ -59,7 +59,7 @@ export const ChallengeRewardNotification = (
       </NotificationHeader>
       <NotificationBody>{messages.body(rewardAmount)}</NotificationBody>
       <TwitterShareButton onClick={handleShare} />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

@@ -36,7 +36,7 @@ type FollowNotificationProps = {
 
 export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
-  const { id, users, userIds, timeLabel, isRead } = notification
+  const { id, users, userIds, timeLabel, isViewed } = notification
   const [firstUser] = users
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
@@ -75,7 +75,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.followed}
       </NotificationBody>
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

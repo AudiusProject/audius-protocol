@@ -15,10 +15,7 @@ import { publishPlaylist } from 'common/store/cache/collections/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
-import {
-  unsubscribeUser,
-  hideNotification
-} from 'common/store/notifications/actions'
+import { unsubscribeUser } from 'common/store/notifications/actions'
 import { getNotificationById } from 'common/store/notifications/selectors'
 import {
   Notification,
@@ -91,7 +88,6 @@ const ConnectedMobileOverflowModal = ({
   visitPlaylistPage,
   visitAlbumPage,
   unsubscribeUser,
-  hideNotification,
   follow,
   unfollow,
   shareUser
@@ -110,7 +106,6 @@ const ConnectedMobileOverflowModal = ({
     onVisitTrackPage,
     onVisitArtistPage,
     onVisitCollectionPage,
-    onHideNotification,
     onUnsubscribeUser,
     onFollow,
     onUnfollow
@@ -127,7 +122,6 @@ const ConnectedMobileOverflowModal = ({
     onVisitTrackPage?: () => void
     onVisitArtistPage?: () => void
     onVisitCollectionPage?: () => void
-    onHideNotification?: () => void
     onUnsubscribeUser?: () => void
     onFollow?: () => void
     onUnfollow?: () => void
@@ -176,7 +170,6 @@ const ConnectedMobileOverflowModal = ({
       case OverflowSource.NOTIFICATIONS: {
         if (!id || !notification) return {}
         return {
-          onHideNotification: () => hideNotification(id as string),
           ...(notification.type === NotificationType.UserSubscription
             ? {
                 onUnsubscribeUser: () => unsubscribeUser(notification.userId)
@@ -214,7 +207,6 @@ const ConnectedMobileOverflowModal = ({
       onDeletePlaylist={onDeletePlaylist}
       onVisitArtistPage={onVisitArtistPage}
       onVisitCollectionPage={onVisitCollectionPage}
-      onHideNotification={onHideNotification}
       onUnsubscribeUser={onUnsubscribeUser}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
@@ -339,8 +331,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
 
     // Notification
     unsubscribeUser: (userId: ID) => dispatch(unsubscribeUser(userId)),
-    hideNotification: (notificationId: string) =>
-      dispatch(hideNotification(notificationId)),
 
     // Routes
     addToPlaylist: (trackId: ID, title: string) =>

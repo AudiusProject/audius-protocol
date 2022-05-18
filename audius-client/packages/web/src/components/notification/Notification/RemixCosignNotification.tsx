@@ -40,7 +40,7 @@ export const RemixCosignNotification = (
     entities,
     entityType,
     timeLabel,
-    isRead,
+    isViewed,
     childTrackId
   } = notification
   const dispatch = useDispatch()
@@ -87,7 +87,7 @@ export const RemixCosignNotification = (
         <TrackContent track={childTrack} />
       </div>
       <TwitterShareButton onClick={handleTwitterShare} />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

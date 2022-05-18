@@ -39,7 +39,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
     entity,
     entityType,
     timeLabel,
-    isRead
+    isViewed
   } = notification
   const [firstUser] = users
   const otherUsersCount = userIds.length - 1
@@ -89,7 +89,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
         {messages.reposted} {entityType.toLowerCase()}{' '}
         <EntityLink entity={entity} entityType={entityType} />
       </NotificationBody>
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

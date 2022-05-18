@@ -7,7 +7,7 @@ import {
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
 import { markAllAsViewed } from 'audius-client/src/common/store/notifications/actions'
-import { getNotificationUnreadCount } from 'audius-client/src/common/store/notifications/selectors'
+import { getNotificationUnviewedCount } from 'audius-client/src/common/store/notifications/selectors'
 import { Text, View } from 'react-native'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
@@ -72,7 +72,7 @@ export const useAppScreenOptions = () => {
   const styles = useStyles()
   const { accentOrangeLight1, neutralLight4 } = useThemeColors()
   const dispatchWeb = useDispatchWeb()
-  const notificationCount = useSelectorWeb(getNotificationUnreadCount)
+  const notificationCount = useSelectorWeb(getNotificationUnviewedCount)
   const navigation = useNavigation<
     AppScreenParamList & AppTabScreenParamList['Search']
   >()

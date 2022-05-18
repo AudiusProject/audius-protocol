@@ -37,7 +37,7 @@ export const TrendingTrackNotification = (
   props: TrendingTrackNotificationProps
 ) => {
   const { notification } = props
-  const { entity, entityType, rank, timeLabel, isRead } = notification
+  const { entity, entityType, rank, timeLabel, isViewed } = notification
   const rankSuffix = getRankSuffix(rank)
   const dispatch = useDispatch()
   const record = useRecord()
@@ -69,7 +69,7 @@ export const TrendingTrackNotification = (
         {rankSuffix} {messages.trending}
       </NotificationBody>
       <TwitterShareButton onClick={handleShare} />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

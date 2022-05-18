@@ -28,7 +28,7 @@ export const TopSupporterNotification = (
   props: TopSupporterNotificationProps
 ) => {
   const { notification } = props
-  const { user, rank, timeLabel, isRead } = notification
+  const { user, rank, timeLabel, isViewed } = notification
 
   return (
     <NotificationTile notification={notification}>
@@ -52,7 +52,7 @@ export const TopSupporterNotification = (
         </span>
       </NotificationBody>
       <TwitterShareButton />
-      <NotificationFooter timeLabel={timeLabel} isRead={isRead} />
+      <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
 }

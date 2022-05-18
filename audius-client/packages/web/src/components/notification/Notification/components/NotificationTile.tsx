@@ -8,10 +8,7 @@ import React, {
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import {
-  markAsRead,
-  toggleNotificationPanel
-} from 'common/store/notifications/actions'
+import { toggleNotificationPanel } from 'common/store/notifications/actions'
 import { Notification } from 'common/store/notifications/types'
 
 import styles from './NotificationTile.module.css'
@@ -28,24 +25,23 @@ type NotificationTileProps = {
 
 export const NotificationTile = (props: NotificationTileProps) => {
   const { notification, onClick, children, disabled, disableClosePanel } = props
-  const { id, isRead } = notification
+  const { isViewed } = notification
   const dispatch = useDispatch()
 
   const handleClick: MouseEventHandler = useCallback(
     event => {
       onClick?.(event)
-      dispatch(markAsRead(id))
       if (!disableClosePanel) {
         dispatch(toggleNotificationPanel())
       }
     },
-    [onClick, id, disableClosePanel, dispatch]
+    [onClick, disableClosePanel, dispatch]
   )
 
   return (
     <div
       className={cn(styles.root, {
-        [styles.read]: isRead,
+        [styles.read]: isViewed,
         [styles.active]: !disabled
       })}
       tabIndex={0}
