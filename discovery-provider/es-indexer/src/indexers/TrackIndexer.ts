@@ -5,10 +5,10 @@ import { TrackDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class TrackIndexer extends BaseIndexer<TrackDoc> {
-  tableName = 'tracks'
-  idColumn = 'track_id'
-  indexName = indexNames.tracks
-  batchSize = 500
+  constructor() {
+    super('tracks', 'track_id')
+    this.batchSize = 500
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
@@ -158,7 +158,10 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.save_count = row.saved_by.length
 
     row.length = Math.ceil(
-      row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
+      row.track_segments.reduce(
+        (acc: number, s: any) => acc + parseFloat(s.duration),
+        0
+      )
     )
 
     // permalink

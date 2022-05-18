@@ -12,8 +12,20 @@ import {
 } from './types/db'
 import { indexNames } from './indexNames'
 import { logger } from './logger'
+import { TrackMilestone, UserMilestone } from './types/milestone_types'
 
-type NotificationEvent = {
+type MilestoneNotification = {
+  id: string
+  user_id: number
+  created_at: string
+  milestone: 'plays' | 'reposts' | 'saves'
+  object_type: 'track' | 'playlist' | 'user'
+  object_id: number
+  object: TrackRow
+  value: number
+}
+
+type SocialNotification = {
   id: string
   blocknumber: number
   created_at: string
@@ -53,46 +65,64 @@ export async function createNotificationIndex() {
   )
 }
 
+type GenericNotification = MilestoneNotification | SocialNotification
+
 export async function materializeNotifications(pending: PendingUpdates) {
-  const nestedEvents = await Promise.all([
-    Promise.all(pending.follows.map(followToEvent)),
-    Promise.all(pending.reposts.map(repostToEvent)),
-    Promise.all(pending.saves.map(saveToEvent)),
+  const nestedNotifications: GenericNotification[][] = await Promise.all([
+    Promise.all(pending.follows.map(followNotif)),
+    Promise.all(pending.reposts.map(repostNotif)),
+    Promise.all(pending.saves.map(saveNotif)),
+    Promise.all(pending.trackMilestones.map(trackMilestoneNotif)),
+    Promise.all(pending.userMilestones.map(userMilestoneNotif)),
   ])
 
-  const events = chain(nestedEvents).flatten().compact().map(setEventId).value()
+  // TODO: instead of .compact to drop deletes... we should delete notifications for events that have been undone.
+  // what could be more brutal than getting a notification that user X followed you...
+  // only to look and see that they no longer do.
+  const notifications = chain(nestedNotifications)
+    .flatten()
+    .compact()
+    .map(setNotifId)
+    .value()
 
   // mostly copy pasted from BaseIndexer.ts
-  if (events.length) {
-    const body = events.flatMap((event) => [
-      { index: { _id: event.id, _index: indexNames.notifications } },
-      event,
+  if (notifications.length) {
+    const body = notifications.flatMap((notif) => [
+      { index: { _id: notif.id, _index: indexNames.notifications } },
+      notif,
     ])
     const got = await dialEs().bulk({ body })
     if (got.errors) {
       logger.error(got.items[0], `notifications indexing error`)
     }
+
+    logger.info(
+      { notification_count: notifications.length },
+      'processed notifications'
+    )
   }
 }
 
-const actorLoader = new DataLoader<number, UserRow>(actorLoaderFn)
+const userLoader = new DataLoader<number, UserRow>(userLoaderFn)
 const trackLoader = new DataLoader<number, TrackRow>(trackLoaderFn)
 const playlistLoader = new DataLoader<number, PlaylistRow>(playlistLoaderFn)
 
-function setEventId(event: NotificationEvent) {
-  event.id = [
-    event.user_id,
-    event.actor_id,
-    event.action,
-    event.object_type,
-    event.object_id,
-  ].join('_')
-  return event
+function setNotifId(notif: SocialNotification) {
+  if (!notif.id) {
+    notif.id = [
+      notif.user_id,
+      notif.actor_id,
+      notif.action,
+      notif.object_type,
+      notif.object_id,
+    ].join('_')
+  }
+  return notif
 }
 
-async function followToEvent(follow: FollowRow): Promise<NotificationEvent> {
+async function followNotif(follow: FollowRow): Promise<SocialNotification> {
   if (follow.is_delete) return null
-  const actor = await actorLoader.load(follow.follower_user_id)
+  const actor = await userLoader.load(follow.follower_user_id)
   return {
     id: '',
     created_at: follow.created_at as any,
@@ -107,7 +137,7 @@ async function followToEvent(follow: FollowRow): Promise<NotificationEvent> {
   }
 }
 
-async function repostToEvent(repost: RepostRow): Promise<NotificationEvent> {
+async function repostNotif(repost: RepostRow): Promise<SocialNotification> {
   if (repost.is_delete) return null
   const params: GenericActionParams = {
     action: 'repost',
@@ -118,13 +148,13 @@ async function repostToEvent(repost: RepostRow): Promise<NotificationEvent> {
   }
 
   if (repost.repost_type == 'track') {
-    return trackEvent(params)
+    return genericTrackNotif(params)
   } else {
-    return playlistEvent(params)
+    return genericPlaylistNotif(params)
   }
 }
 
-async function saveToEvent(save: SaveRow): Promise<NotificationEvent> {
+async function saveNotif(save: SaveRow): Promise<SocialNotification> {
   if (save.is_delete) return null
   const params: GenericActionParams = {
     action: 'save',
@@ -135,9 +165,40 @@ async function saveToEvent(save: SaveRow): Promise<NotificationEvent> {
   }
 
   if (save.save_type == 'track') {
-    return trackEvent(params)
+    return genericTrackNotif(params)
   } else {
-    return playlistEvent(params)
+    return genericPlaylistNotif(params)
+  }
+}
+
+async function trackMilestoneNotif(
+  mile: TrackMilestone
+): Promise<MilestoneNotification> {
+  const track = await trackLoader.load(mile.track_id)
+  return {
+    id: `track_${mile.track_id}_milestone_${mile.name}_${mile.value}`,
+    user_id: track.owner_id,
+    created_at: new Date().toISOString(),
+    milestone: mile.name as any,
+    object_id: mile.track_id,
+    object_type: 'track',
+    object: track,
+    value: mile.value,
+  }
+}
+
+async function userMilestoneNotif(
+  mile: UserMilestone
+): Promise<MilestoneNotification> {
+  return {
+    id: `user_${mile.user_id}_milestone_${mile.name}_${mile.value}`,
+    user_id: mile.user_id,
+    created_at: new Date().toISOString(),
+    milestone: mile.name as any,
+    object_id: mile.user_id,
+    object_type: 'user',
+    object: undefined,
+    value: mile.value,
   }
 }
 
@@ -149,15 +210,15 @@ type GenericActionParams = {
   object_id: number
 }
 
-async function trackEvent({
+async function genericTrackNotif({
   action,
   blocknumber,
   created_at,
   actor_id,
   object_id,
-}: GenericActionParams): Promise<NotificationEvent> {
+}: GenericActionParams): Promise<SocialNotification> {
   const [actor, track] = await Promise.all([
-    actorLoader.load(actor_id),
+    userLoader.load(actor_id),
     trackLoader.load(object_id),
   ])
   return {
@@ -174,15 +235,15 @@ async function trackEvent({
   }
 }
 
-async function playlistEvent({
+async function genericPlaylistNotif({
   action,
   blocknumber,
   created_at,
   actor_id,
   object_id,
-}: GenericActionParams): Promise<NotificationEvent> {
+}: GenericActionParams): Promise<SocialNotification> {
   const [actor, playlist] = await Promise.all([
-    actorLoader.load(actor_id),
+    userLoader.load(actor_id),
     playlistLoader.load(object_id),
   ])
   return {
@@ -202,7 +263,7 @@ async function playlistEvent({
 // --- loader functions ---
 // might could use knex or something
 
-async function actorLoaderFn(keys: number[]) {
+async function userLoaderFn(keys: number[]) {
   if (!keys.length) return []
   const keyList = keys.join(',')
   const sql = `

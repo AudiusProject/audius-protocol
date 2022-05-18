@@ -1,5 +1,5 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { groupBy, keyBy } from 'lodash'
+import { groupBy } from 'lodash'
 import { dialPg } from '../conn'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
@@ -7,9 +7,9 @@ import { UserDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class UserIndexer extends BaseIndexer<UserDoc> {
-  tableName = 'users'
-  idColumn = 'user_id'
-  indexName = indexNames.users
+  constructor() {
+    super('users', 'user_id')
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.users,

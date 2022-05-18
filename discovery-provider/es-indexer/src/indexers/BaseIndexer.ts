@@ -6,6 +6,7 @@ import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { performance } from 'perf_hooks'
 import { logger } from '../logger'
 import { Logger } from 'pino'
+import { indexNames } from '../indexNames'
 
 export abstract class BaseIndexer<RowType> {
   tableName: string
@@ -14,17 +15,17 @@ export abstract class BaseIndexer<RowType> {
   logger: Logger
   rowCounter = 0
   batchSize = 1000
-  mapping: IndicesCreateRequest
+  mapping: IndicesCreateRequest | undefined
 
   private es: Client
 
-  constructor() {
-    setTimeout(() => {
-      // todo: gross hack to initialize logger with indexName from subclass
-      this.logger = logger.child({
-        index: this.indexName,
-      })
-    }, 1)
+  constructor(tableName: string, idColumn: string) {
+    this.tableName = tableName
+    this.idColumn = idColumn
+    this.indexName = indexNames[tableName]
+    this.logger = logger.child({
+      index: this.indexName,
+    })
 
     this.es = dialEs()
   }
@@ -34,7 +35,8 @@ export abstract class BaseIndexer<RowType> {
   }
 
   async createIndex({ drop }: { drop: boolean }) {
-    const { es, mapping, logger } = this
+    const { es, mapping, logger, tableName } = this
+    if (!mapping) throw new Error(`${tableName} mapping is undefined`)
     if (drop) {
       logger.info('dropping index: ' + mapping.index)
       await es.indices.delete({ index: mapping.index }, { ignore: [404] })
@@ -167,7 +169,7 @@ export abstract class BaseIndexer<RowType> {
   }
 
   buildIndexOps(rows: RowType[]) {
-    return rows.flatMap((row) => [
+    return rows.flatMap((row: any) => [
       { index: { _id: row[this.idColumn], _index: this.indexName } },
       row,
     ])

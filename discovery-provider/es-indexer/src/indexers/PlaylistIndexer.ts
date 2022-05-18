@@ -7,9 +7,9 @@ import { PlaylistDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
-  tableName = 'playlists'
-  idColumn = 'playlist_id'
-  indexName = indexNames.playlists
+  constructor() {
+    super('playlists', 'playlist_id')
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.playlists,
