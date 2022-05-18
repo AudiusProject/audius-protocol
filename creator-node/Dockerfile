@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM alpine:3.13
+FROM alpine:3.15
 
 WORKDIR /usr/src/app
 

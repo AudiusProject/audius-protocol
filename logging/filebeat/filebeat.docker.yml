@@ -1,64 +1,76 @@
-# filebeat.config:
-#   modules:
-#     path: ${path.config}/modules.d/*.yml
-#     reload.enabled: false
-
 filebeat.inputs:
 - type: container
   paths:
     - "/var/lib/docker/containers/*/*.log"
-  # json.message_key: log
-  # json.keys_under_root: true
-  # processors:
-  # - add_docker_metadata: ~
-  # # fields:
-  # #   app_id: query_engine_12
+  json.message_key: message
+  processors:
+    - copy_fields:
+        fields:
+          - from: "json.log.level"
+            to: "audius.level"
+        ignore_missing: true
+        fail_on_error: true
+    - copy_fields:
+        fields:
+          - from: "json.level"
+            to: "audius.level"
+        ignore_missing: true
+        fail_on_error: true
+    - copy_fields:
+        fields:
+          - from: "json.msg"
+            to: "audius.message"
+        ignore_missing: true
+        fail_on_error: true
+    - copy_fields:
+        fields:
+          - from: "json.message"
+            to: "audius.message"
+        ignore_missing: true
+        fail_on_error: true
+    - copy_fields:
+        fields:
+          - from: "timestamp"
+            to: "audius.timestamp"
+        ignore_missing: true
+        fail_on_error: true
+    - copy_fields:
+        fields:
+          - from: "@timestamp"
+            to: "audius.timestamp"
+        ignore_missing: true
+        fail_on_error: true
 
-# filebeat.autodiscover:
-#   providers:
-#     - type: docker
-#       hints.enabled: true
-
-# processors:
-#   # decode the log field (sub JSON document) if JSON encoded, then maps it's fields to elasticsearch fields
-#   - decode_json_fields:
-#     fields: ["log", "message"]
-#     process_array: false
-#     max_depth: 3
-#     target: ""
-#     # overwrite existing target elasticsearch fields while decoding json fields
-#     overwrite_keys: true
-#   # - add_docker_metadata:
-#   #     host: "unix:///var/run/docker.sock"
-#   - rename:
-#       fields:
-#       - from: "host"
-#         to: "host.name"
-# processors:
-  # - decode_json_fields:
-  #     fields: ["log", "message"]
-  #     process_array: false
-  #     max_depth: 3
-  #     target: ""
-  #     overwrite_keys: true
+processors:
+  - drop_fields:
+      fields: ["host", "service"]
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"
   # - rename:
   #     fields:
-  #     - from: "service"
-  #       to: "service.name"
-  # - drop_fields:
-  #     fields: ["host"]
-processors:
-- add_docker_metadata:
-    host: "unix:///var/run/docker.sock"
-- decode_json_fields:
-    fields: ["message"]
-    target: "json"
-    overwrite_keys: true
+  #       - from: "json.log.level"
+  #         to: "json.leveld"
+  #       - from: "json.msg"
+  #         to: "json.message"
+  #     ignore_missing: true
+  #     fail_on_error: true
 
 output.elasticsearch:
   hosts: '${ELASTIC_ENDPOINT}'
   username: '${ELASTIC_USER}'
   password: '${ELASTIC_PASS}'
+  indices:
+    - index: "filebeat-4-system-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.or:
+        - equals:
+            container.name: filebeat
+        - equals:
+            container.name: metricbeat
+    - index: "filebeat-4-app-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.or:
+        - equals:
+            container.name: dn1_web-server_1
+    - index: "filebeat-4-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
 logging.json: true
 logging.metrics.enabled: false
