@@ -1,10 +1,9 @@
 import React, {
   memo,
-  ReactNode,
   useEffect,
   useRef,
   RefObject,
-  MouseEventHandler
+  ComponentPropsWithoutRef
 } from 'react'
 
 import cn from 'classnames'
@@ -27,8 +26,6 @@ export type DynamicImageProps = {
   initialOpacity?: number
   // Classes to apply to the wrapper
   wrapperClassName?: string
-  // Classes to apply to the image itself
-  className?: string
   // Styles to apply to the image itself
   imageStyle?: object
   // Whether or not to immediately animate
@@ -37,10 +34,7 @@ export type DynamicImageProps = {
   immediatelyLeave?: boolean
   // Whether or not to use the default placeholder
   usePlaceholder?: boolean
-
-  children?: ReactNode
-  onClick?: MouseEventHandler
-}
+} & ComponentPropsWithoutRef<'div'>
 
 const moveBehind = (ref: RefObject<HTMLDivElement>) => {
   if (ref.current) {
@@ -89,17 +83,19 @@ const fadeIn = (
 /**
  * A dynamic image that transitions between changes to the `image` prop.
  */
-const DynamicImage = ({
-  image,
-  isUrl,
-  wrapperClassName,
-  className,
-  imageStyle,
-  immediate,
-  children,
-  onClick,
-  usePlaceholder = true
-}: DynamicImageProps) => {
+const DynamicImage = (props: DynamicImageProps) => {
+  const {
+    image,
+    isUrl,
+    wrapperClassName,
+    className,
+    imageStyle,
+    immediate,
+    children,
+    onClick,
+    usePlaceholder = true,
+    ...other
+  } = props
   const first = useRef<HTMLDivElement>(null)
   const second = useRef<HTMLDivElement>(null)
   const [getIsFirstActive, setIsFirstActive] = useInstanceVar(true)
@@ -152,7 +148,7 @@ const DynamicImage = ({
   ])
 
   return (
-    <div className={cn(styles.wrapper, wrapperClassName)}>
+    <div className={cn(styles.wrapper, wrapperClassName)} {...other}>
       <div
         ref={first}
         className={cn(styles.image, className)}

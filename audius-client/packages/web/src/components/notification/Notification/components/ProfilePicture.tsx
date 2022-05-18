@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux'
 
 import { SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 

@@ -13,7 +13,7 @@ import {
 import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
 import { formatCount } from 'common/utils/formatUtil'
 import { formatSeconds } from 'common/utils/timeUtil'
-import ArtistPopover from 'components/artist/ArtistPopover'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import Tooltip from 'components/tooltip/Tooltip'
 import TableDragHandle from 'components/tracks-table/TableDragHandle'
