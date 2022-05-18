@@ -1,0 +1,32 @@
+{
+  "transcodeFilePath": "/file_storage/files/tmp_track_artifacts/f7b540eb-a518-4a7e-90dc-927395252c21/f7b540eb-a518-4a7e-90dc-927395252c21-dl.mp3",
+  "segmentFileNames": [
+    "segment00000.ts",
+    "segment00001.ts",
+    "segment00002.ts",
+    "segment00003.ts",
+    "segment00004.ts",
+    "segment00005.ts",
+    "segment00006.ts",
+    "segment00007.ts",
+    "segment00008.ts",
+    "segment00009.ts",
+    "segment00010.ts",
+    "segment00011.ts",
+    "segment00012.ts",
+    "segment00013.ts",
+    "segment00014.ts",
+    "segment00015.ts",
+    "segment00016.ts",
+    "segment00017.ts",
+    "segment00018.ts",
+    "segment00019.ts",
+    "segment00020.ts",
+    "segment00021.ts",
+    "segment00022.ts",
+    "segment00023.ts",
+    "segment00024.ts",
+    "segment00025.ts"
+  ],
+  "m3u8FilePath": "/file_storage/files/tmp_track_artifacts/f7b540eb-a518-4a7e-90dc-927395252c21/f7b540eb-a518-4a7e-90dc-927395252c21.m3u8"
+}

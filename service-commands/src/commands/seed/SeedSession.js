@@ -25,8 +25,12 @@ class SeedSession {
 
   init = async (libsConfigOverride = {}) => {
     const libsConfig = getLibsConfig(libsConfigOverride)
+
+    // console.log('what is libs config', libsConfig) // looks ok
     this.libs = new AudiusLibs(libsConfig)
     await this.libs.init()
+
+    // console.log('what is libs', this.libs, Object.keys(this.libs))
   }
 
   clearSession = async () => {
@@ -89,7 +93,7 @@ class SeedSession {
         profilePictureFile,
         coverPhotoFile,
         hasWallet,
-        host,
+        host
       )
     } catch (error) {
       console.error(error, signUpResponse)
@@ -130,7 +134,6 @@ class SeedSession {
       'Encoded-Data-Message': message,
       'Encoded-Data-Signature': signature
     }
-    
   }
 }
 

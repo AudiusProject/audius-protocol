@@ -20,7 +20,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     value: {
       allowNull: false,
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      get() {
+        // If value is of type 'CID', return the string
+        const rawValue = this.getDataValue('value')
+
+        if (this.getDataValue('type') === types.cid) {
+          return rawValue
+        }
+
+        // Else, return the id parsed as an integer
+        return parseInt(rawValue)
+      }
     },
     createdAt: {
       allowNull: false,
