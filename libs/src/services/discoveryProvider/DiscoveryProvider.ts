@@ -840,7 +840,7 @@ export class DiscoveryProvider {
       parsedResponse = Utils.parseDataFromResponse(response)
 
       // Fire monitoring callbacks for request success case
-      if ('request' in this.monitoringCallbacks) {
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
             endpoint: url.origin,
@@ -864,7 +864,7 @@ export class DiscoveryProvider {
       const errMsg = error.response?.data ?? error
 
       // Fire monitoring callbaks for request failure case
-      if ('request' in this.monitoringCallbacks) {
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
             endpoint: url.origin,

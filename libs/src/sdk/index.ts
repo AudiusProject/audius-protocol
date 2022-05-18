@@ -16,7 +16,7 @@ import {
   ETH_REGISTRY_ADDRESS,
   ETH_TOKEN_ADDRESS,
   IDENTITY_SERVICE_ENDPOINT,
-  REGISTRY_ADDRESS,
+  // REGISTRY_ADDRESS,
   WORMHOLE_ADDRESS
 } from './constants'
 import { oauth } from './oauth'
@@ -42,7 +42,7 @@ type SdkConfig = {
  * The Audius SDK
  */
 export const sdk = async ({
-  appName,
+  // appName,
   discoveryNodeConfig,
   ethContractsConfig,
   ethWeb3Config,

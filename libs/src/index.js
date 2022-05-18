@@ -1,8 +1,9 @@
 const libs = require('./libs')
+const sdk = require('./sdk')
 
 /**
  * @deprecated Please migrate to using `sdk` when possible
  */
 module.exports.libs = libs
 
-// export { sdk } from './sdk'
+module.exports.sdk = sdk
