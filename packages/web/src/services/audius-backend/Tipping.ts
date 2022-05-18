@@ -22,7 +22,7 @@ export const fetchSupporting = async ({
     await waitForLibsInit()
     const response = await libs().discoveryProvider._makeRequest({
       endpoint: `/v1/full/users/${encodedUserId}/supporting`,
-      params: { limit, offset }
+      queryParams: { limit, offset }
     })
     return response
   } catch (e) {
@@ -44,7 +44,7 @@ export const fetchSupporters = async ({
     await waitForLibsInit()
     const response = await libs().discoveryProvider._makeRequest({
       endpoint: `/v1/full/users/${encodedUserId}/supporters`,
-      params: { limit, offset }
+      queryParams: { limit, offset }
     })
     return response
   } catch (e) {
