@@ -58,10 +58,10 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     -- etl users
     select 
       users.*,
-      user_balances.balance,
-      user_balances.associated_wallets_balance,
-      user_balances.waudio,
-      user_balances.waudio as waudio_balance, -- do we need both waudio and waudio_balance
+      coalesce(user_balances.balance, 0) as balance,
+      coalesce(user_balances.associated_wallets_balance) as associated_wallets_balance,
+      coalesce(user_balances.waudio, 0) as user_balances.waudio,
+      coalesce(user_balances.waudio, 0 as waudio_balance, -- do we need both waudio and waudio_balance
       user_balances.associated_sol_wallets_balance,
       user_bank_accounts.bank_account as spl_wallet,
       coalesce(track_count, 0) as track_count,
