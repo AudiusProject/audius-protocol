@@ -504,7 +504,7 @@ class SnapbackSM {
         secondary1,
         secondary2,
         primary,
-        unhealthyReplicas,
+        unhealthyReplicasSet: unhealthyReplicas,
         healthyNodes,
         replicaSetNodesToUserClockStatusesMap
       })
@@ -525,8 +525,8 @@ class SnapbackSM {
         // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
         // selected as part of the new replica set, do not issue reconfig
         if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
+          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${this.peerSetManager.endpointToSPIdMap} | endpt=${endpt}. Skipping reconfig.`
           this.logError(response.errorMsg)
-          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}]. Skipping reconfig.`
           return response
         }
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
