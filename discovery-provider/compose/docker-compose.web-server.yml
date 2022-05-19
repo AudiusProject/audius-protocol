@@ -11,6 +11,7 @@ services:
     ports:
       - '${audius_server_port}:${audius_server_port}'
     environment:
+      - audius_service=server
       - audius_db_run_migrations=false
       - audius_no_workers=true
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_redis-server_1:6379,${COMPOSE_PROJECT_NAME}-ipfs-node:5001
