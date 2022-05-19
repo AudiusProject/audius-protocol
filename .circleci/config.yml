@@ -709,21 +709,9 @@ workflows:
 
       - test-contracts:
           name: test-contracts
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-eth-contracts:
           name: test-eth-contracts
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-creator-node:
           name: test-creator-node
@@ -747,12 +735,6 @@ workflows:
           name: test-solana-programs
       - test-solana-programs-anchor:
           name: test-solana-programs-anchor
-      - docker-build-and-push:
-          name: build-solana-programs
-          repo: solana-programs
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-mad-dog-e2e:
           context:
@@ -794,6 +776,15 @@ workflows:
           context:
             - GCP2
           name: bake-gcp-dev-image-nightly
+      - docker-build-and-push:
+          name: build-eth-contracts
+          repo: eth-contracts
+      - docker-build-and-push:
+          name: build-contracts
+          repo: contracts
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
     triggers:
       - schedule:
           cron: "0 5 * * *"
