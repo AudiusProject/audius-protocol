@@ -788,9 +788,9 @@ workflows:
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
-    triggers:
-      - schedule:
-          cron: "0 5 * * *"
-          filters:
-            branches:
-              only: /(^master$)/
+    # triggers:
+    #   - schedule:
+    #       cron: "0 5 * * *"
+    #       filters:
+    #         branches:
+    #           only: /(^master$)/
