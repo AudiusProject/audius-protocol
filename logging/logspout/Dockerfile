@@ -11,7 +11,8 @@ HEALTHCHECK --interval=30s --timeout=20s \
 # could send double logs upon container restarts if we remove this
 ENV BACKLOG false
 
-CMD export SYSLOG_STRUCTURED_DATA=${audius_loggly_token}@41058 tag="${audius_loggly_tags}" \
+CMD audius_loggly_token=$(echo ${audius_loggly_token} | base64 -d) \
+    && export SYSLOG_STRUCTURED_DATA=${audius_loggly_token}@41058 tag="${audius_loggly_tags}" \
     && multiline+syslog+tcp://logs-01.loggly.com:514
 
 ARG git_sha

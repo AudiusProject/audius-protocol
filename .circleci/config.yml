@@ -658,7 +658,8 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_token=$audius_loggly_token --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
+            audius_loggly_token_b64=$(echo ${audius_loggly_token} | base64)
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_token=$audius_loggly_token_b64 --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
             docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM --force
       - run:
           name: Docker push << parameters.repo >>
