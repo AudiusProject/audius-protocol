@@ -526,6 +526,10 @@ def configure_celery(celery, test_config=None):
             "index_reactions": {
                 "task": "index_reactions",
                 "schedule": timedelta(seconds=5),
+            },
+            "update_track_is_available": {
+                "task": "update_track_is_available",
+                "schedule": crontab(minute=0, hour=0),  # daily at midnight
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
