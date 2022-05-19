@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 from src.tasks.celery_app import celery
@@ -9,6 +10,8 @@ DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
 
 def update_views(self, db):
+    if os.getenv('search_elasticsearch_enabled'):
+        return
     with db.scoped_session() as session:
         start_time = time.time()
         logger.info("index_materialized_views.py | Updating materialized views")
