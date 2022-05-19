@@ -203,8 +203,8 @@ def get_feed_es(args, limit=10):
 
     # popuate_user_metadata_es:
     current_user = user_by_id.pop(str(current_user_id))
-    for user in user_by_id.values():
-        popuate_user_metadata_es(user, current_user)
+    for id, user in user_by_id.items():
+        user_by_id[id] = popuate_user_metadata_es(user, current_user)
 
     for item in sorted_feed:
         # GOTCHA: es ids must be strings, but our ids are ints...

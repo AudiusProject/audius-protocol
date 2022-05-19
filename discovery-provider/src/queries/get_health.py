@@ -25,6 +25,8 @@ from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 from src.utils.redis_constants import (
+    LAST_REACTIONS_INDEX_TIME_KEY,
+    LAST_SEEN_NEW_REACTION_TIME_KEY,
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
     latest_block_hash_redis_key,
@@ -170,6 +172,10 @@ class GetHealthArgs(TypedDict):
     # Number of seconds play counts are allowed to drift
     plays_count_max_drift: Optional[int]
 
+    # Reactions max drift
+    reactions_max_indexing_drift: Optional[int]
+    reactions_max_last_reaction_drift: Optional[int]
+
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
     """
@@ -226,6 +232,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     rewards_manager_health_info = get_rewards_manager_health_info(redis)
     user_bank_health_info = get_user_bank_health_info(redis)
     spl_audio_info = get_spl_audio_info(redis)
+    reactions_health_info = get_reactions_health_info(
+        redis,
+        args.get("reactions_max_indexing_drift"),
+        args.get("reactions_max_last_reaction_drift"),
+    )
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -309,6 +320,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "user_bank": user_bank_health_info,
         "openresty_public_key": openresty_public_key,
         "spl_audio_info": spl_audio_info,
+        "reactions": reactions_health_info,
     }
 
     block_difference = abs(latest_block_num - latest_indexed_block_num)
@@ -340,11 +352,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # DB connections check
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
-        health_results["country"] = shared_config["serviceLocation"]["serviceCountry"]
-        health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
-        health_results["longitude"] = shared_config["serviceLocation"][
-            "serviceLongitude"
-        ]
+        location = get_location()
+        health_results.update(location)
 
         if db_connections_error:
             return health_results, db_connections_error
@@ -373,10 +382,27 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     is_unhealthy = (
-        unhealthy_blocks or unhealthy_challenges or play_health_info["is_unhealthy"]
+        unhealthy_blocks
+        or unhealthy_challenges
+        or play_health_info["is_unhealthy"]
+        or reactions_health_info["is_unhealthy"]
     )
 
     return health_results, is_unhealthy
+
+
+class LocationResponse(TypedDict):
+    country: str
+    latitude: str
+    longitude: str
+
+
+def get_location() -> LocationResponse:
+    return {
+        "country": shared_config["serviceLocation"]["serviceCountry"],
+        "latitude": shared_config["serviceLocation"]["serviceLatitude"],
+        "longitude": shared_config["serviceLocation"]["serviceLongitude"],
+    }
 
 
 def get_elasticsearch_health_info(
@@ -395,9 +421,8 @@ def get_elasticsearch_health_info(
                 "blocknumber": blocknumber,
                 "db_block_difference": latest_indexed_block_num - blocknumber,
             }
-        except:
+        except Exception:
             pass
-
     return elasticsearch_health
 
 
@@ -516,6 +541,47 @@ def get_user_bank_health_info(
         "is_unhealthy": is_unhealthy,
         "tx_info": tx_health_info,
         "time_diff_general": tx_health_info["time_diff"],
+    }
+
+
+def get_reactions_health_info(
+    redis: Redis,
+    max_indexing_drift: Optional[int] = None,
+    max_reaction_drift: Optional[int] = None,
+):
+    now = datetime.now()
+    last_index_time = redis.get(LAST_REACTIONS_INDEX_TIME_KEY)
+    last_index_time = int(last_index_time) if last_index_time else None
+    last_reaction_time = redis.get(LAST_SEEN_NEW_REACTION_TIME_KEY)
+    last_reaction_time = int(last_reaction_time) if last_reaction_time else None
+
+    last_index_time = (
+        datetime.fromtimestamp(last_index_time) if last_index_time else None
+    )
+    last_reaction_time = (
+        datetime.fromtimestamp(last_reaction_time) if last_reaction_time else None
+    )
+
+    indexing_delta = (
+        (now - last_index_time).total_seconds() if last_index_time else None
+    )
+    reaction_delta = (
+        (now - last_reaction_time).total_seconds() if last_reaction_time else None
+    )
+
+    is_unhealthy_indexing = bool(
+        indexing_delta and max_indexing_drift and indexing_delta > max_indexing_drift
+    )
+    is_unhealthy_reaction = bool(
+        reaction_delta and max_reaction_drift and reaction_delta > max_reaction_drift
+    )
+
+    is_unhealthy = is_unhealthy_indexing or is_unhealthy_reaction
+
+    return {
+        "indexing_delta": indexing_delta,
+        "reaction_delta": reaction_delta,
+        "is_unhealthy": is_unhealthy,
     }
 
 

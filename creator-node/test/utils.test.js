@@ -58,7 +58,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        asyncFnLabel:
+        logLabel:
           'test handleBackwardsCompatibility=false with 404 response'
       })
     } catch (e) {
@@ -90,7 +90,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        asyncFnLabel: 'test 500 response'
+        logLabel: 'test 500 response'
       })
     } catch (e) {
       assert.strictEqual(didRetry, true)
@@ -121,7 +121,7 @@ describe('test src/utils.js', () => {
           },
           retries: 1
         },
-        asyncFnLabel: 'test 200 response'
+        logLabel: 'test 200 response'
       })
 
       assert.strictEqual(didRetry, false)

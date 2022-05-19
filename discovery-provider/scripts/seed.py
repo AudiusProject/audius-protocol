@@ -137,8 +137,8 @@ class Seeder:
             text(
                 """
                 BEGIN;
-                DELETE FROM blocks WHERE number >= :blocknumber_offset;
                 DELETE FROM users WHERE user_id >= :user_id_offset;
+                DELETE FROM blocks WHERE number >= :blocknumber_offset;
                 DELETE FROM follows WHERE follower_user_id >= :user_id_offset OR followee_user_id >= :user_id_offset;
                 DELETE FROM aggregate_user_tips WHERE sender_user_id >= :user_id_offset OR receiver_user_id >= :user_id_offset;
                 DELETE FROM user_tips WHERE sender_user_id >= :user_id_offset OR receiver_user_id >= :user_id_offset;

@@ -10,6 +10,10 @@ from src.models.reaction import Reaction
 from src.tasks.aggregates import init_task_and_acquire_lock
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
+from src.utils.redis_constants import (
+    LAST_REACTIONS_INDEX_TIME_KEY,
+    LAST_SEEN_NEW_REACTION_TIME_KEY,
+)
 from src.utils.session_manager import SessionManager
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
@@ -32,10 +36,10 @@ INDEX_REACTIONS_LOCK = "index_reactions_lock"
 class ReactionResponse(TypedDict):
     id: int
     slot: int
-    reaction: int
+    reactionValue: int
     senderWallet: str
-    entityId: str
-    entityType: str
+    reactedTo: str
+    reactionType: str
     createdAt: str
     updatedAt: str
 
@@ -46,10 +50,10 @@ def reaction_dict_to_model(reaction: ReactionResponse) -> Union[Reaction, None]:
     try:
         reaction_model = Reaction(
             slot=reaction["slot"],
-            reaction=reaction["reaction"],
+            reaction_value=reaction["reactionValue"],
             sender_wallet=reaction["senderWallet"],
-            entity_type=reaction["entityType"],
-            entity_id=reaction["entityId"],
+            reaction_type=reaction["reactionType"],
+            reacted_to=reaction["reactedTo"],
             timestamp=cast(datetime, reaction["createdAt"]),
             tx_signature=None,  # no tx_signature for now
         )
@@ -68,7 +72,7 @@ def fetch_reactions_from_identity(start_index) -> List[ReactionResponse]:
     return new_reactions_response.json()["reactions"]
 
 
-def index_identity_reactions(session: Session, _):
+def index_identity_reactions(session: Session, redis: Redis):
     try:
         last_checkpoint = get_last_indexed_checkpoint(
             session, IDENTITY_INDEXING_CHECKPOINT_NAME
@@ -77,6 +81,8 @@ def index_identity_reactions(session: Session, _):
         new_reactions: List[ReactionResponse] = fetch_reactions_from_identity(
             last_checkpoint
         )
+        redis.set(LAST_REACTIONS_INDEX_TIME_KEY, int(datetime.now().timestamp()))
+
         if not len(new_reactions):
             return
 
@@ -92,6 +98,7 @@ def index_identity_reactions(session: Session, _):
         logger.info(
             f"Indexed {len(reaction_models)} reactions, new checkpoint: {new_checkpoint}"
         )
+        redis.set(LAST_SEEN_NEW_REACTION_TIME_KEY, int(datetime.now().timestamp()))
     except Exception as e:
         logger.error(f"index_reactions: error {e}")
 
