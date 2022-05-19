@@ -29,6 +29,10 @@ class Utils {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
+  /**
+   * Generates a random number from [0, max)
+   * @param {number} max the max random number. exclusive
+   */
   static getRandomInt(max) {
     return Math.floor(Math.random() * max)
   }

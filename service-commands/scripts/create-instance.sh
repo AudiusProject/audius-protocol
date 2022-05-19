@@ -118,8 +118,7 @@ case "$provider" in
 			--boot-disk-size $disk_size \
 			--boot-disk-type $disk_type \
 			--machine-type $machine_type \
-			$spot_flag \
-			2> /dev/null
+			$spot_flag
 		if [[ "$image" = "$GCP_DEV_IMAGE" ]]; then
 			gcloud compute instances add-tags $name --tags=fast
 		fi

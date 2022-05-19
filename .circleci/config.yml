@@ -712,12 +712,18 @@ workflows:
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
+          filters:
+            branches:
+              only: /(^master$)/
 
       - test-eth-contracts:
           name: test-eth-contracts
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
+          filters:
+            branches:
+              only: /(^master$)/
 
       - test-creator-node:
           name: test-creator-node
@@ -744,6 +750,9 @@ workflows:
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
+          filters:
+            branches:
+              only: /(^master$)/
 
       - test-mad-dog-e2e:
           context:
