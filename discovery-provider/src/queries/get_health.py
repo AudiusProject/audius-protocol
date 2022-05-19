@@ -55,6 +55,7 @@ default_healthy_block_diff = int(shared_config["discprov"]["healthy_block_diff"]
 default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"]
 )
+infra_setup = shared_config["discprov"]["infra_setup"]
 
 # min system requirement values
 min_number_of_cpus: int = 8  # 8 cpu
@@ -321,6 +322,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "openresty_public_key": openresty_public_key,
         "spl_audio_info": spl_audio_info,
         "reactions": reactions_health_info,
+        "infra_setup": infra_setup,
     }
 
     block_difference = abs(latest_block_num - latest_indexed_block_num)
