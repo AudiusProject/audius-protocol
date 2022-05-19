@@ -51,7 +51,7 @@ search_full_response = make_full_response(
 )
 
 @full_ns.route("/full")
-class FullElasticsearch(Resource):
+class FullSearch(Resource):
     @full_ns.doc(
         id="Search",
         description="""Get Users/Tracks/Playlists/Albums that best match the search query""",

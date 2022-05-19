@@ -261,7 +261,7 @@ def fetch_followed_saves_and_reposts(current_user_id, item_keys, limit):
                 ]
             }
         },
-        "size": limit * 20,  # how mutch to overfetch?
+        "size": limit * 20,  # how much to overfetch?
         "sort": {"created_at": "desc"},
     }
     mdsl = [

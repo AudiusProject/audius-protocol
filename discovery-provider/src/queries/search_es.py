@@ -31,7 +31,7 @@ def search_es_full(args: dict):
     current_user_id = args.get("current_user_id")
     limit = args.get("limit")
     offset = args.get("offset")
-    search_type = args.get("kind")
+    search_type = args.get("kind", "all")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
