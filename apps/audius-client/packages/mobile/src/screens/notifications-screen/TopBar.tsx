@@ -1,73 +1,70 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Platform
-} from 'react-native'
+import { useCallback, useContext } from 'react'
+
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
-import { useSpecialColor, useTheme } from 'app/utils/theme'
+import { IconButton, Text } from 'app/components/core'
+import { makeStyles } from 'app/styles'
+import { Theme } from 'app/utils/theme'
 
-const IS_IOS = Platform.OS === 'ios'
+import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavigationContext'
 
 const messages = {
-  notifications: 'NOTIFICATIONS'
+  notifications: 'notifications'
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    height: IS_IOS ? 87 : 55
+const useStyles = makeStyles(({ spacing, palette, type }) => ({
+  root: {
+    height: 55,
+    backgroundColor: palette.secondary
   },
   container: {
     position: 'absolute',
-    bottom: 4,
-    flex: 1,
+    bottom: spacing(1),
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginLeft: 4,
-    marginRight: 4
+    marginHorizontal: spacing(1)
   },
-  text: {
-    fontFamily: 'AvenirNextLTPro-Heavy',
-    fontSize: 18
+  title: {
+    textTransform: 'uppercase',
+    color: type === Theme.MATRIX ? palette.white : palette.staticWhite,
+    alignSelf: 'center'
+  },
+  iconClose: {
+    height: 30,
+    width: 30
   },
   spacer: {
-    width: 30
+    // This value fully centers the notification text
+    width: 36
   }
-})
+}))
 
-type TopBarProps = {
-  onClose: () => void
-}
+export const TopBar = () => {
+  const styles = useStyles()
+  const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
 
-const TopBar = ({ onClose }: TopBarProps) => {
-  const color = useSpecialColor('staticWhite', 'white')
-  const topBarStyle = useTheme(styles.topBar, {
-    backgroundColor: 'secondary'
-  })
+  const handleClose = useCallback(() => {
+    drawerHelpers?.closeDrawer()
+  }, [drawerHelpers])
+
   return (
-    <View style={topBarStyle}>
+    <SafeAreaView style={styles.root}>
       <View style={styles.container}>
-        <TouchableOpacity activeOpacity={0.7} onPress={onClose}>
-          <IconRemove width={30} height={30} fill={color} />
-        </TouchableOpacity>
-        <Text
-          style={[
-            styles.text,
-            {
-              color
-            }
-          ]}
-        >
+        <IconButton
+          icon={IconRemove}
+          onPress={handleClose}
+          fill={styles.title.color}
+          styles={{ icon: styles.iconClose }}
+        />
+        <Text style={styles.title} variant='h1' noGutter weight='heavy'>
           {messages.notifications}
         </Text>
         <View style={styles.spacer} />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
-
-export default TopBar
