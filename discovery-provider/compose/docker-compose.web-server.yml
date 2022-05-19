@@ -8,6 +8,7 @@ services:
     extends:
       file: docker-compose.common.yml
       service: discovery-provider
+    container_name: server
     ports:
       - '${audius_server_port}:${audius_server_port}'
     environment:
