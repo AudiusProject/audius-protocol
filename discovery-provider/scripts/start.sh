@@ -46,28 +46,20 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         echo "Finished running migrations"
     fi
 
-    if [[ "$audius_service" == "server" ]]; then
-        ./scripts/dev-server.sh
-    fi
+    # filter tail to server/worker/beat logs with
+    # docker exec -it <container> tail -f /var/log/discprov-server.log
+    # docker exec -it <container> tail -f /var/log/discprov-worker.log
+    # docker exec -it <container> tail -f /var/log/discprov-beat.log
+    ./scripts/dev-server.sh
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        if [[ "$audius_service" == "worker" ]]; then
-            watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel
-        fi
-        if [[ "$audius_service" == "beat" ]]; then
-            celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel
-        fi
+        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
-    if [[ "$audius_service" == "server" ]]; then
-        ./scripts/prod-server.sh
-    fi
+    ./scripts/prod-server.sh
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        if [[ "$audius_service" == "worker" ]]; then
-            celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel
-        fi
-        if [[ "$audius_service" == "beat" ]]; then
-            celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel
-        fi
+        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 fi
 
