@@ -16,6 +16,7 @@ import { makeStyles } from 'app/styles/makeStyles'
 import { Pressable } from '../Pressable'
 
 const borderRadius = 8
+const shadowStyles = shadow()
 
 const useStyles = makeStyles(({ palette }) => {
   return {
@@ -27,7 +28,7 @@ const useStyles = makeStyles(({ palette }) => {
       borderRadius,
       // Not using react-native-shadow-2 because it causes performance issues when rendering
       // multiple lineups (in tabs)
-      ...shadow()
+      ...shadowStyles
     },
     content: {
       flex: 1

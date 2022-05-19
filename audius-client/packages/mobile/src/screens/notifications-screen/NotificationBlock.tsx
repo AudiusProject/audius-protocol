@@ -15,15 +15,7 @@ import {
 import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { isEqual } from 'lodash'
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  Platform
-} from 'react-native'
-import { Shadow } from 'react-native-shadow-2'
+import { View, Text } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import { useDispatch } from 'react-redux'
 
@@ -39,6 +31,7 @@ import IconStars from 'app/assets/images/iconStars.svg'
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
+import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -46,7 +39,7 @@ import { AppTabScreenParamList } from 'app/screens/app-screen'
 import { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
 import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { close } from 'app/store/notifications/actions'
-import { useColor, useTheme } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 import NotificationContent from './content/NotificationContent'
 import { getNotificationRoute, getNotificationScreen } from './routeUtil'
@@ -54,8 +47,6 @@ import { getNotificationRoute, getNotificationScreen } from './routeUtil'
 // The maximum number of users to fetch along with a notification,
 // which determines the number of profile pictures to show
 const USER_LENGTH_LIMIT = 8
-
-const IS_IOS = Platform.OS === 'ios'
 
 const tierInfoMap: Record<
   BadgeTier,
@@ -126,46 +117,53 @@ const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
   [NotificationType.TopSupporting]: () => ''
 }
 
-const styles = StyleSheet.create({
-  item: {
-    borderRadius: 8,
-    padding: 12,
-    paddingTop: 16,
-    paddingBottom: 16,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start'
+const useStyles = makeStyles(({ spacing, palette }, { isViewed }) => ({
+  tile: {
+    borderColor: isViewed ? 'none' : palette.primary,
+    borderWidth: isViewed ? 0 : 2
+  },
+  content: {
+    padding: spacing(3),
+    paddingVertical: spacing(4)
   },
   top: {
     flexDirection: 'row',
-    marginLeft: 12,
+    marginLeft: spacing(3),
     justifyContent: 'flex-start',
     alignItems: 'center',
     lineHeight: 20,
-    marginBottom: 8
+    marginBottom: spacing(2)
   },
   title: {
     fontFamily: 'AvenirNextLTPro-Heavy',
     fontSize: 18,
-    marginLeft: 12
+    marginLeft: 12,
+    color: isViewed ? palette.neutralLight4 : palette.primary
   },
   body: {
-    marginLeft: 46
+    marginLeft: spacing(12)
   },
   timestamp: {
     fontFamily: 'AvenirNextLTPro-Regular',
     fontSize: 12,
-    marginTop: 8
+    marginTop: spacing(2),
+    color: palette.neutralLight5
+  },
+  iconTierChange: {
+    color: isViewed ? palette.neutralLight4 : palette.primary
   }
-})
+}))
 
 type NotificationBlockProps = {
   notification: Notification
 }
 
-const NotificationBlock = ({ notification }: NotificationBlockProps) => {
-  const Icon = typeIconMap[notification.type](notification)
-  const title = typeTitleMap[notification.type](notification)
+export const NotificationBlock = (props: NotificationBlockProps) => {
+  const { notification } = props
+  const { isViewed, type } = notification
+  const styles = useStyles({ isViewed })
+  const Icon = typeIconMap[type](notification)
+  const title = typeTitleMap[type](notification)
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
 
@@ -231,92 +229,24 @@ const NotificationBlock = ({ notification }: NotificationBlockProps) => {
     dispatchWeb
   ])
 
-  const itemStyles = useTheme(styles.item, {
-    backgroundColor: 'white',
-    shadowColor: 'shadow'
-  })
-  const timestampStyles = useTheme(styles.timestamp, {
-    color: 'neutralLight5'
-  })
-  const highlight = useColor('primary')
-  const lowlight = useColor('neutralLight4')
-
-  const animation = new Animated.Value(0)
-  const inputRange = [0, 1]
-  const outputRange = [1, 0.97]
-  const scale = animation.interpolate({ inputRange, outputRange })
-
-  const onPressIn = () => {
-    Animated.spring(animation, {
-      toValue: 1,
-      tension: 150,
-      friction: 25,
-      useNativeDriver: true
-    }).start()
-  }
-  const onPressOut = () => {
-    Animated.spring(animation, {
-      toValue: 0,
-      tension: 150,
-      friction: 25,
-      useNativeDriver: true
-    }).start()
-  }
-
-  const iconProps =
+  const iconHeightProps =
     notification.type === NotificationType.TierChange
       ? { height: 32, width: 32 }
       : {}
 
   return (
-    <Animated.View style={[{ transform: [{ scale }] }]}>
-      <TouchableOpacity
-        onPress={notificationRoute ? onPress : undefined}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        delayPressIn={50}
-        activeOpacity={notificationRoute && IS_IOS ? 0.8 : 1}
-      >
-        <Shadow
-          offset={[2, 2]}
-          viewStyle={{ alignSelf: 'stretch' }}
-          distance={5}
-          startColor='#0000000F'
-        >
-          <View
-            style={[
-              itemStyles,
-              {
-                borderColor: notification.isViewed ? 'none' : highlight,
-                borderWidth: notification.isViewed ? 0 : 2
-              }
-            ]}
-          >
-            <View style={styles.top}>
-              <Icon
-                {...iconProps}
-                fill={notification.isViewed ? lowlight : highlight}
-              />
-              <Text
-                style={[
-                  styles.title,
-                  {
-                    color: notification.isViewed ? lowlight : highlight
-                  }
-                ]}
-              >
-                {title}
-              </Text>
-            </View>
-            <View style={styles.body}>
-              <NotificationContent notification={notification} />
-              <Text style={timestampStyles}>{notification.timeLabel}</Text>
-            </View>
-          </View>
-        </Shadow>
-      </TouchableOpacity>
-    </Animated.View>
+    <Tile
+      onPress={onPress}
+      styles={{ tile: styles.tile, content: styles.content }}
+    >
+      <View style={styles.top}>
+        <Icon {...iconHeightProps} fill={styles.iconTierChange.color} />
+        <Text style={styles.title}>{title}</Text>
+      </View>
+      <View style={styles.body}>
+        <NotificationContent notification={notification} />
+        <Text style={styles.timestamp}>{notification.timeLabel}</Text>
+      </View>
+    </Tile>
   )
 }
-
-export default NotificationBlock
