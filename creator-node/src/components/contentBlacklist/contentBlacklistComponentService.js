@@ -3,6 +3,10 @@ const models = require('../../models')
 
 const types = models.ContentBlacklist.Types
 
+const getAllTrackIds = async () => {
+  return BlacklistManager.getAllTrackIds()
+}
+
 const getAllContentBlacklist = async () => {
   // Segments stored in the ContentBlacklist may not be associated with a track
   const segmentsFromCBL = await models.ContentBlacklist.findAll({
@@ -38,5 +42,6 @@ const removeFromContentBlacklist = async ({ type, values }) => {
 module.exports = {
   getAllContentBlacklist,
   addToContentBlacklist,
-  removeFromContentBlacklist
+  removeFromContentBlacklist,
+  getAllTrackIds
 }
