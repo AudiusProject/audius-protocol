@@ -4,7 +4,8 @@ const models = require('../../models')
 const types = models.ContentBlacklist.Types
 
 const getAllTrackIds = async () => {
-  return BlacklistManager.getAllTrackIds()
+  const resp = await BlacklistManager.getAllTrackIds()
+  return resp.map((trackId) => parseInt(trackId))
 }
 
 const getAllContentBlacklist = async () => {
