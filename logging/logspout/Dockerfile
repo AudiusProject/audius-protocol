@@ -7,7 +7,7 @@ COPY healthcheck.sh /
 HEALTHCHECK --interval=30s --timeout=20s \
   CMD /healthcheck.sh || exit 1
 
-# ignores previously logs on startup
+# ignores previously log on startup
 # could be lossy if the container restarts
 # could send double logs upon container restarts if we remove this
 ENV BACKLOG false
