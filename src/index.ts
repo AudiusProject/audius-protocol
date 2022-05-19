@@ -40,8 +40,9 @@ router.get(
 
 router.get(
   [
+    '/embed/api/:handle/audio-nft-playlist',
     '/embed/api/:handle/collectibles',
-    '/embed/api/:handle/collectibles/:collectibleId',
+    '/embed/api/:handle/collectibles/:collectibleId'
   ],
   (req: express.Request, res: express.Response) => {
     getBedtimeResponse(BedtimeFormat.COLLECTIBLES, req, res)
@@ -102,7 +103,7 @@ router.get(
     '/:handle/tracks',
     '/:handle/playlists',
     '/:handle/albums',
-    '/:handle/reposts',
+    '/:handle/reposts'
   ],
   (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.User, req, res)
@@ -117,7 +118,7 @@ router.get(
 )
 
 router.get(
-  ['/:handle/collectibles'],
+  ['/:handle/collectibles', '/:handle/audio-nft-playlist'],
   (req: express.Request, res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Collectibles, req, res)
   }
