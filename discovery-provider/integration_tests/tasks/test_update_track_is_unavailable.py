@@ -1,9 +1,7 @@
 import logging
 from unittest import mock
 
-from src.tasks.update_track_is_available import (  # _update_track_is_available,
-    fetch_unavailable_track_ids,
-)
+from src.tasks.update_track_is_available import fetch_unavailable_track_ids
 
 logger = logging.getLogger(__name__)
 

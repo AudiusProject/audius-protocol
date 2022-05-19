@@ -6,7 +6,7 @@ from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
-def _update_track_is_available()
+def _update_track_is_available():
     pass
 
 def fetch_unavailable_track_ids(node):
