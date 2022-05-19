@@ -12,7 +12,7 @@ services:
       redis-server:
         condition: service_started
     environment:
-      - audius_service=worker
+      - audius_service=beat
       - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
       - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
 
