@@ -50,13 +50,13 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     # docker exec -it <container> tail -f /var/log/discprov-server.log
     # docker exec -it <container> tail -f /var/log/discprov-worker.log
     # docker exec -it <container> tail -f /var/log/discprov-beat.log
-    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
+    ./scripts/dev-server.sh
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
         celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
-    ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    ./scripts/prod-server.sh
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
         celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &

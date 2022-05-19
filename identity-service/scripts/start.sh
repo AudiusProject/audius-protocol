@@ -2,4 +2,4 @@
 
 /usr/bin/wait
 
-node src/index.js | tee >(logger)
+node src/index.js
