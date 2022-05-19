@@ -709,21 +709,9 @@ workflows:
 
       - test-contracts:
           name: test-contracts
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-eth-contracts:
           name: test-eth-contracts
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-creator-node:
           name: test-creator-node
@@ -794,6 +782,12 @@ workflows:
           context:
             - GCP2
           name: bake-gcp-dev-image-nightly
+      - docker-build-and-push:
+          name: build-eth-contracts
+          repo: eth-contracts
+      - docker-build-and-push:
+          name: build-contracts
+          repo: contracts
     triggers:
       - schedule:
           cron: "0 5 * * *"
