@@ -655,7 +655,7 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_token=$audius_loggly_token --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
             docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM --force
       - run:
           name: Docker push << parameters.repo >>
@@ -690,7 +690,7 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_token=$audius_loggly_token .
       - run:
           name: Docker push << parameters.repo >>
           command: |
@@ -736,6 +736,12 @@ workflows:
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
+
+      - test-logspout:
+          name: test-logspout
+      - docker-build-and-push:
+          name: build-logspout
+          repo: logspout/logspout
 
       - test-solana-programs:
           name: test-solana-programs
