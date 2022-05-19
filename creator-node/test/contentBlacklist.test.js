@@ -2,6 +2,7 @@ const assert = require('assert')
 const request = require('supertest')
 const sinon = require('sinon')
 const path = require('path')
+const _ = require('lodash')
 
 const Utils = require('../src/utils')
 const BlacklistManager = require('../src/blacklistManager')
@@ -102,9 +103,7 @@ describe('test ContentBlacklist', function () {
         const actualIds = resp.body.data.values
         assert.deepStrictEqual(actualIds.length, expectedIds.length)
 
-        actualIds.forEach((id, i) => {
-          assert.ok(id, expectedIds[i])
-        })
+        _.isEqual(actualIds.sort(), expectedIds.sort())
       })
   })
 
