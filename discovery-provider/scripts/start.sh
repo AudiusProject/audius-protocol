@@ -1,66 +1,6 @@
 #!/bin/bash
 set -e
 
-mkdir -p /var/log
-mkdir -p /var/spool/rsyslog
-mkdir -p /etc/rsyslog.d
-
-if [[ -z "$audius_loggly_disable" ]]; then
-    if [[ -n "$audius_loggly_token" ]]; then
-        # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
-        audius_discprov_hostname=$(echo $audius_discprov_url | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
-
-        # add hostname to loggly tags
-        if [[ "$audius_discprov_hostname" != "" ]]; then
-            if [[ "$audius_loggly_tags" != "" ]]; then
-                audius_loggly_tags="$audius_loggly_tags,$audius_discprov_hostname"
-            else
-                audius_loggly_tags="$audius_discprov_hostname"
-            fi
-        fi
-
-        if [[ "$audius_loggly_tags" != "" ]]; then
-            audius_loggly_tags="tag=\\\"${audius_loggly_tags//,/\\\" tag=\\\"}\\\""
-            # ${audius_loggly_tags//,/\\\" tag=\\\"} replaces , with \" tag=\"
-            # then we add tag=\" to the start and \" to the end
-        fi
-
-        cat >/etc/rsyslog.d/10-loggly.conf <<EOF
-\$WorkDirectory /var/spool/rsyslog  # where to place spool files
-\$ActionQueueFileName loggly        # unique name prefix for spool files
-\$ActionQueueMaxDiskSpace 1g        # 1gb space limit (use as much as possible)
-\$ActionQueueSaveOnShutdown on      # save messages to disk on shutdown
-\$ActionQueueType LinkedList        # run asynchronously
-\$ActionResumeRetryCount -1         # infinite retries if host is down
-
-template(name="LogglyFormat" type="string"
- string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags] %msg%\n")
-
-# Send messages to Loggly over TCP using the template.
-action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
-EOF
-    fi
-fi
-
-cat >/etc/rsyslog.d/20-file.conf <<EOF
-\$WorkDirectory /var/spool/rsyslog  # where to place spool files
-\$ActionQueueFileName file          # unique name prefix for spool files
-\$ActionQueueMaxDiskSpace 1g        # 1gb space limit (use as much as possible)
-\$ActionQueueSaveOnShutdown on      # save messages to disk on shutdown
-\$ActionQueueType LinkedList        # run asynchronously
-\$ActionResumeRetryCount -1         # infinite retries if host is down
-
-\$outchannel server_log,/var/log/discprov-server.log, 52428800,/audius-discovery-provider/scripts/rotate-log.sh
-\$outchannel worker_log,/var/log/discprov-worker.log, 52428800,/audius-discovery-provider/scripts/rotate-log.sh
-\$outchannel beat_log,/var/log/discprov-beat.log, 52428800,/audius-discovery-provider/scripts/rotate-log.sh
-
-if \$programname == 'server' then :omfile:\$server_log
-if \$programname == 'worker' then :omfile:\$worker_log
-if \$programname == 'beat' then   :omfile:\$beat_log
-EOF
-
-rsyslogd
-
 if [ -z "$audius_redis_url" ]; then
     redis-server --daemonize yes
     export audius_redis_url="redis://localhost:6379/00"
