@@ -1,6 +1,6 @@
 FROM gliderlabs/logspout:v3.2.14
 
-# add a custom healchecker
+# add a custom healthchecker
 RUN apk add --update net-tools
 COPY healthcheck.sh /
 HEALTHCHECK --interval=30s --timeout=20s \
