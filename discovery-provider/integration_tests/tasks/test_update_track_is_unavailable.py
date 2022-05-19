@@ -5,6 +5,7 @@ from src.tasks.update_track_is_available import fetch_unavailable_track_ids
 
 logger = logging.getLogger(__name__)
 
+
 # Mock out request response
 def _mock_response(self, json_data, status=200, raise_for_status=None):  # Error type
     mock_resp = mock.Mock()
