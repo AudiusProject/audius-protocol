@@ -635,6 +635,8 @@ jobs:
     parameters:
       repo:
         type: string
+      logspout-tag:
+        type: string
     steps:
       - checkout
       - setup_remote_docker:
@@ -643,10 +645,11 @@ jobs:
           name: Get tag or latest
           command: |
             # order of precendence for IMAGE tag is:
-            # 1. CIRCLE_TAG if defined,
-            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
-            # 3. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+            # 1. $(head -n1 logging/logspout/Dockerfile) if << parameters.logspout-tag >> defined,
+            # 2. CIRCLE_TAG if defined,
+            # 3. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 4. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ << parameters.tag >> ] && echo $(head -n1 logging/logspout/Dockerfile | cut -f 2 -d ':') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -742,6 +745,7 @@ workflows:
       - docker-build-and-push:
           name: build-logspout
           repo: logspout/logspout
+          logspout-tag: true
 
       - test-solana-programs:
           name: test-solana-programs
