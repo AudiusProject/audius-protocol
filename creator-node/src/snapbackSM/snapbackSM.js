@@ -812,7 +812,8 @@ class SnapbackSM {
   }
 
   /**
-   * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair
+   * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair.
+   * Also returns a set of any nodes that were unhealthy when queried for clock values.
    * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
    *
    * @returns {Object} { replicasToUserClockStatusMap: map(replica node => map(wallet => clockValue)), unhealthyPeers: Set<string> }
@@ -1086,14 +1087,20 @@ class SnapbackSM {
       // Retrieve clock statuses for all users and their current replica sets
       let replicaSetNodesToUserClockStatusesMap
       try {
-        const {
-          replicasToUserClockStatusMap,
-          unhealthyPeers: clockUnhealthyPeers
-        } = await this.retrieveClockStatusesForUsersAcrossReplicaSet(
-          replicaSetNodesToUserWalletsMap
-        )
-        replicaSetNodesToUserClockStatusesMap = replicasToUserClockStatusMap
-        unhealthyPeers = new Set([...unhealthyPeers, ...clockUnhealthyPeers])
+        // Set mapping of replica endpoint to (mapping of wallet to clock value)
+        const clockStatusResp =
+          await this.retrieveClockStatusesForUsersAcrossReplicaSet(
+            replicaSetNodesToUserWalletsMap
+          )
+        replicaSetNodesToUserClockStatusesMap =
+          clockStatusResp.replicasToUserClockStatusMap
+
+        // Mark peers as unhealthy if they were healthy before but failed to return a clock value
+        unhealthyPeers = new Set([
+          ...unhealthyPeers,
+          ...clockStatusResp.unhealthyPeers
+        ])
+
         this._addToStateMachineQueueDecisionTree(
           decisionTree,
           jobId,
