@@ -735,12 +735,6 @@ workflows:
           name: test-solana-programs
       - test-solana-programs-anchor:
           name: test-solana-programs-anchor
-      - docker-build-and-push:
-          name: build-solana-programs
-          repo: solana-programs
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-mad-dog-e2e:
           context:
@@ -788,9 +782,12 @@ workflows:
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
-    # triggers:
-    #   - schedule:
-    #       cron: "0 5 * * *"
-    #       filters:
-    #         branches:
-    #           only: /(^master$)/
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
+    triggers:
+      - schedule:
+          cron: "0 5 * * *"
+          filters:
+            branches:
+              only: /(^master$)/
