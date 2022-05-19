@@ -10,7 +10,7 @@ from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers
 from src.utils.eth_contracts_helpers import (
-    content_node_service_type,
+    CONTENT_NODE_SERVICE_TYPE,
     sp_factory_registry_key,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
@@ -280,7 +280,7 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
             sp_factory_inst = get_sp_factory_inst(update_task)
 
         cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
-            content_node_service_type, sp_id
+            CONTENT_NODE_SERVICE_TYPE, sp_id
         ).call()
         logger.info(
             f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}"
