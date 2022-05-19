@@ -4,7 +4,7 @@ const {
   getAllContentBlacklist,
   addToContentBlacklist,
   removeFromContentBlacklist,
-  getTracks
+  getAllTrackIds
 } = require('./contentBlacklistComponentService')
 const {
   handleResponse,
@@ -28,7 +28,7 @@ const TYPES_SET = new Set([types.cid, types.user, types.track])
 const getTracksController = async (req) => {
   let trackIds
   try {
-    trackIds = await getTracks()
+    trackIds = await getAllTrackIds()
   } catch (e) {
     req.logger.error(
       `ContentBlackListController - Could not fetch tracks: ${e.message}`

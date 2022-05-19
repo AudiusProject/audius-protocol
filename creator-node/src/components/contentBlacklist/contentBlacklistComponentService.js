@@ -3,7 +3,7 @@ const models = require('../../models')
 
 const types = models.ContentBlacklist.Types
 
-const getTracks = async () => {
+const getAllTrackIds = async () => {
   return BlacklistManager.getAllTrackIds()
 }
 
@@ -43,5 +43,5 @@ module.exports = {
   getAllContentBlacklist,
   addToContentBlacklist,
   removeFromContentBlacklist,
-  getTracks
+  getAllTrackIds
 }
