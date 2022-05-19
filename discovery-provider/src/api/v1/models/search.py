@@ -18,6 +18,6 @@ search_model = ns.model(
         ),
         "albums": fields.List(fields.Nested(full_playlist_model), required=True),
         "saved_albums": fields.List(fields.Nested(full_playlist_model), required=False),
-        "elasticsearch_took": (fields.Integer),
+        # "elasticsearch_took": (fields.Integer),
     },
 )

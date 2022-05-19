@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Dict, List
 
 from src.api.v1.helpers import (
     extend_favorite,
@@ -35,6 +35,7 @@ def search_es_full(args: dict):
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
+    do_albums = search_type == "all" or search_type == "albums"
 
     mdsl: Any = []
 
@@ -47,45 +48,52 @@ def search_es_full(args: dict):
 
     # tracks
     if do_tracks:
-        mdsl.extend(
-            [
-                {"index": ES_TRACKS},
-                {
-                    "size": limit,
-                    "from": offset,
-                    "query": {
-                        "function_score": {
-                            "query": {
-                                "bool": {
-                                    "must": [
-                                        {
-                                            "multi_match": {
-                                                "query": search_str,
-                                                "fields": [
-                                                    "title^2",
-                                                    "user.name",
-                                                    "user.handle",
-                                                ],
-                                                "type": "cross_fields",
-                                            }
-                                        },
-                                        {"term": {"is_unlisted": {"value": False}}},
-                                    ],
-                                    "should": [
-                                        *should_saved_or_reposted,
-                                    ],
-                                }
-                            },
-                            "field_value_factor": {
-                                "field": "repost_count",
-                                "factor": 1.2,
-                                "modifier": "log1p",
-                            },
-                        }
-                    },
+        track_search_query: List = [
+            {"index": ES_TRACKS},
+            {
+                "size": limit,
+                "from": offset,
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "multi_match": {
+                                            "query": search_str,
+                                            "fields": [
+                                                "title^2",
+                                                "user.name",
+                                                "user.handle",
+                                            ],
+                                            "type": "cross_fields",
+                                        }
+                                    },
+                                    {"term": {"is_unlisted": {"value": False}}},
+                                ],
+                                "should": [
+                                    *should_saved_or_reposted,
+                                ],
+                            }
+                        },
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1.2,
+                            "modifier": "log1p",
+                        },
+                    }
                 },
-            ]
-        )
+            },
+        ]
+        mdsl.extend(track_search_query)
+        if current_user_id:
+            saved_tracks_query = track_search_query[:]
+            saved_tracks_query[1]["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].extend(should_saved_or_reposted)
+
+            mdsl.extend(saved_tracks_query)
+
     if do_users:
         mdsl.extend(
             [
@@ -138,48 +146,108 @@ def search_es_full(args: dict):
             ]
         )
     if do_playlists:
-        mdsl.extend(
-            [
-                {"index": ES_PLAYLISTS},
-                {
-                    "size": limit,
-                    "from": offset,
-                    "query": {
-                        "function_score": {
-                            "query": {
-                                "bool": {
-                                    "must": [
-                                        {
-                                            "multi_match": {
-                                                "query": search_str,
-                                                "fields": [
-                                                    "playlist_name",
-                                                    "description",
-                                                ],
-                                                "type": "cross_fields",
-                                            }
-                                        },
-                                        {"term": {"is_private": {"value": False}}},
-                                    ],
-                                    "should": [
-                                        *should_saved_or_reposted,
-                                    ],
-                                }
-                            },
-                            "field_value_factor": {
-                                "field": "repost_count",
-                                "factor": 1.2,
-                                "modifier": "log1p",
-                            },
-                        }
-                    },
+        playlist_search_query: List = [
+            {"index": ES_PLAYLISTS},
+            {
+                "size": limit,
+                "from": offset,
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "multi_match": {
+                                            "query": search_str,
+                                            "fields": [
+                                                "playlist_name",
+                                                "description",
+                                            ],
+                                            "type": "cross_fields",
+                                        }
+                                    },
+                                    {"term": {"is_private": {"value": False}}},
+                                    {"term": {"is_album": {"value": False}}},
+                                ],
+                                "should": [
+                                    *should_saved_or_reposted,
+                                ],
+                            }
+                        },
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1.2,
+                            "modifier": "log1p",
+                        },
+                    }
                 },
-            ]
-        )
+            },
+        ]
+        mdsl.extend(playlist_search_query)
+        if current_user_id:
+            saved_playlist_search_query = playlist_search_query[:]
+            saved_playlist_search_query[1]["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].extend(should_saved_or_reposted)
+            mdsl.extend(saved_playlist_search_query)
+
+    if do_albums:
+        album_search_query: List = [
+            {"index": ES_PLAYLISTS},
+            {
+                "size": limit,
+                "from": offset,
+                "query": {
+                    "function_score": {
+                        "query": {
+                            "bool": {
+                                "must": [
+                                    {
+                                        "multi_match": {
+                                            "query": search_str,
+                                            "fields": [
+                                                "playlist_name",
+                                                "description",
+                                            ],
+                                            "type": "cross_fields",
+                                        }
+                                    },
+                                    {"term": {"is_private": {"value": False}}},
+                                    {"term": {"is_album": {"value": True}}},
+                                ],
+                                "should": [
+                                    *should_saved_or_reposted,
+                                ],
+                            }
+                        },
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1.2,
+                            "modifier": "log1p",
+                        },
+                    }
+                },
+            },
+        ]
+        mdsl.extend(album_search_query)
+        if current_user_id:
+            saved_album_search_query = album_search_query[:]
+            saved_album_search_query[1]["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].extend(should_saved_or_reposted)
+            mdsl.extend(saved_album_search_query)
+            
     mfound = esclient.msearch(searches=mdsl)
+    
     tracks_response = []
+    saved_tracks_response = []
     users_response = []
+    followed_users_response = []
     playlists_response = []
+    saved_playlists_response = []
+    albums_response = []
+    saved_albums_response = []
+
     item_keys = []
     user_ids = set()
     if current_user_id:
@@ -190,6 +258,8 @@ def search_es_full(args: dict):
         for track in tracks_response:
             item_keys.append(item_key(track))
             user_ids.add(track["owner_id"])
+        if current_user_id:
+            saved_tracks_response = pluck_hits(mfound["responses"].pop(0))
 
     if do_users:
         users_response = pluck_hits(mfound["responses"].pop(0))
@@ -199,6 +269,16 @@ def search_es_full(args: dict):
         for playlist in playlists_response:
             item_keys.append(item_key(playlist))
             user_ids.add(playlist["playlist_owner_id"])
+        if current_user_id:
+            saved_playlists_response = pluck_hits(mfound["responses"].pop(0))
+
+    if do_albums:
+        albums_response = pluck_hits(mfound["responses"].pop(0))
+        for album in albums_response:
+            item_keys.append(item_key(album))
+            user_ids.add(album["playlist_owner_id"])
+        if current_user_id:
+            saved_albums_response = pluck_hits(mfound["responses"].pop(0))
 
     # fetch users
     users_mget = esclient.mget(index=ES_USERS, ids=list(user_ids))
@@ -233,13 +313,16 @@ def search_es_full(args: dict):
         extend_playlist(populate_track_or_playlist_metadata_es(item, current_user))
         for item in playlists_response
     ]
-
     return {
-        "elasticsearch_took": mfound["took"],
         "tracks": tracks_response,
-        "saved_tracks": [],
+        "saved_tracks": saved_tracks_response,
         "users": users_response,
+        "followed_users": [],
         "playlists": playlists_response,
+        "saved_playlists": saved_playlists_response,
+        "albums": albums_response,
+        "saved_albums": saved_albums_response,
+        # "elasticsearch_took": mfound["took"],
     }
 
 
