@@ -1,4 +1,5 @@
-import logging  # pylint: disable=C0302
+import logging
+import os  # pylint: disable=C0302
 
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
@@ -49,40 +50,6 @@ search_full_response = make_full_response(
     "search_full_response", full_ns, fields.Nested(search_model)
 )
 
-
-@full_ns.route("/full_old")
-class FullSearch(Resource):
-    @full_ns.doc(
-        id="Search",
-        description="""Get Users/Tracks/Playlists/Albums that best match the search query""",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @full_ns.expect(full_search_parser)
-    @full_ns.marshal_with(search_full_response)
-    @cache(ttl_sec=5)
-    def get(self):
-        args = full_search_parser.parse_args()
-        offset = format_offset(args)
-        limit = format_limit(args)
-        current_user_id = get_current_user_id(args)
-
-        search_args = {
-            "is_auto_complete": False,
-            "kind": args.get("kind", "all"),
-            "query": args.get("query"),
-            "current_user_id": current_user_id,
-            "with_users": True,
-            "limit": limit,
-            "offset": offset,
-            "only_downloadable": False,
-        }
-
-        # wip: es search
-        resp = search(search_args)
-        resp = extend_search(resp)
-        return success_response(resp)
-
-
 @full_ns.route("/full")
 class FullElasticsearch(Resource):
     @full_ns.doc(
@@ -109,11 +76,17 @@ class FullElasticsearch(Resource):
             "offset": offset,
             "only_downloadable": False,
         }
+        if os.getenv('search_elasticsearch_enabled'):
+            try:
+                resp = search_es_full(search_args)
+                return success_response(resp)
+            except:
+                logger.info("Failed to get search results from Elasticsearch.")
 
-        # wip: es search
-        resp = search_es_full(search_args)
+        resp = search(search_args)
+        resp = extend_search(resp)
         return success_response(resp)
-
+        
 
 search_autocomplete_response = make_full_response(
     "search_autocomplete_response", full_ns, fields.Nested(search_model)
