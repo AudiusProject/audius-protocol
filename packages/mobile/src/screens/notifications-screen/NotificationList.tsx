@@ -12,46 +12,50 @@ import {
 } from 'audius-client/src/common/store/notifications/selectors'
 import { Notification } from 'audius-client/src/common/store/notifications/types'
 import { isEqual } from 'lodash'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
 import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useColor } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
-import Empty from './Empty'
-import NotificationBlock from './NotificationBlock'
+import { EmptyNotifications } from './EmptyNotifications'
+import { NotificationBlock } from './NotificationBlock'
 
 const NOTIFICATION_PAGE_SIZE = 10
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   list: {
-    paddingTop: 2
+    paddingTop: spacing(1)
   },
   itemContainer: {
-    marginTop: 8,
-    paddingHorizontal: 10
+    marginTop: spacing(2),
+    paddingHorizontal: spacing(2)
   },
   footer: {
-    marginTop: 20,
+    marginTop: spacing(5),
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 48
+    height: spacing(12)
+  },
+  spinner: {
+    color: palette.neutralLight4
   }
-})
+}))
 
-export const List = () => {
+const getNotifications = makeGetAllNotifications()
+
+export const NotificationList = () => {
+  const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
-
-  const getNotifications = makeGetAllNotifications()
   const notifications = useSelectorWeb(getNotifications, isEqual)
   const status = useSelectorWeb(getNotificationStatus)
   const hasMore = useSelectorWeb(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const onPullRefresh = useCallback(() => {
+  const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
     dispatchWeb(refreshNotifications())
   }, [dispatchWeb])
@@ -62,26 +66,21 @@ export const List = () => {
     }
   }, [status, setIsRefreshing])
 
-  const onEndReached = useCallback(() => {
+  const handleEndReached = useCallback(() => {
     if (status !== Status.LOADING && hasMore) {
       dispatchWeb(fetchNotifications(NOTIFICATION_PAGE_SIZE))
     }
   }, [status, dispatchWeb, hasMore])
 
-  const spinnerColor = useColor('neutralLight4')
-
   if (status === Status.SUCCESS && notifications.length === 0) {
-    return <Empty />
+    return <EmptyNotifications />
   }
 
   return (
     <FlatList
       style={styles.list}
-      contentContainerStyle={{
-        paddingBottom: 80
-      }}
       refreshing={isRefreshing}
-      onRefresh={onPullRefresh}
+      onRefresh={handleRefresh}
       data={notifications}
       keyExtractor={(item: Notification) => `${item.id}`}
       renderItem={({ item }) => (
@@ -92,11 +91,11 @@ export const List = () => {
       ListFooterComponent={
         status === Status.LOADING && !isRefreshing ? (
           <View style={styles.footer}>
-            <LoadingSpinner color={spinnerColor} />
+            <LoadingSpinner fill={styles.spinner.color} />
           </View>
         ) : undefined
       }
-      onEndReached={onEndReached}
+      onEndReached={handleEndReached}
       onEndReachedThreshold={0.8}
       initialNumToRender={10}
     />

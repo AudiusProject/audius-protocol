@@ -9,6 +9,10 @@ import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { AppScreen, AppScreenParamList } from 'app/screens/app-screen'
+import {
+  NotificationsScreen,
+  NotificationsDrawerNavigationContextProvider
+} from 'app/screens/notifications-screen'
 import { SignOnScreen } from 'app/screens/signon'
 import {
   getDappLoaded,
@@ -16,9 +20,6 @@ import {
   getOnSignUp
 } from 'app/store/lifecycle/selectors'
 import { getAccountAvailable } from 'app/store/signon/selectors'
-
-import { NotificationsDrawerNavigationContextProvider } from '../notifications-screen/NotificationsDrawerNavigationContext'
-import { NotificationsScreen } from '../notifications-screen/NotificationsScreen'
 
 export type RootScreenParamList = {
   signOn: undefined

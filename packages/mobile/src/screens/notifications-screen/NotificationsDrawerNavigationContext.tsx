@@ -14,15 +14,16 @@ export const NotificationsDrawerNavigationContext = createContext<
   NotificationsDrawerNavigationContextValue
 >({})
 
-export const NotificationsDrawerNavigationContextProvider = ({
-  drawerHelpers,
-  drawerNavigation,
-  children
-}: {
+type ProviderProps = {
   drawerHelpers: DrawerNavigationHelpers
   drawerNavigation?: NavigationProp<any>
   children: ReactNode
-}) => {
+}
+
+export const NotificationsDrawerNavigationContextProvider = (
+  props: ProviderProps
+) => {
+  const { drawerHelpers, drawerNavigation, children } = props
   return (
     <NotificationsDrawerNavigationContext.Provider
       value={{ drawerHelpers, drawerNavigation }}
