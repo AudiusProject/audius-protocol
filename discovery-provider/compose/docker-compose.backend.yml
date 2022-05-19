@@ -1,32 +1,53 @@
 # Compose file to run the discovery backend stack (web server and celery workers)
 version: '3'
 services:
-  web-server:
-    build: ../.
-    restart: always
-    ports:
-      - '${audius_server_port}:${audius_server_port}'
-    env_file:
-      - .env
-    environment:
-      - FLASK_RUN_PORT=${audius_server_port}
-      - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
-      - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
-      - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
-      - audius_delegate_owner_wallet=${audius_delegate_owner_wallet}
-      - audius_delegate_private_key=${audius_delegate_private_key}
-      - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
-      - audius_discprov_dev_mode=true
-      - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
+  worker:
+    extends:
+      file: docker-compose.common.yml
+      service: discovery-provider
+    container_name: worker
     depends_on:
       discovery-provider-db:
         condition: service_healthy
       redis-server:
         condition: service_started
-    volumes:
-      - '../.:/audius-discovery-provider'
-    networks:
-      - audius_dev
+    environment:
+      - audius_service=beat
+      - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+      - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+
+  beat:
+    extends:
+      file: docker-compose.common.yml
+      service: discovery-provider
+    container_name: beat
+    depends_on:
+      discovery-provider-db:
+        condition: service_healthy
+      redis-server:
+        condition: service_started
+    environment:
+      - audius_service=beat
+      - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+      - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+
+  web-server:
+    extends:
+      file: docker-compose.common.yml
+      service: discovery-provider
+    container_name: server
+    depends_on:
+      discovery-provider-db:
+        condition: service_healthy
+      redis-server:
+        condition: service_started
+    ports:
+      - '${audius_server_port}:${audius_server_port}'
+    environment:
+      - audius_service=server
+      - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+      - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+
 
 networks:
   audius_dev:
