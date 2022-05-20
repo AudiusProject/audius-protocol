@@ -5,12 +5,13 @@ FROM gliderlabs/logspout:v3.2.14
 # could send double logs upon container restarts if we remove this
 ENV BACKLOG false
 
-ENTRYPOINT []
-CMD export SYSLOG_STRUCTURED_DATA=${audius_loggly_token}@41058 tag="${audius_loggly_tags},logspout" \
-    && /bin/logspout multiline+syslog+tcp://logs-01.loggly.com:514
-
 ARG git_sha
 ENV GIT_SHA=${git_sha}
 
 ARG audius_loggly_token
 ENV audius_loggly_token ${audius_loggly_token}
+
+ENTRYPOINT []
+CMD export SYSLOG_STRUCTURED_DATA="${audius_loggly_token}@41058 tag=\"${audius_loggly_tags},logspout\"" \
+    && echo SYSLOG_STRUCTURED_DATA=${SYSLOG_STRUCTURED_DATA} \
+    && /bin/logspout multiline+syslog+tcp://logs-01.loggly.com:514
