@@ -71,6 +71,7 @@ def update_track_is_available(self):
     all_unavailable_track_ids = redis.smembers(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
     for track_id in all_unavailable_track_ids:
         replica_set = query_replica_set_by_track_id(db, [track_id])
+        print(replica_set)
 
         # pass
         # try:
