@@ -206,5 +206,3 @@ def print_dummy_tracks_and_users(db):
 
         print("users")
         print(users)
-
-
