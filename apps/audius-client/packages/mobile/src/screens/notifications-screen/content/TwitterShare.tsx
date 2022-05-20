@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { BadgeTier } from 'audius-client/src/common/models/BadgeTier'
-import { Track } from 'audius-client/src/common/models/Track'
 import { User } from 'audius-client/src/common/models/User'
 import {
   Achievement,
@@ -83,7 +82,7 @@ const getTrendingTrackText = (notification: TrendingTrack) => {
 
 const getRemixCreateText = async (notification: RemixCreate) => {
   const track = notification.entities.find(
-    (t: any) => t.track_id === notification.parentTrackId
+    t => t?.track_id === notification.parentTrackId
   )
   if (!track) return
   const link = getEntityRoute(track, Entity.Track, true)
@@ -100,10 +99,10 @@ const getRemixCreateText = async (notification: RemixCreate) => {
 
 const getRemixCosignText = async (notification: RemixCosign) => {
   const parentTrack = notification.entities.find(
-    (t: Track) => t.owner_id === notification.parentTrackUserId
+    t => t?.owner_id === notification.parentTrackUserId
   )
   const childtrack = notification.entities.find(
-    (t: Track) => t.track_id === notification.childTrackId
+    t => t?.track_id === notification.childTrackId
   )
 
   if (!parentTrack || !childtrack) return { text: '', link: '' }

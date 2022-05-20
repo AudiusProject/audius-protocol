@@ -54,7 +54,9 @@ const useSearchHistory = () => {
   }, [dispatch])
 
   const appendSearchItem = useCallback(
-    async (query: string) => {
+    async (query: string | null) => {
+      // there are rare edge cases where query is null
+      if (!query) return
       const trimmedQuery = query.trim()
       if (trimmedQuery === '') return
       const filteredSearch = searchHistory.filter(term => term !== trimmedQuery)

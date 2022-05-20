@@ -60,7 +60,8 @@ const challengeInfoMap: Record<
   }
 }
 
-const ChallengeReward = ({ notification }: ChallengeRewardProps) => {
+const ChallengeReward = (props: ChallengeRewardProps) => {
+  const { notification } = props
   const { challengeId } = notification
 
   const mainTextStyle = useTheme(styles.text, {
