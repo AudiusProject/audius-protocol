@@ -301,7 +301,7 @@ def get_sp_factory_inst(update_task):
         address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
     sp_factory_address = eth_registry_instance.functions.getContract(
-        sp_factory_registry_key
+        SP_FACTORY_REGISTRY_KEY
     ).call()
     sp_factory_inst = eth_web3.eth.contract(
         address=sp_factory_address,
