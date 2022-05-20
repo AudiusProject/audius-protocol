@@ -5,7 +5,7 @@ from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
+DEFAULT_UPDATE_TIMEOUT = 60 * 60 * 6  # 6 hours
 
 
 def update_views(self, db):
