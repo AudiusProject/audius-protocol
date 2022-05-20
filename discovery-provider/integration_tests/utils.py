@@ -191,7 +191,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=user_meta.get("created_at", datetime.now()),
                 primary_id=user_meta.get("primary_id"),
                 secondary_ids=user_meta.get("secondary_ids"),
-                replica_set_update_signer=user_meta.get("replica_set_update_signer")
+                replica_set_update_signer=user_meta.get("replica_set_update_signer"),
             )
             user_bank = models.UserBankAccount(
                 signature=f"0x{i}",

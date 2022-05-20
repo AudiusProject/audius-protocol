@@ -66,27 +66,65 @@ def test_query_replica_set_by_track_id(app):
             # Data that this query should not pick up because track ids are not queried
             {"track_id": 8, "owner_id": 3, "is_current": True},
             {"track_id": 9, "owner_id": 3, "is_current": True},
-            {"track_id": 10, "owner_id": 3, "is_current": True}
+            {"track_id": 10, "owner_id": 3, "is_current": True},
         ],
         "users": [
-            {"user_id": 1, "primary_id": 7, "secondary_ids": [9, 13], "is_current": True},
-            {"user_id": 2, "primary_id": 11, "secondary_ids": [12, 10], "is_current": True},
-            {"user_id": 3, "primary_id": 11, "secondary_ids": [13, 10], "is_current": True},
+            {
+                "user_id": 1,
+                "primary_id": 7,
+                "secondary_ids": [9, 13],
+                "is_current": True,
+            },
+            {
+                "user_id": 2,
+                "primary_id": 11,
+                "secondary_ids": [12, 10],
+                "is_current": True,
+            },
+            {
+                "user_id": 3,
+                "primary_id": 11,
+                "secondary_ids": [13, 10],
+                "is_current": True,
+            },
             # Data that this query should not pick up because data is not recent
-            {"user_id": 1, "primary_id": 6, "secondary_ids": [9, 13], "is_current": False},
-            {"user_id": 1, "primary_id": 4, "secondary_ids": [9, 13], "is_current": False},
-            {"user_id": 3, "primary_id": 7, "secondary_ids": [9, 1], "is_current": False},
-        ]
+            {
+                "user_id": 1,
+                "primary_id": 6,
+                "secondary_ids": [9, 13],
+                "is_current": False,
+            },
+            {
+                "user_id": 1,
+                "primary_id": 4,
+                "secondary_ids": [9, 13],
+                "is_current": False,
+            },
+            {
+                "user_id": 3,
+                "primary_id": 7,
+                "secondary_ids": [9, 1],
+                "is_current": False,
+            },
+        ],
     }
 
     populate_mock_db(db, test_entities)
 
     print_dummy_tracks_and_users(db)
 
-    expected_query_results = [(1, 1, 7, [9, 13]), (2, 1, 7, [9, 13]), (3, 2, 11, [12, 10]), (4, 3, 11, [13, 10]), (5, 3, 11, [13, 10]), (6, 3, 11, [13, 10]), (7, 3, 11, [13, 10])]
+    expected_query_results = [
+        (1, 1, 7, [9, 13]),
+        (2, 1, 7, [9, 13]),
+        (3, 2, 11, [12, 10]),
+        (4, 3, 11, [13, 10]),
+        (5, 3, 11, [13, 10]),
+        (6, 3, 11, [13, 10]),
+        (7, 3, 11, [13, 10]),
+    ]
     track_ids = [1, 2, 3, 4, 5, 6, 7]
     sorted_actual_results = _sort_query_replica_set_by_track_id(
-         query_replica_set_by_track_id(db, track_ids)
+        query_replica_set_by_track_id(db, track_ids)
     )
 
     assert len(sorted_actual_results) == len(track_ids)
@@ -95,18 +133,16 @@ def test_query_replica_set_by_track_id(app):
 
 def print_dummy_tracks_and_users(db):
     with db.scoped_session() as session:
-        tracks = session.query(
-            Track.track_id, Track.owner_id, Track.is_current
-        ).all()
+        tracks = session.query(Track.track_id, Track.owner_id, Track.is_current).all()
 
-        print('tracks')
+        print("tracks")
         print(tracks)
 
         users = session.query(
-            User.user_id, User.primary_id, User.secondary_ids, User.is_current 
+            User.user_id, User.primary_id, User.secondary_ids, User.is_current
         ).all()
 
-        print('users')
+        print("users")
         print(users)
 
 

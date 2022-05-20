@@ -26,24 +26,26 @@ def fetch_unavailable_track_ids(node):
 def query_replica_set_by_track_id(db, track_ids):
     query_results = None
     with db.scoped_session() as session:
-        query_results = session.query(
-            Track.track_id, User.user_id, User.primary_id, User.secondary_ids
-        ).join(
-            User,
-            Track.owner_id == User.user_id,
-            isouter=True  # left join
-        ).filter(
-            User.is_current == True,
-            Track.is_current == True,
-            Track.track_id.in_(track_ids)
-        ).all()
+        query_results = (
+            session.query(
+                Track.track_id, User.user_id, User.primary_id, User.secondary_ids
+            )
+            .join(User, Track.owner_id == User.user_id, isouter=True)  # left join
+            .filter(
+                User.is_current == True,
+                Track.is_current == True,
+                Track.track_id.in_(track_ids),
+            )
+            .all()
+        )
 
     return query_results
 
 
 def get_unavailable_tracks_redis_key(spID):
-    '''Returns the key used to store the unavailable tracks on a sp'''
+    """Returns the key used to store the unavailable tracks on a sp"""
     return f"unavailable_tracks_{spID}"
+
 
 # TODO: what happens when a worker fails? wrap in try/catch? not necessary?
 
