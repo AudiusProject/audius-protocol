@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { CancelToken } = axios
 
 const config = require('../config')
 const Utils = require('../utils')
@@ -125,6 +126,16 @@ class PeerSetManager {
     // Will throw error on non-200 response
     let nodeUsers
     try {
+      // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
+      const cancelTokenSource = CancelToken.source()
+      setTimeout(
+        () =>
+          cancelTokenSource.cancel(
+            'getNodeUsers took more than 70 seconds and did not time out'
+          ),
+        70_000 // 70s
+      )
+
       // Request all users that have this node as a replica (either primary or secondary)
       const resp = await Utils.asyncRetry({
         logLabel: 'fetch all users with this node in replica',
@@ -138,21 +149,25 @@ class PeerSetManager {
               prev_user_id: prevUserId,
               max_users: maxUsers
             },
-            timeout: 60_000 // 60s
+            timeout: 60_000, // 60s
+            cancelToken: cancelTokenSource.token
           })
         },
         logger
       })
       nodeUsers = resp.data.data
     } catch (e) {
+      if (axios.isCancel(e)) {
+        logger.error(`getNodeUsers request canceled: ${e.message}`)
+      }
       throw new Error(
         `getNodeUsers() Error: ${e.toString()} - connected discprov [${
           this.discoveryProviderEndpoint
         }]`
       )
+    } finally {
+      logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
     }
-
-    logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
 
     // Ensure every object in response array contains all required fields
     for (const nodeUser of nodeUsers) {
