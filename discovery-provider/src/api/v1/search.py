@@ -50,6 +50,7 @@ search_full_response = make_full_response(
     "search_full_response", full_ns, fields.Nested(search_model)
 )
 
+
 @full_ns.route("/full")
 class FullSearch(Resource):
     @full_ns.doc(
@@ -76,17 +77,17 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
         }
-        if os.getenv('search_elasticsearch_enabled'):
+        if os.getenv("search_elasticsearch_enabled"):
             try:
                 resp = search_es_full(search_args)
                 return success_response(resp)
-            except:
-                logger.info("Failed to get search results from Elasticsearch.")
+            except Exception as e:
+                logger.error(f"Elasticsearch error: {e}")
 
         resp = search(search_args)
         resp = extend_search(resp)
         return success_response(resp)
-        
+
 
 search_autocomplete_response = make_full_response(
     "search_autocomplete_response", full_ns, fields.Nested(search_model)
@@ -123,7 +124,14 @@ class FullSearchAutocomplete(Resource):
             "offset": offset,
             "only_downloadable": False,
         }
+
+        if os.getenv("search_elasticsearch_enabled"):
+            try:
+                resp = search_es_full(search_args)
+                return success_response(resp)
+            except Exception as e:
+                logger.error(f"Elasticsearch error: {e}")
+
         resp = search(search_args)
         resp = extend_search(resp)
-
         return success_response(resp)

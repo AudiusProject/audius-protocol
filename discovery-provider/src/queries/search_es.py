@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, List
 
 from src.api.v1.helpers import (
     extend_favorite,
@@ -236,13 +236,13 @@ def search_es_full(args: dict):
                 "must"
             ].extend(should_saved_or_reposted)
             mdsl.extend(saved_album_search_query)
-            
+
     mfound = esclient.msearch(searches=mdsl)
-    
+
     tracks_response = []
     saved_tracks_response = []
     users_response = []
-    followed_users_response = []
+    # followed_users_response = []
     playlists_response = []
     saved_playlists_response = []
     albums_response = []
