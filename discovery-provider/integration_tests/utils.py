@@ -172,12 +172,13 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(playlist)
 
         for i, user_meta in enumerate(users):
+            is_current = user_meta.get("is_current")
             user = models.User(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
                 txhash=user_meta.get("txhash", str(i + block_offset)),
                 user_id=user_meta.get("user_id", i),
-                is_current=True,
+                is_current=True if is_current is None else is_current,
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
                 wallet=user_meta.get("wallet", str(i)),
@@ -188,6 +189,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 cover_photo_sizes=user_meta.get("cover_photo_sizes"),
                 updated_at=user_meta.get("updated_at", datetime.now()),
                 created_at=user_meta.get("created_at", datetime.now()),
+                primary_id=user_meta.get("primary_id"),
+                secondary_ids=user_meta.get("secondary_ids"),
+                replica_set_update_signer=user_meta.get("replica_set_update_signer")
             )
             user_bank = models.UserBankAccount(
                 signature=f"0x{i}",
