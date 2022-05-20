@@ -31,7 +31,12 @@ const NavigationContainer = ({ children }: Props) => {
     theme === 'auto' ? (isSystemDarkMode ? 'dark' : 'default') : theme
 
   const linking: LinkingOptions<RootScreenParamList> = {
-    prefixes: ['https://audius.co', 'https://staging.audius.co'],
+    prefixes: [
+      'https://audius.co',
+      'http://audius.co',
+      'https://staging.audius.co',
+      'http://staging.audius.co'
+    ],
     // configuration for matching screens with paths
     config: {
       screens: {
@@ -129,8 +134,12 @@ const NavigationContainer = ({ children }: Props) => {
       } else {
         // If the path has two parts
         if (path.match(/^\/[^/]+\/[^/]+$/)) {
+          // If the path is to audio-nft-playlist, reroute to feed
+          if (path.match(/^\/[^/]+\/audio-nft-playlist$/)) {
+            path = '/feed'
+          }
           // If the path doesn't match a profile tab, it's a track
-          if (
+          else if (
             !path.match(
               /^\/[^/]+\/(tracks|albums|playlists|reposts|collectibles)$/
             )
