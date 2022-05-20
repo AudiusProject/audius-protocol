@@ -14,6 +14,49 @@ ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "unavailable_tracks_all"
 BATCH_SIZE = 1000
 
 
+def fetch_unavailable_track_ids_in_network(redis):
+    spID_to_endpoint = {}
+    content_nodes = fetch_all_registered_content_node_info()
+    for node in content_nodes:
+        # Keep mapping of spID to url endpoint
+        spID_to_endpoint[node.spID] = node.endpoint
+
+        # Keep mapping of spId to set of unavailable tracks
+        unavailable_track_ids = fetch_unavailable_track_ids(node.endpoint)
+        spID_unavailable_tracks_key = get_unavailable_tracks_redis_key(node.spID)
+
+        # TODO: we should probably batch this sadd 
+        redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids)
+
+        # Aggregate a set of unavailable tracks
+        # TODO: and batch this sadd
+        redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, *unavailable_track_ids)
+
+
+def update_tracks_is_available_status(db, redis):
+    """Check track availability on all unavailable tracks and update in Tracks table"""
+    all_unavailable_track_ids = redis.smembers(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
+    for i in range(0, len(all_unavailable_track_ids), BATCH_SIZE):
+        unavailable_track_ids_batch = all_unavailable_track_ids[i : i + BATCH_SIZE]
+
+        tracks_to_update = []
+        track_ids_to_replica_set = query_replica_set_by_track_id(
+            db, unavailable_track_ids_batch
+        )
+
+        for entry in track_ids_to_replica_set:
+            track_id = entry[0]
+            spID_replica_set = [entry[1], *entry[2]]
+            is_available = check_track_is_available(
+                redis=redis, track_id=track_id, spID_replica_set=spID_replica_set
+            )
+            tracks_to_update.append(
+                {"track_id": track_id, "is_available": is_available}
+            )
+
+        update_track_is_available_in_db(db, tracks_to_update)
+
+
 def update_track_is_available_in_db(db, tracks_with_updated_is_available_status):
     query_results = None
     with db.scoped_session() as session:
@@ -77,6 +120,15 @@ def get_unavailable_tracks_redis_key(spID):
 # TODO: what happens when a worker fails? wrap in try/catch? not necessary?
 # TODO: what happens when fetching unavail tracks fails?
 
+# TODO: actual todo :3
+# - add migration for "is_available" column in "Tracks". default to "True"
+# - unit test the bulk update
+# - unit test fetch_unavailable_track_ids_in_network
+# - unit test update_tracks_is_available_status
+# - consider and handle fail conditions
+# - consider and handle batching
+# - consider file placement?
+# - unit/manual test update_track_is_available 
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
@@ -84,44 +136,5 @@ def update_track_is_available(self):
     db = update_track_is_available.db
     redis = update_track_is_available.redis
 
-    spID_to_endpoint = {}
-    content_nodes = fetch_all_registered_content_node_info()
-    for node in content_nodes:
-        # Keep mapping of spID to url endpoint
-        spID_to_endpoint[node.spID] = node.endpoint
-
-        # Keep mapping of spId to set of unavailable tracks
-        unavailable_track_ids = fetch_unavailable_track_ids(node.endpoint)
-        spID_unavailable_tracks_key = get_unavailable_tracks_redis_key(node.spID)
-        redis.sadd(spID_unavailable_tracks_key, unavailable_track_ids)
-
-        # Aggregate a set of unavailable tracks
-        redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, unavailable_track_ids)
-
-    # Check track availability on all unavailable tracks and update in Tracks table
-    all_unavailable_track_ids = redis.smembers(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
-    for i in range(0, len(all_unavailable_track_ids), BATCH_SIZE):
-        unavailable_track_ids_batch = all_unavailable_track_ids[i : i + BATCH_SIZE]
-
-        tracks_to_update = []
-        track_ids_to_replica_set = query_replica_set_by_track_id(
-            db, unavailable_track_ids_batch
-        )
-
-        for entry in track_ids_to_replica_set:
-            track_id = entry[0]
-            spID_replica_set = [entry[1], *entry[2]]
-            is_available = check_track_is_available(
-                redis=redis, track_id=track_id, spID_replica_set=spID_replica_set
-            )
-            tracks_to_update.append(
-                {"track_id": track_id, "is_available": is_available}
-            )
-
-        update_track_is_available_in_db(db, tracks_to_update)
-
-        # pass
-        # try:
-        #     init_task_and_acquire_lock(
-        #         logger, db, redis, AGGREGATE_PLAYS_TABLE_NAME, _update_track_is_available
-        #     # except Exception as e:
+    fetch_unavailable_track_ids_in_network(redis)
+    update_tracks_is_available_status(db, redis)
