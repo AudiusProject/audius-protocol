@@ -9,7 +9,8 @@ import {
   setModalState,
   setModalVisibility
 } from 'audius-client/src/common/store/pages/token-dashboard/slice'
-import { Linking, View } from 'react-native'
+import { AUDIUS_DISCORD_LINK } from 'audius-client/src/utils/route'
+import { View } from 'react-native'
 
 import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import { CopyTextTile } from 'app/components/copy-text-tile'
@@ -18,8 +19,6 @@ import Drawer from 'app/components/drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
-
-const DISCORD_URL = ' https://discord.gg/audius'
 
 const messages = {
   title: 'Launch the VIP Discord',
@@ -82,7 +81,7 @@ export const DiscordDrawer = () => {
           size='medium'
           iconPosition='left'
           icon={IconDiscord}
-          onPress={() => Linking.openURL(DISCORD_URL)}
+          url={AUDIUS_DISCORD_LINK}
         />
       </View>
     </Drawer>

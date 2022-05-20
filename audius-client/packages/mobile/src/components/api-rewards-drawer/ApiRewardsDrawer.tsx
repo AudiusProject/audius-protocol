@@ -1,6 +1,5 @@
-import { useCallback } from 'react'
-
-import { Image, ImageStyle, Linking, View } from 'react-native'
+import { AUDIUS_API_LINK } from 'audius-client/src/utils/route'
+import { Image, ImageStyle, View } from 'react-native'
 
 import AudiusAPI from 'app/assets/images/audiusAPI.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -16,7 +15,6 @@ const messages = {
   button: 'Learn More About The Audius API'
 }
 
-const API_LINK = 'https://audius.org/api'
 const MODAL_NAME = 'APIRewardsExplainer'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -56,10 +54,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 export const ApiRewardsDrawer = () => {
   const styles = useStyles()
 
-  const onClickAudiusAPI = useCallback(() => {
-    Linking.openURL(API_LINK)
-  }, [])
-
   return (
     <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.content}>
@@ -78,7 +72,7 @@ export const ApiRewardsDrawer = () => {
           size='large'
           icon={IconArrow}
           title={messages.button}
-          onPress={onClickAudiusAPI}
+          url={AUDIUS_API_LINK}
           styles={{ button: styles.button, text: styles.buttonText }}
           fullWidth
         />

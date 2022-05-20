@@ -21,6 +21,8 @@ import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { flexRowCentered, makeStyles, StylesProp } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { Link } from './Link'
+
 const useStyles = makeStyles(
   ({ palette, spacing, typography }, { isPressing, size, variant }) => {
     const variantStyles = {
@@ -186,6 +188,7 @@ export type ButtonProps = RNButtonProps &
     }>
     variant?: 'primary' | 'secondary' | 'common' | 'commonAlt'
     haptics?: boolean | 'light' | 'medium'
+    url?: string
   }
 
 export const Button = (props: ButtonProps) => {
@@ -204,6 +207,7 @@ export const Button = (props: ButtonProps) => {
     title,
     variant = 'primary',
     haptics,
+    url,
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
@@ -287,6 +291,8 @@ export const Button = (props: ButtonProps) => {
     />
   ) : null
 
+  const PressableComponent = url ? Link : Pressable
+
   return (
     <View
       style={rootHeightRef.current ? { height: rootHeightRef.current } : null}
@@ -301,7 +307,8 @@ export const Button = (props: ButtonProps) => {
           stylesProp?.root
         ]}
       >
-        <Pressable
+        <PressableComponent
+          url={url as string}
           style={[
             styles.button,
             fullWidth && { width: '100%' },
@@ -319,7 +326,7 @@ export const Button = (props: ButtonProps) => {
             <Text style={[styles.text, stylesProp?.text]}>{title}</Text>
           )}
           {iconPosition !== 'right' ? null : icon}
-        </Pressable>
+        </PressableComponent>
       </Animated.View>
     </View>
   )

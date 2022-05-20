@@ -33,6 +33,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
+import { AUDIUS_DISCORD_LINK } from 'utils/route'
 
 import styles from './WalletModal.module.css'
 import ConnectWalletsBody from './components/ConnectWalletsBody'
@@ -48,7 +49,6 @@ import SendingModalBody from './components/SendingModalBody'
 import ModalDrawer from './components/modals/ModalDrawer'
 
 const { getFeatureEnabled } = remoteConfigInstance
-const DISCORD_URL = ' https://discord.gg/audius'
 
 const messages = {
   receive: 'Receive $AUDIO',
@@ -351,7 +351,7 @@ const WalletModal = () => {
   }
 
   const onLaunchDiscord = () => {
-    window.open(DISCORD_URL, '_blank')
+    window.open(AUDIUS_DISCORD_LINK, '_blank')
   }
 
   const { status } = useSelector(getAssociatedWallets)
