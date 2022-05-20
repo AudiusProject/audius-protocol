@@ -195,8 +195,12 @@ def _update_aggregate_tips(session: Session, redis: Redis):
     prev_slot = get_last_indexed_checkpoint(session, AGGREGATE_TIPS)
     max_slot_result = session.query(func.max(UserTip.slot)).one()
     max_slot = int(max_slot_result[0]) if max_slot_result[0] is not None else 0
+
     if prev_slot == max_slot:
+        if latest_user_bank_slot is not None:
+            redis.set(latest_sol_aggregate_tips_slot_key, int(latest_user_bank_slot))
         return
+
     ranks_before = _get_ranks(session, prev_slot, max_slot)
     update_aggregate_table(
         logger,
