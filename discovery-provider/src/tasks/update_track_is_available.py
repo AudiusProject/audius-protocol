@@ -59,14 +59,9 @@ def update_track_is_available(self):
     # Check track availability on all delisted tracks
     all_delisted_track_ids = redis.smembers(ALL_DELISTED_TRACKS_REDIS_KEY)
     for track_id in all_delisted_track_ids:
+        pass
         # replica_set = get_replica_set(track_id)
-
-
-
-    # try:
-    #     init_task_and_acquire_lock(
-    #         logger, db, redis, AGGREGATE_PLAYS_TABLE_NAME, _update_track_is_available
-    #     )
-    # except Exception as e:
-
-
+        # try:
+        #     init_task_and_acquire_lock(
+        #         logger, db, redis, AGGREGATE_PLAYS_TABLE_NAME, _update_track_is_available
+        #     # except Exception as e:
