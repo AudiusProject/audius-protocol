@@ -119,6 +119,7 @@ export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
 export const AUDIUS_PODCAST_LINK =
   'https://www.youtube.com/playlist?list=PLKEECkHRxmPag5iYp4dTK5fGoRcoX40RY'
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/audius'
+export const AUDIUS_API_LINK = 'https://audius.org/api'
 
 export const authenticatedRoutes = [
   FEED_PAGE,

@@ -16,17 +16,19 @@ const messages = {
 export const useLink = (url: string) => {
   const { toast } = useContext(ToastContext)
 
-  const handlePress = useCallback(
-    async (event?: GestureResponderEvent) => {
+  const handlePress = useCallback(async () => {
+    const errorToastConfig = { content: messages.error, type: 'error' as const }
+    try {
       const supported = await Linking.canOpenURL(url)
       if (supported) {
         await Linking.openURL(url)
       } else {
-        toast({ content: messages.error, type: 'error' })
+        toast(errorToastConfig)
       }
-    },
-    [url, toast]
-  )
+    } catch (error) {
+      toast(errorToastConfig)
+    }
+  }, [url, toast])
 
   return { onPress: handlePress }
 }
@@ -37,19 +39,14 @@ type LinkProps = PressableProps & {
 
 export const Link = (props: LinkProps) => {
   const { url, onPress, ...other } = props
-  const { toast } = useContext(ToastContext)
+  const { onPress: onPressLink } = useLink(url)
 
   const handlePress = useCallback(
-    async (event: GestureResponderEvent) => {
+    (event: GestureResponderEvent) => {
       onPress?.(event)
-      const supported = await Linking.canOpenURL(url)
-      if (supported) {
-        await Linking.openURL(url)
-      } else {
-        toast({ content: messages.error, type: 'error' })
-      }
+      onPressLink()
     },
-    [url, onPress, toast]
+    [onPress, onPressLink]
   )
 
   return <Pressable onPress={handlePress} {...other} />

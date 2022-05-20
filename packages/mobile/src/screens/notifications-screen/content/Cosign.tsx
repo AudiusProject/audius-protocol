@@ -1,4 +1,3 @@
-import { Track } from 'audius-client/src/common/models/Track'
 import {
   Entity as EntityType,
   RemixCosign
@@ -38,7 +37,7 @@ const Cosign = ({ notification }: CosignProps) => {
 
   const user = notification.user
   const entity = notification.entities.find(
-    (track: Track) => track.owner_id === notification.parentTrackUserId
+    track => track?.owner_id === notification.parentTrackUserId
   )
 
   return (
