@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 audius_loggly_tags=${audius_loggly_tags},logspout
 
