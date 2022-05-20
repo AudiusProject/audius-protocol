@@ -4,16 +4,19 @@ from unittest import mock
 from integration_tests.utils import populate_mock_db
 from src.models import Track, User
 from src.tasks.update_track_is_available import (
+    check_track_is_available,
     fetch_unavailable_track_ids,
+    get_unavailable_tracks_redis_key,
     query_replica_set_by_track_id,
 )
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
 
-# Mock out request response
 def _mock_response(json_data, status=200, raise_for_status=None):
+    """Mock out request.get response"""
     mock_resp = mock.Mock()
 
     mock_resp.json = mock.Mock(return_value=json_data)
@@ -24,6 +27,12 @@ def _mock_response(json_data, status=200, raise_for_status=None):
         mock_resp.raise_for_status.side_effect = raise_for_status
 
     return mock_resp
+
+
+def _sort_query_replica_set_by_track_id(list):
+    """sort by the track id in ascending order"""
+    list.sort(key=lambda entry: entry[0])
+    return list
 
 
 @mock.patch("src.tasks.update_track_is_available.requests")
@@ -113,14 +122,15 @@ def test_query_replica_set_by_track_id(app):
 
     print_dummy_tracks_and_users(db)
 
+    # structure: track_id | primary_id | secondary_ids
     expected_query_results = [
-        (1, 1, 7, [9, 13]),
-        (2, 1, 7, [9, 13]),
-        (3, 2, 11, [12, 10]),
-        (4, 3, 11, [13, 10]),
-        (5, 3, 11, [13, 10]),
-        (6, 3, 11, [13, 10]),
-        (7, 3, 11, [13, 10]),
+        (1, 7, [9, 13]),
+        (2, 7, [9, 13]),
+        (3, 11, [12, 10]),
+        (4, 11, [13, 10]),
+        (5, 11, [13, 10]),
+        (6, 11, [13, 10]),
+        (7, 11, [13, 10]),
     ]
     track_ids = [1, 2, 3, 4, 5, 6, 7]
     sorted_actual_results = _sort_query_replica_set_by_track_id(
@@ -129,6 +139,58 @@ def test_query_replica_set_by_track_id(app):
 
     assert len(sorted_actual_results) == len(track_ids)
     assert sorted_actual_results == expected_query_results
+
+
+def test_check_track_is_available__return_is_not_available(app):
+    with app.app_context():
+        redis = get_redis()
+        spID_2_key = get_unavailable_tracks_redis_key(2)
+        spID_3_key = get_unavailable_tracks_redis_key(3)
+        spID_4_key = get_unavailable_tracks_redis_key(4)
+
+        # Seed redis some initialized data
+        # (1, 2, [3, 4])
+        redis.sadd(spID_2_key, 1)
+        redis.sadd(spID_3_key, 1)
+        redis.sadd(spID_4_key, 1)
+
+        assert False == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_check_track_is_available__return_is_available_1(app):
+    with app.app_context():
+        redis = get_redis()
+        spID_2_key = get_unavailable_tracks_redis_key(2)
+        spID_3_key = get_unavailable_tracks_redis_key(3)
+
+        redis.sadd(spID_2_key, 1)
+        redis.sadd(spID_3_key, 1)
+        # Available on spID = 4
+
+        assert True == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_check_track_is_available__return_is_available_2(app):
+    with app.app_context():
+        redis = get_redis()
+        spID_2_key = get_unavailable_tracks_redis_key(2)
+
+        redis.sadd(spID_2_key, 1)
+        # Available on spID = 3
+        # Available on spID = 4
+
+        assert True == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_check_track_is_available__return_is_available_3(app):
+    with app.app_context():
+        redis = get_redis()
+
+        # Available on spID = 2
+        # Available on spID = 3
+        # Available on spID = 4
+
+        assert True == check_track_is_available(redis, 1, [2, 3, 4])
 
 
 def print_dummy_tracks_and_users(db):
@@ -146,7 +208,3 @@ def print_dummy_tracks_and_users(db):
         print(users)
 
 
-def _sort_query_replica_set_by_track_id(list):
-    """sort by the track id in ascending order"""
-    list.sort(key=lambda entry: entry[0])
-    return list
