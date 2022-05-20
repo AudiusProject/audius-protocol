@@ -1,5 +1,6 @@
 import logging
-from typing import Any, List
+from copy import deepcopy
+from typing import Any, Dict, List
 
 from src.api.v1.helpers import (
     extend_favorite,
@@ -46,196 +47,201 @@ def search_es_full(args: dict):
             {"term": {"reposted_by": {"value": current_user_id}}},
         ]
 
-    # tracks
-    if do_tracks:
-        track_search_query: List = [
-            {"index": ES_TRACKS},
-            {
-                "size": limit,
-                "from": offset,
+    base_tracks_query: Dict = {
+        "size": limit,
+        "from": offset,
+        "query": {
+            "function_score": {
                 "query": {
-                    "function_score": {
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {
-                                        "multi_match": {
-                                            "query": search_str,
-                                            "fields": [
-                                                "title^2",
-                                                "user.name",
-                                                "user.handle",
-                                            ],
-                                            "type": "cross_fields",
-                                        }
-                                    },
-                                    {"term": {"is_unlisted": {"value": False}}},
-                                ],
-                                "should": [
-                                    *should_saved_or_reposted,
-                                ],
-                            }
-                        },
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "factor": 1.2,
-                            "modifier": "log1p",
-                        },
-                    }
-                },
-            },
-        ]
-        mdsl.extend(track_search_query)
-        if current_user_id:
-            saved_tracks_query = track_search_query[:]
-            saved_tracks_query[1]["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].extend(should_saved_or_reposted)
-
-            mdsl.extend(saved_tracks_query)
-
-    if do_users:
-        mdsl.extend(
-            [
-                {"index": ES_USERS},
-                {
-                    "size": limit,
-                    "from": offset,
-                    "query": {
-                        "function_score": {
-                            "query": {
-                                "bool": {
-                                    "must": [
-                                        {
-                                            "multi_match": {
-                                                "query": search_str,
-                                                "fields": [
-                                                    "name",
-                                                    "handle",
-                                                ],
-                                                "type": "cross_fields",
-                                            }
-                                        },
-                                        {"term": {"is_deactivated": {"value": False}}},
+                    "bool": {
+                        "must": [
+                            {
+                                "multi_match": {
+                                    "query": search_str,
+                                    "fields": [
+                                        "title^2",
+                                        "user.name",
+                                        "user.handle",
                                     ],
-                                    "should": [
-                                        {"term": {"is_verified": {"value": True}}},
-                                        # promote users that current user follows
-                                        # TODO: need to index user_id for this to work :(
-                                        # _id would work except that following_ids is numbers and _id is string
-                                        # {
-                                        #     "terms": {
-                                        #         "user_id": {
-                                        #             "index": ES_USERS,
-                                        #             "id": current_user_id,
-                                        #             "path": "following_ids",
-                                        #         },
-                                        #     }
-                                        # },
-                                    ],
+                                    "type": "cross_fields",
                                 }
                             },
-                            "field_value_factor": {
-                                "field": "follower_count",
-                                "factor": 1.2,
-                                "modifier": "log1p",
-                            },
-                        }
-                    },
-                },
-            ]
-        )
-    if do_playlists:
-        playlist_search_query: List = [
-            {"index": ES_PLAYLISTS},
-            {
-                "size": limit,
-                "from": offset,
-                "query": {
-                    "function_score": {
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {
-                                        "multi_match": {
-                                            "query": search_str,
-                                            "fields": [
-                                                "playlist_name",
-                                                "description",
-                                            ],
-                                            "type": "cross_fields",
-                                        }
-                                    },
-                                    {"term": {"is_private": {"value": False}}},
-                                    {"term": {"is_album": {"value": False}}},
-                                ],
-                                "should": [
-                                    *should_saved_or_reposted,
-                                ],
-                            }
-                        },
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "factor": 1.2,
-                            "modifier": "log1p",
-                        },
+                            {"term": {"is_unlisted": {"value": False}}},
+                        ],
+                        "should": [
+                            *should_saved_or_reposted,
+                        ],
                     }
                 },
-            },
-        ]
-        mdsl.extend(playlist_search_query)
-        if current_user_id:
-            saved_playlist_search_query = playlist_search_query[:]
-            saved_playlist_search_query[1]["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].extend(should_saved_or_reposted)
-            mdsl.extend(saved_playlist_search_query)
+                "field_value_factor": {
+                    "field": "repost_count",
+                    "factor": 1.2,
+                    "modifier": "log1p",
+                },
+            }
+        },
+    }
 
-    if do_albums:
-        album_search_query: List = [
-            {"index": ES_PLAYLISTS},
-            {
-                "size": limit,
-                "from": offset,
+    base_users_query: Dict = {
+        "size": limit,
+        "from": offset,
+        "query": {
+            "function_score": {
                 "query": {
-                    "function_score": {
-                        "query": {
-                            "bool": {
-                                "must": [
-                                    {
-                                        "multi_match": {
-                                            "query": search_str,
-                                            "fields": [
-                                                "playlist_name",
-                                                "description",
-                                            ],
-                                            "type": "cross_fields",
-                                        }
-                                    },
-                                    {"term": {"is_private": {"value": False}}},
-                                    {"term": {"is_album": {"value": True}}},
-                                ],
-                                "should": [
-                                    *should_saved_or_reposted,
-                                ],
-                            }
-                        },
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "factor": 1.2,
-                            "modifier": "log1p",
-                        },
+                    "bool": {
+                        "must": [
+                            {
+                                "multi_match": {
+                                    "query": search_str,
+                                    "fields": [
+                                        "name",
+                                        "handle",
+                                    ],
+                                    "type": "cross_fields",
+                                }
+                            },
+                            {"term": {"is_deactivated": {"value": False}}},
+                        ],
+                        "should": [
+                            {"term": {"is_verified": {"value": True}}},
+                            # promote users that current user follows
+                            # TODO: need to index user_id for this to work :(
+                            # _id would work except that following_ids is numbers and _id is string
+                            # {
+                            #     "terms": {
+                            #         "user_id": {
+                            #             "index": ES_USERS,
+                            #             "id": current_user_id,
+                            #             "path": "following_ids",
+                            #         },
+                            #     }
+                            # },
+                        ],
                     }
                 },
-            },
-        ]
-        mdsl.extend(album_search_query)
+                "field_value_factor": {
+                    "field": "follower_count",
+                    "factor": 1.2,
+                    "modifier": "log1p",
+                },
+            }
+        },
+    }
+
+    base_playlists_query: Dict = {
+        "size": limit,
+        "from": offset,
+        "query": {
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "multi_match": {
+                                    "query": search_str,
+                                    "fields": [
+                                        "playlist_name",
+                                        "description",
+                                    ],
+                                    "type": "cross_fields",
+                                }
+                            },
+                            {"term": {"is_private": {"value": False}}},
+                            {"term": {"is_album": {"value": False}}},
+                        ],
+                        "should": [
+                            *should_saved_or_reposted,
+                        ],
+                    }
+                },
+                "field_value_factor": {
+                    "field": "repost_count",
+                    "factor": 1.2,
+                    "modifier": "log1p",
+                },
+            }
+        },
+    }
+
+    base_album_query: Dict = {
+        "size": limit,
+        "from": offset,
+        "query": {
+            "function_score": {
+                "query": {
+                    "bool": {
+                        "must": [
+                            {
+                                "multi_match": {
+                                    "query": search_str,
+                                    "fields": [
+                                        "playlist_name",
+                                        "description",
+                                    ],
+                                    "type": "cross_fields",
+                                }
+                            },
+                            {"term": {"is_private": {"value": False}}},
+                            {"term": {"is_album": {"value": True}}},
+                        ],
+                        "should": [
+                            *should_saved_or_reposted,
+                        ],
+                    }
+                },
+                "field_value_factor": {
+                    "field": "repost_count",
+                    "factor": 1.2,
+                    "modifier": "log1p",
+                },
+            }
+        },
+    }
+
+    # tracks
+    if do_tracks:
+        track_search_query: List = [{"index": ES_TRACKS}, base_tracks_query]
+        mdsl.extend(track_search_query)
+
+        # saved tracks
         if current_user_id:
-            saved_album_search_query = album_search_query[:]
-            saved_album_search_query[1]["query"]["function_score"]["query"]["bool"][
+            saved_tracks_query = deepcopy(base_tracks_query)
+            saved_tracks_query["query"]["function_score"]["query"]["bool"][
                 "must"
             ].extend(should_saved_or_reposted)
-            mdsl.extend(saved_album_search_query)
+
+            mdsl.extend([{"index": ES_TRACKS}, saved_tracks_query])
+
+    # users
+    if do_users:
+        mdsl.extend([{"index": ES_USERS}, base_users_query])
+        # TODO: followed_users after index change
+
+    # playlists
+    if do_playlists:
+        playlist_search_query: List = [{"index": ES_PLAYLISTS}, base_playlists_query]
+        mdsl.extend(playlist_search_query)
+
+        # saved playlists
+        if current_user_id:
+            saved_playlist_search_query = deepcopy(base_playlists_query)
+            saved_playlist_search_query["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].extend(should_saved_or_reposted)
+            mdsl.extend([{"index": ES_PLAYLISTS}, saved_playlist_search_query])
+
+    # albums
+    if do_albums:
+        album_search_query: List = [{"index": ES_PLAYLISTS}, base_album_query]
+        mdsl.extend(album_search_query)
+
+        # saved albums
+        if current_user_id:
+            saved_album_search_query = deepcopy(base_album_query)
+            saved_album_search_query["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].extend(should_saved_or_reposted)
+            mdsl.extend([{"index": ES_PLAYLISTS}, saved_album_search_query])
 
     mfound = esclient.msearch(searches=mdsl)
 
