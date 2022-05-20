@@ -121,7 +121,7 @@ def get_unavailable_tracks_redis_key(spID):
 # TODO: what happens when fetching unavail tracks fails?
 
 # TODO: actual todo :3
-# - add migration for "is_available" column in "Tracks". default to "True"
+# o add migration for "is_available" column in "Tracks". default to "True"
 # - unit test the bulk update
 # - unit test fetch_unavailable_track_ids_in_network
 # - unit test update_tracks_is_available_status
