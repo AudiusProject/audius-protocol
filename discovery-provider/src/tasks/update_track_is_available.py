@@ -25,7 +25,7 @@ def fetch_unavailable_track_ids_in_network(redis):
         unavailable_track_ids = fetch_unavailable_track_ids(node.endpoint)
         spID_unavailable_tracks_key = get_unavailable_tracks_redis_key(node.spID)
 
-        # TODO: we should probably batch this sadd 
+        # TODO: we should probably batch this sadd
         redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids)
 
         # Aggregate a set of unavailable tracks
@@ -128,7 +128,7 @@ def get_unavailable_tracks_redis_key(spID):
 # - consider and handle fail conditions
 # - consider and handle batching
 # - consider file placement?
-# - unit/manual test update_track_is_available 
+# - unit/manual test update_track_is_available
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
