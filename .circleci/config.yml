@@ -16,7 +16,7 @@ commands:
             or:
               - equal: [master, << pipeline.git.branch >>]
               - matches:
-                  pattern: "^release.*$"
+                  pattern: '^release.*$'
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
@@ -91,8 +91,8 @@ jobs:
   test-mad-dog-e2e:
     parameters:
       mad-dog-type:
-        description: "test, test-nightly"
-        default: "test"
+        description: 'test, test-nightly'
+        default: 'test'
         type: string
     docker:
       - image: audius/circleci-gcloud-bake:latest
@@ -155,11 +155,11 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-a", "50"]
+        command: ['-l', '8000000', '-a', '50']
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-p", "8546", "-a", "50"]
+        command: ['-l', '8000000', '-p', '8546', '-a', '50']
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -226,7 +226,7 @@ jobs:
     docker:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8555", "-a", "100", "-l", "8000000"]
+        command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
       - diff-if-necessary:
@@ -267,7 +267,7 @@ jobs:
     docker:
       - image: circleci/node:14.17.3
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8546", "-a", "50", "-l", "8000000"]
+        command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
       - checkout
       - diff-if-necessary:
@@ -358,14 +358,14 @@ jobs:
           - cluster.name=docker-cluster
           - node.name=cluster1-node1
           - xpack.security.enabled=false
-          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
       - image: ipfs/go-ipfs:release
         # Bring up ganache
       - image: redis:3.0-alpine
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8555", "-a", "100", "-l", "8000000"]
+        command: ['--port=8555', '-a', '100', '-l', '8000000']
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8556", "-a", "100", "-l", "8000000"]
+        command: ['--port=8556', '-a', '100', '-l', '8000000']
     steps:
       - checkout
       - diff-if-necessary:
@@ -444,7 +444,7 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000"]
+        command: ['-l', '8000000']
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -709,15 +709,9 @@ workflows:
 
       - test-contracts:
           name: test-contracts
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
 
       - test-eth-contracts:
           name: test-eth-contracts
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
 
       - test-creator-node:
           name: test-creator-node
@@ -741,9 +735,6 @@ workflows:
           name: test-solana-programs
       - test-solana-programs-anchor:
           name: test-solana-programs-anchor
-      - docker-build-and-push:
-          name: build-solana-programs
-          repo: solana-programs
 
       - test-mad-dog-e2e:
           context:
@@ -785,9 +776,18 @@ workflows:
           context:
             - GCP2
           name: bake-gcp-dev-image-nightly
+      - docker-build-and-push:
+          name: build-eth-contracts
+          repo: eth-contracts
+      - docker-build-and-push:
+          name: build-contracts
+          repo: contracts
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
     triggers:
       - schedule:
-          cron: "0 5 * * *"
+          cron: '0 5 * * *'
           filters:
             branches:
               only: /(^master$)/
