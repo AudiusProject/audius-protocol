@@ -11,7 +11,7 @@ from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers
 from src.utils.eth_contracts_helpers import (
     CONTENT_NODE_SERVICE_TYPE,
-    sp_factory_registry_key,
+    SP_FACTORY_REGISTRY_KEY,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present

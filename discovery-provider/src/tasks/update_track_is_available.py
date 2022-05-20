@@ -9,7 +9,7 @@ from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_in
 logger = logging.getLogger(__name__)
 
 
-ALL_DELISTED_TRACKS_REDIS_KEY = 'delisted_tracks_all'
+ALL_DELISTED_TRACKS_REDIS_KEY = "delisted_tracks_all"
 
 
 def _update_track_is_available():
@@ -23,13 +23,13 @@ def fetch_unavailable_track_ids(node):
 
 
 def get_replica_set(track_id):
-    # select 
-    #     tracks.track_id, users.user_id, users.primary_id, users.secondary_ids 
-    # from 
-    #     "tracks" 
-    # left join "users" on tracks.owner_id = users.user_id 
-    # where 
-    #     users.is_current = true  and 
+    # select
+    #     tracks.track_id, users.user_id, users.primary_id, users.secondary_ids
+    # from
+    #     "tracks"
+    # left join "users" on tracks.owner_id = users.user_id
+    # where
+    #     users.is_current = true  and
     #     tracks.track_id in (888,2552,353,467,53)
     # limit 100;
     pass
@@ -50,7 +50,7 @@ def update_track_is_available(self):
     for node in content_nodes:
         # Keep mapping of spId to the unavailable tracks
         unavailable_track_ids = fetch_unavailable_track_ids(node.endpoint)
-        key = get_delisted_tracks_per_spID_redis_key(node.spID) 
+        key = get_delisted_tracks_per_spID_redis_key(node.spID)
         redis.sadd(key, unavailable_track_ids)
 
         # Also keep aggregate list of unavailable tracks
