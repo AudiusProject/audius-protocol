@@ -46,16 +46,16 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         echo "Finished running migrations"
     fi
 
-    ./scripts/dev-server.sh &
+    audius_service=server ./scripts/dev-server.sh &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel &
-        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel &
+        audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel &
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel &
     fi
 else
-    ./scripts/prod-server.sh &
+    audius_service=server ./scripts/prod-server.sh &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel &
-        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel &
+        audius_service=worker celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel &
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel &
     fi
 fi
 
