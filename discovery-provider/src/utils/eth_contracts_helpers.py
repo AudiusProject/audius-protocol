@@ -88,11 +88,9 @@ def fetch_all_registered_content_node_info():
     service_provider_factory_instance = _get_service_provider_factory_instance()
 
     # Get all content nodes
-    registered_content_nodes = (
-        service_provider_factory_instance.functions.getServiceProviderList(
-            CONTENT_NODE_SERVICE_TYPE
-        )
-    )
+    registered_content_nodes = service_provider_factory_instance.functions.getServiceProviderList(
+        CONTENT_NODE_SERVICE_TYPE
+    ).call()
 
     return registered_content_nodes
 
