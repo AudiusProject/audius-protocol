@@ -59,18 +59,22 @@ def search_es_full(args: dict):
                                 "multi_match": {
                                     "query": search_str,
                                     "fields": [
-                                        "title^2",
-                                        "user.name",
-                                        "user.handle",
+                                        "title.suggest^2",
+                                        "title.suggest._2gram",
+                                        "title.suggest._3gram",
+                                        "user.name.suggest",
+                                        "user.name.suggest._2gram",
+                                        "user.name.suggest._3gram",
+                                        "user.handle.suggest",
+                                        "user.handle.suggest._2gram",
+                                        "user.handle.suggest._3gram",
                                     ],
-                                    "type": "cross_fields",
+                                    "type": "bool_prefix",
                                 }
                             },
                             {"term": {"is_unlisted": {"value": False}}},
                         ],
-                        "should": [
-                            *should_saved_or_reposted,
-                        ],
+                        "should": [],
                     }
                 },
                 "field_value_factor": {
@@ -94,28 +98,20 @@ def search_es_full(args: dict):
                                 "multi_match": {
                                     "query": search_str,
                                     "fields": [
-                                        "name",
-                                        "handle",
+                                        "name.suggest",
+                                        "name.suggest._2gram",
+                                        "name.suggest._3gram",
+                                        "handle.suggest",
+                                        "handle.suggest._2gram",
+                                        "handle.suggest._3gram",
                                     ],
-                                    "type": "cross_fields",
+                                    "type": "bool_prefix",
                                 }
                             },
                             {"term": {"is_deactivated": {"value": False}}},
                         ],
                         "should": [
                             {"term": {"is_verified": {"value": True}}},
-                            # promote users that current user follows
-                            # TODO: need to index user_id for this to work :(
-                            # _id would work except that following_ids is numbers and _id is string
-                            # {
-                            #     "terms": {
-                            #         "user_id": {
-                            #             "index": ES_USERS,
-                            #             "id": current_user_id,
-                            #             "path": "following_ids",
-                            #         },
-                            #     }
-                            # },
                         ],
                     }
                 },
@@ -140,18 +136,18 @@ def search_es_full(args: dict):
                                 "multi_match": {
                                     "query": search_str,
                                     "fields": [
-                                        "playlist_name",
+                                        "playlist_name.suggest",
+                                        "playlist_name.suggest._2gram",
+                                        "playlist_name.suggest._3gram",
                                         "description",
                                     ],
-                                    "type": "cross_fields",
+                                    "type": "bool_prefix",
                                 }
                             },
                             {"term": {"is_private": {"value": False}}},
                             {"term": {"is_album": {"value": False}}},
                         ],
-                        "should": [
-                            *should_saved_or_reposted,
-                        ],
+                        "should": [],
                     }
                 },
                 "field_value_factor": {
@@ -175,18 +171,18 @@ def search_es_full(args: dict):
                                 "multi_match": {
                                     "query": search_str,
                                     "fields": [
-                                        "playlist_name",
+                                        "playlist_name.suggest",
+                                        "playlist_name.suggest._2gram",
+                                        "playlist_name.suggest._3gram",
                                         "description",
                                     ],
-                                    "type": "cross_fields",
+                                    "type": "bool_prefix",
                                 }
                             },
                             {"term": {"is_private": {"value": False}}},
                             {"term": {"is_album": {"value": True}}},
                         ],
-                        "should": [
-                            *should_saved_or_reposted,
-                        ],
+                        "should": [],
                     }
                 },
                 "field_value_factor": {
@@ -215,7 +211,25 @@ def search_es_full(args: dict):
     # users
     if do_users:
         mdsl.extend([{"index": ES_USERS}, base_users_query])
-        # TODO: followed_users after index change
+        if current_user_id:
+            followed_users_query = deepcopy(base_users_query)
+            followed_users_query["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].extend(
+                [
+                    {
+                        "terms": {
+                            "_id": {
+                                "index": ES_USERS,
+                                "id": str(current_user_id),
+                                "path": "following_ids",
+                            },
+                        }
+                    }
+                ]
+            )
+
+            mdsl.extend([{"index": ES_USERS}, followed_users_query])
 
     # playlists
     if do_playlists:
@@ -248,7 +262,7 @@ def search_es_full(args: dict):
     tracks_response = []
     saved_tracks_response = []
     users_response = []
-    # followed_users_response = []
+    followed_users_response = []
     playlists_response = []
     saved_playlists_response = []
     albums_response = []
@@ -269,6 +283,8 @@ def search_es_full(args: dict):
 
     if do_users:
         users_response = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            followed_users_response = pluck_hits(mfound["responses"].pop(0))
 
     if do_playlists:
         playlists_response = pluck_hits(mfound["responses"].pop(0))
@@ -323,7 +339,7 @@ def search_es_full(args: dict):
         "tracks": tracks_response,
         "saved_tracks": saved_tracks_response,
         "users": users_response,
-        "followed_users": [],
+        "followed_users": followed_users_response,
         "playlists": playlists_response,
         "saved_playlists": saved_playlists_response,
         "albums": albums_response,

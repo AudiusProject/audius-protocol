@@ -45,8 +45,15 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         permalink: { type: 'keyword' },
         route_id: { type: 'keyword' },
         routes: { type: 'keyword' },
-        title: { type: 'text' },
-        description: { type: 'text' },
+        title: {
+          type: 'keyword',
+          fields: {
+            suggest: {
+              type: 'search_as_you_type',
+            },
+          },
+        },
+        // description: { type: 'text' },
         length: { type: 'integer' },
         tags: {
           type: 'text',
@@ -67,8 +74,22 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
 
         user: {
           properties: {
-            handle: { type: 'keyword' }, // should it be text so we can search on it?
-            name: { type: 'text' }, // should it be keyword with a `searchable` treatment?
+            handle: {
+              type: 'keyword',
+              fields: {
+                suggest: {
+                  type: 'search_as_you_type',
+                },
+              },
+            },
+            name: {
+              type: 'keyword',
+              fields: {
+                suggest: {
+                  type: 'search_as_you_type',
+                },
+              },
+            },
             location: { type: 'keyword' },
             follower_count: { type: 'integer' },
             is_verified: { type: 'boolean' },

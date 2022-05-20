@@ -30,7 +30,14 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         is_album: { type: 'boolean' },
         is_private: { type: 'boolean' },
         is_delete: { type: 'boolean' },
-        playlist_name: { type: 'text' },
+        playlist_name: {
+          type: 'keyword',
+          fields: {
+            suggest: {
+              type: 'search_as_you_type',
+            },
+          },
+        },
         'playlist_contents.track_ids.track': { type: 'keyword' },
 
         // saves

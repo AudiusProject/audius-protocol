@@ -26,12 +26,26 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         blocknumber: { type: 'integer' },
         created_at: { type: 'date' },
         wallet: { type: 'keyword' },
-        handle: { type: 'keyword' }, // should have a "searchable" treatment
-        name: { type: 'text' }, // default should be keyword, with a searchable treatment
+        handle: {
+          type: 'keyword',
+          fields: {
+            suggest: {
+              type: 'search_as_you_type',
+            },
+          },
+        },
+        name: {
+          type: 'keyword',
+          fields: {
+            suggest: {
+              type: 'search_as_you_type',
+            },
+          },
+        },
         is_creator: { type: 'boolean' },
         is_verified: { type: 'boolean' },
         is_deactivated: { type: 'boolean' },
-        bio: { type: 'text' },
+        // bio: { type: 'text' },
         location: { type: 'keyword' },
 
         // following
