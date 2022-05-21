@@ -27,13 +27,20 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_saves.map(r => r.user_id),
-  fetchAllUsersForEntity: ({ limit, offset, entityId, currentUserId }) =>
-    apiClient.getPlaylistFavoriteUsers({
+  fetchAllUsersForEntity: async ({
+    limit,
+    offset,
+    entityId,
+    currentUserId
+  }) => {
+    const users = await apiClient.getPlaylistFavoriteUsers({
       limit,
       offset,
       playlistId: entityId,
       currentUserId
-    }),
+    })
+    return { users }
+  },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (collection: Collection, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < collection.save_count,
@@ -44,13 +51,20 @@ const getTrackFavorites = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
     track.followee_saves.map(r => r.user_id),
-  fetchAllUsersForEntity: ({ limit, offset, entityId, currentUserId }) =>
-    apiClient.getTrackFavoriteUsers({
+  fetchAllUsersForEntity: async ({
+    limit,
+    offset,
+    entityId,
+    currentUserId
+  }) => {
+    const users = await apiClient.getTrackFavoriteUsers({
       limit,
       offset,
       trackId: entityId,
       currentUserId
-    }),
+    })
+    return { users }
+  },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (track: Track, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < track.save_count,

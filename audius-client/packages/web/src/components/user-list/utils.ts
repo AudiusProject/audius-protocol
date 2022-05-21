@@ -6,7 +6,7 @@ import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
 
-export type UserListProviderArgs<T> = {
+export type UserListProviderArgs<T, U = void> = {
   // Gets the track or playlist we're referencing.
   getExistingEntity: (state: AppState, props: { id: ID }) => T | null
 
@@ -22,7 +22,7 @@ export type UserListProviderArgs<T> = {
     offset: number
     entityId: ID
     currentUserId: ID | null
-  }) => Promise<UserMetadata[]>
+  }) => Promise<{ users: UserMetadata[]; extra?: U }>
 
   includeCurrentUser: (entity: T) => boolean
 
@@ -32,6 +32,8 @@ export type UserListProviderArgs<T> = {
   // Given the fully combined list of Users we're going to show,
   // are there still more users we page to?
   canFetchMoreUsers: (entity: T, combinedUserIDs: ID[]) => boolean
+
+  processExtra?: (extra: U) => Generator<any, any, any>
 }
 
 // Helper function to provide users from multiple sources. Super useful
@@ -42,14 +44,15 @@ export type UserListProviderArgs<T> = {
 //
 // This is not included in the UserList fetching logic itself because UserList
 // should support usecases that don't require this type of combining logic.
-export function createUserListProvider<T>({
+export function createUserListProvider<T, U = void>({
   getExistingEntity,
   extractUserIDSubsetFromEntity,
   fetchAllUsersForEntity,
   includeCurrentUser,
   selectCurrentUserIDsInList,
-  canFetchMoreUsers
-}: UserListProviderArgs<T>) {
+  canFetchMoreUsers,
+  processExtra
+}: UserListProviderArgs<T, U>) {
   return function* userListProvider({
     id,
     currentPage,
@@ -68,7 +71,10 @@ export function createUserListProvider<T>({
     const userId = yield select(getUserId)
     // Get the next page of users
     const offset = currentPage * pageSize
-    const allUsers: User[] = yield call(fetchAllUsersForEntity, {
+    const {
+      users: allUsers,
+      extra
+    }: { users: User[]; extra: any } = yield call(fetchAllUsersForEntity, {
       limit: pageSize,
       offset,
       entityId: id,
@@ -77,6 +83,11 @@ export function createUserListProvider<T>({
     if (includeCurrentUser(existingEntity)) {
       const currentUser = yield select(getAccountUser)
       allUsers.push(currentUser)
+    }
+
+    // Perform extra processing if applicable
+    if (processExtra) {
+      yield call(processExtra, extra)
     }
 
     // Filter out users from subsetIdSet

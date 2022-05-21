@@ -19,10 +19,9 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
+import { MAX_PROFILE_TOP_SUPPORTERS } from 'utils/constants'
 
 import styles from './Support.module.css'
-
-const MAX_TOP_SUPPORTERS = 5
 
 const messages = {
   topSupporters: 'Top Supporters',
@@ -38,7 +37,7 @@ export const TopSupporters = () => {
     : {}
   const rankedSupporters = useSelector<AppState, User[]>(state => {
     const usersMap = getUsers(state, {
-      ids: Object.keys(supportersForProfile).map(k => parseInt(k))
+      ids: (Object.keys(supportersForProfile) as unknown) as ID[]
     })
     return Object.keys(supportersForProfile)
       .sort((k1, k2) => {
@@ -48,6 +47,7 @@ export const TopSupporters = () => {
         )
       })
       .map(k => usersMap[(k as unknown) as ID])
+      .filter(Boolean)
   })
 
   const handleClick = useCallback(() => {
@@ -74,7 +74,7 @@ export const TopSupporters = () => {
         <UserProfilePictureList
           users={rankedSupporters}
           totalUserCount={profile.supporter_count}
-          limit={MAX_TOP_SUPPORTERS}
+          limit={MAX_PROFILE_TOP_SUPPORTERS}
           stopPropagation
         />
         <div className={styles.viewAll}>

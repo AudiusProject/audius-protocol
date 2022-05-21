@@ -27,13 +27,20 @@ const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_reposts.map(r => r.user_id),
-  fetchAllUsersForEntity: ({ limit, offset, entityId, currentUserId }) =>
-    apiClient.getPlaylistRepostUsers({
+  fetchAllUsersForEntity: async ({
+    limit,
+    offset,
+    entityId,
+    currentUserId
+  }) => {
+    const users = await apiClient.getPlaylistRepostUsers({
       limit,
       offset,
       playlistId: entityId,
       currentUserId
-    }),
+    })
+    return { users }
+  },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (collection: Collection, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < collection.repost_count,
@@ -44,7 +51,7 @@ const getTrackReposts = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
     track.followee_reposts.map(r => r.user_id),
-  fetchAllUsersForEntity: ({
+  fetchAllUsersForEntity: async ({
     limit,
     offset,
     entityId,
@@ -54,13 +61,15 @@ const getTrackReposts = createUserListProvider<Track>({
     offset: number
     entityId: ID
     currentUserId: ID | null
-  }) =>
-    apiClient.getTrackRepostUsers({
+  }) => {
+    const users = await apiClient.getTrackRepostUsers({
       limit,
       offset,
       trackId: entityId,
       currentUserId
-    }),
+    })
+    return { users }
+  },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (track: Track, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < track.repost_count,
