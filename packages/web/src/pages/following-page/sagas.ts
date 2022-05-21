@@ -19,7 +19,7 @@ export const USER_LIST_TAG = 'FOLLOWING'
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
-  fetchAllUsersForEntity: ({
+  fetchAllUsersForEntity: async ({
     limit,
     offset,
     entityId,
@@ -30,12 +30,13 @@ const provider = createUserListProvider<User>({
     entityId: ID
     currentUserId: ID | null
   }) => {
-    return apiClient.getFollowing({
+    const users = await apiClient.getFollowing({
       currentUserId,
       profileUserId: entityId,
       limit: limit,
       offset: offset
     })
+    return { users }
   },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>

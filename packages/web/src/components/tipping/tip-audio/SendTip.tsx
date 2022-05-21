@@ -133,28 +133,30 @@ export const SendTip = () => {
   )
 
   /**
-   * On blur of tip amount input, check whether or not to display
-   * prompt to become top or first supporter
+   * Check whether or not to display prompt to become top or first supporter
    */
   // todo: also handle scenario (and get correct copy from design) for
   // if you can attain top supporter by completing rewards and tipping the result
-  const onBlur = useCallback(() => {
+  useEffect(() => {
     if (hasError || !account || !topSupporter) return
 
     const isAlreadyTopSupporter = account.user_id === topSupporter.sender_id
     if (isAlreadyTopSupporter) return
 
     const topSupporterAmountWei = stringWeiToBN(topSupporter.amount)
-    let newAmountToTipToBecomeTopSupporter = topSupporterAmountWei
+    const oneAudioToWeiBN = parseWeiNumber('1') as BNWei
+    let newAmountToTipToBecomeTopSupporter = topSupporterAmountWei.add(
+      oneAudioToWeiBN
+    ) as BNWei
     if (supporting) {
       const supportingAmountWei = stringWeiToBN(supporting.amount)
-      newAmountToTipToBecomeTopSupporter = topSupporterAmountWei.sub(
+      newAmountToTipToBecomeTopSupporter = newAmountToTipToBecomeTopSupporter.sub(
         supportingAmountWei
       ) as BNWei
     }
     if (
       accountBalance.gte(newAmountToTipToBecomeTopSupporter) &&
-      newAmountToTipToBecomeTopSupporter.gte(parseWeiNumber('1') as BNWei)
+      newAmountToTipToBecomeTopSupporter.gte(oneAudioToWeiBN)
     ) {
       setAmountToTipToBecomeTopSupporter(newAmountToTipToBecomeTopSupporter)
     }
@@ -232,7 +234,6 @@ export const SendTip = () => {
           isNumeric={true}
           isWhole={true}
           onChange={handleTipAmountChange}
-          onBlur={onBlur}
         />
       </div>
       {renderAvailableAmount()}

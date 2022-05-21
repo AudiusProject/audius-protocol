@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ComponentPropsWithoutRef } from 'react'
 
 import cn from 'classnames'
 
@@ -20,30 +20,19 @@ const TIP_SUPPORT_TAGS = new Set([
   TOP_SUPPORTERS_USER_LIST_TAG
 ])
 
-type ArtistChipProps = {
-  userId: number
-  name: string
-  handle: string
-  profilePictureSizes: ProfilePictureSizes
-  followers: number
-  onClickArtistName: () => void
-  showPopover?: boolean
-  doesFollowCurrentUser?: boolean
-  tag?: string
-  className?: string
-}
-
-const ArtistIdentifier = ({
-  userId,
-  name,
-  handle
-}: {
+type ArtistIdentifierProps = {
   userId: ID
   name: string
   handle: string
-}) => {
+} & ComponentPropsWithoutRef<'div'>
+const ArtistIdentifier = ({
+  userId,
+  name,
+  handle,
+  ...other
+}: ArtistIdentifierProps) => {
   return (
-    <div>
+    <div {...other}>
       <div className={styles.name}>
         <span>{name}</span>
         <UserBadges
@@ -58,16 +47,18 @@ const ArtistIdentifier = ({
   )
 }
 
-const ArtistImage = ({ profilePicture }: { profilePicture: any }) => {
-  return (
-    <DynamicImage
-      wrapperClassName={styles.profilePictureWrapper}
-      className={styles.profilePicture}
-      image={profilePicture}
-    />
-  )
+type ArtistChipProps = {
+  userId: number
+  name: string
+  handle: string
+  profilePictureSizes: ProfilePictureSizes
+  followers: number
+  onClickArtistName: () => void
+  showPopover?: boolean
+  doesFollowCurrentUser?: boolean
+  tag?: string
+  className?: string
 }
-
 const ArtistChip = ({
   userId,
   name,
@@ -94,10 +85,18 @@ const ArtistChip = ({
     >
       {showPopover ? (
         <ArtistPopover handle={handle}>
-          <ArtistImage profilePicture={profilePicture} />
+          <DynamicImage
+            wrapperClassName={styles.profilePictureWrapper}
+            className={styles.profilePicture}
+            image={profilePicture}
+          />
         </ArtistPopover>
       ) : (
-        <ArtistImage profilePicture={profilePicture} />
+        <DynamicImage
+          wrapperClassName={styles.profilePictureWrapper}
+          className={styles.profilePicture}
+          image={profilePicture}
+        />
       )}
       <div className={styles.text}>
         <div

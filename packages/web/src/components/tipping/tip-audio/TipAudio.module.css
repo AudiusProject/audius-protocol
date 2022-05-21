@@ -225,14 +225,20 @@
 }
 
 .goBackContainer {
-  margin-top: 24px;
-  color: var(--neutral-light-4);
+  width: 80px;
+  margin: 24px auto;
   cursor: pointer;
 }
-
 .goBack {
   margin-left: 4px;
   font-weight: var(--font-bold);
+  color: var(--neutral-light-4);
+}
+.goBackContainer:hover .goBack {
+  color: var(--secondary);
+}
+.goBackContainer:hover path {
+  fill: var(--secondary);
 }
 
 .disabled {
