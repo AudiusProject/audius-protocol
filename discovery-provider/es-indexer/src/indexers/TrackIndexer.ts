@@ -63,7 +63,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         mood: { type: 'keyword' },
         is_delete: { type: 'boolean' },
         is_unlisted: { type: 'boolean' },
-        is_downloadable: { type: 'boolean' },
+        downloadable: { type: 'boolean' },
 
         // saves
         saved_by: { type: 'keyword' },

@@ -32,6 +32,7 @@ export type TrackDoc = TrackRow & {
   repost_count: number
   favorite_count: number
   play_count: any // todo: is it a string or number?  pg returns string
+  downloadable: boolean
 
   user: {
     handle: string

@@ -33,6 +33,7 @@ def search_es_full(args: dict):
     limit = args.get("limit")
     offset = args.get("offset")
     search_type = args.get("kind", "all")
+    only_downloadable = args.get("only_downloadable")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -40,12 +41,15 @@ def search_es_full(args: dict):
 
     mdsl: Any = []
 
-    should_saved_or_reposted = []
+    # should_saved_or_reposted = []
+    only_downloadable_term = {"term": {"downloadable": {"value": True}}}
+
     if current_user_id:
-        should_saved_or_reposted = [
-            {"term": {"saved_by": {"value": current_user_id}}},
-            {"term": {"reposted_by": {"value": current_user_id}}},
-        ]
+        saved_term = {"term": {"saved_by": {"value": current_user_id}}}
+        # should_saved_or_reposted = [
+        #     saved_term,
+        #     {"term": {"reposted_by": {"value": current_user_id}}},
+        # ]
 
     base_tracks_query: Dict = {
         "size": limit,
@@ -196,7 +200,13 @@ def search_es_full(args: dict):
 
     # tracks
     if do_tracks:
+        if only_downloadable:
+            base_tracks_query["query"]["function_score"]["query"]["bool"][
+                "must"
+            ].append(only_downloadable_term)
+
         track_search_query: List = [{"index": ES_TRACKS}, base_tracks_query]
+
         mdsl.extend(track_search_query)
 
         # saved tracks
@@ -204,10 +214,9 @@ def search_es_full(args: dict):
             saved_tracks_query = deepcopy(base_tracks_query)
             saved_tracks_query["query"]["function_score"]["query"]["bool"][
                 "must"
-            ].extend(should_saved_or_reposted)
+            ].append(saved_term)
 
             mdsl.extend([{"index": ES_TRACKS}, saved_tracks_query])
-
     # users
     if do_users:
         mdsl.extend([{"index": ES_USERS}, base_users_query])
@@ -241,7 +250,7 @@ def search_es_full(args: dict):
             saved_playlist_search_query = deepcopy(base_playlists_query)
             saved_playlist_search_query["query"]["function_score"]["query"]["bool"][
                 "must"
-            ].extend(should_saved_or_reposted)
+            ].append(saved_term)
             mdsl.extend([{"index": ES_PLAYLISTS}, saved_playlist_search_query])
 
     # albums
@@ -254,7 +263,7 @@ def search_es_full(args: dict):
             saved_album_search_query = deepcopy(base_album_query)
             saved_album_search_query["query"]["function_score"]["query"]["bool"][
                 "must"
-            ].extend(should_saved_or_reposted)
+            ].append(saved_term)
             mdsl.extend([{"index": ES_PLAYLISTS}, saved_album_search_query])
 
     mfound = esclient.msearch(searches=mdsl)
@@ -283,6 +292,9 @@ def search_es_full(args: dict):
 
     if do_users:
         users_response = pluck_hits(mfound["responses"].pop(0))
+        for user in users_response:
+            item_keys.append(item_key(user))
+            user_ids.add(user["user_id"])
         if current_user_id:
             followed_users_response = pluck_hits(mfound["responses"].pop(0))
 
@@ -303,13 +315,16 @@ def search_es_full(args: dict):
             saved_albums_response = pluck_hits(mfound["responses"].pop(0))
 
     # fetch users
-    users_mget = esclient.mget(index=ES_USERS, ids=list(user_ids))
-    users_by_id = {d["_id"]: d["_source"] for d in users_mget["docs"] if d["found"]}
+    users_by_id = {}
     current_user = None
-    if current_user_id:
-        current_user = users_by_id.pop(str(current_user_id))
-    for id, user in users_by_id.items():
-        users_by_id[id] = popuate_user_metadata_es(user, current_user)
+
+    if user_ids:
+        users_mget = esclient.mget(index=ES_USERS, ids=list(user_ids))
+        users_by_id = {d["_id"]: d["_source"] for d in users_mget["docs"] if d["found"]}
+        if current_user_id:
+            current_user = users_by_id.get(str(current_user_id))
+        for id, user in users_by_id.items():
+            users_by_id[id] = popuate_user_metadata_es(user, current_user)
 
     # fetch followed saves + reposts
     # TODO: instead of limit param (20) should do an agg to get 3 saves / reposts per item_key
