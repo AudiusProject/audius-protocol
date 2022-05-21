@@ -19,6 +19,7 @@ const messages = {
   sending: 'SENDING',
   areYouSure: 'Are you sure? This cannot be reversed.',
   confirmTip: 'Confirm Tip',
+  confirmAndTryAgain: 'Confirm & Try Again',
   goBack: 'Go Back',
   somethingWrong: 'Something’s gone wrong. Wait a little while and try again.',
   maintenance: 'We’re performing some necessary one-time maintenence.',
@@ -102,7 +103,11 @@ export const ConfirmSendTip = () => {
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
           type={ButtonType.PRIMARY}
-          text={messages.confirmTip}
+          text={
+            sendStatus === 'ERROR'
+              ? messages.confirmAndTryAgain
+              : messages.confirmTip
+          }
           onClick={handleConfirmSendClick}
           rightIcon={
             sendStatus === 'SENDING' || sendStatus === 'CONVERTING' ? (

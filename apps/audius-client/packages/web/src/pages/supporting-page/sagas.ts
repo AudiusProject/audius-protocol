@@ -1,8 +1,10 @@
 import { put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
+import { Supporting } from 'common/models/Tipping'
 import { User, UserMetadata } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
+import { setSupportingForUser } from 'common/store/tipping/slice'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { getSupportingError } from 'common/store/user-list/supporting/actions'
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'
@@ -14,12 +16,20 @@ import {
 import { stringWeiToBN } from 'common/utils/wallet'
 import { createUserListProvider } from 'components/user-list/utils'
 import * as adapter from 'services/audius-api-client/ResponseAdapter'
-import { fetchSupporting } from 'services/audius-backend/Tipping'
-import { encodeHashId } from 'utils/route/hashIds'
+import {
+  fetchSupporting,
+  SupportingResponse
+} from 'services/audius-backend/Tipping'
+import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 
 export const USER_LIST_TAG = 'SUPPORTING'
 
-const provider = createUserListProvider<User>({
+type SupportingProcessExtraType = {
+  userId: ID
+  supportingList: SupportingResponse[]
+}
+
+const provider = createUserListProvider<User, SupportingProcessExtraType>({
   getExistingEntity: getUser,
   extractUserIDSubsetFromEntity: () => [],
   fetchAllUsersForEntity: async ({
@@ -33,14 +43,14 @@ const provider = createUserListProvider<User>({
     currentUserId: ID | null
   }) => {
     const encodedUserId = encodeHashId(entityId)
-    if (!encodedUserId) return []
+    if (!encodedUserId) return { users: [] }
 
     const supporting = await fetchSupporting({
       encodedUserId,
       limit: limit,
       offset: offset
     })
-    return supporting
+    const users = supporting
       .sort((s1, s2) => {
         const amount1BN = stringWeiToBN(s1.amount)
         const amount2BN = stringWeiToBN(s2.amount)
@@ -48,11 +58,38 @@ const provider = createUserListProvider<User>({
       })
       .map(s => adapter.makeUser(s.receiver))
       .filter((user): user is UserMetadata => !!user)
+    return { users, extra: { userId: entityId, supportingList: supporting } }
   },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < user.supporting_count,
-  includeCurrentUser: u => false
+  includeCurrentUser: _ => false,
+  /**
+   * Tipping sagas for user list modals are special in that they require
+   * tipping data on top of the otherwise independent user data.
+   * We need to store the supporting data for the user
+   * in the store. So we use this function, which is optional
+   * in the interface, to update the store.
+   */
+  processExtra: function* ({ userId, supportingList }) {
+    const supportingMap: Record<ID, Supporting> = {}
+    supportingList.forEach((supporting: SupportingResponse) => {
+      const supportingUserId = decodeHashId(supporting.receiver.id)
+      if (supportingUserId) {
+        supportingMap[supportingUserId] = {
+          receiver_id: supportingUserId,
+          rank: supporting.rank,
+          amount: supporting.amount
+        }
+      }
+    })
+    yield put(
+      setSupportingForUser({
+        id: userId,
+        supportingForUser: supportingMap
+      })
+    )
+  }
 })
 
 function* errorDispatcher(error: Error) {

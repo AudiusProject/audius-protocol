@@ -1,21 +1,23 @@
 import { Supporter, Supporting } from 'common/models/Tipping'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
-const LIMIT = 25
+export const TIPPING_SUPPORT_DEFAULT_LIMIT = 25
 
 // @ts-ignore
 const libs = () => window.audiusLibs
 
-type SupportingResponse = Omit<Supporter, 'receiver_id'> & { receiver: any }
-type SupporterResponse = Omit<Supporting, 'sender_id'> & { sender: any }
-type SupportRequest = {
+export type SupportingResponse = Omit<Supporter, 'receiver_id'> & {
+  receiver: any
+}
+export type SupporterResponse = Omit<Supporting, 'sender_id'> & { sender: any }
+export type SupportRequest = {
   encodedUserId: string
   limit?: number
   offset?: number
 }
 export const fetchSupporting = async ({
   encodedUserId,
-  limit = LIMIT,
+  limit = TIPPING_SUPPORT_DEFAULT_LIMIT,
   offset = 0
 }: SupportRequest): Promise<SupportingResponse[]> => {
   try {
@@ -37,7 +39,7 @@ export const fetchSupporting = async ({
 
 export const fetchSupporters = async ({
   encodedUserId,
-  limit = LIMIT,
+  limit = TIPPING_SUPPORT_DEFAULT_LIMIT,
   offset = 0
 }: SupportRequest): Promise<SupporterResponse[]> => {
   try {

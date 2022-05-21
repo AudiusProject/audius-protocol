@@ -7,6 +7,13 @@ import { User } from 'common/models/User'
 import { BNWei } from 'common/models/Wallet'
 import { TippingState } from 'common/store/tipping/types'
 
+export type RefreshSupportPayloadAction = {
+  senderUserId: ID
+  receiverUserId: ID
+  supportingLimit?: number
+  supportersLimit?: number
+}
+
 const initialState: TippingState = {
   supporters: {},
   supporting: {},
@@ -22,14 +29,6 @@ const slice = createSlice({
   name: 'tipping',
   initialState,
   reducers: {
-    setSupporters: (
-      state,
-      action: PayloadAction<{
-        supporters: Record<string, Record<ID, Supporter>>
-      }>
-    ) => {
-      state.supporters = action.payload.supporters
-    },
     setSupportersForUser: (
       state,
       action: PayloadAction<{
@@ -38,15 +37,10 @@ const slice = createSlice({
       }>
     ) => {
       const { id, supportersForUser } = action.payload
-      state.supporters[id] = supportersForUser
-    },
-    setSupporting: (
-      state,
-      action: PayloadAction<{
-        supporting: Record<ID, Record<ID, Supporting>>
-      }>
-    ) => {
-      state.supporting = action.payload.supporting
+      state.supporters[id] = {
+        ...state.supporters[id],
+        ...supportersForUser
+      }
     },
     setSupportingForUser: (
       state,
@@ -56,14 +50,18 @@ const slice = createSlice({
       }>
     ) => {
       const { id, supportingForUser } = action.payload
-      state.supporting[id] = supportingForUser
+      state.supporting[id] = {
+        ...state.supporting[id],
+        ...supportingForUser
+      }
     },
     refreshSupport: (
       state,
-      action: PayloadAction<{
-        senderUserId: ID
-        receiverUserId: ID
-      }>
+      action: PayloadAction<RefreshSupportPayloadAction>
+    ) => {},
+    fetchSupportingForUser: (
+      state,
+      action: PayloadAction<{ userId: ID }>
     ) => {},
     beginTip: (state, action: PayloadAction<{ user: User | null }>) => {
       if (!action.payload.user) {
@@ -111,6 +109,7 @@ export const {
   setSupportingForUser,
   setSupportersForUser,
   refreshSupport,
+  fetchSupportingForUser,
   beginTip,
   sendTip,
   confirmSendTip,

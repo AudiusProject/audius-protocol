@@ -45,6 +45,11 @@ import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { isMobile } from 'utils/clientUtil'
+import {
+  MAX_ARTIST_HOVER_TOP_SUPPORTING,
+  MAX_PROFILE_SUPPORTING_TILES,
+  MAX_PROFILE_TOP_SUPPORTERS
+} from 'utils/constants'
 import { dataURLtoFile } from 'utils/fileUtils'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
@@ -153,7 +158,13 @@ function* fetchSupportersAndSupporting(userId) {
   yield put(
     refreshSupport({
       senderUserId: userId,
-      receiverUserId: userId
+      receiverUserId: userId,
+      supportingLimit:
+        Math.max(
+          MAX_PROFILE_SUPPORTING_TILES,
+          MAX_ARTIST_HOVER_TOP_SUPPORTING
+        ) + 1,
+      supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
     })
   )
 }

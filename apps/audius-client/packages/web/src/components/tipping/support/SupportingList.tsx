@@ -17,11 +17,10 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { MAX_PROFILE_SUPPORTING_TILES } from 'utils/constants'
 
 import styles from './Support.module.css'
 import { SupportingTile } from './SupportingTile'
-
-const MAX_SUPPORTING_TILES = 3
 
 const messages = {
   supporting: 'Supporting',
@@ -69,17 +68,17 @@ export const SupportingList = () => {
         <span className={styles.line} />
       </div>
       {rankedSupportingList
-        .slice(0, MAX_SUPPORTING_TILES)
+        .slice(0, MAX_PROFILE_SUPPORTING_TILES)
         .map((supporting, index) => (
           <div key={`supporting-${index}`} className={styles.tile}>
             <SupportingTile supporting={supporting} />
           </div>
         ))}
-      {profile.supporting_count > MAX_SUPPORTING_TILES && (
+      {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES && (
         <div className={styles.seeMore} onClick={handleClick}>
           <span>
             {messages.seeMorePrefix}+
-            {`${profile.supporting_count - MAX_SUPPORTING_TILES}`}
+            {`${profile.supporting_count - MAX_PROFILE_SUPPORTING_TILES}`}
             {messages.seeMoreSuffix}
           </span>
           <IconArrow className={styles.arrowIcon} />

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 
@@ -8,8 +8,11 @@ import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getSupporting } from 'common/store/tipping/selectors'
+import { fetchSupportingForUser } from 'common/store/tipping/slice'
+import { loadMore, reset } from 'common/store/user-list/actions'
 import { stringWeiToBN } from 'common/utils/wallet'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
+import { USER_LIST_TAG as SUPPORTING_TAG } from 'pages/supporting-page/sagas'
 import {
   setUsers,
   setVisibility
@@ -18,14 +21,13 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from 'utils/constants'
 
 import styles from './ArtistSupporting.module.css'
 
 const messages = {
   supporting: 'Supporting'
 }
-
-const MAX_TOP_SUPPORTING = 7
 
 type ArtistSupportingProps = {
   artist: User
@@ -36,6 +38,8 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const dispatch = useDispatch()
 
   const supportingMap = useSelector(getSupporting)
+  const hasNotPreviouslyFetchedSupportingForArtist =
+    supportingMap[user_id] === undefined
   const supportingForArtist = supportingMap[user_id] ?? {}
   const supportingForArtistIds = (Object.keys(
     supportingForArtist
@@ -55,9 +59,30 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
     return rankedSupportingList
       .sort((s1, s2) => s1.rank - s2.rank)
       .map(s => usersMap[s.receiver_id])
+      .filter(Boolean)
   })
 
+  /**
+   * It's possible that we don't have the data for which artists
+   * this artist is supporting. Thus, we fetch in this case.
+   */
+  useEffect(() => {
+    if (hasNotPreviouslyFetchedSupportingForArtist) {
+      dispatch(fetchSupportingForUser({ userId: user_id }))
+    }
+  }, [dispatch, hasNotPreviouslyFetchedSupportingForArtist, user_id])
+
   const handleClick = useCallback(() => {
+    /**
+     * It's possible that we are already in the supporting
+     * user list modal, and that we are hovering oover one
+     * of the users.
+     * Clicking on the supporting section is supposed to
+     * load a new user list modal that shows the users who
+     * are being supported by the user represented by the
+     * artist card.
+     */
+    dispatch(reset(SUPPORTING_TAG))
     dispatch(
       setUsers({
         userListType: UserListType.SUPPORTING,
@@ -65,6 +90,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
         id: user_id
       })
     )
+    dispatch(loadMore(SUPPORTING_TAG))
     dispatch(setVisibility(true))
   }, [dispatch, user_id])
 
@@ -76,7 +102,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
       </div>
       <div className={styles.line} />
       <UserProfilePictureList
-        limit={MAX_TOP_SUPPORTING}
+        limit={MAX_ARTIST_HOVER_TOP_SUPPORTING}
         users={rankedSupporting}
         totalUserCount={supporting_count}
         disableProfileClick
