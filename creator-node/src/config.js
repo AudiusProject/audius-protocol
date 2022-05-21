@@ -647,6 +647,12 @@ const config = convict({
     format: 'nat',
     env: 'maxBatchClockStatusBatchSize',
     default: 5000
+  },
+  audiusContentInfraSetup: {
+    doc: 'How the content node infrastructure stack is running, injected by the infra directly, not to be defined manually',
+    format: String,
+    env: 'audiusContentInfraSetup',
+    default: ''
   }
   /**
    * unsupported options at the moment
