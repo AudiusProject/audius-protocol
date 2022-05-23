@@ -744,7 +744,7 @@ workflows:
 
       - docker-build-and-push:
           name: build-logspout
-          repo: logging/logspout
+          repo: logspout
           logspout-tag: "true"
 
       - test-solana-programs:
