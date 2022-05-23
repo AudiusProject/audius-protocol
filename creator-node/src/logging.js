@@ -3,14 +3,14 @@ const shortid = require('shortid')
 
 const config = require('./config')
 
-function stdOutWithLevelName() {}
-stdOutWithLevelName.prototype.write = function(data) {
-    var logObject = JSON.parse(data)
+function StdOutWithLevelName() {}
+StdOutWithLevelName.prototype.write = function (data) {
+  const logObject = JSON.parse(data)
 
-    // Change log level number to name and write it out
-    logObject.levelno = logObject.level
-    logObject.level = bunyan.nameFromLevel[logObject.level]
-    process.stdout.write(JSON.stringify(logObject) + '\n')
+  // Change log level number to name and write it out
+  logObject.levelno = logObject.level
+  logObject.level = bunyan.nameFromLevel[logObject.level]
+  process.stdout.write(JSON.stringify(logObject) + '\n')
 }
 
 const logLevel = config.get('logLevel') || 'info'
@@ -19,7 +19,7 @@ const logger = bunyan.createLogger({
   streams: [
     {
       level: logLevel,
-      stream: new stdOutWithLevelName()
+      stream: new StdOutWithLevelName()
     }
   ]
 })
