@@ -1,4 +1,4 @@
-import { ComponentType, useCallback, useRef, useState } from 'react'
+import { ComponentType, useCallback, useMemo, useRef, useState } from 'react'
 
 import { merge } from 'lodash'
 import {
@@ -24,7 +24,10 @@ import { useThemeColors } from 'app/utils/theme'
 import { Link } from './Link'
 
 const useStyles = makeStyles(
-  ({ palette, spacing, typography }, { isPressing, size, variant }) => {
+  (
+    { palette, spacing, typography },
+    { isPressing, size, variant, corners }
+  ) => {
     const variantStyles = {
       primary: {
         root: {
@@ -146,12 +149,24 @@ const useStyles = makeStyles(
       }
     }
 
+    const cornerStyles = {
+      rounded: {
+        root: {
+          borderRadius: spacing(1)
+        }
+      },
+      pill: {
+        root: {
+          borderRadius: spacing(10)
+        }
+      }
+    }
+
     const baseStyles = {
       root: {
         ...flexRowCentered(),
         justifyContent: 'center',
-        alignSelf: 'center',
-        borderRadius: 4
+        alignSelf: 'center'
       },
       button: {
         ...flexRowCentered(),
@@ -167,7 +182,8 @@ const useStyles = makeStyles(
       baseStyles,
       variantStyles[variant],
       isPressing && variantPressingStyles[variant],
-      sizeStyles[size]
+      sizeStyles[size],
+      cornerStyles[corners]
     )
   }
 )
@@ -189,6 +205,7 @@ export type ButtonProps = RNButtonProps &
     variant?: 'primary' | 'secondary' | 'common' | 'commonAlt'
     haptics?: boolean | 'light' | 'medium'
     url?: string
+    corners?: 'rounded' | 'pill'
   }
 
 export const Button = (props: ButtonProps) => {
@@ -208,10 +225,17 @@ export const Button = (props: ButtonProps) => {
     variant = 'primary',
     haptics,
     url,
+    corners = 'rounded',
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
-  const styles = useStyles({ isPressing, size, variant })
+  const stylesConfig = useMemo(() => ({ isPressing, size, variant, corners }), [
+    isPressing,
+    size,
+    variant,
+    corners
+  ])
+  const styles = useStyles(stylesConfig)
   const rootHeightRef = useRef(0)
   const {
     scale,
