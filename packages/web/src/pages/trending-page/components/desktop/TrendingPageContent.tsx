@@ -8,7 +8,7 @@ import {
   trendingMonthActions,
   trendingAllTimeActions
 } from 'common/store/pages/trending/lineup/actions'
-import { GENRES, ELECTRONIC_PREFIX } from 'common/utils/genres'
+import { TRENDING_GENRES, ELECTRONIC_PREFIX } from 'common/utils/genres'
 import Header from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -361,7 +361,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         {body}
       </Page>
       <GenreSelectionModal
-        genres={GENRES}
+        genres={TRENDING_GENRES}
         selectedGenre={trendingGenre}
         didClose={() => {
           setModalIsOpen(false)

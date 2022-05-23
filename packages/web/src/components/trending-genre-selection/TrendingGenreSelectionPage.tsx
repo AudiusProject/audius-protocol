@@ -15,7 +15,7 @@ import {
   getTrendingGenre,
   getTrendingTimeRange
 } from 'common/store/pages/trending/selectors'
-import { GENRES, ELECTRONIC_PREFIX, Genre } from 'common/utils/genres'
+import { TRENDING_GENRES, ELECTRONIC_PREFIX, Genre } from 'common/utils/genres'
 import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
 
@@ -43,10 +43,9 @@ const ConnectedTrendingGenreSelectionPage = ({
     setTrendingTimeRange(timeRange)
     goToTrending()
   }
-
   return (
     <TrendingGenreSelectionPage
-      genres={GENRES}
+      genres={TRENDING_GENRES}
       didSelectGenre={setTrimmedGenre}
       selectedGenre={genre}
     />
