@@ -26,13 +26,38 @@ StdOutWithLevelName.prototype.write = function (data) {
   }
 }
 
+// taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
+// since there is no official support for string-based "level" values
+// response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
+function RawStdOutWithLevelName() {
+  return {
+    write: (log) => {
+      // duplicate log object before sending to stdout
+      const clonedLog = Object.assign({}, log)
+
+      // rename level (int) to levelno key
+      clonedLog.levelno = clonedLog.level
+
+      // add new level (string) to level key
+      clonedLog.level = bunyan.nameFromLevel[clonedLog.levelno]
+
+      const logLine = JSON.stringify(clonedLog, bunyan.safeCycles()) + '\n'
+      process.stdout.write(logLine)
+    }
+  }
+}
+
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
   streams: [
+    // {
+    //   level: logLevel,
+    //   stream: new StdOutWithLevelName()
+    // },
     {
       level: logLevel,
-      stream: new StdOutWithLevelName()
+      stream: new RawStdOutWithLevelName()
     }
   ]
 })
