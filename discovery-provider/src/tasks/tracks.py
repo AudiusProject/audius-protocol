@@ -209,6 +209,13 @@ def invalidate_old_track(session, track_id):
     ), "Update operation requires a current track to be invalidated"
 
 
+# According to docs, "It is strongly recommended to not use the bulk methods as they represent a forking of SQLAlchemy’s functionality"
+# So i guess we don't do bulk updates :shrug:
+def invalidate_old_tracks(session, track_ids):
+    for track_id in track_ids:
+        invalidate_old_track(session, track_id)
+
+ 
 def update_stems_table(session, track_record, track_metadata):
     if ("stem_of" not in track_metadata) or (
         not isinstance(track_metadata["stem_of"], dict)

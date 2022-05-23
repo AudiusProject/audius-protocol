@@ -4,10 +4,12 @@ from unittest import mock
 from integration_tests.utils import populate_mock_db
 from src.models import Track, User
 from src.tasks.update_track_is_available import (
+    ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     check_track_is_available,
     fetch_unavailable_track_ids,
     get_unavailable_tracks_redis_key,
     query_replica_set_by_track_id,
+    update_tracks_is_available_status,
 )
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -34,6 +36,33 @@ def _sort_query_replica_set_by_track_id(list):
     list.sort(key=lambda entry: entry[0])
     return list
 
+
+@mock.patch('src.tasks.update_track_is_available.fetch_all_registered_content_node_info')
+@mock.patch('src.tasks.update_track_is_available.fetch_unavailable_track_ids')
+def test_fetch_unavailable_track_ids_in_network(mock_fetch_unavailable_track_ids, mock_fetch_all_registered_content_node_info, app):
+    # Setup
+    mock_fetch_all_registered_content_node_info.return_value = [{
+        "blockNumber": 100,
+        "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
+        "endpoint": "http://content_node.com",
+        "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
+        "spID": 1,
+        "type": "content-node"
+    },
+    {
+        "blockNumber": 101,
+        "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+        "endpoint": "http://content_node2.com",
+        "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+        "spID": 2,
+        "type": "content-node"
+    }]
+
+    # TODO: figure out how to make it so that diff calls = diff returns
+    mock_fetch_unavailable_track_ids.return_value = [1, 2, 3, 4, 5, 6, 7]
+
+    # Check that redis adds ids as expected
+    pass
 
 @mock.patch("src.tasks.update_track_is_available.requests")
 def test_fetch_unavailable_track_ids(mock_requests, app):
@@ -63,75 +92,9 @@ def test_query_replica_set_by_track_id(app):
     with app.app_context():
         db = get_db()
 
-    test_entities = {
-        "tracks": [
-            {"track_id": 1, "owner_id": 1, "is_current": True},
-            {"track_id": 2, "owner_id": 1, "is_current": True},
-            {"track_id": 3, "owner_id": 2, "is_current": True},
-            {"track_id": 4, "owner_id": 3, "is_current": True},
-            {"track_id": 5, "owner_id": 3, "is_current": True},
-            {"track_id": 6, "owner_id": 3, "is_current": True},
-            {"track_id": 7, "owner_id": 3, "is_current": True},
-            # Data that this query should not pick up because track ids are not queried
-            {"track_id": 8, "owner_id": 3, "is_current": True},
-            {"track_id": 9, "owner_id": 3, "is_current": True},
-            {"track_id": 10, "owner_id": 3, "is_current": True},
-        ],
-        "users": [
-            {
-                "user_id": 1,
-                "primary_id": 7,
-                "secondary_ids": [9, 13],
-                "is_current": True,
-            },
-            {
-                "user_id": 2,
-                "primary_id": 11,
-                "secondary_ids": [12, 10],
-                "is_current": True,
-            },
-            {
-                "user_id": 3,
-                "primary_id": 11,
-                "secondary_ids": [13, 10],
-                "is_current": True,
-            },
-            # Data that this query should not pick up because data is not recent
-            {
-                "user_id": 1,
-                "primary_id": 6,
-                "secondary_ids": [9, 13],
-                "is_current": False,
-            },
-            {
-                "user_id": 1,
-                "primary_id": 4,
-                "secondary_ids": [9, 13],
-                "is_current": False,
-            },
-            {
-                "user_id": 3,
-                "primary_id": 7,
-                "secondary_ids": [9, 1],
-                "is_current": False,
-            },
-        ],
-    }
-
-    populate_mock_db(db, test_entities)
-
-    print_dummy_tracks_and_users(db)
-
     # structure: track_id | primary_id | secondary_ids
-    expected_query_results = [
-        (1, 7, [9, 13]),
-        (2, 7, [9, 13]),
-        (3, 11, [12, 10]),
-        (4, 11, [13, 10]),
-        (5, 11, [13, 10]),
-        (6, 11, [13, 10]),
-        (7, 11, [13, 10]),
-    ]
+    expected_query_results = _seed_db_with_data(db)
+
     track_ids = [1, 2, 3, 4, 5, 6, 7]
     sorted_actual_results = _sort_query_replica_set_by_track_id(
         query_replica_set_by_track_id(db, track_ids)
@@ -193,16 +156,117 @@ def test_check_track_is_available__return_is_available_3(app):
         assert True == check_track_is_available(redis, 1, [2, 3, 4])
 
 
+@mock.patch("src.tasks.update_track_is_available.check_track_is_available")
+def test_update_tracks_is_available_status(mock_check_track_is_available, app):
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    # Setup
+    mock_unavailable_tracks = [1, 2, 3, 4, 5, 6, 7]
+    _seed_db_with_data(db)
+    redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, *mock_unavailable_tracks)
+    mock_check_track_is_available.return_value = False
+
+    update_tracks_is_available_status(db, redis)
+
+    with db.scoped_session() as session:
+        tracks = session.query(Track.track_id, Track.is_available).filter(Track.track_id.in_(mock_unavailable_tracks)).all()
+
+        # Check that the 'is_available' value is False
+        for track in tracks:
+            assert track[1] == False
+
+        mock_available_tracks = [8, 9, 10]
+        tracks = session.query(Track.track_id, Track.is_available).filter(Track.track_id.in_(mock_available_tracks)).all()
+
+        # Check that the 'is_available' value is True
+        for track in tracks:
+            assert track[1] == True
+
+
 def print_dummy_tracks_and_users(db):
     with db.scoped_session() as session:
-        tracks = session.query(Track.track_id, Track.owner_id, Track.is_current).all()
+        # tracks = session.query(Track.track_id, Track.owner_id, Track.is_current, Track.is_available).all()
+        tracks = session.query(Track.track_id, Track.txhash, Track.is_current, Track.is_available).all()
 
         print("tracks")
         print(tracks)
 
-        users = session.query(
-            User.user_id, User.primary_id, User.secondary_ids, User.is_current
-        ).all()
+        # users = session.query(
+        #     User.user_id, User.primary_id, User.secondary_ids, User.is_current
+        # ).all()
 
-        print("users")
-        print(users)
+        # print("users")
+        # print(users)
+
+
+def _seed_db_with_data(db):
+    test_entities = {
+        "tracks": [
+            {"track_id": 1, "owner_id": 1, "is_current": True},
+            {"track_id": 2, "owner_id": 1, "is_current": True},
+            {"track_id": 3, "owner_id": 2, "is_current": True},
+            {"track_id": 4, "owner_id": 3, "is_current": True},
+            {"track_id": 5, "owner_id": 3, "is_current": True},
+            {"track_id": 6, "owner_id": 3, "is_current": True},
+            {"track_id": 7, "owner_id": 3, "is_current": True},
+            # Data that this query should not pick up because track ids are not queried
+            {"track_id": 8, "owner_id": 3, "is_current": True},
+            {"track_id": 9, "owner_id": 3, "is_current": True},
+            {"track_id": 10, "owner_id": 3, "is_current": True},
+        ],
+        "users": [
+            {
+                "user_id": 1,
+                "primary_id": 7,
+                "secondary_ids": [9, 13],
+                "is_current": True,
+            },
+            {
+                "user_id": 2,
+                "primary_id": 11,
+                "secondary_ids": [12, 10],
+                "is_current": True,
+            },
+            {
+                "user_id": 3,
+                "primary_id": 11,
+                "secondary_ids": [13, 10],
+                "is_current": True,
+            },
+            # Data that this query should not pick up because data is not recent
+            {
+                "user_id": 1,
+                "primary_id": 6,
+                "secondary_ids": [9, 13],
+                "is_current": False,
+            },
+            {
+                "user_id": 1,
+                "primary_id": 4,
+                "secondary_ids": [9, 13],
+                "is_current": False,
+            },
+            {
+                "user_id": 3,
+                "primary_id": 7,
+                "secondary_ids": [9, 1],
+                "is_current": False,
+            },
+        ],
+    }
+
+    populate_mock_db(db, test_entities)
+
+    expected_query_results = [
+        (1, 7, [9, 13]),
+        (2, 7, [9, 13]),
+        (3, 11, [12, 10]),
+        (4, 11, [13, 10]),
+        (5, 11, [13, 10]),
+        (6, 11, [13, 10]),
+        (7, 11, [13, 10]),
+    ] 
+
+    return expected_query_results
