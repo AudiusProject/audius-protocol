@@ -3,13 +3,23 @@ const shortid = require('shortid')
 
 const config = require('./config')
 
+function stdOutWithLevelName() {}
+stdOutWithLevelName.prototype.write = function(data) {
+    var logObject = JSON.parse(data)
+
+    // Change log level number to name and write it out
+    logObject.levelno = logObject.level
+    logObject.level = bunyan.nameFromLevel[logObject.level]
+    process.stdout.write(JSON.stringify(logObject) + '\n')
+}
+
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
   streams: [
     {
       level: logLevel,
-      stream: process.stdout
+      stream: new stdOutWithLevelName()
     }
   ]
 })
