@@ -48,8 +48,7 @@ def test_fetch_unavailable_track_ids_in_network(mock_fetch_unavailable_track_ids
         "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
         "spID": 1,
         "type": "content-node"
-    },
-    {
+    }, {
         "blockNumber": 101,
         "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
         "endpoint": "http://content_node2.com",
