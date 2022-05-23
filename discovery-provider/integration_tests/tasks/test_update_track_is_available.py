@@ -193,12 +193,12 @@ def print_dummy_tracks_and_users(db):
         print("tracks")
         print(tracks)
 
-        # users = session.query(
-        #     User.user_id, User.primary_id, User.secondary_ids, User.is_current
-        # ).all()
+        users = session.query(
+            User.user_id, User.primary_id, User.secondary_ids, User.is_current
+        ).all()
 
-        # print("users")
-        # print(users)
+        print("users")
+        print(users)
 
 
 def _seed_db_with_data(db):
