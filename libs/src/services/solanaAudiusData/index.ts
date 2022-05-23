@@ -96,7 +96,7 @@ export class SolanaAudiusData {
    * Encodes and derives the user account, bump seed, and base authority
    */
   async getUserIdSeed(userId: BN) {
-    // @ts-ignore
+    // @ts-expect-error
     const userIdSeed = userId.toArrayLike(Uint8Array, 'le', 4)
     const {
       baseAuthorityAccount,
@@ -391,9 +391,9 @@ export class SolanaAudiusData {
       message: userSolKeypair.publicKey.toBytes(),
       replicaSet: [params.cn1SpId, params.cn2SpId, params.cn3SpId],
       replicaSetBumps: spSeedAddresses.map(({ bumpSeed }) => bumpSeed),
-      cn1: spSeedAddresses[0]!.derivedAddress,
-      cn2: spSeedAddresses[1]!.derivedAddress,
-      cn3: spSeedAddresses[2]!.derivedAddress,
+      cn1: (spSeedAddresses[0] as SeedAddress).derivedAddress,
+      cn2: (spSeedAddresses[1] as SeedAddress).derivedAddress,
+      cn3: (spSeedAddresses[2] as SeedAddress).derivedAddress,
       metadata: params.metadata
     })
     return await this.sendTx(tx)
