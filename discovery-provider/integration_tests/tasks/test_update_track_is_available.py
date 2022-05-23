@@ -16,7 +16,6 @@ from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
-
 def _mock_response(json_data, status=200, raise_for_status=None):
     """Mock out request.get response"""
     mock_resp = mock.Mock()
@@ -30,39 +29,43 @@ def _mock_response(json_data, status=200, raise_for_status=None):
 
     return mock_resp
 
-
 def _sort_query_replica_set_by_track_id(list):
     """sort by the track id in ascending order"""
     list.sort(key=lambda entry: entry[0])
     return list
 
-
-@mock.patch('src.tasks.update_track_is_available.fetch_all_registered_content_node_info')
-@mock.patch('src.tasks.update_track_is_available.fetch_unavailable_track_ids')
-def test_fetch_unavailable_track_ids_in_network(mock_fetch_unavailable_track_ids, mock_fetch_all_registered_content_node_info, app):
+@mock.patch(
+    "src.tasks.update_track_is_available.fetch_all_registered_content_node_info"
+)
+@mock.patch("src.tasks.update_track_is_available.fetch_unavailable_track_ids")
+def test_fetch_unavailable_track_ids_in_network(
+    mock_fetch_unavailable_track_ids, mock_fetch_all_registered_content_node_info, app
+):
     # Setup
-    mock_fetch_all_registered_content_node_info.return_value = [{
-        "blockNumber": 100,
-        "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
-        "endpoint": "http://content_node.com",
-        "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
-        "spID": 1,
-        "type": "content-node"
-    }, {
-        "blockNumber": 101,
-        "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
-        "endpoint": "http://content_node2.com",
-        "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
-        "spID": 2,
-        "type": "content-node"
-    }]
+    mock_fetch_all_registered_content_node_info.return_value = [
+        {
+            "blockNumber": 100,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
+            "endpoint": "http://content_node.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
+            "spID": 1,
+            "type": "content-node",
+        },
+        {
+            "blockNumber": 101,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "endpoint": "http://content_node2.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "spID": 2,
+            "type": "content-node",
+        },
+    ]
 
     # TODO: figure out how to make it so that diff calls = diff returns
     mock_fetch_unavailable_track_ids.return_value = [1, 2, 3, 4, 5, 6, 7]
 
     # Check that redis adds ids as expected
     pass
-
 
 @mock.patch("src.tasks.update_track_is_available.requests")
 def test_fetch_unavailable_track_ids(mock_requests, app):
@@ -85,7 +88,6 @@ def test_fetch_unavailable_track_ids(mock_requests, app):
 
     assert fetch_response == track_ids
 
-
 def test_query_replica_set_by_track_id(app):
     """Test that the query returns a mapping of track id, user id, and replica set"""
 
@@ -103,7 +105,6 @@ def test_query_replica_set_by_track_id(app):
     assert len(sorted_actual_results) == len(track_ids)
     assert sorted_actual_results == expected_query_results
 
-
 def test_check_track_is_available__return_is_not_available(app):
     with app.app_context():
         redis = get_redis()
@@ -119,7 +120,6 @@ def test_check_track_is_available__return_is_not_available(app):
 
         assert False == check_track_is_available(redis, 1, [2, 3, 4])
 
-
 def test_check_track_is_available__return_is_available_1(app):
     with app.app_context():
         redis = get_redis()
@@ -132,7 +132,6 @@ def test_check_track_is_available__return_is_available_1(app):
 
         assert True == check_track_is_available(redis, 1, [2, 3, 4])
 
-
 def test_check_track_is_available__return_is_available_2(app):
     with app.app_context():
         redis = get_redis()
@@ -144,7 +143,6 @@ def test_check_track_is_available__return_is_available_2(app):
 
         assert True == check_track_is_available(redis, 1, [2, 3, 4])
 
-
 def test_check_track_is_available__return_is_available_3(app):
     with app.app_context():
         redis = get_redis()
@@ -154,7 +152,6 @@ def test_check_track_is_available__return_is_available_3(app):
         # Available on spID = 4
 
         assert True == check_track_is_available(redis, 1, [2, 3, 4])
-
 
 @mock.patch("src.tasks.update_track_is_available.check_track_is_available")
 def test_update_tracks_is_available_status(mock_check_track_is_available, app):
@@ -171,24 +168,33 @@ def test_update_tracks_is_available_status(mock_check_track_is_available, app):
     update_tracks_is_available_status(db, redis)
 
     with db.scoped_session() as session:
-        tracks = session.query(Track.track_id, Track.is_available).filter(Track.track_id.in_(mock_unavailable_tracks)).all()
+        tracks = (
+            session.query(Track.track_id, Track.is_available)
+            .filter(Track.track_id.in_(mock_unavailable_tracks))
+            .all()
+        )
 
         # Check that the 'is_available' value is False
         for track in tracks:
             assert track[1] == False
 
         mock_available_tracks = [8, 9, 10]
-        tracks = session.query(Track.track_id, Track.is_available).filter(Track.track_id.in_(mock_available_tracks)).all()
+        tracks = (
+            session.query(Track.track_id, Track.is_available)
+            .filter(Track.track_id.in_(mock_available_tracks))
+            .all()
+        )
 
         # Check that the 'is_available' value is True
         for track in tracks:
             assert track[1] == True
 
-
 def print_dummy_tracks_and_users(db):
     with db.scoped_session() as session:
         # tracks = session.query(Track.track_id, Track.owner_id, Track.is_current, Track.is_available).all()
-        tracks = session.query(Track.track_id, Track.txhash, Track.is_current, Track.is_available).all()
+        tracks = session.query(
+            Track.track_id, Track.txhash, Track.is_current, Track.is_available
+        ).all()
 
         print("tracks")
         print(tracks)
@@ -199,7 +205,6 @@ def print_dummy_tracks_and_users(db):
 
         print("users")
         print(users)
-
 
 def _seed_db_with_data(db):
     test_entities = {
@@ -267,6 +272,6 @@ def _seed_db_with_data(db):
         (5, 11, [13, 10]),
         (6, 11, [13, 10]),
         (7, 11, [13, 10]),
-    ] 
+    ]
 
     return expected_query_results
