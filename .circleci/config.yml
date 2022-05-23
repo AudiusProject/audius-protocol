@@ -637,7 +637,7 @@ jobs:
         type: string
       logspout-tag:
         type: string
-        default:
+        default: ""
     steps:
       - checkout
       - setup_remote_docker:
