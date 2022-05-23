@@ -1,3 +1,4 @@
+import json
 import logging
 from copy import deepcopy
 from typing import Any, Dict, List
@@ -31,13 +32,14 @@ def search_es_full(args: dict):
     search_str = args.get("query")
     current_user_id = args.get("current_user_id")
     limit = args.get("limit")
-    offset = args.get("offset")
+    offset = args.get("offset", 0)
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
     do_albums = search_type == "all" or search_type == "albums"
+    is_auto_complete = args.get("is_auto_complete")
 
     mdsl: Any = []
 
@@ -51,6 +53,10 @@ def search_es_full(args: dict):
         #     {"term": {"reposted_by": {"value": current_user_id}}},
         # ]
 
+    multi_match_type = "best_fields"
+    if is_auto_complete:
+        multi_match_type = "bool_prefix"
+
     base_tracks_query: Dict = {
         "size": limit,
         "from": offset,
@@ -63,17 +69,18 @@ def search_es_full(args: dict):
                                 "multi_match": {
                                     "query": search_str,
                                     "fields": [
-                                        "title.suggest^2",
+                                        "title.suggest^5",
                                         "title.suggest._2gram",
                                         "title.suggest._3gram",
-                                        "user.name.suggest",
+                                        "title.suggest._index_prefix",
+                                        "user.name.suggest^2",
                                         "user.name.suggest._2gram",
                                         "user.name.suggest._3gram",
                                         "user.handle.suggest",
                                         "user.handle.suggest._2gram",
                                         "user.handle.suggest._3gram",
                                     ],
-                                    "type": "bool_prefix",
+                                    "type": multi_match_type,
                                 }
                             },
                             {"term": {"is_unlisted": {"value": False}}},
@@ -89,6 +96,8 @@ def search_es_full(args: dict):
             }
         },
     }
+
+    print(json.dumps(base_tracks_query))
 
     base_users_query: Dict = {
         "size": limit,
@@ -109,7 +118,7 @@ def search_es_full(args: dict):
                                         "handle.suggest._2gram",
                                         "handle.suggest._3gram",
                                     ],
-                                    "type": "bool_prefix",
+                                    "type": multi_match_type,
                                 }
                             },
                             {"term": {"is_deactivated": {"value": False}}},
@@ -145,7 +154,7 @@ def search_es_full(args: dict):
                                         "playlist_name.suggest._3gram",
                                         "description",
                                     ],
-                                    "type": "bool_prefix",
+                                    "type": multi_match_type,
                                 }
                             },
                             {"term": {"is_private": {"value": False}}},
@@ -180,7 +189,7 @@ def search_es_full(args: dict):
                                         "playlist_name.suggest._3gram",
                                         "description",
                                     ],
-                                    "type": "bool_prefix",
+                                    "type": multi_match_type,
                                 }
                             },
                             {"term": {"is_private": {"value": False}}},
@@ -386,3 +395,78 @@ def transform_tracks(tracks, users_by_id, current_user):
         tracks_out.append(track)
 
     return tracks_out
+
+
+# testing 1 2
+
+
+def _print_test_search(args):
+    print("\n\n==========", args)
+    found = search_es_full(args)
+
+    def print_tracks(title, tracks):
+        print(f"\n[ {title} ]")
+        for track in tracks:
+            print(
+                "   ",
+                [
+                    track["user"]["handle"],
+                    track["user"]["name"],
+                    track["title"],
+                    track["repost_count"],
+                ],
+            )
+
+    def print_users(title, users):
+        print(f"\n[ {title} ]")
+        for x in users:
+            print(
+                "   ",
+                [
+                    x["handle"],
+                    x["name"],
+                    x["follower_count"],
+                ],
+            )
+
+    print_tracks("tracks", found["tracks"])
+    print_tracks("saved tracks", found["saved_tracks"])
+    print_users("users", found["users"])
+    print_users("followed_users", found["followed_users"])
+
+
+if __name__ == "__main__":
+    # PYTHONPATH=. python3.9 src/queries/search_es.py
+
+    _print_test_search(
+        {
+            "query": "isaac took that pho",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": True,
+        }
+    )
+    _print_test_search(
+        {
+            "query": "isaac solo took that pho",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": False,
+        }
+    )
+    _print_test_search(
+        {
+            "query": "RAC wat",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": True,
+        }
+    )
+    _print_test_search(
+        {
+            "query": "RAC water",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": False,
+        }
+    )
