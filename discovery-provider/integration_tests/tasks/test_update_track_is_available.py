@@ -16,6 +16,7 @@ from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
+
 def _mock_response(json_data, status=200, raise_for_status=None):
     """Mock out request.get response"""
     mock_resp = mock.Mock()
@@ -28,6 +29,7 @@ def _mock_response(json_data, status=200, raise_for_status=None):
         mock_resp.raise_for_status.side_effect = raise_for_status
 
     return mock_resp
+
 
 def _sort_query_replica_set_by_track_id(list):
     """sort by the track id in ascending order"""
