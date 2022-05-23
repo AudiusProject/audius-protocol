@@ -63,6 +63,7 @@ def test_fetch_unavailable_track_ids_in_network(mock_fetch_unavailable_track_ids
     # Check that redis adds ids as expected
     pass
 
+
 @mock.patch("src.tasks.update_track_is_available.requests")
 def test_fetch_unavailable_track_ids(mock_requests, app):
     """
