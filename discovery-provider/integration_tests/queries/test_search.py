@@ -258,7 +258,7 @@ def setup_search(app_module):
             capture_output=True,
             text=True,
             cwd="es-indexer",
-            timeout=10,
+            timeout=5,
         )
         raise Exception(
             f"Elasticsearch indexing stopped: {output.stderr}. With env: {os.environ}"
