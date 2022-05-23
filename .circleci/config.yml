@@ -742,8 +742,6 @@ workflows:
           name: build-identity-service
           repo: identity-service
 
-      - test-logspout:
-          name: test-logspout
       - docker-build-and-push:
           name: build-logspout
           repo: logspout/logspout
