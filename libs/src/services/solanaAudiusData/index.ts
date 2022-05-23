@@ -12,6 +12,11 @@ type AnchorAudiusDataConfig = {
   adminAccount: string
 }
 
+type SeedAddress = {
+  bumpSeed: number
+  derivedAddress: anchor.web3.PublicKey
+}
+
 type OmitAndRequire<T, K extends keyof T, L extends keyof T> = Partial<
   Omit<T, K>
 > &
@@ -91,6 +96,7 @@ export class SolanaAudiusData {
    * Encodes and derives the user account, bump seed, and base authority
    */
   async getUserIdSeed(userId: BN) {
+    // @ts-ignore
     const userIdSeed = userId.toArrayLike(Uint8Array, 'le', 4)
     const {
       baseAuthorityAccount,
@@ -122,7 +128,7 @@ export class SolanaAudiusData {
   /**
    * Encodes and derives the content node account and bump seed
    */
-  async getContentNodeSeedAddress(spId: number) {
+  async getContentNodeSeedAddress(spId: number): Promise<SeedAddress> {
     const enc = new TextEncoder() // always utf-8
     const baseSpIdSeed = enc.encode('sp_id')
     const spIdValue = new anchor.BN(spId).toArray('le', 2)
@@ -211,14 +217,25 @@ export class SolanaAudiusData {
     params: OmitAndRequire<
       AudiusData.InitUserParams,
       'program' | 'payer',
-      'userId' | 'metadata'
+      | 'userId'
+      | 'metadata'
+      | 'ethAddress'
+      | 'bumpSeed'
+      | 'userAccount'
+      | 'baseAuthorityAccount'
+      | 'cn1'
+      | 'cn2'
+      | 'cn3'
+      | 'replicaSet'
+      | 'replicaSetBumps'
+      | 'adminAuthorityPublicKey'
     >
   ) {
     if (!this.didInit()) return
-    // TODO: implement
     const tx = AudiusData.initUser({
       payer: this.solanaWeb3Manager.feePayerKey,
       program: this.program,
+      adminAccount: this.adminAccount,
       ...params
     })
     return await this.sendTx(tx)
@@ -374,9 +391,9 @@ export class SolanaAudiusData {
       message: userSolKeypair.publicKey.toBytes(),
       replicaSet: [params.cn1SpId, params.cn2SpId, params.cn3SpId],
       replicaSetBumps: spSeedAddresses.map(({ bumpSeed }) => bumpSeed),
-      cn1: spSeedAddresses[0].derivedAddress,
-      cn2: spSeedAddresses[1].derivedAddress,
-      cn3: spSeedAddresses[2].derivedAddress,
+      cn1: spSeedAddresses[0]!.derivedAddress,
+      cn2: spSeedAddresses[1]!.derivedAddress,
+      cn3: spSeedAddresses[2]!.derivedAddress,
       metadata: params.metadata
     })
     return await this.sendTx(tx)
@@ -423,7 +440,6 @@ export class SolanaAudiusData {
 
     const tx = AudiusData.updateAdmin({
       program: this.program,
-      adminAccount: this.adminAccount,
       ...params
     })
     return await this.sendTx(tx)

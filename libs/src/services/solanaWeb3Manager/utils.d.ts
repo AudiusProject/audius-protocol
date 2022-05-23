@@ -1,4 +1,4 @@
-class SolanaUtils {
+export default class SolanaUtils {
   static signBytes: (bytes: any, ethPrivateKey: any) => any
   static prepareInstructionForRelay: (instruction: any) => any
   static constructTransferId: (challengeId: any, specifier: any) => string
@@ -29,5 +29,3 @@ class SolanaUtils {
   // Safely create pubkey from nullable val
   static newPublicKeyNullable: (val: any) => any
 }
-
-module.exports = SolanaUtils
