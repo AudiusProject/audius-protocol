@@ -27,6 +27,7 @@ export enum Genre {
   KIDS = 'Kids',
   AUDIOBOOKS = 'Audiobooks',
   LATIN = 'Latin',
+  LOFI = 'Lo-Fi',
 
   // Electronic Subgenres
   TECHNO = 'Techno',
@@ -111,7 +112,14 @@ export const GENRES = [
   Genre.KIDS,
   Genre.AUDIOBOOKS,
   Genre.LATIN,
+  Genre.LOFI,
   ...Object.keys(ELECTRONIC_SUBGENRES).map(
     subgenre => `${ELECTRONIC_PREFIX}${subgenre}`
   )
 ]
+
+const NEWLY_ADDED_GENRES: string[] = [Genre.LOFI]
+
+export const TRENDING_GENRES = GENRES.filter(
+  g => !NEWLY_ADDED_GENRES.includes(g)
+)
