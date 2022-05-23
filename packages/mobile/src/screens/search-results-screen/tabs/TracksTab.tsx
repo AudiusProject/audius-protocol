@@ -1,9 +1,8 @@
 import { tracksActions } from 'audius-client/src/common/store/pages/search-results/lineup/tracks/actions'
 import { getSearchTracksLineup } from 'audius-client/src/common/store/pages/search-results/selectors'
-import { isEqual } from 'lodash'
 
 import { Lineup } from 'app/components/lineup'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
 
 import { SearchResultsTab } from './SearchResultsTab'
 
