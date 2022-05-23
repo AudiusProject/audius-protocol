@@ -7,7 +7,7 @@ import { FontWeight, makeStyles, typography } from 'app/styles'
 export type TextProps = RNTextProps & {
   variant?: keyof typeof typography
   noGutter?: boolean
-  color?: 'primary' | 'secondary' | 'neutral' | 'neutralLight4'
+  color?: 'primary' | 'secondary' | 'neutral' | 'neutralLight4' | 'inherit'
   weight?: FontWeight
 }
 
@@ -15,7 +15,7 @@ const useStyles = makeStyles(
   ({ typography, palette }, { variant, noGutter, color, weight }) => ({
     root: {
       ...typography[variant],
-      color: palette[color],
+      ...(color === 'inherit' ? null : { color: palette[color] }),
       ...(weight ? { fontFamily: typography.fontByWeight[weight] } : null),
       ...(noGutter && { marginBottom: 0 })
     }
