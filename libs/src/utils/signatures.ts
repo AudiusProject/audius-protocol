@@ -4,7 +4,7 @@ import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
 
 export const sign = (digest: unknown, privateKey: Buffer) => {
-  const buffer = toBuffer(digest)
+  const buffer = toBuffer(digest as any)
   const signature = ecsign(buffer, privateKey)
   return signature
 }

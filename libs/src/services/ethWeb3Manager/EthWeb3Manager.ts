@@ -22,7 +22,7 @@ export type EthWeb3Config = {
 type EthWeb3ManagerConfig = {
   web3Config: EthWeb3Config
   identityService: IdentityService
-  hedgehog: Hedgehog
+  hedgehog?: Hedgehog
 }
 
 /** Singleton state-manager for Audius Eth Contracts */
@@ -30,7 +30,7 @@ export class EthWeb3Manager {
   web3Config: EthWeb3Config
   web3: Web3Type
   identityService: IdentityService
-  hedgehog: Hedgehog
+  hedgehog?: Hedgehog
   ownerWallet: Maybe<Wallet | string>
 
   constructor({ web3Config, identityService, hedgehog }: EthWeb3ManagerConfig) {
@@ -46,12 +46,15 @@ export class EthWeb3Manager {
     this.identityService = identityService
     this.hedgehog = hedgehog
 
-    if (this.web3Config.ownerWallet) {
-      this.ownerWallet = this.web3Config.ownerWallet
-    } else {
-      const storedWallet = this.hedgehog.getWallet()
-      if (storedWallet) {
-        this.ownerWallet = storedWallet
+    // Hedgehog might not exist (in the case of @audius/sdk)
+    if (this.hedgehog) {
+      if (this.web3Config.ownerWallet) {
+        this.ownerWallet = this.web3Config.ownerWallet
+      } else {
+        const storedWallet = this.hedgehog.getWallet()
+        if (storedWallet) {
+          this.ownerWallet = storedWallet
+        }
       }
     }
   }

@@ -1,4 +1,5 @@
-import { promisify, callbackify } from 'util'
+import callbackify from 'callbackify'
+import promisify from 'promisify'
 import Web3 from '../web3'
 import { shuffle } from 'lodash'
 import type { HttpProvider, AbstractProvider } from 'web3-core'

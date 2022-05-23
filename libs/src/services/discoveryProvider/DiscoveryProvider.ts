@@ -76,7 +76,8 @@ export class DiscoveryProvider {
   monitoringCallbacks:
     | DiscoveryProviderSelection['monitoringCallbacks']
     | undefined
-  discoveryProviderEndpoint?: string
+
+  discoveryProviderEndpoint: string | undefined
 
   constructor({
     whitelist,
