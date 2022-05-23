@@ -3,29 +3,6 @@ const shortid = require('shortid')
 
 const config = require('./config')
 
-// taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-396521385
-// since there is no official support for string-based "level" values
-// response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
-function StdOutWithLevelName() {}
-StdOutWithLevelName.prototype.write = function (data) {
-  try {
-    // grab logs before sending to stdout
-    const logObject = JSON.parse(data)
-
-    // rename level (int) to levelno key
-    logObject.levelno = logObject.level
-
-    // add new level (string) to level key
-    logObject.level = bunyan.nameFromLevel[logObject.level]
-
-    // rewrite line to stdout
-    process.stdout.write(JSON.stringify(logObject) + '\n')
-  } catch (e) {
-    // write line as is, in case of parsing exception
-    process.stdout.write(data)
-  }
-}
-
 // taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
 // since there is no official support for string-based "level" values
 // response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
@@ -51,13 +28,10 @@ const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
   streams: [
-    // {
-    //   level: logLevel,
-    //   stream: new StdOutWithLevelName()
-    // },
     {
       level: logLevel,
-      stream: new RawStdOutWithLevelName()
+      stream: new RawStdOutWithLevelName(),
+      type: 'raw'
     }
   ]
 })
