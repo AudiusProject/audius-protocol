@@ -9,7 +9,7 @@ import { trackRemixesPage } from 'audius-client/src/utils/route'
 import { View } from 'react-native'
 
 import { useNavigation } from 'app/hooks/useNavigation'
-import { SearchTrack } from 'app/store/search/types'
+import { SearchTrack, SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
@@ -30,7 +30,7 @@ type TrackScreenMainContentProps = {
   lineupHeader: ReactNode
   remixParentTrack: Nullable<Track & { user: User }>
   track: Track | SearchTrack
-  user: User
+  user: User | SearchUser
 }
 
 /**

@@ -18,6 +18,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useToast } from 'app/hooks/useToast'
+import { SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles/makeStyles'
 import { make, track } from 'app/utils/analytics'
 
@@ -87,7 +88,7 @@ type TrackScreenDownloadButtonsProps = {
   isHidden?: boolean
   isOwner: boolean
   trackId: ID
-  user: User
+  user: User | SearchUser
 }
 
 export const TrackScreenDownloadButtons = ({

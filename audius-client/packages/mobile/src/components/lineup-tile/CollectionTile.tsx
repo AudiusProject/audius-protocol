@@ -32,13 +32,12 @@ import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/s
 import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { albumPage, playlistPage } from 'audius-client/src/utils/route'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
-import { isEqual } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { useCollectionCoverArt } from 'app/hooks/useCollectionCoverArt'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
 
@@ -49,17 +48,17 @@ import { LineupItemProps } from './types'
 export const CollectionTile = (props: LineupItemProps) => {
   const { uid } = props
 
-  const collection: Collection = useSelectorWeb(
+  const collection = useSelectorWeb(
     state => getCollection(state, { uid }),
     isEqual
   )
 
-  const tracks: EnhancedCollectionTrack[] = useSelectorWeb(
+  const tracks = useSelectorWeb(
     state => getTracksFromCollection(state, { uid }),
     isEqual
   )
 
-  const user: User = useSelectorWeb(
+  const user = useSelectorWeb(
     state => getUserFromCollection(state, { uid }),
     isEqual
   )

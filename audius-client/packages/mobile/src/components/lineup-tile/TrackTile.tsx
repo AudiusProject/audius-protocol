@@ -26,13 +26,12 @@ import {
 import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
 import { RepostType } from 'audius-client/src/common/store/user-list/reposts/types'
 import { open as openOverflowMenu } from 'common/store/ui/mobile-overflow-menu/slice'
-import { isEqual } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useTrackCoverArt } from 'app/hooks/useTrackCoverArt'
 import { AppState } from 'app/store'
 import { getPlayingUid } from 'app/store/audio/selectors'
@@ -45,12 +44,9 @@ export const TrackTile = (props: LineupItemProps) => {
   // Using isEqual as the equality function to prevent rerenders due to object references
   // not being preserved when syncing redux state from client.
   // This can be removed when no longer dependent on web client
-  const track: Track = useSelectorWeb(
-    state => getTrack(state, { uid }),
-    isEqual
-  )
+  const track = useSelectorWeb(state => getTrack(state, { uid }), isEqual)
 
-  const user: User = useSelectorWeb(
+  const user = useSelectorWeb(
     state => getUserFromTrack(state, { uid }),
     isEqual
   )

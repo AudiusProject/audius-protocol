@@ -11,7 +11,6 @@ import {
   shortenSPLAddress
 } from 'audius-client/src/common/utils/wallet'
 import BN from 'bn.js'
-import { isEqual } from 'lodash'
 import {
   StyleSheet,
   TouchableWithoutFeedback,
@@ -27,7 +26,7 @@ import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import share from 'app/utils/share'
 
@@ -182,8 +181,8 @@ const messages = {
 export const AudioBreakdownDrawer = () => {
   const styles = useThemedStyles(createStyles)
 
-  const accountBalance = (useSelectorWeb(getAccountBalance, (a: BN, b: BN) =>
-    a.eq(b)
+  const accountBalance = (useSelectorWeb(getAccountBalance, (a, b) =>
+    Boolean(a && b && a.eq(b))
   ) ?? new BN('0')) as BNWei
 
   const associatedWallets = useSelectorWeb(getAssociatedWallets, isEqual)

@@ -16,12 +16,11 @@ import {
 } from 'audius-client/src/common/store/pages/audio-rewards/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { Maybe } from 'audius-client/src/common/utils/typeUtils'
-import { isEqual } from 'lodash'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { challengesConfig, ChallengesParamList } from 'app/utils/challenges'
 
 import Button, { ButtonType } from '../button'
@@ -50,10 +49,12 @@ export const ChallengeRewardsDrawerProvider = () => {
   const { onClose } = useDrawerState(MODAL_NAME)
   const modalType = useSelectorWeb(getChallengeRewardsModalType)
   const userChallenges = useSelectorWeb(getOptimisticUserChallenges, isEqual)
+
   const handleClose = useCallback(() => {
     dispatchWeb(resetAndCancelClaimReward())
     onClose()
   }, [dispatchWeb, onClose])
+
   const claimStatus = useSelectorWeb(getClaimStatus)
 
   const { toast } = useContext(ToastContext)
