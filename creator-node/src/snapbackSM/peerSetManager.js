@@ -4,6 +4,11 @@ const { CancelToken } = axios
 const config = require('../config')
 const Utils = require('../utils')
 const { logger } = require('../logging')
+const {
+  GET_NODE_USERS_TIMEOUT_MS,
+  GET_NODE_USERS_CANCEL_TOKEN_MS,
+  GET_NODE_USERS_DEFAULT_PAGE_SIZE
+} = require('./StateMachineConstants')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
@@ -117,7 +122,10 @@ class PeerSetManager {
    * @param maxUsers the maximum number of users to fetch
    * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
    */
-  async getNodeUsers(prevUserId = 0, maxUsers = 100000) {
+  async getNodeUsers(
+    prevUserId = 0,
+    maxUsers = GET_NODE_USERS_DEFAULT_PAGE_SIZE
+  ) {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -131,9 +139,9 @@ class PeerSetManager {
       setTimeout(
         () =>
           cancelTokenSource.cancel(
-            'getNodeUsers took more than 70 seconds and did not time out'
+            `getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out`
           ),
-        70_000 // 70s
+        GET_NODE_USERS_CANCEL_TOKEN_MS
       )
 
       // Request all users that have this node as a replica (either primary or secondary)
@@ -149,7 +157,7 @@ class PeerSetManager {
               prev_user_id: prevUserId,
               max_users: maxUsers
             },
-            timeout: 60_000, // 60s
+            timeout: GET_NODE_USERS_TIMEOUT_MS,
             cancelToken: cancelTokenSource.token
           })
         },
@@ -166,7 +174,7 @@ class PeerSetManager {
         }]`
       )
     } finally {
-      logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
+      logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
     }
 
     // Ensure every object in response array contains all required fields
