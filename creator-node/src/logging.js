@@ -3,14 +3,27 @@ const shortid = require('shortid')
 
 const config = require('./config')
 
+// taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-396521385
+// since there is no official support for string-based "level" values
+// response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
 function StdOutWithLevelName() {}
 StdOutWithLevelName.prototype.write = function (data) {
-  const logObject = JSON.parse(data)
+  try {
+    // grab logs before sending to stdout
+    const logObject = JSON.parse(data)
 
-  // Change log level number to name and write it out
-  logObject.levelno = logObject.level
-  logObject.level = bunyan.nameFromLevel[logObject.level]
-  process.stdout.write(JSON.stringify(logObject) + '\n')
+    // rename level (int) to levelno key
+    logObject.levelno = logObject.level
+
+    // add new level (string) to level key
+    logObject.level = bunyan.nameFromLevel[logObject.level]
+
+    // rewrite line to stdout
+    process.stdout.write(JSON.stringify(logObject) + '\n')
+  } catch (e) {
+    // write line as is, in case of parsing exception
+    process.stdout.write(data)
+  }
 }
 
 const logLevel = config.get('logLevel') || 'info'
