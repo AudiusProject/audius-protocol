@@ -210,8 +210,6 @@ log_format = {
     "msg": "message",
     "timestamp": "asctime",
     "pathname": "pathname",
-    "filename": "filename",
-    "module": "module",
     "funcName": "funcName",
     "lineno": "lineno",
     "service": os.getenv("audius_service"),
