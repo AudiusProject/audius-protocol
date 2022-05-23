@@ -8,7 +8,7 @@ import {
   getFeedFilter
 } from 'audius-client/src/common/store/pages/feed/selectors'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
-import { isEqual, omit } from 'lodash'
+import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { Screen } from 'app/components/core'
@@ -16,7 +16,7 @@ import { Header } from 'app/components/header'
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
 import { getIsSignedIn } from 'app/store/lifecycle/selectors'
 import { make, track } from 'app/utils/analytics'
 
@@ -33,7 +33,7 @@ export const FeedScreen = () => {
 
   const dispatchWeb = useDispatchWeb()
   const feedLineup = useSelectorWeb(getFeedLineup, (a, b) => {
-    const omitUneeded = o => omit(o, ['inView'])
+    const omitUneeded = <T extends object>(o: T) => omit(o, ['inView'])
     return isEqual(omitUneeded(a), omitUneeded(b))
   })
   const signedIn = useSelector(getIsSignedIn)

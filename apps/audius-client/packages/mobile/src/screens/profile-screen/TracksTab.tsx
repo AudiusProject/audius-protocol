@@ -6,11 +6,10 @@ import {
   getProfileTracksLineup,
   getProfileUserHandle
 } from 'audius-client/src/common/store/pages/profile/selectors'
-import { isEqual } from 'lodash'
 
 import { Lineup } from 'app/components/lineup'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
 import { getIsOwner, useSelectProfile } from './selectors'

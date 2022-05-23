@@ -7,7 +7,7 @@ import {
   getUser
 } from 'audius-client/src/common/store/pages/track/selectors'
 import { trackRemixesPage } from 'audius-client/src/utils/route'
-import { isEqual, omit } from 'lodash'
+import { omit } from 'lodash'
 import { Text, View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
@@ -15,7 +15,7 @@ import { Button, Screen } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
@@ -59,7 +59,8 @@ export const TrackScreen = () => {
     // Omitting uneeded fields from the equality check because they are
     // causing extra renders when added to the `track` object
     (a, b) => {
-      const omitUneeded = o => omit(o, ['_stems', '_remix_parents'])
+      const omitUneeded = <T extends object | null>(o: T) =>
+        omit(o, ['_stems', '_remix_parents'])
       return isEqual(omitUneeded(a), omitUneeded(b))
     }
   )
