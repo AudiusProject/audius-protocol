@@ -17,7 +17,7 @@ const USERS_PER_JOB = config.get('snapbackUsersPerJob')
 const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
- * Processes a job to monitor the current state of `numUsersToProcess` users.
+ * Processes a job to monitor the current state of `USERS_PER_JOB` users.
  * Returns the syncs and replica set updates that are required for these users.
  * @param {number} jobId the id of the job being run
  * @param {number} lastProcessedUserId the highest ID of the user that was most recently processed
