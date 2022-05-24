@@ -14,6 +14,7 @@ import {
 } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
+import { fetchProfile } from 'common/store/pages/profile/actions'
 import {
   setBrowserNotificationPermission,
   setBrowserNotificationEnabled,
@@ -103,6 +104,13 @@ function* onFetchAccount(account) {
     yield fork(setHasSignedInOnMobile, account)
     new SignedIn(account).send()
   }
+
+  // Fetch the profile so we get everything we need to populate
+  // the left nav / other site-wide metadata.
+  yield put(
+    fetchProfile(account.handle, account.user_id, false, false, false, true)
+  )
+
   // Add playlists that might not have made it into the user's library.
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)

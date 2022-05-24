@@ -36,7 +36,8 @@ export function fetchProfile(
   userId: Nullable<ID>,
   forceUpdate: boolean,
   shouldSetLoading: boolean,
-  deleteExistingEntry: boolean
+  deleteExistingEntry: boolean,
+  fetchOnly = false
 ) {
   return {
     type: FETCH_PROFILE,
@@ -44,12 +45,17 @@ export function fetchProfile(
     userId,
     forceUpdate,
     shouldSetLoading,
-    deleteExistingEntry
+    deleteExistingEntry,
+    fetchOnly
   }
 }
 
-export function fetchProfileSucceeded(handle: string, userId: ID) {
-  return { type: FETCH_PROFILE_SUCCEEDED, handle, userId }
+export function fetchProfileSucceeded(
+  handle: string,
+  userId: ID,
+  fetchOnly: boolean
+) {
+  return { type: FETCH_PROFILE_SUCCEEDED, handle, userId, fetchOnly }
 }
 
 export function fetchProfileFailed() {

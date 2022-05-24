@@ -7,6 +7,7 @@ import { AppState } from 'store/types'
 export const getHasTrack = (state: AppState) => !!state.player.trackId
 export const getUid = (state: AppState) => state.player.uid
 export const getTrackId = (state: AppState) => state.player.trackId
+export const getCollectible = (state: AppState) => state.player.collectible
 export const getAudio = (state: AppState) => state.player.audio
 
 export const getPlaying = (state: AppState) => state.player.playing
@@ -26,11 +27,12 @@ const getCurrentUser = (state: AppState) => {
 
 export const makeGetCurrent = () => {
   return createSelector(
-    [getUid, getCurrentTrack, getCurrentUser],
-    (uid, track, user) => ({
+    [getUid, getCurrentTrack, getCurrentUser, getCollectible],
+    (uid, track, user, collectible) => ({
       uid,
       track,
-      user
+      user,
+      collectible
     })
   )
 }

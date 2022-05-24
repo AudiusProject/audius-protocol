@@ -20,6 +20,7 @@ import { getId } from 'common/store/cache/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import {
+  getCollectible,
   getId as getQueueTrackId,
   getIndex,
   getLength,
@@ -158,7 +159,7 @@ export function* watchPlay() {
   yield takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     // persist queue in mobile layer
     yield put(persist({}))
-    const { uid, trackId } = action.payload
+    const { uid, trackId, collectible } = action.payload
 
     // Play a specific uid
     const playerUid = yield select(getPlayerUid)
@@ -214,6 +215,14 @@ export function* watchPlay() {
       } else {
         yield put(playerActions.play({}))
       }
+    } else if (collectible) {
+      yield put(playerActions.stop({}))
+      yield put(
+        playerActions.playCollectible({
+          collectible,
+          onEnd: next
+        })
+      )
     } else {
       // If nothing is queued, grab the proper lineup, queue it and play it
       const index = yield select(getIndex)
@@ -278,6 +287,20 @@ export function* watchNext() {
       return
     }
 
+    // For the audio nft playlist flow
+    const collectible = yield select(getCollectible)
+    if (collectible) {
+      const event = make(Name.PLAYBACK_PLAY, {
+        id: `${collectible.id}`,
+        source: PlaybackSource.PASSIVE
+      })
+      yield put(event)
+
+      const source = yield select(getSource)
+      yield put(play({ collectible, source }))
+      return
+    }
+
     const id: ID = yield select(getQueueTrackId)
     const track: Track = yield select(getTrack, { id })
     const user: User = yield select(getUser, { id: track?.owner_id })
@@ -337,6 +360,20 @@ export function* watchPrevious() {
     const undershot = yield select(getUndershot)
     if (undershot) {
       yield put(playerActions.reset({ shouldAutoplay: false }))
+      return
+    }
+
+    // For the audio nft playlist flow
+    const collectible = yield select(getCollectible)
+    if (collectible) {
+      const event = make(Name.PLAYBACK_PLAY, {
+        id: `${collectible.id}`,
+        source: PlaybackSource.PASSIVE
+      })
+      yield put(event)
+
+      const source = yield select(getSource)
+      yield put(play({ collectible, source }))
       return
     }
 

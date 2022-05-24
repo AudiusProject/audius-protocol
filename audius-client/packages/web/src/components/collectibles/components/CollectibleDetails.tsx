@@ -12,9 +12,9 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { preload } from 'utils/image'
+import { getHash } from 'utils/route'
 
 import { getFrameFromGif } from '../ethCollectibleHelpers'
-import { getHash } from '../helpers'
 
 import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'

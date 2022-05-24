@@ -5,6 +5,18 @@ import { matchPath } from 'react-router'
 import { ID } from 'common/models/Identifiers'
 import { encodeUrlName } from 'common/utils/formatUtil'
 
+/**
+ * Generate a short base36 hash for a given string.
+ * Used to generate short hashes for for queries and urls.
+ */
+export const getHash = (str: string) =>
+  Math.abs(
+    str.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0)
+      return a & a
+    }, 0)
+  ).toString(36)
+
 const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
 
 // Host/protocol.
@@ -38,6 +50,8 @@ export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
 export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
 export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
 export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
+
+export const AUDIO_NFT_PLAYLIST_PAGE = '/:handle/audio-nft-playlist'
 
 export const SAVED_PAGE = '/favorites'
 export const FAVORITES_PAGE = '/favorites'
@@ -244,6 +258,26 @@ export const playlistPage = (
 }
 export const fullPlaylistPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${playlistPage(handle, title, id)}`
+}
+
+export const audioNftPlaylistPage = (handle: string) => {
+  return `/${encodeUrlName(handle)}/audio-nft-playlist`
+}
+export const fullAudioNftPlaylistPage = (handle: string) => {
+  return `${BASE_URL}${audioNftPlaylistPage(handle)}`
+}
+
+export const collectibleDetailsPage = (
+  handle: string,
+  collectibleId: string
+) => {
+  return `/${encodeUrlName(handle)}/collectibles/${getHash(collectibleId)}`
+}
+export const fullCollectibleDetailsPage = (
+  handle: string,
+  collectibleId: string
+) => {
+  return `${BASE_URL}${collectibleDetailsPage(handle, collectibleId)}`
 }
 
 export const profilePage = (handle: string) => {

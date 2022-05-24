@@ -4,6 +4,7 @@ import Client from 'common/models/Client'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
+import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
@@ -47,6 +48,7 @@ const Modals = () => {
       {/* Enable and use this audio breakdown modal until we get
       the feature flags to work for native mobile */}
       <AudioBreakdownModal />
+      <CollectibleDetailsModal />
 
       {!NATIVE_MOBILE && client !== Client.ELECTRON && (
         <BrowserPushConfirmationModal />

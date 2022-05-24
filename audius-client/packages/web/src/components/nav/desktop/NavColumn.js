@@ -62,6 +62,7 @@ import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
+import { makeGetCurrent as makeGetCurrentPlayer } from 'store/player/selectors'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import {
   DASHBOARD_PAGE,
@@ -101,6 +102,7 @@ const NavColumn = ({
   hideCreatePlaylistModalFolderTab,
   updatePlaylistLibrary,
   currentQueueItem,
+  currentPlayerItem,
   dragging: { dragging, kind, isOwner: draggingIsOwner },
   saveTrack,
   saveCollection,
@@ -489,6 +491,11 @@ const NavColumn = ({
           }
           coverArtColor={dominantColors ? dominantColors[0] : null}
           coverArtSizes={currentQueueItem.track?._cover_art_sizes ?? null}
+          artworkLink={
+            currentPlayerItem.collectible?.imageUrl ||
+            currentPlayerItem.collectible?.frameUrl ||
+            currentPlayerItem.collectible?.gifUrl
+          }
           draggableLink={getTrackPageLink()}
           onClick={onClickArtwork}
           onShowVisualizer={onShowVisualizer}
@@ -500,10 +507,13 @@ const NavColumn = ({
 
 const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
+  const getCurrentPlayerItem = makeGetCurrentPlayer()
   const mapStateToProps = state => {
     const currentQueueItem = getCurrentQueueItem(state)
+    const currentPlayerItem = getCurrentPlayerItem(state)
     return {
       currentQueueItem,
+      currentPlayerItem,
       account: getAccountUser(state),
       accountStatus: getAccountStatus(state),
       dragging: getIsDragging(state),

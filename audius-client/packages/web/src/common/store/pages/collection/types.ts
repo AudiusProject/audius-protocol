@@ -1,5 +1,6 @@
 import { Moment } from 'moment'
 
+import { Collectible } from 'common/models/Collectible'
 import { ID, UID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
@@ -17,7 +18,9 @@ export type CollectionsPageState = {
 
 export type CollectionsPageType = 'playlist' | 'album'
 
-export type CollectionTrack = LineupTrack & { dateAdded: Moment }
+export type CollectionTrack = LineupTrack & { dateAdded: Moment } & {
+  collectible?: Collectible
+}
 
 export type TrackRecord = CollectionTrack & {
   key: string

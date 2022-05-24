@@ -19,6 +19,7 @@ import PropTypes from 'prop-types'
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
 import { Variant } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'
+import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { squashNewLines } from 'common/utils/formatUtil'
 import { formatSecondsAsText, formatDate } from 'common/utils/timeUtil'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -226,22 +227,36 @@ const SmartCollectionButtons = props => {
   return (
     <>
       <PlayButton playing={props.playing} onPlay={props.onPlay} />
-      <Tooltip
-        disabled={props.isOwner || props.saves === 0}
-        text={props.isSaved ? messages.unfavorite : messages.favorite}
-      >
-        <div className={styles.buttonSpacing}>
-          <Button
-            className={cn(styles.buttonSpacing, styles.buttonFormatting)}
-            textClassName={styles.buttonTextFormatting}
-            type={props.isSaved ? ButtonType.SECONDARY : ButtonType.COMMON}
-            text={favoriteButtonText(props.isSaved)}
-            leftIcon={<IconHeart />}
-            onClick={props.onSave}
-            widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          />
-        </div>
-      </Tooltip>
+      {/* Audio NFT Playlist share button */}
+      {props.playlistId === SmartCollectionVariant.AUDIO_NFT_PLAYLIST ? (
+        <Button
+          className={cn(styles.buttonSpacing, styles.buttonFormatting)}
+          textClassName={styles.buttonTextFormatting}
+          type={ButtonType.COMMON}
+          text={messages.shareButton}
+          leftIcon={<IconShare />}
+          onClick={props.onShare}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+        />
+      ) : null}
+      {props.onSave ? (
+        <Tooltip
+          disabled={props.isOwner || props.saves === 0}
+          text={props.isSaved ? messages.unfavorite : messages.favorite}
+        >
+          <div className={styles.buttonSpacing}>
+            <Button
+              className={cn(styles.buttonSpacing, styles.buttonFormatting)}
+              textClassName={styles.buttonTextFormatting}
+              type={props.isSaved ? ButtonType.SECONDARY : ButtonType.COMMON}
+              text={favoriteButtonText(props.isSaved)}
+              leftIcon={<IconHeart />}
+              onClick={props.onSave}
+              widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+            />
+          </div>
+        </Tooltip>
+      ) : null}
     </>
   )
 }
@@ -430,7 +445,8 @@ const Artwork = ({
   coverArtSizes,
   callback,
   gradient,
-  icon: Icon
+  icon: Icon,
+  imageOverride
 }) => {
   const image = useCollectionCoverArt(
     collectionId,
@@ -439,12 +455,15 @@ const Artwork = ({
   )
   useEffect(() => {
     // If there's a gradient, this is a smart collection. Just immediately call back
-    if (image || gradient) callback()
-  }, [image, callback, gradient])
+    if (image || gradient || imageOverride) callback()
+  }, [image, callback, gradient, imageOverride])
 
   return (
     <div className={styles.coverArtWrapper}>
-      <DynamicImage className={styles.coverArt} image={gradient || image}>
+      <DynamicImage
+        className={styles.coverArt}
+        image={gradient || imageOverride || image}
+      >
         {Icon && (
           <Icon className={styles.imageIcon} style={{ background: gradient }} />
         )}
@@ -533,6 +552,7 @@ class CollectionHeader extends PureComponent {
       variant,
       gradient,
       icon,
+      imageOverride,
       userId
     } = this.props
     const { artworkLoading } = this.state
@@ -552,6 +572,7 @@ class CollectionHeader extends PureComponent {
             callback={this.onArtworkLoad}
             gradient={gradient}
             icon={icon}
+            imageOverride={imageOverride}
           />
           <div className={styles.infoSection}>
             <div className={cn(styles.typeLabel, fadeIn)}>
@@ -589,11 +610,13 @@ class CollectionHeader extends PureComponent {
                   labelValue={formatDate(modified)}
                 />
               )}
-              <InfoLabel
-                className={styles.infoLabelPlacement}
-                labelName='duration'
-                labelValue={formatSecondsAsText(duration)}
-              />
+              {duration ? (
+                <InfoLabel
+                  className={styles.infoLabelPlacement}
+                  labelName='duration'
+                  labelValue={formatSecondsAsText(duration)}
+                />
+              ) : null}
               <InfoLabel
                 className={styles.infoLabelPlacement}
                 labelName='tracks'
@@ -651,16 +674,18 @@ class CollectionHeader extends PureComponent {
               )}
             </div>
           </div>
-          <div className={styles.inputWrapper}>
-            <Input
-              placeholder={messages.filter}
-              prefix={<IconFilter />}
-              onChange={this.onFilterChange}
-              value={this.state.filterText}
-              size='small'
-              variant='bordered'
-            />
-          </div>
+          {this.props.onFilterChange ? (
+            <div className={styles.inputWrapper}>
+              <Input
+                placeholder={messages.filter}
+                prefix={<IconFilter />}
+                onChange={this.onFilterChange}
+                value={this.state.filterText}
+                size='small'
+                variant='bordered'
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     )
@@ -702,7 +727,8 @@ CollectionHeader.propTypes = {
   // Smart collection
   variant: PropTypes.any, // CollectionVariant
   gradient: PropTypes.string,
-  icon: PropTypes.any
+  icon: PropTypes.any,
+  imageOverride: PropTypes.string
 }
 
 CollectionHeader.defaultProps = {
@@ -724,7 +750,6 @@ CollectionHeader.defaultProps = {
   reposts: 0,
   saves: 0,
 
-  onFilterChange: () => {},
   onPlay: () => {},
   onEdit: () => {}
 }

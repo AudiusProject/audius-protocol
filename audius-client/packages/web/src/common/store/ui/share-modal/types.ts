@@ -7,7 +7,12 @@ import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import { Nullable } from 'common/utils/typeUtils'
 
-export type ShareType = 'track' | 'profile' | 'album' | 'playlist'
+export type ShareType =
+  | 'track'
+  | 'profile'
+  | 'album'
+  | 'playlist'
+  | 'audioNftPlaylist'
 
 type ShareTrackContent = {
   type: 'track'
@@ -32,11 +37,17 @@ type SharePlaylistContent = {
   creator: User
 }
 
+type ShareAudioNftPlaylistContent = {
+  type: 'audioNftPlaylist'
+  user: User
+}
+
 export type ShareModalContent =
   | ShareTrackContent
   | ShareProfileContent
   | ShareAlbumContent
   | SharePlaylistContent
+  | ShareAudioNftPlaylistContent
 
 export type ShareModalState = {
   source: Nullable<ShareSource>
@@ -47,6 +58,7 @@ type RequestOpenPayload = { source: ShareSource } & (
   | { type: 'track'; trackId: ID }
   | { type: 'profile'; profileId: ID }
   | { type: 'collection'; collectionId: ID }
+  | { type: 'audioNftPlaylist'; userId: ID }
 )
 
 export type RequestOpenAction = PayloadAction<RequestOpenPayload>
@@ -56,6 +68,7 @@ type OpenPayload = { source: ShareSource } & (
   | ShareProfileContent
   | ShareAlbumContent
   | SharePlaylistContent
+  | ShareAudioNftPlaylistContent
 )
 
 export type OpenAction = PayloadAction<OpenPayload>

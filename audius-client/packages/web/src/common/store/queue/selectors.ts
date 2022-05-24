@@ -36,25 +36,31 @@ export const getSource = (state: CommonState) =>
   isQueueIndexValid(state) ? state.queue.order[state.queue.index].source : null
 export const getId = (state: CommonState) =>
   isQueueIndexValid(state) ? state.queue.order[state.queue.index].id : null
+export const getCollectible = (state: CommonState) => {
+  if (!isQueueIndexValid(state)) return null
+  return state.queue.order[state.queue.index].collectible ?? null
+}
 
 const getCurrentTrack = (state: AppState) =>
   getTrack(state, { id: getPlayerTrackId(state) })
 const getCurrentUser = (state: AppState) => {
   const track = getCurrentTrack(state)
-  if (track) {
-    return getUser(state, { id: track.owner_id })
+  const queueable = state.queue.order[state.queue.index]
+  if (track || queueable?.artistId) {
+    return getUser(state, { id: track?.owner_id ?? queueable.artistId })
   }
   return null
 }
 
 export const makeGetCurrent = () => {
   return createSelector(
-    [getPlayerUid, getSource, getCurrentTrack, getCurrentUser],
-    (uid, source, track, user) => ({
+    [getPlayerUid, getSource, getCurrentTrack, getCurrentUser, getCollectible],
+    (uid, source, track, user, collectible) => ({
       uid,
       source,
       track,
-      user
+      user,
+      collectible
     })
   )
 }

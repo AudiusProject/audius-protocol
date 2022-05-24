@@ -34,6 +34,10 @@ export const getContentUrl = (content: ShareModalContent) => {
         true
       )
     }
+    // TODO: add audioNFTPlaylist link
+    case 'audioNftPlaylist': {
+      return ''
+    }
   }
 }
 
@@ -65,6 +69,9 @@ export const getTwitterShareText = (content: ShareModalContent) => {
         creator: { handle }
       } = content
       return messages.playlistShareText(playlist_name, handle)
+    }
+    case 'audioNftPlaylist': {
+      return messages.nftPlaylistShareText
     }
   }
 }

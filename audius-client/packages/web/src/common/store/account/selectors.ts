@@ -47,6 +47,13 @@ export const getAccountIsCreator = createSelector(
   [internalGetAccountUser],
   user => (user ? user.is_creator : false)
 )
+export const getAccountCollectibles = createSelector(
+  [internalGetAccountUser],
+  user => [
+    ...(user?.collectibleList ?? []),
+    ...(user?.solanaCollectibleList ?? [])
+  ]
+)
 export const getAccountProfilePictureSizes = (state: CommonState) => {
   const user = internalGetAccountUser(state)
   return user ? user._profile_picture_sizes : null

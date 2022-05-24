@@ -15,7 +15,7 @@ export enum Variant {
 }
 
 type PlaylistContents = {
-  track_ids: Array<{ time: number; track: ID }>
+  track_ids: Array<{ time: number; track: ID } | { track: string }>
 }
 
 export type CollectionMetadata = {
@@ -66,7 +66,12 @@ export type SmartCollection = {
   variant: Variant.SMART
   playlist_name: string
   description?: string
+  makeDescription?: (...args: any) => string
+  // Where this type of playlist is given a different classification
+  // e.g. "Audio NFT Playlist" instead of just "Playlist"
+  typeTitle?: 'Playlist' | 'Audio NFT Playlist'
   gradient?: string
+  imageOverride?: string
   shadow?: string
   icon?: ReactNode
   link: string
@@ -74,4 +79,5 @@ export type SmartCollection = {
   has_current_user_saved?: boolean
   incentivized?: boolean // Whether we reward winners with Audio
   cardSensitivity?: number
+  customEmptyText?: string
 }

@@ -10,7 +10,7 @@ import {
   Name,
   PlaybackSource
 } from 'common/models/Analytics'
-import { getUserId } from 'common/store/account/selectors'
+import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { getLineupHasTracks } from 'common/store/lineup/selectors'
 import { makeGetCurrent } from 'common/store/queue/selectors'
 import {
@@ -43,6 +43,7 @@ import { make } from 'store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {
   getAudio,
+  getCollectible,
   getPlaying,
   getCounter,
   getUid as getPlayingUid,
@@ -50,7 +51,7 @@ import {
 } from 'store/player/selectors'
 import { seek, reset } from 'store/player/slice'
 import { setupHotkeys } from 'utils/hotkeyUtil'
-import { profilePage } from 'utils/route'
+import { collectibleDetailsPage, profilePage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
@@ -136,11 +137,14 @@ class PlayBar extends Component {
   goToTrackPage = () => {
     const {
       currentQueueItem: { track, user },
+      collectible,
       goToRoute
     } = this.props
 
     if (track && user) {
       goToRoute(track.permalink)
+    } else if (collectible && user) {
+      goToRoute(collectibleDetailsPage(user.handle, collectible.id))
     }
   }
 
@@ -151,8 +155,7 @@ class PlayBar extends Component {
     } = this.props
 
     if (user) {
-      const handle = user.handle
-      goToRoute(profilePage(handle))
+      goToRoute(profilePage(user.handle))
     }
   }
 
@@ -170,7 +173,7 @@ class PlayBar extends Component {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
-          id: track.track_id,
+          id: track ? track.track_id : null,
           source: PlaybackSource.PLAYBAR
         })
       )
@@ -281,12 +284,15 @@ class PlayBar extends Component {
   }
 
   playable = () =>
-    !!this.props.currentQueueItem.uid || this.props.lineupHasTracks
+    !!this.props.currentQueueItem.uid ||
+    this.props.lineupHasTracks ||
+    this.props.collectible
 
   render() {
     const {
       currentQueueItem: { uid, track, user },
       audio,
+      collectible,
       isPlaying,
       isBuffering,
       userId,
@@ -323,6 +329,19 @@ class PlayBar extends Component {
       reposted = track.has_current_user_reposted
       favorited = track.has_current_user_saved || false
       isTrackUnlisted = track.is_unlisted
+    } else if (collectible && user) {
+      // Special case for audio nft playlist
+      trackTitle = collectible.name
+      artistName = user.name
+      artistHandle = user.handle
+      artistUserId = user.user_id
+      isVerified = user.is_verified
+      profilePictureSizes = user._profile_picture_sizes
+      isOwner = this.props.accountUser?.user_id === user.user_id
+      duration = audio.getDuration()
+
+      reposted = false
+      favorited = false
     }
 
     let playButtonStatus
@@ -365,7 +384,7 @@ class PlayBar extends Component {
               <Scrubber
                 mediaKey={`${uid}${mediaKey}`}
                 isPlaying={isPlaying && !isBuffering}
-                isDisabled={!uid}
+                isDisabled={!uid && !collectible}
                 includeTimestamps
                 elapsedSeconds={audio?.getPosition()}
                 totalSeconds={duration}
@@ -466,9 +485,11 @@ const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state, props) => ({
+    accountUser: getAccountUser(state),
     currentQueueItem: getCurrentQueueItem(state),
     playCounter: getCounter(state),
     audio: getAudio(state),
+    collectible: getCollectible(state),
     isPlaying: getPlaying(state),
     isBuffering: getBuffering(state),
     playingUid: getPlayingUid(state),
