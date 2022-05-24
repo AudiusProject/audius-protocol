@@ -205,8 +205,8 @@ def tuple_to_model_dictionary(t, model):
 
 
 log_format = {
-    "levelno": "levelno",
-    "level": "levelname",
+    "level": "levelno",
+    "logLevel": "levelname",
     "msg": "message",
     "timestamp": "asctime",
     "pathname": "pathname",
