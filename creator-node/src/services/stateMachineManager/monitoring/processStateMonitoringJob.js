@@ -1,7 +1,7 @@
 const config = require('../../../config')
 const { logger } = require('../../../logging')
 const NodeHealthManager = require('../nodeHealthManager')
-const NodeToSpIdManager = require('../nodeToSpIdManager')
+const NodeToSpIdManager = require('../cNodeToSpIdMapManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
@@ -68,9 +68,12 @@ const processStateMonitoringJob = async (
         decisionTree,
         jobId,
         'getNodeUsers and sliceUsers Success',
-        { nodeUsersLength: nodeUsers.length }
+        { nodeUsersLength: nodeUsers?.length }
       )
     } catch (e) {
+      // Make the next job try again instead of looping back to userId 0
+      nodeUsers = [{ user_id: lastProcessedUserId }]
+
       _addToDecisionTree(
         decisionTree,
         jobId,
@@ -86,7 +89,7 @@ const processStateMonitoringJob = async (
     try {
       unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(nodeUsers)
       _addToDecisionTree(decisionTree, jobId, 'getUnhealthyPeers Success', {
-        unhealthyPeerSetLength: unhealthyPeers.size,
+        unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e) {
@@ -109,7 +112,7 @@ const processStateMonitoringJob = async (
       jobId,
       'buildReplicaSetNodesToUserWalletsMap Success',
       {
-        numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap).length
+        numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)?.length
       }
     )
 
@@ -159,7 +162,7 @@ const processStateMonitoringJob = async (
         {
           userSecondarySyncMetricsMapLength: Object.keys(
             userSecondarySyncMetricsMap
-          ).length
+          )?.length
         }
       )
     } catch (e) {
@@ -188,8 +191,8 @@ const processStateMonitoringJob = async (
       jobId,
       'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
       {
-        requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
-        potentialSyncRequestsLength: potentialSyncRequests.length
+        requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps?.length,
+        potentialSyncRequestsLength: potentialSyncRequests?.length
       }
     )
   } catch (e) {

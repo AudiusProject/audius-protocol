@@ -1,7 +1,6 @@
 const axios = require('axios')
 
 const config = require('../../config')
-const { computeContentNodePeerSet } = require('./utils')
 const { logger } = require('../../logging')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
@@ -64,7 +63,7 @@ class NodeHealthManager {
     performSimpleCheck = false
   ) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-    const peerSet = computeContentNodePeerSet(
+    const peerSet = this._computeContentNodePeerSet(
       nodeUsers,
       thisContentNodeEndpoint
     )
@@ -260,6 +259,26 @@ class NodeHealthManager {
 
   removePrimaryFromUnhealthyPrimaryMap(primary) {
     delete this.primaryToEarliestFailedHealthCheckTimestamp[primary]
+  }
+
+  /**
+   * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @returns {Set} Set of content node endpoint strings
+   */
+  _computeContentNodePeerSet(nodeUserInfoList, thisContentNodeEndpoint) {
+    // Aggregate all nodes from user replica sets
+    let peerList = nodeUserInfoList
+      .map((userInfo) => userInfo.primary)
+      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary1))
+      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary2))
+
+    peerList = peerList
+      .filter(Boolean) // filter out false-y values to account for incomplete replica sets
+      .filter((peer) => peer !== thisContentNodeEndpoint) // remove self from peerList
+
+    const peerSet = new Set(peerList) // convert to Set to get uniques
+
+    return peerSet
   }
 }
 

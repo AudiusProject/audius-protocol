@@ -15,7 +15,6 @@ const {
 } = require('../src/services/stateMachineManager/constants')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const nodeConfig = require('../src/config')
 
 describe('test StateMonitoringQueue initialization and logging', function () {
   let server, sandbox
@@ -37,7 +36,7 @@ describe('test StateMonitoringQueue initialization and logging', function () {
   it('creates the queue and registers its event handlers', function () {
     // Initialize StateMonitoringQueue and spy on its registerQueueEventHandlers function
     sandbox.spy(StateMonitoringQueue.prototype, 'registerQueueEventHandlers')
-    const stateMonitoringQueue = new StateMonitoringQueue(nodeConfig)
+    const stateMonitoringQueue = new StateMonitoringQueue(config)
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
     expect(stateMonitoringQueue.queue).to.exist.and.to.be.instanceOf(BullQueue)
@@ -56,7 +55,7 @@ describe('test StateMonitoringQueue initialization and logging', function () {
       .reply(200, { data: 0 })
 
     // Initialize StateMonitoringQueue
-    const stateMonitoringQueue = new StateMonitoringQueue(nodeConfig)
+    const stateMonitoringQueue = new StateMonitoringQueue(config)
     await stateMonitoringQueue.init(getLibsMock())
 
     // Verify that the queue has the correct initial job in it
@@ -90,7 +89,7 @@ describe('test StateMonitoringQueue initialization and logging', function () {
         }
       }
     )
-    const stateMonitoringQueue = new MockStateMonitoringQueue(nodeConfig)
+    const stateMonitoringQueue = new MockStateMonitoringQueue(config)
 
     // Verify that each log function passes the correct message to the logger
     stateMonitoringQueue.logDebug('test debug msg')
@@ -109,5 +108,90 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     expect(logErrorStub).to.have.been.calledOnceWithExactly(
       'StateMonitoringQueue ERROR: test error msg'
     )
+  })
+})
+
+describe('test StateMonitoringQueue re-enqueuing', function () {
+  let server, sandbox
+  beforeEach(async function () {
+    const appInfo = await getApp(getLibsMock())
+    await appInfo.app.get('redisClient').flushdb()
+    server = appInfo.server
+    sandbox = sinon.createSandbox()
+
+    config.set('spID', 1)
+  })
+
+  afterEach(async function () {
+    await server.close()
+    nock.cleanAll()
+    sandbox.restore()
+  })
+
+  it('re-enqueues a new job with the correct data after a job completes successfully', async function () {
+    // Initialize StateMonitoringQueue and stubbed queue.add()
+    const stateMonitoringQueue = new StateMonitoringQueue(config)
+    const queueAdd = sandbox.stub()
+
+    // Call function that enqueues a new job after the previous job completed successfully
+    const prevJobDiscNode = 'testDiscoveryNode'
+    const prevJobModuloBase = 10
+    const prevJobModuloSlice = 5
+    const prevJobProcessedUserIdOnStart = 0 // Should NOT be used for the next job
+    const prevJobProcessedUserIdOnEnd = 100 // Should be used for the next job
+    const successfulJob = {
+      data: {
+        lastProcessedUserId: prevJobProcessedUserIdOnStart,
+        discoveryNodeEndpoint: prevJobDiscNode,
+        moduloBase: prevJobModuloBase,
+        currentModuloSlice: prevJobModuloSlice
+      }
+    }
+    const successfulJobResult = {
+      lastProcessedUserId: prevJobProcessedUserIdOnEnd,
+      jobFailed: false
+    }
+    stateMonitoringQueue.enqueueJobAfterSuccess(
+      { add: queueAdd },
+      successfulJob,
+      successfulJobResult
+    )
+
+    // Verify that the queue has the correct initial job in it
+    expect(queueAdd).to.have.been.calledOnceWithExactly({
+      lastProcessedUserId: prevJobProcessedUserIdOnEnd,
+      discoveryNodeEndpoint: prevJobDiscNode,
+      moduloBase: prevJobModuloBase,
+      currentModuloSlice: (prevJobModuloSlice + 1) % prevJobModuloBase
+    })
+  })
+
+  it('re-enqueues a new job with the correct data after a job fails', async function () {
+    // Initialize StateMonitoringQueue and stubbed queue.add()
+    const stateMonitoringQueue = new StateMonitoringQueue(config)
+    const queueAdd = sandbox.stub()
+
+    // Call function that enqueues a new job after the previous job failed
+    const prevJobDiscNode = 'testDiscoveryNode'
+    const prevJobModuloBase = 10
+    const prevJobModuloSlice = 5
+    const prevJobProcessedUserId = 100
+    const failedJob = {
+      data: {
+        lastProcessedUserId: prevJobProcessedUserId,
+        discoveryNodeEndpoint: prevJobDiscNode,
+        moduloBase: prevJobModuloBase,
+        currentModuloSlice: prevJobModuloSlice
+      }
+    }
+    stateMonitoringQueue.enqueueJobAfterFailure({ add: queueAdd }, failedJob)
+
+    // Verify that the queue has the correct initial job in it
+    expect(queueAdd).to.have.been.calledOnceWithExactly({
+      lastProcessedUserId: prevJobProcessedUserId,
+      discoveryNodeEndpoint: prevJobDiscNode,
+      moduloBase: prevJobModuloBase,
+      currentModuloSlice: (prevJobModuloSlice + 1) % prevJobModuloBase
+    })
   })
 })

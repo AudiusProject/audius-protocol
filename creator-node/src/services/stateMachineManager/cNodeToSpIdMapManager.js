@@ -5,7 +5,7 @@ const { logger } = require('../../logging')
  * up to date.
  * TODO: Make updateCnodeEndpointToSpIdMap into a cron or its own queue after deciding on a reasonable interval.
  */
-class NodeToSpIdManager {
+class CNodeToSpIdMapManager {
   constructor() {
     this.cNodeEndpointToSpIdMap = {}
   }
@@ -20,20 +20,20 @@ class NodeToSpIdManager {
    * @param {Object} ethContracts audiusLibs.ethContracts instance; has helper fn to get service provider info
    */
   async updateCnodeEndpointToSpIdMap(ethContracts) {
-    const endpointToSPIdMap = {}
+    const cNodeEndpointToSpIdMap = {}
     try {
       const contentNodes = await ethContracts.getServiceProviderList(
         'content-node'
       )
       contentNodes.forEach((cn) => {
-        endpointToSPIdMap[cn.endpoint] = cn.spID
+        cNodeEndpointToSpIdMap[cn.endpoint] = cn.spID
       })
     } catch (e) {
       logger.error(`updateCnodeEndpointToSpIdMap Error: ${e.message}`)
     }
 
-    if (Object.keys(endpointToSPIdMap).length > 0) {
-      this.cNodeEndpointToSpIdMap = endpointToSPIdMap
+    if (Object.keys(cNodeEndpointToSpIdMap).length > 0) {
+      this.cNodeEndpointToSpIdMap = cNodeEndpointToSpIdMap
     }
 
     const mapLength = Object.keys(this.cNodeEndpointToSpIdMap).length
@@ -48,4 +48,4 @@ class NodeToSpIdManager {
   }
 }
 
-module.exports = new NodeToSpIdManager()
+module.exports = new CNodeToSpIdMapManager()

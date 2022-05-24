@@ -10,11 +10,11 @@ const {
 } = require('../constants')
 const { logger } = require('../../../logging')
 const redis = require('../../../redis')
-const { getLatestUserId } = require('./utils')
+const { getLatestUserId: getLatestUserIdFromDiscovery } = require('./utils')
 const processStateMonitoringJob = require('./processStateMonitoringJob')
 
 /**
- * Handles setup and lifecycle management (producing/adding jobs and consuming/ processing jobs)
+ * Handles setup and lifecycle management (adding and processing jobs)
  * of the queue that calculates required syncs and replica set updates (handles user slicing, clocks,
  * gathering sync metrics, and computing healthy/unhealthy peers).
  */
@@ -25,7 +25,7 @@ class StateMonitoringQueue {
       config.get('redisPort')
     )
     this.registerQueueEventHandlers(this.queue)
-    this.registerQueueConsumer(this.queue)
+    this.registerQueueJobProcessor(this.queue)
   }
 
   async init(audiusLibs) {
@@ -117,17 +117,16 @@ class StateMonitoringQueue {
    * Enqueues a job that processes the next slice of users after the slice
    * that the previous job sucessfully processed.
    * @param queue the StateMonitoringQueue to enqueue a job
-   * @param successfulJobData the jobData of the previous job that succeeded
+   * @param successfulJob the jobData of the previous job that succeeded
    * @param successfulJobResult the result of the previous job that succeeded
    */
-  enqueueJobAfterSuccess(queue, successfulJobData, successfulJobResult) {
+  enqueueJobAfterSuccess(queue, successfulJob, successfulJobResult) {
     const {
       data: { discoveryNodeEndpoint, moduloBase, currentModuloSlice }
-    } = successfulJobData
+    } = successfulJob
     const { lastProcessedUserId } = successfulJobResult
 
     queue.add({
-      startTime: Date.now(),
       lastProcessedUserId,
       discoveryNodeEndpoint,
       moduloBase,
@@ -151,7 +150,6 @@ class StateMonitoringQueue {
     } = failedJob
 
     queue.add({
-      startTime: Date.now(),
       lastProcessedUserId,
       discoveryNodeEndpoint,
       moduloBase,
@@ -161,9 +159,9 @@ class StateMonitoringQueue {
 
   /**
    * Registers the logic that gets executed to process each new job from the queue.
-   * @param {*} queue the StateMonitoringQueue to consume jobs from
+   * @param {Object} queue the StateMonitoringQueue to consume jobs from
    */
-  registerQueueConsumer(queue) {
+  registerQueueJobProcessor(queue) {
     // Initialize queue job processor (aka consumer)
     queue.process(1 /** concurrency */, async (job) => {
       const {
@@ -223,7 +221,9 @@ class StateMonitoringQueue {
     await queue.obliterate({ force: true })
 
     // Start at a random userId to avoid biased processing of early users
-    const latestUserId = await getLatestUserId(discoveryNodeEndpoint)
+    const latestUserId = await getLatestUserIdFromDiscovery(
+      discoveryNodeEndpoint
+    )
     const lastProcessedUserId = _.random(0, latestUserId)
     const currentModuloSlice = this.randomStartingSlice(moduloBase)
 
@@ -231,7 +231,6 @@ class StateMonitoringQueue {
     await queue.add(
       /** data */
       {
-        startTime: Date.now(),
         lastProcessedUserId,
         discoveryNodeEndpoint,
         prevJobFailed: false,

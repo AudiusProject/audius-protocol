@@ -20,5 +20,38 @@ module.exports = {
   // Max number of attempts to fetch clock statuses from /users/batch_clock_status
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES: 5,
   // Number of users to process in each batch when calculating reconfigs and syncs
-  AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE: 500
+  AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE: 500,
+  // Modes used in issuing a reconfig. Each successive mode is a superset of the mode prior.
+  // The `key` of the reconfig states is used to identify the current reconfig mode.
+  // The `value` of the reconfig states is used in the superset logic of determining which type of
+  // reconfig is enabled.
+  RECONFIG_MODES: Object.freeze({
+    // Reconfiguration is entirely disabled
+    RECONFIG_DISABLED: {
+      key: 'RECONFIG_DISABLED',
+      value: 0
+    },
+    // Reconfiguration is enabled only if one secondary is unhealthy
+    ONE_SECONDARY: {
+      key: 'ONE_SECONDARY',
+      value: 1
+    },
+    // Reconfiguration is enabled for one secondary and multiple secondaries (currently two secondaries)
+    MULTIPLE_SECONDARIES: {
+      key: 'MULTIPLE_SECONDARIES',
+      value: 2
+    },
+    // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary
+    PRIMARY_AND_OR_SECONDARIES: {
+      key: 'PRIMARY_AND_OR_SECONDARIES',
+      value: 3
+    },
+    // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary,
+    // and entire replica set
+    // Note: this mode will probably be disabled.
+    ENTIRE_REPLICA_SET: {
+      key: 'ENTIRE_REPLICA_SET',
+      value: 4
+    }
+  })
 }
