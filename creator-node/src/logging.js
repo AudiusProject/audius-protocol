@@ -10,11 +10,14 @@ function RawStdOutWithLevelName() {
   return {
     write: (log) => {
       // duplicate log object before sending to stdout
-      const clonedLog = Object.assign({}, log)
+      const clonedLog = { ...log }
 
       // add new level (string) to level key
       clonedLog.logLevel = bunyan.nameFromLevel[clonedLog.level]
 
+      // stringify() uses the safeCycles() replacer, which returns '[Circular]'
+      // when circular references are detected
+      // related code: https://github.com/trentm/node-bunyan/blob/0ff1ae29cc9e028c6c11cd6b60e3b90217b66a10/lib/bunyan.js#L1155-L1200
       const logLine = JSON.stringify(clonedLog, bunyan.safeCycles()) + '\n'
       process.stdout.write(logLine)
     }
@@ -27,7 +30,7 @@ const logger = bunyan.createLogger({
   streams: [
     {
       level: logLevel,
-      stream: new RawStdOutWithLevelName(),
+      stream: RawStdOutWithLevelName(),
       type: 'raw'
     }
   ]
