@@ -224,11 +224,11 @@ def test_check_track_is_available__return_is_available_3(app):
     with app.app_context():
         redis = get_redis()
 
-        # Available on spID = 2
-        # Available on spID = 3
-        # Available on spID = 4
+    # Available on spID = 2
+    # Available on spID = 3
+    # Available on spID = 4
 
-        assert True == check_track_is_available(redis, 1, [2, 3, 4])
+    assert True == check_track_is_available(redis, 1, [2, 3, 4])
 
 
 def test_query_tracks_by_track_id(app):
