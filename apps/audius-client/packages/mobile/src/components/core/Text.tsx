@@ -21,7 +21,7 @@ const useStyles = makeStyles(
       ...typography[variant],
       ...(color === 'inherit' ? null : { color: palette[color] }),
       ...(weight ? { fontFamily: typography.fontByWeight[weight] } : null),
-      fontSize: typography.fontSize[fontSize],
+      ...(fontSize ? { fontSize: typography.fontSize[fontSize] } : null),
       ...(noGutter && { marginBottom: 0 })
     }
   })
@@ -29,14 +29,16 @@ const useStyles = makeStyles(
 
 export const Text = (props: TextProps) => {
   const {
-    variant = 'body',
+    variant: variantProp,
     noGutter,
     style,
     color = 'neutral',
     weight,
-    fontSize = 'medium',
+    fontSize: fontSizeProp,
     ...other
   } = props
+  const variant = variantProp ?? 'body'
+  const fontSize = !fontSizeProp && !variantProp ? 'medium' : fontSizeProp
 
   const styleOptions = useMemo(
     () => ({ variant, noGutter, color, weight, fontSize }),

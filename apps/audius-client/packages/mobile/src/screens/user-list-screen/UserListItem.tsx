@@ -20,6 +20,9 @@ import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 import { useThemeColors } from 'app/utils/theme'
 
+import { TopSupportingInfo } from './SupporterInfo'
+import { SupportingInfo } from './SupportingInfo'
+
 const messages = {
   followers: (followerCount: number) =>
     followerCount === 1 ? 'Follower' : 'Followers'
@@ -63,11 +66,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type UserListItemProps = {
+  tag: string
   user: User
 }
 
 export const UserListItem = (props: UserListItemProps) => {
-  const { user } = props
+  const { tag, user } = props
   const {
     user_id,
     handle,
@@ -122,6 +126,10 @@ export const UserListItem = (props: UserListItemProps) => {
               </View>
               {does_follow_current_user ? <FollowsYouChip /> : null}
             </View>
+            {tag === 'SUPPORTING' ? <SupportingInfo user={user} /> : null}
+            {tag === 'TOP SUPPORTERS' ? (
+              <TopSupportingInfo user={user} />
+            ) : null}
           </View>
         </View>
         {currentUserId !== user_id ? (
