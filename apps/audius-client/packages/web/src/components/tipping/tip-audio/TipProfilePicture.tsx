@@ -14,11 +14,19 @@ type TipProfilePictureProps = {
   user: Nullable<User>
   className?: string
   imgClassName?: string
+  centered?: boolean
+  badgeSize?: number
+  displayNameClassName?: string
+  handleClassName?: string
 }
 export const TipProfilePicture = ({
   user,
   className = '',
-  imgClassName = ''
+  imgClassName = '',
+  centered = true,
+  badgeSize = 12,
+  displayNameClassName,
+  handleClassName
 }: TipProfilePictureProps) => {
   const image = useUserProfilePicture(
     user?.user_id ?? null,
@@ -28,19 +36,25 @@ export const TipProfilePicture = ({
 
   return user ? (
     <div className={cn(styles.profileUser, className)}>
-      <div className={styles.accountWrapper}>
+      <div
+        className={cn(styles.accountWrapper, {
+          [styles.accountWrapperLeftAlign]: !centered
+        })}
+      >
         <img className={cn(styles.dynamicPhoto, imgClassName)} src={image} />
         <div className={styles.userInfoWrapper}>
-          <div className={styles.name}>
+          <div className={cn(styles.name, displayNameClassName)}>
             {user.name}
             <UserBadges
               userId={user?.user_id}
-              badgeSize={12}
+              badgeSize={badgeSize}
               className={styles.badge}
             />
           </div>
           <div className={styles.handleContainer}>
-            <span className={styles.handle}>{`@${user.handle}`}</span>
+            <span
+              className={cn(styles.handle, handleClassName)}
+            >{`@${user.handle}`}</span>
           </div>
         </div>
       </div>

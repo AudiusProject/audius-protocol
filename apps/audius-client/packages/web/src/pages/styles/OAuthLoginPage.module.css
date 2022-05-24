@@ -1,7 +1,196 @@
+body {
+  background: var(--static-white);
+}
+
+.wrapper {
+  justify-content: center;
+}
+
+.centeredContent {
+  display: flex;
+  justify-content: center;
+}
+
+.titleContainer {
+  margin-top: var(--unit-8);
+  text-align: center;
+}
+
+.title {
+  color: var(--static-secondary);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  line-height: 25px;
+}
+
+.permsTitleContainer {
+  margin-bottom: var(--unit-2);
+  margin-top: var(--unit-8);
+}
+
+.infoSectionTitle {
+  color: var(--neutral-light-2);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--unit-2);
+}
+
 .container {
+  max-width: 375px;
   flex-direction: column;
+  margin: 64px 24px 0px 24px;
 }
 
 .list {
   display: block;
+}
+
+.logo {
+  width: 194px;
+  height: 51px;
+}
+
+.tile {
+  background-color: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 8px;
+  padding: var(--unit-4) var(--unit-3);
+}
+
+.permissionContainer,
+.userProfileContentContainer {
+  display: flex;
+  align-items: center;
+}
+
+.nonFirstPermissionContainer {
+  margin-top: var(--unit-2);
+}
+
+.permissionTextContainer {
+  margin-left: var(--unit-4);
+}
+
+.permissionText {
+  color: var(--neutral);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 150%;
+}
+
+.permissionTextLight {
+  color: var(--neutral-light-2);
+}
+
+.userInfoContainer,
+.signInFormContainer {
+  padding-bottom: var(--unit-8);
+  margin-top: var(--unit-8);
+}
+
+.userInfo {
+  margin: 0;
+}
+
+.profileImg {
+  height: 48px;
+}
+
+.userInfoDisplayName {
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  line-height: 120%;
+  color: var(--neutral);
+}
+
+.signOutButtonContainer {
+  margin-top: var(--unit-2);
+}
+
+.signUpButtonContainer {
+  text-align: center;
+  margin-top: var(--unit-4);
+}
+
+.linkButton {
+  cursor: pointer;
+  border: 1px solid transparent;
+  padding: 0;
+  display: inline;
+  height: auto;
+  vertical-align: baseline;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline-style: none;
+  outline-width: 0px;
+  /* Add padding bottom because Safari has issue where it clips off the bottom of the text otherwise */
+  padding-bottom: 2px;
+  background: none;
+  color: var(--secondary);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  line-height: 100%;
+}
+
+.linkButton:hover,
+.linkButton:active {
+  color: var(--secondary-dark-2);
+}
+
+.ctaButton {
+  margin-top: var(--unit-8);
+  width: 100%;
+}
+
+.atSignIcon {
+  color: var(--neutral-light-3);
+}
+
+.loadingSpinner {
+  margin-right: var(--unit-2);
+  display: inline-block;
+  height: var(--font-m);
+  width: var(--font-m);
+}
+
+.permissionTextExtraLight {
+  color: var(--neutral-light-4);
+}
+
+.passwordInput {
+  margin-top: var(--unit-4);
+}
+
+.buttonLoadingSpinner {
+  width: var(--font-l);
+  height: var(--font-l);
+}
+
+.buttonLoadingSpinner g path {
+  stroke: var(--white);
+}
+
+.credentialsErrorContainer {
+  display: flex;
+  align-items: center;
+  margin-top: var(--unit-4);
+}
+
+.credentialsErrorIcon {
+  margin-right: var(--unit-3);
+}
+
+.generalErrorContainer {
+  text-align: center;
+  margin-top: var(--unit-8);
+}
+
+.errorText {
+  font-weight: var(--font-bold);
+  color: var(--accent-red);
+  font-size: var(--font-m);
+  line-height: 120%;
 }
