@@ -15,10 +15,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # for system and auth modules
       - /var/log/:/var/log/:ro
-    # healthcheck:
-    #   test: ["CMD", "redis-cli", "PING"]
-    #   interval: 10s
-    #   timeout: 5s
 
   metricbeat:
     build: metricbeat
@@ -33,10 +29,6 @@ services:
       - ELASTIC_PASS=${ELASTIC_PASS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    # healthcheck:
-    #   test: ["CMD", "redis-cli", "PING"]
-    #   interval: 10s
-    #   timeout: 5s
 
   logspout:
     image: gliderlabs/logspout:v3.2.14
@@ -48,7 +40,4 @@ services:
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    # healthcheck:
-    #   test: ["CMD", "redis-cli", "PING"]
-    #   interval: 10s
-    #   timeout: 5s
+s

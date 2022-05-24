@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# installs the Elastic Agent for Fleet
+# https://www.elastic.co/guide/en/fleet/current/fleet-overview.html
+# Fleet us allows us to auto-upgrade Elastic Agents, add integrations,
+# and provide host-based metrics
+
 set -ex
 
 cd /tmp
