@@ -39,7 +39,7 @@ def search_es_full(args: dict):
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
     do_albums = search_type == "all" or search_type == "albums"
-    is_auto_complete = args.get("is_auto_complete")
+    # is_auto_complete = args.get("is_auto_complete")
 
     mdsl: Any = []
 
@@ -53,16 +53,41 @@ def search_es_full(args: dict):
         #     {"term": {"reposted_by": {"value": current_user_id}}},
         # ]
 
-    multi_match_type = "best_fields"
-    fields = ["suggest"]
-    if is_auto_complete:
-        multi_match_type = "bool_prefix"
-        fields = [
-            "suggest",
-            "suggest._2gram",
-            "suggest._3gram",
-            # "suggest._index_prefix",
-        ]
+    match_query = {
+        "multi_match": {
+            "query": search_str,
+            "fields": [
+                "suggest",
+                "suggest._2gram",
+                "suggest._3gram",
+                # "suggest._index_prefix",
+            ],
+            "type": "bool_prefix",
+        }
+    }
+    should_match_query = {
+        "multi_match": {
+            "query": search_str,
+            "fields": [
+                "suggest",
+                "suggest._2gram",
+                "suggest._3gram",
+            ],
+            "operator": "and",
+            "type": "bool_prefix",
+        }
+    }
+
+    # USE same query for both search + autocomplete for now
+    # if is_auto_complete:
+    #     match_query = {
+    #         "multi_match": {
+    #             "query": search_str,
+    #             "fields": ["suggest", "suggest._2gram", "suggest._3gram"],
+    #             "operator": "and",
+    #             "type": "bool_prefix",
+    #         }
+    #     }
 
     base_tracks_query: Dict = {
         "size": limit,
@@ -72,23 +97,33 @@ def search_es_full(args: dict):
                 "query": {
                     "bool": {
                         "must": [
-                            {
-                                "multi_match": {
-                                    "query": search_str,
-                                    "fields": fields,
-                                    "type": multi_match_type,
-                                }
-                            },
+                            match_query,
                             {"term": {"is_unlisted": {"value": False}}},
+                            {"term": {"is_delete": False}},
                         ],
-                        "should": [],
+                        "must_not": [{"exists": {"field": "stem_of"}}],
+                        "should": [
+                            should_match_query,
+                            # {"term": {"user.is_verified": {"value": True}}},
+                        ],
                     }
                 },
-                "field_value_factor": {
-                    "field": "repost_count",
-                    "factor": 1.1,
-                    "modifier": "log1p",
-                },
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": "repost_count",
+                            "factor": 1.2,
+                            "modifier": "log1p",
+                        }
+                    },
+                    {
+                        "field_value_factor": {
+                            "field": "user.follower_count",
+                            "factor": 1.2,
+                            "modifier": "log1p",
+                        }
+                    },
+                ],
             }
         },
     }
@@ -103,16 +138,11 @@ def search_es_full(args: dict):
                 "query": {
                     "bool": {
                         "must": [
-                            {
-                                "multi_match": {
-                                    "query": search_str,
-                                    "fields": fields,
-                                    "type": multi_match_type,
-                                }
-                            },
+                            match_query,
                             {"term": {"is_deactivated": {"value": False}}},
                         ],
                         "should": [
+                            should_match_query,
                             {"term": {"is_verified": {"value": True}}},
                         ],
                     }
@@ -134,17 +164,14 @@ def search_es_full(args: dict):
                 "query": {
                     "bool": {
                         "must": [
-                            {
-                                "multi_match": {
-                                    "query": search_str,
-                                    "fields": fields,
-                                    "type": multi_match_type,
-                                }
-                            },
+                            match_query,
                             {"term": {"is_private": {"value": False}}},
+                            {"term": {"is_delete": False}},
                             {"term": {"is_album": {"value": False}}},
                         ],
-                        "should": [],
+                        "should": [
+                            should_match_query,
+                        ],
                     }
                 },
                 "field_value_factor": {
@@ -164,17 +191,14 @@ def search_es_full(args: dict):
                 "query": {
                     "bool": {
                         "must": [
-                            {
-                                "multi_match": {
-                                    "query": search_str,
-                                    "fields": fields,
-                                    "type": multi_match_type,
-                                }
-                            },
+                            match_query,
                             {"term": {"is_private": {"value": False}}},
+                            {"term": {"is_delete": False}},
                             {"term": {"is_album": {"value": True}}},
                         ],
-                        "should": [],
+                        "should": [
+                            should_match_query,
+                        ],
                     }
                 },
                 "field_value_factor": {
@@ -393,6 +417,7 @@ def _print_test_search(args):
                     track["user"]["name"],
                     track["title"],
                     track["repost_count"],
+                    track["user"]["follower_count"],
                 ],
             )
 
@@ -405,6 +430,7 @@ def _print_test_search(args):
                     x["handle"],
                     x["name"],
                     x["follower_count"],
+                    x["is_verified"],
                 ],
             )
 
@@ -447,5 +473,21 @@ if __name__ == "__main__":
             "limit": 4,
             "current_user_id": 1,
             "is_auto_complete": False,
+        }
+    )
+    _print_test_search(
+        {
+            "query": "closer 2 u raymont",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": True,
+        }
+    )
+    _print_test_search(
+        {
+            "query": "raymont",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": True,
         }
     )
