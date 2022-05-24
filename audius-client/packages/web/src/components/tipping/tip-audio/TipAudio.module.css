@@ -129,6 +129,10 @@
   transition: all ease-in-out 0.18s;
 }
 
+.accountWrapperLeftAlign {
+  justify-content: start;
+}
+
 .wrapperPhoto {
   position: relative;
 
@@ -175,7 +179,7 @@
   overflow: hidden;
 }
 
-.accountWrapper .userInfoWrapper .name {
+.name {
   font-size: var(--font-s);
   line-height: 17px;
   font-weight: var(--font-bold);
@@ -200,7 +204,7 @@
   padding-right: 4px;
 }
 
-.accountWrapper .userInfoWrapper .handle {
+.handle {
   font-size: var(--font-s);
   color: var(--neutral);
   font-weight: var(--font-medium);
