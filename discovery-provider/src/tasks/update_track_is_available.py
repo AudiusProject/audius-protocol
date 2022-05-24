@@ -4,6 +4,7 @@ import requests
 
 # TODO: do i need this?
 # from src.tasks.aggregates import init_task_and_acquire_lock
+from sqlalchemy.orm.session import make_transient
 from src.models import Track, User
 from src.tasks.celery_app import celery
 from src.tasks.tracks import invalidate_old_tracks
@@ -63,10 +64,16 @@ def update_tracks_is_available_status(db, redis):
 
             # Invalidate old tracks and update with is_available status
             tracks = query_tracks_by_track_ids(session, unavailable_track_ids_batch)
+            # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
+            # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
+            for track in tracks:
+                session.expunge(track)
+                make_transient(track)
+
             invalidate_old_tracks(session, unavailable_track_ids_batch)
 
             def update_is_available(track):
-                track.is_available = track_id_to_is_available_status[track_id]
+                track.is_available = track_id_to_is_available_status[track.track_id]
                 return track
 
             tracks_with_updated_is_available_status = list(
@@ -98,7 +105,7 @@ def query_replica_set_by_track_id(session, track_ids):
 
 
 def query_tracks_by_track_ids(session, track_ids):
-    query_results = (
+    tracks = (
         session.query(Track)
         .filter(
             Track.is_current == True,
@@ -107,7 +114,7 @@ def query_tracks_by_track_ids(session, track_ids):
         .all()
     )
 
-    return query_results
+    return tracks
 
 
 def check_track_is_available(redis, track_id, spID_replica_set):

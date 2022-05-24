@@ -2,6 +2,7 @@ import logging
 from unittest import mock
 
 from integration_tests.utils import populate_mock_db
+from more_itertools import side_effect
 from src.models import Track, User
 from src.tasks.update_track_is_available import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
@@ -12,6 +13,7 @@ from src.tasks.update_track_is_available import (
     get_unavailable_tracks_redis_key,
     query_replica_set_by_track_id,
     query_tracks_by_track_ids,
+    update_track_is_available,
     update_tracks_is_available_status,
 )
 from src.utils.db_session import get_db
@@ -139,7 +141,9 @@ def test_update_tracks_is_available_status(mock_check_track_is_available, app):
     with db.scoped_session() as session:
         tracks = (
             session.query(Track.track_id, Track.is_available)
-            .filter(Track.track_id.in_(mock_unavailable_tracks))
+            .filter(
+                Track.track_id.in_(mock_unavailable_tracks), Track.is_current == True
+            )
             .all()
         )
 
@@ -150,7 +154,7 @@ def test_update_tracks_is_available_status(mock_check_track_is_available, app):
         mock_available_tracks = [8, 9, 10]
         tracks = (
             session.query(Track.track_id, Track.is_available)
-            .filter(Track.track_id.in_(mock_available_tracks))
+            .filter(Track.track_id.in_(mock_available_tracks), Track.is_current == True)
             .all()
         )
 
@@ -247,20 +251,135 @@ def test_query_tracks_by_track_id(app):
         assert sorted_track_ids == track_ids
 
 
-@mock.patch("src.tasks.update_track_is_available.fetch_unavailable_track_ids")
-def test_update_track_is_available(mock_fetch_unavailable_track_ids, app):
-    mock_fetch_unavailable_track_ids.return_value = None
-    pass
+@mock.patch(
+    "src.tasks.update_track_is_available.fetch_all_registered_content_node_info"
+)
+def test_update_track_is_available(
+    mock_fetch_all_registered_content_node_info,
+    app,
+    mocker,
+):
+
+    # Setup
+    mock_fetch_all_registered_content_node_info.return_value = [
+        {
+            "blockNumber": 107,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
+            "endpoint": "http://content_node7.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
+            "spID": 7,
+            "type": "content-node",
+        },
+        {
+            "blockNumber": 109,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "endpoint": "http://content_node9.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "spID": 9,
+            "type": "content-node",
+        },
+        {
+            "blockNumber": 110,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "endpoint": "http://content_node10.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "spID": 10,
+            "type": "content-node",
+        },
+        {
+            "blockNumber": 111,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "endpoint": "http://content_node11.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "spID": 11,
+            "type": "content-node",
+        },
+        {
+            "blockNumber": 112,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "endpoint": "http://content_node12.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "spID": 12,
+            "type": "content-node",
+        },
+        {
+            "blockNumber": 113,
+            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "endpoint": "http://content_node13.com",
+            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
+            "spID": 13,
+            "type": "content-node",
+        },
+    ]
+
+    # Mock fetch data to make it so that track ids 1, 2, 3 are unavailable
+    def mock_fetch_unavailable_track_ids(*args, **kwargs):
+        endpoint = args[0]
+        print("uh did u get here")
+        spID = int(endpoint.split("content_node")[1].split(".com")[0])
+        if spID == 7 or spID == 9 or spID == 13:
+            return [1, 2]
+        elif spID == 10 or spID == 11:
+            return [3, 4]
+        elif spID == 12:
+            return [3, 4, 5, 6, 7]
+        else:
+            return []
+
+    # mock_fetch_unavailable_track_ids.side_effect = self.mock_fetch_unavailable_track_ids
+    # mock_fetch_unavailable_track_ids = mock.MagicMock(side_effect=mock_fetch_resp)
+    mocker.patch(
+        "src.tasks.update_track_is_available.fetch_unavailable_track_ids",
+        side_effect=mock_fetch_unavailable_track_ids,
+    )
+
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    _seed_db_with_data(db)
+
+    fetch_unavailable_track_ids_in_network(redis)
+    update_tracks_is_available_status(db, redis)
+
+    # print_dummy_tracks_and_users(db)
+    with db.scoped_session() as session:
+        mock_available_tracks = [1, 2, 3]
+        tracks = (
+            session.query(Track.track_id, Track.is_available)
+            .filter(Track.track_id.in_(mock_available_tracks), Track.is_current == True)
+            .all()
+        )
+
+        # Check that the 'is_available' value is False
+        for track in tracks:
+            assert track[1] == False
+
+        mock_available_tracks = [4, 5, 6, 7, 8, 9, 10]
+        tracks = (
+            session.query(Track.track_id, Track.is_available)
+            .filter(Track.track_id.in_(mock_available_tracks), Track.is_current == True)
+            .all()
+        )
+
+        # Check that the 'is_available' value is True
+        for track in tracks:
+            assert track[1] == True
 
 
 def print_dummy_tracks_and_users(db):
     with db.scoped_session() as session:
         # tracks = session.query(Track.track_id, Track.owner_id, Track.is_current, Track.is_available).all()
-        tracks = session.query(
-            Track.track_id, Track.txhash, Track.is_current, Track.is_available
-        ).all()
+        tracks = (
+            session.query(
+                Track.track_id, Track.txhash, Track.is_current, Track.is_available
+            )
+            .filter(Track.is_current == True)
+            .all()
+        )
 
         print("tracks")
+        tracks.sort(key=lambda entry: entry[0])
         print(tracks)
 
         users = session.query(
