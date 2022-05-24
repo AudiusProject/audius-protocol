@@ -4,5 +4,6 @@ export enum SmartCollectionVariant {
   UNDER_THE_RADAR = 'Under The Radar',
   MOST_LOVED = 'Most Loved',
   FEELING_LUCKY = 'Feeling Lucky?',
-  REMIXABLES = 'Remixables'
+  REMIXABLES = 'Remixables',
+  AUDIO_NFT_PLAYLIST = 'Audio NFTs'
 }

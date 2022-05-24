@@ -51,13 +51,11 @@ import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,
   PROFILE_PAGE_COLLECTIBLE_DETAILS,
-  doesMatchRoute
+  doesMatchRoute,
+  getHash
 } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
-import { getHash } from '../helpers'
-
-import CollectibleDetailsModal from './CollectibleDetailsModal'
 import styles from './CollectiblesPage.module.css'
 
 export const editTableContainerClass = 'editTableContainer'
@@ -436,6 +434,13 @@ const CollectiblesPage: React.FC<{
     return []
   }, [collectiblesMetadata, collectibleList, hasCollectibles])
 
+  // const getAudioCollectibles = useCallback(() => {
+  //   const visibleCollectibles = getVisibleCollectibles()
+  //   return visibleCollectibles?.filter(c =>
+  //     ['mp3', 'wav', 'oga'].some(ext => c.animationUrl?.endsWith(ext))
+  //   )
+  // }, [getVisibleCollectibles])
+
   const getHiddenCollectibles = useCallback(() => {
     if (collectibleList) {
       const visibleCollectibleKeySet = new Set(
@@ -465,12 +470,23 @@ const CollectiblesPage: React.FC<{
 
       // If the URL matches a collectible ID and we haven't set a collectible in the
       // store yet, open up the modal
-      if (collectibleId && !collectible && !hasSetDeepLinkedCollectible) {
+      if (collectibleId && !hasSetDeepLinkedCollectible) {
         const collectibleFromUrl =
           getVisibleCollectibles().find(c => getHash(c.id) === collectibleId) ??
           null
-        if (collectibleFromUrl) {
-          dispatch(setCollectible({ collectible: collectibleFromUrl }))
+        if (collectibleFromUrl && profile) {
+          dispatch(
+            setCollectible({
+              collectible: collectibleFromUrl,
+              ownerHandle: profile.handle,
+              embedCollectibleHash,
+              isUserOnTheirProfile,
+              updateProfilePicture,
+              onSave,
+              setIsEmbedModalOpen,
+              onClose: () => setEmbedCollectibleHash(null)
+            })
+          )
           setIsDetailsModalOpen(true)
           setEmbedCollectibleHash(collectibleId)
           setHasSetDeepLinkedCollectible(true)
@@ -484,7 +500,12 @@ const CollectiblesPage: React.FC<{
     dispatch,
     getVisibleCollectibles,
     setIsDetailsModalOpen,
-    embedCollectibleHash
+    embedCollectibleHash,
+    profile,
+    isUserOnTheirProfile,
+    updateProfilePicture,
+    onSave,
+    setIsEmbedModalOpen
   ])
 
   const overflowMenuItems: PopupMenuItem[] = [
@@ -592,16 +613,6 @@ const CollectiblesPage: React.FC<{
           )}
         </div>
       </div>
-
-      <CollectibleDetailsModal
-        isMobile={isMobile}
-        isUserOnTheirProfile={isUserOnTheirProfile}
-        updateProfilePicture={updateProfilePicture}
-        onSave={onSave}
-        shareUrl={shareUrl}
-        setIsEmbedModalOpen={setIsEmbedModalOpen}
-        onClose={() => setEmbedCollectibleHash(null)}
-      />
 
       <Modal
         title={collectibleMessages.sortCollectibles}

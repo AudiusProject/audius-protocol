@@ -28,3 +28,10 @@
   line-height: 26px;
   text-align: center;
 }
+
+.spinner {
+  margin: 0 auto;
+  height: 24px;
+  width: 24px;
+  margin-bottom: 24px;
+}

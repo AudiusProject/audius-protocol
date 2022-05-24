@@ -367,6 +367,7 @@
   justify-content: space-evenly;
   font-size: var(--font-s);
   font-weight: var(--font-bold);
+  overflow: auto;
 }
 
 .nftDrawer {

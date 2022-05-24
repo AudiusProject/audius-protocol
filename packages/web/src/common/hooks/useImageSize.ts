@@ -50,7 +50,7 @@ type UseImageSizeProps<
   // The fallback if no sizes are available
   defaultImage?: string
   // A unique id (used to prevent duplicate fetches)
-  id?: number | null
+  id?: number | null | undefined | string
   // A flag (default = true) that will trigger the image load. Can be used to delay the load
   load?: boolean
   // A flag that will cause the return value to be a function that will trigger the image load
@@ -95,7 +95,7 @@ export const useImageSize = <
   const getLargerImage = getNextImage<ImageSize, ImageSizes>((a, b) => a > b)
 
   const getImageSize = (): Maybe<URL> => {
-    if (id === null || id === undefined) {
+    if (id === null || id === undefined || typeof id === 'string') {
       return ''
     }
 

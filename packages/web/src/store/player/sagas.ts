@@ -30,6 +30,8 @@ import {
   setAudioStream as setAudioStreamAction,
   play,
   playSucceeded,
+  playCollectible,
+  playCollectibleSucceeded,
   pause,
   stop,
   setBuffering,
@@ -131,6 +133,44 @@ export function* watchPlay() {
     // Play.
     audio.play()
     yield put(playSucceeded({ uid, trackId }))
+  })
+}
+
+export function* watchCollectiblePlay() {
+  yield takeLatest(playCollectible.type, function* (
+    action: ReturnType<typeof playCollectible>
+  ) {
+    const { collectible, onEnd } = action.payload
+    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const endChannel = eventChannel(emitter => {
+      audio.load(
+        [],
+        () => {
+          if (onEnd) {
+            emitter(onEnd({}))
+          }
+        },
+        [],
+        [], // Gateways
+        {
+          id: collectible.id,
+          title: collectible.name ?? 'Collectible',
+          // TODO: Add account user name here
+          artist: 'YOUR NAME HERE',
+          artwork:
+            collectible.imageUrl ??
+            collectible.frameUrl ??
+            collectible.gifUrl ??
+            ''
+        },
+        collectible.animationUrl
+      )
+      return () => {}
+    })
+    yield spawn(actionChannelDispatcher, endChannel)
+
+    audio.play()
+    yield put(playCollectibleSucceeded({ collectible }))
   })
 }
 
@@ -278,7 +318,7 @@ function* recordListenWorker() {
     const newPlay = lastSeenPlayCounter !== playCounter
 
     if (newPlay && position > RECORD_LISTEN_SECONDS) {
-      yield put(recordListen(trackId))
+      if (trackId) yield put(recordListen(trackId))
       lastSeenPlayCounter = playCounter
     }
     yield delay(RECORD_LISTEN_INTERVAL)
@@ -289,6 +329,7 @@ const sagas = () => {
   return [
     setAudioStream,
     watchPlay,
+    watchCollectiblePlay,
     watchPause,
     watchStop,
     watchReset,

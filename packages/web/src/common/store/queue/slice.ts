@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { Collectible } from 'common/models/Collectible'
 import { ID, UID } from 'common/models/Identifiers'
 import { RepeatMode, Queueable } from 'common/store/queue/types'
 import { Nullable } from 'common/utils/typeUtils'
@@ -49,6 +50,7 @@ export const initialState: State = {
 type PlayPayload = {
   uid?: UID
   trackId?: ID
+  collectible?: Collectible
   source?: string
 }
 
@@ -103,8 +105,16 @@ const slice = createSlice({
   reducers: {
     // Play the queue, either resuming or playing a new uid if provided */
     play: (state, action: PayloadAction<PlayPayload>) => {
-      const { uid } = action.payload
-      state.index = uid ? state.positions[uid] : state.index
+      const { collectible, uid } = action.payload
+      let newIndex
+
+      if (uid) {
+        newIndex = state.positions[uid]
+      } else if (collectible) {
+        newIndex = state.positions[collectible.id]
+      }
+
+      state.index = newIndex ?? state.index
       state.overshot = false
       state.undershot = false
     },
@@ -211,7 +221,7 @@ const slice = createSlice({
       newOrder.splice(newIndex, 0, ...entries)
 
       const addedPositions = entries.reduce((mapping, entry, i) => {
-        mapping[entry.uid] = newIndex + i
+        mapping[entry.uid ?? entry.id] = newIndex + i
         return mapping
       }, {} as { [uid: string]: number })
       const newPositions = Object.keys(state.positions).reduce(

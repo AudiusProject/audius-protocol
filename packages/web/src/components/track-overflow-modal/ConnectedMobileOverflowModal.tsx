@@ -21,6 +21,7 @@ import {
   Notification,
   NotificationType
 } from 'common/store/notifications/types'
+import { makeGetCurrent } from 'common/store/queue/selectors'
 import {
   repostCollection,
   undoRepostCollection,
@@ -46,7 +47,12 @@ import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/sel
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
 import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import { AppState } from 'store/types'
-import { profilePage, playlistPage, albumPage } from 'utils/route'
+import {
+  profilePage,
+  playlistPage,
+  albumPage,
+  collectibleDetailsPage
+} from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
 
@@ -54,6 +60,8 @@ type ConnectedMobileOverflowModalProps = {} & ReturnType<
   typeof mapStateToProps
 > &
   ReturnType<typeof mapDispatchToProps>
+
+const getCurrent = makeGetCurrent()
 
 // A connected `MobileOverflowModal`. Builds and injects callbacks for it's contained MobileOverflowModal component.
 const ConnectedMobileOverflowModal = ({
@@ -85,6 +93,7 @@ const ConnectedMobileOverflowModal = ({
   publishPlaylist,
   visitTrackPage,
   visitArtistPage,
+  visitCollectiblePage,
   visitPlaylistPage,
   visitAlbumPage,
   unsubscribeUser,
@@ -106,6 +115,7 @@ const ConnectedMobileOverflowModal = ({
     onVisitTrackPage,
     onVisitArtistPage,
     onVisitCollectionPage,
+    onVisitCollectiblePage,
     onUnsubscribeUser,
     onFollow,
     onUnfollow
@@ -121,6 +131,7 @@ const ConnectedMobileOverflowModal = ({
     onDeletePlaylist?: () => void
     onVisitTrackPage?: () => void
     onVisitArtistPage?: () => void
+    onVisitCollectiblePage?: () => void
     onVisitCollectionPage?: () => void
     onUnsubscribeUser?: () => void
     onFollow?: () => void
@@ -136,6 +147,9 @@ const ConnectedMobileOverflowModal = ({
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
           onAddToPlaylist: () => addToPlaylist(id as ID, title),
+          onVisitCollectiblePage: () => {
+            visitCollectiblePage(handle, id as string)
+          },
           onVisitTrackPage: () =>
             permalink === undefined
               ? console.error(`Permalink missing for track ${id}`)
@@ -160,6 +174,8 @@ const ConnectedMobileOverflowModal = ({
               handle,
               title
             ),
+          onVisitCollectiblePage: () =>
+            visitCollectiblePage(handle, id as string),
           onEditPlaylist: isAlbum ? () => {} : () => editPlaylist(id as ID),
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
@@ -207,6 +223,7 @@ const ConnectedMobileOverflowModal = ({
       onDeletePlaylist={onDeletePlaylist}
       onVisitArtistPage={onVisitArtistPage}
       onVisitCollectionPage={onVisitCollectionPage}
+      onVisitCollectiblePage={onVisitCollectiblePage}
       onUnsubscribeUser={onUnsubscribeUser}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
@@ -224,6 +241,7 @@ const getAdditionalInfo = ({
   id: ID | string | null
   source: OverflowSource
 }): {
+  id?: string
   handle?: string
   artistName?: string
   title?: string
@@ -237,7 +255,21 @@ const getAdditionalInfo = ({
   switch (source) {
     case OverflowSource.TRACKS: {
       const track = getTrack(state, { id: id as number })
-      if (!track) return {}
+      if (!track) {
+        const { collectible, user } = getCurrent(state)
+        if (!collectible || !user) return {}
+
+        return {
+          id: collectible.id,
+          title: collectible.name ?? '',
+          ownerId: user.user_id,
+          handle: user.handle,
+          artistName: user.name,
+          permalink: '',
+          isAlbum: false
+        }
+      }
+
       const user = getUser(state, { id: track.owner_id })
       if (!user) return {}
       return {
@@ -338,6 +370,9 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     visitTrackPage: (permalink: string) => dispatch(pushRoute(permalink)),
     visitArtistPage: (handle: string) =>
       dispatch(pushRoute(profilePage(handle))),
+    visitCollectiblePage: (handle: string, id: string) => {
+      dispatch(pushRoute(collectibleDetailsPage(handle, id)))
+    },
     visitPlaylistPage: (
       playlistId: ID,
       handle: string,

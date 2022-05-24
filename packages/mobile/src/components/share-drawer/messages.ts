@@ -4,7 +4,8 @@ const shareTypeMap: Record<ShareType, string> = {
   track: 'Track',
   profile: 'Profile',
   album: 'Album',
-  playlist: 'Playlist'
+  playlist: 'Playlist',
+  audioNftPlaylist: 'Audio NFT Playlist'
 }
 
 export const messages = {
@@ -21,5 +22,6 @@ export const messages = {
   albumShareText: (albumName: string, handle: string) =>
     `Check out ${albumName} by ${handle} @AudiusProject #Audius`,
   playlistShareText: (playlistName: string, handle: string) =>
-    `Check out ${playlistName} by ${handle} @AudiusProject #Audius`
+    `Check out ${playlistName} by ${handle} @AudiusProject #Audius`,
+  nftPlaylistShareText: ''
 }

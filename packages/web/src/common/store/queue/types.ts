@@ -1,3 +1,4 @@
+import { Collectible } from 'common/models/Collectible'
 import { ID, UID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
@@ -13,6 +14,7 @@ export enum Source {
   DISCOVER_FEED = 'DISCOVER_FEED',
   DISCOVER_TRENDING = 'DISCOVER_TRENDING',
   HISTORY_TRACKS = 'HISTORY_TRACKS',
+  COLLECTIBLE_PLAYLIST_TRACKS = 'COLLECTIBLE_PLAYLIST_TRACKS',
   PROFILE_FEED = 'PROFILE_FEED',
   PROFILE_TRACKS = 'PROFILE_TRACKS',
   SAVED_TRACKS = 'SAVED_TRACKS',
@@ -22,8 +24,10 @@ export enum Source {
 }
 
 export type Queueable = {
-  id: ID
+  id: ID | string
   uid: UID
+  artistId?: ID
+  collectible?: Collectible
   source: Source
 }
 

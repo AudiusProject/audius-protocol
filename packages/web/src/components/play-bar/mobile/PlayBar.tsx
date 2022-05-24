@@ -55,7 +55,7 @@ const PlayBar = ({
   unsave,
   onClickInfo
 }: PlayBarProps) => {
-  const { uid, track, user } = currentQueueItem
+  const { uid, track, user, collectible } = currentQueueItem
 
   const [percentComplete, setPercentComplete] = useState(0)
   const record = useRecord()
@@ -73,15 +73,32 @@ const PlayBar = ({
     return () => clearInterval(seekInterval)
   })
 
-  const image = useTrackCoverArt(
-    track ? track.track_id : null,
-    track ? track._cover_art_sizes : null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image =
+    (useTrackCoverArt(
+      track ? track.track_id : null,
+      track ? track._cover_art_sizes : null,
+      SquareSizes.SIZE_150_BY_150
+    ) ||
+      collectible?.imageUrl) ??
+    collectible?.frameUrl ??
+    collectible?.gifUrl
 
-  if (!audio || !uid || !track || !user) return null
+  if (!audio || ((!uid || !track) && !collectible) || !user) return null
 
-  const { title, track_id, has_current_user_saved, _co_sign } = track
+  const getDisplayInfo = () => {
+    if (track && !collectible) {
+      return track
+    }
+    return {
+      title: collectible?.name,
+      track_id: collectible?.id,
+      has_current_user_saved: false,
+      _co_sign: null
+    }
+  }
+
+  const { title, track_id, has_current_user_saved, _co_sign } = getDisplayInfo()
+
   const { name } = user
 
   let playButtonStatus
@@ -114,7 +131,7 @@ const PlayBar = ({
   }
 
   const toggleFavorite = () => {
-    if (track_id) {
+    if (track && track_id && typeof track_id === 'number') {
       has_current_user_saved ? unsave(track_id) : save(track_id)
     }
   }

@@ -1,5 +1,6 @@
-import { takeEvery, put, call, select } from 'typed-redux-saga'
+import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
+import { SmartCollection } from 'common/models/Collection'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import Status from 'common/models/Status'
 import { Track, UserTrack } from 'common/models/Track'
@@ -195,7 +196,8 @@ const fetchMap = {
     EXPLORE_PAGE
   ),
   [SmartCollectionVariant.FEELING_LUCKY]: fetchFeelingLucky,
-  [SmartCollectionVariant.REMIXABLES]: fetchRemixables
+  [SmartCollectionVariant.REMIXABLES]: fetchRemixables,
+  [SmartCollectionVariant.AUDIO_NFT_PLAYLIST]: () => {}
 }
 
 function* watchFetch() {
@@ -212,14 +214,18 @@ function* watchFetch() {
 
     const { variant } = action.payload
 
-    const collection = yield* call(fetchMap[variant])
-
-    yield put(
-      fetchSmartCollectionSucceeded({
-        variant,
-        collection
-      })
+    const collection: SmartCollection | undefined = yield* call(
+      fetchMap[variant]
     )
+
+    if (collection) {
+      yield put(
+        fetchSmartCollectionSucceeded({
+          variant,
+          collection
+        })
+      )
+    }
     yield put(setSmartCollection(variant))
   })
 }

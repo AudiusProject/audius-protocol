@@ -145,6 +145,7 @@ import {
   CHECK_PAGE,
   getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
+  AUDIO_NFT_PLAYLIST_PAGE,
   DEACTIVATE_PAGE,
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE
@@ -157,6 +158,7 @@ import TopLevelPage from '../components/nav/mobile/TopLevelPage'
 import Notice from '../components/notice/Notice'
 
 import styles from './App.module.css'
+import { CollectiblesPlaylistPage } from './collectibles-playlist-page'
 import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import FollowersPage from './followers-page/FollowersPage'
@@ -599,6 +601,11 @@ class App extends Component {
                 )}
               />
               <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
+              <Route
+                exact
+                path={AUDIO_NFT_PLAYLIST_PAGE}
+                render={() => <CollectiblesPlaylistPage />}
+              />
               <Route
                 exact
                 path={EXPLORE_HEAVY_ROTATION_PAGE}

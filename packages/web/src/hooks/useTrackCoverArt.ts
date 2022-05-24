@@ -6,7 +6,7 @@ import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
 import { fetchCoverArt } from 'common/store/cache/tracks/actions'
 
 export const useTrackCoverArt = (
-  trackId: number | null,
+  trackId: number | null | string | undefined,
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
   defaultImage: string = imageEmpty as string,

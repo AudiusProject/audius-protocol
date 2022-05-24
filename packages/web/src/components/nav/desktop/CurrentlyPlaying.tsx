@@ -18,6 +18,7 @@ type CurrentlyPlayingProps = {
   trackTitle: string
   coverArtSizes: CoverArtSizes
   coverArtColor: Color
+  artworkLink?: string
   draggableLink: string
   onClick: () => void
   onShowVisualizer: (e: MouseEvent) => void
@@ -39,6 +40,7 @@ const CurrentlyPlaying = ({
   trackTitle,
   coverArtSizes,
   coverArtColor,
+  artworkLink,
   draggableLink,
   onClick,
   onShowVisualizer
@@ -96,7 +98,7 @@ const CurrentlyPlaying = ({
         onClick={onClick}
       >
         <DynamicImage
-          image={image}
+          image={artworkLink ?? image}
           initialOpacity={newTrack ? 0.6 : 0}
           immediate={newTrack}
           className={styles.artwork}

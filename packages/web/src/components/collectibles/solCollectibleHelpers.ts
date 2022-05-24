@@ -15,6 +15,22 @@ type SolanaNFTMedia = {
   frameUrl: Nullable<string>
 }
 
+const fetchWithTimeout = async (
+  resource: RequestInfo,
+  options: { timeout?: number } & RequestInit = {}
+) => {
+  const { timeout = 4000 } = options
+
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeout)
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal
+  })
+  clearTimeout(id)
+  return response
+}
+
 /**
  * NFT is a gif if it has a file with MIME type image/gif
  * if it's a gif, we compute an image frame from the gif
@@ -213,7 +229,7 @@ const nftComputedMedia = async (
   }
 
   const url = typeof files[0] === 'object' ? files[0].uri : files[0]
-  const headResponse = await fetch(url, { method: 'HEAD' })
+  const headResponse = await fetchWithTimeout(url, { method: 'HEAD' })
   const contentType = headResponse.headers.get('Content-Type')
   if (contentType?.includes('gif')) {
     // frame url for the gif is computed later in the collectibles page

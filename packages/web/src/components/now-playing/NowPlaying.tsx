@@ -63,7 +63,11 @@ import {
 import { seek, reset } from 'store/player/slice'
 import { AudioState } from 'store/player/types'
 import { AppState } from 'store/types'
-import { pushUniqueRoute as pushRoute, profilePage } from 'utils/route'
+import {
+  pushUniqueRoute as pushRoute,
+  profilePage,
+  collectibleDetailsPage
+} from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -90,9 +94,13 @@ const messages = {
 }
 
 const g = withNullGuard((wide: NowPlayingProps) => {
-  const { uid, source, user, track } = wide.currentQueueItem
-  if (uid !== null && source !== null && user !== null && track !== null) {
-    const currentQueueItem = { uid, source, user, track }
+  const { uid, source, user, track, collectible } = wide.currentQueueItem
+  if (
+    ((uid !== null && track !== null) || collectible !== null) &&
+    source !== null &&
+    user !== null
+  ) {
+    const currentQueueItem = { uid, source, user, track, collectible }
     return {
       ...wide,
       currentQueueItem
@@ -128,8 +136,7 @@ const NowPlaying = g(
     castMethod,
     dominantColors
   }) => {
-    const { uid } = currentQueueItem
-    const { track, user } = currentQueueItem
+    const { uid, track, user, collectible } = currentQueueItem
 
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).
@@ -187,6 +194,26 @@ const NowPlaying = g(
 
     const record = useRecord()
 
+    let displayInfo
+    if (track) {
+      displayInfo = track
+    } else {
+      displayInfo = {
+        title: collectible?.name as string,
+        track_id: collectible?.id as string,
+        owner_id: user?.user_id,
+        _cover_art_sizes: {
+          [SquareSizes.SIZE_480_BY_480]:
+            collectible?.imageUrl ??
+            collectible?.frameUrl ??
+            collectible?.gifUrl ??
+            ''
+        },
+        has_current_user_saved: false,
+        has_current_user_reposted: false,
+        _co_sign: null
+      }
+    }
     const {
       title,
       track_id,
@@ -195,13 +222,15 @@ const NowPlaying = g(
       has_current_user_saved,
       has_current_user_reposted,
       _co_sign
-    } = track
+    } = displayInfo
+
     const { name, handle } = user
-    const image = useTrackCoverArt(
-      track_id,
-      _cover_art_sizes,
-      SquareSizes.SIZE_480_BY_480
-    )
+    const image =
+      useTrackCoverArt(
+        track_id,
+        _cover_art_sizes,
+        SquareSizes.SIZE_480_BY_480
+      ) || _cover_art_sizes[SquareSizes.SIZE_480_BY_480]
 
     let playButtonStatus
     if (isBuffering) {
@@ -235,24 +264,28 @@ const NowPlaying = g(
     }
 
     const toggleFavorite = useCallback(() => {
-      if (track_id) {
+      if (track && track_id && typeof track_id !== 'string') {
         has_current_user_saved ? unsave(track_id) : save(track_id)
       }
-    }, [track_id, has_current_user_saved, unsave, save])
+    }, [track, track_id, has_current_user_saved, unsave, save])
 
     const toggleRepost = useCallback(() => {
-      if (track_id) {
+      if (track && track_id && typeof track_id !== 'string') {
         has_current_user_reposted ? undoRepost(track_id) : repost(track_id)
       }
-    }, [track_id, has_current_user_reposted, undoRepost, repost])
+    }, [track, track_id, has_current_user_reposted, undoRepost, repost])
 
     const onShare = useCallback(() => {
-      share(track_id)
-    }, [share, track_id])
+      if (track && track_id && typeof track_id !== 'string') share(track_id)
+    }, [share, track, track_id])
 
     const goToTrackPage = () => {
       onClose()
-      goToRoute(track.permalink)
+      if (track) {
+        goToRoute(track.permalink)
+      } else {
+        goToRoute(collectibleDetailsPage(user.handle, collectible?.id ?? ''))
+      }
     }
 
     const goToProfilePage = () => {
@@ -264,37 +297,43 @@ const NowPlaying = g(
       const isOwner = currentUserId === owner_id
 
       const overflowActions = [
-        !isOwner
+        !collectible && !isOwner
           ? has_current_user_reposted
             ? OverflowAction.UNREPOST
             : OverflowAction.REPOST
           : null,
-        !isOwner
+        !collectible && !isOwner
           ? has_current_user_saved
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
           : null,
-        OverflowAction.ADD_TO_PLAYLIST,
-        OverflowAction.VIEW_TRACK_PAGE,
+        !collectible ? OverflowAction.ADD_TO_PLAYLIST : null,
+        track && OverflowAction.VIEW_TRACK_PAGE,
+        collectible && OverflowAction.VIEW_COLLECTIBLE_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
       ].filter(Boolean) as OverflowAction[]
+
       const overflowCallbacks = {
         [OverflowAction.VIEW_TRACK_PAGE]: onClose,
+        [OverflowAction.VIEW_COLLECTIBLE_PAGE]: onClose,
         [OverflowAction.VIEW_ARTIST_PAGE]: onClose
       }
+
       clickOverflow(track_id, overflowActions, overflowCallbacks)
     }, [
       currentUserId,
-      track_id,
       owner_id,
-      clickOverflow,
-      has_current_user_saved,
+      collectible,
       has_current_user_reposted,
-      onClose
+      has_current_user_saved,
+      track,
+      onClose,
+      clickOverflow,
+      track_id
     ])
 
     const onPrevious = () => {
-      if (track.genre === Genre.PODCASTS) {
+      if (track?.genre === Genre.PODCASTS) {
         const position = timing.position
         const newPosition = position - SKIP_DURATION_SEC
         seek(Math.max(0, newPosition))
@@ -312,7 +351,7 @@ const NowPlaying = g(
     }
 
     const onNext = () => {
-      if (track.genre === Genre.PODCASTS) {
+      if (track?.genre === Genre.PODCASTS) {
         const newPosition = timing.position + SKIP_DURATION_SEC
         seek(Math.min(newPosition, timing.duration))
         // Update mediakey so scrubber updates
@@ -396,7 +435,7 @@ const NowPlaying = g(
             // potentially update before the duration coming from the native layer if present
             mediaKey={`${uid}${mediaKey}${timing.duration}`}
             isPlaying={isPlaying && !isBuffering}
-            isDisabled={!uid}
+            isDisabled={!uid && !collectible}
             isMobile
             elapsedSeconds={timing.position}
             totalSeconds={timing.duration}
@@ -449,6 +488,7 @@ const NowPlaying = g(
             hasReposted={has_current_user_reposted}
             hasFavorited={has_current_user_saved}
             isCasting={isCasting}
+            isCollectible={!!collectible}
             onToggleRepost={toggleRepost}
             onToggleFavorite={toggleFavorite}
             onShare={onShare}
@@ -527,7 +567,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     undoRepost: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.NOW_PLAYING)),
     clickOverflow: (
-      trackId: ID,
+      trackId: ID | string,
       overflowActions: OverflowAction[],
       callbacks: OverflowActionCallbacks
     ) =>

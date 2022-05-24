@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import NativeMobileAudio from 'audio/NativeMobileAudio'
+import { Collectible } from 'common/models/Collectible'
 import { UID, ID } from 'common/models/Identifiers'
 
 import { AudioState } from './types'
@@ -11,6 +12,8 @@ type State = {
   // Identifiers for the audio that's playing.
   uid: UID | null
   trackId: ID | null
+
+  collectible: Collectible | null
 
   audio: AudioState
 
@@ -30,6 +33,8 @@ type State = {
 export const initialState: State = {
   uid: null,
   trackId: null,
+
+  collectible: null,
 
   // In the case of native mobile, use the native mobile audio
   // player directly. Otherwise, it is set dynamically
@@ -53,6 +58,15 @@ type PlayPayload = {
 type PlaySucceededPayload = {
   uid?: UID
   trackId?: ID
+}
+
+type PlayCollectiblePayload = {
+  collectible: Collectible
+  onEnd?: (...args: any) => any
+}
+
+type PlayCollectibleSucceededPayload = {
+  collectible: Collectible
 }
 
 type PausePayload = {
@@ -104,8 +118,24 @@ const slice = createSlice({
     playSucceeded: (state, action: PayloadAction<PlaySucceededPayload>) => {
       const { uid, trackId } = action.payload
       state.playing = true
+      if (!uid || !trackId) return
       state.uid = uid || state.uid
       state.trackId = trackId || state.trackId
+      state.collectible = null
+    },
+    playCollectible: (
+      state,
+      action: PayloadAction<PlayCollectiblePayload>
+    ) => {},
+    playCollectibleSucceeded: (
+      state,
+      action: PayloadAction<PlayCollectibleSucceededPayload>
+    ) => {
+      const { collectible } = action.payload
+      state.playing = true
+      state.uid = null
+      state.trackId = null
+      state.collectible = collectible || state.collectible
     },
     pause: (state, action: PayloadAction<PausePayload>) => {
       state.playing = false
@@ -143,6 +173,8 @@ export const {
   setAudioStream,
   play,
   playSucceeded,
+  playCollectible,
+  playCollectibleSucceeded,
   pause,
   stop,
   setBuffering,
