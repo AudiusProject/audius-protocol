@@ -1,16 +1,13 @@
-import { View } from 'react-native'
-
+import { Divider as DividerBase } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    height: spacing(6),
-    borderBottomColor: palette.neutralLight8,
-    borderBottomWidth: 1
+    height: spacing(6)
   }
 }))
 
 export const Divider = () => {
   const styles = useStyles()
-  return <View style={styles.root} />
+  return <DividerBase style={styles.root} />
 }

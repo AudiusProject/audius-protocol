@@ -26,7 +26,7 @@ type FollowButtonsProps = Partial<ButtonProps> & {
 }
 
 export const FollowButton = (props: FollowButtonsProps) => {
-  const { profile, noIcon, style, onPress, followSource } = props
+  const { profile, noIcon, style, onPress, followSource, ...other } = props
   const { does_current_user_follow, user_id } = profile
   const isFollowing = does_current_user_follow
   const dispatchWeb = useDispatchWeb()
@@ -57,6 +57,7 @@ export const FollowButton = (props: FollowButtonsProps) => {
       iconPosition='left'
       size='small'
       onPress={handlePress}
+      {...other}
     />
   )
 }

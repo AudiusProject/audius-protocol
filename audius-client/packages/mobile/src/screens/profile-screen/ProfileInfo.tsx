@@ -1,7 +1,7 @@
 import { FollowSource } from 'audius-client/src/common/models/Analytics'
 import { View, Text } from 'react-native'
 
-import { FollowButton } from 'app/components/user'
+import { FollowButton, FollowsYouChip } from 'app/components/user'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -63,10 +63,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   }
 }))
 
-const messages = {
-  followsYou: 'Follows You'
-}
-
 type ProfileInfoProps = {
   onFollow: () => void
 }
@@ -116,11 +112,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
           <View style={styles.handle}>
             <Text style={styles.handleText}>@{handle}</Text>
           </View>
-          {does_follow_current_user ? (
-            <View style={styles.followsYou}>
-              <Text style={styles.followsYouText}>{messages.followsYou}</Text>
-            </View>
-          ) : null}
+          {does_follow_current_user ? <FollowsYouChip /> : null}
         </View>
       </View>
       <View style={styles.actionButtons}>
