@@ -28,11 +28,11 @@ const messages = {
 }
 
 const tierInfoMap = {
-  none: { label: 'None', icon: '' },
-  bronze: { label: 'Bronze', icon: '🥉' },
-  silver: { label: 'Silver', icon: '🥈' },
-  gold: { label: 'Gold', icon: '🥇' },
-  platinum: { label: 'Platinum', icon: '🥇' }
+  none: { label: 'None', icon: '', amount: 0 },
+  bronze: { label: 'Bronze', icon: '🥉', amount: 10 },
+  silver: { label: 'Silver', icon: '🥈', amount: 100 },
+  gold: { label: 'Gold', icon: '🥇', amount: 10000 },
+  platinum: { label: 'Platinum', icon: '🥇', amount: 100000 }
 }
 
 type TierChangeNotificationProps = {

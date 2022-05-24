@@ -55,13 +55,18 @@ export const RemixCreateNotification = (
     entityType,
     timeLabel,
     isViewed,
-    childTrackId
+    childTrackId,
+    parentTrackId
   } = notification
   const dispatch = useDispatch()
   const record = useRecord()
 
-  const entity = entities.find(
-    track => track.track_id === notification.childTrackId
+  const childTrack = entities.find(
+    track => track.track_id === childTrackId
+  ) as TrackEntity
+
+  const parentTrack = entities.find(
+    track => track.track_id === parentTrackId
   ) as TrackEntity
 
   const handleShare = useCallback(async () => {
@@ -73,19 +78,19 @@ export const RemixCreateNotification = (
   }, [notification, record])
 
   const handleClick = useCallback(() => {
-    const childTrack = entities.find(track => track.track_id === childTrackId)
-    if (childTrack) {
-      dispatch(push(getEntityLink(childTrack)))
-    }
-  }, [entities, childTrackId, dispatch])
+    dispatch(push(getEntityLink(childTrack)))
+  }, [childTrack, dispatch])
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconRemix />}>
-        <NotificationTitle>{messages.title}</NotificationTitle>
+        <NotificationTitle>
+          {messages.title}{' '}
+          <EntityLink entity={parentTrack} entityType={entityType} />
+        </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <EntityLink entity={entity} entityType={entityType} /> {messages.by}{' '}
+        <EntityLink entity={childTrack} entityType={entityType} /> {messages.by}{' '}
         <UserNameLink user={user} notification={notification} />
       </NotificationBody>
       <TwitterShareButton onClick={handleShare} />

@@ -41,7 +41,8 @@ export const RemixCosignNotification = (
     entityType,
     timeLabel,
     isViewed,
-    childTrackId
+    childTrackId,
+    parentTrackUserId
   } = notification
   const dispatch = useDispatch()
   const record = useRecord()
@@ -51,7 +52,7 @@ export const RemixCosignNotification = (
   ) as TrackEntity
 
   const parentTrack = entities.find(
-    track => track.track_id === childTrackId
+    track => track.owner_id === parentTrackUserId
   ) as TrackEntity
 
   const handleClick = useCallback(() => {
@@ -81,7 +82,7 @@ export const RemixCosignNotification = (
       <NotificationBody>
         <UserNameLink user={user} notification={notification} />{' '}
         {messages.cosign}{' '}
-        <EntityLink entity={childTrack} entityType={entityType} />
+        <EntityLink entity={parentTrack} entityType={entityType} />
       </NotificationBody>
       <div>
         <TrackContent track={childTrack} />
