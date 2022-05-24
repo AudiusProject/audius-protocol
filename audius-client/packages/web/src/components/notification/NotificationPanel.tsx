@@ -1,12 +1,11 @@
 import React, { useRef, useCallback, useEffect } from 'react'
 
-import { Popup, PopupPosition } from '@audius/stems'
+import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
-import SimpleBar from 'simplebar-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
@@ -37,11 +36,11 @@ import styles from './NotificationPanel.module.css'
 
 const getNotifications = makeGetAllNotifications()
 
-const simpleBarId = 'notificationsPanelScroll'
+const scrollbarId = 'notificationsPanelScroll'
 
 const getScrollParent = () => {
-  const simpleBarElement = window.document.getElementById(simpleBarId)
-  return simpleBarElement || null
+  const scrollbarElement = window.document.getElementById(scrollbarId)
+  return scrollbarElement || null
 }
 
 const messages = {
@@ -56,7 +55,7 @@ type NotificationPanelProps = {
 
 // The threshold of distance from the bottom of the scroll container in the
 // notification panel before requesting `loadMore` for more notifications
-const SCROLL_THRESHOLD = 1000
+const SCROLL_THRESHOLD = 400
 
 /** The notification panel displays the list of notifications w/ a
  * summary of each notification and a link to open the full
@@ -72,14 +71,9 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const isUserListOpen = useSelector(getIsUserListOpen)
 
   const panelRef = useRef<Nullable<HTMLDivElement>>(null)
-  const scrollRef = useRef<Nullable<HTMLDivElement>>(null)
 
   const dispatch = useDispatch()
   const openNotifications = useSearchParam('openNotifications')
-
-  const setSimpleBarRef = useCallback(el => {
-    el.recalculate()
-  }, [])
 
   const handleCloseNotificationModal = useCallback(() => {
     dispatch(setNotificationModal(false))
@@ -140,11 +134,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
             </div>
           ) : null}
           {hasLoaded && notifications.length > 0 ? (
-            <SimpleBar
-              className={styles.scrollContent}
-              ref={setSimpleBarRef}
-              scrollableNodeProps={{ id: simpleBarId, ref: scrollRef }}
-            >
+            <Scrollbar className={styles.scrollContent} id={scrollbarId}>
               <InfiniteScroll
                 pageStart={0}
                 loadMore={loadMore}
@@ -178,7 +168,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
                   ) : null}
                 </div>
               </InfiniteScroll>
-            </SimpleBar>
+            </Scrollbar>
           ) : null}
           {hasLoaded && notifications.length === 0 ? (
             <EmptyNotifications />

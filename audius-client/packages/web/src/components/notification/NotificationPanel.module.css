@@ -50,16 +50,10 @@
 }
 
 .scrollContent {
-  overflow-y: scroll;
   max-height: calc(100vh - 333px);
   background: var(--white);
   border-radius: 0px 0px 8px 8px;
 }
-
-.scrollContent::-webkit-scrollbar {
-  display: none;
-}
-
 /*
  * The simplebar doesn't do calculations correctly because it races
  * with the modal opening
