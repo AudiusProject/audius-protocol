@@ -1,13 +1,14 @@
 /* eslint-disable no-unused-expressions */
+const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
 const { expect } = chai
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
-
 const BullQueue = require('bull')
 
+const config = require('../src/config')
 const StateMonitoringQueue = require('../src/services/stateMachineManager/monitoring/StateMonitoringQueue')
 const {
   STATE_MONITORING_QUEUE_NAME
@@ -23,10 +24,13 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     await appInfo.app.get('redisClient').flushdb()
     server = appInfo.server
     sandbox = sinon.createSandbox()
+
+    config.set('spID', 1)
   })
 
   afterEach(async function () {
     await server.close()
+    nock.cleanAll()
     sandbox.restore()
   })
 
@@ -45,14 +49,26 @@ describe('test StateMonitoringQueue initialization and logging', function () {
   })
 
   it('kicks off an initial job when initting', async function () {
+    // Mock the latest userId, which is used during init as an upper bound
+    // to start the monitoring queue at a random user
+    nock(getLibsMock().discoveryProvider.discoveryProviderEndpoint)
+      .get('/latest/user')
+      .reply(200, { data: 0 })
+
     // Initialize StateMonitoringQueue
     const stateMonitoringQueue = new StateMonitoringQueue(nodeConfig)
     await stateMonitoringQueue.init(getLibsMock())
 
-    // Verify that the queue has an initial job in it
-    expect(
-      stateMonitoringQueue.queue.getJobs('delayed')
-    ).to.eventually.be.fulfilled.and.have.lengthOf(1)
+    // Verify that the queue has the correct initial job in it
+    return expect(stateMonitoringQueue.queue.getJobs('delayed'))
+      .to.eventually.be.fulfilled.and.have.nested.property('[0]')
+      .and.nested.include({
+        id: '1',
+        'data.discoveryNodeEndpoint':
+          getLibsMock().discoveryProvider.discoveryProviderEndpoint,
+        'data.prevJobFailed': false,
+        'data.lastProcessedUserId': 0
+      })
   })
 
   it('logs debug, info, warning, and error', function () {
