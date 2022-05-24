@@ -34,6 +34,8 @@ const fontSize = {
   xxxxxl: 64
 }
 
+export type FontSize = keyof typeof fontSize
+
 export const font = (weight: FontWeight): TextStyle => ({
   fontFamily: fontByWeight[weight]
 })
