@@ -1,13 +1,11 @@
 import concurrent.futures
 import logging  # pylint: disable=C0302
-import os
 from enum import Enum
 from functools import cmp_to_key
 
 import sqlalchemy
 from flask import Blueprint, request
 from src import api_helpers, exceptions
-from src.api.v1.search import extend_search
 from src.models import Follow, RepostType, Save, SaveType
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
@@ -35,7 +33,6 @@ from src.queries.search_config import (
     user_handle_exact_match_boost,
     user_name_weight,
 )
-from src.queries.search_es import search_es_full
 from src.queries.search_track_tags import search_track_tags
 from src.queries.search_user_tags import search_user_tags
 from src.utils.db_session import get_db_read_replica
@@ -265,14 +262,6 @@ def search(args):
     """Perform a search. `args` should contain `is_auto_complete`,
     `query`, `kind`, `current_user_id`, and `only_downloadable`
     """
-
-    if os.getenv("search_elasticsearch_enabled"):
-        try:
-            resp = search_es_full(args)
-            return resp
-        except Exception as e:
-            logger.error(f"Elasticsearch error: {e}")
-
     search_str = args.get("query")
 
     # when creating query table, we substitute this too
@@ -368,7 +357,7 @@ def search(args):
                         if user_id is not None:
                             user = users[user_id]
                             result["user"] = user
-    return extend_search(results)
+    return results
 
 
 def track_search_query(

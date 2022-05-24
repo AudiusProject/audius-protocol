@@ -77,7 +77,15 @@ class FullSearch(Resource):
             "offset": offset,
             "only_downloadable": False,
         }
+        if os.getenv("search_elasticsearch_enabled"):
+            try:
+                resp = search_es_full(search_args)
+                return success_response(resp)
+            except Exception as e:
+                logger.error(f"Elasticsearch error: {e}")
+
         resp = search(search_args)
+        resp = extend_search(resp)
         return success_response(resp)
 
 
@@ -116,5 +124,14 @@ class FullSearchAutocomplete(Resource):
             "offset": offset,
             "only_downloadable": False,
         }
+
+        if os.getenv("search_elasticsearch_enabled"):
+            try:
+                resp = search_es_full(search_args)
+                return success_response(resp)
+            except Exception as e:
+                logger.error(f"Elasticsearch error: {e}")
+
         resp = search(search_args)
+        resp = extend_search(resp)
         return success_response(resp)

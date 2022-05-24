@@ -185,7 +185,8 @@ class PlaylistSearchResult(Resource):
             "offset": 0,
         }
         response = search(search_args)
-        return success_response(response)
+        playlists = list(map(extend_playlist, response["playlists"]))
+        return success_response(playlists)
 
 
 top_parser = pagination_parser.copy()
