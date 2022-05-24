@@ -46,7 +46,9 @@ export type AppTabScreenParamList = {
   Following: { userId: ID }
   Search: undefined
   SearchResults: { query: string }
+  SupportingUsers: { userId: ID }
   TagSearch: { query: string }
+  TopSupporters: { userId: ID }
   NotificationUsers: {
     id: string // uuid
     notificationType: NotificationType

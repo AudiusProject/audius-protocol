@@ -9,16 +9,13 @@ const messages = {
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   followsYou: {
-    marginTop: -6,
     borderRadius: 4,
-    overflow: 'hidden',
     borderColor: palette.neutralLight4,
     borderWidth: 1,
     paddingVertical: spacing(1),
     paddingHorizontal: spacing(2)
   },
   followsYouText: {
-    textAlign: 'center',
     textTransform: 'uppercase'
   }
 }))

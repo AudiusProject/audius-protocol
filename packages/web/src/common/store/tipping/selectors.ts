@@ -6,9 +6,21 @@ export const getSupporters = (state: CommonState) => state.tipping.supporters
 export const getSupportersForUser = (state: CommonState, userId: ID) =>
   getSupporters(state)[userId]
 
+export const getSupporterForUser = (
+  state: CommonState,
+  userId: ID,
+  supporterId: ID
+) => getSupporters(state)?.[userId]?.[supporterId]
+
 export const getSupporting = (state: CommonState) => state.tipping.supporting
 export const getSupportingForUser = (state: CommonState, userId: ID) =>
   getSupporting(state)[userId]
+
+export const getSupportedUserByUser = (
+  state: CommonState,
+  userId: ID,
+  supportingId: ID
+) => getSupporting(state)?.[userId]?.[supportingId]
 
 export const getSendStatus = (state: CommonState) => state.tipping.send.status
 export const getSendAmount = (state: CommonState) => state.tipping.send.amount
