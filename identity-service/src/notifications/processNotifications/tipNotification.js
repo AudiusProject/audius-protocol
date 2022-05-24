@@ -30,7 +30,6 @@ async function processTipNotifications (notifications, tx) {
           metadata: {
             tipTxSignature,
             amount,
-            reactionValue: 0 // Initially, no reaction
           }
         },
         transaction: tx

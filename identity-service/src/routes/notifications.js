@@ -219,7 +219,8 @@ const formatTipReceive = (notification) => ({
   type: notification.type,
   amount: notification.metadata.amount,
   reactionValue: notification.metadata.reactionValue,
-  senderId: notification.entityId
+  senderId: notification.entityId,
+  tipTxSignature: notification.metadata.tipTxSignature
 })
 
 const formatSupportingRankUp = (notification) => ({
@@ -241,7 +242,8 @@ const formatReaction = (notification) => ({
   type: notification.type,
   reactingUser: notification.entityId,
   reactionType: notification.metadata.reactionType,
-  reactionValue: notification.metadata.reactionValue
+  reactionValue: notification.metadata.reactionValue,
+  reactedTo: notification.metadata.reactedTo
 })
 
 const getCommonNotificationsFields = (notification) => ({
