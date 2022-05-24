@@ -52,14 +52,6 @@ processors:
       fields: ["host", "service"]
   - add_docker_metadata:
       host: "unix:///var/run/docker.sock"
-  # - rename:
-  #     fields:
-  #       - from: "json.log.level"
-  #         to: "json.leveld"
-  #       - from: "json.msg"
-  #         to: "json.message"
-  #     ignore_missing: true
-  #     fail_on_error: true
 
 output.elasticsearch:
   hosts: '${ELASTIC_ENDPOINT}'
