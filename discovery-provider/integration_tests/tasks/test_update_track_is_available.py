@@ -2,7 +2,6 @@ import logging
 from unittest import mock
 
 from integration_tests.utils import populate_mock_db
-from more_itertools import side_effect
 from src.models import Track, User
 from src.tasks.update_track_is_available import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
@@ -13,7 +12,6 @@ from src.tasks.update_track_is_available import (
     get_unavailable_tracks_redis_key,
     query_replica_set_by_track_id,
     query_tracks_by_track_ids,
-    update_track_is_available,
     update_tracks_is_available_status,
 )
 from src.utils.db_session import get_db
