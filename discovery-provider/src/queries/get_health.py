@@ -200,10 +200,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         else default_healthy_block_diff
     )
 
-    latest_block_num = None
-    latest_block_hash = None
-    latest_indexed_block_num = None
-    latest_indexed_block_hash = None
+    latest_block_num: Optional[int] = None
+    latest_block_hash: Optional[str] = None
+    latest_indexed_block_num: Optional[int] = None
+    latest_indexed_block_hash: Optional[str] = None
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -216,9 +216,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if latest_indexed_block_num is not None:
             latest_indexed_block_num = int(latest_indexed_block_num)
 
-        latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
+        latest_indexed_block_hash_bytes = redis.get(
+            most_recent_indexed_block_hash_redis_key
+        )
         if latest_indexed_block_hash is not None:
-            latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
+            latest_indexed_block_hash = latest_indexed_block_hash_bytes.decode("utf-8")
     else:
         # Get latest blockchain state from web3
         try:
@@ -324,7 +326,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "infra_setup": infra_setup,
     }
 
-    if latest_block_num != None and latest_indexed_block_num != None:
+    if latest_block_num is not None and latest_indexed_block_num is not None:
         block_difference = abs(latest_block_num - latest_indexed_block_num)
     else:
         # If we cannot get a reading from chain about what the latest block is,
