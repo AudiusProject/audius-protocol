@@ -262,7 +262,7 @@ const config = convict({
     doc: 'If we should print logs from sequelize',
     format: Boolean,
     env: 'printSequelizeLogs',
-    default: true
+    default: false
   },
 
   // Transcoding settings

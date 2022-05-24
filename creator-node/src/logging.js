@@ -3,13 +3,32 @@ const shortid = require('shortid')
 
 const config = require('./config')
 
+// taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
+// since there is no official support for string-based "level" values
+// response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
+function RawStdOutWithLevelName() {
+  return {
+    write: (log) => {
+      // duplicate log object before sending to stdout
+      const clonedLog = Object.assign({}, log)
+
+      // add new level (string) to level key
+      clonedLog.logLevel = bunyan.nameFromLevel[clonedLog.level]
+
+      const logLine = JSON.stringify(clonedLog, bunyan.safeCycles()) + '\n'
+      process.stdout.write(logLine)
+    }
+  }
+}
+
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
   streams: [
     {
       level: logLevel,
-      stream: process.stdout
+      stream: new RawStdOutWithLevelName(),
+      type: 'raw'
     }
   ]
 })
