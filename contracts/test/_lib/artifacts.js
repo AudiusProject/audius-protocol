@@ -31,3 +31,7 @@ export const TestStorage = artifacts.require('./contract/storage/test/TestStorag
 export const TestContract = artifacts.require('./contract/test/TestContract')
 export const TestContractWithStorage = artifacts.require('./contract/test/TestContractWithStorage')
 export const TestUserReplicaSetManager = artifacts.require('./contract/test/TestUserReplicaSetManager')
+
+export const ProofOfAudiusConsensus = artifacts.require('./contract/ProofOfAudiusConsensus')
+
+export const TestProofOfAudiusConsensus = artifacts.require('./contract/test/TestProofOfAudiusConsensus')
