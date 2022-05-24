@@ -12,11 +12,8 @@ function RawStdOutWithLevelName() {
       // duplicate log object before sending to stdout
       const clonedLog = Object.assign({}, log)
 
-      // rename level (int) to levelno key
-      clonedLog.levelno = clonedLog.level
-
       // add new level (string) to level key
-      clonedLog.level = bunyan.nameFromLevel[clonedLog.levelno]
+      clonedLog.logLevel = bunyan.nameFromLevel[clonedLog.level]
 
       const logLine = JSON.stringify(clonedLog, bunyan.safeCycles()) + '\n'
       process.stdout.write(logLine)
