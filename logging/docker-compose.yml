@@ -29,15 +29,3 @@ services:
       - ELASTIC_PASS=${ELASTIC_PASS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-
-  logspout:
-    image: gliderlabs/logspout:v3.2.14
-    container_name: logspout
-    environment:
-      - SYSLOG_STRUCTURED_DATA=${LOGGLY_TOKEN}@41058 tag="logspout"
-      - BACKLOG=false
-    command: multiline+syslog+tcp://logs-01.loggly.com:514
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-s
