@@ -1,4 +1,5 @@
 const config = require('./config')
+const { logger } = require('../logging')
 
 const {
   requestNotExcludedFromLogging,
@@ -19,7 +20,7 @@ module.exports.handleResponse = (func) => {
       sendResponse(req, res, resp)
       next()
     } catch (error) {
-      console.error('HandleResponse', error)
+      logger.error('HandleResponse', error)
       next(error)
     }
   }

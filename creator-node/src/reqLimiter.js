@@ -1,6 +1,7 @@
 const express = require('express')
 const rateLimit = require('express-rate-limit')
 const config = require('./config.js')
+const { logger } = require('../logging')
 const RedisStore = require('rate-limit-redis')
 const client = require('./redis.js')
 const { verifyRequesterIsValidSP } = require('./apiSigning.js')
@@ -9,7 +10,7 @@ let endpointRateLimits = {}
 try {
   endpointRateLimits = JSON.parse(config.get('endpointRateLimits'))
 } catch (e) {
-  console.error('Failed to parse endpointRateLimits!')
+  logger.error('Failed to parse endpointRateLimits!')
 }
 
 // Key generator for rate limiter that rate limits based on unique IP

@@ -7,7 +7,7 @@ const stream = require('stream')
 const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
-const { logger: genericLogger } = require('./logging.js')
+const { logger } = require('./logging')
 
 const models = require('./models')
 const redis = require('./redis')
@@ -24,7 +24,7 @@ class Utils {
 
   static async timeout(ms, log = true) {
     if (log) {
-      console.log(`starting timeout of ${ms}`)
+      logger.info(`starting timeout of ${ms}`)
     }
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
@@ -370,7 +370,7 @@ function currentNodeShouldHandleTranscode({
 function asyncRetry({
   asyncFn,
   options = {},
-  logger = genericLogger,
+  logger = logger.genericLogger,
   log = true,
   logLabel = null
 }) {

@@ -719,12 +719,12 @@ class BlacklistManager {
       }
     })
     stream.on('end', function () {
-      console.log(
+      logger.info(
         `Done deleting ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries`
       )
     })
     stream.on('error', function (e) {
-      console.error(
+      logger.error(
         `Could not delete ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries: ${e.toString()}`
       )
     })

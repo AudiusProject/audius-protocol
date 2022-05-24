@@ -133,7 +133,7 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
     req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
-    console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
 }
 
