@@ -1,4 +1,10 @@
-import React, { FormEvent, useEffect, useMemo, useState } from 'react'
+import React, {
+  FormEvent,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState
+} from 'react'
 
 import {
   Button,
@@ -71,6 +77,12 @@ const CTAButton = ({
 }
 
 export const OAuthLoginPage = () => {
+  useLayoutEffect(() => {
+    document.body.classList.add(styles.bgWhite)
+    return () => {
+      document.body.classList.remove(styles.bgWhite)
+    }
+  }, [])
   const { search } = useLocation()
   const history = useHistory()
   const { scope, state, redirect_uri, app_name } = queryString.parse(search)
