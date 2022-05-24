@@ -19,6 +19,10 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconRewards } from './components/icons'
 
 const messages = {
+  amountEarned: (amount: number) => `You've earned ${amount} $AUDIO`,
+  referredText:
+    ' for being referred! Invite your friends to join to earn more!',
+  challengeCompleteText: 'for completing this challenge!',
   body: (amount: number) =>
     `You've earned ${amount} $AUDIO for completing this challenge!`,
   twitterShareText:
@@ -57,7 +61,12 @@ export const ChallengeRewardNotification = (
       <NotificationHeader icon={<IconRewards>{icon}</IconRewards>}>
         <NotificationTitle>{title}</NotificationTitle>
       </NotificationHeader>
-      <NotificationBody>{messages.body(rewardAmount)}</NotificationBody>
+      <NotificationBody>
+        {messages.amountEarned(rewardAmount)}
+        {challengeId === 'referred'
+          ? messages.referredText
+          : messages.challengeCompleteText}
+      </NotificationBody>
       <TwitterShareButton onClick={handleShare} />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

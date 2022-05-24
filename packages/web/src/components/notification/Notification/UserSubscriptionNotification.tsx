@@ -35,15 +35,14 @@ export const UserSubscriptionNotification = (
 ) => {
   const { notification } = props
   const { user, entities, entityType, timeLabel, isViewed, type } = notification
+  const uploadCount = entities.length
+  const isSingleUpload = uploadCount === 1
+
   const dispatch = useDispatch()
   const record = useRecord()
 
-  const entitiesCount = entities.length
-
-  const singleEntity = entitiesCount === 1
-
   const handleClick = useCallback(() => {
-    if (entityType === Entity.Track && !singleEntity) {
+    if (entityType === Entity.Track && !isSingleUpload) {
       dispatch(push(profilePage(user.handle)))
     } else {
       const entityLink = getEntityLink(entities[0])
@@ -52,7 +51,7 @@ export const UserSubscriptionNotification = (
         make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: entityLink })
       )
     }
-  }, [entityType, singleEntity, user, entities, dispatch, record, type])
+  }, [entityType, isSingleUpload, user, entities, dispatch, record, type])
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -64,10 +63,10 @@ export const UserSubscriptionNotification = (
           <ProfilePicture className={styles.profilePicture} user={user} />
           <span>
             <UserNameLink user={user} notification={notification} />{' '}
-            {messages.posted} {singleEntity ? 'a' : entitiesCount}{' '}
+            {messages.posted} {isSingleUpload ? 'a' : uploadCount}{' '}
             {messages.new} {entityType.toLowerCase()}
-            {singleEntity ? '' : 's'}{' '}
-            {singleEntity ? (
+            {isSingleUpload ? '' : 's'}{' '}
+            {isSingleUpload ? (
               <EntityLink entity={entities[0]} entityType={entityType} />
             ) : null}
           </span>

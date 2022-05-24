@@ -3,7 +3,8 @@ import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ typography }) => ({
   root: {
-    fontSize: typography.fontSize.large
+    fontSize: typography.fontSize.large,
+    lineHeight: 27
   }
 }))
 

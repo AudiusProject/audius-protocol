@@ -16,7 +16,8 @@ import {
   Notification,
   NotificationType,
   Achievement,
-  Announcement
+  Announcement,
+  EntityType
 } from './types'
 
 const getBaseState = (state: CommonState) => state.pages.notifications
@@ -155,7 +156,7 @@ export const getNotificationEntities = (
         }
         return null
       })
-      .filter(Boolean)
+      .filter((entity): entity is EntityType => !!entity)
     return entities
   }
   return null

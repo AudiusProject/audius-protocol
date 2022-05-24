@@ -46,7 +46,7 @@ const useStyles = makeStyles(
 
 type NotificationTileProps = {
   children: ReactNode
-  onPress: () => void
+  onPress?: () => void
   notification: Notification
 }
 
@@ -63,7 +63,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
       {children}
       <View style={styles.footer}>
         <Text style={styles.timestamp}>{timeLabel}</Text>
-        {isViewed ? null : (
+        {!isViewed ? null : (
           <View style={styles.newPill}>
             <Text style={styles.newPillText}>{messages.new}</Text>
           </View>
