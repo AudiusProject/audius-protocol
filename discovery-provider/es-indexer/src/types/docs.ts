@@ -8,15 +8,26 @@ import {
 } from './db'
 
 export type PlaylistDoc = PlaylistRow & {
+  suggest: string
   tracks: TrackDoc[]
   save_count: number
   saved_by: number[]
   repost_count: number
   reposted_by: number[]
   total_play_count: number
+
+  user: {
+    handle: string
+    name: string
+    location: string
+    follower_count: number
+    created_at: Date
+    updated_at: Date
+  }
 }
 
 export type UserDoc = UserRow & {
+  suggest: string
   tracks: TrackRow[]
   track_count: number
   following_ids: number[]
@@ -24,6 +35,7 @@ export type UserDoc = UserRow & {
 }
 
 export type TrackDoc = TrackRow & {
+  suggest: string
   reposted_by: number[]
   saved_by: number[]
   routes: string[]

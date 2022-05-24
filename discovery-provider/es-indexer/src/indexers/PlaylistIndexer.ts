@@ -30,15 +30,36 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         is_album: { type: 'boolean' },
         is_private: { type: 'boolean' },
         is_delete: { type: 'boolean' },
+        suggest: { type: 'search_as_you_type' },
         playlist_name: {
           type: 'keyword',
           fields: {
-            suggest: {
-              type: 'search_as_you_type',
-            },
+            searchable: { type: 'text' },
           },
         },
         'playlist_contents.track_ids.track': { type: 'keyword' },
+
+        user: {
+          properties: {
+            handle: {
+              type: 'keyword',
+              fields: {
+                searchable: { type: 'text' },
+              },
+            },
+            name: {
+              type: 'keyword',
+              fields: {
+                searchable: { type: 'text' },
+              },
+            },
+            location: { type: 'keyword' },
+            follower_count: { type: 'integer' },
+            is_verified: { type: 'boolean' },
+            created_at: { type: 'date' },
+            updated_at: { type: 'date' },
+          },
+        },
 
         // saves
         saved_by: { type: 'keyword' },
@@ -65,7 +86,17 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
     return `
       -- etl playlists
       select 
-        *,
+        playlists.*,
+
+        json_build_object(
+          'handle', users.handle,
+          'name', users.name,
+          'location', users.location,
+          'follower_count', follower_count,
+          'is_verified', users.is_verified,
+          'created_at', users.created_at,
+          'updated_at', users.updated_at
+        ) as user,
 
         array(
           select user_id 
@@ -90,7 +121,11 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         ) as saved_by
 
       from playlists 
-      where is_current = true
+      join users on playlist_owner_id = user_id
+      left join aggregate_user on users.user_id = aggregate_user.user_id
+      where 
+        playlists.is_current
+        AND users.is_current
     `
   }
 
@@ -139,6 +174,9 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
   }
 
   withRow(row: PlaylistDoc) {
+    row.suggest = [row.playlist_name, row.user.handle, row.user.name]
+      .filter((x) => x)
+      .join(' ')
     row.repost_count = row.reposted_by.length
     row.save_count = row.saved_by.length
   }

@@ -26,19 +26,20 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         blocknumber: { type: 'integer' },
         created_at: { type: 'date' },
         wallet: { type: 'keyword' },
+        suggest: { type: 'search_as_you_type' },
         handle: {
           type: 'keyword',
           fields: {
-            suggest: {
-              type: 'search_as_you_type',
+            searchable: {
+              type: 'text',
             },
           },
         },
         name: {
           type: 'keyword',
           fields: {
-            suggest: {
-              type: 'search_as_you_type',
+            searchable: {
+              type: 'text',
             },
           },
         },
@@ -126,6 +127,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
   }
 
   withRow(row: UserDoc) {
+    row.suggest = [row.handle, row.name].filter((x) => x).join(' ')
     row.following_count = row.following_ids.length
   }
 

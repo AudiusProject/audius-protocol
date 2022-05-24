@@ -54,8 +54,15 @@ def search_es_full(args: dict):
         # ]
 
     multi_match_type = "best_fields"
+    fields = ["suggest"]
     if is_auto_complete:
         multi_match_type = "bool_prefix"
+        fields = [
+            "suggest",
+            "suggest._2gram",
+            "suggest._3gram",
+            # "suggest._index_prefix",
+        ]
 
     base_tracks_query: Dict = {
         "size": limit,
@@ -68,18 +75,7 @@ def search_es_full(args: dict):
                             {
                                 "multi_match": {
                                     "query": search_str,
-                                    "fields": [
-                                        "title.suggest^5",
-                                        "title.suggest._2gram",
-                                        "title.suggest._3gram",
-                                        "title.suggest._index_prefix",
-                                        "user.name.suggest^2",
-                                        "user.name.suggest._2gram",
-                                        "user.name.suggest._3gram",
-                                        "user.handle.suggest",
-                                        "user.handle.suggest._2gram",
-                                        "user.handle.suggest._3gram",
-                                    ],
+                                    "fields": fields,
                                     "type": multi_match_type,
                                 }
                             },
@@ -90,7 +86,7 @@ def search_es_full(args: dict):
                 },
                 "field_value_factor": {
                     "field": "repost_count",
-                    "factor": 1.2,
+                    "factor": 1.1,
                     "modifier": "log1p",
                 },
             }
@@ -110,14 +106,7 @@ def search_es_full(args: dict):
                             {
                                 "multi_match": {
                                     "query": search_str,
-                                    "fields": [
-                                        "name.suggest",
-                                        "name.suggest._2gram",
-                                        "name.suggest._3gram",
-                                        "handle.suggest",
-                                        "handle.suggest._2gram",
-                                        "handle.suggest._3gram",
-                                    ],
+                                    "fields": fields,
                                     "type": multi_match_type,
                                 }
                             },
@@ -148,12 +137,7 @@ def search_es_full(args: dict):
                             {
                                 "multi_match": {
                                     "query": search_str,
-                                    "fields": [
-                                        "playlist_name.suggest",
-                                        "playlist_name.suggest._2gram",
-                                        "playlist_name.suggest._3gram",
-                                        "description",
-                                    ],
+                                    "fields": fields,
                                     "type": multi_match_type,
                                 }
                             },
@@ -183,12 +167,7 @@ def search_es_full(args: dict):
                             {
                                 "multi_match": {
                                     "query": search_str,
-                                    "fields": [
-                                        "playlist_name.suggest",
-                                        "playlist_name.suggest._2gram",
-                                        "playlist_name.suggest._3gram",
-                                        "description",
-                                    ],
+                                    "fields": fields,
                                     "type": multi_match_type,
                                 }
                             },
@@ -440,7 +419,7 @@ if __name__ == "__main__":
 
     _print_test_search(
         {
-            "query": "isaac took that pho",
+            "query": "isaac pho",
             "limit": 4,
             "current_user_id": 1,
             "is_auto_complete": True,
@@ -448,7 +427,7 @@ if __name__ == "__main__":
     )
     _print_test_search(
         {
-            "query": "isaac solo took that pho",
+            "query": "isaac photo",
             "limit": 4,
             "current_user_id": 1,
             "is_auto_complete": False,

@@ -48,8 +48,8 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         title: {
           type: 'keyword',
           fields: {
-            suggest: {
-              type: 'search_as_you_type',
+            searchable: {
+              type: 'text',
             },
           },
         },
@@ -72,21 +72,23 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
 
+        suggest: { type: 'search_as_you_type' },
+
         user: {
           properties: {
             handle: {
               type: 'keyword',
               fields: {
-                suggest: {
-                  type: 'search_as_you_type',
+                searchable: {
+                  type: 'text',
                 },
               },
             },
             name: {
               type: 'keyword',
               fields: {
-                suggest: {
-                  type: 'search_as_you_type',
+                searchable: {
+                  type: 'text',
                 },
               },
             },
@@ -182,6 +184,9 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
   }
 
   withRow(row: TrackDoc) {
+    row.suggest = [row.title, row.user.handle, row.user.name]
+      .filter((x) => x)
+      .join(' ')
     row.tags = row.tags
     row.repost_count = row.reposted_by.length
     row.favorite_count = row.saved_by.length
