@@ -7,7 +7,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { getModalVisibility } from 'common/store/ui/modals/slice'
 import NowPlayingDrawer from 'components/now-playing/NowPlayingDrawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
-import { getUid as getPlayingUid } from 'store/player/selectors'
+import { getCollectible, getUid as getPlayingUid } from 'store/player/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
@@ -25,6 +25,7 @@ type PlayBarProviderProps = OwnProps &
 const PlayBarProvider = ({
   isMobile,
   playingUid,
+  collectible,
   keyboardVisible,
   addToPlaylistOpen
 }: PlayBarProviderProps) => {
@@ -36,7 +37,7 @@ const PlayBarProvider = ({
     >
       {isMobile ? (
         <NowPlayingDrawer
-          isPlaying={!!playingUid}
+          isPlaying={!!playingUid || !!collectible}
           keyboardVisible={keyboardVisible}
           shouldClose={addToPlaylistOpen === true}
         />
@@ -53,6 +54,7 @@ const PlayBarProvider = ({
 function mapStateToProps(state: AppState) {
   return {
     playingUid: getPlayingUid(state),
+    collectible: getCollectible(state),
     isMobile: isMobile(),
     keyboardVisible: getKeyboardVisibility(state),
     addToPlaylistOpen: getModalVisibility(state, 'AddToPlaylist')

@@ -1,11 +1,11 @@
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { Name } from 'common/models/Analytics'
+import { FavoriteSource, Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import {
   PlaylistLibrary as PlaylistLibraryType,
@@ -14,6 +14,7 @@ import {
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { FeatureFlags } from 'common/services/remote-config'
 import {
+  getAccountCollectibles,
   getAccountNavigationPlaylists,
   getAccountUser,
   getPlaylistLibrary
@@ -28,17 +29,21 @@ import {
   isInsideFolder,
   reorderPlaylistLibrary
 } from 'common/store/playlist-library/helpers'
+import { saveSmartCollection } from 'common/store/social/collections/actions'
 import Droppable from 'components/dragndrop/Droppable'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { SMART_COLLECTION_MAP } from 'pages/smart-collection/smartCollections'
+import {
+  AUDIO_NFT_PLAYLIST,
+  SMART_COLLECTION_MAP
+} from 'pages/smart-collection/smartCollections'
 import { make, useRecord } from 'store/analytics/actions'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { update } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
-import { getPathname, playlistPage } from 'utils/route'
+import { audioNftPlaylistPage, getPathname, playlistPage } from 'utils/route'
 
 import navColumnStyles from './NavColumn.module.css'
 import { PlaylistFolderNavItem } from './PlaylistFolderNavItem'
@@ -53,7 +58,7 @@ type LibraryContentsLevelProps = {
   level?: number
   contents: PlaylistLibraryType['contents']
   renderPlaylist: (playlistId: number, level: number) => void
-  renderExplorePlaylist: (
+  renderCollectionPlaylist: (
     playlistId: SmartCollectionVariant,
     level: number
   ) => void
@@ -71,7 +76,7 @@ const LibraryContentsLevel = ({
   level = 0,
   contents,
   renderPlaylist,
-  renderExplorePlaylist,
+  renderCollectionPlaylist,
   renderFolder
 }: LibraryContentsLevelProps) => {
   return (
@@ -79,7 +84,7 @@ const LibraryContentsLevel = ({
       {contents.map(content => {
         switch (content.type) {
           case 'explore_playlist': {
-            return renderExplorePlaylist(content.playlist_id, level)
+            return renderCollectionPlaylist(content.playlist_id, level)
           }
           case 'playlist': {
             return renderPlaylist(content.playlist_id, level)
@@ -113,6 +118,35 @@ const PlaylistLibrary = ({
   const { toast } = useContext(ToastContext)
   const record = useRecord()
   const [, setIsEditFolderModalOpen] = useModalState('EditFolder')
+
+  const accountCollectibles = useSelector(getAccountCollectibles)
+  const audioCollectibles = useMemo(
+    () =>
+      accountCollectibles?.filter(c =>
+        ['mp3', 'wav', 'oga', 'mp4'].some(
+          ext => c.hasAudio || c.animationUrl?.endsWith(ext)
+        )
+      ),
+    [accountCollectibles]
+  )
+
+  // Set audio nft playlist in library if it is not already set
+  useEffect(() => {
+    if (library) {
+      const isAudioNftPlaylistInLibrary = !!findInPlaylistLibrary(
+        library,
+        SmartCollectionVariant.AUDIO_NFT_PLAYLIST
+      )
+      if (audioCollectibles.length && !isAudioNftPlaylistInLibrary) {
+        dispatch(
+          saveSmartCollection(
+            AUDIO_NFT_PLAYLIST.playlist_name,
+            FavoriteSource.IMPLICIT
+          )
+        )
+      }
+    }
+  }, [audioCollectibles, library, dispatch])
 
   const handleClickEditFolder = useCallback(
     folderId => {
@@ -197,14 +231,21 @@ const PlaylistLibrary = ({
     [dispatch, library, record]
   )
 
-  const renderExplorePlaylist = (
+  const renderCollectionPlaylist = (
     playlistId: SmartCollectionVariant,
     level = 0
   ) => {
+    const isAudioNftPlaylist =
+      playlistId === SmartCollectionVariant.AUDIO_NFT_PLAYLIST
+    if (isAudioNftPlaylist && !audioCollectibles.length) return null
     const playlist = SMART_COLLECTION_MAP[playlistId]
     if (!playlist) return null
+
     const name = playlist.playlist_name
-    const url = playlist.link
+    const url = isAudioNftPlaylist
+      ? audioNftPlaylistPage(account?.handle ?? '')
+      : playlist.link
+
     return (
       <PlaylistNavLink
         isInsideFolder={level > 0}
@@ -307,7 +348,7 @@ const PlaylistLibrary = ({
               level={level + 1}
               contents={folder.contents}
               renderPlaylist={renderPlaylist}
-              renderExplorePlaylist={renderExplorePlaylist}
+              renderCollectionPlaylist={renderCollectionPlaylist}
               renderFolder={renderFolder}
             />
           </div>
@@ -341,7 +382,7 @@ const PlaylistLibrary = ({
         <LibraryContentsLevel
           contents={library.contents || []}
           renderPlaylist={renderPlaylist}
-          renderExplorePlaylist={renderExplorePlaylist}
+          renderCollectionPlaylist={renderCollectionPlaylist}
           renderFolder={renderFolder}
         />
       ) : null}

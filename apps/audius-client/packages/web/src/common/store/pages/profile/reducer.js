@@ -53,6 +53,8 @@ const initialState = {
 
 const actionsMap = {
   [FETCH_PROFILE](state, action) {
+    if (action.fetchOnly) return state
+
     const newState = {
       ...state,
       status: action.shouldSetLoading ? Status.LOADING : state.status
@@ -66,6 +68,8 @@ const actionsMap = {
     return newState
   },
   [FETCH_PROFILE_SUCCEEDED](state, action) {
+    if (action.fetchOnly) return state
+
     return {
       ...state,
       status: Status.SUCCESS,

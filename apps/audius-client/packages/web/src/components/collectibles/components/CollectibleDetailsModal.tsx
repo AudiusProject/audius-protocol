@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -19,7 +20,6 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { useRouteMatch } from 'react-router'
 
 import { ReactComponent as IconEmbed } from 'assets/img/iconEmbed.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
@@ -29,7 +29,10 @@ import { useSelectTierInfo } from 'common/hooks/wallet'
 import { Chain } from 'common/models/Chain'
 import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
 import { getAccountUser } from 'common/store/account/selectors'
-import { getCollectible } from 'common/store/ui/collectible-details/selectors'
+import {
+  getCollectibleDetails,
+  getCollectible
+} from 'common/store/ui/collectible-details/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import { badgeTiers } from 'common/store/wallet/utils'
 import { formatDateWithTimezoneOffset } from 'common/utils/timeUtil'
@@ -40,7 +43,8 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useScript } from 'hooks/useScript'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
-import { copyToClipboard } from 'utils/clipboardUtil'
+import { useIsMobile } from 'utils/clientUtil'
+import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { getScrollParent } from 'utils/scrollParent'
 import zIndex from 'utils/zIndex'
 
@@ -153,6 +157,7 @@ const CollectibleMedia: React.FC<{
 
 const CollectibleDetailsModal = ({
   isMobile,
+  handle,
   onSave,
   updateProfilePicture,
   isUserOnTheirProfile,
@@ -161,6 +166,7 @@ const CollectibleDetailsModal = ({
   onClose
 }: {
   isMobile: boolean
+  handle: string | null
   onSave?: () => void
   updateProfilePicture?: (
     selectedFiles: any,
@@ -168,10 +174,9 @@ const CollectibleDetailsModal = ({
   ) => void
   isUserOnTheirProfile: boolean
   shareUrl: string
-  setIsEmbedModalOpen: (val: boolean) => void
-  onClose: () => void
+  setIsEmbedModalOpen?: (val: boolean) => void
+  onClose?: () => void
 }) => {
-  const match = useRouteMatch()
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
   const [isModalOpen, setIsModalOpen] = useModalState('CollectibleDetails')
@@ -192,13 +197,15 @@ const CollectibleDetailsModal = ({
   const handleClose = useCallback(() => {
     dispatch(setCollectible({ collectible: null }))
     setIsModalOpen(false)
-    // Ignore needed bc typescript doesn't think that match.params has handle property
-    // @ts-ignore
-    const url = `/${match.params.handle}/collectibles`
-    // Push window state as to not trigger router change & component remount
-    window.history.pushState('', '', url)
-    onClose()
-  }, [match.params, dispatch, setIsModalOpen, onClose])
+    if (onClose) {
+      // Ignore needed bc typescript doesn't think that match.params has handle property
+      // @ts-ignore
+      const url = `/${handle}/collectibles`
+      // Push window state as to not trigger router change & component remount
+      window.history.pushState('', '', url)
+      onClose?.()
+    }
+  }, [dispatch, setIsModalOpen, onClose, handle])
 
   const toggleMute = useCallback(() => {
     setIsMuted(!isMuted)
@@ -340,7 +347,7 @@ const CollectibleDetailsModal = ({
                 className={styles.detailsButton}
                 textClassName={styles.detailsButtonText}
                 iconClassName={styles.detailsButtonIcon}
-                onClick={() => setIsEmbedModalOpen(true)}
+                onClick={() => setIsEmbedModalOpen?.(true)}
                 text='Embed'
                 type={ButtonType.COMMON_ALT}
                 size={ButtonSize.SMALL}
@@ -502,4 +509,38 @@ const CollectibleDetailsModal = ({
   )
 }
 
-export default CollectibleDetailsModal
+const ConnectedCollectibleDetailsModal = () => {
+  const isMobile = useIsMobile()
+  const {
+    ownerHandle,
+    embedCollectibleHash,
+    isUserOnTheirProfile,
+    updateProfilePicture,
+    onSave,
+    setIsEmbedModalOpen,
+    onClose
+  } = useSelector(getCollectibleDetails)
+
+  const shareUrl = useMemo(() => {
+    return getCopyableLink(
+      `/${ownerHandle}/collectibles${
+        embedCollectibleHash ? `/${embedCollectibleHash}` : ''
+      }`
+    )
+  }, [ownerHandle, embedCollectibleHash])
+
+  return (
+    <CollectibleDetailsModal
+      isMobile={isMobile}
+      handle={ownerHandle}
+      isUserOnTheirProfile={isUserOnTheirProfile}
+      updateProfilePicture={updateProfilePicture}
+      onSave={onSave}
+      shareUrl={shareUrl}
+      setIsEmbedModalOpen={setIsEmbedModalOpen}
+      onClose={onClose}
+    />
+  )
+}
+
+export default ConnectedCollectibleDetailsModal

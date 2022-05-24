@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { Collectible } from 'audius-client/src/common/models/Collectible'
 import { ID } from 'audius-client/src/common/models/Identifiers'
+import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { setCollectible } from 'audius-client/src/common/store/ui/collectible-details/slice'
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { ImageBackground, StyleProp, Text, View, ViewStyle } from 'react-native'
@@ -9,6 +10,7 @@ import { ImageBackground, StyleProp, Text, View, ViewStyle } from 'react-native'
 import IconPlay from 'app/assets/images/pbIconPlay.svg'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 const messages = {
@@ -76,11 +78,18 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
   const { name, frameUrl, isOwned, mediaType, gifUrl } = collectible
   const styles = useStyles({ isOwned })
   const dispatchWeb = useDispatchWeb()
+  const accountId = useSelectorWeb(getUserId)
 
   const handlePress = useCallback(() => {
-    dispatchWeb(setCollectible({ collectible, ownerId }))
+    dispatchWeb(
+      setCollectible({
+        collectible,
+        ownerId,
+        isUserOnTheirProfile: accountId === ownerId
+      })
+    )
     dispatchWeb(setVisibility({ modal: 'CollectibleDetails', visible: true }))
-  }, [dispatchWeb, collectible, ownerId])
+  }, [dispatchWeb, collectible, accountId, ownerId])
 
   const url = frameUrl ?? gifUrl
 

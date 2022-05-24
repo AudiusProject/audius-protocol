@@ -24,6 +24,8 @@ export type Collectible = {
   gifUrl: Nullable<string>
   videoUrl: Nullable<string>
   threeDUrl: Nullable<string>
+  animationUrl: Nullable<string>
+  hasAudio: boolean
   isOwned: boolean
   dateCreated: Nullable<string>
   dateLastTransferred: Nullable<string>
@@ -32,4 +34,5 @@ export type Collectible = {
   assetContractAddress: Nullable<string>
   chain: Chain
   wallet: string
+  duration?: number
 }

@@ -101,6 +101,7 @@ const CollectionHeader = ({
   onClickMobileOverflow,
   variant,
   gradient,
+  imageOverride,
   icon: Icon
 }) => {
   const onSaveCollection = () => {
@@ -154,7 +155,7 @@ const CollectionHeader = ({
       label: 'Tracks',
       value: formatCount(numTracks)
     },
-    {
+    duration && {
       label: 'Duration',
       value: formatSecondsAsText(duration)
     },
@@ -208,7 +209,7 @@ const CollectionHeader = ({
         <>
           <DynamicImage
             wrapperClassName={styles.coverArt}
-            image={gradient || image}
+            image={gradient || imageOverride || image}
           >
             {Icon && (
               <Icon
@@ -241,9 +242,11 @@ const CollectionHeader = ({
               isPublishing={isPublishing}
               onRepost={onRepost}
               onClickOverflow={onClickOverflow}
-              showFavorite
+              showFavorite={!!onSave}
               showRepost={variant !== Variant.SMART}
-              showShare={variant !== Variant.SMART}
+              showShare={
+                variant !== Variant.SMART || type === 'Audio NFT Playlist'
+              }
               showOverflow={variant !== Variant.SMART}
               darkMode={isDarkMode()}
             />
@@ -259,7 +262,11 @@ const CollectionHeader = ({
               onClickReposts={onClickReposts}
             />
           )}
-          <div className={cn(styles.infoSection)}>
+          <div
+            className={cn(styles.infoSection, {
+              [styles.noStats]: !isPublished || variant === Variant.SMART
+            })}
+          >
             {renderCollectionLabels()}
           </div>
           {description ? (

@@ -23,6 +23,7 @@ type ActionsBarProps = {
   hasReposted: boolean
   hasFavorited: boolean
   isCasting: boolean
+  isCollectible: boolean
   isOwner: boolean
   castMethod: CastMethod
   onToggleRepost: () => void
@@ -38,6 +39,7 @@ const ActionsBar = ({
   hasReposted,
   hasFavorited,
   isCasting,
+  isCollectible = false,
   isOwner,
   onToggleRepost,
   onToggleFavorite,
@@ -70,7 +72,7 @@ const ActionsBar = ({
         isDarkMode={isDarkMode}
         isMatrixMode={isMatrixMode}
         isActive={hasReposted}
-        isDisabled={isOwner}
+        isDisabled={isOwner || isCollectible}
         onClick={onToggleRepost}
         wrapperClassName={styles.icon}
         className={styles.repostButton}
@@ -78,7 +80,7 @@ const ActionsBar = ({
       />
       <FavoriteButton
         isActive={hasFavorited}
-        isDisabled={isOwner}
+        isDisabled={isOwner || isCollectible}
         isDarkMode={isDarkMode}
         isMatrixMode={isMatrixMode}
         onClick={onToggleFavorite}
@@ -88,6 +90,7 @@ const ActionsBar = ({
       />
       <IconButton
         aria-label='share'
+        disabled={isCollectible}
         icon={<IconShare />}
         onClick={onShare}
         className={styles.icon}
