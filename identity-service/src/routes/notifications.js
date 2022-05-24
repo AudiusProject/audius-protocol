@@ -442,7 +442,6 @@ module.exports = function (app) {
         }],
         limit
       })
-      console.log({ solanaNotifications, userId, timeOffset })
 
       let unViewedCount = await models.Notification.findAll({
         where: {
@@ -468,7 +467,6 @@ module.exports = function (app) {
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
         group: ['SolanaNotification.id']
       })
-      console.log({ unViewedSolanaCount })
 
       unViewedCount = unViewedCount.length + unViewedSolanaCount.length
 

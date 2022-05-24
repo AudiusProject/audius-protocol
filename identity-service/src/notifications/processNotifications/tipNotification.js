@@ -29,7 +29,7 @@ async function processTipNotifications (notifications, tx) {
           entityId: senderId,
           metadata: {
             tipTxSignature,
-            amount,
+            amount
           }
         },
         transaction: tx
