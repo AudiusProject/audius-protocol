@@ -1,5 +1,5 @@
 const config = require('./config.js')
-const { logger } = require('../logging')
+const { logger } = require('./logging')
 const Redis = require('ioredis')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
