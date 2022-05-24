@@ -5,10 +5,13 @@ from integration_tests.utils import populate_mock_db
 from src.models import Track, User
 from src.tasks.update_track_is_available import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
+    _get_redis_set_members_as_list,
     check_track_is_available,
     fetch_unavailable_track_ids,
+    fetch_unavailable_track_ids_in_network,
     get_unavailable_tracks_redis_key,
     query_replica_set_by_track_id,
+    query_tracks_by_track_ids,
     update_tracks_is_available_status,
 )
 from src.utils.db_session import get_db
@@ -64,11 +67,37 @@ def test_fetch_unavailable_track_ids_in_network(
         },
     ]
 
-    # TODO: figure out how to make it so that diff calls = diff returns
-    mock_fetch_unavailable_track_ids.return_value = [1, 2, 3, 4, 5, 6, 7]
+    spID_1_unavailable_tracks = [1, 2, 3, 4]
+    spID_2_unavailable_tracks = [4, 5, 6, 7]
+    mock_fetch_unavailable_track_ids.side_effect = [
+        spID_1_unavailable_tracks,
+        spID_2_unavailable_tracks,
+    ]
 
-    # Check that redis adds ids as expected
-    pass
+    with app.app_context():
+        redis = get_redis()
+
+    fetch_unavailable_track_ids_in_network(redis)
+
+    # Check that redis adds track ids as expected
+
+    spID_1_unavailable_tracks_redis = set(
+        _get_redis_set_members_as_list(redis, get_unavailable_tracks_redis_key(1))
+    )
+    for id in spID_1_unavailable_tracks:
+        assert id in spID_1_unavailable_tracks_redis
+
+    spID_2_unavailable_tracks_redis = set(
+        _get_redis_set_members_as_list(redis, get_unavailable_tracks_redis_key(2))
+    )
+    for id in spID_2_unavailable_tracks:
+        assert id in spID_2_unavailable_tracks_redis
+
+    all_unavailable_tracks_redis = set(
+        _get_redis_set_members_as_list(redis, ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
+    )
+    for id in [*spID_1_unavailable_tracks, *spID_2_unavailable_tracks]:
+        assert id in all_unavailable_tracks_redis
 
 
 @mock.patch("src.tasks.update_track_is_available.requests")
@@ -91,76 +120,6 @@ def test_fetch_unavailable_track_ids(mock_requests, app):
     fetch_response = fetch_unavailable_track_ids("http://content_node.com")
 
     assert fetch_response == track_ids
-
-
-def test_query_replica_set_by_track_id(app):
-    """Test that the query returns a mapping of track id, user id, and replica set"""
-
-    with app.app_context():
-        db = get_db()
-
-    # structure: track_id | primary_id | secondary_ids
-    expected_query_results = _seed_db_with_data(db)
-
-    track_ids = [1, 2, 3, 4, 5, 6, 7]
-    sorted_actual_results = _sort_query_replica_set_by_track_id(
-        query_replica_set_by_track_id(db, track_ids)
-    )
-
-    assert len(sorted_actual_results) == len(track_ids)
-    assert sorted_actual_results == expected_query_results
-
-
-def test_check_track_is_available__return_is_not_available(app):
-    with app.app_context():
-        redis = get_redis()
-        spID_2_key = get_unavailable_tracks_redis_key(2)
-        spID_3_key = get_unavailable_tracks_redis_key(3)
-        spID_4_key = get_unavailable_tracks_redis_key(4)
-
-        # Seed redis some initialized data
-        # (1, 2, [3, 4])
-        redis.sadd(spID_2_key, 1)
-        redis.sadd(spID_3_key, 1)
-        redis.sadd(spID_4_key, 1)
-
-        assert False == check_track_is_available(redis, 1, [2, 3, 4])
-
-
-def test_check_track_is_available__return_is_available_1(app):
-    with app.app_context():
-        redis = get_redis()
-        spID_2_key = get_unavailable_tracks_redis_key(2)
-        spID_3_key = get_unavailable_tracks_redis_key(3)
-
-        redis.sadd(spID_2_key, 1)
-        redis.sadd(spID_3_key, 1)
-        # Available on spID = 4
-
-        assert True == check_track_is_available(redis, 1, [2, 3, 4])
-
-
-def test_check_track_is_available__return_is_available_2(app):
-    with app.app_context():
-        redis = get_redis()
-        spID_2_key = get_unavailable_tracks_redis_key(2)
-
-        redis.sadd(spID_2_key, 1)
-        # Available on spID = 3
-        # Available on spID = 4
-
-        assert True == check_track_is_available(redis, 1, [2, 3, 4])
-
-
-def test_check_track_is_available__return_is_available_3(app):
-    with app.app_context():
-        redis = get_redis()
-
-        # Available on spID = 2
-        # Available on spID = 3
-        # Available on spID = 4
-
-        assert True == check_track_is_available(redis, 1, [2, 3, 4])
 
 
 @mock.patch("src.tasks.update_track_is_available.check_track_is_available")
@@ -198,6 +157,100 @@ def test_update_tracks_is_available_status(mock_check_track_is_available, app):
         # Check that the 'is_available' value is True
         for track in tracks:
             assert track[1] == True
+
+
+def test_query_replica_set_by_track_id(app):
+    """Test that the query returns a mapping of track id, user id, and replica set"""
+
+    with app.app_context():
+        db = get_db()
+
+    expected_query_results = _seed_db_with_data(db)
+
+    with db.scoped_session() as session:
+        track_ids = [1, 2, 3, 4, 5, 6, 7]
+        sorted_actual_results = query_replica_set_by_track_id(session, track_ids)
+        sorted_actual_results.sort(key=lambda entry: entry[0])
+
+        assert len(sorted_actual_results) == len(track_ids)
+        assert sorted_actual_results == expected_query_results
+
+
+def test_check_track_is_available__return_is_not_available(app):
+    with app.app_context():
+        redis = get_redis()
+
+    spID_2_key = get_unavailable_tracks_redis_key(2)
+    spID_3_key = get_unavailable_tracks_redis_key(3)
+    spID_4_key = get_unavailable_tracks_redis_key(4)
+
+    # Seed redis some initialized data
+    # (1, 2, [3, 4])
+    redis.sadd(spID_2_key, 1)
+    redis.sadd(spID_3_key, 1)
+    redis.sadd(spID_4_key, 1)
+
+    assert False == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_check_track_is_available__return_is_available_1(app):
+    with app.app_context():
+        redis = get_redis()
+
+    spID_2_key = get_unavailable_tracks_redis_key(2)
+    spID_3_key = get_unavailable_tracks_redis_key(3)
+
+    redis.sadd(spID_2_key, 1)
+    redis.sadd(spID_3_key, 1)
+    # Available on spID = 4
+
+    assert True == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_check_track_is_available__return_is_available_2(app):
+    with app.app_context():
+        redis = get_redis()
+
+    spID_2_key = get_unavailable_tracks_redis_key(2)
+
+    redis.sadd(spID_2_key, 1)
+    # Available on spID = 3
+    # Available on spID = 4
+
+    assert True == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_check_track_is_available__return_is_available_3(app):
+    with app.app_context():
+        redis = get_redis()
+
+        # Available on spID = 2
+        # Available on spID = 3
+        # Available on spID = 4
+
+        assert True == check_track_is_available(redis, 1, [2, 3, 4])
+
+
+def test_query_tracks_by_track_id(app):
+    with app.app_context():
+        db = get_db()
+
+    _seed_db_with_data(db)
+
+    with db.scoped_session() as session:
+        track_ids = [1, 2, 3, 4, 5, 6, 7]
+        tracks = query_tracks_by_track_ids(session, track_ids)
+
+        sorted_track_ids = list(map(lambda track: track.track_id, tracks))
+        sorted_track_ids.sort()
+        assert len(sorted_track_ids) == len(track_ids)
+        assert sorted_track_ids == track_ids
+
+
+@mock.patch("src.tasks.update_track_is_available.fetch_unavailable_track_ids")
+def test_update_track_is_available(mock_fetch_unavailable_track_ids, app):
+    mock_fetch_unavailable_track_ids.return_value = None
+    pass
 
 
 def print_dummy_tracks_and_users(db):
@@ -276,6 +329,7 @@ def _seed_db_with_data(db):
 
     populate_mock_db(db, test_entities)
 
+    # structure: track_id | primary_id | secondary_ids
     expected_query_results = [
         (1, 7, [9, 13]),
         (2, 7, [9, 13]),
