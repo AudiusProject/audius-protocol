@@ -3,6 +3,7 @@ const chai = require('chai')
 const sinon = require('sinon')
 const { expect } = chai
 chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
 
 const BullQueue = require('bull')
@@ -41,6 +42,17 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     expect(
       stateMonitoringQueue.registerQueueEventHandlers.getCall(0).args[0]
     ).to.have.deep.property('name', STATE_MONITORING_QUEUE_NAME)
+  })
+
+  it('kicks off an initial job when initting', async function () {
+    // Initialize StateMonitoringQueue
+    const stateMonitoringQueue = new StateMonitoringQueue(nodeConfig)
+    await stateMonitoringQueue.init(getLibsMock())
+
+    // Verify that the queue has an initial job in it
+    expect(
+      stateMonitoringQueue.queue.getJobs('delayed')
+    ).to.eventually.be.fulfilled.and.have.lengthOf(1)
   })
 
   it('logs debug, info, warning, and error', function () {

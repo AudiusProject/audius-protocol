@@ -32,8 +32,9 @@ class NodeToSpIdManager {
       logger.error(`updateCnodeEndpointToSpIdMap Error: ${e.message}`)
     }
 
-    if (Object.keys(endpointToSPIdMap).length > 0)
+    if (Object.keys(endpointToSPIdMap).length > 0) {
       this.cNodeEndpointToSpIdMap = endpointToSPIdMap
+    }
 
     const mapLength = Object.keys(this.cNodeEndpointToSpIdMap).length
     if (mapLength === 0) {

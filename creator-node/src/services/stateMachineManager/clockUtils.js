@@ -25,7 +25,9 @@ class ClockUtils {
    *
    * @returns {Object} { replicasToUserClockStatusMap: map(replica node => map(wallet => clockValue)), unhealthyPeers: Set<string> }
    */
-  async retrieveClockStatusesForUsersAcrossReplicaSet(replicasToWalletsMap) {
+  static async retrieveClockStatusesForUsersAcrossReplicaSet(
+    replicasToWalletsMap
+  ) {
     const replicasToUserClockStatusMap = {}
     const unhealthyPeers = new Set()
 
@@ -102,7 +104,7 @@ class ClockUtils {
    * Make request to given replica to get its clock value for given user
    * Signs request with spID to bypass rate limits
    */
-  async _retrieveClockValueForUserFromReplica(replica, wallet) {
+  static async _retrieveClockValueForUserFromReplica(replica, wallet) {
     const spID = SP_ID
 
     const { timestamp, signature } = generateTimestampAndSignature(
@@ -125,4 +127,4 @@ class ClockUtils {
   }
 }
 
-module.exports = new ClockUtils()
+module.exports = ClockUtils

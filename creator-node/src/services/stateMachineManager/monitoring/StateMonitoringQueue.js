@@ -95,7 +95,9 @@ class StateMonitoringQueue {
     // Re-queue a new job when the current job fails or succeeds
     queue.on('completed', (job, result) => {
       this.log(
-        `Queue Job Completed - ID ${job?.id} - Result ${result}. Queuing another job...`
+        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(
+          result
+        )}. Queuing another job...`
       )
       if (result?.jobFailed) {
         this.enqueueJobAfterSuccess(queue, job, result)
@@ -120,10 +122,7 @@ class StateMonitoringQueue {
    */
   enqueueJobAfterSuccess(queue, successfulJobData, successfulJobResult) {
     const {
-      discoveryNodeEndpoint,
-      contentNodeEndpoint,
-      moduloBase,
-      currentModuloSlice
+      data: { discoveryNodeEndpoint, moduloBase, currentModuloSlice }
     } = successfulJobData
     const { lastProcessedUserId } = successfulJobResult
 
@@ -131,7 +130,6 @@ class StateMonitoringQueue {
       startTime: Date.now(),
       lastProcessedUserId,
       discoveryNodeEndpoint,
-      contentNodeEndpoint,
       moduloBase,
       currentModuloSlice: (currentModuloSlice + 1) % moduloBase
     })
@@ -144,18 +142,18 @@ class StateMonitoringQueue {
    */
   enqueueJobAfterFailure(queue, failedJob) {
     const {
-      lastProcessedUserId,
-      discoveryNodeEndpoint,
-      contentNodeEndpoint,
-      moduloBase,
-      currentModuloSlice
+      data: {
+        lastProcessedUserId,
+        discoveryNodeEndpoint,
+        moduloBase,
+        currentModuloSlice
+      }
     } = failedJob
 
     queue.add({
       startTime: Date.now(),
       lastProcessedUserId,
       discoveryNodeEndpoint,
-      contentNodeEndpoint,
       moduloBase,
       currentModuloSlice: (currentModuloSlice + 1) % moduloBase
     })
@@ -170,10 +168,12 @@ class StateMonitoringQueue {
     queue.process(1 /** concurrency */, async (job) => {
       const {
         id: jobId,
-        lastProcessedUserId,
-        numUsersToProcess,
-        moduloBase,
-        currentModuloSlice
+        data: {
+          lastProcessedUserId,
+          discoveryNodeEndpoint,
+          moduloBase,
+          currentModuloSlice
+        }
       } = job
 
       try {
@@ -185,23 +185,25 @@ class StateMonitoringQueue {
       // Default results of this job will be passed to the next job, so default to failure
       let result = {
         lastProcessedUserId,
-        numUsersToProcess,
         jobFailed: true,
         moduloBase,
         currentModuloSlice
       }
       try {
-        await redis.set('stateMachineQueueLatestJobStart', Date.now())
+        // TODO: Wire up metrics
+        // await redis.set('stateMachineQueueLatestJobStart', Date.now())
         result = await processStateMonitoringJob(
           jobId,
           lastProcessedUserId,
-          numUsersToProcess,
+          discoveryNodeEndpoint,
           moduloBase,
           currentModuloSlice
         )
-        await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
+        // TODO: Wire up metrics
+        // await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
       } catch (e) {
         this.logError(`Error processing jobId ${jobId}: ${e}`)
+        console.log(e.stack)
       }
 
       return result
@@ -226,11 +228,12 @@ class StateMonitoringQueue {
     const currentModuloSlice = this.randomStartingSlice(moduloBase)
 
     // Enqueue first job after a delay. This job requeues itself upon completion or failure
-    await this.stateMachineQueue.add(
+    await queue.add(
       /** data */
       {
         startTime: Date.now(),
         lastProcessedUserId,
+        discoveryNodeEndpoint,
         prevJobFailed: false,
         moduloBase,
         currentModuloSlice

@@ -1,7 +1,7 @@
 const config = require('../../config')
 const { logger } = require('../../logging')
 const StateMonitoringQueue = require('./monitoring/StateMonitoringQueue')
-const { updateCnodeEndpointToSpIdMap } = require('./nodeToSpIdManager')
+const NodeToSpIdManager = require('./nodeToSpIdManager')
 
 // Modes used in issuing a reconfig. Each successive mode is a superset of the mode prior.
 // The `key` of the reconfig states is used to identify the current reconfig mode.
@@ -53,7 +53,7 @@ class StateMachineManager {
     await this.stateMonitoringQueue.init(audiusLibs)
     // TODO: Decide on interval to run this on
     try {
-      updateCnodeEndpointToSpIdMap(audiusLibs.ethContracts)
+      NodeToSpIdManager.updateCnodeEndpointToSpIdMap(audiusLibs.ethContracts)
 
       // Update enabledReconfigModesSet after successful `updateCnodeEndpointToSpIdMap()` call
       this.updateEnabledReconfigModesSet()
@@ -64,6 +64,10 @@ class StateMachineManager {
       )
       logger.error(`updateEndpointToSpIdMap Error: ${e.message}`)
     }
+  }
+
+  getStateMonitoringQueue() {
+    return this.stateMonitoringQueue.queue
   }
 
   /**

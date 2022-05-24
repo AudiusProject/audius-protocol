@@ -1,7 +1,7 @@
 const config = require('../../../config')
 const { logger } = require('../../../logging')
-const { getUnhealthyPeers, endpointToSPIdMap } = require('../nodeHealthManager')
-const { getCNodeEndpointToSpIdMap } = require('../nodeToSpIdManager')
+const NodeHealthManager = require('../nodeHealthManager')
+const NodeToSpIdManager = require('../nodeToSpIdManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
@@ -14,6 +14,7 @@ const {
 
 // Number of users to process each time processStateMonitoringJob is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
+const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
  * Processes a job to monitor the current state of `numUsersToProcess` users.
@@ -21,8 +22,6 @@ const USERS_PER_JOB = config.get('snapbackUsersPerJob')
  * @param {number} jobId the id of the job being run
  * @param {number} lastProcessedUserId the highest ID of the user that was most recently processed
  * @param {string} discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
- * @param {string} contentNodeEndpoint the IP address / URL of this Content Node
- * @param {boolean} lastJobFailed true if the previous job failed to complete
  * @param {number} moduloBase (DEPRECATED)
  * @param {number} currentModuloSlice (DEPRECATED)
  * @return {Object} { lastProcessedUserId (number), jobFailed (boolean) }
@@ -31,8 +30,6 @@ const processStateMonitoringJob = async (
   jobId,
   lastProcessedUserId,
   discoveryNodeEndpoint,
-  contentNodeEndpoint,
-  lastJobFailed,
   moduloBase, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
   currentModuloSlice // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
 ) => {
@@ -40,8 +37,11 @@ const processStateMonitoringJob = async (
   const decisionTree = []
   _addToDecisionTree(decisionTree, jobId, 'BEGIN processStateMonitoringJob', {
     lastProcessedUserId,
-    USERS_PER_JOB,
-    lastJobFailed
+    discoveryNodeEndpoint,
+    moduloBase, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
+    currentModuloSlice, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
+    THIS_CNODE_ENDPOINT,
+    USERS_PER_JOB
   })
 
   let jobFailed = false
@@ -52,7 +52,7 @@ const processStateMonitoringJob = async (
     try {
       nodeUsers = await getNodeUsers(
         discoveryNodeEndpoint,
-        contentNodeEndpoint,
+        THIS_CNODE_ENDPOINT,
         lastProcessedUserId,
         USERS_PER_JOB
       )
@@ -84,7 +84,7 @@ const processStateMonitoringJob = async (
 
     let unhealthyPeers
     try {
-      unhealthyPeers = await getUnhealthyPeers(nodeUsers)
+      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(nodeUsers)
       _addToDecisionTree(decisionTree, jobId, 'getUnhealthyPeers Success', {
         unhealthyPeerSetLength: unhealthyPeers.size,
         unhealthyPeers: Array.from(unhealthyPeers)
@@ -180,8 +180,8 @@ const processStateMonitoringJob = async (
         nodeUsers,
         unhealthyPeers,
         userSecondarySyncMetricsMap,
-        getCNodeEndpointToSpIdMap(),
-        contentNodeEndpoint
+        NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
+        THIS_CNODE_ENDPOINT
       )
     _addToDecisionTree(
       decisionTree,
@@ -193,7 +193,7 @@ const processStateMonitoringJob = async (
       }
     )
   } catch (e) {
-    logger.log(`processStateMonitoringJob ERROR: ${e.toString()}`)
+    logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
     jobFailed = true
   } finally {
     _addToDecisionTree(decisionTree, jobId, 'END processStateMachineOperation')
@@ -237,7 +237,7 @@ const _addToDecisionTree = (
   decisionTree.push(obj)
 
   if (log) {
-    log(logStr)
+    logger.info(logStr)
   }
 }
 
