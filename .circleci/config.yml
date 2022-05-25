@@ -629,7 +629,7 @@ jobs:
             npm run localnet-up-ci
             npm run dev-setup
 
-  docker-build-and-push-updated:
+  docker-build-and-push:
     docker:
       - image: cimg/base:2022.03
     parameters:
@@ -670,7 +670,7 @@ workflows:
     jobs:
       - test-libs:
           name: test-libs
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-libs
           repo: libs
 
@@ -682,19 +682,19 @@ workflows:
 
       - test-creator-node:
           name: test-creator-node
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
 
       - test-discovery-provider:
           name: test-discovery-provider
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
 
       - test-identity-service:
           name: test-identity-service
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
 
@@ -743,13 +743,13 @@ workflows:
           context:
             - GCP2
           name: bake-gcp-dev-image-nightly
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-contracts
           repo: contracts
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
     triggers:
