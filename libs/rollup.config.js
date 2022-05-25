@@ -6,6 +6,7 @@ import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import alias from '@rollup/plugin-alias'
+// import shim from 'rollup-plugin-shim'
 
 import pkg from './package.json'
 
@@ -38,15 +39,42 @@ const commonConfig = {
 
 // These need to be internal so they are polyfilled via `nodePolyfills`
 const internal = [
+  // '@audius/hedgehog',
+  // 'cipher-base'
   'ethereumjs-wallet',
   'ethereumjs-util',
   'ethereumjs-tx',
   'eth-sig-util'
+  // 'fs',
+  // 'node-localstorage',
+  // 'crypto',
+  // 'web3',
+  // 'esm',
+  // 'ipfs-unixfs-importer',
+  // 'stream',
+  // 'interface-blockstore',
+  // 'interface-store',
+  // 'multiformats/cid'
 ]
+
+// "browser": {
+//   "fs": false,
+//   "node-localstorage": false,
+//   "crypto": false,
+//   "web3": false,
+//   "esm": false,
+//   "ipfs-unixfs-importer": false,
+//   "stream": false,
+//   "interface-blockstore": false,
+//   "interface-store": false,
+//   "multiformats/cid": false
+// },
+
+// TODO: figure out how to achieve the `browser` field ignores in rollup
 
 const browserSdkConfig = {
   plugins: [
-    resolve({ extensions, preferBuiltins: false }),
+    resolve({ browser: false, extensions, preferBuiltins: false }),
     commonjs({
       extensions,
       transformMixedEsModules: true,
@@ -59,6 +87,9 @@ const browserSdkConfig = {
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
     }),
     nodePolyfills(),
+    // shim({
+    //   web3: 'export default {}'
+    // }),
     babel({ babelHelpers: 'bundled', extensions }),
     json(),
     typescript()
@@ -77,18 +108,9 @@ const commonTypeConfig = {
 }
 
 export default [
-  {
-    input: 'src/libs.js',
-    output: [
-      { file: pkg.libs, format: 'cjs', exports: 'auto', sourcemap: true }
-    ],
-    ...commonConfig
-  },
-  {
-    input: './src/types.ts',
-    output: [{ file: pkg.libsTypes, format: 'cjs' }],
-    ...commonTypeConfig
-  },
+  /**
+   * SDK
+   */
   {
     input: 'src/sdk/index.ts',
     output: [
@@ -97,12 +119,41 @@ export default [
     ...browserSdkConfig
   },
   {
-    input: 'src/sdk/index.ts',
+    input: './src/sdk/index.ts',
+    output: [{ file: pkg.types, format: 'cjs' }],
+    ...commonTypeConfig
+  },
+
+  /**
+   * SDK bundled for a browser environment
+   */
+  // {
+  //   input: 'src/sdk/index.ts',
+  //   output: [
+  //     { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
+  //   ],
+  //   ...browserSdkConfig
+  // },
+
+  /**
+   * libs (deprecated)
+   */
+  {
+    input: 'src/libs.js',
     output: [
-      { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
+      { file: pkg.libs, format: 'cjs', exports: 'auto', sourcemap: true }
     ],
     ...commonConfig
   },
+  {
+    input: './src/libsTypes.ts',
+    output: [{ file: pkg.libsTypes, format: 'cjs' }],
+    ...commonTypeConfig
+  },
+
+  /**
+   * core (used for eager requests)
+   */
   {
     input: 'src/core.ts',
     output: [
