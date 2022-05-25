@@ -65,7 +65,7 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 
 const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   const duration = getDuration(req)
-  let logger = req.logger.getChild({
+  let logger = req.logger.createChildLogger({
     duration,
     statusCode: resp.statusCode
   })
@@ -75,7 +75,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
       logger.info('Success')
     }
   } else {
-    logger = logger.getChild({
+    logger = logger.createChildLogger({
       errorMessage: resp.object.error
     })
     if (req && req.body) {
@@ -102,7 +102,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
 const sendResponseWithHeartbeatTerminator =
   (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
     const duration = getDuration(req)
-    let logger = req.logger.getChild({
+    let logger = req.logger.createChildLogger({
       duration,
       statusCode: resp.statusCode
     })
@@ -112,7 +112,7 @@ const sendResponseWithHeartbeatTerminator =
         logger.info('Success')
       }
     } else {
-      logger = logger.getChild({
+      logger = logger.createChildLogger({
         errorMessage: resp.object.error
       })
       if (req && req.body) {

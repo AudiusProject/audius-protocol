@@ -97,7 +97,7 @@ function loggingMiddleware(req, res, next) {
 }
 
 /** Creates and returns a childLogger */
-logger.getChild = function (options = {}) {
+logger.createChildLogger = function (options = {}) {
   return logger.child(options)
 }
 
