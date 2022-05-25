@@ -2,10 +2,8 @@ import logging
 from typing import Any
 
 import requests
-from sqlalchemy.orm.session import make_transient
 from src.models import Track, User
 from src.tasks.celery_app import celery
-from src.tasks.tracks import invalidate_old_tracks
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_info
 
 logger = logging.getLogger(__name__)
