@@ -7,6 +7,32 @@ if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
 fi
 
+# enable rsyslog if not set to 0
+: "${enableRsyslog:=1}"
+
+# $enableRsyslog should be > 0
+# $logglyDisable should be empty/null
+# $logglyToken should be a nonzero length string
+if ((enableRsyslog)) && [[ -z "$logglyDisable" && -n "$logglyToken" ]]; then
+    logglyTags=$(echo $logglyTags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+    mkdir -p /var/spool/rsyslog
+    mkdir -p /etc/rsyslog.d
+    sed -i '1s|^|$MaxMessageSize 64k\n|' /etc/rsyslog.conf
+    cat >/etc/rsyslog.d/22-loggly.conf <<EOF
+\$WorkDirectory /var/spool/rsyslog # where to place spool files
+\$ActionQueueFileName fwdRule1   # unique name prefix for spool files
+\$ActionQueueMaxDiskSpace 1g    # 1gb space limit (use as much as possible)
+\$ActionQueueSaveOnShutdown on   # save messages to disk on shutdown
+\$ActionQueueType LinkedList    # run asynchronously
+\$ActionResumeRetryCount -1    # infinite retries if host is down
+template(name="LogglyFormat" type="string"
+ string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$logglyToken@41058 $logglyTags \\"$creatorNodeEndpoint\\"] %msg%\n")
+# Send messages to Loggly over TCP using the template.
+action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
+EOF
+    rsyslogd
+fi
+
 if [ -z "$redisHost" ]; then
     redis-server --daemonize yes
     export redisHost=localhost
@@ -46,12 +72,12 @@ if [[ "$devMode" == "true" ]]; then
         npm link
         cd ../app
         npm link @audius/libs
-        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | ./node_modules/.bin/bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
     else
-        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | ./node_modules/.bin/bunyan
+        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
     fi
 else
-    node build/src/index.js
+    node build/src/index.js | tee >(logger)
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
 
