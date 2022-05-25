@@ -96,21 +96,9 @@ function loggingMiddleware(req, res, next) {
   next()
 }
 
-/**
- * Add fields to a child logger instance
- * @param {*} req
- * @param {Object} options fields to add to child logger
- * @returns a logger instance
- */
-function setFieldsInChildLogger(req, options = {}) {
-  const fields = Object.keys(options)
-
-  const childOptions = {}
-  fields.forEach((field) => {
-    childOptions[field] = options[field]
-  })
-
-  return req.logger.child(childOptions)
+/** Creates and returns a childLogger */
+logger.getChild = function (options = {}) {
+  return logger.child(options)
 }
 
 /**
@@ -151,6 +139,5 @@ module.exports = {
   getRequestLoggingContext,
   getStartTime,
   getDuration,
-  setFieldsInChildLogger,
   logInfoWithDuration
 }
