@@ -46,12 +46,22 @@ def search_es_full(args: dict):
     # should_saved_or_reposted = []
     only_downloadable_term = {"term": {"downloadable": {"value": True}}}
 
-    if current_user_id:
-        saved_term = {"term": {"saved_by": {"value": current_user_id}}}
-        # should_saved_or_reposted = [
-        #     saved_term,
-        #     {"term": {"reposted_by": {"value": current_user_id}}},
-        # ]
+    saved_term = {"term": {"saved_by": {"value": current_user_id, "boost": 1.2}}}
+
+    personalized_terms = [
+        saved_term,
+        {"term": {"reposted_by": {"value": current_user_id, "boost": 1.2}}},
+    ]
+
+    followed_term = {
+        "terms": {
+            "_id": {
+                "index": ES_USERS,
+                "id": str(current_user_id),
+                "path": "following_ids",
+            },
+        }
+    }
 
     match_query = [
         {
@@ -109,7 +119,7 @@ def search_es_full(args: dict):
                         ],  # why filter stems?
                         "should": [
                             *should_match_query,
-                            # {"term": {"user.is_verified": {"value": True}}},
+                            {"term": {"user.is_verified": {"value": True}}},
                         ],
                     }
                 },
@@ -229,7 +239,6 @@ def search_es_full(args: dict):
             ].append(only_downloadable_term)
 
         track_search_query: List = [{"index": ES_TRACKS}, base_tracks_query]
-
         mdsl.extend(track_search_query)
 
         # saved tracks
@@ -239,7 +248,11 @@ def search_es_full(args: dict):
                 "must"
             ].append(saved_term)
 
-            mdsl.extend([{"index": ES_TRACKS}, saved_tracks_query])
+            base_tracks_query["query"]["function_score"]["query"]["bool"][
+                "should"
+            ].extend(personalized_terms)
+        mdsl.extend(track_search_query)
+
     # users
     if do_users:
         mdsl.extend([{"index": ES_USERS}, base_users_query])
@@ -247,21 +260,12 @@ def search_es_full(args: dict):
             followed_users_query = deepcopy(base_users_query)
             followed_users_query["query"]["function_score"]["query"]["bool"][
                 "must"
-            ].extend(
-                [
-                    {
-                        "terms": {
-                            "_id": {
-                                "index": ES_USERS,
-                                "id": str(current_user_id),
-                                "path": "following_ids",
-                            },
-                        }
-                    }
-                ]
-            )
+            ].append(followed_term)
 
             mdsl.extend([{"index": ES_USERS}, followed_users_query])
+            base_users_query["query"]["function_score"]["query"]["bool"][
+                "should"
+            ].append(followed_term)
 
     # playlists
     if do_playlists:
@@ -275,12 +279,14 @@ def search_es_full(args: dict):
                 "must"
             ].append(saved_term)
             mdsl.extend([{"index": ES_PLAYLISTS}, saved_playlist_search_query])
+            base_playlists_query["query"]["function_score"]["query"]["bool"][
+                "should"
+            ].extend(personalized_terms)
 
     # albums
     if do_albums:
         album_search_query: List = [{"index": ES_PLAYLISTS}, base_album_query]
         mdsl.extend(album_search_query)
-
         # saved albums
         if current_user_id:
             saved_album_search_query = deepcopy(base_album_query)
@@ -288,9 +294,11 @@ def search_es_full(args: dict):
                 "must"
             ].append(saved_term)
             mdsl.extend([{"index": ES_PLAYLISTS}, saved_album_search_query])
+            base_album_query["query"]["function_score"]["query"]["bool"][
+                "should"
+            ].extend(personalized_terms)
 
     mfound = esclient.msearch(searches=mdsl)
-
     tracks_response = []
     saved_tracks_response = []
     users_response = []
@@ -460,7 +468,6 @@ if __name__ == "__main__":
         {
             "query": "isaac pho",
             "limit": 4,
-            "current_user_id": 1,
             "is_auto_complete": True,
         }
     )
@@ -524,6 +531,16 @@ if __name__ == "__main__":
             "is_auto_complete": True,
         }
     )
+
+    _print_test_search(
+        {
+            "query": "low",
+            "limit": 4,
+            "current_user_id": 14,
+            "is_auto_complete": True,
+        }
+    )
+
     _print_test_search(
         {
             "query": "stereosteve guitar",
@@ -536,7 +553,7 @@ if __name__ == "__main__":
     _print_test_search(
         {
             "query": "skrillex",
-            "limit": 10,
+            "limit": 4,
             "current_user_id": 1,
             "is_auto_complete": True,
         }
