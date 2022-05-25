@@ -45,7 +45,7 @@ const generateAudiusLogoSvg = (size: 'small' | 'medium' | 'large') => {
 </svg>`
 }
 
-const OAUTH_URL = 'http://localhost:3001/oauth/auth'
+const OAUTH_URL = 'https://audius.co/oauth/auth'
 const CSRF_TOKEN_KEY = 'audiusOauthState'
 
 export class Oauth {
