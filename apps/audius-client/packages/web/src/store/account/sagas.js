@@ -2,6 +2,7 @@ import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
+import { USER_ID_AVAILABLE_EVENT } from 'common/services/remote-config/remote-config'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getUserId,
@@ -184,8 +185,12 @@ export function* fetchAccountAsync(action) {
     return
   }
 
-  // Set account ID in remote-config provider
+  // Set account ID and let remote-config provider
+  // know that the user id is available
   remoteConfigInstance.setUserId(account.user_id)
+  const event = new CustomEvent(USER_ID_AVAILABLE_EVENT)
+  window.dispatchEvent(event)
+
   // Fire-and-forget fp identify
   fingerprintClient.identify(account.user_id)
 

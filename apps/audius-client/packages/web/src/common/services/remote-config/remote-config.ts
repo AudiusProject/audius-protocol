@@ -23,6 +23,8 @@ import {
 import { Nullable } from 'common/utils/typeUtils'
 import { uuid } from 'common/utils/uid'
 
+export const USER_ID_AVAILABLE_EVENT = 'USER_ID_AVAILABLE_EVENT'
+
 // Constants
 // All optimizely feature keys are lowercase_snake
 const REMOTE_CONFIG_FEATURE_KEY = 'remote_config'
@@ -218,6 +220,29 @@ export const remoteConfig = <
     await new Promise<void>(resolve => onClientReady(() => resolve()))
   }
 
+  /**
+   * Need this function for feature flags that depend on user id.
+   * This is because the waitForRemoteConfig does not ensure that
+   * user id is available before its promise resolution, meaning
+   * that it will sometimes return false for a feature flag
+   * that is enabled and supposed to return true.
+   */
+  const waitForUserRemoteConfig = async () => {
+    if (state.userId) {
+      await new Promise<void>(resolve => onClientReady(resolve))
+      return
+    }
+    await new Promise<void>(resolve => {
+      if (state.userId) {
+        onClientReady(resolve)
+      } else {
+        window.addEventListener(USER_ID_AVAILABLE_EVENT, () =>
+          onClientReady(resolve)
+        )
+      }
+    })
+  }
+
   // Type predicates
   function isIntKey(key: AllRemoteConfigKeys): key is IntKeys {
     return !!Object.values(IntKeys).find(x => x === key)
@@ -248,7 +273,8 @@ export const remoteConfig = <
     init,
     onClientReady,
     setUserId,
-    waitForRemoteConfig
+    waitForRemoteConfig,
+    waitForUserRemoteConfig
   }
 }
 
