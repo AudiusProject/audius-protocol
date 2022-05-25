@@ -1,4 +1,4 @@
-import { Supporter, Supporting } from 'common/models/Tipping'
+import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 export const TIPPING_SUPPORT_DEFAULT_LIMIT = 25
@@ -54,6 +54,68 @@ export const fetchSupporters = async ({
       `Could not fetch supporters for encoded user id ${encodedUserId}: ${
         (e as Error).message
       }`
+    )
+    return []
+  }
+}
+
+export type UserTipRequest = {
+  userId?: string
+  limit?: number
+  offset?: number
+  receiverMinFollowers?: number
+  receiverIsVerified?: boolean
+  currentUserFollows?: 'sender' | 'receiver' | 'sender_or_receiver'
+  uniqueBy?: 'sender' | 'receiver'
+  minSlot?: number
+  maxSlot?: number
+  txSignatures?: string[]
+}
+type UserTipOmitIds = 'sender_id' | 'receiver_id' | 'followee_supporter_ids'
+type UserTipResponse = Omit<UserTip, UserTipOmitIds> & {
+  sender: any
+  receiver: any
+  followee_supporters: any[]
+}
+
+export const fetchRecentUserTips = async ({
+  userId,
+  limit,
+  offset,
+  receiverMinFollowers,
+  receiverIsVerified,
+  currentUserFollows,
+  uniqueBy,
+  minSlot,
+  maxSlot,
+  txSignatures
+}: UserTipRequest): Promise<UserTipResponse[]> => {
+  await waitForLibsInit()
+  const queryParams = {
+    user_id: userId,
+    limit,
+    offset,
+    receiver_min_followers: receiverMinFollowers,
+    receiver_is_verififed: receiverIsVerified,
+    current_user_follows: currentUserFollows,
+    unique_by: uniqueBy,
+    min_slot: minSlot,
+    max_slot: maxSlot,
+    tx_signatures: txSignatures
+  }
+  try {
+    const response = await libs().discoveryProvider._makeRequest({
+      endpoint: `/v1/full/tips`,
+      queryParams
+    })
+    return response
+  } catch (e) {
+    console.error(
+      `Could not fetch recent tips for ${JSON.stringify(
+        queryParams,
+        null,
+        2
+      )}. Error: ${(e as Error).message}`
     )
     return []
   }

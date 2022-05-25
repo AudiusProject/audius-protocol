@@ -75,7 +75,7 @@ export const TipSent = () => {
       {renderSentAudio()}
       <TipProfilePicture
         user={recipient}
-        className={styles.confirmProfileUser}
+        className={styles.confirmReceiver}
         imgClassName={styles.smallDynamicPhoto}
       />
       <div className={cn(styles.flexCenter, styles.support)}>
