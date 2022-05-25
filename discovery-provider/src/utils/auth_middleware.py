@@ -1,4 +1,5 @@
 import functools
+import logging
 
 from eth_account.messages import encode_defunct
 from flask.globals import request
@@ -7,6 +8,8 @@ from src.utils import db_session, web3_provider
 
 MESSAGE_HEADER = "Encoded-Data-Message"
 SIGNATURE_HEADER = "Encoded-Data-Signature"
+
+logger = logging.getLogger(__name__)
 
 
 def auth_middleware(**kwargs):
@@ -33,6 +36,7 @@ def auth_middleware(**kwargs):
         def inner_wrap(*args, **kwargs):
             message = request.headers.get(MESSAGE_HEADER)
             signature = request.headers.get(SIGNATURE_HEADER)
+            logger.info(f"DYLANJEFFERS message {message} signature {signature}")
 
             authed_user_id = None
             if message and signature:
