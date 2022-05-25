@@ -30,7 +30,8 @@ const logger = {
   },
   info: () => {},
   warn: () => {},
-  error: () => {}
+  error: () => {},
+  createChildLogger: () => ({ ...logger })
 }
 
 /**
