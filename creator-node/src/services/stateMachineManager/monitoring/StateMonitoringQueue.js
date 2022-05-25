@@ -9,7 +9,6 @@ const {
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../constants')
 const { logger } = require('../../../logging')
-const redis = require('../../../redis')
 const { getLatestUserId: getLatestUserIdFromDiscovery } = require('./utils')
 const processStateMonitoringJob = require('./processStateMonitoringJob')
 
@@ -72,6 +71,11 @@ class StateMonitoringQueue {
         lockDuration: STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
         // We never want to re-process stalled jobs
         maxStalledCount: 0
+      },
+      limiter: {
+        // Bull doesn't allow either of these to be set to 0
+        max: config.get('stateMonitoringQueueRateLimitJobsPerInterval') || 1,
+        duration: config.get('stateMonitoringQueueRateLimitInterval') || 1
       }
     })
   }
@@ -229,6 +233,13 @@ class StateMonitoringQueue {
   async startQueue(queue, discoveryNodeEndpoint, moduloBase) {
     // Clear any old state if redis was running but the rest of the server restarted
     await queue.obliterate({ force: true })
+
+    // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
+    // pausing the queue and not enqueuing the first job
+    if (config.get('stateMonitoringQueueRateLimitJobsPerInterval') === 0) {
+      await queue.pause()
+      return
+    }
 
     // Start at a random userId to avoid biased processing of early users
     const latestUserId = await getLatestUserIdFromDiscovery(

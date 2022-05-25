@@ -448,6 +448,18 @@ const config = convict({
 
   /** sync / snapback configs */
 
+  stateMonitoringQueueRateLimitInterval: {
+    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
+    format: 'nat',
+    env: 'stateMonitoringQueueRateLimitInterval',
+    default: 60_000 // 1m
+  },
+  stateMonitoringQueueRateLimitJobsPerInterval: {
+    doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
+    format: 'nat',
+    env: 'stateMonitoringQueueRateLimitJobsPerInterval',
+    default: 1
+  },
   debounceTime: {
     doc: 'sync debounce time in ms',
     format: 'nat',

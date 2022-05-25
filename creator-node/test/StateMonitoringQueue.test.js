@@ -53,6 +53,8 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     nock(getLibsMock().discoveryProvider.discoveryProviderEndpoint)
       .get('/latest/user')
       .reply(200, { data: 0 })
+    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 1)
+    config.set('stateMonitoringQueueRateLimitInterval', 60_000)
 
     // Initialize StateMonitoringQueue
     const stateMonitoringQueue = new StateMonitoringQueue(config)
@@ -68,6 +70,26 @@ describe('test StateMonitoringQueue initialization and logging', function () {
         'data.prevJobFailed': false,
         'data.lastProcessedUserId': 0
       })
+  })
+
+  it("doesn't queue or process any jobs when rate limit jobsPerInterval is set to 0", async function () {
+    // Mock the latest userId, which is used during init as an upper bound
+    // to start the monitoring queue at a random user
+    nock(getLibsMock().discoveryProvider.discoveryProviderEndpoint)
+      .get('/latest/user')
+      .reply(200, { data: 0 })
+    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 0)
+    config.set('stateMonitoringQueueRateLimitInterval', 60_000)
+
+    // Initialize StateMonitoringQueue
+    const stateMonitoringQueue = new StateMonitoringQueue(config)
+    await stateMonitoringQueue.init(getLibsMock())
+
+    // Verify that the queue won't process or queue jobs because it's paused
+    const isQueuePaused = await stateMonitoringQueue.queue.isPaused()
+    expect(isQueuePaused).to.be.true
+    return expect(stateMonitoringQueue.queue.getJobs('delayed')).to.eventually
+      .be.fulfilled.and.be.empty
   })
 
   it('logs debug, info, warning, and error', function () {
