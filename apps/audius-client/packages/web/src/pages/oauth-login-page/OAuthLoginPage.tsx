@@ -53,7 +53,11 @@ const messages = {
   missingAppNameError: 'Whoops, this is an invalid link (app name missing).',
   scopeError: `Whoops, this is an invalid link (scope missing or invalid - only the 
     "read" scope is available).`,
-  missingFieldError: 'Whoops, you must enter both your email and password.'
+  missingFieldError: 'Whoops, you must enter both your email and password.',
+  originInvalidError:
+    'Whoops, this is an invalid link (redirect URI is set to `postMessage` but origin is missing).',
+  noWindowError:
+    'Whoops, something went wrong. Please close this window and try again.'
 }
 
 const CTAButton = ({
@@ -83,13 +87,23 @@ export const OAuthLoginPage = () => {
       document.body.classList.remove(styles.bgWhite)
     }
   }, [])
+
   const { search } = useLocation()
   const history = useHistory()
-  const { scope, state, redirect_uri, app_name } = queryString.parse(search)
+  const {
+    scope,
+    state,
+    redirect_uri,
+    app_name,
+    origin: originParam
+  } = queryString.parse(search)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const parsedRedirectUri = useMemo(() => {
     if (redirect_uri && typeof redirect_uri === 'string') {
+      if (redirect_uri.toLowerCase() === 'postmessage') {
+        return 'postmessage'
+      }
       try {
         return new URL(redirect_uri)
       } catch {
@@ -138,6 +152,9 @@ export const OAuthLoginPage = () => {
         // This means the redirect uri is not a string (and is thus invalid) or the URI format was invalid
         return false
       }
+      if (parsedRedirectUri === 'postmessage') {
+        return true
+      }
       const { hash, username, password, pathname, hostname } = parsedRedirectUri
       if (hash || username || password) {
         return false
@@ -168,9 +185,23 @@ export const OAuthLoginPage = () => {
     }
   }, [parsedRedirectUri, redirect_uri])
 
+  const parsedOrigin = useMemo(() => {
+    if (originParam && typeof originParam === 'string') {
+      try {
+        return new URL(originParam)
+      } catch {
+        return null
+      }
+    }
+    return null
+  }, [originParam])
+
   let queryParamsError = null
   if (isRedirectValid === false) {
     queryParamsError = messages.redirectURIInvalidError
+  } else if (parsedRedirectUri === 'postmessage' && !parsedOrigin) {
+    // Only applicable if redirect URI set to `postMessage`
+    queryParamsError = messages.originInvalidError
   } else if (!app_name) {
     queryParamsError = messages.missingAppNameError
   } else if (scope !== 'read') {
@@ -225,10 +256,24 @@ export const OAuthLoginPage = () => {
       setGeneralSubmitError(messages.miscError)
       return
     }
-    const statePart = state != null ? `state=${state}&` : ''
-    const fragment = `#${statePart}token=${jwt}`
     if (isRedirectValid === true) {
-      window.location.href = `${redirect_uri}${fragment}`
+      if (parsedRedirectUri === 'postmessage') {
+        if (parsedOrigin) {
+          if (!window.opener) {
+            setGeneralSubmitError(messages.noWindowError)
+            setIsSubmitting(false)
+          } else {
+            window.opener.postMessage(
+              { state, token: jwt },
+              parsedOrigin.origin
+            )
+          }
+        }
+      } else {
+        const statePart = state != null ? `state=${state}&` : ''
+        const fragment = `#${statePart}token=${jwt}`
+        window.location.href = `${redirect_uri}${fragment}`
+      }
     }
   }
 
