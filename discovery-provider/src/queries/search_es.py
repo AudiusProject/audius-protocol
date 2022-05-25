@@ -378,9 +378,9 @@ def search_es_full(args: dict):
 
     # users: finalize
     for k in ["users", "followed_users"]:
+        users = drop_copycats(response[k])
         response[k] = [
-            extend_user(popuate_user_metadata_es(user, current_user))
-            for user in response[k]
+            extend_user(popuate_user_metadata_es(user, current_user)) for user in users
         ]
 
     # playlists: finalize
@@ -394,6 +394,32 @@ def search_es_full(args: dict):
         ]
 
     return response
+
+
+def drop_copycats(users):
+    """Filters out users with copy cat names.
+    e.g. if a verified deadmau5 is in the result set
+    filter out all non-verified users with same name.
+    """
+    reserved = set()
+    for user in users:
+        if user["is_verified"]:
+            reserved.add(lower_ascii_name(user["name"]))
+
+    filtered = []
+    for user in users:
+        if not user["is_verified"] and lower_ascii_name(user["name"]) in reserved:
+            continue
+        filtered.append(user)
+    return filtered
+
+
+def lower_ascii_name(name):
+    if not name:
+        return ""
+    n = name.lower()
+    n = n.encode("ascii", "ignore")
+    return n.decode()
 
 
 def hydrate_user(items, users_by_id):
@@ -566,6 +592,15 @@ if __name__ == "__main__":
             "query": "camo",
             "limit": 4,
             "is_auto_complete": True,
+        }
+    )
+
+    _print_test_search(
+        {
+            "query": "deadmau5",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": False,
         }
     )
 
