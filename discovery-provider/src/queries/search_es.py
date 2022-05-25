@@ -1,6 +1,5 @@
 import logging
-from copy import deepcopy
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from src.api.v1.helpers import (
     extend_favorite,
@@ -40,248 +39,94 @@ def search_es_full(args: dict):
 
     mdsl: Any = []
 
-    only_downloadable_term = {"term": {"downloadable": {"value": True}}}
-
-    saved_term = {"term": {"saved_by": {"value": current_user_id, "boost": 1.2}}}
-
     # Scoring Summary
     # Query score * Function score multiplier
     # Query score = boosted on text similarity, verified artists, personalization (current user saved or reposted or followed)
     # Function score multiplier = popularity (repost count)
 
-    personalized_terms = [
-        saved_term,
-        {"term": {"reposted_by": {"value": current_user_id, "boost": 1.2}}},
-    ]
-
-    followed_term = {
-        "terms": {
-            "_id": {
-                "index": ES_USERS,
-                "id": str(current_user_id),
-                "path": "following_ids",
-            },
-        }
-    }
-
-    match_query = [
-        {
-            "multi_match": {
-                "query": search_str,
-                "fields": [
-                    "suggest",
-                    "suggest._2gram",
-                    "suggest._3gram",
-                ],
-                "type": "bool_prefix",
-            }
-        }
-    ]
-    should_match_query = [
-        {
-            "multi_match": {
-                "query": search_str,
-                "fields": [
-                    "suggest",
-                    "suggest._2gram",
-                    "suggest._3gram",
-                ],
-                "operator": "and",
-                "type": "bool_prefix",
-            }
-        },
-    ]
-
-    base_tracks_query: Dict = {
-        "size": limit,
-        "from": offset,
-        "query": {
-            "function_score": {
-                "query": {
-                    "bool": {
-                        "must": [
-                            *match_query,
-                            {"term": {"is_unlisted": {"value": False}}},
-                            {"term": {"is_delete": False}},
-                        ],
-                        "must_not": [{"exists": {"field": "stem_of"}}],
-                        "should": [
-                            *should_match_query,
-                            {"term": {"user.is_verified": {"value": True}}},
-                        ],
-                    }
-                },
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "modifier": "ln2p",
-                        }
-                    },
-                ],
-            }
-        },
-    }
-
-    base_users_query: Dict = {
-        "size": limit,
-        "from": offset,
-        "query": {
-            "function_score": {
-                "query": {
-                    "bool": {
-                        "must": [
-                            *match_query,
-                            {"term": {"is_deactivated": {"value": False}}},
-                        ],
-                        "should": [
-                            *should_match_query,
-                            {"term": {"is_verified": {"value": True}}},
-                        ],
-                    }
-                },
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "follower_count",
-                            "modifier": "log1p",
-                        },
-                    }
-                ],
-            }
-        },
-    }
-
-    base_playlists_query: Dict = {
-        "size": limit,
-        "from": offset,
-        "query": {
-            "function_score": {
-                "query": {
-                    "bool": {
-                        "must": [
-                            *match_query,
-                            {"term": {"is_private": {"value": False}}},
-                            {"term": {"is_delete": False}},
-                            {"term": {"is_album": {"value": False}}},
-                        ],
-                        "should": [
-                            *should_match_query,
-                            {"term": {"is_verified": {"value": True}}},
-                        ],
-                    }
-                },
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "modifier": "ln2p",
-                        }
-                    },
-                ],
-            }
-        },
-    }
-
-    base_album_query: Dict = {
-        "size": limit,
-        "from": offset,
-        "query": {
-            "function_score": {
-                "query": {
-                    "bool": {
-                        "must": [
-                            *match_query,
-                            {"term": {"is_private": {"value": False}}},
-                            {"term": {"is_delete": False}},
-                            {"term": {"is_album": {"value": True}}},
-                        ],
-                        "should": [
-                            *should_match_query,
-                            {"term": {"is_verified": {"value": True}}},
-                        ],
-                    }
-                },
-                "functions": [
-                    {
-                        "field_value_factor": {
-                            "field": "repost_count",
-                            "modifier": "ln2p",
-                        }
-                    },
-                ],
-            }
-        },
-    }
-
     # tracks
     if do_tracks:
-        if only_downloadable:
-            base_tracks_query["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].append(only_downloadable_term)
-
-        track_search_query: List = [{"index": ES_TRACKS}, base_tracks_query]
-        mdsl.extend(track_search_query)
+        mdsl.extend(
+            [
+                {"index": ES_TRACKS},
+                track_dsl(
+                    search_str,
+                    current_user_id,
+                    must_saved=False,
+                    only_downloadable=only_downloadable,
+                ),
+            ]
+        )
 
         # saved tracks
         if current_user_id:
-            saved_tracks_query = deepcopy(base_tracks_query)
-            saved_tracks_query["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].append(saved_term)
-            mdsl.extend([{"index": ES_TRACKS}, saved_tracks_query])
-
-            base_tracks_query["query"]["function_score"]["query"]["bool"][
-                "should"
-            ].extend(personalized_terms)
+            mdsl.extend(
+                [
+                    {"index": ES_TRACKS},
+                    track_dsl(
+                        search_str,
+                        current_user_id,
+                        must_saved=True,
+                        only_downloadable=only_downloadable,
+                    ),
+                ]
+            )
 
     # users
     if do_users:
-        mdsl.extend([{"index": ES_USERS}, base_users_query])
+        mdsl.extend(
+            [
+                {"index": ES_USERS},
+                user_dsl(search_str, current_user_id),
+            ]
+        )
         if current_user_id:
-            followed_users_query = deepcopy(base_users_query)
-            followed_users_query["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].append(followed_term)
-            mdsl.extend([{"index": ES_USERS}, followed_users_query])
-
-            base_users_query["query"]["function_score"]["query"]["bool"][
-                "should"
-            ].append(followed_term)
+            mdsl.extend(
+                [
+                    {"index": ES_USERS},
+                    user_dsl(search_str, current_user_id, True),
+                ]
+            )
 
     # playlists
     if do_playlists:
-        playlist_search_query: List = [{"index": ES_PLAYLISTS}, base_playlists_query]
-        mdsl.extend(playlist_search_query)
+        mdsl.extend(
+            [
+                {"index": ES_PLAYLISTS},
+                playlist_dsl(search_str, current_user_id),
+            ]
+        )
 
         # saved playlists
         if current_user_id:
-            saved_playlist_search_query = deepcopy(base_playlists_query)
-            saved_playlist_search_query["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].append(saved_term)
-            mdsl.extend([{"index": ES_PLAYLISTS}, saved_playlist_search_query])
-
-            base_playlists_query["query"]["function_score"]["query"]["bool"][
-                "should"
-            ].extend(personalized_terms)
+            mdsl.extend(
+                [
+                    {"index": ES_PLAYLISTS},
+                    playlist_dsl(search_str, current_user_id, True),
+                ]
+            )
 
     # albums
     if do_albums:
-        album_search_query: List = [{"index": ES_PLAYLISTS}, base_album_query]
-        mdsl.extend(album_search_query)
+        mdsl.extend(
+            [
+                {"index": ES_PLAYLISTS},
+                album_dsl(search_str, current_user_id),
+            ]
+        )
         # saved albums
         if current_user_id:
-            saved_album_search_query = deepcopy(base_album_query)
-            saved_album_search_query["query"]["function_score"]["query"]["bool"][
-                "must"
-            ].append(saved_term)
-            mdsl.extend([{"index": ES_PLAYLISTS}, saved_album_search_query])
+            mdsl.extend(
+                [
+                    {"index": ES_PLAYLISTS},
+                    album_dsl(search_str, current_user_id, True),
+                ]
+            )
 
-            base_album_query["query"]["function_score"]["query"]["bool"][
-                "should"
-            ].extend(personalized_terms)
+    for dsl in mdsl:
+        if "query" in dsl:
+            dsl["size"] = limit
+            dsl["from"] = offset
 
     mfound = esclient.msearch(searches=mdsl)
 
@@ -378,6 +223,141 @@ def search_es_full(args: dict):
         ]
 
     return response
+
+
+def base_match(search_str: str, operator="or"):
+    return [
+        {
+            "multi_match": {
+                "query": search_str,
+                "fields": [
+                    "suggest",
+                    "suggest._2gram",
+                    "suggest._3gram",
+                ],
+                "operator": operator,
+                "type": "bool_prefix",
+            }
+        }
+    ]
+
+
+def be_saved(current_user_id):
+    return {"term": {"saved_by": {"value": current_user_id, "boost": 1.2}}}
+
+
+def be_reposted(current_user_id):
+    return {"term": {"reposted_by": {"value": current_user_id, "boost": 1.2}}}
+
+
+def be_followed(current_user_id):
+    return {
+        "terms": {
+            "_id": {
+                "index": ES_USERS,
+                "id": str(current_user_id),
+                "path": "following_ids",
+            },
+        }
+    }
+
+
+def personalize_dsl(dsl, current_user_id, must_saved):
+    if current_user_id and must_saved:
+        dsl["must"].append(be_saved(current_user_id))
+
+    if current_user_id:
+        dsl["should"].append(be_saved(current_user_id))
+        dsl["should"].append(be_reposted(current_user_id))
+
+
+def default_function_score(dsl, ranking_field):
+    return {
+        "query": {
+            "function_score": {
+                "query": {"bool": dsl},
+                "functions": [
+                    {
+                        "field_value_factor": {
+                            "field": ranking_field,
+                            "modifier": "ln2p",
+                        }
+                    },
+                ],
+            }
+        },
+    }
+
+
+def track_dsl(search_str, current_user_id, must_saved=False, only_downloadable=False):
+    dsl = {
+        "must": [
+            *base_match(search_str),
+            {"term": {"is_unlisted": {"value": False}}},
+            {"term": {"is_delete": False}},
+        ],
+        "must_not": [
+            {"exists": {"field": "stem_of"}},
+        ],
+        "should": [
+            *base_match(search_str, operator="and"),
+        ],
+    }
+
+    if only_downloadable:
+        dsl["must"].append({"term": {"downloadable": {"value": True}}})
+
+    personalize_dsl(dsl, current_user_id, must_saved)
+    return default_function_score(dsl, "repost_count")
+
+
+def user_dsl(search_str, current_user_id, must_saved=False):
+    dsl = {
+        "must": [
+            *base_match(search_str),
+            {"term": {"is_deactivated": {"value": False}}},
+        ],
+        "must_not": [],
+        "should": [
+            *base_match(search_str, operator="and"),
+            {"term": {"is_verified": {"value": True}}},
+        ],
+    }
+
+    if current_user_id and must_saved:
+        dsl["must"].append(be_followed(current_user_id))
+
+    if current_user_id:
+        dsl["should"].append(be_followed(current_user_id))
+
+    return default_function_score(dsl, "follower_count")
+
+
+def base_playlist_dsl(search_str, is_album):
+    return {
+        "must": [
+            *base_match(search_str),
+            {"term": {"is_private": {"value": False}}},
+            {"term": {"is_delete": False}},
+            {"term": {"is_album": {"value": is_album}}},
+        ],
+        "should": [
+            *base_match(search_str, operator="and"),
+            {"term": {"is_verified": {"value": True}}},
+        ],
+    }
+
+
+def playlist_dsl(search_str, current_user_id, must_saved=False):
+    dsl = base_playlist_dsl(search_str, False)
+    personalize_dsl(dsl, current_user_id, must_saved)
+    return default_function_score(dsl, "repost_count")
+
+
+def album_dsl(search_str, current_user_id, must_saved=False):
+    dsl = base_playlist_dsl(search_str, True)
+    personalize_dsl(dsl, current_user_id, must_saved)
+    return default_function_score(dsl, "repost_count")
 
 
 def drop_copycats(users):
