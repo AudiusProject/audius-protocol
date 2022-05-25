@@ -27,7 +27,6 @@ def search_es_full(args: dict):
     if not esclient:
         raise Exception("esclient is None")
 
-    # taken from search_queries.py
     search_str = args.get("query")
     current_user_id = args.get("current_user_id")
     limit = args.get("limit")
@@ -38,14 +37,17 @@ def search_es_full(args: dict):
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
     do_albums = search_type == "all" or search_type == "albums"
-    # is_auto_complete = args.get("is_auto_complete")
 
     mdsl: Any = []
 
-    # should_saved_or_reposted = []
     only_downloadable_term = {"term": {"downloadable": {"value": True}}}
 
     saved_term = {"term": {"saved_by": {"value": current_user_id, "boost": 1.2}}}
+
+    # Scoring Summary
+    # Query score * Function score multiplier
+    # Query score = boosted on text similarity, verified artists, personalization (current user saved or reposted or followed)
+    # Function score multiplier = popularity (repost count)
 
     personalized_terms = [
         saved_term,
@@ -90,17 +92,6 @@ def search_es_full(args: dict):
         },
     ]
 
-    # USE same query for both search + autocomplete for now
-    # if is_auto_complete:
-    #     match_query = {
-    #         "multi_match": {
-    #             "query": search_str,
-    #             "fields": ["suggest", "suggest._2gram", "suggest._3gram"],
-    #             "operator": "and",
-    #             "type": "bool_prefix",
-    #         }
-    #     }
-
     base_tracks_query: Dict = {
         "size": limit,
         "from": offset,
@@ -113,9 +104,7 @@ def search_es_full(args: dict):
                             {"term": {"is_unlisted": {"value": False}}},
                             {"term": {"is_delete": False}},
                         ],
-                        "must_not": [
-                            {"exists": {"field": "stem_of"}}
-                        ],  # why filter stems?
+                        "must_not": [{"exists": {"field": "stem_of"}}],
                         "should": [
                             *should_match_query,
                             {"term": {"user.is_verified": {"value": True}}},
@@ -130,8 +119,6 @@ def search_es_full(args: dict):
                         }
                     },
                 ],
-                # "boost_mode": "sum",
-                # "max_boost": 5,
             }
         },
     }
@@ -161,7 +148,6 @@ def search_es_full(args: dict):
                         },
                     }
                 ],
-                # "boost_mode": "replace",
             }
         },
     }
