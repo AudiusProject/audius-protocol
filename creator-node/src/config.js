@@ -262,7 +262,7 @@ const config = convict({
     doc: 'If we should print logs from sequelize',
     format: Boolean,
     env: 'printSequelizeLogs',
-    default: true
+    default: false
   },
 
   // Transcoding settings
@@ -448,6 +448,18 @@ const config = convict({
 
   /** sync / snapback configs */
 
+  stateMonitoringQueueRateLimitInterval: {
+    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
+    format: 'nat',
+    env: 'stateMonitoringQueueRateLimitInterval',
+    default: 60_000 // 1m
+  },
+  stateMonitoringQueueRateLimitJobsPerInterval: {
+    doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
+    format: 'nat',
+    env: 'stateMonitoringQueueRateLimitJobsPerInterval',
+    default: 0
+  },
   debounceTime: {
     doc: 'sync debounce time in ms',
     format: 'nat',
@@ -647,6 +659,12 @@ const config = convict({
     format: 'nat',
     env: 'maxBatchClockStatusBatchSize',
     default: 5000
+  },
+  audiusContentInfraSetup: {
+    doc: 'How the content node infrastructure stack is running, injected by the infra directly, not to be defined manually',
+    format: String,
+    env: 'audiusContentInfraSetup',
+    default: ''
   }
   /**
    * unsupported options at the moment

@@ -11,6 +11,9 @@ const processPlaylistUpdateNotifications = require('./playlistUpdateNotification
 const processChallengeRewardNotifications = require('./challengeRewardNotification')
 const processMilestoneListenNotifications = require('./milestoneListenNotification')
 const processTierChangeNotifications = require('./tierChangeNotification')
+const processTipNotification = require('./tipNotification')
+const processReactionNotification = require('./reactionNotification')
+const processSupporterRankChangeNotification = require('./supporterRankChangeNotification')
 
 // Mapping of Notification type to processing function.
 const notificationMapping = {
@@ -23,7 +26,10 @@ const notificationMapping = {
   [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications,
   [notificationTypes.ChallengeReward]: processChallengeRewardNotifications,
   [notificationTypes.MilestoneListen]: processMilestoneListenNotifications,
-  [notificationTypes.TierChange]: processTierChangeNotifications
+  [notificationTypes.TierChange]: processTierChangeNotifications,
+  [notificationTypes.Tip]: processTipNotification,
+  [notificationTypes.Reaction]: processReactionNotification,
+  [notificationTypes.SupporterRankUp]: processSupporterRankChangeNotification
 }
 
 /**

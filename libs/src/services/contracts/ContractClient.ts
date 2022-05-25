@@ -108,7 +108,7 @@ export class ContractClient {
         this._contractAddress
       )
       this._isInitializing = false
-      this._isInitialized = true
+      this._isInitialized = !!this._contractAddress
     } catch (e) {
       if (++this._initAttempts >= CONTRACT_INIT_MAX_ATTEMPTS) {
         this.logger.error(
