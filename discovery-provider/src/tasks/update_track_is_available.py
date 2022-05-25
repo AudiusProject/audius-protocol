@@ -1,15 +1,13 @@
 import logging
+from datetime import datetime
+from typing import Any, List, Tuple, Union
 
 import requests
 from src.models import Track, User
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_info
 
-# from typing import Any
-
-
 logger = logging.getLogger(__name__)
-
 
 ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "unavailable_tracks_all"
 BATCH_SIZE = 1000
@@ -17,12 +15,12 @@ DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
-def _get_redis_set_members_as_list(redis, key):
+def _get_redis_set_members_as_list(redis: Any, key: str) -> List[int]:
     values = redis.smembers(key)
     return [int(value.decode()) for value in values]
 
 
-def fetch_unavailable_track_ids_in_network(redis):
+def fetch_unavailable_track_ids_in_network(redis: Any) -> None:
     content_nodes = fetch_all_registered_content_node_info()
 
     # Clear redis for existing data
@@ -44,7 +42,7 @@ def fetch_unavailable_track_ids_in_network(redis):
             redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, *unavailable_track_ids_batch)
 
 
-def update_tracks_is_available_status(db, redis):
+def update_tracks_is_available_status(db: Any, redis: Any) -> None:
     """Check track availability on all unavailable tracks and update in Tracks table"""
     all_unavailable_track_ids = _get_redis_set_members_as_list(
         redis, ALL_UNAVAILABLE_TRACKS_REDIS_KEY
@@ -60,15 +58,22 @@ def update_tracks_is_available_status(db, redis):
                 )
 
                 track_id_to_is_available_status = {}
+                entry: Tuple[int, Union[int, None], Union[List[int], List[None]]]
                 for entry in track_ids_to_replica_set:
                     track_id = entry[0]
-                    spID_replica_set = [entry[1], *entry[2]]
 
-                    is_available = check_track_is_available(
-                        redis=redis,
-                        track_id=track_id,
-                        spID_replica_set=spID_replica_set,
-                    )
+                    # Some users are do not have primary_ids or secondary_ids
+                    # If these values are null, default to track is available
+                    if entry[1] is None or entry[2][0] is None or entry[2][1] is None:
+                        is_available = True
+                    else:
+                        spID_replica_set = [entry[1], *entry[2]]
+                        is_available = check_track_is_available(
+                            redis=redis,
+                            track_id=track_id,
+                            spID_replica_set=spID_replica_set,
+                        )
+
                     track_id_to_is_available_status[track_id] = is_available
 
                 # Update tracks with is_available status
@@ -89,7 +94,7 @@ def update_tracks_is_available_status(db, redis):
                 session.rollback()
 
 
-def fetch_unavailable_track_ids(node):
+def fetch_unavailable_track_ids(node: str) -> List[int]:
     """Fetches unavailable tracks from Content Node. Returns empty list if request fails."""
     unavailable_track_ids = []
 
@@ -104,10 +109,12 @@ def fetch_unavailable_track_ids(node):
     return unavailable_track_ids
 
 
-def query_replica_set_by_track_id(session, track_ids):
+def query_replica_set_by_track_id(
+    session: Any, track_ids: List[int]
+) -> Union[List[Tuple[int, int, List[int]]], List[Tuple[int, None, List[None]]]]:
     """
-    Returns an array of tuples with the structure:
-    (integer: track_id | integer: primary_id | integer[]: secondary_ids)
+    Returns an array of tuples with the structure: [(track_id | primary_id | secondary_ids), ...]
+    If `primary_id` and `secondary_ids` are undefined, will return as None
     """
     query_results = (
         session.query(Track.track_id, User.primary_id, User.secondary_ids)
@@ -123,7 +130,8 @@ def query_replica_set_by_track_id(session, track_ids):
     return query_results
 
 
-def query_tracks_by_track_ids(session, track_ids):
+def query_tracks_by_track_ids(session: Any, track_ids: List[int]) -> List[Any]:
+    """Returns a list of Track objects that has a track id in `track_ids`"""
     tracks = (
         session.query(Track)
         .filter(
@@ -136,52 +144,51 @@ def query_tracks_by_track_ids(session, track_ids):
     return tracks
 
 
-def check_track_is_available(redis, track_id, spID_replica_set):
+def check_track_is_available(
+    redis: Any, track_id: int, spID_replica_set: List[int]
+) -> bool:
     """
     Checks if a track is available in the replica set. Needs to only be available
     on one replica set node to be marked as available.
         redis: redis instance
-        track_id: integer; the observed track id
-        spID_replica_set: integer[] an array of the SP IDs that are associated with track
+        track_id: the observed track id
+        spID_replica_set: an array of the SP IDs that are associated with track
     """
 
-    is_available_in_network = False
     i = 0
-    while not is_available_in_network and i < len(spID_replica_set):
+    while i < len(spID_replica_set):
         spID_unavailable_tracks_key = get_unavailable_tracks_redis_key(
             spID_replica_set[i]
         )
         is_available_on_sp = not redis.sismember(spID_unavailable_tracks_key, track_id)
 
         if is_available_on_sp:
-            is_available_in_network = True
+            return True
 
         i = i + 1
 
-    return is_available_in_network
+    return False
 
 
-def get_unavailable_tracks_redis_key(spID):
-    """Returns the key used to store the unavailable tracks on a sp"""
+def get_unavailable_tracks_redis_key(spID: int) -> str:
+    """Returns the redis key used to store the unavailable tracks on a sp"""
     return f"unavailable_tracks_{spID}"
 
 
 # TODO: what happens when a worker fails? wrap in try/catch? not necessary?
-# TODO: what happens when fetching unavail tracks fails?
 
 # TODO: actual todo :3
 # o add migration for "is_available" column in "Tracks". default to "True"
 # o unit test the updating the tracks table with the 'is_available' status
 # o unit test fetch_unavailable_track_ids_in_network
 # o unit test update_tracks_is_available_status
-# - consider and handle fail conditions
-# - consider and handle batching
-# - consider file placement?
+# o consider and handle fail conditions
+# o consider and handle batching
 # - unit/manual test update_track_is_available / get the worker working
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
-def update_track_is_available(self):
+def update_track_is_available(self) -> None:
     """
     Recurring task that updates whether tracks are available on the network
     """
@@ -193,14 +200,15 @@ def update_track_is_available(self):
 
     have_lock = False
     update_lock = redis.lock(
-        "disc_prov_lock",
+        "update_track_is_available_lock",
         timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
     )
 
     try:
         have_lock = update_lock.acquire(blocking=False)
-        # TODO: clear redis here ? how often do tracks get un-delisted?
         if have_lock:
+            redis.set("update_track_is_available_start", datetime.now())
+
             fetch_unavailable_track_ids_in_network(redis)
             update_tracks_is_available_status(db, redis)
         else:
@@ -216,4 +224,5 @@ def update_track_is_available(self):
         raise e
     finally:
         if have_lock:
+            redis.set("update_track_is_available_finish", datetime.now())
             update_lock.release()
