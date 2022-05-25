@@ -1,6 +1,69 @@
 #!/bin/bash
 set -e
 
+# enable rsyslog if not set to 0
+: "${enableRsyslog:=1}"
+
+# $enableRsyslog should be > 0
+if ((enableRsyslog)); then
+    mkdir -p /var/log
+    mkdir -p /var/spool/rsyslog
+    mkdir -p /etc/rsyslog.d
+
+    # $logglyDisable should be empty/null
+    # $logglyToken should be a nonzero length string
+    if [[ -z "$audius_loggly_disable" && -n "$audius_loggly_token" ]]; then
+        # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
+        audius_discprov_hostname=$(echo $audius_discprov_url | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
+
+        # add hostname to loggly tags
+        if [[ "$audius_discprov_hostname" != "" ]]; then
+            if [[ "$audius_loggly_tags" != "" ]]; then
+                audius_loggly_tags="$audius_loggly_tags,$audius_discprov_hostname"
+            else
+                audius_loggly_tags="$audius_discprov_hostname"
+            fi
+        fi
+
+        if [[ "$audius_loggly_tags" != "" ]]; then
+            audius_loggly_tags="tag=\\\"${audius_loggly_tags//,/\\\" tag=\\\"}\\\""
+            # ${audius_loggly_tags//,/\\\" tag=\\\"} replaces , with \" tag=\"
+            # then we add tag=\" to the start and \" to the end
+        fi
+
+        cat >/etc/rsyslog.d/10-loggly.conf <<EOF
+\$WorkDirectory /var/spool/rsyslog  # where to place spool files
+\$ActionQueueFileName loggly        # unique name prefix for spool files
+\$ActionQueueMaxDiskSpace 1g        # 1gb space limit (use as much as possible)
+\$ActionQueueSaveOnShutdown on      # save messages to disk on shutdown
+\$ActionQueueType LinkedList        # run asynchronously
+\$ActionResumeRetryCount -1         # infinite retries if host is down
+template(name="LogglyFormat" type="string"
+string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags] %msg%\n")
+# Send messages to Loggly over TCP using the template.
+action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
+EOF
+    fi
+
+    cat >/etc/rsyslog.d/20-file.conf <<EOF
+\$WorkDirectory /var/spool/rsyslog  # where to place spool files
+\$ActionQueueFileName file          # unique name prefix for spool files
+\$ActionQueueMaxDiskSpace 1g        # 1gb space limit (use as much as possible)
+\$ActionQueueSaveOnShutdown on      # save messages to disk on shutdown
+\$ActionQueueType LinkedList        # run asynchronously
+\$ActionResumeRetryCount -1         # infinite retries if host is down
+\$outchannel server_log,/var/log/discprov-server.log, 52428800,/audius-discovery-provider/scripts/rotate-log.sh
+\$outchannel worker_log,/var/log/discprov-worker.log, 52428800,/audius-discovery-provider/scripts/rotate-log.sh
+\$outchannel beat_log,/var/log/discprov-beat.log, 52428800,/audius-discovery-provider/scripts/rotate-log.sh
+joaquincasares marked this conversation as resolved.
+if \$programname == 'server' then :omfile:\$server_log
+if \$programname == 'worker' then :omfile:\$worker_log
+if \$programname == 'beat' then   :omfile:\$beat_log
+EOF
+
+    rsyslogd
+fi
+
 if [ -z "$audius_redis_url" ]; then
     redis-server --daemonize yes
     export audius_redis_url="redis://localhost:6379/00"
@@ -46,16 +109,16 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         echo "Finished running migrations"
     fi
 
-    audius_service=server ./scripts/dev-server.sh &
+    audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel &
-        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel &
+        audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
-    audius_service=server ./scripts/prod-server.sh &
+    audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        audius_service=worker celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel &
-        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel &
+        audius_service=worker celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 fi
 
