@@ -118,7 +118,7 @@ export const GENRES = [
   )
 ]
 
-const NEWLY_ADDED_GENRES: string[] = [Genre.LOFI]
+const NEWLY_ADDED_GENRES: string[] = []
 
 export const TRENDING_GENRES = GENRES.filter(
   g => !NEWLY_ADDED_GENRES.includes(g)
