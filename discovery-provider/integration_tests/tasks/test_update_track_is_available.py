@@ -323,8 +323,6 @@ def test_update_track_is_available(
         else:
             return []
 
-    # mock_fetch_unavailable_track_ids.side_effect = self.mock_fetch_unavailable_track_ids
-    # mock_fetch_unavailable_track_ids = mock.MagicMock(side_effect=mock_fetch_resp)
     mocker.patch(
         "src.tasks.update_track_is_available.fetch_unavailable_track_ids",
         side_effect=mock_fetch_unavailable_track_ids,
@@ -339,7 +337,6 @@ def test_update_track_is_available(
     fetch_unavailable_track_ids_in_network(redis)
     update_tracks_is_available_status(db, redis)
 
-    # print_dummy_tracks_and_users(db)
     with db.scoped_session() as session:
         mock_available_tracks = [1, 2, 3]
         tracks = (

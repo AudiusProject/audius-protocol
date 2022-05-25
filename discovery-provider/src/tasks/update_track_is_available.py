@@ -1,9 +1,7 @@
 import logging
+from typing import Any
 
 import requests
-
-# TODO: do i need this?
-# from src.tasks.aggregates import init_task_and_acquire_lock
 from sqlalchemy.orm.session import make_transient
 from src.models import Track, User
 from src.tasks.celery_app import celery
@@ -15,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "unavailable_tracks_all"
 BATCH_SIZE = 1000
+DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
+REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
 def _get_redis_set_members_as_list(redis, key):
@@ -24,17 +24,24 @@ def _get_redis_set_members_as_list(redis, key):
 
 def fetch_unavailable_track_ids_in_network(redis):
     content_nodes = fetch_all_registered_content_node_info()
+
+    # Clear redis for existing data
+    redis.delete(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
+
     for node in content_nodes:
         # Keep mapping of spId to set of unavailable tracks
         unavailable_track_ids = fetch_unavailable_track_ids(node["endpoint"])
         spID_unavailable_tracks_key = get_unavailable_tracks_redis_key(node["spID"])
 
-        # TODO: we should probably batch this sadd
-        redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids)
+        # Clear redis for existing data
+        redis.delete(spID_unavailable_tracks_key)
 
-        # Aggregate a set of unavailable tracks
-        # TODO: and batch this sadd
-        redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, *unavailable_track_ids)
+        for i in range(0, len(unavailable_track_ids), BATCH_SIZE):
+            unavailable_track_ids_batch = unavailable_track_ids[i : i + BATCH_SIZE]
+            redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids_batch)
+
+            # Aggregate a set of unavailable tracks
+            redis.sadd(ALL_UNAVAILABLE_TRACKS_REDIS_KEY, *unavailable_track_ids_batch)
 
 
 def update_tracks_is_available_status(db, redis):
@@ -43,53 +50,65 @@ def update_tracks_is_available_status(db, redis):
         redis, ALL_UNAVAILABLE_TRACKS_REDIS_KEY
     )
 
-    # TODO: wrap in big try/except probably
     for i in range(0, len(all_unavailable_track_ids), BATCH_SIZE):
+        unavailable_track_ids_batch = all_unavailable_track_ids[i : i + BATCH_SIZE]
         with db.scoped_session() as session:
-            unavailable_track_ids_batch = all_unavailable_track_ids[i : i + BATCH_SIZE]
+            try:
 
-            track_ids_to_replica_set = query_replica_set_by_track_id(
-                session, unavailable_track_ids_batch
-            )
-
-            track_id_to_is_available_status = {}
-            for entry in track_ids_to_replica_set:
-                track_id = entry[0]
-                spID_replica_set = [entry[1], *entry[2]]
-
-                is_available = check_track_is_available(
-                    redis=redis, track_id=track_id, spID_replica_set=spID_replica_set
+                track_ids_to_replica_set = query_replica_set_by_track_id(
+                    session, unavailable_track_ids_batch
                 )
-                track_id_to_is_available_status[track_id] = is_available
 
-            # Invalidate old tracks and update with is_available status
-            tracks = query_tracks_by_track_ids(session, unavailable_track_ids_batch)
-            # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
-            # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
-            for track in tracks:
-                session.expunge(track)
-                make_transient(track)
+                track_id_to_is_available_status = {}
+                for entry in track_ids_to_replica_set:
+                    track_id = entry[0]
+                    spID_replica_set = [entry[1], *entry[2]]
 
-            invalidate_old_tracks(session, unavailable_track_ids_batch)
+                    is_available = check_track_is_available(
+                        redis=redis,
+                        track_id=track_id,
+                        spID_replica_set=spID_replica_set,
+                    )
+                    track_id_to_is_available_status[track_id] = is_available
 
-            def update_is_available(track):
-                track.is_available = track_id_to_is_available_status[track.track_id]
-                return track
+                # Update tracks with is_available status
+                tracks = query_tracks_by_track_ids(session, unavailable_track_ids_batch)
+                for track in tracks:
+                    is_available = track_id_to_is_available_status[track.track_id]
 
-            tracks_with_updated_is_available_status = list(
-                map(update_is_available, tracks)
-            )
-            session.bulk_save_objects(tracks_with_updated_is_available_status)
-            session.commit()
+                    # If track is not available, also flip 'is_delete' flag to True
+                    if not is_available:
+                        track.is_available = False
+                        track.is_delete = True
+
+                session.commit()
+            except Exception as e:
+                logger.warn(
+                    f"Could not process batch {unavailable_track_ids_batch}: {e}\nContinuing..."
+                )
+                session.rollback()
 
 
 def fetch_unavailable_track_ids(node):
-    resp = requests.get(f"{node}/blacklist/tracks").json()
-    unavailable_track_ids = resp["data"]["values"]
+    """Fetches unavailable tracks from Content Node. Returns empty list if request fails."""
+    unavailable_track_ids = []
+
+    try:
+        resp = requests.get(
+            f"{node}/blacklist/tracks", timeout=REQUESTS_TIMEOUT_SECONDS
+        ).json()
+        unavailable_track_ids = resp["data"]["values"]
+    except Exception as e:
+        logger.warn(f"Could not fetch unavailable tracks from {node}: {e}")
+
     return unavailable_track_ids
 
 
 def query_replica_set_by_track_id(session, track_ids):
+    """
+    Returns an array of tuples with the structure:
+    (integer: track_id | integer: primary_id | integer[]: secondary_ids)
+    """
     query_results = (
         session.query(Track.track_id, User.primary_id, User.secondary_ids)
         .join(User, Track.owner_id == User.user_id, isouter=True)  # left join
@@ -121,6 +140,9 @@ def check_track_is_available(redis, track_id, spID_replica_set):
     """
     Checks if a track is available in the replica set. Needs to only be available
     on one replica set node to be marked as available.
+        redis: redis instance
+        track_id: integer; the observed track id
+        spID_replica_set: integer[] an array of the SP IDs that are associated with track
     """
 
     is_available_in_network = False
@@ -160,8 +182,38 @@ def get_unavailable_tracks_redis_key(spID):
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
 def update_track_is_available(self):
+    """
+    Recurring task that updates whether tracks are available on the network
+    """
+
+    # Reference: src/tasks/user_listening_history/index_user_listening_history.py
+
     db = update_track_is_available.db
     redis = update_track_is_available.redis
 
-    fetch_unavailable_track_ids_in_network(redis)
-    update_tracks_is_available_status(db, redis)
+    have_lock = False
+    update_lock = redis.lock(
+        "disc_prov_lock",
+        timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
+    )
+
+    try:
+        have_lock = update_lock.acquire(blocking=False)
+        # TODO: clear redis here ? how often do tracks get un-delisted?
+        if have_lock:
+            fetch_unavailable_track_ids_in_network(redis)
+            update_tracks_is_available_status(db, redis)
+        else:
+            logger.warning(
+                "update_track_is_available.py | Lock not acquired",
+                exc_info=True,
+            )
+
+    except Exception as e:
+        logger.error(
+            "update_track_is_available.py | Fatal error in main loop", exc_info=True
+        )
+        raise e
+    finally:
+        if have_lock:
+            update_lock.release()
