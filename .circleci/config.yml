@@ -629,40 +629,6 @@ jobs:
             npm run localnet-up-ci
             npm run dev-setup
 
-  docker-build-and-push:
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    parameters:
-      repo:
-        type: string
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Get tag or latest
-          command: |
-            # order of precendence for IMAGE tag is:
-            # 1. CIRCLE_TAG if defined,
-            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
-            # 3. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
-      - run:
-          name: Docker login
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-      - run:
-          name: Docker build << parameters.repo >>
-          command: |
-            cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
-            docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM --force
-      - run:
-          name: Docker push << parameters.repo >>
-          command: |
-            docker push audius/<< parameters.repo >>:$IMAGE_TAG
-            docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
-
   docker-build-and-push-updated:
     docker:
       - image: cimg/base:2022.03
