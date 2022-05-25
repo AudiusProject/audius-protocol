@@ -219,7 +219,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_hash_bytes = redis.get(
             most_recent_indexed_block_hash_redis_key
         )
-        if latest_indexed_block_hash is not None:
+        if latest_indexed_block_hash_bytes is not None:
             latest_indexed_block_hash = latest_indexed_block_hash_bytes.decode("utf-8")
     else:
         # Get latest blockchain state from web3
