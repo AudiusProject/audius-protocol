@@ -68,6 +68,7 @@ def _get_tracks(session, args):
             and "authed_user_id" in args
             and args.get("user_id") == args.get("authed_user_id")
         )
+        logger.info(f"DYLANJEFFERS is_authed_user: {is_authed_user} {args}")
         if not is_authed_user:
             base_query = base_query.filter(Track.is_unlisted == False)
 

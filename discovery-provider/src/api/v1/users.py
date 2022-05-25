@@ -206,6 +206,8 @@ class TrackList(Resource):
         sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        logger.info(f"DYLANJEFFERS authed_user_id: {authed_user_id}")
+        logger.info(f"DYLANJEFFERS current_user_id: {current_user_id}")
 
         args = {
             "user_id": decoded_id,
