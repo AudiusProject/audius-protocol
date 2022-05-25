@@ -29,6 +29,17 @@ type RequestParams = {
   data?: Record<string, unknown>
 }
 
+export type UserProfile = {
+  userId: number
+  email: string
+  name: string
+  handle: string
+  verified: boolean
+  imageURL?: string
+  sub: number
+  iat: string
+}
+
 /**
  * Constructs a service class for a discovery node
  * @param whitelist whether or not to only include specified nodes in selection
@@ -581,6 +592,21 @@ export class DiscoveryProvider {
   async getSaversForPlaylist(limit = 100, offset = 0, savePlaylistId: number) {
     const req = Requests.getSaversForPlaylist(limit, offset, savePlaylistId)
     return await this._makeRequest(req)
+  }
+
+  /**
+   * get whether a JWT given by Audius Oauth popup is valid
+   * @param token - JWT
+   * @return {UserProfile | false} profile info of user attached to JWT payload if the JWT is valid, else false
+   */
+  async verifyToken(token: string): Promise<UserProfile | false> {
+    const req = Requests.verifyToken(token)
+    const res = await this._makeRequest<UserProfile[]>(req)
+    if (res == null || res[0] == null) {
+      return false
+    } else {
+      return res[0]
+    }
   }
 
   /**
