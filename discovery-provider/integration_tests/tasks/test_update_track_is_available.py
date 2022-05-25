@@ -313,7 +313,6 @@ def test_update_track_is_available(
     # Mock fetch data to make it so that track ids 1, 2, 3 are unavailable
     def mock_fetch_unavailable_track_ids(*args, **kwargs):
         endpoint = args[0]
-        print("uh did u get here")
         spID = int(endpoint.split("content_node")[1].split(".com")[0])
         if spID == 7 or spID == 9 or spID == 13:
             return [1, 2]

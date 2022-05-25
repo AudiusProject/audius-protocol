@@ -11,6 +11,10 @@ from src.database_task import DatabaseTask
 from src.models import Remix, Stem, Track, TrackRoute, User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.tasks.update_track_is_available import (
+    check_track_is_available,
+    query_replica_set_by_track_id,
+)
 from src.utils import helpers, multihash
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -33,6 +37,7 @@ def track_state_update(
     block_hash,
     ipfs_metadata,
     blacklisted_cids,
+    redis,
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
@@ -109,6 +114,7 @@ def track_state_update(
                         block_timestamp,
                         track_metadata,
                         pending_track_routes,
+                        redis,
                     )
 
                     # If track record object is None, it has a blacklisted metadata CID
@@ -422,6 +428,7 @@ def parse_track_event(
     block_timestamp,
     track_metadata,
     pending_track_routes,
+    redis,
 ):
     challenge_bus = update_task.challenge_event_bus
     # Just use block_timestamp as integer
@@ -498,6 +505,14 @@ def parse_track_event(
         owner_id = helpers.get_tx_arg(entry, "_trackOwnerId")
         track_record.owner_id = owner_id
         track_record.is_delete = False
+
+        # TODO: do we do this for new tracks too? shouldnt all new tracks be available?
+        track_replica_set = query_replica_set_by_track_id(
+            session, [track_record.track_id]
+        )
+        track_record.is_available = check_track_is_available(
+            redis, track_record.track_id, track_replica_set
+        )
 
         handle = (
             session.query(User.handle)
