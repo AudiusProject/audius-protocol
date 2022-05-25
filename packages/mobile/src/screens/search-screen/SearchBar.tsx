@@ -1,9 +1,8 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { TextInput } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { SearchInput } from 'app/components/core'
+import { TextInput, TextInputRef } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -21,7 +20,7 @@ export const SearchBar = () => {
   const dispatchWeb = useDispatchWeb()
   const navigation = useNavigation()
   const [clearable, setClearable] = useState(query !== '')
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<TextInputRef>(null)
 
   const handleChangeText = useCallback(
     (text: string) => {
@@ -68,7 +67,7 @@ export const SearchBar = () => {
   const icon = isLoading ? LoadingSpinner : undefined
 
   return (
-    <SearchInput
+    <TextInput
       autoFocus
       ref={inputRef}
       value={query}

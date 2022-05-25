@@ -1,7 +1,7 @@
 import { TextInputProps } from 'react-native'
 
 import IconFilter from 'app/assets/images/iconFilter.svg'
-import { SearchInput, Tile } from 'app/components/core'
+import { TextInput, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 type FilterInputProps = TextInputProps
@@ -18,15 +18,13 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const FilterInput = ({
-  value,
-  onChangeText,
-  placeholder
-}: FilterInputProps) => {
+export const FilterInput = (props: FilterInputProps) => {
+  const { value, onChangeText, placeholder } = props
   const styles = useStyles()
+
   return (
     <Tile styles={{ root: styles.tileRoot, tile: styles.tile }}>
-      <SearchInput
+      <TextInput
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}

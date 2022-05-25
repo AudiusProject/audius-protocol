@@ -6,7 +6,7 @@ import { confirmCredentials } from 'audius-client/src/common/store/change-passwo
 import { View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { Button, SearchInput } from 'app/components/core'
+import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message/'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
@@ -73,7 +73,7 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
 
   return (
     <View style={{ width: '100%' }}>
-      <SearchInput
+      <TextInput
         style={styles.input}
         onChangeText={handleEmailChange}
         onKeyPress={handleKeyPress}
@@ -81,7 +81,7 @@ export const ConfirmCredentials = ({ onComplete }: ConfirmCredentialsProps) => {
         placeholder={messages.emailPlaceholder}
         value={email}
       />
-      <SearchInput
+      <TextInput
         style={styles.input}
         onChangeText={handlePasswordChange}
         onKeyPress={handleKeyPress}

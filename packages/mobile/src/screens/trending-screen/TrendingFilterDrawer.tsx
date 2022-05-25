@@ -15,7 +15,7 @@ import {
 } from 'audius-client/src/common/utils/genres'
 import { FlatList, View } from 'react-native'
 
-import { SearchInput, Button } from 'app/components/core'
+import { TextInput, Button } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -86,7 +86,7 @@ export const TrendingFilterDrawer = () => {
       isGestureSupported={false}
     >
       <View style={styles.root}>
-        <SearchInput
+        <TextInput
           placeholder={messages.searchPlaceholder}
           style={styles.search}
           value={searchValue}

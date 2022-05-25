@@ -4,7 +4,7 @@ import commonPasswordList from 'fxa-common-password-list'
 import { View } from 'react-native'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { Button, SearchInput } from 'app/components/core'
+import { Button, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
 import { makeStyles } from 'app/styles'
@@ -193,7 +193,7 @@ export const EnterPassword = ({
 
   return (
     <View style={{ width: '100%' }}>
-      <SearchInput
+      <TextInput
         style={styles.input}
         placeholder={messages.passwordPlaceholder}
         value={password}
@@ -202,7 +202,7 @@ export const EnterPassword = ({
         textContentType='password'
         secureTextEntry
       />
-      <SearchInput
+      <TextInput
         style={styles.input}
         placeholder={messages.confirmationPlaceholder}
         value={passwordConfirmation}
