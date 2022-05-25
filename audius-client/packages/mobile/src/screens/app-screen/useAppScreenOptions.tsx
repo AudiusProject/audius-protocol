@@ -68,7 +68,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
-export const useAppScreenOptions = () => {
+export const useAppScreenOptions = (
+  overrides?: Partial<NativeStackNavigationOptions>
+) => {
   const styles = useStyles()
   const { accentOrangeLight1, neutralLight4 } = useThemeColors()
   const dispatchWeb = useDispatchWeb()
@@ -195,7 +197,8 @@ export const useAppScreenOptions = () => {
               />
             </View>
           )
-        }
+        },
+        ...overrides
       }
     },
     [
@@ -206,7 +209,8 @@ export const useAppScreenOptions = () => {
       styles,
       neutralLight4,
       accentOrangeLight1,
-      notificationCount
+      notificationCount,
+      overrides
     ]
   )
 

@@ -30,6 +30,7 @@ import { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
 import { NotificationsDrawerNavigationContext } from '../notifications-screen/NotificationsDrawerNavigationContext'
+import { TipArtistModal } from '../tip-artist-screen'
 import { TrackRemixesScreen } from '../track-screen/TrackRemixesScreen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
@@ -54,6 +55,7 @@ export type AppTabScreenParamList = {
     notificationType: NotificationType
     count: number
   }
+  TipArtist: undefined
 }
 
 const forFade = ({ current }) => ({
@@ -116,12 +118,13 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           // hack for now to prevent pop for some pages
           if (
             !e.target?.includes('EditProfile') &&
+            !e.target?.includes('EditPlaylist') &&
+            !e.target?.includes('CreatePlaylist') &&
             !(
               e.target?.includes('Search') &&
               !e.target?.includes('SearchResults')
             ) &&
-            !e.target?.includes('EditPlaylist') &&
-            !e.target?.includes('CreatePlaylist')
+            !e.target?.includes('TipArtist')
           ) {
             // When a screen is removed, notify the web layer to pop navigation
             dispatchWeb({
@@ -204,6 +207,14 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           options={screenOptions}
         />
       </Stack.Group>
+      <Stack.Screen
+        name='TipArtist'
+        component={TipArtistModal}
+        options={{
+          headerShown: false,
+          presentation: 'fullScreenModal'
+        }}
+      />
     </Stack.Navigator>
   )
 }
