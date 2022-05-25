@@ -35,7 +35,7 @@ export const TipProfilePicture = ({
   )
 
   return user ? (
-    <div className={cn(styles.profileUser, className)}>
+    <div className={cn(styles.receiver, className)}>
       <div
         className={cn(styles.accountWrapper, {
           [styles.accountWrapperLeftAlign]: !centered

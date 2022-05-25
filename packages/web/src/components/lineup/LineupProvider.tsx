@@ -14,6 +14,8 @@ import Kind from 'common/models/Kind'
 import { Lineup } from 'common/models/Lineup'
 import Status from 'common/models/Status'
 import { LineupActions } from 'common/store/lineup/actions'
+import { getShowTip } from 'common/store/tipping/selectors'
+import { FeedTipTile } from 'components/tipping/feed-tip-tile/FeedTipTile'
 import {
   TrackTileProps,
   PlaylistTileProps,
@@ -191,6 +193,9 @@ export interface LineupProviderProps {
 
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
+
+  /** Whether we are in the feed lineup */
+  isFeed?: boolean
 
   /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
   rankIconCount?: number
@@ -472,6 +477,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineup: { isMetadataLoading, page },
       numPlaylistSkeletonRows,
       isTrending = false,
+      isFeed = false,
+      showTip,
       rankIconCount = 0
     } = this.props
     const status = lineup.status
@@ -766,6 +773,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               threshold={loadMoreThreshold}
               element='ol'
             >
+              {isFeed && showTip ? <FeedTipTile /> : null}
               {tiles.map((tile, index) => (
                 <li key={index}>{tile}</li>
               ))}
@@ -780,7 +788,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
 function mapStateToProps(state: AppState) {
   return {
-    isMobile: isMobile()
+    isMobile: isMobile(),
+    showTip: getShowTip(state)
   }
 }
 

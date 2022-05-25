@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 
 import { ID } from 'common/models/Identifiers'
-import { Supporter, Supporting } from 'common/models/Tipping'
+import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
 import { User } from 'common/models/User'
 import { BNWei } from 'common/models/Wallet'
 import { TippingState } from 'common/store/tipping/types'
@@ -22,7 +22,10 @@ const initialState: TippingState = {
     user: null,
     amount: new BN('0') as BNWei,
     error: null
-  }
+  },
+  recentTips: [],
+  tipToDisplay: null,
+  showTip: true
 }
 
 const slice = createSlice({
@@ -60,6 +63,10 @@ const slice = createSlice({
       action: PayloadAction<RefreshSupportPayloadAction>
     ) => {},
     fetchSupportingForUser: (
+      state,
+      action: PayloadAction<{ userId: ID }>
+    ) => {},
+    fetchSupportersForUser: (
       state,
       action: PayloadAction<{ userId: ID }>
     ) => {},
@@ -101,6 +108,19 @@ const slice = createSlice({
       state.send.user = null
       state.send.amount = new BN('0') as BNWei
       state.send.error = null
+    },
+    fetchRecentTips: _ => {},
+    setRecentTips: (
+      state,
+      action: PayloadAction<{ recentTips: UserTip[] }>
+    ) => {
+      state.recentTips = action.payload.recentTips
+    },
+    setRecentTip: (state, action: PayloadAction<{ tipToDisplay: UserTip }>) => {
+      state.tipToDisplay = action.payload.tipToDisplay
+    },
+    hideTip: state => {
+      state.showTip = false
     }
   }
 })
@@ -110,13 +130,18 @@ export const {
   setSupportersForUser,
   refreshSupport,
   fetchSupportingForUser,
+  fetchSupportersForUser,
   beginTip,
   sendTip,
   confirmSendTip,
   convert,
   sendTipSucceeded,
   sendTipFailed,
-  resetSend
+  resetSend,
+  fetchRecentTips,
+  setRecentTips,
+  setRecentTip,
+  hideTip
 } = slice.actions
 
 export default slice.reducer

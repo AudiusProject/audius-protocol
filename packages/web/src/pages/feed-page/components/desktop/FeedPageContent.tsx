@@ -108,6 +108,7 @@ const FeedPageContent = ({
           }
           endOfLineup={<EndOfLineup key='endOfLineup' />}
           key='feed'
+          isFeed
           {...feedLineupProps}
           {...mainLineupProps}
         />
