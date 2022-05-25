@@ -2,7 +2,7 @@ const config = require('../../config')
 const { logger } = require('../../logging')
 const StateMonitoringQueue = require('./monitoring/StateMonitoringQueue')
 const NodeToSpIdManager = require('./cNodeToSpIdMapManager')
-const { RECONFIG_MODES } = require('./constantsM')
+const { RECONFIG_MODES } = require('./constants')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
