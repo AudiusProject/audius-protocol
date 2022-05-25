@@ -505,10 +505,6 @@ def process_state_changes(
             blacklisted_cids,
         ]
 
-        # Used for determining whether or not a track is available on the network
-        if tx_type == TRACK_FACTORY:
-            tx_processing_args.append(redis)
-
         (
             total_changes_for_tx_type,
             changed_entity_ids,
