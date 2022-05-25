@@ -1,6 +1,11 @@
 import { ComponentType, forwardRef, useCallback } from 'react'
 
-import { Animated, TextInput, TextInputProps, View } from 'react-native'
+import {
+  Animated,
+  TextInput as RNTextInput,
+  TextInputProps as RNTextInputProps,
+  View
+} from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 
@@ -34,7 +39,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   }
 }))
 
-type SearchInputProps = TextInputProps & {
+type TextInputProps = RNTextInputProps & {
   /**
    * Default icon to show at the right side of the input
    */
@@ -49,7 +54,9 @@ type SearchInputProps = TextInputProps & {
   onClear?: () => void
 }
 
-export const SearchInput = forwardRef<TextInput, SearchInputProps>(
+export type TextInputRef = RNTextInput
+
+export const TextInput = forwardRef<RNTextInput, TextInputProps>(
   (props, ref) => {
     const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.8)
 
@@ -62,7 +69,7 @@ export const SearchInput = forwardRef<TextInput, SearchInputProps>(
 
     return (
       <View style={[styles.root, style]}>
-        <TextInput
+        <RNTextInput
           ref={ref}
           style={styles.input}
           underlineColorAndroid='transparent'
