@@ -97,20 +97,13 @@ function loggingMiddleware(req, res, next) {
 }
 
 /**
- * Add fields to a child logger instance
- * @param {*} req
- * @param {Object} options fields to add to child logger
- * @returns a logger instance
+ * Creates and returns a child logger for provided logger
+ * @param {Object} logger bunyan parent logger instance
+ * @param {Object} options optional object to define child logger properties. adds to JSON fields, allowing for better log filtering/querying
+ * @returns {Object} child logger instance with defined options
  */
-function setFieldsInChildLogger(req, options = {}) {
-  const fields = Object.keys(options)
-
-  const childOptions = {}
-  fields.forEach((field) => {
-    childOptions[field] = options[field]
-  })
-
-  return req.logger.child(childOptions)
+function createChildLogger(logger, options = {}) {
+  return logger.child(options)
 }
 
 /**
@@ -151,6 +144,6 @@ module.exports = {
   getRequestLoggingContext,
   getStartTime,
   getDuration,
-  setFieldsInChildLogger,
+  createChildLogger,
   logInfoWithDuration
 }
