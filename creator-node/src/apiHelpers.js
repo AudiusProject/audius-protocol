@@ -1,9 +1,6 @@
 const config = require('./config')
 
-const {
-  requestNotExcludedFromLogging,
-  getDuration,
-} = require('./logging')
+const { requestNotExcludedFromLogging, getDuration } = require('./logging')
 const { generateTimestampAndSignature } = require('./apiSigning')
 
 module.exports.handleResponse = (func) => {
