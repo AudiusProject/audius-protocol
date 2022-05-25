@@ -50,6 +50,9 @@ def auth_middleware(**kwargs):
                             User.wallet == wallet.lower(),
                             User.is_current == True,
                         )
+                        # In the case that multiple wallets match (not enforced on the data layer),
+                        # pick the user id that is lowest (created first).
+                        .order_by(User.user_id.asc())
                         .first()
                     )
                     if user:
