@@ -49,7 +49,8 @@ import { waitForValue } from 'utils/sagaHelpers'
 const {
   getRemoteVar,
   getFeatureEnabled,
-  waitForRemoteConfig
+  waitForRemoteConfig,
+  waitForUserRemoteConfig
 } = remoteConfigInstance
 
 function* watchFetchProfile() {
@@ -141,7 +142,7 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchSupportersAndSupporting(userId) {
-  yield call(waitForRemoteConfig)
+  yield call(waitForUserRemoteConfig)
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
   if (!isTippingEnabled) {
     return
