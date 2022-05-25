@@ -24,7 +24,11 @@ class StateMonitoringQueue {
       config.get('redisHost'),
       config.get('redisPort')
     )
-    this.registerQueueEventHandlers(this.queue)
+    this.registerQueueEventHandlers(
+      this.queue,
+      this.enqueueJobAfterSuccess,
+      this.enqueueJobAfterFailure
+    )
     this.registerQueueJobProcessor(this.queue)
   }
 
@@ -72,7 +76,13 @@ class StateMonitoringQueue {
     })
   }
 
-  registerQueueEventHandlers(queue) {
+  /**
+   * Registers event handlers for logging and job success/failure.
+   * @param {Object} queue the queue to register events for
+   * @param {Function<queue, successfulJob, jobResult>} jobSuccessCallback the function to call when a job succeeds
+   * @param {Function<queue, failedJob>} jobFailureCallback the function to call when a job fails
+   */
+  registerQueueEventHandlers(queue, jobSuccessCallback, jobFailureCallback) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
       this.log(`Queue Job Waiting - ID ${jobId}`)
@@ -92,7 +102,7 @@ class StateMonitoringQueue {
       this.logError(`Queue Job Error - ${error}. Queuing another job...`)
     })
 
-    // Re-queue a new job when the current job fails or succeeds
+    // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
     queue.on('completed', (job, result) => {
       this.log(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(
@@ -100,16 +110,16 @@ class StateMonitoringQueue {
         )}. Queuing another job...`
       )
       if (result?.jobFailed) {
-        this.enqueueJobAfterSuccess(queue, job, result)
+        jobSuccessCallback(queue, job, result)
       } else {
-        this.enqueueJobAfterFailure(queue, job)
+        jobFailureCallback(queue, job)
       }
     })
     queue.on('failed', (job, err) => {
       this.logError(
         `Queue Job Failed - ID ${job?.id} - Error ${err}. Queuing another job...`
       )
-      this.enqueueJobAfterFailure(queue, job)
+      jobFailureCallback(queue, job)
     })
   }
 

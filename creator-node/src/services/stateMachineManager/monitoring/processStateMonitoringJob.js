@@ -8,9 +8,7 @@ const {
   computeUserSecondarySyncSuccessRatesMap,
   aggregateReconfigAndPotentialSyncOps
 } = require('./utils')
-const {
-  retrieveClockStatusesForUsersAcrossReplicaSet
-} = require('../clockUtils')
+const { retrieveClockStatusesForUsersAcrossReplicaSet } = require('../utils')
 
 // Number of users to process each time processStateMonitoringJob is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
