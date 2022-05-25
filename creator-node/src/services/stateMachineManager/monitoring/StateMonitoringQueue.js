@@ -114,9 +114,9 @@ class StateMonitoringQueue {
         )}. Queuing another job...`
       )
       if (result?.jobFailed) {
-        jobSuccessCallback(queue, job, result)
-      } else {
         jobFailureCallback(queue, job)
+      } else {
+        jobSuccessCallback(queue, job, result)
       }
     })
     queue.on('failed', (job, err) => {

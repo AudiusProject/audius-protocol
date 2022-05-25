@@ -160,6 +160,12 @@ const healthCheck = async (
     manualSyncsDisabled,
     snapbackModuloBase,
     snapbackUsersPerJob,
+    stateMonitoringQueueRateLimitInterval: config.get(
+      'stateMonitoringQueueRateLimitInterval'
+    ),
+    stateMonitoringQueueRateLimitJobsPerInterval: config.get(
+      'stateMonitoringQueueRateLimitJobsPerInterval'
+    ),
     transcodeActive,
     transcodeWaiting,
     transcodeQueueIsAvailable: isAvailable,
