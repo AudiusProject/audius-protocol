@@ -300,51 +300,56 @@ def search_es_full(args: dict):
             ].extend(personalized_terms)
 
     mfound = esclient.msearch(searches=mdsl)
-    tracks_response = []
-    saved_tracks_response = []
-    users_response = []
-    followed_users_response = []
-    playlists_response = []
-    saved_playlists_response = []
-    albums_response = []
-    saved_albums_response = []
 
+    response: Dict = {
+        "tracks": [],
+        "saved_tracks": [],
+        "users": [],
+        "followed_users": [],
+        "playlists": [],
+        "saved_playlists": [],
+        "albums": [],
+        "saved_albums": [],
+    }
+
+    if do_tracks:
+        response["tracks"] = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            response["saved_tracks"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_users:
+        response["users"] = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_playlists:
+        response["playlists"] = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            response["saved_playlists"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_albums:
+        response["albums"] = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            response["saved_albums"] = pluck_hits(mfound["responses"].pop(0))
+
+    # hydrate users, saves, reposts
     item_keys = []
     user_ids = set()
     if current_user_id:
         user_ids.add(current_user_id)
 
-    if do_tracks:
-        tracks_response = pluck_hits(mfound["responses"].pop(0))
-        for track in tracks_response:
-            item_keys.append(item_key(track))
-            user_ids.add(track["owner_id"])
-        if current_user_id:
-            saved_tracks_response = pluck_hits(mfound["responses"].pop(0))
-
-    if do_users:
-        users_response = pluck_hits(mfound["responses"].pop(0))
-        for user in users_response:
-            item_keys.append(item_key(user))
-            user_ids.add(user["user_id"])
-        if current_user_id:
-            followed_users_response = pluck_hits(mfound["responses"].pop(0))
-
-    if do_playlists:
-        playlists_response = pluck_hits(mfound["responses"].pop(0))
-        for playlist in playlists_response:
-            item_keys.append(item_key(playlist))
-            user_ids.add(playlist["playlist_owner_id"])
-        if current_user_id:
-            saved_playlists_response = pluck_hits(mfound["responses"].pop(0))
-
-    if do_albums:
-        albums_response = pluck_hits(mfound["responses"].pop(0))
-        for album in albums_response:
-            item_keys.append(item_key(album))
-            user_ids.add(album["playlist_owner_id"])
-        if current_user_id:
-            saved_albums_response = pluck_hits(mfound["responses"].pop(0))
+    # collect keys for fetching
+    for k in [
+        "tracks",
+        "saved_tracks",
+        "playlists",
+        "saved_playlists",
+        "albums",
+        "saved_albums",
+    ]:
+        for item in response[k]:
+            item_keys.append(item_key(item))
+            user_ids.add(item.get("owner_id", item.get("playlist_owner_id")))
 
     # fetch users
     users_by_id = {}
@@ -365,34 +370,30 @@ def search_es_full(args: dict):
     )
 
     # tracks: finalize
-    hydrate_user(tracks_response, users_by_id)
-    tracks_response = transform_tracks(tracks_response, users_by_id, current_user)
-    hydrate_saves_reposts(tracks_response, follow_saves, follow_reposts)
+    for k in ["tracks", "saved_tracks"]:
+        tracks = response[k]
+        hydrate_user(tracks, users_by_id)
+        hydrate_saves_reposts(tracks, follow_saves, follow_reposts)
+        response[k] = transform_tracks(tracks, users_by_id, current_user)
 
     # users: finalize
-    users_response = [
-        extend_user(popuate_user_metadata_es(user, current_user))
-        for user in users_response
-    ]
+    for k in ["users", "followed_users"]:
+        response[k] = [
+            extend_user(popuate_user_metadata_es(user, current_user))
+            for user in response[k]
+        ]
 
     # playlists: finalize
-    hydrate_saves_reposts(playlists_response, follow_saves, follow_reposts)
-    hydrate_user(playlists_response, users_by_id)
-    playlists_response = [
-        extend_playlist(populate_track_or_playlist_metadata_es(item, current_user))
-        for item in playlists_response
-    ]
-    return {
-        "tracks": tracks_response,
-        "saved_tracks": saved_tracks_response,
-        "users": users_response,
-        "followed_users": followed_users_response,
-        "playlists": playlists_response,
-        "saved_playlists": saved_playlists_response,
-        "albums": albums_response,
-        "saved_albums": saved_albums_response,
-        # "elasticsearch_took": mfound["took"],
-    }
+    for k in ["playlists", "saved_playlists"]:
+        playlists = response[k]
+        hydrate_saves_reposts(playlists, follow_saves, follow_reposts)
+        hydrate_user(playlists, users_by_id)
+        response[k] = [
+            extend_playlist(populate_track_or_playlist_metadata_es(item, current_user))
+            for item in playlists
+        ]
+
+    return response
 
 
 def hydrate_user(items, users_by_id):
