@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
+import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { shareCollection } from 'audius-client/src/common/store/social/collections/actions'
 import { shareTrack } from 'audius-client/src/common/store/social/tracks/actions'
@@ -16,6 +17,7 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import {
@@ -70,6 +72,9 @@ const createStyles = (themeColors: ThemeColors) =>
 
 export const ShareDrawer = () => {
   const styles = useThemedStyles(createStyles)
+  const { isEnabled: isShareToTikTokEnabled } = useFeatureFlag(
+    FeatureFlags.SHARE_SOUND_TO_TIKTOK
+  )
   const { secondary, neutral, staticTwitterBlue } = useThemeColors()
   const themeVariant = useThemeVariant()
   const isLightMode = themeVariant === Theme.DEFAULT
@@ -126,7 +131,8 @@ export const ShareDrawer = () => {
   }, [dispatchWeb, content, source])
 
   const shouldIncludeTikTokAction = Boolean(
-    content?.type === 'track' &&
+    isShareToTikTokEnabled &&
+      content?.type === 'track' &&
       isOwner &&
       !content.track.is_unlisted &&
       !content.track.is_invalid &&
