@@ -1,3 +1,4 @@
+import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
 import * as lifecycleActions from 'app/store/lifecycle/actions'
 import * as oauthActions from 'app/store/oauth/actions'
 import * as signonActions from 'app/store/signon/actions'
@@ -14,6 +15,7 @@ export const messageHandlers: Partial<MessageHandlers> = {
     reload()
   },
   [MessageType.SIGNED_IN]: ({ message, dispatch }) => {
+    remoteConfigInstance.setUserId(message.account.user_id)
     dispatch(lifecycleActions.signedIn(message.account))
   },
   [MessageType.SIGNED_OUT]: ({ message, dispatch }) => {
