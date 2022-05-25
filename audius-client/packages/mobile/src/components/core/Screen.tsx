@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode, useEffect } from 'react'
+import { ReactElement, ReactNode, useLayoutEffect } from 'react'
 
 import { useNavigation } from '@react-navigation/native'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
@@ -48,7 +48,7 @@ export const Screen = (props: ScreenProps) => {
   const styles = useStyles({ variant })
   const navigation = useNavigation()
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     navigation.setOptions(
       removeUndefined({
         headerLeft: topbarLeft === undefined ? undefined : () => topbarLeft,
