@@ -1,5 +1,5 @@
 import callbackify from 'callbackify'
-import promisify from 'promisify'
+import promisify from 'pify'
 import Web3 from '../web3'
 import { shuffle } from 'lodash'
 import type { HttpProvider, AbstractProvider } from 'web3-core'
@@ -37,14 +37,11 @@ export class MultiProvider extends Web3.providers.HttpProvider {
       web3Providers = providers
     }
 
-    console.log('PROVIDERS', web3Providers, providers)
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
     const web3ProviderInstances = web3Providers.map(
       (provider) => new Web3(provider).eth.currentProvider
     ) as Providers
     super(web3ProviderInstances[0]?.host)
-
-    console.log('PROVIDERS 2', web3ProviderInstances)
 
     if (!web3ProviderInstances.every(getSendMethod)) {
       throw new Error('Some providers do not have a send method to use.')
