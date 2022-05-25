@@ -72,14 +72,6 @@ def search_es_full(args: dict):
                 "query": search_str,
                 "fields": [
                     "suggest",
-                ],
-            }
-        },
-        {
-            "multi_match": {
-                "query": search_str,
-                "fields": [
-                    "suggest",
                     "suggest._2gram",
                     "suggest._3gram",
                 ],
@@ -112,7 +104,9 @@ def search_es_full(args: dict):
                             {"term": {"is_unlisted": {"value": False}}},
                             {"term": {"is_delete": False}},
                         ],
-                        "must_not": [{"exists": {"field": "stem_of"}}],
+                        "must_not": [
+                            {"exists": {"field": "stem_of"}}
+                        ],  # why filter stems?
                         "should": [
                             *should_match_query,
                             # {"term": {"user.is_verified": {"value": True}}},
@@ -123,17 +117,15 @@ def search_es_full(args: dict):
                     {
                         "field_value_factor": {
                             "field": "repost_count",
-                            "factor": 1.1,
-                            "modifier": "log1p",
+                            "modifier": "ln2p",
                         }
                     },
                 ],
-                "boost_mode": "sum",
+                # "boost_mode": "sum",
+                # "max_boost": 5,
             }
         },
     }
-
-    print(json.dumps(base_tracks_query))
 
     base_users_query: Dict = {
         "size": limit,
@@ -156,12 +148,11 @@ def search_es_full(args: dict):
                     {
                         "field_value_factor": {
                             "field": "follower_count",
-                            "factor": 1.2,
                             "modifier": "log1p",
                         },
                     }
                 ],
-                "boost_mode": "sum",
+                # "boost_mode": "replace",
             }
         },
     }
@@ -436,28 +427,30 @@ def _print_test_search(args):
                     track["user"]["handle"],
                     track["user"]["name"],
                     track["title"],
-                    track["repost_count"],
-                    track["user"]["follower_count"],
+                    f"{track['repost_count']} reposts",
+                    f"{track['user']['follower_count']} followers",
+                    f"{track.get('_score')} score",
                 ],
             )
 
     def print_users(title, users):
         print(f"\n[ {title} ]")
-        for x in users:
+        for user in users:
             print(
                 "   ",
                 [
-                    x["handle"],
-                    x["name"],
-                    x["follower_count"],
-                    x["is_verified"],
+                    user["handle"],
+                    user["name"],
+                    f"{user.get('follower_count')} followers",
+                    f"{user.get('is_verified')} verified",
+                    f"{user.get('_score')} score",
                 ],
             )
 
     print_tracks("tracks", found["tracks"])
-    print_tracks("saved tracks", found["saved_tracks"])
+    # print_tracks("saved tracks", found["saved_tracks"])
     print_users("users", found["users"])
-    print_users("followed_users", found["followed_users"])
+    # print_users("followed_users", found["followed_users"])
 
 
 if __name__ == "__main__":
@@ -495,6 +488,26 @@ if __name__ == "__main__":
             "is_auto_complete": False,
         }
     )
+
+    _print_test_search(
+        {
+            "query": "deadmau",
+            "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": False,
+        }
+    )
+
+    # should have disclosure at the top
+    _print_test_search(
+        {
+            "query": "waterfal",
+            "limit": 10,
+            "current_user_id": 1,
+            "is_auto_complete": True,
+        }
+    )
+
     _print_test_search(
         {
             "query": "closer 2 u ray",
@@ -515,6 +528,15 @@ if __name__ == "__main__":
         {
             "query": "stereosteve guitar",
             "limit": 4,
+            "current_user_id": 1,
+            "is_auto_complete": True,
+        }
+    )
+
+    _print_test_search(
+        {
+            "query": "skrillex",
+            "limit": 10,
             "current_user_id": 1,
             "is_auto_complete": True,
         }
