@@ -1,4 +1,3 @@
-import json
 import logging
 from copy import deepcopy
 from typing import Any, Dict, List
@@ -247,11 +246,11 @@ def search_es_full(args: dict):
             saved_tracks_query["query"]["function_score"]["query"]["bool"][
                 "must"
             ].append(saved_term)
+            mdsl.extend([{"index": ES_TRACKS}, saved_tracks_query])
 
             base_tracks_query["query"]["function_score"]["query"]["bool"][
                 "should"
             ].extend(personalized_terms)
-        mdsl.extend(track_search_query)
 
     # users
     if do_users:
@@ -261,8 +260,8 @@ def search_es_full(args: dict):
             followed_users_query["query"]["function_score"]["query"]["bool"][
                 "must"
             ].append(followed_term)
-
             mdsl.extend([{"index": ES_USERS}, followed_users_query])
+
             base_users_query["query"]["function_score"]["query"]["bool"][
                 "should"
             ].append(followed_term)
@@ -279,6 +278,7 @@ def search_es_full(args: dict):
                 "must"
             ].append(saved_term)
             mdsl.extend([{"index": ES_PLAYLISTS}, saved_playlist_search_query])
+
             base_playlists_query["query"]["function_score"]["query"]["bool"][
                 "should"
             ].extend(personalized_terms)
@@ -294,6 +294,7 @@ def search_es_full(args: dict):
                 "must"
             ].append(saved_term)
             mdsl.extend([{"index": ES_PLAYLISTS}, saved_album_search_query])
+
             base_album_query["query"]["function_score"]["query"]["bool"][
                 "should"
             ].extend(personalized_terms)
@@ -558,3 +559,13 @@ if __name__ == "__main__":
             "is_auto_complete": True,
         }
     )
+
+    _print_test_search(
+        {
+            "query": "camo",
+            "limit": 4,
+            "is_auto_complete": True,
+        }
+    )
+
+    print("\n\n")

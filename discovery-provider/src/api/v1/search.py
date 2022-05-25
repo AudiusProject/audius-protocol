@@ -1,5 +1,4 @@
 import logging
-import os  # pylint: disable=C0302
 
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
@@ -14,7 +13,6 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.models.search import search_model
-from src.queries.search_es import search_es_full
 from src.queries.search_queries import search
 from src.utils.redis_cache import cache
 
