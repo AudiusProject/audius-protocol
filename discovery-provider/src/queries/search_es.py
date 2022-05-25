@@ -181,6 +181,7 @@ def search_es_full(args: dict):
                         ],
                         "should": [
                             *should_match_query,
+                            {"term": {"is_verified": {"value": True}}},
                         ],
                     }
                 },
@@ -188,12 +189,10 @@ def search_es_full(args: dict):
                     {
                         "field_value_factor": {
                             "field": "repost_count",
-                            "factor": 1.2,
-                            "modifier": "log1p",
-                        },
-                    }
+                            "modifier": "ln2p",
+                        }
+                    },
                 ],
-                "boost_mode": "sum",
             }
         },
     }
@@ -213,6 +212,7 @@ def search_es_full(args: dict):
                         ],
                         "should": [
                             *should_match_query,
+                            {"term": {"is_verified": {"value": True}}},
                         ],
                     }
                 },
@@ -220,12 +220,10 @@ def search_es_full(args: dict):
                     {
                         "field_value_factor": {
                             "field": "repost_count",
-                            "factor": 1.2,
-                            "modifier": "log1p",
-                        },
-                    }
+                            "modifier": "ln2p",
+                        }
+                    },
                 ],
-                "boost_mode": "sum",
             }
         },
     }

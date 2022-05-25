@@ -6,18 +6,18 @@ def test_search(args):
     found = search_es_full(args)
     search_type = args.get("kind", "all")
 
-    def print_tracks(title, tracks):
+    def print_entity(title, entities):
         print(f"\n[ {title} ]")
-        for track in tracks:
+        for entity in entities:
             print(
                 "   ",
                 [
-                    track["user"]["handle"],
-                    track["user"]["name"],
-                    track["title"],
-                    f"{track['repost_count']} reposts",
-                    f"{track['user']['follower_count']} followers",
-                    f"{track.get('_score')} score",
+                    entity["user"]["handle"],
+                    entity["user"]["name"],
+                    entity.get("title") or entity.get("playlist_name"),
+                    f"{entity['repost_count']} reposts",
+                    f"{entity['user']['follower_count']} followers",
+                    f"{entity.get('_score')} score",
                 ],
             )
 
@@ -36,12 +36,26 @@ def test_search(args):
             )
 
     if search_type == "tracks" or search_type == "all":
-        print_tracks("tracks", found["tracks"])
-        print_tracks("saved tracks", found["saved_tracks"])
+        print_entity("tracks", found["tracks"])
+        print_entity("saved tracks", found["saved_tracks"])
     if search_type == "users" or search_type == "all":
-
         print_users("users", found["users"])
         print_users("followed_users", found["followed_users"])
+    if search_type == "playlists" or search_type == "all":
+        print_entity("playlists", found["playlists"])
+        print_entity("saved_playlists", found["saved_playlists"])
+    if search_type == "albums" or search_type == "all":
+        print_entity("albums", found["albums"])
+        print_entity("saved_albums", found["saved_albums"])
+
+
+test_search(
+    {
+        "query": "the cycle of change",
+        "limit": 4,
+        "is_auto_complete": True,
+    }
+)
 
 
 test_search(
@@ -51,163 +65,154 @@ test_search(
         "is_auto_complete": True,
     }
 )
+test_search(
+    {
+        "query": "isaac photo",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": False,
+    }
+)
+test_search(
+    {
+        "query": "RAC wat",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
+test_search(
+    {
+        "query": "RAC water",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": False,
+    }
+)
 
+test_search(
+    {
+        "query": "deadmau",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": False,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "isaac pho",
-#         "limit": 4,
-#         "is_auto_complete": True,
-#     }
-# )
-# test_search(
-#     {
-#         "query": "isaac photo",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": False,
-#     }
-# )
-# test_search(
-#     {
-#         "query": "RAC wat",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
-# test_search(
-#     {
-#         "query": "RAC water",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": False,
-#     }
-# )
+# should have disclosure at the top
+test_search(
+    {
+        "query": "waterfal",
+        "limit": 10,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "deadmau",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": False,
-#     }
-# )
+test_search(
+    {
+        "query": "closer 2 u ray",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
+test_search(
+    {
+        "query": "raymont",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# # should have disclosure at the top
-# test_search(
-#     {
-#         "query": "waterfal",
-#         "limit": 10,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "low",
+        "limit": 4,
+        "current_user_id": 14,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "closer 2 u ray",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
-# test_search(
-#     {
-#         "query": "raymont",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "stereosteve guitar",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "low",
-#         "limit": 4,
-#         "current_user_id": 14,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "skrillex",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "stereosteve guitar",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "camo",
+        "limit": 4,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "skrillex",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "that looks good",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "camo",
-#         "limit": 4,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "fall in love",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "that looks good",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "only yesterday",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "fall in love",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "with music",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "only yesterday",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "all night",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
-# test_search(
-#     {
-#         "query": "with music",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
-
-# test_search(
-#     {
-#         "query": "all night",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
-
-# test_search(
-#     {
-#         "query": "one and only",
-#         "limit": 4,
-#         "current_user_id": 1,
-#         "is_auto_complete": True,
-#     }
-# )
+test_search(
+    {
+        "query": "one and only",
+        "limit": 4,
+        "current_user_id": 1,
+        "is_auto_complete": True,
+    }
+)
 
 print("\n\n")
