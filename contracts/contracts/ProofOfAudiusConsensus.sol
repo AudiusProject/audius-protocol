@@ -4,6 +4,7 @@ import "./SigningLogicInitializable.sol";
 
 contract ProofOfAudiusConsensus is SigningLogicInitializable {
     event InitiateChange(bytes32 indexed parentHash, address[] newSet);
+    event ChangeFinalized(address[] newSet);
 
     address[] public currentValidators;
     address[] public pendingList;
@@ -71,6 +72,7 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
     function finalizeChange() public onlySystemAndNotFinalized {
         finalized = true;
         currentValidators = pendingList;
+        emit ChangeFinalized(currentValidators);
     }
 
     // NOTE - In reality this function will have several more signatures passed in to support EIP712 typehash based signature validation (existing validators must add new validators etc.)

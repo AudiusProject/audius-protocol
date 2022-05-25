@@ -91,9 +91,11 @@ contract.only('ProofOfAudius', async (accounts) => {
         await poaContract.removeValidator(
             miningKeys[2]
         )
+
         await poaContract.finalizeChange({
             from: testSystemAddress
         })
+
         console.log(await poaContract.getValidators())
    })
 })
