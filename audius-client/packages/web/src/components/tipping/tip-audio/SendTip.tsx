@@ -12,8 +12,11 @@ import { ID } from 'common/models/Identifiers'
 import { Supporter, Supporting } from 'common/models/Tipping'
 import { BNWei, StringAudio, StringWei } from 'common/models/Wallet'
 import { getAccountUser } from 'common/store/account/selectors'
-import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { getSupporters, getSupporting } from 'common/store/tipping/selectors'
+import {
+  getSendUser,
+  getSupporters,
+  getSupporting
+} from 'common/store/tipping/selectors'
 import { sendTip } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { getTierAndNumberForBalance } from 'common/store/wallet/utils'
@@ -48,7 +51,7 @@ export const SendTip = () => {
   const account = useSelector(getAccountUser)
   const supportersMap = useSelector(getSupporters)
   const supportingMap = useSelector(getSupporting)
-  const profile = useSelector(getProfileUser)
+  const receiver = useSelector(getSendUser)
 
   const accountBalance = (useSelector(getAccountBalance) ??
     new BN('0')) as BNWei
@@ -73,37 +76,37 @@ export const SendTip = () => {
   const [isFirstSupporter, setIsFirstSupporter] = useState(false)
 
   /**
-   * Get supporting info if current user is already supporting profile
+   * Get supporting info if current user is already supporting receiver
    * so that the already supported amount can be used to determine
    * how much is left to tip to become top supporter
    */
   useEffect(() => {
-    if (!account || !profile) return
+    if (!account || !receiver) return
 
     const supportingForAccount = supportingMap[account.user_id] ?? {}
-    const accountSupportingProfile =
-      supportingForAccount[profile.user_id] ?? null
-    if (accountSupportingProfile) {
-      setSupporting(accountSupportingProfile)
+    const accountSupportingReceiver =
+      supportingForAccount[receiver.user_id] ?? null
+    if (accountSupportingReceiver) {
+      setSupporting(accountSupportingReceiver)
     }
-  }, [account, profile, supportingMap])
+  }, [account, receiver, supportingMap])
 
   /**
    * Get user who is top supporter to later check whether it is
    * not the same as the current user
    */
   useEffect(() => {
-    if (!profile) return
+    if (!receiver) return
 
-    const supportersForProfile = supportersMap[profile.user_id] ?? {}
-    const rankedSupportersList = Object.keys(supportersForProfile)
+    const supportersForReceiver = supportersMap[receiver.user_id] ?? {}
+    const rankedSupportersList = Object.keys(supportersForReceiver)
       .sort((k1, k2) => {
         return (
-          supportersForProfile[(k1 as unknown) as ID].rank -
-          supportersForProfile[(k2 as unknown) as ID].rank
+          supportersForReceiver[(k1 as unknown) as ID].rank -
+          supportersForReceiver[(k2 as unknown) as ID].rank
         )
       })
-      .map(k => supportersForProfile[(k as unknown) as ID])
+      .map(k => supportersForReceiver[(k as unknown) as ID])
     const theTopSupporter =
       rankedSupportersList.length > 0 ? rankedSupportersList[0] : null
 
@@ -112,7 +115,7 @@ export const SendTip = () => {
     } else {
       setIsFirstSupporter(true)
     }
-  }, [profile, supportersMap])
+  }, [receiver, supportersMap])
 
   useEffect(() => {
     const zeroWei = stringWeiToBN('0' as StringWei)
@@ -127,9 +130,8 @@ export const SendTip = () => {
   const handleTipAmountChange = useCallback(
     (value: string) => {
       setTipAmount(value as StringAudio)
-      setAmountToTipToBecomeTopSupporter(null)
     },
-    [setTipAmount, setAmountToTipToBecomeTopSupporter]
+    [setTipAmount]
   )
 
   /**
@@ -217,7 +219,7 @@ export const SendTip = () => {
 
   return (
     <div className={styles.container}>
-      <TipProfilePicture user={profile} />
+      <TipProfilePicture user={receiver} />
       {!hasError && isFirstSupporter ? renderBecomeFirstSupporter() : null}
       {!hasError && amountToTipToBecomeTopSupporter
         ? renderBecomeTopSupporter()

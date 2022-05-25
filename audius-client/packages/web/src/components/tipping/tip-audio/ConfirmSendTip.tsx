@@ -6,8 +6,11 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { getSendAmount, getSendStatus } from 'common/store/tipping/selectors'
+import {
+  getSendAmount,
+  getSendStatus,
+  getSendUser
+} from 'common/store/tipping/selectors'
 import { confirmSendTip, beginTip } from 'common/store/tipping/slice'
 import { formatWei } from 'common/utils/wallet'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -54,7 +57,7 @@ export const ConfirmSendTip = () => {
   const dispatch = useDispatch()
   const sendStatus = useSelector(getSendStatus)
   const sendAmount = useSelector(getSendAmount)
-  const profile = useSelector(getProfileUser)
+  const receiver = useSelector(getSendUser)
   const [isDisabled, setIsDisabled] = useState(false)
 
   useEffect(() => {
@@ -67,9 +70,9 @@ export const ConfirmSendTip = () => {
 
   const handleGoBackClick = useCallback(() => {
     if (!isDisabled) {
-      dispatch(beginTip({ user: profile }))
+      dispatch(beginTip({ user: receiver }))
     }
-  }, [isDisabled, dispatch, profile])
+  }, [isDisabled, dispatch, receiver])
 
   const renderSendingAudio = () => (
     <>
@@ -92,10 +95,10 @@ export const ConfirmSendTip = () => {
     </div>
   )
 
-  return profile ? (
+  return receiver ? (
     <div className={styles.container}>
       {renderSendingAudio()}
-      <TipProfilePicture user={profile} />
+      <TipProfilePicture user={receiver} />
       {sendStatus === 'SENDING' && <EmptyContainer />}
       {sendStatus === 'CONFIRM' && <ConfirmInfo />}
       {sendStatus === 'CONVERTING' && <ConvertingInfo />}

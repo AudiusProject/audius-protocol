@@ -1,5 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-import { Supporter, Supporting } from 'common/models/Tipping'
+import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
 import { User } from 'common/models/User'
 import { BNWei } from 'common/models/Wallet'
 import { Nullable } from 'common/utils/typeUtils'
@@ -45,4 +45,7 @@ export type TippingState = {
     amount: BNWei
     error: Nullable<string>
   }
+  recentTips: UserTip[]
+  tipToDisplay: Nullable<UserTip>
+  showTip: boolean
 }

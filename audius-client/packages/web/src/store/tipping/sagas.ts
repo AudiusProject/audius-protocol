@@ -3,7 +3,7 @@ import { call, put, select, takeEvery } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
-import { Supporter, Supporting } from 'common/models/Tipping'
+import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
 import { BNWei } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
@@ -12,11 +12,15 @@ import { getSendTipData } from 'common/store/tipping/selectors'
 import {
   confirmSendTip,
   convert,
+  fetchRecentTips,
+  fetchSupportersForUser,
   fetchSupportingForUser,
   refreshSupport,
   RefreshSupportPayloadAction,
   sendTipFailed,
   sendTipSucceeded,
+  setRecentTip,
+  setRecentTips,
   setSupportersForUser,
   setSupportingForUser
 } from 'common/store/tipping/slice'
@@ -24,15 +28,19 @@ import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
 import { weiToAudioString, weiToString } from 'common/utils/wallet'
 import {
+  fetchRecentUserTips,
   fetchSupporters,
   fetchSupporting,
-  SupportRequest
+  SupportRequest,
+  UserTipRequest
 } from 'services/audius-backend/Tipping'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from 'utils/constants'
 import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
+
+import { getMinSlotForRecentTips, checkTipToDisplay } from './utils'
 
 const { getFeatureEnabled, waitForRemoteConfig } = remoteConfigInstance
 
@@ -170,9 +178,8 @@ function* refreshSupportAsync({
       )
     ]
 
-    // todo: probs just cache users returned from tipping support api
-    // todo: also, should maybe poll here if right after successful tipping?
-    yield* call(fetchUsers, userIds, new Set(), true)
+    // todo: should maybe poll here if right after successful tipping?
+    yield call(fetchUsers, userIds, new Set(), true)
 
     const supportingForSenderMap: Record<string, Supporting> = {}
     supportingForSenderList.forEach(supporting => {
@@ -223,6 +230,9 @@ function* fetchSupportingForUserAsync({
     return
   }
 
+  // todo: need to also get whether logged in user is supporting this user
+  // so that we can have correct 'become top supporter' logic
+  // as-is, cannot rely on response because of pagination
   const supportingList = yield* call(fetchSupporting, {
     encodedUserId,
     limit: MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
@@ -231,8 +241,7 @@ function* fetchSupportingForUserAsync({
     decodeHashId(supporting.receiver.id)
   )
 
-  // todo: probs just cache users returned from tipping support api
-  yield* call(fetchUsers, userIds, new Set(), true)
+  yield call(fetchUsers, userIds, new Set(), true)
 
   const map: Record<string, Supporting> = {}
   supportingList.forEach(supporting => {
@@ -254,8 +263,126 @@ function* fetchSupportingForUserAsync({
   )
 }
 
+function* fetchSupportersForUserAsync({
+  payload: { userId }
+}: {
+  payload: { userId: ID }
+  type: string
+}) {
+  const encodedUserId = encodeHashId(userId)
+  if (!encodedUserId) {
+    return
+  }
+
+  // todo: need to also get whether this user is supported by logged in user
+  // so that we can have correct 'become top supporter' logic
+  // as-is, cannot rely on response because of pagination
+  const supporters = yield* call(fetchSupporters, {
+    encodedUserId
+  })
+  const userIds = supporters.map(supporter => decodeHashId(supporter.sender.id))
+
+  yield call(fetchUsers, userIds, new Set(), true)
+
+  const map: Record<string, Supporter> = {}
+  supporters.forEach(supporter => {
+    const supporterUserId = decodeHashId(supporter.sender.id)
+    if (supporterUserId) {
+      map[supporterUserId] = {
+        sender_id: supporterUserId,
+        rank: supporter.rank,
+        amount: supporter.amount
+      }
+    }
+  })
+
+  yield put(
+    setSupportersForUser({
+      id: userId,
+      supportersForUser: map
+    })
+  )
+}
+
+function* fetchRecentTipsAsync() {
+  const account = yield* select(getAccountUser)
+  if (!account) {
+    return
+  }
+
+  const encodedUserId = encodeHashId(account.user_id)
+  if (!encodedUserId) {
+    return
+  }
+
+  const params: UserTipRequest = {
+    userId: encodedUserId,
+    currentUserFollows: 'receiver',
+    uniqueBy: 'receiver'
+  }
+  const minSlot = getMinSlotForRecentTips()
+  if (minSlot) {
+    params.minSlot = minSlot
+  }
+
+  const userTips = yield* call(fetchRecentUserTips, params)
+
+  const recentTips = userTips
+    .map(userTip => {
+      const senderId = decodeHashId(userTip.sender.id)
+      const receiverId = decodeHashId(userTip.receiver.id)
+      if (!senderId || !receiverId) {
+        return null
+      }
+
+      const followeeSupporterIds = userTip.followee_supporters
+        .map(followee_supporter => decodeHashId(followee_supporter.id))
+        .filter((id): id is ID => !!id)
+
+      const { amount, slot, created_at, tx_signature } = userTip
+
+      return {
+        amount,
+        sender_id: senderId,
+        receiver_id: receiverId,
+        followee_supporter_ids: followeeSupporterIds,
+        slot,
+        created_at,
+        tx_signature
+      }
+    })
+    .filter((userTip): userTip is UserTip => !!userTip)
+
+  const tipToDisplay = checkTipToDisplay({
+    userId: account.user_id,
+    recentTips
+  })
+  if (tipToDisplay) {
+    const userIds = [
+      ...new Set([
+        tipToDisplay.sender_id,
+        tipToDisplay.receiver_id,
+        ...tipToDisplay.followee_supporter_ids
+      ])
+    ]
+    yield call(fetchUsers, userIds, new Set(), true)
+    yield put(
+      refreshSupport({
+        senderUserId: account.user_id,
+        receiverUserId: tipToDisplay.receiver_id
+      })
+    )
+    yield put(setRecentTip({ tipToDisplay }))
+  }
+  yield put(setRecentTips({ recentTips }))
+}
+
 function* watchFetchSupportingForUser() {
   yield* takeEvery(fetchSupportingForUser.type, fetchSupportingForUserAsync)
+}
+
+function* watchFetchSupportersForUser() {
+  yield* takeEvery(fetchSupportersForUser.type, fetchSupportersForUserAsync)
 }
 
 function* watchRefreshSupport() {
@@ -266,8 +393,18 @@ function* watchConfirmSendTip() {
   yield* takeEvery(confirmSendTip.type, sendTipAsync)
 }
 
+function* watchFetchRecentTips() {
+  yield* takeEvery(fetchRecentTips.type, fetchRecentTipsAsync)
+}
+
 const sagas = () => {
-  return [watchFetchSupportingForUser, watchRefreshSupport, watchConfirmSendTip]
+  return [
+    watchFetchSupportingForUser,
+    watchFetchSupportersForUser,
+    watchRefreshSupport,
+    watchConfirmSendTip,
+    watchFetchRecentTips
+  ]
 }
 
 export default sagas
