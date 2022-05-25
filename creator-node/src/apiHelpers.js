@@ -1,6 +1,10 @@
 const config = require('./config')
 
-const { requestNotExcludedFromLogging, getDuration } = require('./logging')
+const {
+  requestNotExcludedFromLogging,
+  getDuration,
+  createChildLogger
+} = require('./logging')
 const { generateTimestampAndSignature } = require('./apiSigning')
 
 module.exports.handleResponse = (func) => {
@@ -62,7 +66,7 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 
 const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
   const duration = getDuration(req)
-  let logger = req.logger.createChildLogger({
+  let logger = createChildLogger(req.logger, {
     duration,
     statusCode: resp.statusCode
   })
@@ -72,7 +76,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
       logger.info('Success')
     }
   } else {
-    logger = logger.createChildLogger({
+    logger = createChildLogger(logger, {
       errorMessage: resp.object.error
     })
     if (req && req.body) {
@@ -99,7 +103,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
 const sendResponseWithHeartbeatTerminator =
   (module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
     const duration = getDuration(req)
-    let logger = req.logger.createChildLogger({
+    let logger = createChildLogger(req.logger, {
       duration,
       statusCode: resp.statusCode
     })
@@ -109,7 +113,7 @@ const sendResponseWithHeartbeatTerminator =
         logger.info('Success')
       }
     } else {
-      logger = logger.createChildLogger({
+      logger = createChildLogger(logger, {
         errorMessage: resp.object.error
       })
       if (req && req.body) {
