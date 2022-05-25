@@ -5,6 +5,7 @@ from elasticsearch import Elasticsearch
 from src.utils.spl_audio import to_wei
 
 es_url = os.getenv("audius_elasticsearch_url")
+es_url = "http://10.142.0.5:9200"
 esclient = None
 if es_url:
     esclient = Elasticsearch(es_url)
@@ -26,8 +27,13 @@ def listify(things):
 
 
 def pluck_hits(found):
-    # TODO don't assume hits
-    return [h["_source"] for h in found["hits"]["hits"]]
+    res = [h["_source"] for h in found["hits"]["hits"]]
+
+    # add score for testing
+    for i in range(len(found["hits"]["hits"])):
+        res[i]["_score"] = found["hits"]["hits"][i]["_score"]
+        
+    return res
 
 
 def docs_and_ids(found, id_set=False):
