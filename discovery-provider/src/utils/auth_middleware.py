@@ -1,9 +1,12 @@
 import functools
+import logging
 
 from eth_account.messages import encode_defunct
 from flask.globals import request
 from src.models.models import User
 from src.utils import db_session, web3_provider
+
+logger = logging.getLogger(__name__)
 
 MESSAGE_HEADER = "Encoded-Data-Message"
 SIGNATURE_HEADER = "Encoded-Data-Signature"
@@ -57,6 +60,9 @@ def auth_middleware(**kwargs):
                     )
                     if user:
                         authed_user_id = user.user_id
+                        logger.info(
+                            f"auth_middleware.py | authed_user_id: {authed_user_id}"
+                        )
             return func(*args, **kwargs, authed_user_id=authed_user_id)
 
         return inner_wrap
