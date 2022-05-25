@@ -100,6 +100,7 @@ function loggingMiddleware(req, res, next) {
  * Creates and returns a child logger for provided logger
  * @param {Object} logger bunyan parent logger instance
  * @param {Object} options optional object to define child logger properties. adds to JSON fields, allowing for better log filtering/querying
+ * @returns {Object} child logger instance with defined options
  */
 function createChildLogger(logger, options = {}) {
   return logger.child(options)
