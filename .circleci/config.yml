@@ -690,7 +690,8 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags .
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
+            docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM --force
       - run:
           name: Docker push << parameters.repo >>
           command: |
@@ -703,7 +704,7 @@ workflows:
     jobs:
       - test-libs:
           name: test-libs
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-libs
           repo: libs
 
@@ -715,7 +716,7 @@ workflows:
 
       - test-creator-node:
           name: test-creator-node
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-creator-node
           repo: creator-node
 
@@ -727,7 +728,7 @@ workflows:
 
       - test-identity-service:
           name: test-identity-service
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-identity-service
           repo: identity-service
 
@@ -776,13 +777,13 @@ workflows:
           context:
             - GCP2
           name: bake-gcp-dev-image-nightly
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-eth-contracts
           repo: eth-contracts
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-contracts
           repo: contracts
-      - docker-build-and-push:
+      - docker-build-and-push-updated:
           name: build-solana-programs
           repo: solana-programs
     triggers:
