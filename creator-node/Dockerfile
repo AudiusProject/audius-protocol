@@ -78,7 +78,14 @@ VOLUME "/file_storage"
 ENV storagePath=/file_storage
 
 ARG git_sha
+ARG audius_loggly_disable
+ARG audius_loggly_token
+ARG audius_loggly_tags
+
 ENV GIT_SHA=$git_sha
+ENV logglyDisable=$audius_loggly_disable
+ENV logglyToken=$audius_loggly_token
+ENV logglyTags=$audius_loggly_tags
 
 HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
     CMD curl -f http://localhost:4000/health_check || exit 1
