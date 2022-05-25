@@ -210,6 +210,7 @@ export type ButtonProps = RNButtonProps &
 
 export const Button = (props: ButtonProps) => {
   const {
+    accessibilityLabel,
     icon: Icon,
     iconPosition = 'right',
     IconProps,
@@ -339,7 +340,7 @@ export const Button = (props: ButtonProps) => {
             stylesProp?.button
           ]}
           accessibilityRole='button'
-          accessibilityLabel={noText ? title : undefined}
+          accessibilityLabel={accessibilityLabel ?? noText ? title : undefined}
           onPress={handlePress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
