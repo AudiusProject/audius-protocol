@@ -420,7 +420,6 @@ def parse_track_event(
     block_timestamp,
     track_metadata,
     pending_track_routes,
-    redis,
 ):
     challenge_bus = update_task.challenge_event_bus
     # Just use block_timestamp as integer
