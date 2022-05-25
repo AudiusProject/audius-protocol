@@ -237,6 +237,7 @@ def base_match(search_str: str, operator="or"):
                 ],
                 "operator": operator,
                 "type": "bool_prefix",
+                "fuzziness": "AUTO",
             }
         }
     ]

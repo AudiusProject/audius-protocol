@@ -49,6 +49,11 @@ def test_search(args):
         print_entity("saved_albums", found["saved_albums"])
 
 
+test_search({"query": "space fm lido", "limit": 3, "kind": "tracks"})
+
+test_search({"query": "issac solo", "limit": 3, "kind": "users"})  # misspell
+
+
 test_search(
     {
         "query": "the cycle of change",
@@ -65,14 +70,7 @@ test_search(
         "is_auto_complete": True,
     }
 )
-test_search(
-    {
-        "query": "isaac photo",
-        "limit": 4,
-        "current_user_id": 1,
-        "is_auto_complete": False,
-    }
-)
+
 test_search(
     {
         "query": "RAC wat",
@@ -157,60 +155,6 @@ test_search(
     {
         "query": "camo",
         "limit": 4,
-        "is_auto_complete": True,
-    }
-)
-
-test_search(
-    {
-        "query": "that looks good",
-        "limit": 4,
-        "current_user_id": 1,
-        "is_auto_complete": True,
-    }
-)
-
-test_search(
-    {
-        "query": "fall in love",
-        "limit": 4,
-        "current_user_id": 1,
-        "is_auto_complete": True,
-    }
-)
-
-test_search(
-    {
-        "query": "only yesterday",
-        "limit": 4,
-        "current_user_id": 1,
-        "is_auto_complete": True,
-    }
-)
-
-test_search(
-    {
-        "query": "with music",
-        "limit": 4,
-        "current_user_id": 1,
-        "is_auto_complete": True,
-    }
-)
-
-test_search(
-    {
-        "query": "all night",
-        "limit": 4,
-        "current_user_id": 1,
-        "is_auto_complete": True,
-    }
-)
-
-test_search(
-    {
-        "query": "one and only",
-        "limit": 4,
-        "current_user_id": 1,
         "is_auto_complete": True,
     }
 )
