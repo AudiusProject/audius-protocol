@@ -1,10 +1,12 @@
 import logging
-from typing import Any
 
 import requests
 from src.models import Track, User
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_info
+
+# from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
