@@ -81,7 +81,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
       errorMessage: resp.object.error
     })
     if (req && req.body) {
-      childLogger.info(
+      logger.info(
         'Error processing request:',
         resp.object.error,
         '|| Request Body:',
@@ -90,7 +90,7 @@ const sendResponse = (module.exports.sendResponse = (req, res, resp) => {
         req.query
       )
     } else {
-      childLogger.info('Error processing request:', resp.object.error)
+      logger.info('Error processing request:', resp.object.error)
     }
   }
 
@@ -118,14 +118,14 @@ const sendResponseWithHeartbeatTerminator =
         errorMessage: resp.object.error
       })
       if (req && req.body) {
-        childLogger.info(
+        logger.info(
           'Error processing request:',
           resp.object.error,
           '|| Request Body:',
           req.body
         )
       } else {
-        childLogger.info('Error processing request:', resp.object.error)
+        logger.info('Error processing request:', resp.object.error)
       }
 
       // Converts the error object into an object that JSON.stringify can parse
