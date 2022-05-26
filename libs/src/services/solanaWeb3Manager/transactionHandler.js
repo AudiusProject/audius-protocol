@@ -209,7 +209,7 @@ class TransactionHandler {
     try {
       await this._awaitTransactionSignatureConfirmation(txid, logger)
       done = true
-      logger.info(`Finished for txid ${txid} with ${sendCount} retries`)
+      logger.info(`transactionHandler: finished for txid ${txid} with ${sendCount} retries`)
       return {
         res: txid,
         error: null,
