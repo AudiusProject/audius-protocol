@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-expressions */
-const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
 const { expect } = chai
@@ -34,7 +33,6 @@ describe('test processStateMonitoringJob', function () {
 
   afterEach(async function () {
     await server.close()
-    nock.cleanAll()
     sandbox.restore()
 
     getNodeUsersStub = null
