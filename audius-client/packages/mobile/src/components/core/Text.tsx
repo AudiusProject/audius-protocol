@@ -7,7 +7,13 @@ import { FontSize, FontWeight, makeStyles, typography } from 'app/styles'
 export type TextProps = RNTextProps & {
   variant?: keyof typeof typography
   noGutter?: boolean
-  color?: 'primary' | 'secondary' | 'neutral' | 'neutralLight4' | 'inherit'
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'neutral'
+    | 'neutralLight4'
+    | 'inherit'
+    | 'error'
   weight?: FontWeight
   fontSize?: FontSize
 }
@@ -19,7 +25,11 @@ const useStyles = makeStyles(
   ) => ({
     root: {
       ...typography[variant],
-      ...(color === 'inherit' ? null : { color: palette[color] }),
+      ...(color === 'inherit'
+        ? null
+        : color === 'error'
+        ? { color: palette.accentRed }
+        : { color: palette[color] }),
       ...(weight ? { fontFamily: typography.fontByWeight[weight] } : null),
       ...(fontSize ? { fontSize: typography.fontSize[fontSize] } : null),
       ...(noGutter && { marginBottom: 0 })
