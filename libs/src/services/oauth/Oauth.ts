@@ -65,8 +65,8 @@ const CSS = `
 `
 // From https://stackoverflow.com/a/27747377
 const generateId = (): string => {
-  let arr = new Uint8Array(40 / 2) // Result of function will be 40 chars long
-  // @ts-ignore TS doesn't understand `msCrypto` (which provides compatibility for IE)
+  const arr = new Uint8Array(40 / 2) // Result of function will be 40 chars long
+  // @ts-expect-error TS doesn't understand `msCrypto` (which provides compatibility for IE)
   ;(window.crypto || window.msCrypto).getRandomValues(arr)
   return Array.from(arr, function dec2hex(dec) {
     return dec.toString(16).padStart(2, '0')
@@ -163,7 +163,7 @@ export class Oauth {
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
     this._clearPopupCheckInterval()
     this.popupCheckInterval = setInterval(() => {
-      if (this.activePopupWindow && this.activePopupWindow.closed) {
+      if (this.activePopupWindow?.closed) {
         this._surfaceError('The login popup was closed prematurely.')
         if (this.popupCheckInterval) {
           clearInterval(this.popupCheckInterval)

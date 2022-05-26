@@ -619,9 +619,7 @@ export const getUndisbursedChallenges = (
   }
 }
 
-export const verifyToken = (
-  token: string
-) => {
+export const verifyToken = (token: string) => {
   return {
     endpoint: '/v1/users/verify_token',
     queryParams: {
