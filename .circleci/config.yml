@@ -742,10 +742,14 @@ workflows:
           name: build-identity-service
           repo: identity-service
 
+      - hold-build-logspout:
+          type: approval
       - docker-build-and-push:
           name: build-logspout
           repo: logspout
           logspout-tag: "true"
+          requires:
+            - hold-build-logspout
 
       - test-solana-programs:
           name: test-solana-programs
