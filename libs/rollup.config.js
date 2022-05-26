@@ -12,6 +12,14 @@ import pkg from './package.json'
 
 const extensions = ['.js', '.ts']
 
+const external = [
+  ...Object.keys(pkg.dependencies),
+  ...Object.keys(pkg.devDependencies),
+  'ethers/lib/utils',
+  'ethers/lib/index',
+  'hashids/cjs'
+]
+
 const commonConfig = {
   plugins: [
     commonjs({
@@ -26,51 +34,26 @@ const commonConfig = {
     resolve({ extensions, preferBuiltins: true }),
     typescript()
   ],
-  external: [
-    ...Object.keys(pkg.dependencies),
-    ...Object.keys(pkg.devDependencies),
-    'ethereumjs-util',
-    'ethereumjs-wallet',
-    'ethers/lib/utils',
-    'ethers/lib/index',
-    'hashids/cjs'
-  ]
+  external
 }
 
-// These need to be internal because they either:
+// For the browser bundle, these need to be internal because they either:
 // * contain deps that need to be polyfilled via `nodePolyfills`
 // * are ignored via `ignore`
 const internal = [
-  '@audius/hedgehog',
-  'cipher-base',
-  'ethereumjs-wallet',
-  'ethereumjs-util',
-  'ethereumjs-tx',
   'eth-sig-util',
+  'ethereumjs-tx',
+  'ethereumjs-util',
+  'ethereumjs-wallet',
   'graceful-fs',
   'node-localstorage',
   'web3'
 ]
 
-// Previously ignored via the `browser` field
-//
-// "browser": {
-//   "fs": false,
-//   "node-localstorage": false,
-//   "crypto": false,
-//   "web3": false,
-//   "esm": false,
-//   "ipfs-unixfs-importer": false,
-//   "stream": false,
-//   "interface-blockstore": false,
-//   "interface-store": false,
-//   "multiformats/cid": false
-// },
-
 const browserConfig = {
   plugins: [
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
-    resolve({ browser: false, extensions, preferBuiltins: false }),
+    resolve({ extensions, preferBuiltins: false }),
     commonjs({
       extensions,
       transformMixedEsModules: true,
@@ -87,13 +70,7 @@ const browserConfig = {
     json(),
     typescript()
   ],
-  external: [
-    ...Object.keys(pkg.dependencies).filter((dep) => !internal.includes(dep)),
-    ...Object.keys(pkg.devDependencies),
-    'ethers/lib/utils',
-    'ethers/lib/index',
-    'hashids/cjs'
-  ]
+  external: external.filter((dep) => !internal.includes(dep))
 }
 
 const commonTypeConfig = {
