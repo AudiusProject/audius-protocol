@@ -63,20 +63,24 @@
 
 .tileContainer {
   height: 122px;
+  border-radius: 8px;
+}
+.tileContainer,
+.topSupportersContainer {
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
 }
 .tileContainer:hover,
 .topSupportersContainer:hover {
-  box-shadow: 1px 5px 1px var(--tile-shadow-1-alt),
+  box-shadow: 1px 10px 20px var(--tile-shadow-1-alt),
     0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
   transform: scale3d(1.005, 1.005, 1.005);
   cursor: pointer;
 }
 .tileContainer:active,
 .topSupportersContainer:active {
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
-    0 2px 3px -2px var(--tile-shadow-3);
+  box-shadow: 0px 0px 1px -2px var(--tile-shadow-2),
+    0px 1px 0px -2px var(--tile-shadow-2), 1px 2px 5px var(--tile-shadow-2);
   transform: scale3d(0.995, 0.995, 0.995);
 }
 
@@ -92,8 +96,8 @@
   font-weight: var(--font-bold);
   font-size: var(--font-xs);
   padding: 8px 18px;
-  border-bottom-right-radius: 4px;
-  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 8px;
 }
 .tileHeader .trophyIcon,
 .tileHeader .tokenBadgeIcon {
@@ -120,17 +124,14 @@
 .coverPhoto {
   width: 100%;
   height: 100%;
-  border-top-right-radius: 4px;
-  border-top-left-radius: 4px;
-}
-
-.profilePictureContainer {
-  position: relative;
-  top: -74px;
-  left: 8px;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
 }
 
 .profilePicture {
+  position: relative;
+  top: -74px;
+  left: 8px;
   margin-bottom: 4px;
   height: 40px;
   border-radius: 40px;
@@ -142,6 +143,17 @@
 }
 
 .name {
+  position: relative;
+  top: -78px;
+  padding-left: 8px;
+  height: 29px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.02) 30%,
+    rgba(0, 0, 0, 0.1) 60%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  background-blend-mode: multiply;
   color: var(--white);
   font-weight: var(--font-bold);
   font-size: var(--font-s);
@@ -159,9 +171,7 @@
   margin-top: 16px;
   padding: 16px 8px 8px;
   background: var(--white);
-  border-radius: 4px;
-  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
-    0px 0px 1px var(--tile-shadow-1);
+  border-radius: 8px;
 }
 
 .viewAll {
