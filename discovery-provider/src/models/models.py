@@ -315,6 +315,7 @@ class Track(Base):
     is_unlisted = Column(Boolean, nullable=False)
     field_visibility = Column(postgresql.JSONB, nullable=True)
     stem_of = Column(postgresql.JSONB, nullable=True)
+    is_available = Column(Boolean, default=True, nullable=False)
 
     _routes = relationship(  # type: ignore
         "TrackRoute",
@@ -390,6 +391,7 @@ class Track(Base):
             f"stem_of={self.stem_of},"
             f"permalink={self.permalink},"
             f"user={self.user}"
+            f"is_available={self.is_available}"
             ")>"
         )
 
