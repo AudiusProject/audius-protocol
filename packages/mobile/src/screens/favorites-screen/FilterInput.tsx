@@ -6,15 +6,12 @@ import { makeStyles } from 'app/styles'
 
 type FilterInputProps = TextInputProps
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   tileRoot: {
     margin: spacing(4)
   },
   tile: {
     padding: spacing(2)
-  },
-  input: {
-    backgroundColor: palette.neutralLight10
   }
 }))
 
@@ -28,7 +25,6 @@ export const FilterInput = (props: FilterInputProps) => {
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
-        style={styles.input}
         Icon={IconFilter}
       />
     </Tile>

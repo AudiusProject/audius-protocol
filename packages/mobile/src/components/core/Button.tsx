@@ -227,6 +227,7 @@ export const Button = (props: ButtonProps) => {
     haptics,
     url,
     corners = 'rounded',
+    disabled,
     ...other
   } = props
   const [isPressing, setIsPressing] = useState(false)
@@ -244,7 +245,7 @@ export const Button = (props: ButtonProps) => {
     handlePressOut: handlePressOutScale
   } = usePressScaleAnimation(0.97, false)
 
-  const { primaryDark1, neutralLight10 } = useThemeColors()
+  const { primaryDark1, neutralLight10, neutralLight7 } = useThemeColors()
 
   const pressColor = {
     primary: primaryDark1,
@@ -329,7 +330,8 @@ export const Button = (props: ButtonProps) => {
           { transform: [{ scale }], backgroundColor: color },
           fullWidth && { width: '100%' },
           style,
-          stylesProp?.root
+          stylesProp?.root,
+          disabled && { backgroundColor: neutralLight7 }
         ]}
       >
         <PressableComponent
@@ -344,6 +346,7 @@ export const Button = (props: ButtonProps) => {
           onPress={handlePress}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
+          disabled={disabled}
           {...other}
         >
           {iconPosition !== 'left' ? null : icon}

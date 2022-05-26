@@ -189,7 +189,7 @@ export const AudioScreen = () => {
         }}
       >
         <Text style={styles.audioAmount}>
-          {formatWei(totalBalance || (new BN(0) as BNWei), true, 0)}{' '}
+          {formatWei((totalBalance || new BN(0)) as BNWei, true, 0)}{' '}
         </Text>
         <View style={styles.audioInfo}>
           {hasMultipleWallets ? (

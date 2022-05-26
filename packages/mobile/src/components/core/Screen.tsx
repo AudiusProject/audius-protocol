@@ -43,7 +43,8 @@ export const Screen = (props: ScreenProps) => {
     headerTitle,
     topbarRightStyle,
     topbarLeftStyle,
-    variant = 'primary'
+    variant = 'primary',
+    style
   } = props
   const styles = useStyles({ variant })
   const navigation = useNavigation()
@@ -72,5 +73,5 @@ export const Screen = (props: ScreenProps) => {
     headerTitle
   ])
 
-  return <View style={styles.root}>{children}</View>
+  return <View style={[styles.root, style]}>{children}</View>
 }
