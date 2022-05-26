@@ -2,7 +2,7 @@
 
 /usr/bin/wait
 
-# enable rsyslog if not explicitly disabled by audius-docker-compose
+# enable rsyslog if not explicitly disabled by Dockerfile ARGs
 : "${enableRsyslog:=true}"
 
 # $enableRsyslog should be true

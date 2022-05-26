@@ -6,7 +6,7 @@ if [[ "${audius_loggly_tags}" ]]; then
 fi
 
 hostname=${audius_discprov_url}
-if [ -z "$hostname" ]; then
+if [[ -z "$hostname" ]]; then
    hostname=${creatorNodeEndpoint}
 fi
 if [[ "${hostname}" ]]; then
