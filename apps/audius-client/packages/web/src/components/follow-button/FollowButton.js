@@ -14,9 +14,9 @@ import PropTypes from 'prop-types'
 import styles from './FollowButton.module.css'
 
 const messages = {
-  follow: 'FOLLOW',
-  following: 'FOLLOWING',
-  unfollow: 'UNFOLLOW'
+  follow: 'Follow',
+  following: 'Following',
+  unfollow: 'Unfollow'
 }
 
 const FollowButton = props => {
@@ -52,19 +52,19 @@ const FollowButton = props => {
   let icon
   let text
   if (!props.following && !isHoveringClicked) {
-    icon = <IconFollow />
+    icon = <IconFollow width={18} height={18} />
     text = props.messages.follow
   } else if (props.following && isHoveringClicked) {
-    icon = <IconFollowing />
+    icon = <IconFollowing width={18} height={18} />
     text = props.messages.following
   } else if (props.following && !isHovering) {
     text = props.messages.following
-    icon = <IconFollowing />
+    icon = <IconFollowing width={18} height={18} />
   } else if (props.following && isHovering) {
-    icon = <IconUnfollow />
+    icon = <IconUnfollow width={18} height={18} />
     text = props.messages.unfollow
   } else if (!props.following && isHoveringClicked) {
-    icon = <IconFollow />
+    icon = <IconFollow width={18} height={18} />
     text = props.messages.follow
   }
 

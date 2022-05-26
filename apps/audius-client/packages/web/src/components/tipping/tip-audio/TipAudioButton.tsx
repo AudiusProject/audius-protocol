@@ -4,7 +4,7 @@ import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { beginTip } from 'common/store/tipping/slice'
@@ -29,7 +29,13 @@ export const TipAudioButton = () => {
       type={ButtonType.PRIMARY}
       text={
         <div className={styles.tipIconTextContainer}>
-          <IconGoldBadgeSVG width={24} height={24} />
+          <img
+            draggable={false}
+            alt=''
+            src={IconGoldBadge as string}
+            width={24}
+            height={24}
+          />
           <span className={styles.tipText}>{messages.tipAudio}</span>
         </div>
       }

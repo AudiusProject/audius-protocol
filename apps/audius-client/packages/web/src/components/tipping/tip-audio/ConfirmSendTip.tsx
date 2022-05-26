@@ -109,7 +109,9 @@ export const ConfirmSendTip = () => {
           text={
             sendStatus === 'ERROR'
               ? messages.confirmAndTryAgain
-              : messages.confirmTip
+              : sendStatus === 'CONFIRM'
+              ? messages.confirmTip
+              : ''
           }
           onClick={handleConfirmSendClick}
           rightIcon={
@@ -120,7 +122,9 @@ export const ConfirmSendTip = () => {
             )
           }
           disabled={isDisabled}
-          className={cn(styles.button, { [styles.disabled]: isDisabled })}
+          className={cn(styles.button, styles.confirmButton, {
+            [styles.disabled]: isDisabled
+          })}
         />
       </div>
       {sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING' ? (

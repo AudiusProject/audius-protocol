@@ -4,7 +4,7 @@ import { call, delay, fork, put, select, takeEvery } from 'redux-saga/effects'
 import { DefaultSizes } from 'common/models/ImageSizes'
 import Kind from 'common/models/Kind'
 import { DoubleKeys, FeatureFlags } from 'common/services/remote-config'
-import { getUserId } from 'common/store/account/selectors'
+import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import {
   fetchUsers,
@@ -148,15 +148,27 @@ function* fetchSupportersAndSupporting(userId) {
     return
   }
 
+  /**
+   * If the profile is that of the logged in user, then
+   * get all its supporting data so that when the logged in
+   * user is trying to tip an artist, we'll know whether or
+   * not that artist is already being supported by the logged in
+   * user and thus correctly calculate how much more audio to tip
+   * to become the top supporter.
+   */
+  const account = yield select(getAccountUser)
+  const supportingLimit =
+    account?.user_id === userId
+      ? account.supporting_count
+      : Math.max(
+          MAX_PROFILE_SUPPORTING_TILES,
+          MAX_ARTIST_HOVER_TOP_SUPPORTING
+        ) + 1
   yield put(
     refreshSupport({
       senderUserId: userId,
       receiverUserId: userId,
-      supportingLimit:
-        Math.max(
-          MAX_PROFILE_SUPPORTING_TILES,
-          MAX_ARTIST_HOVER_TOP_SUPPORTING
-        ) + 1,
+      supportingLimit,
       supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
     })
   )

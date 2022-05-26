@@ -37,7 +37,10 @@ import {
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
-import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from 'utils/constants'
+import {
+  MAX_ARTIST_HOVER_TOP_SUPPORTING,
+  MAX_PROFILE_TOP_SUPPORTERS
+} from 'utils/constants'
 import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 
 import { getMinSlotForRecentTips, checkTipToDisplay } from './utils'
@@ -119,7 +122,9 @@ function* sendTipAsync() {
     yield put(
       refreshSupport({
         senderUserId: sender.user_id,
-        receiverUserId: recipient.user_id
+        receiverUserId: recipient.user_id,
+        supportingLimit: sender.supporting_count,
+        supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
       })
     )
   } catch (e) {
@@ -154,13 +159,21 @@ function* refreshSupportAsync({
     }
     if (supportingLimit) {
       supportingParams.limit = supportingLimit
+    } else {
+      const account = yield* select(getAccountUser)
+      supportingParams.limit =
+        account?.user_id === senderUserId
+          ? account.supporting_count
+          : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
     }
+
     const supportersParams: SupportRequest = {
       encodedUserId: encodedReceiverUserId
     }
     if (supportersLimit) {
       supportersParams.limit = supportersLimit
     }
+
     const supportingForSenderList = yield* call(
       fetchSupporting,
       supportingParams
@@ -169,6 +182,7 @@ function* refreshSupportAsync({
       fetchSupporters,
       supportersParams
     )
+
     const userIds = [
       ...supportingForSenderList.map(supporting =>
         decodeHashId(supporting.receiver.id)
@@ -230,12 +244,22 @@ function* fetchSupportingForUserAsync({
     return
   }
 
-  // todo: need to also get whether logged in user is supporting this user
-  // so that we can have correct 'become top supporter' logic
-  // as-is, cannot rely on response because of pagination
+  /**
+   * If the user id is that of the logged in user, then
+   * get all its supporting data so that when the logged in
+   * user is trying to tip an artist, we'll know whether or
+   * not that artist is already being supported by the logged in
+   * user and thus correctly calculate how much more audio to tip
+   * to become the top supporter.
+   */
+  const account = yield* select(getAccountUser)
+  const limit =
+    account?.user_id === userId
+      ? account.supporting_count
+      : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
   const supportingList = yield* call(fetchSupporting, {
     encodedUserId,
-    limit: MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
+    limit
   })
   const userIds = supportingList.map(supporting =>
     decodeHashId(supporting.receiver.id)
@@ -366,10 +390,22 @@ function* fetchRecentTipsAsync() {
       ])
     ]
     yield call(fetchUsers, userIds, new Set(), true)
+
+    /**
+     * We need to get supporting data for logged in user and
+     * supporters data for followee that logged in user may
+     * send a tip to.
+     * This is so that we know if and how much the logged in
+     * user has already tipped the followee, and also whether or
+     * not the logged in user is the top supporter for the
+     * followee.
+     */
     yield put(
       refreshSupport({
         senderUserId: account.user_id,
-        receiverUserId: tipToDisplay.receiver_id
+        receiverUserId: tipToDisplay.receiver_id,
+        supportingLimit: account.supporting_count,
+        supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
       })
     )
     yield put(setRecentTip({ tipToDisplay }))

@@ -111,6 +111,7 @@ export const SendTip = () => {
       rankedSupportersList.length > 0 ? rankedSupportersList[0] : null
 
     if (theTopSupporter) {
+      setIsFirstSupporter(false)
       setTopSupporter(theTopSupporter)
     } else {
       setIsFirstSupporter(true)
@@ -137,8 +138,6 @@ export const SendTip = () => {
   /**
    * Check whether or not to display prompt to become top or first supporter
    */
-  // todo: also handle scenario (and get correct copy from design) for
-  // if you can attain top supporter by completing rewards and tipping the result
   useEffect(() => {
     if (hasError || !account || !topSupporter) return
 

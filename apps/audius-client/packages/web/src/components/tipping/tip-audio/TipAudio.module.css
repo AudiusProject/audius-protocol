@@ -252,6 +252,9 @@
 .disabled {
   cursor: unset;
 }
+.confirmButton.disabled {
+  width: 186px;
+}
 
 .loadingSpinner {
   height: 24px;
