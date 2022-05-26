@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { useDispatch } from 'react-redux'
+import { animated, Transition } from 'react-spring/renderprops'
 import { usePrevious } from 'react-use'
 
 import { ReactComponent as IconGoldBadge } from 'assets/img/IconGoldBadge.svg'
@@ -9,7 +10,6 @@ import { useSelector } from 'common/hooks/useSelector'
 import { getSendStatus } from 'common/store/tipping/selectors'
 import { resetSend } from 'common/store/tipping/slice'
 import { TippingSendStatus } from 'common/store/tipping/types'
-import { TransitionContainer } from 'components/transition-container/TransitionContainer'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import { ConfirmSendTip } from './ConfirmSendTip'
@@ -62,17 +62,13 @@ const titlesMap: { [key in TippingSendStatus]?: JSX.Element | string } = {
   )
 }
 
-const ModalContent = () => {
-  const sendStatus = useSelector(getSendStatus)
-  switch (sendStatus) {
-    case 'SEND':
+const ModalContent = (pageNumber: number) => {
+  switch (pageNumber) {
+    case 0:
       return <SendTip />
-    case 'CONFIRM':
-    case 'SENDING':
-    case 'CONVERTING':
-    case 'ERROR':
+    case 1:
       return <ConfirmSendTip />
-    case 'SUCCESS':
+    case 2:
       return <TipSent />
     default:
       return null
@@ -88,6 +84,10 @@ const statusOrder = {
   SUCCESS: 2
 }
 
+const defaultTransitions = {
+  initial: { opacity: 1, transform: 'translate3d(0%, 0, 0)' },
+  enter: { opacity: 1, transform: 'translate3d(0%, 0 ,0)' }
+}
 export const TipAudioModal = () => {
   const dispatch = useDispatch()
   const sendStatus = useSelector(getSendStatus)
@@ -97,6 +97,24 @@ export const TipAudioModal = () => {
     dispatch(resetSend())
   }, [dispatch])
 
+  const transitions =
+    !previousSendStatus ||
+    !sendStatus ||
+    statusOrder[sendStatus] >= statusOrder[previousSendStatus]
+      ? {
+          ...defaultTransitions,
+          // Next screen enters from right
+          from: { opacity: 0, transform: 'translate3d(100%, 0, 0)' },
+          // Current screen leaves on left
+          leave: { opacity: 0, transform: 'translate3d(-100%, 0, 0)' }
+        }
+      : {
+          ...defaultTransitions,
+          // Previous screen enters from left
+          from: { opacity: 0, transform: 'translate3d(-100%, 0, 0)' },
+          // Current screen leaves on right
+          leave: { opacity: 0, transform: 'translate3d(100%, 0, 0)' }
+        }
   return (
     <ModalDrawer
       isOpen={sendStatus !== null}
@@ -114,64 +132,20 @@ export const TipAudioModal = () => {
       useGradientTitle={false}
     >
       <div className={styles.modalContentContainer}>
-        {sendStatus && (
-          <TransitionContainer
-            render={() => <ModalContent />}
-            item={sendStatus}
-            fromStyles={{
-              opacity: 1,
-              /**
-               * if we are in the first modal screen, then
-               * enter from natural position within modal
-               *
-               * if we are moving forward in the modal flow, then
-               * enter from outside the modal swiping right to left
-               *
-               * if we are moving backward in the modal flow, then
-               * enter from outside the modal swiping left to right
-               */
-              transform:
-                !previousSendStatus ||
-                statusOrder[previousSendStatus] <= statusOrder[sendStatus]
-                  ? sendStatus === 'CONFIRM' || sendStatus === 'SUCCESS'
-                    ? 'translate3d(488px,0,0)'
-                    : 'translate3d(0%,0,0)'
-                  : sendStatus === 'SEND'
-                  ? 'translate3d(-488px,0,0)'
-                  : 'translate3d(0%,0,0)'
-            }}
-            enterStyles={{
-              opacity: 1,
-              transform: 'translate3d(0%,0,0)'
-            }}
-            leaveStyles={{
-              opacity: 0,
-              /**
-               * if we are in the first modal screen, or
-               * if we are moving forward in the modal flow, then
-               * leave outside the modal to the left
-               *
-               * if we are moving backward in the modal flow, then
-               * leave outside the modal to the right
-               */
-              transform:
-                !previousSendStatus ||
-                statusOrder[previousSendStatus] < statusOrder[sendStatus]
-                  ? 'translate3d(-488px,0,0)'
-                  : statusOrder[previousSendStatus] > statusOrder[sendStatus]
-                  ? 'translate3d(488px,0,0)'
-                  : 'translate3d(0%,0,0)'
-            }}
-            config={
-              !previousSendStatus || sendStatus === 'SEND'
-                ? { duration: 150 }
-                : statusOrder[previousSendStatus] === statusOrder[sendStatus]
-                ? { duration: 0 }
-                : { duration: 300 }
-            }
-            additionalStyles={{ width: '100%' }}
-          />
-        )}
+        <Transition
+          items={sendStatus !== null ? statusOrder[sendStatus] : 0}
+          initial={transitions.initial}
+          from={transitions.from}
+          enter={transitions.enter}
+          leave={transitions.leave}
+          unique={true}
+        >
+          {item => style => (
+            <animated.div style={{ ...style }}>
+              {ModalContent(item)}
+            </animated.div>
+          )}
+        </Transition>
       </div>
     </ModalDrawer>
   )

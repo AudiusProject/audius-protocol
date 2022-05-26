@@ -14,8 +14,12 @@
 
 .modalContentContainer {
   margin: 24px 0;
-  display: flex;
-  justify-content: center;
+  position: relative;
+}
+
+.modalContentContainer > div {
+  position: absolute;
+  width: 100%;
 }
 
 .container {
