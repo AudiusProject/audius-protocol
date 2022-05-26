@@ -9,7 +9,7 @@ from src.utils.elasticdsl import (
     ES_USERS,
     esclient,
     pluck_hits,
-    popuate_user_metadata_es,
+    populate_user_metadata_es,
     populate_track_or_playlist_metadata_es,
 )
 
@@ -201,10 +201,10 @@ def get_feed_es(args, limit=10):
     user_list = esclient.mget(index=ES_USERS, ids=user_id_list)
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
 
-    # popuate_user_metadata_es:
+    # populate_user_metadata_es:
     current_user = user_by_id.pop(str(current_user_id))
     for id, user in user_by_id.items():
-        user_by_id[id] = popuate_user_metadata_es(user, current_user)
+        user_by_id[id] = populate_user_metadata_es(user, current_user)
 
     for item in sorted_feed:
         # GOTCHA: es ids must be strings, but our ids are ints...

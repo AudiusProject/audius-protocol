@@ -15,7 +15,7 @@ from src.utils.elasticdsl import (
     ES_USERS,
     esclient,
     pluck_hits,
-    popuate_user_metadata_es,
+    populate_user_metadata_es,
     populate_track_or_playlist_metadata_es,
 )
 
@@ -190,7 +190,7 @@ def search_es_full(args: dict):
         if current_user_id:
             current_user = users_by_id.get(str(current_user_id))
         for id, user in users_by_id.items():
-            users_by_id[id] = popuate_user_metadata_es(user, current_user)
+            users_by_id[id] = populate_user_metadata_es(user, current_user)
 
     # fetch followed saves + reposts
     # TODO: instead of limit param (20) should do an agg to get 3 saves / reposts per item_key
@@ -209,7 +209,7 @@ def search_es_full(args: dict):
     for k in ["users", "followed_users"]:
         users = drop_copycats(response[k])
         response[k] = [
-            extend_user(popuate_user_metadata_es(user, current_user)) for user in users
+            extend_user(populate_user_metadata_es(user, current_user)) for user in users
         ]
 
     # playlists: finalize

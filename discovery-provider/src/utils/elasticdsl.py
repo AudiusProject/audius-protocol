@@ -49,7 +49,7 @@ def hits_by_id(found):
     return {h["_id"]: h["_source"] for h in found["hits"]["hits"]}
 
 
-def popuate_user_metadata_es(user, current_user):
+def populate_user_metadata_es(user, current_user):
     user["total_balance"] = str(
         int(user.get("balance", "0") or "0")
         + int(user.get("associated_wallets_balance", "0") or "0")

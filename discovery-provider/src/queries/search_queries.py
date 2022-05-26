@@ -266,7 +266,7 @@ def search(args):
     `query`, `kind`, `current_user_id`, and `only_downloadable`
     """
 
-    if os.getenv("search_elasticsearch_enabled"):
+    if os.getenv("audius_elasticsearch_search_enabled"):
         try:
             resp = search_es_full(args)
             return resp
