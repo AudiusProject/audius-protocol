@@ -10,6 +10,59 @@ export type ButtonOptions = {
   fullWidth: boolean
 }
 
+const CSS = `
+.audiusLoginButton {
+  cursor: pointer;
+  font-family: Helvetica, Arial, sans-serif;
+  text-align: center;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 100%;
+  align-items: center;
+  display: flex;
+  border: 0;
+  height: 28px;
+  justify-content: center;
+  padding: 0px 16px;
+  background: #CC0FE0;
+  border-radius: 4px;
+  transition: all 0.07s ease-in-out;
+}
+
+.audiusLoginButton:hover {
+  background: #D127E3;
+  transform: perspective(1px) scale3d(1.04, 1.04, 1.04);
+}
+
+.audiusLoginButton.disableHoverGrow:hover {
+  transform: none;
+}
+
+.audiusLoginButton:active {
+  background: #A30CB3;
+}
+
+.audiusLoginButton.pill {
+  border-radius: 99px;
+}
+
+.audiusLoginButton.fullWidth {
+  width: 100%;
+}
+
+.audiusLoginButton.small {
+  height: 20px;
+  font-size: 11px;
+  padding: 0px 32px;
+}
+
+.audiusLoginButton.large {
+  height: 40px;
+  font-size: 18px;
+  padding: 0px 18px;
+}
+`
 // From https://stackoverflow.com/a/27747377
 const generateId = (): string => {
   let arr = new Uint8Array(40 / 2) // Result of function will be 40 chars long
@@ -52,6 +105,7 @@ export class Oauth {
   discoveryProvider: DiscoveryProvider
   appName: string | null
   activePopupWindow: null | Window
+  popupCheckInterval: NodeJS.Timer | null
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
 
@@ -67,18 +121,35 @@ export class Oauth {
     this.activePopupWindow = null
     this.loginSuccessCallback = null
     this.loginErrorCallback = null
+    this.popupCheckInterval = null
   }
 
-  // TODO(nkang): Maybe put login success/error callbacks here instead?
-  init(appName: string) {
+  init(
+    appName: string,
+    successCallback: LoginSuccessCallback,
+    errorCallback?: LoginErrorCallback
+  ) {
     this.appName = appName
+    this.loginSuccessCallback = successCallback
+    this.loginErrorCallback = errorCallback ?? null
+    window.addEventListener(
+      'message',
+      (e: MessageEvent) => {
+        this._receiveMessage(e)
+      },
+      false
+    )
   }
 
-  login(callback: LoginSuccessCallback, errorCallback?: LoginErrorCallback) {
+  login() {
     if (!this.appName) {
-      if (errorCallback) {
-        errorCallback('App name not set (set with `init` method).')
-      }
+      this._surfaceError('App name not set (set with `init` method).')
+      return
+    }
+    if (!this.loginSuccessCallback) {
+      this._surfaceError(
+        'Login success callback not set (set with `init` method).'
+      )
       return
     }
 
@@ -90,81 +161,23 @@ export class Oauth {
     const appNameURISafe = encodeURI(this.appName)
     const fullOauthUrl = `${OAUTH_URL}?scope=read&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&app_name=${appNameURISafe}`
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
-    this.loginSuccessCallback = callback
-    this.loginErrorCallback = errorCallback ?? null
-    window.addEventListener(
-      'message',
-      (e: MessageEvent) => {
-        this._receiveMessage(e)
-      },
-      false
-    )
+    this._clearPopupCheckInterval()
+    this.popupCheckInterval = setInterval(() => {
+      if (this.activePopupWindow && this.activePopupWindow.closed) {
+        this._surfaceError('The login popup was closed prematurely.')
+        if (this.popupCheckInterval) {
+          clearInterval(this.popupCheckInterval)
+        }
+      }
+    }, 500)
   }
 
-  renderButton(
-    element: HTMLElement,
-    onLoginSuccess: LoginSuccessCallback,
-    onLoginError?: LoginErrorCallback,
-    options?: ButtonOptions
-  ) {
+  renderButton(element: HTMLElement, options?: ButtonOptions) {
     if (!element) {
       console.error('Target element for Audius OAuth button is empty.')
     }
-    const css = `
-    .audiusLoginButton {
-      cursor: pointer;
-      font-family: Helvetica, Arial, sans-serif;
-      text-align: center;
-      color: #FFFFFF;
-      font-weight: 700;
-      font-size: 14px;
-      line-height: 100%;
-      align-items: center;
-      display: flex;
-      border: 0;
-      height: 28px;
-      justify-content: center;
-      padding: 0px 16px;
-      background: #CC0FE0;
-      border-radius: 4px;
-      transition: all 0.07s ease-in-out;
-    }
-
-    .audiusLoginButton:hover {
-      background: #D127E3;
-      transform: perspective(1px) scale3d(1.04, 1.04, 1.04);
-    }
-
-    .audiusLoginButton.disableHoverGrow:hover {
-      transform: none;
-    }
-
-    .audiusLoginButton:active {
-      background: #A30CB3;
-    }
-
-    .audiusLoginButton.pill {
-      border-radius: 99px;
-    }
-
-    .audiusLoginButton.fullWidth {
-      width: 100%;
-    }
-
-    .audiusLoginButton.small {
-      height: 20px;
-      font-size: 11px;
-      padding: 0px 32px;
-    }
-
-    .audiusLoginButton.large {
-      height: 40px;
-      font-size: 18px;
-      padding: 0px 18px;
-    }
-    `
     const style = document.createElement('style')
-    style.textContent = css
+    style.textContent = CSS
     document.head.appendChild(style)
     const button = document.createElement('button')
     button.id = 'audius-login-button'
@@ -188,7 +201,7 @@ export class Oauth {
       options?.customText ?? 'Continue With Audius'
     }`
     button.onclick = () => {
-      this.login(onLoginSuccess, onLoginError)
+      this.login()
     }
     element.replaceWith(button)
   }
@@ -199,56 +212,48 @@ export class Oauth {
 
   /* ------- INTERNAL FUNCTIONS ------- */
 
-  _resetCallbacks() {
-    this.loginSuccessCallback = null
-    this.loginErrorCallback = null
+  _surfaceError(errorMessage: string) {
+    if (this.loginErrorCallback) {
+      this.loginErrorCallback(errorMessage)
+    } else {
+      console.error(errorMessage)
+    }
+  }
+
+  _clearPopupCheckInterval() {
+    if (this.popupCheckInterval) {
+      clearInterval(this.popupCheckInterval)
+    }
   }
 
   async _receiveMessage(event: MessageEvent) {
     const oauthOrigin = new URL(OAUTH_URL).origin
     if (
       event.origin !== oauthOrigin ||
-      event.source !== this.activePopupWindow
+      event.source !== this.activePopupWindow ||
+      !event.data.state ||
+      !event.data.token
     ) {
       return
     }
-    if (this.activePopupWindow && !this.activePopupWindow.closed) {
-      this.activePopupWindow.close()
-    }
-    if (
-      event.data.state == null ||
-      window.localStorage.getItem(CSRF_TOKEN_KEY) !== event.data.state
-    ) {
-      if (this.loginErrorCallback) {
-        this.loginErrorCallback('State mismatch.')
-        console.log(event)
-        console.log(
-          event.data.state,
-          window.localStorage.getItem(CSRF_TOKEN_KEY)
-        )
+    this._clearPopupCheckInterval()
+    if (this.activePopupWindow) {
+      if (!this.activePopupWindow.closed) {
+        this.activePopupWindow.close()
       }
-      this._resetCallbacks()
-      return
+      this.activePopupWindow = null
     }
-    if (event.data.token) {
-      // Verify token and decode
-      const decodedJwt = await this.verifyToken(event.data.token)
-      if (decodedJwt) {
-        if (this.loginSuccessCallback) {
-          this.loginSuccessCallback(decodedJwt)
-        }
-        this._resetCallbacks()
-      } else {
-        if (this.loginErrorCallback) {
-          this.loginErrorCallback('The token was invalid.')
-        }
-        this._resetCallbacks()
+    if (window.localStorage.getItem(CSRF_TOKEN_KEY) !== event.data.state) {
+      this._surfaceError('State mismatch.')
+    }
+    // Verify token and decode
+    const decodedJwt = await this.verifyToken(event.data.token)
+    if (decodedJwt) {
+      if (this.loginSuccessCallback) {
+        this.loginSuccessCallback(decodedJwt)
       }
     } else {
-      if (this.loginErrorCallback) {
-        this.loginErrorCallback('Auth popup did not return a token.')
-      }
-      this._resetCallbacks()
+      this._surfaceError('The token was invalid.')
     }
   }
 }
