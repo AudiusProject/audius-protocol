@@ -302,7 +302,7 @@ def extend_supporter(support: SupportResponse):
 def extend_supporting(support: SupportResponse):
     return {
         "rank": support["rank"],
-        "amount": support["amount"],
+        "amount": to_wei_string(support["amount"]),
         "receiver": extend_user(support["user"]),
     }
 

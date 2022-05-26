@@ -1,14 +1,7 @@
 const axios = require('axios')
-const { CancelToken } = axios
 
-const config = require('../config')
-const Utils = require('../utils')
-const { logger } = require('../logging')
-const {
-  GET_NODE_USERS_TIMEOUT_MS,
-  GET_NODE_USERS_CANCEL_TOKEN_MS,
-  GET_NODE_USERS_DEFAULT_PAGE_SIZE
-} = require('./StateMachineConstants')
+const config = require('../../config')
+const { logger } = require('../../logging')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
@@ -22,20 +15,17 @@ const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
 const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
   config.get('minimumSuccessfulSyncCountPercentage') / 100
 
-// Used in determining primary health
+// Max number of seconds a primary may be unhealthy for since the first time it was seen as unhealthy
 const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
 
-class PeerSetManager {
-  constructor({
-    discoveryProviderEndpoint,
-    creatorNodeEndpoint,
-    maxNumberSecondsPrimaryRemainsUnhealthy
-  }) {
-    this.discoveryProviderEndpoint = discoveryProviderEndpoint
-    this.creatorNodeEndpoint = creatorNodeEndpoint
-
+/**
+ * Tracks and caches health of Content Nodes.
+ * TODO: Add caching for secondaries similar to how primaries have a threshold of time to remain unhealthy for.
+ */
+class NodeHealthManager {
+  constructor() {
     /* We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
       have data that the secondaries lack. This map is used to track the primary and the number of times it has
       failed a health check.
@@ -46,29 +36,20 @@ class PeerSetManager {
       }
     */
     this.primaryToEarliestFailedHealthCheckTimestamp = {}
-
-    // Mapping of Content Node endpoint to its service provider ID
-    this.endpointToSPIdMap = {}
-
-    // Max number of hours a primary may be unhealthy for since the first time it was seen as unhealthy
-    this.maxNumberSecondsPrimaryRemainsUnhealthy = isNaN(
-      parseInt(maxNumberSecondsPrimaryRemainsUnhealthy)
-    )
-      ? MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY
-      : maxNumberSecondsPrimaryRemainsUnhealthy
   }
 
   log(msg) {
-    logger.info(`SnapbackSM:::PeerSetManager: ${msg}`)
+    logger.info(`NodeHealthManager: ${msg}`)
   }
 
   logError(msg) {
-    logger.error(`SnapbackSM:::PeerSetManager ERROR: ${msg}`)
+    logger.error(`NodeHealthManager ERROR: ${msg}`)
   }
 
   /**
    * Performs a health check on the peer set
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {string} contentNodeEndpoint the IP address / URL of this Content Node
    * @param {boolean?} [performSimpleCheck=false] flag to dictate whether or not to check health check response to
    *  determine node health
    * @returns the unhealthy peers in a Set
@@ -76,9 +57,16 @@ class PeerSetManager {
    * @note consider returning healthy set?
    * TODO - add retry logic to node requests
    */
-  async getUnhealthyPeers(nodeUsers, performSimpleCheck = false) {
+  async getUnhealthyPeers(
+    nodeUsers,
+    thisContentNodeEndpoint,
+    performSimpleCheck = false
+  ) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-    const peerSet = this.computeContentNodePeerSet(nodeUsers)
+    const peerSet = this._computeContentNodePeerSet(
+      nodeUsers,
+      thisContentNodeEndpoint
+    )
 
     /**
      * Determine health for every peer & build list of unhealthy peers
@@ -103,9 +91,7 @@ class PeerSetManager {
         this.determinePeerHealth(verboseHealthCheckResp)
       }
     } catch (e) {
-      this.logError(
-        `isNodeHealthy() peer=${peer} is unhealthy: ${e.toString()}`
-      )
+      this.logError(`isNodeHealthy peer=${peer} is unhealthy: ${e.toString()}`)
       return false
     }
 
@@ -113,122 +99,11 @@ class PeerSetManager {
   }
 
   /**
-   * Retrieve users with this node as replica (primary or secondary).
-   * Makes single request to discovery node to retrieve all users, optionally paginated
-   *
-   * @notice Discovery Nodes will ignore these params if they're not updated to the version which added pagination
-   * @param prevUserId user_id is used for pagination, where each paginated request returns
-   *                   maxUsers number of users starting at a user with id=user_id
-   * @param maxUsers the maximum number of users to fetch
-   * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
-   */
-  async getNodeUsers(
-    prevUserId = 0,
-    maxUsers = GET_NODE_USERS_DEFAULT_PAGE_SIZE
-  ) {
-    // Fetch discovery node currently connected to libs as this can change
-    if (!this.discoveryProviderEndpoint) {
-      throw new Error('No discovery provider currently selected, exiting')
-    }
-
-    // Will throw error on non-200 response
-    let nodeUsers
-    try {
-      // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
-      const cancelTokenSource = CancelToken.source()
-      setTimeout(
-        () =>
-          cancelTokenSource.cancel(
-            `getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out`
-          ),
-        GET_NODE_USERS_CANCEL_TOKEN_MS
-      )
-
-      // Request all users that have this node as a replica (either primary or secondary)
-      const resp = await Utils.asyncRetry({
-        logLabel: 'fetch all users with this node in replica',
-        asyncFn: async () => {
-          return axios({
-            method: 'get',
-            baseURL: this.discoveryProviderEndpoint,
-            url: `v1/full/users/content_node/all`,
-            params: {
-              creator_node_endpoint: this.creatorNodeEndpoint,
-              prev_user_id: prevUserId,
-              max_users: maxUsers
-            },
-            timeout: GET_NODE_USERS_TIMEOUT_MS,
-            cancelToken: cancelTokenSource.token
-          })
-        },
-        logger
-      })
-      nodeUsers = resp.data.data
-    } catch (e) {
-      if (axios.isCancel(e)) {
-        logger.error(`getNodeUsers request canceled: ${e.message}`)
-      }
-      throw new Error(
-        `getNodeUsers() Error: ${e.toString()} - connected discprov [${
-          this.discoveryProviderEndpoint
-        }]`
-      )
-    } finally {
-      logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
-    }
-
-    // Ensure every object in response array contains all required fields
-    for (const nodeUser of nodeUsers) {
-      const requiredFields = [
-        'user_id',
-        'wallet',
-        'primary',
-        'secondary1',
-        'secondary2',
-        'primarySpID',
-        'secondary1SpID',
-        'secondary2SpID'
-      ]
-      const responseFields = Object.keys(nodeUser)
-      const allRequiredFieldsPresent = requiredFields.every((requiredField) =>
-        responseFields.includes(requiredField)
-      )
-      if (!allRequiredFieldsPresent) {
-        throw new Error(
-          'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
-        )
-      }
-    }
-
-    return nodeUsers
-  }
-
-  /**
-   * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @returns {Set} Set of content node endpoint strings
-   */
-  computeContentNodePeerSet(nodeUserInfoList) {
-    // Aggregate all nodes from user replica sets
-    let peerList = nodeUserInfoList
-      .map((userInfo) => userInfo.primary)
-      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary1))
-      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary2))
-
-    peerList = peerList
-      .filter(Boolean) // filter out false-y values to account for incomplete replica sets
-      .filter((peer) => peer !== this.creatorNodeEndpoint) // remove self from peerList
-
-    const peerSet = new Set(peerList) // convert to Set to get uniques
-
-    return peerSet
-  }
-
-  /**
-   * Returns /health_check/verbose response
+   * Returns /health_check/verbose response.
    * TODO: - consider moving this pure function to libs
    *
-   * @param {string} endpoint
-   * @returns {Object} the /health_check/verbose response
+   * @param {string} endpoint the endpoint to query
+   * @returns {Object} the /health_check/verbose response from the endpoint
    */
   async queryVerboseHealthCheck(endpoint) {
     // Axios request will throw on timeout or non-200 response
@@ -332,61 +207,6 @@ class PeerSetManager {
   }
 
   /**
-   * Updates `this.endpointToSPIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
-   * `this.endpointToSPIdMap` value. If the existing map is empty, throw error as we need this map to issue reconfigs.
-   * @param {Object} ethContracts audiusLibs.ethContracts instance; has helper fn to get service provider info
-   */
-  async updateEndpointToSpIdMap(ethContracts) {
-    const endpointToSPIdMap = {}
-    try {
-      const contentNodes = await ethContracts.getServiceProviderList(
-        'content-node'
-      )
-      contentNodes.forEach((cn) => {
-        endpointToSPIdMap[cn.endpoint] = cn.spID
-      })
-    } catch (e) {
-      this.logError(`[updateEndpointToSpIdMap]: ${e.message}`)
-    }
-
-    if (Object.keys(endpointToSPIdMap).length > 0)
-      this.endpointToSPIdMap = endpointToSPIdMap
-    if (Object.keys(this.endpointToSPIdMap).length === 0) {
-      const errorMsg =
-        '[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap'
-      this.logError(errorMsg)
-      throw new Error(errorMsg)
-    }
-  }
-
-  /**
-   * Converts provided array of nodeUser info to issue to a map(replica set node => userWallets[]) for easier access
-   *
-   * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
-   * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
-   */
-  buildReplicaSetNodesToUserWalletsMap(nodeUsers) {
-    const replicaSetNodesToUserWalletsMap = {}
-
-    nodeUsers.forEach((userInfo) => {
-      const { wallet, primary, secondary1, secondary2 } = userInfo
-      const replicaSet = [primary, secondary1, secondary2]
-
-      replicaSet.forEach((node) => {
-        if (!replicaSetNodesToUserWalletsMap[node]) {
-          replicaSetNodesToUserWalletsMap[node] = []
-        }
-
-        replicaSetNodesToUserWalletsMap[node].push(wallet)
-      })
-    })
-
-    return replicaSetNodesToUserWalletsMap
-  }
-
-  // ============== `this.unhealthyPrimaryToWalletMap` functions ==============
-
-  /**
    * Perform a simple health check to see if a primary is truly unhealthy. If the primary returns a
    * non-200 response, track the timestamp in the map. If the health check has failed for a primary over
    * `this.maxNumberSecondsPrimaryRemainsUnhealthy`, return as unhealthy. Else, keep track of the timestamp
@@ -408,7 +228,7 @@ class PeerSetManager {
         const failedTimestampPlusThreshold = new Date(failedTimestamp)
         failedTimestampPlusThreshold.setSeconds(
           failedTimestamp.getSeconds() +
-            this.maxNumberSecondsPrimaryRemainsUnhealthy
+            MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY
         )
 
         // Determine if the failed timestamp + max hours threshold surpasses our allowed time threshold
@@ -440,5 +260,26 @@ class PeerSetManager {
   removePrimaryFromUnhealthyPrimaryMap(primary) {
     delete this.primaryToEarliestFailedHealthCheckTimestamp[primary]
   }
+
+  /**
+   * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @returns {Set} Set of content node endpoint strings
+   */
+  _computeContentNodePeerSet(nodeUserInfoList, thisContentNodeEndpoint) {
+    // Aggregate all nodes from user replica sets
+    let peerList = nodeUserInfoList
+      .map((userInfo) => userInfo.primary)
+      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary1))
+      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary2))
+
+    peerList = peerList
+      .filter(Boolean) // filter out false-y values to account for incomplete replica sets
+      .filter((peer) => peer !== thisContentNodeEndpoint) // remove self from peerList
+
+    const peerSet = new Set(peerList) // convert to Set to get uniques
+
+    return peerSet
+  }
 }
-module.exports = PeerSetManager
+
+module.exports = new NodeHealthManager()
