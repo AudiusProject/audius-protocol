@@ -1,7 +1,7 @@
 import { ID } from 'common/models/Identifiers'
 import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
 import { User } from 'common/models/User'
-import { BNWei } from 'common/models/Wallet'
+import { StringAudio } from 'common/models/Wallet'
 import { Nullable } from 'common/utils/typeUtils'
 
 export type TippingSendStatus =
@@ -42,7 +42,7 @@ export type TippingState = {
   send: {
     status: Nullable<TippingSendStatus>
     user: Nullable<User>
-    amount: BNWei
+    amount: StringAudio
     error: Nullable<string>
   }
   recentTips: UserTip[]
