@@ -9,10 +9,10 @@ const proxyquire = require('proxyquire')
 const BullQueue = require('bull')
 
 const config = require('../src/config')
-const StateMonitoringQueue = require('../src/services/stateMachineManager/monitoring/StateMonitoringQueue')
+const StateMonitoringQueue = require('../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue')
 const {
   STATE_MONITORING_QUEUE_NAME
-} = require('../src/services/stateMachineManager/constants')
+} = require('../src/services/stateMachineManager/stateMachineConstants')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
@@ -33,10 +33,11 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     sandbox.restore()
   })
 
-  it('creates the queue and registers its event handlers', function () {
+  it('creates the queue and registers its event handlers', async function () {
     // Initialize StateMonitoringQueue and spy on its registerQueueEventHandlers function
     sandbox.spy(StateMonitoringQueue.prototype, 'registerQueueEventHandlers')
     const stateMonitoringQueue = new StateMonitoringQueue(config)
+    await stateMonitoringQueue.init(getLibsMock())
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
     expect(stateMonitoringQueue.queue).to.exist.and.to.be.instanceOf(BullQueue)
@@ -99,7 +100,7 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     const logWarnStub = sandbox.stub()
     const logErrorStub = sandbox.stub()
     const MockStateMonitoringQueue = proxyquire(
-      '../src/services/stateMachineManager/monitoring/StateMonitoringQueue.js',
+      '../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue.js',
       {
         './../../../logging': {
           logger: {
@@ -153,6 +154,7 @@ describe('test StateMonitoringQueue re-enqueuing', function () {
   it('re-enqueues a new job with the correct data after a job completes successfully', async function () {
     // Initialize StateMonitoringQueue and stubbed queue.add()
     const stateMonitoringQueue = new StateMonitoringQueue(config)
+    await stateMonitoringQueue.init(getLibsMock())
     const queueAdd = sandbox.stub()
 
     // Call function that enqueues a new job after the previous job completed successfully
@@ -191,6 +193,7 @@ describe('test StateMonitoringQueue re-enqueuing', function () {
   it('re-enqueues a new job with the correct data after a job fails', async function () {
     // Initialize StateMonitoringQueue and stubbed queue.add()
     const stateMonitoringQueue = new StateMonitoringQueue(config)
+    await stateMonitoringQueue.init(getLibsMock())
     const queueAdd = sandbox.stub()
 
     // Call function that enqueues a new job after the previous job failed
