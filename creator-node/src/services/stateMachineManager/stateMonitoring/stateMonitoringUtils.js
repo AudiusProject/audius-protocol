@@ -25,16 +25,12 @@ const MIN_SECONDARY_USER_SYNC_SUCCESS_PERCENT =
  * @returns the ID of the newest user on Audius
  */
 const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint) => {
-  if (!discoveryNodeEndpoint) {
-    throw new Error('No discovery provider currently selected, exiting')
-  }
-
   // Will throw error on non-200 response
   let latestUserId = 0
   try {
     // Request all users that have this node as a replica (either primary or secondary)
     const resp = await Utils.asyncRetry({
-      logLabel: 'fetch all users with this node in replica',
+      logLabel: 'fetch the ID of the newest user on Audius',
       asyncFn: async () => {
         return axios({
           method: 'get',
@@ -73,11 +69,6 @@ const getNodeUsers = async (
   prevUserId = 0,
   maxUsers = GET_NODE_USERS_DEFAULT_PAGE_SIZE
 ) => {
-  // Fetch discovery node currently connected to libs as this can change
-  if (!discoveryNodeEndpoint) {
-    throw new Error('No discovery provider currently selected, exiting')
-  }
-
   // Will throw error on non-200 response
   let nodeUsers
   try {
@@ -86,7 +77,7 @@ const getNodeUsers = async (
     setTimeout(
       () =>
         cancelTokenSource.cancel(
-          `getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out`
+          `getNodeUsers() took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out`
         ),
       GET_NODE_USERS_CANCEL_TOKEN_MS
     )
@@ -113,13 +104,13 @@ const getNodeUsers = async (
     nodeUsers = resp.data.data
   } catch (e) {
     if (axios.isCancel(e)) {
-      logger.error(`getNodeUsers request canceled: ${e.message}`)
+      logger.error(`getNodeUsers() request canceled: ${e.message}`)
     }
     throw new Error(
-      `getNodeUsers Error: ${e.toString()} - connected discovery node [${discoveryNodeEndpoint}]`
+      `getNodeUsers() Error: ${e.toString()} - connected discovery node [${discoveryNodeEndpoint}]`
     )
   } finally {
-    logger.info(`getNodeUsers nodeUsers.length: ${nodeUsers?.length}`)
+    logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
   }
 
   // Ensure every object in response array contains all required fields
@@ -140,7 +131,7 @@ const getNodeUsers = async (
     )
     if (!allRequiredFieldsPresent) {
       throw new Error(
-        'getNodeUsers Error: Unexpected response format during getNodeUsers call'
+        'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
       )
     }
   }
