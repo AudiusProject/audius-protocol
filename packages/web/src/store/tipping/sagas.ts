@@ -26,7 +26,11 @@ import {
 } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
-import { weiToAudioString, weiToString } from 'common/utils/wallet'
+import {
+  parseAudioInputToWei,
+  weiToAudioString,
+  weiToString
+} from 'common/utils/wallet'
 import {
   fetchRecentUserTips,
   fetchSupporters,
@@ -60,11 +64,12 @@ function* sendTipAsync() {
   }
 
   const sendTipData = yield* select(getSendTipData)
-  const { user: recipient, amount: weiBNAmount } = sendTipData
+  const { user: recipient, amount } = sendTipData
   if (!recipient) {
     return
   }
 
+  const weiBNAmount = parseAudioInputToWei(amount) ?? (new BN('0') as BNWei)
   const recipientWallet = recipient.spl_wallet
   const weiBNBalance: BNWei = yield select(getAccountBalance) ??
     (new BN('0') as BNWei)

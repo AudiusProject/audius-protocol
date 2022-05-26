@@ -1,10 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import BN from 'bn.js'
 
 import { ID } from 'common/models/Identifiers'
 import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
 import { User } from 'common/models/User'
-import { BNWei } from 'common/models/Wallet'
 import { TippingState } from 'common/store/tipping/types'
 
 export type RefreshSupportPayloadAction = {
@@ -20,7 +18,7 @@ const initialState: TippingState = {
   send: {
     status: null,
     user: null,
-    amount: new BN('0') as BNWei,
+    amount: '0',
     error: null
   },
   recentTips: [],
@@ -77,7 +75,7 @@ const slice = createSlice({
       state.send.status = 'SEND'
       state.send.user = action.payload.user
     },
-    sendTip: (state, action: PayloadAction<{ amount: BNWei }>) => {
+    sendTip: (state, action: PayloadAction<{ amount: string }>) => {
       if (state.send.status !== 'SEND') {
         return
       }
@@ -106,7 +104,7 @@ const slice = createSlice({
     resetSend: state => {
       state.send.status = null
       state.send.user = null
-      state.send.amount = new BN('0') as BNWei
+      state.send.amount = '0'
       state.send.error = null
     },
     fetchRecentTips: _ => {},
