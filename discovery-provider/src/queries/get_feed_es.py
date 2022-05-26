@@ -9,8 +9,8 @@ from src.utils.elasticdsl import (
     ES_USERS,
     esclient,
     pluck_hits,
-    populate_user_metadata_es,
     populate_track_or_playlist_metadata_es,
+    populate_user_metadata_es,
 )
 
 

@@ -5,7 +5,6 @@ import time
 
 import pytest
 from elasticsearch import Elasticsearch
-from integration_tests.conftest import DB_URL
 from integration_tests.utils import populate_mock_db
 from src.utils.db_session import get_db
 
