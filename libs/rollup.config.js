@@ -6,7 +6,7 @@ import typescript from '@rollup/plugin-typescript'
 import dts from 'rollup-plugin-dts'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import alias from '@rollup/plugin-alias'
-// import shim from 'rollup-plugin-shim'
+import ignore from 'rollup-plugin-ignore'
 
 import pkg from './package.json'
 
@@ -37,26 +37,23 @@ const commonConfig = {
   ]
 }
 
-// These need to be internal so they are polyfilled via `nodePolyfills`
+// These need to be internal because they either:
+// * contain deps that need to be polyfilled via `nodePolyfills`
+// * are ignored via `ignore`
 const internal = [
-  // '@audius/hedgehog',
-  // 'cipher-base'
+  '@audius/hedgehog',
+  'cipher-base',
   'ethereumjs-wallet',
   'ethereumjs-util',
   'ethereumjs-tx',
-  'eth-sig-util'
-  // 'fs',
-  // 'node-localstorage',
-  // 'crypto',
-  // 'web3',
-  // 'esm',
-  // 'ipfs-unixfs-importer',
-  // 'stream',
-  // 'interface-blockstore',
-  // 'interface-store',
-  // 'multiformats/cid'
+  'eth-sig-util',
+  'graceful-fs',
+  'node-localstorage',
+  'web3'
 ]
 
+// Previously ignored via the `browser` field
+//
 // "browser": {
 //   "fs": false,
 //   "node-localstorage": false,
@@ -70,10 +67,9 @@ const internal = [
 //   "multiformats/cid": false
 // },
 
-// TODO: figure out how to achieve the `browser` field ignores in rollup
-
-const browserSdkConfig = {
+const browserConfig = {
   plugins: [
+    ignore(['web3', 'graceful-fs', 'node-localstorage']),
     resolve({ browser: false, extensions, preferBuiltins: false }),
     commonjs({
       extensions,
@@ -87,9 +83,6 @@ const browserSdkConfig = {
       entries: [{ find: 'stream', replacement: 'stream-browserify' }]
     }),
     nodePolyfills(),
-    // shim({
-    //   web3: 'export default {}'
-    // }),
     babel({ babelHelpers: 'bundled', extensions }),
     json(),
     typescript()
@@ -116,7 +109,7 @@ export default [
     output: [
       { file: pkg.main, format: 'cjs', exports: 'auto', sourcemap: true }
     ],
-    ...browserSdkConfig
+    ...commonConfig
   },
   {
     input: './src/sdk/index.ts',
@@ -125,15 +118,15 @@ export default [
   },
 
   /**
-   * SDK bundled for a browser environment
+   * Bundle for a browser environment
    */
-  // {
-  //   input: 'src/sdk/index.ts',
-  //   output: [
-  //     { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
-  //   ],
-  //   ...browserSdkConfig
-  // },
+  {
+    input: 'src/sdk/index.ts',
+    output: [
+      { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
+    ],
+    ...browserConfig
+  },
 
   /**
    * libs (deprecated)
