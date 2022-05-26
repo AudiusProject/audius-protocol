@@ -11,6 +11,7 @@ const { Comstock } = require('./services/comstock')
 const { Hedgehog } = require('./services/hedgehog')
 const { CreatorNode } = require('./services/creatorNode')
 const { DiscoveryProvider } = require('./services/discoveryProvider')
+const { Oauth } = require('./services/oauth')
 const Wormhole = require('./services/wormhole')
 const { AudiusABIDecoder } = require('./services/ABIDecoder')
 const { SchemaValidator } = require('./services/schemaValidator')
@@ -379,6 +380,7 @@ class AudiusLibs {
     this.identityService = null
     this.hedgehog = null
     this.discoveryProvider = null
+    this.oauth = null
     this.ethWeb3Manager = null
     this.ethContracts = null
     this.web3Manager = null
@@ -532,6 +534,9 @@ class AudiusLibs {
         this.discoveryProviderConfig.unhealthyBlockDiff
       )
       await this.discoveryProvider.init()
+      if (typeof window !== 'undefined') {
+        this.oauth = new Oauth(this.discoveryProvider)
+      }
     }
 
     /** Creator Node */

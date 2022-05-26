@@ -39,7 +39,7 @@ solanaRouter.post(
     }
 
     // Unpack instructions
-    let { instructions = [], skipPreflight, feePayerOverride, signatures = [], recentBlockhash } = req.body
+    let { instructions = [], skipPreflight, feePayerOverride, signatures = [], retry = true, recentBlockhash } = req.body
 
     // Allowed relay checks
     const isRelayAllowed = await areRelayAllowedInstructions(instructions)
@@ -91,7 +91,8 @@ solanaRouter.post(
       signatures: (signatures || []).map(s => ({ ...s, signature: Buffer.from(s.signature.data) })),
       instructions,
       skipPreflight,
-      feePayerOverride
+      feePayerOverride,
+      retry
     })
 
     if (error) {

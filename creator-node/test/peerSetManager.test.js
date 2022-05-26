@@ -59,6 +59,10 @@ describe('test peerSetManager -- determinePeerHealth', () => {
     })
   })
 
+  afterEach(() => {
+    nock.cleanAll()
+  })
+
   it('should throw error if storage path vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp

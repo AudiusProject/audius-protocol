@@ -7,9 +7,9 @@ const {
   STATE_MONITORING_QUEUE_NAME,
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
-} = require('../constants')
+} = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
-const { getLatestUserId: getLatestUserIdFromDiscovery } = require('./utils')
+const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
 const processStateMonitoringJob = require('./processStateMonitoringJob')
 
 /**
@@ -18,20 +18,18 @@ const processStateMonitoringJob = require('./processStateMonitoringJob')
  * gathering sync metrics, and computing healthy/unhealthy peers).
  */
 class StateMonitoringQueue {
-  constructor() {
+  async init(audiusLibs) {
     this.queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
     )
-    this.registerQueueEventHandlers(
-      this.queue,
-      this.enqueueJobAfterSuccess,
-      this.enqueueJobAfterFailure
-    )
+    this.registerQueueEventHandlers({
+      queue: this.queue,
+      jobSuccessCallback: this.enqueueJobAfterSuccess,
+      jobFailureCallback: this.enqueueJobAfterFailure
+    })
     this.registerQueueJobProcessor(this.queue)
-  }
 
-  async init(audiusLibs) {
     await this.startQueue(
       this.queue,
       audiusLibs.discoveryProvider.discoveryProviderEndpoint,
@@ -82,11 +80,15 @@ class StateMonitoringQueue {
 
   /**
    * Registers event handlers for logging and job success/failure.
-   * @param {Object} queue the queue to register events for
-   * @param {Function<queue, successfulJob, jobResult>} jobSuccessCallback the function to call when a job succeeds
-   * @param {Function<queue, failedJob>} jobFailureCallback the function to call when a job fails
+   * @param {Object} params.queue the queue to register events for
+   * @param {Function<queue, successfulJob, jobResult>} params.jobSuccessCallback the function to call when a job succeeds
+   * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
    */
-  registerQueueEventHandlers(queue, jobSuccessCallback, jobFailureCallback) {
+  registerQueueEventHandlers({
+    queue,
+    jobSuccessCallback,
+    jobFailureCallback
+  }) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
       this.log(`Queue Job Waiting - ID ${jobId}`)

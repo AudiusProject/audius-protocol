@@ -1,20 +1,18 @@
 const config = require('../../config')
 const { logger } = require('../../logging')
-const StateMonitoringQueue = require('./monitoring/StateMonitoringQueue')
+const StateMonitoringQueue = require('./stateMonitoring/StateMonitoringQueue')
 const NodeToSpIdManager = require('./cNodeToSpIdMapManager')
-const { RECONFIG_MODES } = require('./constants')
+const { RECONFIG_MODES } = require('./stateMachineConstants')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
  * the queue for reconciling anomalies in the state (syncs and replica set updates).
  */
 class StateMachineManager {
-  constructor() {
+  async init(audiusLibs) {
     this.updateEnabledReconfigModesSet()
     this.stateMonitoringQueue = new StateMonitoringQueue()
-  }
 
-  async init(audiusLibs) {
     // TODO: Decide on interval to run this on
     try {
       NodeToSpIdManager.updateCnodeEndpointToSpIdMap(audiusLibs.ethContracts)
