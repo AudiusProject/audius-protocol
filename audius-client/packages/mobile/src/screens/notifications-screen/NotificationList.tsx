@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import Status from 'audius-client/src/common/models/Status'
+import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import {
   fetchNotifications,
   refreshNotifications
@@ -16,11 +17,13 @@ import { View } from 'react-native'
 import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { NotificationBlock } from './NotificationBlock'
+import { NotificationListItem } from './NotificationListItem'
 
 const NOTIFICATION_PAGE_SIZE = 10
 
@@ -53,6 +56,9 @@ export const NotificationList = () => {
   const status = useSelectorWeb(getNotificationStatus)
   const hasMore = useSelectorWeb(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { isEnabled: isTippingEnabled } = useFeatureFlag(
+    FeatureFlags.TIPPING_ENABLED
+  )
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
@@ -84,7 +90,11 @@ export const NotificationList = () => {
       keyExtractor={(item: Notification) => `${item.id}`}
       renderItem={({ item }) => (
         <View style={styles.itemContainer}>
-          <NotificationBlock notification={item} />
+          {isTippingEnabled ? (
+            <NotificationListItem notification={item} />
+          ) : (
+            <NotificationBlock notification={item} />
+          )}
         </View>
       )}
       ListFooterComponent={
