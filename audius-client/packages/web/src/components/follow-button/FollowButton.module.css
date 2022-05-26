@@ -19,7 +19,7 @@
 }
 
 .followButton.small .followButtonText {
-  font-size: 11px;
+  font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 0.3px;
 }
