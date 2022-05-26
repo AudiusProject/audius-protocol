@@ -84,7 +84,7 @@ def fetch_all_registered_content_node_endpoints(
 
 
 # Perform eth web3 call to fetch endpoint info
-def fetch_content_node_info(spID, service_provider_factory_instance):
+def fetch_registered_content_node_info(spID, service_provider_factory_instance):
     return service_provider_factory_instance.functions.getServiceEndpointInfo(
         CONTENT_NODE_SERVICE_TYPE, spID
     ).call()
@@ -104,33 +104,33 @@ def fetch_all_registered_content_node_info():
     )
     logger.info(f"Number of content nodes: {num_content_nodes}")
 
-    ids_list = list(range(1, num_content_nodes + 1))
+    spIDs_list = list(range(1, num_content_nodes + 1))
     registered_content_nodes_info = []
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        content_node_futures = {
+        future_to_spID = {
             executor.submit(
-                fetch_content_node_info, i, service_provider_factory_instance
+                fetch_registered_content_node_info, i, service_provider_factory_instance
             ): i
-            for i in ids_list
+            for i in spIDs_list
         }
-        for index, future in enumerate(
-            concurrent.futures.as_completed(content_node_futures), start=1
-        ):
-            node_op = content_node_futures[future]
+
+        for future in concurrent.futures.as_completed(future_to_spID):
+            spID = future_to_spID[future]
             try:
                 future_result = future.result()
-                # TODO: Not sure which index is which for the wallets
                 node_info = {
-                    # "delegate_owner_wallet": future_result[0],
                     "endpoint": future_result[1],
                     "block_number": future_result[2],
+                    "spID": spID,
+                    # TODO: Not sure which index is which for the wallets
+                    # "delegate_owner_wallet": future_result[0],
                     # "owner": future_result[3],
-                    "spID": index,
                 }
                 registered_content_nodes_info.append(node_info)
             except Exception as e:
                 logger.error(
-                    f"eth_contracts_helpers.py | ERROR in content_node_futures {node_op}: {e}"
+                    f"eth_contracts_helpers.py | ERROR in fetching Content Node info for {spID}: {e}"
                 )
 
     return registered_content_nodes_info
