@@ -37,10 +37,11 @@
     "openzeppelin-solidity": "^2.1.0",
     "@openzeppelin/upgrades": "2.8.0",
     "truffle": "5.0.42",
-    "truffle-hdwallet-provider": "^1.0.13"
+    "@truffle/hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "0.5.5",
+    "ganache": "^7.1.0",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "chance": "^1.0.18",

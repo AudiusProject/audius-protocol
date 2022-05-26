@@ -9,7 +9,7 @@ if [ -z "$dbPath" ]; then
 fi
 
 mkdir -p $dbPath
-ganache --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbPath" &
+npx ganache --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbPath" &
 ganache_pid=$!
 
 npx truffle migrate --to 4 --network predeploy
