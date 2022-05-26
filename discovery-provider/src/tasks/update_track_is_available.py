@@ -9,7 +9,8 @@ from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_in
 
 logger = logging.getLogger(__name__)
 
-ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "unavailable_tracks_all"
+UPDATE_TRACK_IS_AVAILABLE_LOCK = "update_track_is_available_lock"
+ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "update_track_is_available:unavailable_tracks_all"
 BATCH_SIZE = 1000
 DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
@@ -89,7 +90,7 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
                 session.commit()
             except Exception as e:
                 logger.warn(
-                    f"Could not process batch {unavailable_track_ids_batch}: {e}\nContinuing..."
+                    f"update_track_is_available.py | Could not process batch {unavailable_track_ids_batch}: {e}\nContinuing..."
                 )
                 session.rollback()
 
@@ -104,7 +105,9 @@ def fetch_unavailable_track_ids(node: str) -> List[int]:
         ).json()
         unavailable_track_ids = resp["data"]["values"]
     except Exception as e:
-        logger.warn(f"Could not fetch unavailable tracks from {node}: {e}")
+        logger.warn(
+            f"update_track_is_available.py | Could not fetch unavailable tracks from {node}: {e}"
+        )
 
     return unavailable_track_ids
 
@@ -172,7 +175,7 @@ def check_track_is_available(
 
 def get_unavailable_tracks_redis_key(spID: int) -> str:
     """Returns the redis key used to store the unavailable tracks on a sp"""
-    return f"unavailable_tracks_{spID}"
+    return f"update_track_is_available:unavailable_tracks_{spID}"
 
 
 # TODO: what happens when a worker fails? wrap in try/catch? not necessary?
@@ -200,17 +203,20 @@ def update_track_is_available(self) -> None:
 
     have_lock = False
     update_lock = redis.lock(
-        "update_track_is_available_lock",
+        UPDATE_TRACK_IS_AVAILABLE_LOCK,
         timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
     )
 
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            redis.set("update_track_is_available_start", datetime.now())
-
+            redis.set(
+                "update_track_is_available:start",
+                datetime.now().strftime("%m/%d/%Y, %H:%M:%S.%f"),
+            )
             fetch_unavailable_track_ids_in_network(redis)
             update_tracks_is_available_status(db, redis)
+            logger.info("update_track_is_available.py | very nice")
         else:
             logger.warning(
                 "update_track_is_available.py | Lock not acquired",
@@ -224,5 +230,8 @@ def update_track_is_available(self) -> None:
         raise e
     finally:
         if have_lock:
-            redis.set("update_track_is_available_finish", datetime.now())
+            redis.set(
+                "update_track_is_available:finish",
+                datetime.now().strftime("%m/%d/%Y, %H:%M:%S.%f"),
+            )
             update_lock.release()
