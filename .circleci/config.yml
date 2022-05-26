@@ -379,7 +379,9 @@ jobs:
           command: |
             cd discovery-provider
             python3 -m pip install --user virtualenv
+            cd env/
             python3 -m venv env
+            cd .../
             source env/bin/activate
             pip3 install -r requirements.txt
       - save_cache:
