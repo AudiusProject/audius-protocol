@@ -7,7 +7,7 @@
     "install-hooks": "npx @escape.tech/mookme init --only-hook --skip-types-selection"
   },
   "devDependencies": {
-    "lerna": "4.0.0"
+    "lerna": "5.0.0"
   },
   "dependencies": {
     "@escape.tech/mookme": "1.2.0"
