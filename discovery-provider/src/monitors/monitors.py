@@ -5,8 +5,6 @@ from src.monitors.celery import get_celery_tasks
 from src.monitors.database import (
     get_database_connection_info,
     get_database_connections,
-    get_database_index_count,
-    get_database_index_info,
     get_database_liveness,
     get_database_size,
     get_frequent_queries,
@@ -62,20 +60,6 @@ DATABASE_CONNECTIONS = {
 DATABASE_CONNECTION_INFO = {
     monitor_names.name: monitor_names.database_connection_info,
     monitor_names.func: get_database_connection_info,
-    monitor_names.type: "json",
-}
-
-DATABASE_INDEX_COUNT = {
-    monitor_names.name: monitor_names.database_index_count,
-    monitor_names.func: get_database_index_count,
-    monitor_names.ttl: 60 * 60 * 6,  # six hours
-    monitor_names.type: "int",
-}
-
-DATABASE_INDEX_INFO = {
-    monitor_names.name: monitor_names.database_index_info,
-    monitor_names.func: get_database_index_info,
-    monitor_names.ttl: 60 * 60 * 6,  # six hours
     monitor_names.type: "json",
 }
 
