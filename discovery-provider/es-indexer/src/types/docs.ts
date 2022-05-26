@@ -7,6 +7,15 @@ import {
   UserRow,
 } from './db'
 
+export type EntityUserDoc = {
+  handle: string
+  name: string
+  location: string
+  follower_count: number
+  created_at: Date
+  updated_at: Date
+}
+
 export type PlaylistDoc = PlaylistRow & {
   suggest: string
   tracks: TrackDoc[]
@@ -15,15 +24,7 @@ export type PlaylistDoc = PlaylistRow & {
   repost_count: number
   reposted_by: number[]
   total_play_count: number
-
-  user: {
-    handle: string
-    name: string
-    location: string
-    follower_count: number
-    created_at: Date
-    updated_at: Date
-  }
+  user: EntityUserDoc
 }
 
 export type UserDoc = UserRow & {
@@ -45,15 +46,7 @@ export type TrackDoc = TrackRow & {
   favorite_count: number
   play_count: any // todo: is it a string or number?  pg returns string
   downloadable: boolean
-
-  user: {
-    handle: string
-    name: string
-    location: string
-    follower_count: number
-    created_at: Date
-    updated_at: Date
-  }
+  user: EntityUserDoc
 }
 
 export type RepostDoc = RepostRow & {
