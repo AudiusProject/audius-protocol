@@ -36,6 +36,7 @@ export type UserMetadata = {
   spl_wallet: SolanaWalletAddress
   has_collectibles: boolean
   collectibles?: CollectiblesMetadata
+  collectiblesOrderUnset?: boolean
   collectibleList?: Collectible[]
   solanaCollectibleList?: Collectible[]
 
