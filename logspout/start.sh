@@ -5,8 +5,12 @@ if [[ "${audius_loggly_tags}" ]]; then
    tag_csv=${tag_csv},${audius_loggly_tags}
 fi
 
-hostname=$(echo ${audius_discprov_url} | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
+hostname=${audius_discprov_url}
+if [ -z "$hostname" ]; then
+   hostname=${creatorNodeEndpoint}
+fi
 if [[ "${hostname}" ]]; then
+   hostname=$(echo ${hostname} | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
    tag_csv=${tag_csv},${hostname}
 fi
 
