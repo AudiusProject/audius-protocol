@@ -1,8 +1,14 @@
 const axios = require('axios')
+const { CancelToken } = axios
 
 const config = require('../config')
 const Utils = require('../utils')
 const { logger } = require('../logging')
+const {
+  GET_NODE_USERS_TIMEOUT_MS,
+  GET_NODE_USERS_CANCEL_TOKEN_MS,
+  GET_NODE_USERS_DEFAULT_PAGE_SIZE
+} = require('./StateMachineConstants')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
@@ -116,7 +122,10 @@ class PeerSetManager {
    * @param maxUsers the maximum number of users to fetch
    * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
    */
-  async getNodeUsers(prevUserId = 0, maxUsers = 100000) {
+  async getNodeUsers(
+    prevUserId = 0,
+    maxUsers = GET_NODE_USERS_DEFAULT_PAGE_SIZE
+  ) {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -125,6 +134,16 @@ class PeerSetManager {
     // Will throw error on non-200 response
     let nodeUsers
     try {
+      // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
+      const cancelTokenSource = CancelToken.source()
+      setTimeout(
+        () =>
+          cancelTokenSource.cancel(
+            `getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out`
+          ),
+        GET_NODE_USERS_CANCEL_TOKEN_MS
+      )
+
       // Request all users that have this node as a replica (either primary or secondary)
       const resp = await Utils.asyncRetry({
         logLabel: 'fetch all users with this node in replica',
@@ -138,21 +157,25 @@ class PeerSetManager {
               prev_user_id: prevUserId,
               max_users: maxUsers
             },
-            timeout: 60_000 // 60s
+            timeout: GET_NODE_USERS_TIMEOUT_MS,
+            cancelToken: cancelTokenSource.token
           })
         },
         logger
       })
       nodeUsers = resp.data.data
     } catch (e) {
+      if (axios.isCancel(e)) {
+        logger.error(`getNodeUsers request canceled: ${e.message}`)
+      }
       throw new Error(
         `getNodeUsers() Error: ${e.toString()} - connected discprov [${
           this.discoveryProviderEndpoint
         }]`
       )
+    } finally {
+      logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
     }
-
-    logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers.length}`)
 
     // Ensure every object in response array contains all required fields
     for (const nodeUser of nodeUsers) {

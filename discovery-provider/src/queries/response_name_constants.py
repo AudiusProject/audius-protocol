@@ -125,6 +125,7 @@ solana_notification_challenge_id = "challenge_id"
 solana_notification_threshold = "threshold"
 solana_notification_tip_rank = "rank"
 solana_notification_tip_amount = "amount"
+solana_notification_tip_signature = "tx_signature"
 
 solana_notification_reaction_type = "reaction_type"
 solana_notification_reaction_type_tip = "tip"
