@@ -12,7 +12,6 @@ import {
   getSendUser
 } from 'common/store/tipping/selectors'
 import { confirmSendTip, beginTip } from 'common/store/tipping/slice'
-import { formatWei } from 'common/utils/wallet'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './TipAudio.module.css'
@@ -83,7 +82,7 @@ export const ConfirmSendTip = () => {
         {messages.sending}
       </div>
       <div className={cn(styles.flexCenter, styles.sendingAudio)}>
-        <span className={styles.sendAmount}>{formatWei(sendAmount, true)}</span>
+        <span className={styles.sendAmount}>{sendAmount}</span>
         $AUDIO
       </div>
     </>
