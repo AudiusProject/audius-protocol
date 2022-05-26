@@ -11,7 +11,7 @@ if [ -z "$dbPath" ]; then
 fi
 
 mkdir -p $dbPath
-ganache --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbPath" --miner.blockTime 1 &
+npx ganache --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbPath" --miner.blockTime 1 &
 ganache_pid=$!
 
 npx truffle migrate --to 12 --network predeploy
