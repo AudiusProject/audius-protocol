@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# enable rsyslog if not set to 0
-: "${enableRsyslog:=1}"
+# enable rsyslog if not explicitly disabled by audius-docker-compose
+: "${audius_enable_rsyslog:=true}"
 
-# $enableRsyslog should be > 0
-if ((enableRsyslog)); then
+# $audius_enable_rsyslog should be true
+if $audius_enable_rsyslog; then
     mkdir -p /var/log
     mkdir -p /var/spool/rsyslog
     mkdir -p /etc/rsyslog.d

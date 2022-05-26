@@ -7,13 +7,13 @@ if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
 fi
 
-# enable rsyslog if not set to 0
-: "${enableRsyslog:=1}"
+# enable rsyslog if not explicitly disabled by audius-docker-compose
+: "${enableRsyslog:=true}"
 
-# $enableRsyslog should be > 0
+# $enableRsyslog should be true
 # $logglyDisable should be empty/null
 # $logglyToken should be a nonzero length string
-if ((enableRsyslog)) && [[ -z "$logglyDisable" && -n "$logglyToken" ]]; then
+if $enableRsyslog && [[ -z "$logglyDisable" && -n "$logglyToken" ]]; then
     logglyTags=$(echo $logglyTags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
     mkdir -p /var/spool/rsyslog
     mkdir -p /etc/rsyslog.d
