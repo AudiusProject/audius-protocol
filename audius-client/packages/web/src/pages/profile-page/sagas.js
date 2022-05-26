@@ -78,6 +78,14 @@ function* fetchProfileCustomizedCollectibles(user) {
         ])
       )
     } else {
+      yield put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: user.user_id,
+            metadata: { ...metadata, collectiblesOrderUnset: true }
+          }
+        ])
+      )
       console.log('something went wrong, could not get user collectibles order')
     }
   }
