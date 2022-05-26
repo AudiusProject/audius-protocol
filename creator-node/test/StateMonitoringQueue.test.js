@@ -43,9 +43,9 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     expect(stateMonitoringQueue.queue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(stateMonitoringQueue.registerQueueEventHandlers).to.have.been
       .calledOnce
-    expect(
-      stateMonitoringQueue.registerQueueEventHandlers.getCall(0).args[0]
-    ).to.have.deep.property('name', STATE_MONITORING_QUEUE_NAME)
+    expect(stateMonitoringQueue.registerQueueEventHandlers.getCall(0).args[0])
+      .to.have.property('queue')
+      .that.has.deep.property('name', STATE_MONITORING_QUEUE_NAME)
   })
 
   it('kicks off an initial job when initting', async function () {
