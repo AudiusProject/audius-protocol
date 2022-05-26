@@ -9,7 +9,7 @@ const {
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
   CLOCK_STATUS_REQUEST_TIMEOUT_MS,
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
-} = require('./constants')
+} = require('./stateMachineConstants')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'

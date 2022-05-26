@@ -7,9 +7,9 @@ const {
   STATE_MONITORING_QUEUE_NAME,
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
-} = require('../constants')
+} = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
-const { getLatestUserId: getLatestUserIdFromDiscovery } = require('./utils')
+const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
 const processStateMonitoringJob = require('./processStateMonitoringJob')
 
 /**
@@ -18,7 +18,7 @@ const processStateMonitoringJob = require('./processStateMonitoringJob')
  * gathering sync metrics, and computing healthy/unhealthy peers).
  */
 class StateMonitoringQueue {
-  constructor() {
+  async init(audiusLibs) {
     this.queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
@@ -29,9 +29,7 @@ class StateMonitoringQueue {
       this.enqueueJobAfterFailure
     )
     this.registerQueueJobProcessor(this.queue)
-  }
 
-  async init(audiusLibs) {
     await this.startQueue(
       this.queue,
       audiusLibs.discoveryProvider.discoveryProviderEndpoint,
