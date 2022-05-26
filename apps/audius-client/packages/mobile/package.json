@@ -124,6 +124,7 @@
     "@react-native-community/eslint-config": "0.0.5",
     "@svgr/plugin-svgo": "5.5.0",
     "@types/array.prototype.flat": "1.2.1",
+    "@types/bn.js": "^5.1.0",
     "@types/hls.js": "0.13.0",
     "@types/jest": "24.9.1",
     "@types/lodash.samplesize": "4.2.6",

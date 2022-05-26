@@ -194,11 +194,11 @@ export const AudioBreakdownDrawer = () => {
     solWallets: null
   }
 
-  const linkedWalletsBalance = ((ethWallets ?? [])
+  const linkedWalletsBalance = (((ethWallets ?? [])
     .concat(solWallets ?? [])
     .reduce((total, wallet) => {
-      return total.add(new BN(wallet.balance))
-    }, new BN('0')) ?? new BN('0')) as BNWei
+      return total.add(new BN((wallet.balance as unknown) as string))
+    }, new BN('0')) ?? new BN('0')) as unknown) as BNWei
 
   const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
 

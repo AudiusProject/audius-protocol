@@ -4,14 +4,16 @@ import {
   Animated,
   TextInput as RNTextInput,
   TextInputProps as RNTextInputProps,
-  View
+  TextStyle,
+  View,
+  ViewStyle
 } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 
 import IconClose from 'app/assets/images/iconRemove.svg'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { makeStyles } from 'app/styles'
+import { makeStyles, StylesProp } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
@@ -39,7 +41,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   }
 }))
 
-type TextInputProps = RNTextInputProps & {
+export type TextInputProps = RNTextInputProps & {
   /**
    * Default icon to show at the right side of the input
    */
@@ -52,6 +54,7 @@ type TextInputProps = RNTextInputProps & {
    * What happens when the user clicks the clear icon
    */
   onClear?: () => void
+  styles?: StylesProp<{ root: ViewStyle; input: TextStyle }>
 }
 
 export type TextInputRef = RNTextInput
@@ -60,7 +63,14 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
   (props, ref) => {
     const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.8)
 
-    const { style, Icon, clearable, onClear, ...other } = props
+    const {
+      style,
+      styles: stylesProp,
+      Icon,
+      clearable,
+      onClear,
+      ...other
+    } = props
     const styles = useStyles()
 
     const handlePressIcon = useCallback(() => {
@@ -68,10 +78,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     }, [onClear])
 
     return (
-      <View style={[styles.root, style]}>
+      <View style={[styles.root, style, stylesProp?.root]}>
         <RNTextInput
           ref={ref}
-          style={styles.input}
+          style={[styles.input, stylesProp?.input]}
           underlineColorAndroid='transparent'
           autoComplete='off'
           autoCorrect={false}
