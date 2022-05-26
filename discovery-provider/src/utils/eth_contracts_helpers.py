@@ -83,18 +83,57 @@ def fetch_all_registered_content_node_endpoints(
     return eth_cn_endpoints_set
 
 
+# Perform eth web3 call to fetch endpoint info
+def fetch_content_node_info(spID, service_provider_factory_instance):
+    return service_provider_factory_instance.functions.getServiceEndpointInfo(
+        CONTENT_NODE_SERVICE_TYPE, spID
+    ).call()
+
+
 def fetch_all_registered_content_node_info():
     # Setup eth web3
+
     service_provider_factory_instance = _get_service_provider_factory_instance()
 
-    # Get all content nodes
-    registered_content_nodes = (
-        service_provider_factory_instance.functions.getServiceProviderList(
+    # Fetch all Content Nodes info in parallel
+
+    num_content_nodes = (
+        service_provider_factory_instance.functions.getTotalServiceTypeProviders(
             CONTENT_NODE_SERVICE_TYPE
         ).call()
     )
+    logger.info(f"Number of content nodes: {num_content_nodes}")
 
-    return registered_content_nodes
+    ids_list = list(range(1, num_content_nodes + 1))
+    registered_content_nodes_info = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        content_node_futures = {
+            executor.submit(
+                fetch_content_node_info, i, service_provider_factory_instance
+            ): i
+            for i in ids_list
+        }
+        for index, future in enumerate(
+            concurrent.futures.as_completed(content_node_futures), start=1
+        ):
+            node_op = content_node_futures[future]
+            try:
+                future_result = future.result()
+                # TODO: Not sure which index is which for the wallets
+                node_info = {
+                    # "delegate_owner_wallet": future_result[0],
+                    "endpoint": future_result[1],
+                    "block_number": future_result[2],
+                    # "owner": future_result[3],
+                    "spID": index,
+                }
+                registered_content_nodes_info.append(node_info)
+            except Exception as e:
+                logger.error(
+                    f"eth_contracts_helpers.py | ERROR in content_node_futures {node_op}: {e}"
+                )
+
+    return registered_content_nodes_info
 
 
 def _get_service_provider_factory_instance():
