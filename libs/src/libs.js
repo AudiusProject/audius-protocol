@@ -609,9 +609,6 @@ class AudiusLibs {
 // https://github.com/rollup/plugins/tree/master/packages/commonjs#defaultismoduleexports
 // exports.__esModule = true
 
-/**
- * @deprecated Please migrate to using `sdk` when possible
- */
 module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder

@@ -111,6 +111,7 @@ export default [
     ],
     ...commonConfig
   },
+
   {
     input: './src/sdk/index.ts',
     output: [{ file: pkg.types, format: 'cjs' }],
@@ -126,22 +127,6 @@ export default [
       { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
     ],
     ...browserConfig
-  },
-
-  /**
-   * libs (deprecated)
-   */
-  {
-    input: 'src/libs.js',
-    output: [
-      { file: pkg.libs, format: 'cjs', exports: 'auto', sourcemap: true }
-    ],
-    ...commonConfig
-  },
-  {
-    input: './src/libsTypes.ts',
-    output: [{ file: pkg.libsTypes, format: 'cjs' }],
-    ...commonTypeConfig
   },
 
   /**

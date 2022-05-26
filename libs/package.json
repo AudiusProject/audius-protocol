@@ -5,8 +5,6 @@
   "main": "dist/index.js",
   "browser": "dist/browser.js",
   "types": "dist/types.d.ts",
-  "libs": "dist/libs.js",
-  "libsTypes": "dist/libs.d.ts",
   "core": "dist/core.js",
   "coreTypes": "dist/core.d.ts",
   "scripts": {

@@ -1,1 +1,0 @@
-export { sdk } from './sdk'
