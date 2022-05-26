@@ -178,25 +178,12 @@ def get_unavailable_tracks_redis_key(spID: int) -> str:
     return f"update_track_is_available:unavailable_tracks_{spID}"
 
 
-# TODO: what happens when a worker fails? wrap in try/catch? not necessary?
-
-# TODO: actual todo :3
-# o add migration for "is_available" column in "Tracks". default to "True"
-# o unit test the updating the tracks table with the 'is_available' status
-# o unit test fetch_unavailable_track_ids_in_network
-# o unit test update_tracks_is_available_status
-# o consider and handle fail conditions
-# o consider and handle batching
-# - unit/manual test update_track_is_available / get the worker working
-
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
 def update_track_is_available(self) -> None:
     """
     Recurring task that updates whether tracks are available on the network
     """
-
-    # Reference: src/tasks/user_listening_history/index_user_listening_history.py
 
     db = update_track_is_available.db
     redis = update_track_is_available.redis
@@ -214,9 +201,10 @@ def update_track_is_available(self) -> None:
                 "update_track_is_available:start",
                 datetime.now().strftime("%m/%d/%Y, %H:%M:%S.%f"),
             )
+
             fetch_unavailable_track_ids_in_network(redis)
+
             update_tracks_is_available_status(db, redis)
-            logger.info("update_track_is_available.py | very nice")
         else:
             logger.warning(
                 "update_track_is_available.py | Lock not acquired",
