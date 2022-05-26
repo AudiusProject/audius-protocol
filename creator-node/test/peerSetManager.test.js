@@ -53,6 +53,7 @@ describe('test peerSetManager -- determinePeerHealth', () => {
   }
 
   beforeEach(() => {
+    nock.disableNetConnect()
     peerSetManager = new PeerSetManager({
       discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
       creatorNodeEndpoint: 'https://content_node_endpoint.audius.co'
@@ -61,6 +62,7 @@ describe('test peerSetManager -- determinePeerHealth', () => {
 
   afterEach(() => {
     nock.cleanAll()
+    nock.enableNetConnect()
   })
 
   it('should throw error if storage path vars are improper', () => {
@@ -297,6 +299,15 @@ describe('test peerSetManager -- getNodeUsers', () => {
       'secondary1SpID': 2,
       'secondary2SpID': 3
     })
+  })
+
+  beforeEach(() => {
+    nock.disableNetConnect()
+  })
+
+  afterEach(() => {
+    nock.cleanAll()
+    nock.enableNetConnect()
   })
 
   it('uses correct params for axios request when not given pagination params', async () => {

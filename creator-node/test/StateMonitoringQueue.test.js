@@ -25,11 +25,13 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     sandbox = sinon.createSandbox()
 
     config.set('spID', 1)
+    nock.disableNetConnect()
   })
 
   afterEach(async function () {
     await server.close()
     nock.cleanAll()
+    nock.enableNetConnect()
     sandbox.restore()
   })
 
@@ -143,11 +145,13 @@ describe('test StateMonitoringQueue re-enqueuing', function () {
     sandbox = sinon.createSandbox()
 
     config.set('spID', 1)
+    nock.disableNetConnect()
   })
 
   afterEach(async function () {
     await server.close()
     nock.cleanAll()
+    nock.enableNetConnect()
     sandbox.restore()
   })
 

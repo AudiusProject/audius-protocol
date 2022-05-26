@@ -83,11 +83,13 @@ describe('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconfig mo
     await app.get('redisClient').flushdb()
 
     nodeConfig.set('spID', 1)
+    nock.disableNetConnect()
   })
 
   afterEach(async function () {
     await server.close()
     nock.cleanAll()
+    nock.enableNetConnect()
   })
 
   it('Manual and recurring syncs are processed correctly', async function () {

@@ -4,7 +4,7 @@ const { CancelToken } = axios
 
 const config = require('../../../config')
 const Utils = require('../../../utils')
-const { isPrimaryHealthy } = require('../nodeHealthManager')
+const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const { logger } = require('../../../logging')
 const SecondarySyncHealthTracker = require('../../../snapbackSM/secondarySyncHealthTracker')
 const {
