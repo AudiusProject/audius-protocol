@@ -57,8 +57,10 @@ def popuate_user_metadata_es(user, current_user):
         + to_wei(user.get("waudio", "0") or 0)
     )
 
-    # TODO: how to compute this?
-    user["current_user_followee_follow_count"] = 0
+    # Mutual box on profile page will fetch the data to compute this number
+    # using the /v1/full/users/xyz/related?user_id=abc endpoint
+    # Avoid extra round trips by not computing it here
+    user["current_user_followee_follow_count"] = None
 
     if current_user:
         user_following = user.get("following_ids", [])
