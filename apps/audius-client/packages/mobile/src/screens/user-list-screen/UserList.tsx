@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import { User } from 'audius-client/src/common/models/User'
+import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { CommonState } from 'audius-client/src/common/store'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
@@ -13,13 +14,15 @@ import { UserListStoreState } from 'audius-client/src/common/store/user-list/typ
 import { View } from 'react-native'
 import { Selector } from 'react-redux'
 
-import { FlatList } from 'app/components/core'
+import { Divider, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { UserChip } from './UserChip'
+import { UserListItem } from './UserListItem'
 
 const useStyles = makeStyles(({ spacing }) => ({
   spinner: {
@@ -73,6 +76,10 @@ export const UserList = (props: UserListProps) => {
     [usersMap, userIds]
   )
 
+  const { isEnabled: isTippingEnabled } = useFeatureFlag(
+    FeatureFlags.TIPPING_ENABLED
+  )
+
   useFocusEffect(
     useCallback(() => {
       setIsRefreshing(true)
@@ -124,10 +131,15 @@ export const UserList = (props: UserListProps) => {
   return (
     <FlatList
       data={data}
-      renderItem={({ item }) => (
-        <UserChip user={item} currentUserId={currentUserId} />
-      )}
+      renderItem={({ item }) =>
+        isTippingEnabled ? (
+          <UserListItem user={item} tag={tag} />
+        ) : (
+          <UserChip user={item} currentUserId={currentUserId} />
+        )
+      }
       keyExtractor={item => item.user_id.toString()}
+      ItemSeparatorComponent={isTippingEnabled ? Divider : undefined}
       onEndReached={handleEndReached}
       ListFooterComponent={loading || isRefreshing ? loadingSpinner : footer}
     />

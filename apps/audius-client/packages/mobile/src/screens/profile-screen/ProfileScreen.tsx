@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { PortalHost } from '@gorhom/portal'
 import { ShareSource } from 'audius-client/src/common/models/Analytics'
 import Status from 'audius-client/src/common/models/Status'
+import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
@@ -17,6 +18,7 @@ import { IconButton, Screen } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePopToTopOnDrawerOpen } from 'app/hooks/usePopToTopOnDrawerOpen'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles/makeStyles'
@@ -32,6 +34,7 @@ import { ProfileMetrics } from './ProfileMetrics'
 import { ProfilePicture } from './ProfilePicture'
 import { ProfileSocials } from './ProfileSocials'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
+import { TipArtistButton } from './TipArtistButton'
 import { UploadTrackButton } from './UploadTrackButton'
 import { useSelectProfileRoot } from './selectors'
 
@@ -75,8 +78,10 @@ export const ProfileScreen = () => {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { neutralLight4, accentOrange } = useThemeColors()
-
   const navigation = useNavigation<ProfileTabScreenParamList>()
+  const { isEnabled: isTippingEnabled } = useFeatureFlag(
+    FeatureFlags.TIPPING_ENABLED
+  )
 
   const handleNavigateSettings = useCallback(() => {
     navigation.push({
@@ -152,6 +157,12 @@ export const ProfileScreen = () => {
     />
   )
 
+  const profileActionButton = isOwner ? (
+    <UploadTrackButton />
+  ) : isTippingEnabled ? (
+    <TipArtistButton />
+  ) : null
+
   const scrollY = useRef(new Animated.Value(0)).current
 
   const renderHeader = () => {
@@ -172,7 +183,7 @@ export const ProfileScreen = () => {
           {!hasUserFollowed ? null : (
             <ArtistRecommendations onClose={handleCloseArtistRecs} />
           )}
-          {!isOwner ? null : <UploadTrackButton />}
+          {profileActionButton}
         </View>
       </>
     )
