@@ -1,7 +1,7 @@
 const config = require('../../../config')
 const { logger } = require('../../../logging')
-const NodeHealthManager = require('../nodeHealthManager')
-const NodeToSpIdManager = require('../cNodeToSpIdMapManager')
+const NodeHealthManager = require('../CNodeHealthManager')
+const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,

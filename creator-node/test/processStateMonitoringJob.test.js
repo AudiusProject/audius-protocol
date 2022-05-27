@@ -10,8 +10,8 @@ const _ = require('lodash')
 const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const NodeHealthManager = require('../src/services/stateMachineManager/nodeHealthManager')
-const CNodeToSpIdMapManager = require('../src/services/stateMachineManager/cNodeToSpIdMapManager')
+const NodeHealthManager = require('../src/services/stateMachineManager/CNodeHealthManager')
+const CNodeToSpIdMapManager = require('../src/services/stateMachineManager/CNodeToSpIdMapManager')
 
 describe('test processStateMonitoringJob', function () {
   let server,
@@ -133,8 +133,8 @@ describe('test processStateMonitoringJob', function () {
           aggregateReconfigAndPotentialSyncOps:
             aggregateReconfigAndPotentialSyncOpsStub
         },
-        '../nodeHealthManager': NodeHealthManager,
-        '../cNodeToSpIdMapManager': CNodeToSpIdMapManager,
+        '../CNodeHealthManager': NodeHealthManager,
+        '../CNodeToSpIdMapManager': CNodeToSpIdMapManager,
         '../stateMachineUtils': {
           retrieveClockStatusesForUsersAcrossReplicaSet:
             retrieveClockStatusesForUsersAcrossReplicaSetStub

@@ -76,42 +76,6 @@ def get_database_connection_info(**kwargs):
         return json.dumps(connection_info)
 
 
-def get_database_index_count(**kwargs):
-    """
-    Gets number of indexes in the database
-
-    Kwargs:
-        db: global database instance
-        redis: global redis instance
-    """
-    db = kwargs["db"]
-    with db.scoped_session() as session:
-        q = sqlalchemy.text(
-            "SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'public'"
-        )
-        res = session.execute(q).fetchone()[0]
-        return res
-
-
-def get_database_index_info(**kwargs):
-    """
-    Gets full database index information (tablename, indexname, indexdef)
-
-    Kwargs:
-        db: global database instance
-        redis: global redis instance
-    """
-    db = kwargs["db"]
-    with db.scoped_session() as session:
-        q = sqlalchemy.text(
-            "SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public'"
-            + "ORDER BY tablename, indexname"
-        )
-        result = session.execute(q).fetchall()
-        connection_info = [dict(row) for row in result]
-        return json.dumps(connection_info)
-
-
 def get_table_size_info(**kwargs):
     """
     Gets table information (number of rows, data size).
