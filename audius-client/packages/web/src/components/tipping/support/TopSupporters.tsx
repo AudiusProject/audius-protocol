@@ -76,6 +76,7 @@ export const TopSupporters = () => {
           totalUserCount={profile.supporter_count}
           limit={MAX_PROFILE_TOP_SUPPORTERS}
           stopPropagation
+          profilePictureClassname={styles.profilePictureWrapper}
         />
         <div className={styles.viewAll}>
           <span>{messages.viewAll}</span>

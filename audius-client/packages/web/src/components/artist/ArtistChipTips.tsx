@@ -7,8 +7,11 @@ import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { ID } from 'common/models/Identifiers'
 import { StringWei } from 'common/models/Wallet'
-import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { getSupporters, getSupporting } from 'common/store/tipping/selectors'
+import {
+  getMainUser,
+  getSupporters,
+  getSupporting
+} from 'common/store/tipping/selectors'
 import { Nullable } from 'common/utils/typeUtils'
 import { formatWei, stringWeiToBN } from 'common/utils/wallet'
 import { USER_LIST_TAG as SUPPORTING_USER_LIST_TAG } from 'pages/supporting-page/sagas'
@@ -23,31 +26,31 @@ const messages = {
 }
 
 type ArtistChipTipsProps = {
-  userId: ID
+  artistId: ID
   tag: string
 }
 
-export const ArtistChipTips = ({ userId, tag }: ArtistChipTipsProps) => {
-  const profile = useSelector(getProfileUser)
+export const ArtistChipTips = ({ artistId, tag }: ArtistChipTipsProps) => {
+  const mainUser = useSelector(getMainUser)
   const supportingMap = useSelector(getSupporting)
   const supportersMap = useSelector(getSupporters)
   const [amount, setAmount] = useState<Nullable<StringWei>>(null)
   const [rank, setRank] = useState<Nullable<number>>(null)
 
   useEffect(() => {
-    if (userId && profile) {
+    if (mainUser && artistId) {
       if (tag === SUPPORTING_USER_LIST_TAG) {
-        const profileSupporting = supportingMap[profile.user_id] ?? {}
-        const supporting = profileSupporting[userId] ?? {}
-        setAmount(supporting.amount ?? null)
+        const userSupportingMap = supportingMap[mainUser.user_id] ?? {}
+        const artistSupporting = userSupportingMap[artistId] ?? {}
+        setAmount(artistSupporting.amount ?? null)
       } else if (tag === TOP_SUPPORTERS_USER_LIST_TAG) {
-        const profileSupporters = supportersMap[profile.user_id] ?? {}
-        const supporter = profileSupporters[userId] ?? {}
-        setRank(supporter.rank ?? null)
-        setAmount(supporter.amount ?? null)
+        const userSupportersMap = supportersMap[mainUser.user_id] ?? {}
+        const artistSupporter = userSupportersMap[artistId] ?? {}
+        setRank(artistSupporter.rank ?? null)
+        setAmount(artistSupporter.amount ?? null)
       }
     }
-  }, [userId, profile, supportingMap, supportersMap, tag])
+  }, [mainUser, artistId, supportingMap, supportersMap, tag])
 
   return (
     <div className={styles.tipContainer}>

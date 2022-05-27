@@ -19,10 +19,11 @@ import {
   RefreshSupportPayloadAction,
   sendTipFailed,
   sendTipSucceeded,
-  setRecentTip,
+  setTipToDisplay,
   setRecentTips,
   setSupportersForUser,
-  setSupportingForUser
+  setSupportingForUser,
+  hideTip
 } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
@@ -413,7 +414,9 @@ function* fetchRecentTipsAsync() {
         supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
       })
     )
-    yield put(setRecentTip({ tipToDisplay }))
+    yield put(setTipToDisplay({ tipToDisplay }))
+  } else {
+    yield put(hideTip())
   }
   yield put(setRecentTips({ recentTips }))
 }

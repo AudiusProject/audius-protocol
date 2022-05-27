@@ -1,18 +1,34 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { Button } from '@audius/stems'
+import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconClose } from 'assets/img/iconRemove.svg'
+import { ReactComponent as IconClose } from 'assets/img/iconClose.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { getTipToDisplay } from 'common/store/tipping/selectors'
-import { beginTip, fetchRecentTips, hideTip } from 'common/store/tipping/slice'
+import { getShowTip, getTipToDisplay } from 'common/store/tipping/selectors'
+import {
+  beginTip,
+  fetchRecentTips,
+  hideTip,
+  setMainUser
+} from 'common/store/tipping/slice'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
+import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListEntityType,
+  UserListType
+} from 'store/application/ui/userListModal/types'
 import { dismissRecentTip } from 'store/tipping/utils'
 import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
@@ -27,6 +43,17 @@ const messages = {
   sendTipToPrefix: 'SEND TIP TO '
 }
 
+const SkeletonTile = () => (
+  <div className={styles.container}>
+    <div className={styles.skeletonContainer}>
+      <Skeleton className={styles.skeleton} width='10%' />
+      <Skeleton className={styles.skeleton} width='20%' />
+      <Skeleton className={styles.skeleton} width='60%' />
+    </div>
+    <Skeleton className={styles.skeleton} width='30%' />
+  </div>
+)
+
 const WasTippedBy = () => (
   <div className={styles.wasTippedByContainer}>
     <IconTip className={styles.wasTippedByIcon} />
@@ -36,32 +63,51 @@ const WasTippedBy = () => (
 
 type TippersProps = {
   tippers: User[]
+  receiver: User
 }
 
-const Tippers = ({ tippers }: TippersProps) => (
-  <div className={styles.tippers}>
-    {tippers.slice(0, NUM_FEED_TIPPERS_DISPLAYED).map((tipper, index) => (
-      <div key={`tipper-${tipper.user_id}`} className={styles.tipperName}>
-        <span>{tipper.name}</span>
-        <UserBadges
-          userId={tipper.user_id}
-          className={styles.badge}
-          badgeSize={10}
-          inline
-        />
-        {index < tippers.length - 1 &&
-        index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
-          <div className={styles.tipperSeparator}>,</div>
-        ) : null}
-      </div>
-    ))}
-    {tippers.length > NUM_FEED_TIPPERS_DISPLAYED ? (
-      <div className={styles.andOthers}>
-        {messages.andOthers(tippers.length - NUM_FEED_TIPPERS_DISPLAYED)}
-      </div>
-    ) : null}
-  </div>
-)
+const Tippers = ({ tippers, receiver }: TippersProps) => {
+  const dispatch = useDispatch()
+
+  const handleClick = useCallback(() => {
+    dispatch(
+      setUsers({
+        userListType: UserListType.SUPPORTER,
+        entityType: UserListEntityType.USER,
+        id: receiver.user_id
+      })
+    )
+    dispatch(setVisibility(true))
+  }, [dispatch, receiver])
+
+  return (
+    <div className={styles.tippers} onClick={handleClick}>
+      {tippers.slice(0, NUM_FEED_TIPPERS_DISPLAYED).map((tipper, index) => (
+        <div key={`tipper-${tipper.user_id}`} className={styles.tipperName}>
+          <span>{tipper.name}</span>
+          <UserBadges
+            userId={tipper.user_id}
+            className={styles.badge}
+            badgeSize={12}
+            inline
+          />
+          {index < tippers.length - 1 &&
+          index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
+            <div className={styles.tipperSeparator}>,</div>
+          ) : null}
+        </div>
+      ))}
+      {receiver.supporter_count > NUM_FEED_TIPPERS_DISPLAYED ? (
+        <div className={styles.andOthers}>
+          {messages.andOthers(
+            receiver.supporter_count -
+              Math.min(tippers.length, NUM_FEED_TIPPERS_DISPLAYED)
+          )}
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 type SendTipToButtonProps = {
   user: User
@@ -87,7 +133,7 @@ const SendTipToButton = ({ user }: SendTipToButtonProps) => {
             <UserBadges
               userId={user.user_id}
               className={styles.badge}
-              badgeSize={10}
+              badgeSize={12}
               inline
             />
           </div>
@@ -117,6 +163,7 @@ export const FeedTipTile = () => {
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
 
   const dispatch = useDispatch()
+  const showTip = useSelector(getShowTip)
   const tipToDisplay = useSelector(getTipToDisplay)
   const tipperIds = tipToDisplay
     ? [
@@ -128,32 +175,58 @@ export const FeedTipTile = () => {
   const usersMap = useSelector<AppState, { [id: number]: User }>(state =>
     getUsers(state, { ids: tipToDisplay ? tipperIds : [] })
   )
+  const [hasSetMainUser, setHasSetMainUser] = useState(false)
+
+  useEffect(() => {
+    if (
+      isTippingEnabled &&
+      !hasSetMainUser &&
+      tipToDisplay &&
+      usersMap[tipToDisplay.receiver_id]
+    ) {
+      dispatch(setMainUser({ user: usersMap[tipToDisplay.receiver_id] }))
+      setHasSetMainUser(true)
+    }
+  }, [isTippingEnabled, hasSetMainUser, tipToDisplay, usersMap, dispatch])
 
   useEffect(() => {
     dispatch(fetchRecentTips())
   }, [dispatch])
 
-  return isTippingEnabled &&
-    tipToDisplay &&
-    Object.keys(usersMap).length === tipperIds.length ? (
+  const handleClick = useCallback(() => {
+    if (tipToDisplay) {
+      dispatch(pushRoute(`/${usersMap[tipToDisplay.receiver_id].handle}`))
+    }
+  }, [dispatch, usersMap, tipToDisplay])
+
+  if (!isTippingEnabled || !showTip) {
+    return null
+  }
+
+  return !tipToDisplay || Object.keys(usersMap).length !== tipperIds.length ? (
+    <SkeletonTile />
+  ) : (
     <div className={styles.container}>
       <div className={styles.usersContainer}>
         <ProfilePicture
           key={tipToDisplay.receiver_id}
           className={styles.profilePicture}
           user={usersMap[tipToDisplay.receiver_id]}
-          disableClick
-          disablePopover
         />
-        <div className={styles.name}>
-          <span>{usersMap[tipToDisplay.receiver_id].name}</span>
-          <UserBadges
-            userId={tipToDisplay.receiver_id}
-            className={styles.badge}
-            badgeSize={10}
-            inline
-          />
-        </div>
+        <ArtistPopover
+          handle={usersMap[tipToDisplay.receiver_id].handle}
+          component='div'
+        >
+          <div className={styles.name} onClick={handleClick}>
+            <span>{usersMap[tipToDisplay.receiver_id].name}</span>
+            <UserBadges
+              userId={tipToDisplay.receiver_id}
+              className={styles.badge}
+              badgeSize={12}
+              inline
+            />
+          </div>
+        </ArtistPopover>
         <WasTippedBy />
         <Tippers
           tippers={[
@@ -162,6 +235,7 @@ export const FeedTipTile = () => {
           ]
             .map(id => usersMap[id])
             .filter((user): user is User => !!user)}
+          receiver={usersMap[tipToDisplay.receiver_id]}
         />
       </div>
       <div className={styles.buttons}>
@@ -169,5 +243,5 @@ export const FeedTipTile = () => {
         <DismissTipButton />
       </div>
     </div>
-  ) : null
+  )
 }

@@ -3,7 +3,8 @@ import React, { ComponentPropsWithoutRef } from 'react'
 import cn from 'classnames'
 
 import { ID } from 'common/models/Identifiers'
-import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
+import { SquareSizes } from 'common/models/ImageSizes'
+import { User } from 'common/models/User'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -24,15 +25,33 @@ type ArtistIdentifierProps = {
   userId: ID
   name: string
   handle: string
+  showPopover: boolean
 } & ComponentPropsWithoutRef<'div'>
 const ArtistIdentifier = ({
   userId,
   name,
   handle,
-  ...other
+  showPopover
 }: ArtistIdentifierProps) => {
-  return (
-    <div {...other}>
+  return showPopover ? (
+    <div>
+      <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
+        <div className={styles.name}>
+          <span>{name}</span>
+          <UserBadges
+            userId={userId}
+            className={cn(styles.badge)}
+            badgeSize={10}
+            inline
+          />
+        </div>
+      </ArtistPopover>
+      <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
+        <div className={styles.handle}>@{handle}</div>
+      </ArtistPopover>
+    </div>
+  ) : (
+    <div>
       <div className={styles.name}>
         <span>{name}</span>
         <UserBadges
@@ -48,29 +67,28 @@ const ArtistIdentifier = ({
 }
 
 type ArtistChipProps = {
-  userId: number
-  name: string
-  handle: string
-  profilePictureSizes: ProfilePictureSizes
-  followers: number
+  user: User
   onClickArtistName: () => void
   showPopover?: boolean
-  doesFollowCurrentUser?: boolean
   tag?: string
   className?: string
 }
 const ArtistChip = ({
-  userId,
-  name,
-  handle,
-  profilePictureSizes,
-  followers,
+  user,
   onClickArtistName,
   showPopover = true,
-  doesFollowCurrentUser = false,
   tag,
   className = ''
 }: ArtistChipProps) => {
+  const {
+    user_id: userId,
+    name,
+    handle,
+    _profile_picture_sizes: profilePictureSizes,
+    follower_count: followers,
+    does_follow_current_user: doesFollowCurrentUser
+  } = user
+
   const profilePicture = useUserProfilePicture(
     userId,
     profilePictureSizes,
@@ -84,7 +102,7 @@ const ArtistChip = ({
       })}
     >
       {showPopover ? (
-        <ArtistPopover handle={handle}>
+        <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
           <DynamicImage
             wrapperClassName={styles.profilePictureWrapper}
             className={styles.profilePicture}
@@ -103,20 +121,19 @@ const ArtistChip = ({
           className={cn(styles.identity, 'name')}
           onClick={onClickArtistName}
         >
-          {showPopover ? (
-            <ArtistPopover handle={handle}>
-              <ArtistIdentifier userId={userId} name={name} handle={handle} />
-            </ArtistPopover>
-          ) : (
-            <ArtistIdentifier userId={userId} name={name} handle={handle} />
-          )}
+          <ArtistIdentifier
+            userId={userId}
+            name={name}
+            handle={handle}
+            showPopover
+          />
         </div>
         <ArtistChipFollowers
           followerCount={followers}
-          doesFollowCurrentUser={doesFollowCurrentUser}
+          doesFollowCurrentUser={!!doesFollowCurrentUser}
         />
         {tag && TIP_SUPPORT_TAGS.has(tag) ? (
-          <ArtistChipTips userId={userId} tag={tag} />
+          <ArtistChipTips artistId={user.user_id} tag={tag} />
         ) : null}
       </div>
     </div>
