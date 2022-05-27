@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
+
+import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 
 import { Audio, TextInput, TextInputProps } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -25,7 +27,18 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 type TipInputProps = TextInputProps
 
 export const TipInput = (props: TipInputProps) => {
+  const { value, onChangeText, ...other } = props
   const styles = useStyles()
+
+  const handleChangeText = useCallback(
+    (newValue: string) => {
+      const unformattedValue = newValue.replace(/,/g, '')
+      onChangeText?.(unformattedValue)
+    },
+    [onChangeText]
+  )
+
+  const formattedValue = formatNumberCommas(value as string)
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -40,7 +53,9 @@ export const TipInput = (props: TipInputProps) => {
       Icon={() => <Audio weight='bold' fontSize='xl' />}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
-      {...props}
+      value={formattedValue}
+      onChangeText={handleChangeText}
+      {...other}
     />
   )
 }
