@@ -1,6 +1,6 @@
 services:
   filebeat:
-    build: 
+    build:
       context: filebeat
       args:
           - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
@@ -17,15 +17,16 @@ services:
       - /var/log/:/var/log/:ro
 
   metricbeat:
-    build: metricbeat
+    build:
+      context: metricbeat
+      args:
+        - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
+        - ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID}
+        - ELASTIC_USER=${ELASTIC_USER}
+        - ELASTIC_PASS=${ELASTIC_PASS}
     container_name: metricbeat
     hostname: "{{.Node.Hostname}}-metricbeat"
     user: root
     restart: always
-    environment:
-      - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
-      - ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID}
-      - ELASTIC_USER=${ELASTIC_USER}
-      - ELASTIC_PASS=${ELASTIC_PASS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
