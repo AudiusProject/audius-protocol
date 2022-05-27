@@ -1,3 +1,7 @@
+const { createBullBoard } = require('@bull-board/api')
+const { BullAdapter } = require('@bull-board/api/bullAdapter')
+const { ExpressAdapter } = require('@bull-board/express')
+
 const AudiusLibs = require('@audius/libs')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
@@ -6,10 +10,6 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
-const { createBullBoard } = require('@bull-board/api')
-const { BullAdapter } = require('@bull-board/api/bullAdapter')
-const { ExpressAdapter } = require('@bull-board/express')
-
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
@@ -19,6 +19,7 @@ const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 const ImageProcessingQueue = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
+const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -54,6 +55,7 @@ class ServiceRegistry {
     this.syncQueue = null
     this.skippedCIDsRetryQueue = null
     this.trustedNotifierManager = null
+    this.prometheusRegistry = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -143,6 +145,9 @@ class ServiceRegistry {
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
   async initServicesThatRequireServer(app) {
+    this.prometheusRegistry = new PrometheusRegistry()
+    this.prometheusRegistry.init({ collectDefaultMetrics: true })
+
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
