@@ -15,7 +15,7 @@ export type TextProps = RNTextProps & {
     | 'inherit'
     | 'error'
   weight?: FontWeight
-  fontSize?: FontSize
+  fontSize?: FontSize | 'inherit'
 }
 
 const useStyles = makeStyles(
@@ -31,7 +31,9 @@ const useStyles = makeStyles(
         ? { color: palette.accentRed }
         : { color: palette[color] }),
       ...(weight ? { fontFamily: typography.fontByWeight[weight] } : null),
-      ...(fontSize ? { fontSize: typography.fontSize[fontSize] } : null),
+      ...(fontSize && fontSize !== 'inherit'
+        ? { fontSize: typography.fontSize[fontSize] }
+        : null),
       ...(noGutter && { marginBottom: 0 })
     }
   })
