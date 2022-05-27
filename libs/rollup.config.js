@@ -94,6 +94,27 @@ const browserLegacyConfig = {
   external
 }
 
+const browserLegacyConfig = {
+  plugins: [
+    ignore(['web3', 'graceful-fs', 'node-localstorage']),
+    resolve({ extensions, preferBuiltins: true }),
+    commonjs({
+      extensions,
+      dynamicRequireTargets: [
+        'data-contracts/ABIs/*.json',
+        'eth-contracts/ABIs/*.json'
+      ]
+    }),
+    alias({
+      entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+    }),
+    babel({ babelHelpers: 'bundled', extensions }),
+    json(),
+    typescript()
+  ],
+  external
+}
+
 const commonTypeConfig = {
   plugins: [dts()]
 }
