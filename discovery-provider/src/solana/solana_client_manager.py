@@ -126,6 +126,34 @@ class SolanaClientManager:
             "solana_client_manager.py | get_signatures_for_address | All requests failed",
         )
 
+    def get_slot(self, retries=DEFAULT_MAX_RETRIES, encoding="json") -> Optional[int]:
+        def _get_slot(client: Client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    response = client.get_slot(Commitment("finalized"))
+                    return response["result"]
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_slot, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_slot | Retrying with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_slot | Failed with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            _get_slot,
+            "solana_client_manager.py | get_slot | All requests failed to fetch",
+        )
+
 
 @contextmanager
 def timeout(time):

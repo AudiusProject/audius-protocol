@@ -9,7 +9,7 @@ const {
   getStartTime
 } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
-const { uploadTempDiskStorage } = require('../fileManager')
+const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
@@ -152,7 +152,7 @@ const checkStoragePathForFile = async (storagePath) => {
       throw new Error('CID is of invalid file type')
     }
 
-    if (fsStats.size === 0) {
+    if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
       // Remove file if it is empty and force fetch from CN network
       await fs.unlink(storagePath)
 

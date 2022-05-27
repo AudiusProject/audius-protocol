@@ -17,7 +17,7 @@ PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 source $PROTOCOL_DIR/service-commands/scripts/utils.sh
 
 # parse arguments
-while getopts "p:u:c:r:l:f" flag; do
+while getopts "p:u:c:r:l:fs:" flag; do
 	case "$flag" in
 		p) provider=$OPTARG;;
 		u) user=$OPTARG;;
@@ -25,6 +25,7 @@ while getopts "p:u:c:r:l:f" flag; do
 		r) audius_protocol_git_ref=$OPTARG;;
 		l) audius_client_git_ref=$OPTARG;;
 		f) image=${GCP_DEV_IMAGE}; fast=1;;
+		s) spot_instance=$OPTARG;;
 	esac
 done
 
@@ -36,6 +37,7 @@ provider=${provider:-$DEFAULT_PROVIDER}
 user=${user:-$DEFAULT_USER}
 audius_protocol_git_ref=${audius_protocol_git_ref:-$DEFAULT_AUDIUS_PROTOCOL_GIT_REF}
 audius_client_git_ref=${audius_client_git_ref:-$DEFAULT_AUDIUS_CLIENT_GIT_REF}
+spot_instance=${spot_instance:-false}
 
 if [[ "$provider" != "gcp" ]] && [[ "$provider" != "azure" ]]; then
 	echo "Unknown provider:" $provider
@@ -78,7 +80,7 @@ if ! instance_exists $provider $name; then
 	if [ "${fast:-0}" -eq "1" ]; then
 		echo "Defrosting prebaked image for provisioning... $image"
 	fi
-	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" $name; then
+	if ! bash $PROTOCOL_DIR/service-commands/scripts/create-instance.sh -p $provider -i "$image" -s "$spot_instance" $name; then
 		echo "Creation of new instance did not succeed. Aborting"
 		exit 1
 	fi

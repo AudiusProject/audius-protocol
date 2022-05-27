@@ -33,6 +33,7 @@ from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
+    latest_sol_plays_slot_key,
 )
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
@@ -531,6 +532,15 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     # Current batch
     page_count = 0
 
+    # The last transaction processed
+    last_tx = None
+
+    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    try:
+        latest_global_slot = solana_client_manager.get_slot()
+    except:
+        logger.error("index_solana_plays.py | Failed to get block height")
+
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
         logger.info(
@@ -621,6 +631,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
             exc_info=True,
         )
         raise e
+
+    if last_tx:
+        redis.set(latest_sol_plays_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_plays_slot_key, latest_global_slot)
 
 
 @celery.task(name="index_solana_plays", bind=True)

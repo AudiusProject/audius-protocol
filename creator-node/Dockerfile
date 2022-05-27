@@ -25,7 +25,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add postgresql-libs=11.12-r0 && \
     apk add python3 && \
     apk add python3-dev && \
-    apk add py3-pip
+    apk add py3-pip && \
+    apk add curl
 
 # Install openresty with public key
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
@@ -85,6 +86,9 @@ ENV GIT_SHA=$git_sha
 ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
+
+HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
+    CMD curl -f http://localhost:4000/health_check || exit 1
 
 # CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
 CMD ["bash", "scripts/start.sh"]

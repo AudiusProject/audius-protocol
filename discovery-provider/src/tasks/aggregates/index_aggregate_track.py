@@ -134,7 +134,7 @@ UPDATE_AGGREGATE_TRACK_QUERY = """
     """
 
 
-def _update_aggregate_track(session):
+def _update_aggregate_track(session, _=None):
     current_blocknumber = get_latest_blocknumber(session)
 
     update_aggregate_table(

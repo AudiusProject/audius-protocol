@@ -4,7 +4,9 @@ import { uuid } from '../../utils/uuid'
 import type { Captcha } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
-import type Web3Manager from '../web3Manager'
+import type { Web3Manager } from '../web3Manager'
+import type { TransactionReceipt } from 'web3-core'
+import type Wallet from 'ethereumjs-wallet'
 
 type Data = Record<string, unknown>
 
@@ -139,6 +141,19 @@ export class IdentityService {
         email: email
       }
     })
+  }
+
+  async getUserEmail() {
+    const headers = await this._signData()
+    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
+      return await this._makeRequest<{ email: string | undefined | null }>({
+        url: '/user/email',
+        method: 'get',
+        headers
+      })
+    } else {
+      throw new Error('Cannot get user email - user is not authenticated')
+    }
   }
 
   /**
@@ -338,12 +353,12 @@ export class IdentityService {
   }
 
   async relay(
-    contractRegistryKey: string,
-    contractAddress: string,
+    contractRegistryKey: string | null | undefined,
+    contractAddress: string | null | undefined,
     senderAddress: string,
     encodedABI: string,
-    gasLimit: string
-  ) {
+    gasLimit: number
+  ): Promise<{ receipt: TransactionReceipt }> {
     const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
     let token
     if (this.captcha && shouldCaptcha) {
@@ -370,7 +385,7 @@ export class IdentityService {
 
   async ethRelay(
     contractAddress: string,
-    senderAddress: string,
+    senderAddress: Wallet | string,
     encodedABI: string,
     gasLimit: string
   ): Promise<RelayTransaction> {
@@ -432,17 +447,7 @@ export class IdentityService {
 
   // Relays tx data through the solana relay endpoint
   async solanaRelay(transactionData: TransactionData) {
-    const headers: {
-      [AuthHeaders.MESSAGE]?: string
-      [AuthHeaders.SIGNATURE]?: string
-    } = {}
-    if (this.web3Manager) {
-      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-      const message = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager?.sign(message)
-      headers[AuthHeaders.MESSAGE] = message
-      headers[AuthHeaders.SIGNATURE] = signature
-    }
+    const headers = await this._signData()
 
     return await this._makeRequest({
       url: '/solana/relay',
@@ -522,6 +527,20 @@ export class IdentityService {
         )
       }
       throw error
+    }
+  }
+
+  async _signData() {
+    if (this.web3Manager) {
+      const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+      const message = `Click sign to authenticate with identity service: ${unixTs}`
+      const signature = await this.web3Manager?.sign(message)
+      return {
+        [AuthHeaders.MESSAGE]: message,
+        [AuthHeaders.SIGNATURE]: signature
+      }
+    } else {
+      return {}
     }
   }
 }

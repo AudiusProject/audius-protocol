@@ -585,7 +585,7 @@ class SolanaWeb3Manager {
    * Returns [derivedAddress, bumpSeed]
    * @param {string} programId
    * @param {string} base
-   * @param {string} seed
+   * @param {Buffer | Uint8Array} seed
    * @returns the program address
    */
   async findDerivedAddress (programId, base, seed) {
@@ -600,7 +600,7 @@ class SolanaWeb3Manager {
    * In conjunction with the secondary seed as the users id in bytes
    * @param {PublicKey} programId
    * @param {PublicKey} adminAccount
-   * @param {string} seed
+   * @param {Buffer | Uint8Array} seed
    */
   async findDerivedPair (programId, adminAccount, seed) {
     programId = SolanaUtils.newPublicKeyNullable(programId)

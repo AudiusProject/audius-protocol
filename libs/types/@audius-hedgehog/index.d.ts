@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 declare module '@audius/hedgehog' {
-  import { IdentityService } from '../../src/services/identity'
+  import type { IdentityService } from '../../src/services/identity'
+  import type Wallet from 'ethereumjs-wallet'
 
   type RecoveryInfo = {
     login: string
     host: string
   }
-
-  type Wallet = Record<string, unknown>
 
   export class Hedgehog {
     wallet: Wallet
@@ -23,7 +22,8 @@ declare module '@audius/hedgehog' {
     ): void
     async login(email: string, password: string): Promise<Wallet>
     async generateRecoveryInfo(): Promise<RecoveryInfo>
-    getWallet(): string
+    getWallet(): Wallet
+    async createWalletObj(passwordEntropy: string): Promise<Wallet>
   }
 
   export class WalletManager {

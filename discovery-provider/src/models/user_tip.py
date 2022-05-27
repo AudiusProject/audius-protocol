@@ -8,10 +8,10 @@ from sqlalchemy import (
     func,
 )
 
-from .models import Base
+from .models import Base, RepresentableMixin
 
 
-class UserTip(Base):
+class UserTip(Base, RepresentableMixin):
     __tablename__ = "user_tips"
     signature = Column(String, nullable=False)
     slot = Column(Integer, nullable=False, index=True)
@@ -19,15 +19,8 @@ class UserTip(Base):
     receiver_user_id = Column(Integer, nullable=False, index=True)
     amount = Column(BigInteger, nullable=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     PrimaryKeyConstraint(signature)
-
-    def __repr__(self):
-        return f"<UserTip\
-signature={self.signature},\
-slot={self.slot},\
-sender_user_id={self.sender_user_id},\
-receiver_user_id={self.receiver_user_id},\
-amount={self.amount},\
-created_at={self.created_at}\
->"

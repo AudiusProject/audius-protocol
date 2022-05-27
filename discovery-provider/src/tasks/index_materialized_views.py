@@ -1,22 +1,29 @@
 import logging
+import os
 import time
 
 from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
+DEFAULT_UPDATE_TIMEOUT = 60 * 60 * 6  # 6 hours
 
 
 def update_views(self, db):
     with db.scoped_session() as session:
         start_time = time.time()
+        if os.getenv("audius_elasticsearch_search_enabled"):
+            session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
+            logger.info(
+                f"index_materialized_views.py | Finished updating tag_track_user in: {time.time() - start_time} sec."
+            )
+            return
+
         logger.info("index_materialized_views.py | Updating materialized views")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY user_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY track_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY playlist_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY album_lexeme_dict")
-        session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
 
     logger.info(
         f"index_materialized_views.py | Finished updating materialized views in: {time.time() - start_time} sec."

@@ -1,8 +1,9 @@
 const packageJSON = require('../package.json')
 
 const { EthWeb3Manager } = require('./services/ethWeb3Manager')
-const Web3Manager = require('./services/web3Manager/index')
-const EthContracts = require('./services/ethContracts/index')
+const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
+const { Web3Manager } = require('./services/web3Manager')
+const { EthContracts } = require('./services/ethContracts')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
 const AudiusContracts = require('./services/dataContracts/index')
 const { IdentityService } = require('./services/identity')
@@ -10,6 +11,7 @@ const { Comstock } = require('./services/comstock')
 const { Hedgehog } = require('./services/hedgehog')
 const { CreatorNode } = require('./services/creatorNode')
 const { DiscoveryProvider } = require('./services/discoveryProvider')
+const { Oauth } = require('./services/oauth')
 const Wormhole = require('./services/wormhole')
 const { AudiusABIDecoder } = require('./services/ABIDecoder')
 const { SchemaValidator } = require('./services/schemaValidator')
@@ -29,7 +31,9 @@ const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
 const { PublicKey } = require('@solana/web3.js')
-const { RewardsAttester } = require('./services/solanaWeb3Manager/rewardsAttester')
+const {
+  RewardsAttester
+} = require('./services/solanaWeb3Manager/rewardsAttester')
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
@@ -104,7 +108,13 @@ class AudiusLibs {
     blockList = null,
     monitoringCallbacks = {}
   ) {
-    return { fallbackUrl, lazyConnect, passList, blockList, monitoringCallbacks }
+    return {
+      fallbackUrl,
+      lazyConnect,
+      passList,
+      blockList,
+      monitoringCallbacks
+    }
   }
 
   /**
@@ -115,7 +125,12 @@ class AudiusLibs {
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
    * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
-  static async configExternalWeb3 (registryAddress, web3Provider, networkId, walletOverride = null) {
+  static async configExternalWeb3 (
+    registryAddress,
+    web3Provider,
+    networkId,
+    walletOverride = null
+  ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
       throw new Error('External web3 incorrectly configured')
@@ -145,7 +160,9 @@ class AudiusLibs {
     } else if (Array.isArray(providers)) {
       providerList = providers
     } else {
-      throw new Error('Providers must be of type string, Array, or Web3 instance')
+      throw new Error(
+        'Providers must be of type string, Array, or Web3 instance'
+      )
     }
 
     return {
@@ -183,7 +200,9 @@ class AudiusLibs {
     } else if (Array.isArray(providers)) {
       providerList = providers
     } else {
-      throw new Error('Providers must be of type string, Array, or Web3 instance')
+      throw new Error(
+        'Providers must be of type string, Array, or Web3 instance'
+      )
     }
 
     return {
@@ -267,7 +286,9 @@ class AudiusLibs {
     audiusDataIdl
   }) {
     if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(audiusDataAdminStorageKeypairPublicKey)
+      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
+        audiusDataAdminStorageKeypairPublicKey
+      )
     }
     if (audiusDataProgramId instanceof String) {
       audiusDataProgramId = new PublicKey(audiusDataProgramId)
@@ -283,11 +304,26 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypairs: feePayerSecretKeys ? feePayerSecretKeys.map(key => Keypair.fromSecretKey(key)) : null,
+      feePayerKeypairs: feePayerSecretKeys
+        ? feePayerSecretKeys.map((key) => Keypair.fromSecretKey(key))
+        : null,
       confirmationTimeout,
       audiusDataAdminStorageKeypairPublicKey,
       audiusDataProgramId,
       audiusDataIdl
+    }
+  }
+
+  /**
+   * Configures a solana audius-data
+   * @param {Object} config
+   * @param {string} config.programId Program ID of the audius data program
+   * @param {string} config.adminAccount Public Key of admin account
+   */
+  static configSolanaAudiusData ({ programId, adminAccount }) {
+    return {
+      programId,
+      adminAccount
     }
   }
 
@@ -305,6 +341,7 @@ class AudiusLibs {
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
+    solanaAudiusDataConfig,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -312,6 +349,7 @@ class AudiusLibs {
     wormholeConfig,
     captchaConfig,
     isServer,
+    logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true
@@ -323,6 +361,7 @@ class AudiusLibs {
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.solanaWeb3Config = solanaWeb3Config
+    this.solanaAudiusDataConfig = solanaAudiusDataConfig
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -331,6 +370,7 @@ class AudiusLibs {
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
+    this.logger = logger
 
     this.AudiusABIDecoder = AudiusABIDecoder
     this.Utils = Utils
@@ -340,10 +380,12 @@ class AudiusLibs {
     this.identityService = null
     this.hedgehog = null
     this.discoveryProvider = null
+    this.oauth = null
     this.ethWeb3Manager = null
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
+    this.anchorAudiusData = null
     this.contracts = null
     this.creatorNode = null
 
@@ -377,8 +419,14 @@ class AudiusLibs {
 
     /** Identity Service */
     if (this.identityServiceConfig) {
-      this.identityService = new IdentityService(this.identityServiceConfig.url, this.captcha)
-      this.hedgehog = new Hedgehog(this.identityService, this.identityServiceConfig.useHedgehogLocalStorage)
+      this.identityService = new IdentityService(
+        this.identityServiceConfig.url,
+        this.captcha
+      )
+      this.hedgehog = new Hedgehog(
+        this.identityService,
+        this.identityServiceConfig.useHedgehogLocalStorage
+      )
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
     }
@@ -411,6 +459,14 @@ class AudiusLibs {
       )
       await this.solanaWeb3Manager.init()
     }
+    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
+      this.solanaAudiusData = new SolanaAudiusData(
+        this.solanaAudiusDataConfig,
+        this.solanaWeb3Manager,
+        this.web3Manager
+      )
+      await this.solanaAudiusData.init()
+    }
 
     /** Contracts - Eth and Data Contracts */
     const contractsToInit = []
@@ -419,9 +475,13 @@ class AudiusLibs {
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
-        (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
-        (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
+        (this.ethWeb3Config &&
+          this.ethWeb3Config.claimDistributionContractAddress) ||
+          null,
+        (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) ||
+          null,
         this.isServer,
+        this.logger,
         this.isDebug
       )
       contractsToInit.push(this.ethContracts.init())
@@ -430,12 +490,18 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer
+        this.isServer,
+        this.logger
       )
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
-    if (this.wormholeConfig && this.ethWeb3Manager && this.ethContracts && this.solanaWeb3Manager) {
+    if (
+      this.wormholeConfig &&
+      this.ethWeb3Manager &&
+      this.ethContracts &&
+      this.solanaWeb3Manager
+    ) {
       this.wormholeClient = new Wormhole(
         this.hedgehog,
         this.ethWeb3Manager,
@@ -468,13 +534,17 @@ class AudiusLibs {
         this.discoveryProviderConfig.unhealthyBlockDiff
       )
       await this.discoveryProvider.init()
+      if (typeof window !== 'undefined') {
+        this.oauth = new Oauth(this.discoveryProvider)
+      }
     }
 
     /** Creator Node */
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
       const creatorNodeEndpoint = currentUser
-        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) || this.creatorNodeConfig.fallbackUrl
+        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ||
+          this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
 
       this.creatorNode = new CreatorNode(
@@ -507,11 +577,13 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
+      this.anchorAudiusData,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,
       this.captcha,
-      this.isServer
+      this.isServer,
+      this.logger
     ]
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new User(

@@ -19,11 +19,6 @@ has_remix_author_reposted = "has_remix_author_reposted"
 # boolean - does the remix track author favorite the track
 has_remix_author_saved = "has_remix_author_saved"
 
-# boolean - does current user follow given user
-does_current_user_follow = "does_current_user_follow"
-# integer - number of followees of current user that also follow given user
-current_user_followee_follow_count = "current_user_followee_follow_count"
-
 # user metadata
 user_id = "user_id"  # integer - unique id of a user
 follower_count = "follower_count"  # integer - total follower count of given user
@@ -48,12 +43,20 @@ associated_sol_wallets_balance = "associated_sol_wallets_balance"
 waudio_balance = "waudio_balance"
 erc_wallet = "erc_wallet"
 spl_wallet = "spl_wallet"
+supporter_count = "supporter_count"
+supporting_count = "supporting_count"
 
 # current user specific
 # boolean - does current user follow given user
 does_current_user_follow = "does_current_user_follow"
+# boolean - does given user follow current user
+does_follow_current_user = "does_follow_current_user"
 # integer - number of followees of current user that also follow given user
 current_user_followee_follow_count = "current_user_followee_follow_count"
+# boolean - has current user tipped given user
+does_current_user_support = "does_current_user_support"
+# boolean - has given user tipped current user
+does_support_current_user = "does_support_current_user"
 
 # feed
 # string - timestamp of relevant activity on underlying object, used for sorting
@@ -109,6 +112,9 @@ notification_tier = "tier"
 solana_notification_type = "type"
 solana_notification_type_challenge_reward = "ChallengeReward"
 solana_notification_type_listen_milestone = "MilestoneListen"
+solana_notification_type_supporter_rank_up = "SupporterRankUp"
+solana_notification_type_tip = "Tip"
+solana_notification_type_reaction = "Reaction"
 
 solana_notification_slot = "slot"
 solana_notification_timestamp = "timestamp"
@@ -117,6 +123,15 @@ solana_notification_metadata = "metadata"
 
 solana_notification_challenge_id = "challenge_id"
 solana_notification_threshold = "threshold"
+solana_notification_tip_rank = "rank"
+solana_notification_tip_amount = "amount"
+solana_notification_tip_signature = "tx_signature"
+
+solana_notification_reaction_type = "reaction_type"
+solana_notification_reaction_type_tip = "tip"
+solana_notification_reaction_reacted_to = "reacted_to"
+solana_notification_reaction_reaction_value = "reaction_value"
+
 
 # Trending
 owner_follower_count = "owner_follower_count"

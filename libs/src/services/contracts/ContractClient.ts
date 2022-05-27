@@ -1,14 +1,17 @@
 import { ProviderSelection } from './ProviderSelection'
-import Web3Manager from '../web3Manager'
+import { Web3Manager } from '../web3Manager'
 import retry from 'async-retry'
-import type { ContractABI, Nullable } from '../../utils'
+import type { ContractABI, Nullable, Logger } from '../../utils'
 import type { Contract } from 'web3-eth-contract'
 import type { HttpProvider } from 'web3-core'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
 const CONTRACT_INIT_MAX_ATTEMPTS = 5
 const METHOD_CALL_MAX_RETRIES = 5
+
+export type GetRegistryAddress = (key: string) => Promise<string>
 
 /*
  * Base class for instantiating contracts.
@@ -16,28 +19,31 @@ const METHOD_CALL_MAX_RETRIES = 5
  * time a method on the contract is invoked.
  */
 export class ContractClient {
-  web3Manager: Web3Manager
+  web3Manager: Web3Manager | EthWeb3Manager
   contractABI: ContractABI['abi']
   contractRegistryKey: string
-  getRegistryAddress: (key: string) => Promise<string>
+  getRegistryAddress: GetRegistryAddress
   _contractAddress: Nullable<string>
   _contract: Nullable<Contract>
   _isInitialized: boolean
   _isInitializing: boolean
   _initAttempts: number
   providerSelector: Nullable<ProviderSelection>
+  logger: Logger
 
   constructor(
-    web3Manager: Web3Manager,
+    web3Manager: Web3Manager | EthWeb3Manager,
     contractABI: ContractABI['abi'],
     contractRegistryKey: string,
-    getRegistryAddress: (key: string) => Promise<string>,
+    getRegistryAddress: GetRegistryAddress,
+    logger: Logger = console,
     contractAddress: Nullable<string> = null
   ) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
+    this.logger = logger
 
     // Once initialized, contract address and contract are set up
     this._contractAddress = contractAddress
@@ -102,17 +108,17 @@ export class ContractClient {
         this._contractAddress
       )
       this._isInitializing = false
-      this._isInitialized = true
+      this._isInitialized = !!this._contractAddress
     } catch (e) {
       if (++this._initAttempts >= CONTRACT_INIT_MAX_ATTEMPTS) {
-        console.error(
+        this.logger.error(
           `Failed to initialize ${this.contractRegistryKey}. Max attempts exceeded.`
         )
         return
       }
 
       const selectNewEndpoint = !!this.providerSelector
-      console.error(
+      this.logger.error(
         `Failed to initialize ${this.contractRegistryKey} on attempt #${this._initAttempts}. Retrying with selectNewEndpoint=${selectNewEndpoint}`
       )
       this._isInitializing = false
@@ -127,7 +133,7 @@ export class ContractClient {
       }
       await this.init()
     } catch (e: any) {
-      console.error(e?.message)
+      this.logger.error(e?.message)
     }
   }
 
@@ -144,7 +150,7 @@ export class ContractClient {
       this.providerSelector?.getUnhealthySize() ===
       this.providerSelector?.getServicesSize()
     ) {
-      console.log(
+      this.logger.log(
         'No healthy providers available - resetting ProviderSelection and selecting.'
       )
       this.providerSelector?.clearUnhealthy()
@@ -159,7 +165,8 @@ export class ContractClient {
   /** Gets the contract address and ensures that the contract has initted. */
   async getAddress() {
     await this.init()
-    return this._contractAddress
+    // calling init first ensures _contactAddress is present
+    return this._contractAddress as string
   }
 
   /**
@@ -167,7 +174,7 @@ export class ContractClient {
    * The contract can then be invoked with .call() or be passed to a sendTransaction.
    * @param methodName the name of the contract method
    */
-  async getMethod(methodName: string, ...args: unknown[]) {
+  async getMethod(methodName: string, ...args: any[]) {
     await this.init()
     if (!(methodName in this._contract?.methods)) {
       throw new Error(
@@ -195,7 +202,7 @@ export class ContractClient {
           onRetry: (err) => {
             if (err) {
               // eslint-disable-next-line @typescript-eslint/no-base-to-string
-              console.log(`Retry error for ${methodName} : ${err}`)
+              this.logger.log(`Retry error for ${methodName} : ${err}`)
             }
           }
         }
@@ -214,6 +221,7 @@ export class ContractClient {
 
   async getContract() {
     await this.init()
-    return this._contract
+    // init ensures _contract is set
+    return this._contract as Contract
   }
 }

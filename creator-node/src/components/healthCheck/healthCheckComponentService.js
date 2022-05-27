@@ -44,9 +44,12 @@ const healthCheck = async (
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
   // SnapbackSM information
-  const snapbackJobInterval = config.get('snapbackJobInterval')
+  const snapbackUsersPerJob = config.get('snapbackUsersPerJob')
   const snapbackModuloBase = config.get('snapbackModuloBase')
   const manualSyncsDisabled = config.get('manualSyncsDisabled')
+
+  // expose audiusInfraStack to see how node is being run
+  const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
 
   // System information
   const [
@@ -129,6 +132,7 @@ const healthCheck = async (
     spOwnerWallet: config.get('spOwnerWallet'),
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
+    audiusContentInfraSetup,
     numberOfCPUs,
     totalMemory,
     storagePathSize,
@@ -155,7 +159,13 @@ const healthCheck = async (
     currentSnapbackReconfigMode,
     manualSyncsDisabled,
     snapbackModuloBase,
-    snapbackJobInterval,
+    snapbackUsersPerJob,
+    stateMonitoringQueueRateLimitInterval: config.get(
+      'stateMonitoringQueueRateLimitInterval'
+    ),
+    stateMonitoringQueueRateLimitJobsPerInterval: config.get(
+      'stateMonitoringQueueRateLimitJobsPerInterval'
+    ),
     transcodeActive,
     transcodeWaiting,
     transcodeQueueIsAvailable: isAvailable,

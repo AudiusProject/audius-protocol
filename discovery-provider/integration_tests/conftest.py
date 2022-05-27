@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os
+from contextlib import contextmanager
 
 import alembic
 import alembic.config
@@ -16,7 +17,7 @@ from src.utils import helpers
 from src.utils.redis_connection import get_redis
 from web3 import HTTPProvider, Web3
 
-DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
+DB_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/test_audius_discovery"
 TEST_BROKER_URL = "redis://localhost:5379/0"
 ENGINE_ARGS_LITERAL = '{ \
     "pool_size": 10, \
@@ -36,8 +37,8 @@ TEST_CONFIG_OVERRIDE = {
 }
 
 
-@pytest.fixture
-def app():
+@contextmanager
+def app_impl():
     # Drop DB, ensuring migration performed at start
     if database_exists(DB_URL):
         drop_database(DB_URL)
@@ -63,6 +64,18 @@ def app():
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
 
     yield discovery_provider_app
+
+
+@pytest.fixture
+def app():
+    with app_impl() as app:
+        yield app
+
+
+@pytest.fixture(scope="module")
+def app_module():
+    with app_impl() as app:
+        yield app
 
 
 @pytest.fixture(scope="session")

@@ -2,6 +2,7 @@ const fs = require('fs')
 const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
+const dataContractsConfig = require('../data-contracts/config.json')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {
@@ -586,6 +587,7 @@ const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
   const bootstrapSPIdsString = `    bootstrapSPIds: [${bootstrapSPIds}],`
   const bootstrapSPDelegateWalletsString = `    bootstrapSPDelegateWallets: ['${bootstrapSPDelegateWallets[0]}', '${bootstrapSPDelegateWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
   const bootstrapSPOwnerWalletString = `    bootstrapSPOwnerWallets: ['${bootstrapSPOwnerWallets[0]}', '${bootstrapSPOwnerWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
+  const bootstrapRegistryAddressString = `    registryAddress: '${dataContractsConfig.registryAddress}'`
   console.log('Initializing UserReplicaSetManager configuration from known delegateWallets within system...')
   console.log(`Bootstrapping with ${bootstrapSPIds}, ${bootstrapSPDelegateWallets}, ${bootstrapSPOwnerWalletString}`)
 
@@ -604,6 +606,8 @@ const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
       output.push(bootstrapSPDelegateWalletsString)
     } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPOwnerWallets')) {
       output.push(bootstrapSPOwnerWalletString)
+    } else if (traversingDevelopmentConfigBlock && line.includes('registryAddress')) {
+      output.push(bootstrapRegistryAddressString)
     } else {
       output.push(line)
     }

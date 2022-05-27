@@ -371,7 +371,7 @@ class BlacklistManager {
   static async _addToRedisChunkHelper(redisKey, data) {
     const redisAddMaxItemsSize = 100000
     try {
-      logger.error(
+      logger.info(
         `About to call _addToRedisChunkHelper for ${redisKey} with data of length ${data.length}`
       )
       for (let i = 0; i < data.length; i += redisAddMaxItemsSize) {
@@ -421,7 +421,7 @@ class BlacklistManager {
           for (const cid of cids) {
             const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
             try {
-              await this._addToRedisChunkHelper(redisCIDKey, trackId)
+              await this._addToRedisChunkHelper(redisCIDKey, [trackId])
             } catch (e) {
               errors.push(
                 `Unable to add ${redisCIDKey}:${trackId}: ${e.toString()}`
@@ -725,7 +725,7 @@ class BlacklistManager {
     })
     stream.on('error', function (e) {
       console.error(
-        `Could not delete ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries: ${e.toString}`
+        `Could not delete ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries: ${e.toString()}`
       )
     })
   }

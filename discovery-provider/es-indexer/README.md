@@ -21,6 +21,22 @@ If you are adding a new denormalization (attaching data from a related model), t
 - For "catchup" mode this is the `checkpointSql` function. See UserIndexer or TrackIndexer for an example
 - For listen / notify mode, this is the handler code in `listen.ts`
 
+When working on mapping changes, I might put code like this at top of `main.ts main()` function:
+
+```ts
+await new Promise((r) => setTimeout(r, 100)) // don't ask... will fix haha
+await indexer.playlists.createIndex({ drop: true })
+await indexer.playlists.catchup()
+process.exit(0)
+```
+
+and then:
+
+```
+source .env
+npm run dev
+```
+
 ## How it works
 
 Program attempts to avoid any gaps by doing a "catchup" on boot... when complete it swithces to processing "batches" which are events collected from postgres LISTEN / NOTIFY.
@@ -38,9 +54,12 @@ When program boots it does the following:
 
 ## Debugging
 
-Need to add some "blocknumber" info to the health endpoint, but in the meantime:
+Check "elasticsearch" health info in `/health_check?verbose=true` endpoint.
 
 (instructions for sandbox3... subject to change):
+
+Use Kibana:
+Uncomment the kibana container and restart discovery-provider.
 
 List indices:
 

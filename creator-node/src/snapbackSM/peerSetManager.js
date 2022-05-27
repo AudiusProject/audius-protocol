@@ -1,7 +1,14 @@
 const axios = require('axios')
+const { CancelToken } = axios
 
 const config = require('../config')
+const Utils = require('../utils')
 const { logger } = require('../logging')
+const {
+  GET_NODE_USERS_TIMEOUT_MS,
+  GET_NODE_USERS_CANCEL_TOKEN_MS,
+  GET_NODE_USERS_DEFAULT_PAGE_SIZE
+} = require('./StateMachineConstants')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
@@ -19,8 +26,6 @@ const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
 const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
   'maxNumberSecondsPrimaryRemainsUnhealthy'
 )
-
-const DEFAULT_AXIOS_TIMEOUT_MS = 5000 // 5s
 
 class PeerSetManager {
   constructor({
@@ -108,44 +113,81 @@ class PeerSetManager {
   }
 
   /**
-   * Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
-   * Or retrieve primary users only if connected to old discprov
+   * Retrieve users with this node as replica (primary or secondary).
+   * Makes single request to discovery node to retrieve all users, optionally paginated
    *
-   * Also handles backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
-   * This only works if both functions have a consistent return format
+   * @notice Discovery Nodes will ignore these params if they're not updated to the version which added pagination
+   * @param prevUserId user_id is used for pagination, where each paginated request returns
+   *                   maxUsers number of users starting at a user with id=user_id
+   * @param maxUsers the maximum number of users to fetch
+   * @returns {Object[]} array of objects of shape { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
    */
-  async getNodeUsers() {
-    let fetchUsersSuccess = false
-    let nodeUsers
-
-    let firstFetchError = null
-    try {
-      // Retrieves users from route `v1/full/users/content_node/all`
-      nodeUsers = await this.getAllNodeUsers()
-      fetchUsersSuccess = true
-    } catch (e) {
-      firstFetchError = e
+  async getNodeUsers(
+    prevUserId = 0,
+    maxUsers = GET_NODE_USERS_DEFAULT_PAGE_SIZE
+  ) {
+    // Fetch discovery node currently connected to libs as this can change
+    if (!this.discoveryProviderEndpoint) {
+      throw new Error('No discovery provider currently selected, exiting')
     }
 
-    if (!fetchUsersSuccess) {
-      try {
-        // Retrieves users from route `users/creator_node`
-        nodeUsers = await this.getNodePrimaryUsers()
-      } catch (secondFetchError) {
-        throw new Error(
-          `getAllNodeUsers() Error: ${firstFetchError.toString()}\n\ngetNodePrimaryUsers() Error: ${secondFetchError.toString()}`
-        )
+    // Will throw error on non-200 response
+    let nodeUsers
+    try {
+      // Cancel the request if it hasn't succeeded/failed/timed out after 70 seconds
+      const cancelTokenSource = CancelToken.source()
+      setTimeout(
+        () =>
+          cancelTokenSource.cancel(
+            `getNodeUsers took more than ${GET_NODE_USERS_CANCEL_TOKEN_MS}ms and did not time out`
+          ),
+        GET_NODE_USERS_CANCEL_TOKEN_MS
+      )
+
+      // Request all users that have this node as a replica (either primary or secondary)
+      const resp = await Utils.asyncRetry({
+        logLabel: 'fetch all users with this node in replica',
+        asyncFn: async () => {
+          return axios({
+            method: 'get',
+            baseURL: this.discoveryProviderEndpoint,
+            url: `v1/full/users/content_node/all`,
+            params: {
+              creator_node_endpoint: this.creatorNodeEndpoint,
+              prev_user_id: prevUserId,
+              max_users: maxUsers
+            },
+            timeout: GET_NODE_USERS_TIMEOUT_MS,
+            cancelToken: cancelTokenSource.token
+          })
+        },
+        logger
+      })
+      nodeUsers = resp.data.data
+    } catch (e) {
+      if (axios.isCancel(e)) {
+        logger.error(`getNodeUsers request canceled: ${e.message}`)
       }
+      throw new Error(
+        `getNodeUsers() Error: ${e.toString()} - connected discprov [${
+          this.discoveryProviderEndpoint
+        }]`
+      )
+    } finally {
+      logger.info(`getNodeUsers() nodeUsers.length: ${nodeUsers?.length}`)
     }
 
     // Ensure every object in response array contains all required fields
-    nodeUsers.forEach((nodeUser) => {
+    for (const nodeUser of nodeUsers) {
       const requiredFields = [
         'user_id',
         'wallet',
         'primary',
         'secondary1',
-        'secondary2'
+        'secondary2',
+        'primarySpID',
+        'secondary1SpID',
+        'secondary2SpID'
       ]
       const responseFields = Object.keys(nodeUser)
       const allRequiredFieldsPresent = requiredFields.every((requiredField) =>
@@ -153,86 +195,12 @@ class PeerSetManager {
       )
       if (!allRequiredFieldsPresent) {
         throw new Error(
-          'getNodeUsers() Error: Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call'
+          'getNodeUsers() Error: Unexpected response format during getNodeUsers() call'
         )
       }
-    })
+    }
 
     return nodeUsers
-  }
-
-  /**
-   * Retrieve users with this node as replica (primary or secondary)
-   *  - Makes single request to discovery node to retrieve all users
-   *
-   * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
-   *    It will throw if the route doesn't exist
-   * @returns {Object[]} array of objects
-   *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID },
-   * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
-   */
-  async getAllNodeUsers() {
-    // Fetch discovery node currently connected to libs as this can change
-    if (!this.discoveryProviderEndpoint) {
-      throw new Error('No discovery provider currently selected, exiting')
-    }
-
-    // Request all users that have this node as a replica (either primary or secondary)
-    const requestParams = {
-      method: 'get',
-      baseURL: this.discoveryProviderEndpoint,
-      url: `v1/full/users/content_node/all`,
-      params: {
-        creator_node_endpoint: this.creatorNodeEndpoint
-      },
-      timeout: DEFAULT_AXIOS_TIMEOUT_MS
-    }
-
-    // Will throw error on non-200 response
-    let allNodeUsers
-    try {
-      const resp = await axios(requestParams)
-      allNodeUsers = resp.data.data
-    } catch (e) {
-      throw new Error(`getAllNodeUsers() Error: ${e.toString()}`)
-    }
-
-    return allNodeUsers
-  }
-
-  /**
-   * Retrieve users with this node as primary
-   * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
-   * @returns {Object[]} array of objects
-   *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
-   * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
-   */
-  async getNodePrimaryUsers() {
-    // Fetch discovery node currently connected to libs as this can change
-    if (!this.discoveryProviderEndpoint) {
-      throw new Error('No discovery provider currently selected, exiting')
-    }
-
-    const requestParams = {
-      method: 'get',
-      baseURL: this.discoveryProviderEndpoint,
-      url: `users/creator_node`,
-      params: {
-        creator_node_endpoint: this.creatorNodeEndpoint
-      },
-      timeout: DEFAULT_AXIOS_TIMEOUT_MS
-    }
-
-    // Will throw error on non-200 response
-    let nodePrimaryUsers
-    try {
-      const resp = await axios(requestParams)
-      nodePrimaryUsers = resp.data.data
-    } catch (e) {
-      throw new Error(`getNodePrimaryUsers() Error: ${e.toString()}`)
-    }
-
-    return nodePrimaryUsers
   }
 
   /**

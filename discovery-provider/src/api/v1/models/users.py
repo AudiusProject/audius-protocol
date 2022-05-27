@@ -45,6 +45,8 @@ user_model = ns.model(
         "is_deactivated": fields.Boolean(required=True),
         "erc_wallet": fields.String(requred=True),
         "spl_wallet": fields.String(required=True),
+        "supporter_count": fields.Integer(required=True),
+        "supporting_count": fields.Integer(required=True),
     },
 )
 
@@ -112,5 +114,19 @@ challenge_response = ns.model(
         "challenge_type": fields.String(required=True),
         "amount": fields.String(required=True),
         "metadata": fields.Raw(required=True),
+    },
+)
+
+decoded_user_token = ns.model(
+    "decoded_user_token",
+    {
+        "userId": fields.String(required=True),
+        "email": fields.String(required=True),
+        "name": fields.String(required=True),
+        "handle": fields.String(required=True),
+        "verified": fields.Boolean(required=True),
+        "imageUrl": fields.String(required=False),
+        "sub": fields.String(required=True),
+        "iat": fields.String(required=True),
     },
 )

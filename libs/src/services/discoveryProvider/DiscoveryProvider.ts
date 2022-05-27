@@ -13,8 +13,8 @@ import {
   DiscoveryProviderSelectionConfig
 } from './DiscoveryProviderSelection'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
-import type EthContracts from '../ethContracts'
-import type Web3Manager from '../web3Manager'
+import type { EthContracts } from '../ethContracts'
+import type { Web3Manager } from '../web3Manager'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
@@ -27,6 +27,17 @@ type RequestParams = {
   urlParams?: PathArg
   headers?: Record<string, string>
   data?: Record<string, unknown>
+}
+
+export type UserProfile = {
+  userId: number
+  email: string
+  name: string
+  handle: string
+  verified: boolean
+  imageURL?: string
+  sub: number
+  iat: string
 }
 
 /**
@@ -581,6 +592,21 @@ export class DiscoveryProvider {
   async getSaversForPlaylist(limit = 100, offset = 0, savePlaylistId: number) {
     const req = Requests.getSaversForPlaylist(limit, offset, savePlaylistId)
     return await this._makeRequest(req)
+  }
+
+  /**
+   * get whether a JWT given by Audius Oauth popup is valid
+   * @param token - JWT
+   * @return {UserProfile | false} profile info of user attached to JWT payload if the JWT is valid, else false
+   */
+  async verifyToken(token: string): Promise<UserProfile | false> {
+    const req = Requests.verifyToken(token)
+    const res = await this._makeRequest<UserProfile[]>(req)
+    if (res == null || res[0] == null) {
+      return false
+    } else {
+      return res[0]
+    }
   }
 
   /**

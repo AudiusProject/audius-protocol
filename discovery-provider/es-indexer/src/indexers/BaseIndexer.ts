@@ -1,9 +1,11 @@
 import { Client } from '@elastic/elasticsearch'
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
 import { chunk } from 'lodash'
-import pino, { Logger } from 'pino'
 import { dialPg, queryCursor, dialEs } from '../conn'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
+import { performance } from 'perf_hooks'
+import { logger } from '../logger'
+import { Logger } from 'pino'
 
 export abstract class BaseIndexer<RowType> {
   tableName: string
@@ -18,10 +20,9 @@ export abstract class BaseIndexer<RowType> {
 
   constructor() {
     setTimeout(() => {
-      // todo: gross hack to initialize logger with tableName from subclass
-      this.logger = pino({
-        name: `es-indexer:${this.tableName}`,
-        base: undefined,
+      // todo: gross hack to initialize logger with indexName from subclass
+      this.logger = logger.child({
+        index: this.indexName,
       })
     }, 1)
 
@@ -41,6 +42,12 @@ export abstract class BaseIndexer<RowType> {
     } else {
       await es.indices.create(mapping, { ignore: [400] })
     }
+  }
+
+  async refreshIndex() {
+    const { es, logger, indexName } = this
+    logger.info('refreshing index: ' + indexName)
+    await es.indices.refresh({ index: indexName })
   }
 
   async cutoverAlias() {
@@ -96,12 +103,12 @@ export abstract class BaseIndexer<RowType> {
   async indexIds(ids: Array<number>) {
     if (!ids.length) return
     let sql = this.baseSelect()
-    sql += ` and ${this.idColumn} in (${ids.join(',')}) `
+    sql += ` and ${this.tableName}.${this.idColumn} in (${ids.join(',')}) `
     const result = await dialPg().query(sql)
     await this.indexRows(result.rows)
   }
 
-  async catchup(checkpoint: BlocknumberCheckpoint) {
+  async catchup(checkpoint?: BlocknumberCheckpoint) {
     let sql = this.baseSelect()
     if (checkpoint) {
       sql += this.checkpointSql(checkpoint)
@@ -124,9 +131,12 @@ export abstract class BaseIndexer<RowType> {
     if (!rows.length) return
 
     const { es, logger } = this
+    const took: Record<string, number> = {}
 
     // with batch
+    let before = performance.now()
     await this.withBatch(rows)
+    took.withBatch = performance.now() - before
 
     // with row
     rows.forEach((r) => this.withRow(r))
@@ -136,16 +146,27 @@ export abstract class BaseIndexer<RowType> {
     for (let chunk of chunks) {
       // index to es
       const body = this.buildIndexOps(chunk)
-      const got = await es.bulk({ body })
+      let attempt = 1
 
-      if (got.errors) {
-        // todo: do a better job picking out error items
-        logger.error(got.items[0], `bulk indexing errors`)
+      for (attempt = 1; attempt < 10; attempt++) {
+        const got = await es.bulk({ body })
+        if (got.errors) {
+          logger.error(
+            got.items[0],
+            `bulk indexing error.  Attempt #${attempt}`
+          )
+          // linear backoff 5s increments
+          await new Promise((r) => setTimeout(r, 5000 * attempt))
+        } else {
+          break
+        }
       }
 
       this.rowCounter += chunk.length
       logger.info({
         updates: chunk.length,
+        attempts: attempt,
+        withBatchMs: took.withBatch.toFixed(0),
         lifetime: this.rowCounter,
       })
     }
@@ -158,7 +179,7 @@ export abstract class BaseIndexer<RowType> {
     ])
   }
 
-  async withBatch(rows: Array<RowType>) {}
+  async withBatch(rows: Array<RowType>) { }
 
-  withRow(row: RowType) {}
+  withRow(row: RowType) { }
 }
