@@ -1,7 +1,7 @@
 .artistChip {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   overflow: hidden;
 }
 .artistChip > div {
@@ -113,7 +113,7 @@
 .tipContainer .supporter {
   display: flex;
   align-items: center;
-  width: 136px;
+  width: 128px;
   font-size: var(--font-s);
   font-weight: var(--font-medium);
 }

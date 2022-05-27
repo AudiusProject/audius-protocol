@@ -116,11 +116,7 @@ export const UserListModal = forwardRef<HTMLDivElement, UserListModalProps>(
                   })}
                 >
                   <ArtistChip
-                    userId={user.user_id}
-                    name={user.name}
-                    handle={user.handle}
-                    profilePictureSizes={user._profile_picture_sizes}
-                    followers={user.follower_count}
+                    user={user}
                     onClickArtistName={() => {
                       onClose()
                       onClickArtistName(user.handle)

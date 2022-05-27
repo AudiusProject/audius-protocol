@@ -1,6 +1,7 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -9,6 +10,8 @@ import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
+import { getProfileUser } from 'common/store/pages/profile/selectors'
+import { setMainUser } from 'common/store/tipping/slice'
 import { Nullable } from 'common/utils/typeUtils'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
@@ -108,13 +111,21 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     isOwner
   } = props
 
+  const dispatch = useDispatch()
+  const record = useRecord()
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
   const accountUser = useSelector(getAccountUser)
-  const record = useRecord()
+  const profile = useSelector(getProfileUser)
   const bioRef = useRef<Nullable<HTMLDivElement>>(null)
   const { isCollapsible, isCollapsed, handleToggleCollapse } = useCollapse({
     ref: bioRef
   })
+
+  useEffect(() => {
+    if (isTippingEnabled && profile) {
+      dispatch(setMainUser({ user: profile }))
+    }
+  }, [isTippingEnabled, dispatch, profile])
 
   const onClickUploadChip = useCallback(() => {
     goToRoute(UPLOAD_PAGE)

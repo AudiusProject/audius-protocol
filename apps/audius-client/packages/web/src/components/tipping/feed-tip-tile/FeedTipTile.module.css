@@ -1,3 +1,22 @@
+.skeletonContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.skeleton {
+  height: 32px;
+  border-radius: 8px;
+}
+.skeleton:nth-child(1) {
+  height: 40px;
+}
+.skeleton:nth-child(2) {
+  margin-left: 8px;
+}
+.skeleton:nth-child(3) {
+  margin-left: 16px;
+}
+
 .container {
   display: flex;
   justify-content: space-between;
@@ -19,11 +38,20 @@
   align-items: center;
   font-size: var(--font-s);
 }
-
+.profilePicture {
+  cursor: pointer;
+}
 .name {
   margin-left: 8px;
   font-weight: var(--font-bold);
   color: var(--neutral);
+}
+.name > span:hover {
+  cursor: pointer;
+  color: var(--primary);
+  text-decoration: underline;
+  -webkit-text-decoration-color: var(--primary-light-2);
+  text-decoration-color: var(--primary-light-2);
 }
 .badge {
   margin-left: 4px;
@@ -50,17 +78,21 @@
 .tippers {
   display: flex;
   margin-left: 4px;
+  color: var(--neutral);
+}
+.tippers:hover {
+  cursor: pointer;
+  color: var(--primary);
 }
 .tipperName {
   display: flex;
   font-weight: var(--font-medium);
-  color: var(--neutral);
 }
 .tipperSeparator {
   margin: 0 4px;
 }
 .andOthers {
-  margin-left: 4px;
+  font-weight: var(--font-medium);
 }
 
 .buttons {
@@ -104,14 +136,14 @@
 }
 
 .dismissButton {
-  margin-left: 4px;
+  margin-left: 8px;
 }
 .dismissButton:hover {
   cursor: pointer;
 }
 .dismissIcon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 .dismissIcon path {
   fill: var(--neutral-light-4);
