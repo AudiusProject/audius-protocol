@@ -430,9 +430,7 @@ class TrackSearchResult(Resource):
             "only_downloadable": args["only_downloadable"],
         }
         response = search(search_args)
-        tracks = response["tracks"]
-        tracks = list(map(extend_track, tracks))
-        return success_response(tracks)
+        return success_response(response)
 
 
 # Trending

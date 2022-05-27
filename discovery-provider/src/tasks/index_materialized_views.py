@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 from src.tasks.celery_app import celery
@@ -9,6 +10,8 @@ DEFAULT_UPDATE_TIMEOUT = 60 * 60 * 6  # 6 hours
 
 
 def update_views(self, db):
+    if os.getenv("audius_elasticsearch_search_enabled"):
+        return
     with db.scoped_session() as session:
         start_time = time.time()
         logger.info("index_materialized_views.py | Updating materialized views")

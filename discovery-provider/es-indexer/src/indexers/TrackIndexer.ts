@@ -1,8 +1,14 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
+import { merge } from 'lodash'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { TrackDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
+import {
+  sharedIndexSettings,
+  standardSuggest,
+  standardText,
+} from './sharedIndexSettings'
 
 export class TrackIndexer extends BaseIndexer<TrackDoc> {
   tableName = 'tracks'
@@ -12,44 +18,55 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
-    settings: {
+    settings: merge(sharedIndexSettings, {
+      analysis: {
+        tokenizer: {
+          comma_tokenizer: {
+            // @ts-ignore - es client typings lagging
+            type: 'simple_pattern_split',
+            pattern: ',',
+          },
+        },
+        analyzer: {
+          // @ts-ignore - es client typings lagging
+          comma_analyzer: {
+            tokenizer: 'comma_tokenizer',
+            filter: ['lowercase', 'asciifolding'],
+          },
+        },
+      },
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
         refresh_interval: '5s',
-
-        analysis: {
-          normalizer: {
-            lower_ascii: {
-              type: 'custom',
-              char_filter: [],
-              filter: ['lowercase', 'asciifolding'],
-            },
-          },
-        },
       },
-    },
+    }),
     mappings: {
       dynamic: false,
       properties: {
         blocknumber: { type: 'integer' },
         owner_id: { type: 'keyword' },
         created_at: { type: 'date' },
+        updated_at: { type: 'date' },
         permalink: { type: 'keyword' },
         route_id: { type: 'keyword' },
         routes: { type: 'keyword' },
-        title: { type: 'text' },
-        description: { type: 'text' },
+        title: {
+          type: 'keyword',
+          fields: {
+            searchable: standardText,
+          },
+        },
         length: { type: 'integer' },
         tags: {
-          type: 'keyword',
-          normalizer: 'lower_ascii',
+          type: 'text',
+          analyzer: 'comma_analyzer',
         },
         genre: { type: 'keyword' },
         mood: { type: 'keyword' },
         is_delete: { type: 'boolean' },
         is_unlisted: { type: 'boolean' },
-        is_downloadable: { type: 'boolean' },
+        downloadable: { type: 'boolean' },
 
         // saves
         saved_by: { type: 'keyword' },
@@ -58,13 +75,27 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
 
-        artist: {
+        suggest: standardSuggest,
+
+        user: {
           properties: {
-            handle: { type: 'keyword' },
+            handle: {
+              type: 'keyword',
+              fields: {
+                searchable: standardText,
+              },
+            },
+            name: {
+              type: 'keyword',
+              fields: {
+                searchable: standardText,
+              },
+            },
             location: { type: 'keyword' },
-            name: { type: 'text' }, // should it be keyword with a `searchable` treatment?
             follower_count: { type: 'integer' },
             is_verified: { type: 'boolean' },
+            created_at: { type: 'date' },
+            updated_at: { type: 'date' },
           },
         },
 
@@ -85,19 +116,19 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     -- etl tracks
     select 
       tracks.*,
-      (tracks.download->>'is_downloadable')::boolean as is_downloadable,
+      (tracks.download->>'is_downloadable')::boolean as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
   
       json_build_object(
         'handle', users.handle,
         'name', users.name,
         'location', users.location,
-        'follower_count', coalesce(follower_count, 0),
-        'is_verified', is_verified,
-        'balance', balance,
-        'associated_wallets_balance', associated_wallets_balance
-      ) as artist,
-  
+        'follower_count', follower_count,
+        'is_verified', users.is_verified,
+        'created_at', users.created_at,
+        'updated_at', users.updated_at
+      ) as user,
+
       array(
         select slug 
         from track_routes r
@@ -131,7 +162,6 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     from tracks
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id
-      left join user_balances on users.user_id = user_balances.user_id
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
     WHERE tracks.is_current = true 
       AND users.is_current = true
@@ -153,16 +183,18 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
   }
 
   withRow(row: TrackDoc) {
-    row.tags = row.tags ? row.tags.split(',') : []
+    row.suggest = [row.title, row.user.handle, row.user.name]
+      .filter((x) => x)
+      .join(' ')
+    row.tags = row.tags
     row.repost_count = row.reposted_by.length
-    row.save_count = row.saved_by.length
-
-    row.length = Math.ceil(
+    row.favorite_count = row.saved_by.length
+    row.duration = Math.ceil(
       row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
     )
 
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]
-    row.permalink = `/${row.artist.handle}/${currentRoute}`
+    row.permalink = `/${row.user.handle}/${currentRoute}`
   }
 }

@@ -400,7 +400,7 @@ export interface TrackRow {
   is_delete: boolean
   owner_id: number
   title?: string | null
-  length?: number | null
+  duration?: number | null
   cover_art?: string | null
   tags?: string | null
   genre?: string | null
