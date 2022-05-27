@@ -1,9 +1,7 @@
 import concurrent.futures
 import logging
 
-from src.utils import web3_provider
-from src.utils.config import shared_config
-from src.utils.helpers import is_fqdn, load_eth_abi_values
+from src.utils.helpers import is_fqdn
 from src.utils.redis_cache import (
     get_json_cached_key,
     get_sp_id_key,
@@ -12,9 +10,8 @@ from src.utils.redis_cache import (
 
 logger = logging.getLogger(__name__)
 
-eth_abi_values = load_eth_abi_values()
-SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
-CONTENT_NODE_SERVICE_TYPE = bytes("content-node", "utf-8")
+sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
+content_node_service_type = bytes("content-node", "utf-8")
 
 cnode_info_redis_ttl = 1800
 
@@ -29,7 +26,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
         return sp_info_cached
 
     cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
-        CONTENT_NODE_SERVICE_TYPE, sp_id
+        content_node_service_type, sp_id
     ).call()
     set_json_cached_key(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
     logger.info(
@@ -38,7 +35,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     return cn_endpoint_info
 
 
-def fetch_all_registered_content_node_endpoints(
+def fetch_all_registered_content_nodes(
     eth_web3, shared_config, redis, eth_abi_values
 ) -> set:
     eth_registry_address = eth_web3.toChecksumAddress(
@@ -48,13 +45,13 @@ def fetch_all_registered_content_node_endpoints(
         address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
     )
     sp_factory_address = eth_registry_instance.functions.getContract(
-        SP_FACTORY_REGISTRY_KEY
+        sp_factory_registry_key
     ).call()
     sp_factory_inst = eth_web3.eth.contract(
         address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
     )
     total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(
-        CONTENT_NODE_SERVICE_TYPE
+        content_node_service_type
     ).call()
     ids_list = list(range(1, total_cn_type_providers + 1))
     eth_cn_endpoints_set = set()
@@ -81,75 +78,3 @@ def fetch_all_registered_content_node_endpoints(
                     f"eth_contract_helpers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}"
                 )
     return eth_cn_endpoints_set
-
-
-# Perform eth web3 call to fetch endpoint info
-def fetch_registered_content_node_info(spID, service_provider_factory_instance):
-    return service_provider_factory_instance.functions.getServiceEndpointInfo(
-        CONTENT_NODE_SERVICE_TYPE, spID
-    ).call()
-
-
-def fetch_all_registered_content_node_info():
-    # Setup eth web3
-
-    service_provider_factory_instance = _get_service_provider_factory_instance()
-
-    # Fetch all Content Nodes info in parallel
-
-    num_content_nodes = (
-        service_provider_factory_instance.functions.getTotalServiceTypeProviders(
-            CONTENT_NODE_SERVICE_TYPE
-        ).call()
-    )
-    logger.info(f"Number of content nodes: {num_content_nodes}")
-
-    spIDs_list = list(range(1, num_content_nodes + 1))
-    registered_content_nodes_info = []
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_spID = {
-            executor.submit(
-                fetch_registered_content_node_info, i, service_provider_factory_instance
-            ): i
-            for i in spIDs_list
-        }
-
-        for future in concurrent.futures.as_completed(future_to_spID):
-            spID = future_to_spID[future]
-            try:
-                future_result = future.result()
-                node_info = {
-                    "endpoint": future_result[1],
-                    "block_number": future_result[2],
-                    "spID": spID,
-                    # TODO: Not sure which index is which for the wallets
-                    # "delegate_owner_wallet": future_result[0],
-                    # "owner": future_result[3],
-                }
-                registered_content_nodes_info.append(node_info)
-            except Exception as e:
-                logger.error(
-                    f"eth_contracts_helpers.py | ERROR in fetching Content Node info for {spID}: {e}"
-                )
-
-    return registered_content_nodes_info
-
-
-def _get_service_provider_factory_instance():
-    eth_web3 = web3_provider.get_eth_web3()
-
-    eth_registry_address = eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
-    )
-    eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
-    )
-    sp_factory_address = eth_registry_instance.functions.getContract(
-        SP_FACTORY_REGISTRY_KEY
-    ).call()
-    sp_factory_instance = eth_web3.eth.contract(
-        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
-    )
-
-    return sp_factory_instance

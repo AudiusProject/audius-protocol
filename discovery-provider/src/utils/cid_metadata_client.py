@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import aiohttp
 from src.tasks.metadata import track_metadata_format, user_metadata_format
-from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_endpoints
+from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class CIDMetadataClient:
         # in the celery worker
         if eth_web3 and shared_config and redis and eth_abi_values:
             self._cnode_endpoints = list(
-                fetch_all_registered_content_node_endpoints(
+                fetch_all_registered_content_nodes(
                     eth_web3, shared_config, redis, eth_abi_values
                 )
             )

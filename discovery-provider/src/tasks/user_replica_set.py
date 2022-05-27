@@ -10,8 +10,8 @@ from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers
 from src.utils.eth_contracts_helpers import (
-    CONTENT_NODE_SERVICE_TYPE,
-    SP_FACTORY_REGISTRY_KEY,
+    content_node_service_type,
+    sp_factory_registry_key,
 )
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -280,7 +280,7 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
             sp_factory_inst = get_sp_factory_inst(update_task)
 
         cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
-            CONTENT_NODE_SERVICE_TYPE, sp_id
+            content_node_service_type, sp_id
         ).call()
         logger.info(
             f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}"
@@ -301,7 +301,7 @@ def get_sp_factory_inst(update_task):
         address=eth_registry_address, abi=get_eth_abi_values()["Registry"]["abi"]
     )
     sp_factory_address = eth_registry_instance.functions.getContract(
-        SP_FACTORY_REGISTRY_KEY
+        sp_factory_registry_key
     ).call()
     sp_factory_inst = eth_web3.eth.contract(
         address=sp_factory_address,
