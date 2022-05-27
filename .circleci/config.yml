@@ -341,6 +341,7 @@ jobs:
             export spOwnerWallet='yes'
             export isCIBuild=true
             npm run test:coverage:ci
+            cd ..
       - coveralls/upload:
           path_to_lcov: ./creator-node/coverage/lcov.info
 
