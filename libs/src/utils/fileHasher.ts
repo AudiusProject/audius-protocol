@@ -5,7 +5,7 @@ import {
 } from 'ipfs-unixfs-importer'
 import fs from 'fs'
 import { hrtime } from 'process'
-import promisify from 'pify'
+import { promisify } from 'util'
 import { Stream } from 'stream'
 import type { Blockstore, Options } from 'interface-blockstore'
 import type {

@@ -3,8 +3,8 @@ import { ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
 
-export const sign = (digest: unknown, privateKey: Buffer) => {
-  const buffer = toBuffer(digest as any)
+export const sign = (digest: any, privateKey: Buffer) => {
+  const buffer = toBuffer(digest)
   const signature = ecsign(buffer, privateKey)
   return signature
 }

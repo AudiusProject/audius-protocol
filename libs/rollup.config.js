@@ -40,7 +40,7 @@ const commonConfig = {
 // For the browser bundle, these need to be internal because they either:
 // * contain deps that need to be polyfilled via `nodePolyfills`
 // * are ignored via `ignore`
-const internal = [
+const browserInternal = [
   'eth-sig-util',
   'ethereumjs-tx',
   'ethereumjs-util',
@@ -70,7 +70,7 @@ const browserConfig = {
     json(),
     typescript()
   ],
-  external: external.filter((dep) => !internal.includes(dep))
+  external: external.filter((dep) => !browserInternal.includes(dep))
 }
 
 const browserLegacyConfig = {
