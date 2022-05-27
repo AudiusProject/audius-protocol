@@ -2,7 +2,6 @@
 set -e
 set -o pipefail
 
-
 <<COMMENT
 Lint all files in the audius_contracts repository
 COMMENT
@@ -22,5 +21,3 @@ printf 'START Solium lint'
 npm run solidity-lint
 printf '\nEND Solium lint'
 printline
-
-
