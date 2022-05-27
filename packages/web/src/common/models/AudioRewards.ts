@@ -49,7 +49,9 @@ export enum FailureReason {
   // UserChallenge is not in complete state
   CHALLENGE_INCOMPLETE = 'CHALLENGE_INCOMPLETE',
   // An unknown error has occurred
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  // Unknown AAO error
+  AAO_ATTESTATION_UNKNOWN_RESPONSE = 'AAO_ATTESTATION_UNKNOWN_RESPONSE'
 }
 
 export type FlowUIOpenEvent = {
