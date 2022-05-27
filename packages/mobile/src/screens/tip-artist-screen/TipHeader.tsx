@@ -1,4 +1,5 @@
 import { getSendAmount } from 'audius-client/src/common/store/tipping/selectors'
+import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 import { View } from 'react-native'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -46,7 +47,7 @@ export const TipHeader = (props: TipHeaderProps) => {
         </Text>
       </Text>
       <Text fontSize='xxxxl' weight='heavy'>
-        {sendAmount}{' '}
+        {formatNumberCommas(sendAmount)}{' '}
         <Audio fontSize='xxxxl' color='neutralLight4' weight='heavy' />
       </Text>
     </View>
