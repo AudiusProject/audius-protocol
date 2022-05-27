@@ -10,8 +10,7 @@
     "test:local:teardown": "./scripts/run-tests.sh standalone_creator teardown",
     "test:teardown": "./scripts/run-tests.sh teardown",
     "test:unit": "./scripts/run-tests.sh unit_test",
-    "coverage": "nyc npm run test",
-    "report": "nyc report --reporter=html",
+    "test:coverage:ci": "nyc --silent npm run test:ci && nyc report --reporter=text-lcov | coveralls",
     "lint:fix": "eslint --fix --ext=js,ts src",
     "lint": "eslint --ext=js,ts src"
   },
@@ -74,6 +73,7 @@
     "@typescript-eslint/parser": "^5.5.0",
     "chai": "4.3.6",
     "chai-as-promised": "^7.1.1",
+    "coveralls": "^3.1.1",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.3",
