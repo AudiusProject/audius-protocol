@@ -62,6 +62,12 @@ export enum Name {
   TIKTOK_COMPLETE_SHARE_SOUND = 'TikTok: Complete Share Sound',
   TIKTOK_SHARE_SOUND_ERROR = 'TikTok: Share Sound Error',
 
+  // Audius OAuth Login Page
+  AUDIUS_OAUTH_START = 'Audius Oauth: Open Login (authenticate)',
+  AUDIUS_OAUTH_SUBMIT = 'Audius Oauth: Submit Login (authenticate)',
+  AUDIUS_OAUTH_COMPLETE = 'Audius Oauth: Login (authenticate) Success',
+  AUDIUS_OAUTH_ERROR = 'Audius Oauth: Login (authenticate) Failed',
+
   // Visualizer
   VISUALIZER_OPEN = 'Visualizer: Open',
   VISUALIZER_CLOSE = 'Visualizer: Close',
@@ -1175,6 +1181,28 @@ type SocialProofError = {
   error: string
 }
 
+type AudiusOauthStart = {
+  eventName: Name.AUDIUS_OAUTH_START
+  redirectUriParam: string | string[]
+  originParam: string | string[] | undefined | null
+  appNameParam: string | string[]
+}
+
+type AudiusOauthSubmit = {
+  eventName: Name.AUDIUS_OAUTH_SUBMIT
+  alreadySignedIn: boolean
+}
+
+type AudiusOauthComplete = {
+  eventName: Name.AUDIUS_OAUTH_COMPLETE
+}
+
+type AudiusOauthError = {
+  eventName: Name.AUDIUS_OAUTH_ERROR
+  isUserError: boolean
+  error: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1332,3 +1360,7 @@ export type AllTrackingEvents =
   | FolderSubmitEdit
   | FolderDelete
   | FolderCancelEdit
+  | AudiusOauthStart
+  | AudiusOauthComplete
+  | AudiusOauthSubmit
+  | AudiusOauthError
