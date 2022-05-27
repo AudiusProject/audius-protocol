@@ -28,7 +28,7 @@ def search_es_full(args: dict):
 
     search_str = args.get("query")
     current_user_id = args.get("current_user_id")
-    limit = args.get("limit")
+    limit = args.get("limit", 10)
     offset = args.get("offset", 0)
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
@@ -123,10 +123,17 @@ def search_es_full(args: dict):
                 ]
             )
 
+    # add size and limit with some
+    # over-fetching for sake of drop_copycats
+    index_name = ""
     for dsl in mdsl:
-        if "query" in dsl:
-            dsl["size"] = limit
-            dsl["from"] = offset
+        if "index" in dsl:
+            index_name = dsl["index"]
+            continue
+        dsl["size"] = limit
+        dsl["from"] = offset
+        if index_name == ES_USERS:
+            dsl["size"] = limit + 5
 
     mfound = esclient.msearch(searches=mdsl)
 
@@ -208,6 +215,7 @@ def search_es_full(args: dict):
     # users: finalize
     for k in ["users", "followed_users"]:
         users = drop_copycats(response[k])
+        users = users[:limit]
         response[k] = [
             extend_user(populate_user_metadata_es(user, current_user)) for user in users
         ]

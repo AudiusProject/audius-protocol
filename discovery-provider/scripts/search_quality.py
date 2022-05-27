@@ -7,6 +7,8 @@ def test_search(args):
     search_type = args.get("kind", "all")
 
     def print_entity(title, entities):
+        if not entities:
+            return
         print(f"\n[ {title} ]")
         for entity in entities:
             print(
@@ -22,6 +24,8 @@ def test_search(args):
             )
 
     def print_users(title, users):
+        if not users:
+            return
         print(f"\n[ {title} ]")
         for user in users:
             print(
@@ -154,6 +158,14 @@ test_search(
 test_search(
     {
         "query": "camo",
+        "limit": 4,
+        "is_auto_complete": True,
+    }
+)
+
+test_search(
+    {
+        "query": "zouai",
         "limit": 4,
         "is_auto_complete": True,
     }
