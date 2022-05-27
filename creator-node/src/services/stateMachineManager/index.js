@@ -1,7 +1,7 @@
 const config = require('../../config')
 const { logger } = require('../../logging')
 const StateMonitoringQueue = require('./stateMonitoring/StateMonitoringQueue')
-const NodeToSpIdManager = require('./cNodeToSpIdMapManager')
+const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
 const { RECONFIG_MODES } = require('./stateMachineConstants')
 
 /**

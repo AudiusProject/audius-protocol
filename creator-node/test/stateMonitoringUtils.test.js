@@ -23,11 +23,15 @@ const {
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 const SecondarySyncHealthTracker = require('../src/snapbackSM/secondarySyncHealthTracker')
 
-describe('test getLatestUserIdFromDiscovery', function () {
+describe('test getLatestUserIdFromDiscovery()', function () {
   const DISCOVERY_NODE_ENDPOINT = 'https://discovery_endpoint.audius.co'
 
+  beforeEach(() => {
+    nock.disableNetConnect()
+  })
   afterEach(() => {
     nock.cleanAll()
+    nock.enableNetConnect()
   })
 
   it('returns correct value from discovery endpoint param', async function () {
@@ -55,7 +59,7 @@ describe('test getLatestUserIdFromDiscovery', function () {
   })
 })
 
-describe('test getNodeUsers', function () {
+describe('test getNodeUsers()', function () {
   const DISCOVERY_NODE_ENDPOINT = 'https://discovery_endpoint.audius.co'
   const CONTENT_NODE_ENDPOINT = 'https://content_node_endpoint.audius.co'
   const DEFAULT_GET_NODE_USERS_TIMEOUT_MS = 100
@@ -96,8 +100,16 @@ describe('test getNodeUsers', function () {
     return getNodeUsers
   }
 
+  let sandbox
+  beforeEach(() => {
+    sandbox = sinon.createSandbox()
+    nock.disableNetConnect()
+  })
+
   afterEach(() => {
+    sandbox.restore()
     nock.cleanAll()
+    nock.enableNetConnect()
   })
 
   it('uses correct params for axios request when not given pagination params', async function () {
@@ -108,8 +120,8 @@ describe('test getNodeUsers', function () {
 
       return { data: { data: users } }
     }
-    const cancelTokenSourceMock = sinon.mock(CancelToken.source())
-    const cancelTokenCancelFunc = sinon.stub()
+    const cancelTokenSourceMock = sandbox.mock(CancelToken.source())
+    const cancelTokenCancelFunc = sandbox.stub()
     cancelTokenSourceMock.cancel = cancelTokenCancelFunc
     const cancelTokenStub = { source: () => cancelTokenSourceMock }
     axiosStub.CancelToken = cancelTokenStub
@@ -142,8 +154,8 @@ describe('test getNodeUsers', function () {
 
       return { data: { data: users } }
     }
-    const cancelTokenSourceMock = sinon.mock(CancelToken.source())
-    const cancelTokenCancelFunc = sinon.stub()
+    const cancelTokenSourceMock = sandbox.mock(CancelToken.source())
+    const cancelTokenCancelFunc = sandbox.stub()
     cancelTokenSourceMock.cancel = cancelTokenCancelFunc
     const cancelTokenStub = { source: () => cancelTokenSourceMock }
     axiosStub.CancelToken = cancelTokenStub
@@ -210,8 +222,8 @@ describe('test getNodeUsers', function () {
 
       return { data: { data: users } }
     }
-    const cancelTokenSourceMock = sinon.mock(CancelToken.source())
-    const cancelTokenCancelFunc = sinon.stub()
+    const cancelTokenSourceMock = sandbox.mock(CancelToken.source())
+    const cancelTokenCancelFunc = sandbox.stub()
     cancelTokenSourceMock.cancel = cancelTokenCancelFunc
     const cancelTokenStub = { source: () => cancelTokenSourceMock }
     axiosStub.CancelToken = cancelTokenStub
@@ -284,7 +296,7 @@ describe('test getNodeUsers', function () {
   })
 })
 
-describe('test buildReplicaSetNodesToUserWalletsMap', function () {
+describe('test buildReplicaSetNodesToUserWalletsMap()', function () {
   it('', function () {
     const nodeUsersInput = [
       {
@@ -329,7 +341,7 @@ describe('test buildReplicaSetNodesToUserWalletsMap', function () {
   })
 })
 
-describe('test computeUserSecondarySyncSuccessRatesMap', function () {
+describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   let server
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -428,7 +440,7 @@ describe('test computeUserSecondarySyncSuccessRatesMap', function () {
   })
 })
 
-describe('test aggregateReconfigAndPotentialSyncOps', function () {
+describe('test aggregateReconfigAndPotentialSyncOps()', function () {
   let server
 
   beforeEach(async function () {
