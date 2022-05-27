@@ -6,7 +6,6 @@ const { expect } = chai
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
-const _ = require('lodash')
 
 const config = require('../src/config')
 

@@ -65,7 +65,7 @@ describe('test CNodeToSpIdMapManager', function () {
       getServiceProviderList: getServiceProviderListStub
     }
 
-    // Verify that CNodeToSpIdMapManager's mapping is set to the new mapping
+    // Verify that CNodeToSpIdMapManager's mapping was NOT replaced with the empty mapping
     await CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(ethContracts)
     expect(CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()).to.deep.equal(
       originalCNodeEndpointToSpIdMap
@@ -103,7 +103,7 @@ describe('test CNodeToSpIdMapManager', function () {
       getServiceProviderList: getServiceProviderListStub
     }
 
-    // Verify that CNodeToSpIdMapManager's mapping is set to the new mapping
+    // Verify that CNodeToSpIdMapManager throws because its mapping is empty
     return expect(
       CNodeToSpIdMapManager.updateCnodeEndpointToSpIdMap(ethContracts)
     )
