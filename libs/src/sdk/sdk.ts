@@ -6,6 +6,7 @@ import { EthContracts, EthContractsConfig } from '../services/ethContracts'
 import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
 import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
+import { Oauth } from './oauth'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -16,7 +17,6 @@ import {
   IDENTITY_SERVICE_ENDPOINT,
   WORMHOLE_ADDRESS
 } from './constants'
-import { oauth } from './oauth'
 
 type Web3Config = {
   providers: string[]
@@ -36,6 +36,7 @@ type SdkConfig = {
  */
 export const sdk = async (config?: SdkConfig) => {
   const {
+    appName,
     discoveryNodeConfig,
     ethContractsConfig,
     ethWeb3Config,
@@ -78,6 +79,11 @@ export const sdk = async (config?: SdkConfig) => {
   // TODO: potentially don't await this and have a different method (callback/event) to
   // know when the sdk is initialized
   await discoveryNode.init()
+
+  const oauth =
+    typeof window !== 'undefined'
+      ? new Oauth({ discoveryProvider: discoveryNode, appName })
+      : undefined
 
   return {
     oauth,
