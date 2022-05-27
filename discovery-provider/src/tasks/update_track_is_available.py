@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
-from src.models import Track, User
+from src.models import Track, URSMContentNode, User
 from src.tasks.celery_app import celery
-from src.utils.eth_contracts_helpers import fetch_all_registered_content_node_info
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +15,18 @@ DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
+class ContentNodeInfo(TypedDict):
+    endpoint: str
+    spID: int
+
+
 def _get_redis_set_members_as_list(redis: Any, key: str) -> List[int]:
     values = redis.smembers(key)
     return [int(value.decode()) for value in values]
 
 
-def fetch_unavailable_track_ids_in_network(redis: Any) -> None:
-    content_nodes = fetch_all_registered_content_node_info()
+def fetch_unavailable_track_ids_in_network(session: Any, redis: Any) -> None:
+    content_nodes = query_registered_content_node_info(session)
 
     # Clear redis for existing data
     redis.delete(ALL_UNAVAILABLE_TRACKS_REDIS_KEY)
@@ -59,7 +63,8 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
                 )
 
                 track_id_to_is_available_status = {}
-                entry: Tuple[int, Union[int, None], Union[List[int], List[None]]]
+
+                entry: Union[Tuple[int, int, List[int]], Tuple[int, None, List[None]]]
                 for entry in track_ids_to_replica_set:
                     track_id = entry[0]
 
@@ -119,7 +124,7 @@ def query_replica_set_by_track_id(
     Returns an array of tuples with the structure: [(track_id | primary_id | secondary_ids), ...]
     If `primary_id` and `secondary_ids` are undefined, will return as None
     """
-    query_results = (
+    track_ids_and_replica_sets = (
         session.query(Track.track_id, User.primary_id, User.secondary_ids)
         .join(User, Track.owner_id == User.user_id, isouter=True)  # left join
         .filter(
@@ -130,7 +135,7 @@ def query_replica_set_by_track_id(
         .all()
     )
 
-    return query_results
+    return track_ids_and_replica_sets
 
 
 def query_tracks_by_track_ids(session: Any, track_ids: List[int]) -> List[Any]:
@@ -145,6 +150,25 @@ def query_tracks_by_track_ids(session: Any, track_ids: List[int]) -> List[Any]:
     )
 
     return tracks
+
+
+def query_registered_content_node_info(
+    session: Any,
+    # ) -> List[Dict[str, Union[str, int]]]:
+) -> List[ContentNodeInfo]:
+    """Returns a list of all registered Content Node endpoint and spID"""
+    registered_content_nodes = (
+        session.query(URSMContentNode.endpoint, URSMContentNode.cnode_sp_id)
+        .filter(
+            URSMContentNode.is_current == True,
+        )
+        .all()
+    )
+
+    def create_named_fields(node):
+        return {"endpoint": node[0], "spID": node[1]}
+
+    return list(map(create_named_fields, registered_content_nodes))
 
 
 def check_track_is_available(
@@ -202,7 +226,8 @@ def update_track_is_available(self) -> None:
                 datetime.now().strftime("%m/%d/%Y, %H:%M:%S.%f"),
             )
 
-            fetch_unavailable_track_ids_in_network(redis)
+            with db.scoped_session() as session:
+                fetch_unavailable_track_ids_in_network(session, redis)
 
             update_tracks_is_available_status(db, redis)
         else:

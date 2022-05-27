@@ -2,7 +2,7 @@ import logging
 from unittest import mock
 
 from integration_tests.utils import populate_mock_db
-from src.models import Track, User
+from src.models import Track, URSMContentNode, User
 from src.tasks.update_track_is_available import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     _get_redis_set_members_as_list,
@@ -10,6 +10,7 @@ from src.tasks.update_track_is_available import (
     fetch_unavailable_track_ids,
     fetch_unavailable_track_ids_in_network,
     get_unavailable_tracks_redis_key,
+    query_registered_content_node_info,
     query_replica_set_by_track_id,
     query_tracks_by_track_ids,
     update_tracks_is_available_status,
@@ -34,36 +35,36 @@ def _mock_response(json_data, status=200, raise_for_status=None):
     return mock_resp
 
 
-def _sort_query_replica_set_by_track_id(list):
-    """sort by the track id in ascending order"""
-    list.sort(key=lambda entry: entry[0])
-    return list
+def test_query_registered_content_node_info(app):
+    with app.app_context():
+        db = get_db()
+
+    _seed_db_with_data(db)
+    print_dummy_tracks_and_users(db)
+
+    with db.scoped_session() as session:
+        content_nodes = query_registered_content_node_info(session)
+        print(content_nodes)
+
+        for i, node in enumerate(content_nodes):
+            assert node["endpoint"] == f"www.content_node{i}.com"
+            assert node["spID"] == i + 1
 
 
-@mock.patch(
-    "src.tasks.update_track_is_available.fetch_all_registered_content_node_info"
-)
+@mock.patch("src.tasks.update_track_is_available.query_registered_content_node_info")
 @mock.patch("src.tasks.update_track_is_available.fetch_unavailable_track_ids")
 def test_fetch_unavailable_track_ids_in_network(
-    mock_fetch_unavailable_track_ids, mock_fetch_all_registered_content_node_info, app
+    mock_fetch_unavailable_track_ids, mock_query_registered_content_node_info, app
 ):
     # Setup
-    mock_fetch_all_registered_content_node_info.return_value = [
+    mock_query_registered_content_node_info.return_value = [
         {
-            "blockNumber": 100,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
             "endpoint": "http://content_node.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
             "spID": 1,
-            "type": "content-node",
         },
         {
-            "blockNumber": 101,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "endpoint": "http://content_node2.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "spID": 2,
-            "type": "content-node",
         },
     ]
 
@@ -76,8 +77,10 @@ def test_fetch_unavailable_track_ids_in_network(
 
     with app.app_context():
         redis = get_redis()
+        db = get_db()
 
-    fetch_unavailable_track_ids_in_network(redis)
+    with db.scoped_session() as session:
+        fetch_unavailable_track_ids_in_network(session, redis)
 
     # Check that redis adds track ids as expected
 
@@ -249,64 +252,38 @@ def test_query_tracks_by_track_id(app):
         assert sorted_track_ids == track_ids
 
 
-@mock.patch(
-    "src.tasks.update_track_is_available.fetch_all_registered_content_node_info"
-)
+@mock.patch("src.tasks.update_track_is_available.query_registered_content_node_info")
 def test_update_track_is_available(
-    mock_fetch_all_registered_content_node_info,
+    mock_query_registered_content_node_info,
     app,
     mocker,
 ):
 
     # Setup
-    mock_fetch_all_registered_content_node_info.return_value = [
+    mock_query_registered_content_node_info.return_value = [
         {
-            "blockNumber": 107,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
             "endpoint": "http://content_node7.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAc8vicky",
             "spID": 7,
-            "type": "content-node",
         },
         {
-            "blockNumber": 109,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "endpoint": "http://content_node9.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "spID": 9,
-            "type": "content-node",
         },
         {
-            "blockNumber": 110,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "endpoint": "http://content_node10.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "spID": 10,
-            "type": "content-node",
         },
         {
-            "blockNumber": 111,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "endpoint": "http://content_node11.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "spID": 11,
-            "type": "content-node",
         },
         {
-            "blockNumber": 112,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "endpoint": "http://content_node12.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "spID": 12,
-            "type": "content-node",
         },
         {
-            "blockNumber": 113,
-            "delegateOwnerWallet": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "endpoint": "http://content_node13.com",
-            "owner": "0x0B99Af13e7E11d88ECAD3B94260D18eEAcvickyy",
             "spID": 13,
-            "type": "content-node",
         },
     ]
 
@@ -334,7 +311,9 @@ def test_update_track_is_available(
 
     _seed_db_with_data(db)
 
-    fetch_unavailable_track_ids_in_network(redis)
+    with db.scoped_session() as session:
+        fetch_unavailable_track_ids_in_network(session, redis)
+
     update_tracks_is_available_status(db, redis)
 
     with db.scoped_session() as session:
@@ -382,6 +361,11 @@ def print_dummy_tracks_and_users(db):
 
         print("users")
         print(users)
+
+        nodes = session.query(URSMContentNode).all()
+
+        print("nodes")
+        print(nodes)
 
 
 def _seed_db_with_data(db):
@@ -438,6 +422,8 @@ def _seed_db_with_data(db):
                 "is_current": False,
             },
         ],
+        # Created three defaulted Content Nodes
+        "ursm_content_nodes": [{}, {}, {}],
     }
 
     populate_mock_db(db, test_entities)
