@@ -1,8 +1,14 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
+import { merge } from 'lodash'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { TrackDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
+import {
+  sharedIndexSettings,
+  standardSuggest,
+  standardText,
+} from './sharedIndexSettings'
 
 export class TrackIndexer extends BaseIndexer<TrackDoc> {
   tableName = 'tracks'
@@ -12,7 +18,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
-    settings: {
+    settings: merge(sharedIndexSettings, {
       analysis: {
         tokenizer: {
           comma_tokenizer: {
@@ -34,7 +40,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         number_of_replicas: 0,
         refresh_interval: '5s',
       },
-    },
+    }),
     mappings: {
       dynamic: false,
       properties: {
@@ -48,12 +54,9 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         title: {
           type: 'keyword',
           fields: {
-            searchable: {
-              type: 'text',
-            },
+            searchable: standardText,
           },
         },
-        // description: { type: 'text' },
         length: { type: 'integer' },
         tags: {
           type: 'text',
@@ -72,24 +75,20 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
 
-        suggest: { type: 'search_as_you_type' },
+        suggest: standardSuggest,
 
         user: {
           properties: {
             handle: {
               type: 'keyword',
               fields: {
-                searchable: {
-                  type: 'text',
-                },
+                searchable: standardText,
               },
             },
             name: {
               type: 'keyword',
               fields: {
-                searchable: {
-                  type: 'text',
-                },
+                searchable: standardText,
               },
             },
             location: { type: 'keyword' },

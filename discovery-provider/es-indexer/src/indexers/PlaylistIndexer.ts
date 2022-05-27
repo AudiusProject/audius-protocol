@@ -1,10 +1,15 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { keyBy } from 'lodash'
+import { keyBy, merge } from 'lodash'
 import { dialPg } from '../conn'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { PlaylistDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
+import {
+  sharedIndexSettings,
+  standardSuggest,
+  standardText,
+} from './sharedIndexSettings'
 
 export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
   tableName = 'playlists'
@@ -13,13 +18,13 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.playlists,
-    settings: {
+    settings: merge(sharedIndexSettings, {
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
         refresh_interval: '5s',
       },
-    },
+    }),
     mappings: {
       dynamic: false,
       properties: {
@@ -30,11 +35,11 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         is_album: { type: 'boolean' },
         is_private: { type: 'boolean' },
         is_delete: { type: 'boolean' },
-        suggest: { type: 'search_as_you_type' },
+        suggest: standardSuggest,
         playlist_name: {
           type: 'keyword',
           fields: {
-            searchable: { type: 'text' },
+            searchable: standardText,
           },
         },
         'playlist_contents.track_ids.track': { type: 'keyword' },
@@ -44,13 +49,13 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
             handle: {
               type: 'keyword',
               fields: {
-                searchable: { type: 'text' },
+                searchable: standardText,
               },
             },
             name: {
               type: 'keyword',
               fields: {
-                searchable: { type: 'text' },
+                searchable: standardText,
               },
             },
             location: { type: 'keyword' },

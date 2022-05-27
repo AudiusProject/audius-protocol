@@ -7,7 +7,11 @@ import { UserIndexer } from './indexers/UserIndexer'
 import { PendingUpdates, startListener, takePending } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
-import { getBlocknumberCheckpoints, waitForHealthyCluster } from './conn'
+import {
+  ensureSaneCluterSettings,
+  getBlocknumberCheckpoints,
+  waitForHealthyCluster,
+} from './conn'
 
 export const indexer = {
   playlists: new PlaylistIndexer(),
@@ -31,6 +35,7 @@ async function processPending(pending: PendingUpdates) {
 async function start() {
   const health = await waitForHealthyCluster()
   logger.info(health, 'booting')
+  await ensureSaneCluterSettings()
 
   // create indexes
   const indexers = Object.values(indexer)

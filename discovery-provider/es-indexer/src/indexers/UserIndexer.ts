@@ -1,10 +1,15 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { groupBy, keyBy } from 'lodash'
+import { groupBy, keyBy, merge } from 'lodash'
 import { dialPg } from '../conn'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { UserDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
+import {
+  sharedIndexSettings,
+  standardSuggest,
+  standardText,
+} from './sharedIndexSettings'
 
 export class UserIndexer extends BaseIndexer<UserDoc> {
   tableName = 'users'
@@ -13,34 +18,30 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.users,
-    settings: {
+    settings: merge(sharedIndexSettings, {
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
         refresh_interval: '5s',
       },
-    },
+    }),
     mappings: {
       dynamic: false,
       properties: {
         blocknumber: { type: 'integer' },
         created_at: { type: 'date' },
         wallet: { type: 'keyword' },
-        suggest: { type: 'search_as_you_type' },
+        suggest: standardSuggest,
         handle: {
           type: 'keyword',
           fields: {
-            searchable: {
-              type: 'text',
-            },
+            searchable: standardText,
           },
         },
         name: {
           type: 'keyword',
           fields: {
-            searchable: {
-              type: 'text',
-            },
+            searchable: standardText,
           },
         },
         is_creator: { type: 'boolean' },
