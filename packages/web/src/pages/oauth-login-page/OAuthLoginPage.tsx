@@ -21,12 +21,14 @@ import { useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
+import { Name } from 'common/models/Analytics'
 import { User } from 'common/models/User'
 import { getAccountUser } from 'common/store/account/selectors'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TipProfilePicture } from 'components/tipping/tip-audio/TipProfilePicture'
 import AudiusBackend from 'services/AudiusBackend'
+import { make, useRecord } from 'store/analytics/actions'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { signOut } from 'utils/signOut'
 
@@ -87,6 +89,7 @@ export const OAuthLoginPage = () => {
       document.body.classList.remove(styles.bgWhite)
     }
   }, [])
+  const record = useRecord()
 
   const { search } = useLocation()
   const history = useHistory()
@@ -146,6 +149,24 @@ export const OAuthLoginPage = () => {
     setHasCredentialsError(false)
   }
 
+  const setAndLogGeneralSubmitError = (
+    isUserError: boolean,
+    errorMessage: string
+  ) => {
+    setGeneralSubmitError(errorMessage)
+    record(make(Name.AUDIUS_OAUTH_ERROR, { isUserError, error: errorMessage }))
+  }
+
+  const setAndLogInvalidCredentialsError = () => {
+    setHasCredentialsError(true)
+    record(
+      make(Name.AUDIUS_OAUTH_ERROR, {
+        isUserError: true,
+        error: messages.invalidCredentialsError
+      })
+    )
+  }
+
   const isRedirectValid = useMemo(() => {
     if (redirect_uri) {
       if (parsedRedirectUri == null) {
@@ -196,7 +217,7 @@ export const OAuthLoginPage = () => {
     return null
   }, [originParam])
 
-  let queryParamsError = null
+  let queryParamsError: string | null = null
   if (isRedirectValid === false) {
     queryParamsError = messages.redirectURIInvalidError
   } else if (parsedRedirectUri === 'postmessage' && !parsedOrigin) {
@@ -207,6 +228,26 @@ export const OAuthLoginPage = () => {
   } else if (scope !== 'read') {
     queryParamsError = messages.scopeError
   }
+
+  useEffect(() => {
+    if (!queryParamsError) {
+      record(
+        make(Name.AUDIUS_OAUTH_START, {
+          redirectUriParam:
+            parsedRedirectUri === 'postmessage' ? 'postmessage' : redirect_uri!,
+          originParam: originParam,
+          appNameParam: app_name!
+        })
+      )
+    }
+  }, [
+    app_name,
+    originParam,
+    parsedRedirectUri,
+    queryParamsError,
+    record,
+    redirect_uri
+  ])
 
   const formOAuthResponse = async (account: User) => {
     let email: string
@@ -253,16 +294,17 @@ export const OAuthLoginPage = () => {
     const jwt = await formOAuthResponse(account)
     if (jwt == null) {
       setIsSubmitting(false)
-      setGeneralSubmitError(messages.miscError)
+      setAndLogGeneralSubmitError(false, messages.miscError)
       return
     }
     if (isRedirectValid === true) {
       if (parsedRedirectUri === 'postmessage') {
         if (parsedOrigin) {
           if (!window.opener) {
-            setGeneralSubmitError(messages.noWindowError)
+            setAndLogGeneralSubmitError(false, messages.noWindowError)
             setIsSubmitting(false)
           } else {
+            record(make(Name.AUDIUS_OAUTH_COMPLETE, {}))
             window.opener.postMessage(
               { state, token: jwt },
               parsedOrigin.origin
@@ -270,6 +312,7 @@ export const OAuthLoginPage = () => {
           }
         }
       } else {
+        record(make(Name.AUDIUS_OAUTH_COMPLETE, {}))
         const statePart = state != null ? `state=${state}&` : ''
         const fragment = `#${statePart}token=${jwt}`
         window.location.href = `${redirect_uri}${fragment}`
@@ -279,9 +322,10 @@ export const OAuthLoginPage = () => {
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    record(make(Name.AUDIUS_OAUTH_SUBMIT, { alreadySignedIn: false }))
     clearErrors()
     if (!emailInput || !passwordInput) {
-      setGeneralSubmitError(messages.missingFieldError)
+      setAndLogGeneralSubmitError(true, messages.missingFieldError)
       return
     }
     setIsSubmitting(true)
@@ -290,7 +334,7 @@ export const OAuthLoginPage = () => {
       signInResponse = await AudiusBackend.signIn(emailInput, passwordInput)
     } catch (err) {
       setIsSubmitting(false)
-      setGeneralSubmitError(messages.miscError)
+      setAndLogGeneralSubmitError(false, messages.miscError)
       return
     }
     if (
@@ -307,17 +351,18 @@ export const OAuthLoginPage = () => {
       (signInResponse.error && signInResponse.phase === 'FIND_USER')
     ) {
       setIsSubmitting(false)
-      setGeneralSubmitError(messages.accountIncompleteError)
+      setAndLogGeneralSubmitError(false, messages.accountIncompleteError)
     } else {
       setIsSubmitting(false)
-      setHasCredentialsError(true)
+      setAndLogInvalidCredentialsError()
     }
   }
 
   const handleAlreadySignedInAuthorizeSubmit = () => {
     clearErrors()
+    record(make(Name.AUDIUS_OAUTH_SUBMIT, { alreadySignedIn: true }))
     if (!account) {
-      setGeneralSubmitError(messages.miscError)
+      setAndLogGeneralSubmitError(false, messages.miscError)
     } else {
       setIsSubmitting(true)
       authAndRedirect(account)
