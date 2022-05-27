@@ -1,4 +1,5 @@
 'use strict'
+
 module.exports = (sequelize, DataTypes) => {
   const SolanaNotification = sequelize.define('SolanaNotification', {
     id: {
@@ -9,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     type: {
       type: DataTypes.ENUM({
-        values: ['ChallengeReward', 'MilestoneListen']
+        values: ['ChallengeReward', 'MilestoneListen', 'TipSend', 'TipReceive', 'Reaction', 'SupporterRankUp', 'SupportingRankUp']
       }),
       allowNull: false
     },
@@ -40,8 +41,18 @@ module.exports = (sequelize, DataTypes) => {
     slot: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [{
+      fields: ["((metadata->'tipTxSignature'))"],
+      unique: false,
+      name: 'solana_notifications_metadata_tip_tx_signature_idx'
+    }]
+  })
 
   SolanaNotification.associate = function (models) {
     SolanaNotification.hasMany(models.SolanaNotificationAction, {

@@ -116,3 +116,17 @@ challenge_response = ns.model(
         "metadata": fields.Raw(required=True),
     },
 )
+
+decoded_user_token = ns.model(
+    "decoded_user_token",
+    {
+        "userId": fields.String(required=True),
+        "email": fields.String(required=True),
+        "name": fields.String(required=True),
+        "handle": fields.String(required=True),
+        "verified": fields.Boolean(required=True),
+        "imageUrl": fields.String(required=False),
+        "sub": fields.String(required=True),
+        "iat": fields.String(required=True),
+    },
+)

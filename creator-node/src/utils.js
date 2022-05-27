@@ -7,6 +7,7 @@ const stream = require('stream')
 const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
+const { logger: genericLogger } = require('./logging.js')
 
 const models = require('./models')
 const redis = require('./redis')
@@ -28,12 +29,12 @@ class Utils {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
+  /**
+   * Generates a random number from [0, max)
+   * @param {number} max the max random number. exclusive
+   */
   static getRandomInt(max) {
     return Math.floor(Math.random() * max)
-  }
-
-  static randomIntFromIntervalInclusive(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min)
   }
 }
 
@@ -354,26 +355,35 @@ function currentNodeShouldHandleTranscode({
  *
  * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
- * @param {Object} param.logger
  * @param {func} param.asyncFn the fn to asynchronously retry
- * @param {string} param.asyncFnLabel the task label used to print on retry. used for debugging purposes
  * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
  * @param {number} [param.options.factor=2] the exponential factor
  * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
  * @param {number} [param.options.minTimeout=1000] minimum number of ms to wait after first retry. defaulted to 1000ms
  * @param {number} [param.options.maxTimeout=5000] maximum number of ms between two retries. defaulted to 5000ms
  * @param {func} [param.options.onRetry] fn that gets called per retry
+ * @param {Object} param.logger
+ * @param {Boolean} param.log enables/disables logging
+ * @param {string?} param.logLabel
  * @returns the fn response if success, or throws an error
  */
-function asyncRetry({ logger, asyncFn, asyncFnLabel, options = {} }) {
+function asyncRetry({
+  asyncFn,
+  options = {},
+  logger = genericLogger,
+  log = true,
+  logLabel = null
+}) {
   options = {
     retries: 5,
     factor: 2,
     minTimeout: 1000,
     maxTimeout: 5000,
     onRetry: (err, i) => {
-      if (err) {
-        logger.warn(`${asyncFnLabel} ${i} retry error: `, err)
+      if (err && log) {
+        const logPrefix =
+          (logLabel ? `[${logLabel}] ` : '') + `[asyncRetry] [attempt #${i}]`
+        logger.warn(`${logPrefix}: `, err)
       }
     },
     ...options

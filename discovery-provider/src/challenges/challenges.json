@@ -80,5 +80,12 @@
 		"amount": "100",
 		"active": true,
 		"starting_block": 25346436
+	},
+	{
+		"id": "send-first-tip",
+		"type": "boolean",
+		"amount": 3,
+		"active": true,
+		"starting_block": 0
 	}
 ]

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+mkdir -p /var/log
+mkdir -p /var/spool/rsyslog
+mkdir -p /etc/rsyslog.d
+
 if [[ -z "$audius_loggly_disable" ]]; then
     if [[ -n "$audius_loggly_token" ]]; then
         # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
@@ -21,10 +25,6 @@ if [[ -z "$audius_loggly_disable" ]]; then
             # then we add tag=\" to the start and \" to the end
         fi
 
-        mkdir -p /var/log
-        mkdir -p /var/spool/rsyslog
-        mkdir -p /etc/rsyslog.d
-
         cat >/etc/rsyslog.d/10-loggly.conf <<EOF
 \$WorkDirectory /var/spool/rsyslog  # where to place spool files
 \$ActionQueueFileName loggly        # unique name prefix for spool files
@@ -39,8 +39,10 @@ template(name="LogglyFormat" type="string"
 # Send messages to Loggly over TCP using the template.
 action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
 EOF
+    fi
+fi
 
-        cat >/etc/rsyslog.d/20-file.conf <<EOF
+cat >/etc/rsyslog.d/20-file.conf <<EOF
 \$WorkDirectory /var/spool/rsyslog  # where to place spool files
 \$ActionQueueFileName file          # unique name prefix for spool files
 \$ActionQueueMaxDiskSpace 1g        # 1gb space limit (use as much as possible)
@@ -57,9 +59,7 @@ if \$programname == 'worker' then :omfile:\$worker_log
 if \$programname == 'beat' then   :omfile:\$beat_log
 EOF
 
-        rsyslogd
-    fi
-fi
+rsyslogd
 
 if [ -z "$audius_redis_url" ]; then
     redis-server --daemonize yes

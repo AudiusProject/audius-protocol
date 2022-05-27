@@ -519,9 +519,9 @@ def process_solana_rewards_manager(
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
-        latest_global_slot = solana_client_manager.get_block_height()
+        latest_global_slot = solana_client_manager.get_slot()
     except:
-        logger.error("index_rewards_manager.py | Failed to get block height")
+        logger.error("index_rewards_manager.py | Failed to get slot")
 
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(

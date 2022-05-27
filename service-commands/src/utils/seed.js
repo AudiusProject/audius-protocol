@@ -62,7 +62,7 @@ const getLibsConfig = overrideConfig => {
       rewardsManagerProgramId: SOLANA_REWARDS_MANAGER_PROGRAM_ID,
       rewardsManagerProgramPDA: SOLANA_REWARDS_MANAGER_PROGRAM_PDA,
       rewardsManagerTokenPDA: SOLANA_REWARDS_MANAGER_TOKEN_PDA,
-      useRelay: false,
+      useRelay: true,
       feePayerSecretKeys: SOLANA_FEE_PAYER_SECRET_KEYS
     }),
     isServer: true,
