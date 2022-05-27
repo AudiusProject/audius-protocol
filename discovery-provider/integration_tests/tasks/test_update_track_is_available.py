@@ -40,7 +40,6 @@ def test_query_registered_content_node_info(app):
         db = get_db()
 
     _seed_db_with_data(db)
-    print_dummy_tracks_and_users(db)
 
     with db.scoped_session() as session:
         content_nodes = query_registered_content_node_info(session)
@@ -338,34 +337,6 @@ def test_update_track_is_available(
         # Check that the 'is_available' value is True
         for track in tracks:
             assert track[1] == True
-
-
-def print_dummy_tracks_and_users(db):
-    with db.scoped_session() as session:
-        # tracks = session.query(Track.track_id, Track.owner_id, Track.is_current, Track.is_available).all()
-        tracks = (
-            session.query(
-                Track.track_id, Track.txhash, Track.is_current, Track.is_available
-            )
-            .filter(Track.is_current == True)
-            .all()
-        )
-
-        print("tracks")
-        tracks.sort(key=lambda entry: entry[0])
-        print(tracks)
-
-        users = session.query(
-            User.user_id, User.primary_id, User.secondary_ids, User.is_current
-        ).all()
-
-        print("users")
-        print(users)
-
-        nodes = session.query(URSMContentNode).all()
-
-        print("nodes")
-        print(nodes)
 
 
 def _seed_db_with_data(db):
