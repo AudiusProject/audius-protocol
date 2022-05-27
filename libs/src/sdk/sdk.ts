@@ -4,9 +4,7 @@ import {
 } from '../services/discoveryProvider'
 import { EthContracts, EthContractsConfig } from '../services/ethContracts'
 import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
-// import { Hedgehog, HedgehogConfig } from '../services/hedgehog'
 import { IdentityService } from '../services/identity'
-// import { Web3Manager, Web3ManagerConfig } from '../services/web3Manager'
 import { UserStateManager } from '../userStateManager'
 
 import {
@@ -16,12 +14,9 @@ import {
   ETH_REGISTRY_ADDRESS,
   ETH_TOKEN_ADDRESS,
   IDENTITY_SERVICE_ENDPOINT,
-  // REGISTRY_ADDRESS,
   WORMHOLE_ADDRESS
 } from './constants'
 import { oauth } from './oauth'
-
-// TODO: move everything out of index file
 
 type Web3Config = {
   providers: string[]
@@ -32,9 +27,7 @@ type SdkConfig = {
   discoveryNodeConfig?: DiscoveryProviderConfig
   ethContractsConfig?: EthContractsConfig
   ethWeb3Config?: EthWeb3Config
-  // hedgehogConfig?: HedgehogConfig
   identityServiceConfig?: IdentityService
-  // web3ManagerConfig?: Web3ManagerConfig
   web3Config?: Web3Config
 }
 
@@ -43,14 +36,12 @@ type SdkConfig = {
  */
 export const sdk = async (config?: SdkConfig) => {
   const {
-    // appName,
     discoveryNodeConfig,
     ethContractsConfig,
     ethWeb3Config,
-    // hedgehogConfig,
     identityServiceConfig
-    // web3Config
   } = config ?? {}
+
   /** Initialize services */
 
   const userStateManager = new UserStateManager()
@@ -60,14 +51,6 @@ export const sdk = async (config?: SdkConfig) => {
     ...identityServiceConfig
   })
 
-  // const hedgehogService = new Hedgehog({
-  //   identityService,
-  //   useLocalStorage: true,
-  //   ...hedgehogConfig
-  // })
-
-  // const hedgehog = hedgehogService.instance
-
   const ethWeb3Manager = new EthWeb3Manager({
     identityService,
     web3Config: {
@@ -76,22 +59,6 @@ export const sdk = async (config?: SdkConfig) => {
       providers: formatProviders(ethWeb3Config?.providers ?? ETH_PROVIDER_URLS)
     }
   })
-
-  // TODO: support external web3
-  // const web3Manager = new Web3Manager({
-  //   web3Config: {
-  //     useExternalWeb3: false,
-  //     internalWeb3Config: {
-  //       web3ProviderEndpoints: formatProviders(
-  //         web3Config?.providers ?? ETH_PROVIDER_URLS
-  //       )
-  //     }
-  //   },
-  //   identityService,
-  //   hedgehog
-  // })
-  // await web3Manager.init()
-  // identityService.setWeb3Manager(web3Manager)
 
   const ethContracts = new EthContracts({
     ethWeb3Manager,
@@ -108,6 +75,8 @@ export const sdk = async (config?: SdkConfig) => {
     ...discoveryNodeConfig
   })
 
+  // TODO: potentially don't await this and have a different method (callback/event) to
+  // know when the sdk is initialized
   await discoveryNode.init()
 
   return {
