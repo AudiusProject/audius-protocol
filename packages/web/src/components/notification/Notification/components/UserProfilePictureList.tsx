@@ -1,5 +1,7 @@
 import React from 'react'
 
+import cn from 'classnames'
+
 import { User } from 'common/models/User'
 import { formatCount } from 'common/utils/formatUtil'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -28,6 +30,7 @@ type UserProfileListProps = {
   disableProfileClick?: boolean
   disablePopover?: boolean
   stopPropagation?: boolean
+  profilePictureClassname?: string
 }
 
 export const UserProfilePictureList = ({
@@ -36,7 +39,8 @@ export const UserProfilePictureList = ({
   limit = USER_LENGTH_LIMIT,
   disableProfileClick = false,
   disablePopover = false,
-  stopPropagation = false
+  stopPropagation = false,
+  profilePictureClassname
 }: UserProfileListProps) => {
   const showUserListModal = totalUserCount > limit
   const remainingUsersCount = totalUserCount - limit
@@ -49,7 +53,7 @@ export const UserProfilePictureList = ({
         .map(user => (
           <ProfilePicture
             key={user.user_id}
-            className={styles.profilePicture}
+            className={cn(styles.profilePicture, profilePictureClassname)}
             user={user}
             disableClick={disableProfileClick}
             disablePopover={disablePopover}
@@ -61,7 +65,10 @@ export const UserProfilePictureList = ({
           <div className={styles.profilePictureExtraRoot}>
             <ProfilePicture
               disablePopover
-              className={styles.profilePictureExtra}
+              className={cn(
+                styles.profilePictureExtra,
+                profilePictureClassname
+              )}
               user={users[limit]}
             />
             <span className={styles.profilePictureCount}>

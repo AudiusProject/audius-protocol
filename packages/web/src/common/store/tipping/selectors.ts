@@ -30,3 +30,4 @@ export const getRecentTips = (state: CommonState) => state.tipping.recentTips
 export const getTipToDisplay = (state: CommonState) =>
   state.tipping.tipToDisplay
 export const getShowTip = (state: CommonState) => state.tipping.showTip
+export const getMainUser = (state: CommonState) => state.tipping.mainUser

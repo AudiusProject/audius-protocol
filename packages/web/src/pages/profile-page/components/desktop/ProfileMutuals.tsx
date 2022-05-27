@@ -42,6 +42,7 @@ const Mutuals = ({
           users={followers}
           totalUserCount={followers.length}
           limit={MAX_MUTUALS}
+          profilePictureClassname={styles.profilePictureWrapper}
         />
         <div className={styles.viewAll}>
           <span>{messages.viewAll}</span>

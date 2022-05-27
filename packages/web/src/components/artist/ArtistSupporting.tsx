@@ -107,6 +107,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
         totalUserCount={supporting_count}
         disableProfileClick
         disablePopover
+        profilePictureClassname={styles.profilePictureWrapper}
       />
     </div>
   ) : null

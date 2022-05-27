@@ -69,6 +69,7 @@
 .topSupportersContainer {
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
+  transition: all 0.18s ease-in-out 0s;
 }
 .tileContainer:hover,
 .topSupportersContainer:hover {
@@ -128,10 +129,12 @@
   border-top-left-radius: 8px;
 }
 
-.profilePicture {
+.profilePictureContainer {
   position: relative;
   top: -74px;
-  left: 8px;
+}
+.profilePicture {
+  margin-left: 8px;
   margin-bottom: 4px;
   height: 40px;
   border-radius: 40px;
@@ -141,12 +144,17 @@
   background-repeat: no-repeat;
   background-color: var(--default-profile-picture-background);
 }
+.profilePictureWrapper {
+  width: 39px;
+  height: 39px;
+}
+.profilePictureWrapper:hover {
+  transform: none;
+}
 
 .name {
-  position: relative;
-  top: -78px;
   padding-left: 8px;
-  height: 29px;
+  height: 25px;
   background: linear-gradient(
     180deg,
     rgba(0, 0, 0, 0.02) 30%,

@@ -48,16 +48,11 @@ const UserList = (props: UserListProps) => {
             })}
           >
             <ArtistChip
-              userId={user.user_id}
-              name={user.name}
-              handle={user.handle}
-              profilePictureSizes={user._profile_picture_sizes}
-              followers={user.follower_count}
+              user={user}
               onClickArtistName={() => {
                 props.onClickArtistName(user.handle)
               }}
               showPopover={!props.isMobile}
-              doesFollowCurrentUser={user.does_follow_current_user}
               tag={props.tag}
               className={styles.artistChipContainer}
             />
