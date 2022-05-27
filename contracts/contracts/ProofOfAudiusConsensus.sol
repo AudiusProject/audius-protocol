@@ -14,6 +14,10 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
         address ownerKey;
         // Index into current validators
         uint index;
+        // Is this a validator.
+        bool isValidator;
+        // Is a validator finalized.
+        bool isValidatorFinalized;
     }
 
     mapping (address => ValidatorState) validatorState;
@@ -56,7 +60,9 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
             currentValidators.push(_miningKeys[i]);
             validatorState[_miningKeys[i]] = ValidatorState({
                 ownerKey: _ownerKeys[i],
-                index: i
+                index: i,
+                isValidator: true,
+                isValidatorFinalized: true
             });
         }
 
@@ -72,6 +78,12 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
     function finalizeChange() public onlySystemAndNotFinalized {
         finalized = true;
         currentValidators = pendingList;
+
+        for (uint256 i = 0; i < currentValidators.length; i++) {
+            validatorState[currentValidators[i]].isValidator = true;
+            validatorState[currentValidators[i]].isValidatorFinalized = true;
+        }
+
         emit ChangeFinalized(currentValidators);
     }
 
@@ -83,7 +95,9 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
         require(validatorState[_miningKey].ownerKey == address(0x00), "Already set");
         validatorState[_miningKey] = ValidatorState({
             ownerKey: _ownerWallet,
-            index: pendingList.length
+            index: pendingList.length,
+            isValidator: true,
+            isValidatorFinalized: false
         });
         pendingList.push(_ownerWallet);
         finalized = false;
@@ -108,6 +122,8 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
 
         validatorState[_miningKey].ownerKey = address(0x00);
         validatorState[_miningKey].index = 0;
+        validatorState[_miningKey].isValidator = false;
+        validatorState[_miningKey].isValidatorFinalized = false;
 
         finalized = false;
 
@@ -120,11 +136,19 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
     }
 
     function getPendingList() public view returns (address[] memory) {
-        return currentValidators;
+        return pendingList;
     }
 
     function getValidatorOwner(address _validator) public view returns (address) {
         return validatorState[_validator].ownerKey;
+    }
+
+    function isValidator(address _miningKey) public view returns(bool) {
+        return validatorState[_miningKey].isValidator;
+    }
+
+    function isValidatorFinalized(address _miningKey) public view returns(bool) {
+        return validatorState[_miningKey].isValidatorFinalized;
     }
 
 }

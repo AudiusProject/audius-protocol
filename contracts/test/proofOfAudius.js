@@ -70,32 +70,46 @@ contract.only('ProofOfAudius', async (accounts) => {
        await poaContract.seedValidators(miningKeys, ownerWallets, { from: seedAddress })
        await poaContract.testSetSystemAddress(testSystemAddress)
 
-       console.log(await poaContract.systemAddress())
-
        let newValidatorMiningKey = accounts[12]
        let newValidatorOwnerKey = accounts[13]
 
-       console.log(await poaContract.getValidators())
+    //    console.log(await poaContract.getValidators())
 
+        console.log('--Initial')
+        console.log(await poaContract.isValidator(newValidatorMiningKey))
+        console.log(await poaContract.isValidatorFinalized(newValidatorMiningKey))
        await poaContract.addValidator(
            newValidatorMiningKey,
            newValidatorOwnerKey
         )
 
-        await poaContract.finalizeChange({
+        console.log(await poaContract.isValidator(newValidatorMiningKey))
+        console.log(await poaContract.isValidatorFinalized(newValidatorMiningKey))
+        console.log('--Added')
+
+        let tx = await poaContract.finalizeChange({
             from: testSystemAddress
         })
+        console.log('--Finalized:')
+        // console.log(tx)
 
-        console.log(await poaContract.getValidators())
+        // console.log(await poaContract.getValidators())
+        console.log(await poaContract.isValidator(newValidatorMiningKey))
+        console.log(await poaContract.isValidatorFinalized(newValidatorMiningKey))
+        console.log('--')
 
         await poaContract.removeValidator(
-            miningKeys[2]
+            newValidatorMiningKey
         )
 
         await poaContract.finalizeChange({
             from: testSystemAddress
         })
 
-        console.log(await poaContract.getValidators())
+        console.log(await poaContract.isValidator(newValidatorMiningKey))
+        console.log(await poaContract.isValidatorFinalized(newValidatorMiningKey))
+        console.log('--')
+
+        // console.log(await poaContract.getValidators())
    })
 })
