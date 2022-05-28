@@ -133,8 +133,18 @@ const streamFromFileSystem = async (
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
+/**
+ * Check the storage paths (new and legacy) for the CID.
+ * @param {Object} param
+ * @param {string} param.CID the observed CID
+ * @param {Object} param.logger the logger object
+ * @param {string} param.logPrefix the prefix string that gets printed with the log
+ * @returns {Object}
+ *  foundFile: true or false flag if file is found
+ *  checkStorageResponse: checkStoragePathForFile response
+ *  errors: string[] of error messages
+ */
 const checkStoragePathsForFile = async ({ CID, logger, logPrefix }) => {
-  // Check file existence on fs with new storage path pattern
   const storagePaths = getStoragePaths({ CID, logger: logger, logPrefix })
 
   // Check file existence in storage paths. Exit for-loop immediately when file exists
@@ -216,6 +226,11 @@ const checkStoragePathForFile = async (CID, storagePath) => {
   return { fsStats, storagePath, fileIsEmpty: false }
 }
 
+/**
+ * Checks whether or not the CID exists in the db
+ * @param {string} CID the observed CID
+ * @returns the query result if found, or null
+ */
 const checkDbForStoragePath = async (CID) => {
   const queryResults = await models.File.findOne({
     where: {
@@ -286,11 +301,11 @@ const getCID = async (req, res) => {
 
   // At this point, the file does not exist in the fs in the new nor legacy storage paths.
   if (fileIsEmpty) {
-    // Remove file if it is empty and shouldn't be
     req.logger.warn(
       `${logPrefix} File is empty but should not be. Removing file..`
     )
 
+    // Remove file since it is empty and shouldn't be
     try {
       await fs.unlink(storagePathWhereFileExists)
     } catch (e) {
