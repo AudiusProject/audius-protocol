@@ -158,6 +158,34 @@ const checkStoragePathsForFile = async ({CID, logger, logPrefix}) => {
 }
 
 /**
+ * Retrieves the new and legacy storage paths for a given CID
+ * @param {string} CID
+ * @param {Object} logger
+ * @param {string} logPrefix
+ * @returns array of storage paths
+ */
+ function getStoragePaths({ CID, logger, logPrefix }) {
+  const storagePaths = []
+  try {
+    const storagePath = DiskManager.computeFilePath(CID, false)
+    storagePaths.push(storagePath)
+  } catch (e) {
+    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
+  }
+
+  try {
+    const storagePath = DiskManager.computeLegacyFilePath(CID)
+    storagePaths.push(storagePath)
+  } catch (e) {
+    logger.warn(
+      `${logPrefix} Could not compute legacy storage path: ${e.message}`
+    )
+  }
+
+  return storagePaths
+}
+
+/**
  * Checks to see if the path exists and has content on fs. If path turns out to
  * be a directory, not a proper file, or an empty file, mark as error in checking.
  * @param {string} storagePath path to check
@@ -447,34 +475,6 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
     logger.error(errMsg)
     throw new Error(errMsg)
   }
-}
-
-/**
- * Retrieves the new and legacy storage paths for a given CID
- * @param {string} CID
- * @param {Object} logger
- * @param {string} logPrefix
- * @returns array of storage paths
- */
-function getStoragePaths({ CID, logger, logPrefix }) {
-  const storagePaths = []
-  try {
-    const storagePath = DiskManager.computeFilePath(CID, false)
-    storagePaths.push(storagePath)
-  } catch (e) {
-    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
-  }
-
-  try {
-    const storagePath = DiskManager.computeLegacyFilePath(CID)
-    storagePaths.push(storagePath)
-  } catch (e) {
-    logger.warn(
-      `${logPrefix} Could not compute legacy storage path: ${e.message}`
-    )
-  }
-
-  return storagePaths
 }
 
 /**
