@@ -186,7 +186,7 @@ async function findCIDInNetwork(
     } catch (e) {
       // Do not error and stop the flow of execution for functions that call it
       logger.error(
-        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
+        `findCIDInNetwork fetch error from ${contentNodeEndpoint} - ${e.toString()}`
       )
       continue
     }

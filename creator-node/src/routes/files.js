@@ -135,7 +135,7 @@ const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 const checkStoragePathsForFile = async ({ CID, logger, logPrefix }) => {
   // Check file existence on fs with new storage path pattern
-  const storagePaths = getStoragePaths({ CID, logger: req.logger, logPrefix })
+  const storagePaths = getStoragePaths({ CID, logger: logger, logPrefix })
 
   // Check file existence in storage paths. Exit for-loop immediately when file exists
   const errors = []
@@ -145,11 +145,11 @@ const checkStoragePathsForFile = async ({ CID, logger, logPrefix }) => {
     if (foundFile) break
 
     try {
-      checkStorageResponse = await checkStoragePathForFile(storagePath)
+      checkStorageResponse = await checkStoragePathForFile(CID, storagePath)
       foundFile = true
     } catch (e) {
       const errorMsg = `Failed storage check with path ${storagePath}: ${e.message}`
-      req.logger.warn(`${logPrefix} ${errorMsg}`)
+      logger.warn(`${logPrefix} ${errorMsg}`)
       errors.push(errorMsg)
     }
   }
@@ -188,9 +188,10 @@ function getStoragePaths({ CID, logger, logPrefix }) {
 /**
  * Checks to see if the path exists and has content on fs. If path turns out to
  * be a directory, not a proper file, or an empty file, mark as error in checking.
+ * @param {string} CID the observed CID
  * @param {string} storagePath path to check
  */
-const checkStoragePathForFile = async (storagePath) => {
+const checkStoragePathForFile = async (CID, storagePath) => {
   let fsStats
   try {
     fsStats = await fs.stat(storagePath)
