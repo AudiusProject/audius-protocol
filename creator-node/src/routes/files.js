@@ -133,28 +133,28 @@ const streamFromFileSystem = async (
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
-const checkStoragePathsForFile = async ({CID, logger, logPrefix}) => {
-    // Check file existence on fs with new storage path pattern
-    const storagePaths = getStoragePaths({ CID, logger: req.logger, logPrefix })
+const checkStoragePathsForFile = async ({ CID, logger, logPrefix }) => {
+  // Check file existence on fs with new storage path pattern
+  const storagePaths = getStoragePaths({ CID, logger: req.logger, logPrefix })
 
-    // Check file existence in storage paths. Exit for-loop immediately when file exists
-    const errors = []
-    let foundFile = false
-    let checkStorageResponse
-    for (const storagePath of storagePaths) {
-      if (foundFile) break
-  
-      try {
-        checkStorageResponse = await checkStoragePathForFile(storagePath)
-        foundFile = true
-      } catch (e) {
-        const errorMsg = `Failed storage check with path ${storagePath}: ${e.message}`
-        req.logger.warn(`${logPrefix} ${errorMsg}`)
-        errors.push(errorMsg)
-      }
+  // Check file existence in storage paths. Exit for-loop immediately when file exists
+  const errors = []
+  let foundFile = false
+  let checkStorageResponse
+  for (const storagePath of storagePaths) {
+    if (foundFile) break
+
+    try {
+      checkStorageResponse = await checkStoragePathForFile(storagePath)
+      foundFile = true
+    } catch (e) {
+      const errorMsg = `Failed storage check with path ${storagePath}: ${e.message}`
+      req.logger.warn(`${logPrefix} ${errorMsg}`)
+      errors.push(errorMsg)
     }
+  }
 
-    return { foundFile, checkStorageResponse, errors }
+  return { foundFile, checkStorageResponse, errors }
 }
 
 /**
@@ -164,7 +164,7 @@ const checkStoragePathsForFile = async ({CID, logger, logPrefix}) => {
  * @param {string} logPrefix
  * @returns array of storage paths
  */
- function getStoragePaths({ CID, logger, logPrefix }) {
+function getStoragePaths({ CID, logger, logPrefix }) {
   const storagePaths = []
   try {
     const storagePath = DiskManager.computeFilePath(CID, false)
@@ -266,12 +266,12 @@ const getCID = async (req, res) => {
     )
   }
 
-  const { foundFile, checkStorageResponse, errors } = await checkStoragePathsForFile({
-    CID,
-    logger: req.logger,
-    logPrefix
-  })
-
+  const { foundFile, checkStorageResponse, errors } =
+    await checkStoragePathsForFile({
+      CID,
+      logger: req.logger,
+      logPrefix
+    })
 
   if (!foundFile) {
     return sendResponse(req, res, errorResponseBadRequest(errors.toString()))
@@ -286,7 +286,9 @@ const getCID = async (req, res) => {
   // At this point, the file does not exist in the fs in the new nor legacy storage paths.
   if (fileIsEmpty) {
     // Remove file if it is empty and shouldn't be
-    req.logger.warn(`${logPrefix} File is empty but should not be. Removing file..`)
+    req.logger.warn(
+      `${logPrefix} File is empty but should not be. Removing file..`
+    )
 
     try {
       await fs.unlink(storagePathWhereFileExists)
@@ -336,7 +338,9 @@ const getCID = async (req, res) => {
 
     try {
       codeBlockTimeStart = getStartTime()
-      req.logger.warn(`${logPrefix} File exists in db. Attempting to fetch from Content Node network..`)
+      req.logger.warn(
+        `${logPrefix} File exists in db. Attempting to fetch from Content Node network..`
+      )
       const found = await findCIDInNetwork(
         storagePathWhereFileExists,
         CID,
