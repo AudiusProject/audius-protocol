@@ -54,6 +54,7 @@ export const ExpandableBio = () => {
   const [fullBioHeight, setFullBioHeight] = useState(0)
   const hasSites = Boolean(website || donation)
   const [shouldShowMore, setShouldShowMore] = useState(hasSites)
+  const [isHeightCalculationDone, setIsHeightCalculationDone] = useState(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
 
   const handleBioLayout = useCallback(
@@ -62,8 +63,11 @@ export const ExpandableBio = () => {
 
       if (!fullBioHeight) {
         setFullBioHeight(height)
-      } else if (fullBioHeight > height) {
-        setShouldShowMore(true)
+      } else {
+        if (fullBioHeight > height) {
+          setShouldShowMore(true)
+        }
+        setIsHeightCalculationDone(true)
       }
     },
     [fullBioHeight]
@@ -95,15 +99,23 @@ export const ExpandableBio = () => {
             pointerEvents='box-none'
             style={styles.bioContainer}
           >
-            <Hyperlink
-              source='profile page'
-              style={[
-                styles.bioText,
-                { height: fullBioHeight && !isExpanded ? 32 : 'auto' }
-              ]}
-              text={squashNewLines(bio) ?? ''}
-              allowPointerEventsToPassThrough
-            />
+            {!isHeightCalculationDone || (shouldShowMore && !isExpanded) ? (
+              <Text
+                style={[
+                  styles.bioText,
+                  { height: fullBioHeight ? 32 : 'auto' }
+                ]}
+              >
+                {squashNewLines(bio)}
+              </Text>
+            ) : (
+              <Hyperlink
+                source='profile page'
+                style={[styles.bioText]}
+                text={squashNewLines(bio) ?? ''}
+                allowPointerEventsToPassThrough
+              />
+            )}
           </View>
         ) : null}
         {hasSites && isExpanded ? <Sites /> : null}
