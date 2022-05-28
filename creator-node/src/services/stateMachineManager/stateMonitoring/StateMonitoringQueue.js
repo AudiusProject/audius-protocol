@@ -179,6 +179,7 @@ class StateMonitoringQueue {
   }
 
   async processJob(job) {
+    this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
     const {
       id: jobId,
       data: {
@@ -188,12 +189,6 @@ class StateMonitoringQueue {
         currentModuloSlice
       }
     } = job
-
-    try {
-      this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
-    } catch (e) {
-      this.logError(`Failed to log details for jobId=${jobId}: ${e}`)
-    }
 
     // Default results of this job will be passed to the next job, so default to failure
     let result = {

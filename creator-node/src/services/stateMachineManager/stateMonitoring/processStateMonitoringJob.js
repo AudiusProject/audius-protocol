@@ -1,12 +1,10 @@
 const config = require('../../../config')
 const { logger } = require('../../../logging')
 const NodeHealthManager = require('../CNodeHealthManager')
-const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap,
-  aggregateReconfigAndPotentialSyncOps
+  computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
 const {
   retrieveClockStatusesForUsersAcrossReplicaSet
@@ -26,13 +24,13 @@ const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
  * @param {number} currentModuloSlice (DEPRECATED)
  * @return {Object} { lastProcessedUserId (number), jobFailed (boolean) }
  */
-const processStateMonitoringJob = async (
+module.exports = async function (
   jobId,
   lastProcessedUserId,
   discoveryNodeEndpoint,
   moduloBase, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
   currentModuloSlice // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-) => {
+) {
   // Record all stages of this function along with associated information for use in logging
   const decisionTree = []
   _addToDecisionTree(decisionTree, jobId, 'BEGIN processStateMonitoringJob', {
@@ -46,6 +44,9 @@ const processStateMonitoringJob = async (
 
   let jobFailed = false
   let nodeUsers = []
+  let unhealthyPeers = new Set()
+  let replicaSetNodesToUserClockStatusesMap = {}
+  let userSecondarySyncMetricsMap = {}
   // New DN versions support pagination, so we fall back to modulo slicing for old versions
   // TODO: Remove modulo supports once all DNs update to include https://github.com/AudiusProject/audius-protocol/pull/3071
   try {
@@ -85,7 +86,6 @@ const processStateMonitoringJob = async (
       )
     }
 
-    let unhealthyPeers
     try {
       unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(nodeUsers)
       _addToDecisionTree(decisionTree, jobId, 'getUnhealthyPeers Success', {
@@ -117,7 +117,6 @@ const processStateMonitoringJob = async (
     )
 
     // Retrieve clock statuses for all users and their current replica sets
-    let replicaSetNodesToUserClockStatusesMap
     try {
       // Set mapping of replica endpoint to (mapping of wallet to clock value)
       const clockStatusResp =
@@ -151,7 +150,6 @@ const processStateMonitoringJob = async (
     }
 
     // Retrieve success metrics for all users syncing to their secondaries
-    let userSecondarySyncMetricsMap = {}
     try {
       userSecondarySyncMetricsMap =
         await computeUserSecondarySyncSuccessRatesMap(nodeUsers)
@@ -176,25 +174,6 @@ const processStateMonitoringJob = async (
         'processStateMonitoringJob computeUserSecondarySyncSuccessRatesMap Error'
       )
     }
-
-    // Find sync requests that need to be issued and ReplicaSets that need to be updated
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
-        THIS_CNODE_ENDPOINT
-      )
-    _addToDecisionTree(
-      decisionTree,
-      jobId,
-      'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
-      {
-        requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps?.length,
-        potentialSyncRequestsLength: potentialSyncRequests?.length
-      }
-    )
   } catch (e) {
     logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
     jobFailed = true
@@ -211,7 +190,11 @@ const processStateMonitoringJob = async (
   }
   return {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
-    jobFailed
+    jobFailed,
+    nodeUsers,
+    unhealthyPeers,
+    replicaSetNodesToUserClockStatusesMap,
+    userSecondarySyncMetricsMap
   }
 }
 
@@ -275,5 +258,3 @@ const sliceUsers = (nodeUsers, moduloBase, currentModuloSlice) => {
     (nodeUser) => nodeUser.user_id % moduloBase === currentModuloSlice
   )
 }
-
-module.exports = processStateMonitoringJob

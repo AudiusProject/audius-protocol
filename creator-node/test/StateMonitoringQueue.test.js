@@ -137,7 +137,7 @@ describe('test StateMonitoringQueue initialization, logging, and events', functi
   })
 
   it('returns default result when processing a job fails or logging fails', async function () {
-    // Mock StateMonitoringQueue to have processStateMonitoringJob return dummy data
+    // Mock StateMonitoringQueue to have processStateMonitoringJob reject the promise
     const logErrorStub = sandbox.stub()
     const processStateMonitoringJobStub = sandbox.stub().rejects('test error')
     const MockStateMonitoringQueue = proxyquire(

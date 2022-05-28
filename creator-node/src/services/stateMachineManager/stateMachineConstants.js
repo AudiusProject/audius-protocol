@@ -7,6 +7,10 @@ module.exports = {
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to delay starting the first job in the StateMonitoringQueue (30 seconds)
   STATE_MONITORING_QUEUE_INIT_DELAY_MS: 1000 * 30,
+  // Name of StateReconciliationQueue
+  STATE_RECONCILIATION_QUEUE_NAME: 'state-reconciliation-queue',
+  // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
+  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to timeout request for getting users who have a node as their primary/secondary (60 seconds)
   GET_NODE_USERS_TIMEOUT_MS: 1000 * 60,
   // Millis to forcibly cancel getNodeUsers request if axios timeout doesn't work (70 seconds)
