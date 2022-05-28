@@ -133,13 +133,36 @@ const streamFromFileSystem = async (
 
 const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
+const checkStoragePathsForFile = async ({CID, logger, logPrefix}) => {
+    // Check file existence on fs with new storage path pattern
+    const storagePaths = getStoragePaths({ CID, logger: req.logger, logPrefix })
+
+    // Check file existence in storage paths. Exit for-loop immediately when file exists
+    const errors = []
+    let foundFile = false
+    let checkStorageResponse
+    for (const storagePath of storagePaths) {
+      if (foundFile) break
+  
+      try {
+        checkStorageResponse = await checkStoragePathForFile(storagePath)
+        foundFile = true
+      } catch (e) {
+        const errorMsg = `Failed storage check with path ${storagePath}: ${e.message}`
+        req.logger.warn(`${logPrefix} ${errorMsg}`)
+        errors.push(errorMsg)
+      }
+    }
+
+    return { foundFile, checkStorageResponse, errors }
+}
+
 /**
  * Checks to see if the path exists and has content on fs. If path turns out to
  * be a directory, not a proper file, or an empty file, mark as error in checking.
  * @param {string} storagePath path to check
  */
 const checkStoragePathForFile = async (storagePath) => {
-  let fileIsEmpty = false
   let fsStats
   try {
     fsStats = await fs.stat(storagePath)
@@ -153,11 +176,7 @@ const checkStoragePathForFile = async (storagePath) => {
     }
 
     if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
-      // Remove file if it is empty and force fetch from CN network
-      await fs.unlink(storagePath)
-
-      fileIsEmpty = true
-      fsStats = null
+      return { fsStats: null, storagePath, fileIsEmpty: true }
     }
   } catch (e) {
     throw new Error(
@@ -165,7 +184,7 @@ const checkStoragePathForFile = async (storagePath) => {
     )
   }
 
-  return { fsStats, storagePath, fileIsEmpty }
+  return { fsStats, storagePath, fileIsEmpty: false }
 }
 
 const checkDbForStoragePath = async (CID) => {
@@ -219,24 +238,14 @@ const getCID = async (req, res) => {
     )
   }
 
-  // Check file existence on fs with new storage path pattern
-  const storagePaths = getStoragePaths({ CID, logger: req.logger, logPrefix })
+  const { foundFile, checkStorageResponse, errors } = await checkStoragePathsForFile({
+    CID,
+    logger: req.logger,
+    logPrefix
+  })
 
-  // Check file existence in storage paths. Exit for-loop immediately when file exists
-  const errors = []
-  let checkStorageResponse
-  for (const storagePath of storagePaths) {
-    try {
-      checkStorageResponse = await checkStoragePathForFile(storagePath)
-      break
-    } catch (e) {
-      const errorMsg = `Failed attempt with path ${storagePath}: ${e.message}`
-      req.logger.warn(`${logPrefix} ${errorMsg}`)
-      errors.push(errorMsg)
-    }
-  }
 
-  if (errors.length > 0) {
+  if (!foundFile) {
     return sendResponse(req, res, errorResponseBadRequest(errors.toString()))
   }
 
@@ -248,12 +257,21 @@ const getCID = async (req, res) => {
 
   // At this point, the file does not exist in the fs in the new nor legacy storage paths.
   if (fileIsEmpty) {
-    req.logger.warn('File is empty. Attempting to fetch from CN network..')
+    // Remove file if it is empty and shouldn't be
+    req.logger.warn(`${logPrefix} File is empty but should not be. Removing file..`)
+
+    try {
+      await fs.unlink(storagePathWhereFileExists)
+    } catch (e) {
+      req.logger.warn(`${logPrefix} Could not remove file: ${e.message}`)
+    }
 
     // The DB existence is the source of truth whether content should live in in the node.
     // If found in DB, query the CN network for the content and serve. Else, respond with 404
 
     try {
+      req.logger.warn(`${logPrefix} Checking db for file existence..`)
+
       codeBlockTimeStart = getStartTime()
       const queryResults = await checkDbForStoragePath(CID)
       logInfoWithDuration(
@@ -290,6 +308,7 @@ const getCID = async (req, res) => {
 
     try {
       codeBlockTimeStart = getStartTime()
+      req.logger.warn(`${logPrefix} File exists in db. Attempting to fetch from Content Node network..`)
       const found = await findCIDInNetwork(
         storagePathWhereFileExists,
         CID,
@@ -299,7 +318,7 @@ const getCID = async (req, res) => {
       )
       logInfoWithDuration(
         { logger: req.logger, startTime: codeBlockTimeStart },
-        `${logPrefix} Found cid from network: ${found}`
+        `${logPrefix} Found CID from network: ${found}`
       )
 
       if (!found) {
