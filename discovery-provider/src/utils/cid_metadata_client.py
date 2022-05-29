@@ -207,6 +207,7 @@ class CIDMetadataClient:
         cid_type: Dict[str, str],
         should_fetch_from_replica_set: bool = True,
     ):
+        logger.info(f"fetch_metadata_from_gateway_endpoints cids_txhash_set: {cids_txhash_set}, keys: {fetched_cids}")
         return asyncio.run(
             self._fetch_metadata_from_gateway_endpoints(
                 fetched_cids,

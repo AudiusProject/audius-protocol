@@ -343,6 +343,7 @@ def fetch_cid_metadata(
                 should_fetch_from_replica_set=True,
             )
         )
+        logger.info(f"fetch_metadata_from_gateway_endpoints 1 cid_metadata: {cid_metadata}")
     except asyncio.TimeoutError:
         # swallow exception on first attempt fetching from replica set
         pass
@@ -359,8 +360,10 @@ def fetch_cid_metadata(
                 should_fetch_from_replica_set=False,
             )
         )
+        logger.info(f"fetch_metadata_from_gateway_endpoints 2 cid_metadata: {cid_metadata}")
 
     if cid_type and len(cid_metadata) != len(cid_type.keys()):
+        logger.info(f"fetch_metadata_from_gateway_endpoints cid_type: {cid_type}, cid_metadata: {cid_metadata}") 
         missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
         raise Exception(missing_cids_msg)
 
