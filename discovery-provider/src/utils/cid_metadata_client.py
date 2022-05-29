@@ -143,15 +143,18 @@ class CIDMetadataClient:
                     futures.append(future)
 
             try:
+                logger.info(f"CIDMetadataClient | waiting for get metadata async")
                 for future in asyncio.as_completed(
                     futures, timeout=GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS
                 ):
                     try:
                         future_result = await future
+                        logger.info("CIDMetadataClient | awaited future")
                     except asyncio.CancelledError:
                         pass  # swallow canceled requests
 
                     if not future_result:
+                        logger.info("CIDMetadataClient | no future result")
                         continue
 
                     cid, metadata_json = future_result
@@ -166,13 +169,18 @@ class CIDMetadataClient:
                     formatted_json = self._get_metadata_from_json(
                         metadata_format, metadata_json
                     )
+                    logger.info(
+                        f"CIDMetadataClient | formatted_json {formatted_json}, cid: {cid}"
+                    )
 
                     if formatted_json != metadata_format:
+                        logger.info(f"CIDMetadataClient | metadata not equal, cid: {cid}")
                         cid_metadata[cid] = formatted_json
 
                         if len(fetched_cids) + len(cid_metadata) == len(
                             cids_txhash_set
                         ):
+                            logger.info(f"CIDMetadataClient | length match break, cid: {cid}")
                             break  # fetched all metadata
 
                         for other_future in cid_futures_map[cid]:
