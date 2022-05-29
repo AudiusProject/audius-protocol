@@ -227,6 +227,7 @@ class CIDMetadataClient:
         cid_type: Dict[str, str],
     ) -> Dict[str, Dict]:
         cid_metadata: Dict[str, Dict] = {}
+        logger.info(f"async_fetch_metadata_from_gateway_endpoints cids_txhash_set: {cids_txhash_set}, keys: {cid_metadata.keys()}")
 
         # first attempt - fetch all CIDs from replica set
         try:
@@ -241,6 +242,7 @@ class CIDMetadataClient:
                     should_fetch_from_replica_set=True,
                 )
             )
+            logger.info(f"async_fetch_metadata_from_gateway_endpoints 1 cid_metadata: {cid_metadata}")
         except asyncio.TimeoutError:
             # swallow exception on first attempt fetching from replica set
             pass
@@ -257,7 +259,9 @@ class CIDMetadataClient:
                     should_fetch_from_replica_set=False,
                 )
             )
+            logger.info(f"async_fetch_metadata_from_gateway_endpoints 2 cid_metadata: {cid_metadata}")
 
+        logger.info(f"async_fetch_metadata_from_gateway_endpoints cid_type: {cid_type}, cid_metadata: {cid_metadata}")
         if cid_type and len(cid_metadata) != len(cid_type.keys()):
             missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
             raise Exception(missing_cids_msg)
