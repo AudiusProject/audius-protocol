@@ -1,5 +1,3 @@
-[![Coverage Status](https://coveralls.io/repos/github/AudiusProject/audius-protocol/badge.svg)](https://coveralls.io/github/AudiusProject/audius-protocol)
-
 An Audius Content Node (previously known as Creator Node) maintains the availability of content on Audius's decentralized network. The information stored includes Audius user metadata, images, and audio content. The content is backed by either aws S3 or a local directory.
 
 To blacklist content on an already running node:
