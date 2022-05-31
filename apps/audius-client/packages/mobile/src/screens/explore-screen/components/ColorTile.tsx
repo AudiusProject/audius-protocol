@@ -149,7 +149,7 @@ export const ColorTile = ({
   const handlePress = useCallback(() => {
     if (screen) {
       navigation.push({
-        native: { screen, params: undefined },
+        native: { screen },
         web: { route: link }
       })
     }

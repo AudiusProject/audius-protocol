@@ -50,18 +50,18 @@ export const getEntityScreen = (
     case Entity.Track:
       return {
         screen: 'Track' as const,
-        params: { id: entity.track_id, ...contextualParams }
+        params: { id: entity?.track_id, ...contextualParams }
       }
     case Entity.User:
       return {
         screen: 'Profile' as const,
-        params: { handle: entity.handle, ...contextualParams }
+        params: { handle: entity?.handle, ...contextualParams }
       }
     case Entity.Album:
     case Entity.Playlist:
       return {
         screen: 'Collection' as const,
-        params: { id: entity.playlist_id, ...contextualParams }
+        params: { id: entity?.playlist_id, ...contextualParams }
       }
   }
 }

@@ -52,7 +52,8 @@ export const TrackScreen = () => {
   const navigation = useNavigation()
   const { params } = useRoute<'Track'>()
 
-  const { searchTrack } = params
+  // params is incorrectly typed and can sometimes be undefined
+  const { searchTrack } = params ?? {}
 
   const cachedTrack = useSelectorWeb(
     state => getTrack(state, params),

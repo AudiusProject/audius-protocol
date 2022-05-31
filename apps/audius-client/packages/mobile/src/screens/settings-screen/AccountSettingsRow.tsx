@@ -32,7 +32,7 @@ export const AccountSettingsRow = () => {
 
   const handlePress = useCallback(() => {
     navigation.push({
-      native: { screen: 'AccountSettingsScreen', params: undefined },
+      native: { screen: 'AccountSettingsScreen' },
       web: { route: '/settings/account' }
     })
   }, [navigation])
