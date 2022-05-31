@@ -87,14 +87,14 @@ export const useAppScreenOptions = (
 
   const handlePressHome = useCallback(() => {
     navigation.navigate({
-      native: { screen: 'trending', params: undefined },
+      native: { screen: 'trending' },
       web: { route: 'trending' }
     })
   }, [navigation])
 
   const handlePressSearch = useCallback(() => {
     navigation.push({
-      native: { screen: 'Search', params: undefined }
+      native: { screen: 'Search' }
     })
   }, [navigation])
 

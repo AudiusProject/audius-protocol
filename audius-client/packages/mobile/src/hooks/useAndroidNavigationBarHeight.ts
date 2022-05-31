@@ -1,20 +1,15 @@
-import { useEffect, useState } from 'react'
-
-import { Dimensions } from 'react-native'
+import { Dimensions, Platform } from 'react-native'
 import { getNavigationBarHeight } from 'react-native-android-navbar-height'
+import { useAsync } from 'react-use'
 
 export const useAndroidNavigationBarHeight = () => {
-  const [androidNavigationBarHeight, setAndroidNavigationBarHeight] = useState(
-    0
-  )
+  const { value: androidNavigationBarHeight = 0 } = useAsync(async () => {
+    if (Platform.OS === 'android') {
+      const scale = Dimensions.get('screen').scale
+      const navigationBarHeight = await getNavigationBarHeight()
+      return navigationBarHeight / scale
+    }
+  })
 
-  const getAndroidNavigationBarHeight = async () => {
-    const scale = Dimensions.get('screen').scale
-    const navigationBarHeight = await getNavigationBarHeight()
-    setAndroidNavigationBarHeight(navigationBarHeight / scale)
-  }
-  useEffect(() => {
-    getAndroidNavigationBarHeight()
-  }, [])
   return androidNavigationBarHeight
 }

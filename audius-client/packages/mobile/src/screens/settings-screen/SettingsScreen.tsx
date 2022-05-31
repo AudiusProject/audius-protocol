@@ -46,21 +46,21 @@ export const SettingsScreen = () => {
 
   const handlePressHistory = useCallback(() => {
     navigation.push({
-      native: { screen: 'ListeningHistoryScreen', params: undefined },
+      native: { screen: 'ListeningHistoryScreen' },
       web: { route: '/history' }
     })
   }, [navigation])
 
   const handlePressNotifications = useCallback(() => {
     navigation.push({
-      native: { screen: 'NotificationSettingsScreen', params: undefined },
+      native: { screen: 'NotificationSettingsScreen' },
       web: { route: '/settings/notifications' }
     })
   }, [navigation])
 
   const handlePressAbout = useCallback(() => {
     navigation.push({
-      native: { screen: 'AboutScreen', params: undefined },
+      native: { screen: 'AboutScreen' },
       web: { route: '/settings/about' }
     })
   }, [navigation])

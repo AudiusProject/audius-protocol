@@ -23,6 +23,7 @@ import { makeStyles } from 'app/styles'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { NotificationBlock } from './NotificationBlock'
+import { NotificationErrorBoundary } from './NotificationErrorBoundary'
 import { NotificationListItem } from './NotificationListItem'
 
 const NOTIFICATION_PAGE_SIZE = 10
@@ -93,7 +94,9 @@ export const NotificationList = () => {
           {isTippingEnabled ? (
             <NotificationListItem notification={item} />
           ) : (
-            <NotificationBlock notification={item} />
+            <NotificationErrorBoundary>
+              <NotificationBlock notification={item} />
+            </NotificationErrorBoundary>
           )}
         </View>
       )}
