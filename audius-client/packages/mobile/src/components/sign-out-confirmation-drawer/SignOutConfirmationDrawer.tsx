@@ -1,9 +1,12 @@
+import { useCallback } from 'react'
+
 import { signOut } from 'audius-client/src/common/store/sign-out/slice'
 import { View } from 'react-native'
 
 import { Button, Text } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer/AppDrawer'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import useSearchHistory from 'app/store/search/hooks'
 import { makeStyles } from 'app/styles'
 
 const MODAL_NAME = 'SignOutConfirmation'
@@ -17,7 +20,7 @@ const messages = {
     'Double check that you have an account recovery email just in case (resend from your settings).'
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   contentContainer: {
     paddingHorizontal: spacing(6),
     paddingBottom: spacing(4)
@@ -34,13 +37,16 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 export const SignOutConfirmationDrawer = () => {
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
+  const { clearHistory } = useSearchHistory()
 
   const { onClose } = useDrawerState(MODAL_NAME)
 
-  const handleSignOut = () => {
+  const handleSignOut = useCallback(() => {
     dispatchWeb(signOut)
+    // TODO: move to the sign-out saga when store migrated to react-native
+    clearHistory()
     onClose()
-  }
+  }, [dispatchWeb, clearHistory, onClose])
 
   return (
     <AppDrawer modalName={MODAL_NAME} title={messages.drawerTitle}>
