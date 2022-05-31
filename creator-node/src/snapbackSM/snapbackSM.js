@@ -10,7 +10,8 @@ const redis = require('../redis.js')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
-const { CreatorNode } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const CreatorNode = libs.CreatorNode
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 const {

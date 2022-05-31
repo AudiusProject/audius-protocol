@@ -1,4 +1,4 @@
-const AudiusLibs = require('@audius/libs')
+const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
