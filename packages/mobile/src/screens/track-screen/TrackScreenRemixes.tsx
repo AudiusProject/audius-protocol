@@ -22,6 +22,9 @@ type TrackScreenRemixesProps = {
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+  root: {
+    marginBottom: spacing(6)
+  },
   tile: {
     padding: spacing(6)
   },
@@ -68,7 +71,7 @@ export const TrackScreenRemixes = ({
   const styles = useStyles()
   const { pageHeaderGradientColor2 } = useThemeColors()
   return (
-    <Tile styles={{ tile: styles.tile }}>
+    <Tile styles={{ root: styles.root, tile: styles.tile }}>
       <View style={styles.header}>
         <IconRemix style={styles.iconRemix} fill={pageHeaderGradientColor2} />
         <GradientText style={styles.headerText}>{messages.title}</GradientText>
