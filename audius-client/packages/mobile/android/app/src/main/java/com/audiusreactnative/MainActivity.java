@@ -25,8 +25,8 @@ public class MainActivity extends ReactActivity {
   }
 
   @Override
-  protected void onCreate(@Nullable Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(null);
 
     // lazy load Google Cast context
     CastContext.getSharedInstance(this);
