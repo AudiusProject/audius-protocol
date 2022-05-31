@@ -13,7 +13,7 @@ import {
   Genre,
   GENRES
 } from 'audius-client/src/common/utils/genres'
-import { FlatList, View } from 'react-native'
+import { FlatList, Keyboard, View } from 'react-native'
 
 import { TextInput, Button } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
@@ -70,6 +70,7 @@ export const TrendingFilterDrawer = () => {
         dispatchWeb(trendingWeekActions.reset())
         dispatchWeb(trendingMonthActions.reset())
         dispatchWeb(trendingAllTimeActions.reset())
+        Keyboard.dismiss()
         onClose()
       }
 
@@ -93,6 +94,7 @@ export const TrendingFilterDrawer = () => {
           onChangeText={setSearchValue}
         />
         <FlatList
+          keyboardShouldPersistTaps='handled'
           data={genres}
           renderItem={({ item: genre }) => {
             const isSelected =
