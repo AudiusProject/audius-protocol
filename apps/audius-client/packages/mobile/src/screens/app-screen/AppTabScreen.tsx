@@ -24,7 +24,8 @@ import {
   FollowersScreen,
   FollowingScreen,
   RepostsScreen,
-  NotificationUsersScreen
+  NotificationUsersScreen,
+  MutualsScreen
 } from 'app/screens/user-list-screen'
 import { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
@@ -45,6 +46,7 @@ export type AppTabScreenParamList = {
   Reposts: { id: ID; repostType: RepostType }
   Followers: { userId: ID }
   Following: { userId: ID }
+  Mutuals: { userId: ID }
   Search: undefined
   SearchResults: { query: string }
   SupportingUsers: { userId: ID }
@@ -197,8 +199,8 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           options={screenOptions}
         />
         <Stack.Screen
-          name='Reposts'
-          component={RepostsScreen}
+          name='Mutuals'
+          component={MutualsScreen}
           options={screenOptions}
         />
         <Stack.Screen
@@ -207,6 +209,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           options={screenOptions}
         />
       </Stack.Group>
+      <Stack.Screen
+        name='Reposts'
+        component={RepostsScreen}
+        options={screenOptions}
+      />
       <Stack.Screen
         name='TipArtist'
         component={TipArtistModal}
