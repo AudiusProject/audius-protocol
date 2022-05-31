@@ -127,15 +127,15 @@ export function* fetchNotifications(
     const timeOffset = lastNotification
       ? lastNotification.timestamp
       : moment().toISOString()
-    const withRewards = remoteConfigInstance.getFeatureEnabled(
-      FeatureFlags.REWARDS_NOTIFICATIONS_ENABLED
+    const withTips = remoteConfigInstance.getFeatureEnabled(
+      FeatureFlags.TIPPING_ENABLED
     )
     const notificationsResponse: NotificationsResponse = yield call(
       AudiusBackend.getNotifications,
       {
         limit,
         timeOffset,
-        withRewards
+        withTips
       }
     )
     if ('error' in notificationsResponse) {
@@ -464,8 +464,8 @@ export function* getNotifications(isFirstFetch: boolean) {
       )
       if (!hasAccount) return
       const timeOffset = moment().toISOString()
-      const withRewards = remoteConfigInstance.getFeatureEnabled(
-        FeatureFlags.REWARDS_NOTIFICATIONS_ENABLED
+      const withTips = remoteConfigInstance.getFeatureEnabled(
+        FeatureFlags.TIPPING_ENABLED
       )
 
       const notificationsResponse:
@@ -473,7 +473,7 @@ export function* getNotifications(isFirstFetch: boolean) {
         | undefined = yield call(AudiusBackend.getNotifications, {
         limit,
         timeOffset,
-        withRewards
+        withTips
       })
       if (
         !notificationsResponse ||
