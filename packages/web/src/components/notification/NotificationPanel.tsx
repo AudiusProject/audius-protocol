@@ -55,7 +55,7 @@ type NotificationPanelProps = {
 
 // The threshold of distance from the bottom of the scroll container in the
 // notification panel before requesting `loadMore` for more notifications
-const SCROLL_THRESHOLD = 400
+const SCROLL_THRESHOLD = 1000
 
 /** The notification panel displays the list of notifications w/ a
  * summary of each notification and a link to open the full
