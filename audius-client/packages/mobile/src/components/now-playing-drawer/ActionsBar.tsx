@@ -1,10 +1,11 @@
-import { useCallback } from 'react'
+import { useCallback, useLayoutEffect } from 'react'
 
 import {
   FavoriteSource,
   RepostSource,
   ShareSource
 } from 'audius-client/src/common/models/Analytics'
+import { updateMethod } from 'audius-client/src/common/store/cast/slice'
 import {
   repostTrack,
   saveTrack,
@@ -23,7 +24,7 @@ import {
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { requestOpen as requestOpenShareModal } from 'common/store/ui/share-modal/slice'
-import { View, StyleSheet } from 'react-native'
+import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
@@ -33,50 +34,53 @@ import { useAirplay } from 'app/components/audio/Airplay'
 import { IconButton } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { ThemeColors, useThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    container: {
-      marginTop: 40,
-      height: 48,
-      borderRadius: 10,
-      backgroundColor: themeColors.neutralLight8,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-evenly'
-    },
-    button: {
-      flexGrow: 1,
-      display: 'flex',
-      alignItems: 'center'
-    },
-    animatedIcon: {
-      width: 28,
-      height: 28
-    },
-    icon: {
-      width: 24,
-      height: 24
-    }
-  })
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  container: {
+    marginTop: spacing(10),
+    height: spacing(12),
+    borderRadius: 10,
+    backgroundColor: palette.neutralLight8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly'
+  },
+  button: {
+    flexGrow: 1,
+    alignItems: 'center'
+  },
+  animatedIcon: {
+    width: spacing(7),
+    height: spacing(7)
+  },
+  icon: {
+    width: spacing(6),
+    height: spacing(6)
+  }
+}))
 
 type ActionsBarProps = {
   track: Track
 }
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const currentUserId = useSelectorWeb(getUserId)
   const castMethod = useSelectorWeb(getCastMethod)
   const isCasting = useSelectorWeb(getIsCasting)
   const { neutral, primary } = useThemeColors()
-
   const dispatchWeb = useDispatchWeb()
+
+  useLayoutEffect(() => {
+    if (Platform.OS === 'android' && castMethod === 'airplay') {
+      dispatchWeb(updateMethod({ method: 'chromecast' }))
+    }
+  }, [castMethod, dispatchWeb])
 
   const onToggleFavorite = useCallback(() => {
     if (track) {
