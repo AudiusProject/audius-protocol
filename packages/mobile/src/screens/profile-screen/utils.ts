@@ -1,5 +1,4 @@
 import { badgeTiers } from 'audius-client/src/common/store/wallet/utils'
-import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 
 import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -64,6 +63,6 @@ export const useShouldShowCollectiblesTab = () => {
  * trims both leading and trailing newlines
  * @param {string} str
  */
-export const squashNewLines = (str: Nullable<string>) => {
-  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : str
+export const squashNewLines = (str?: string) => {
+  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : ''
 }
