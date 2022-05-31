@@ -16,13 +16,21 @@ const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
  * Processes a job to monitor the current state of `USERS_PER_JOB` users.
- * Returns the syncs and replica set updates that are required for these users.
+ * Returns state data for the slice of users processed and the Content Nodes affiliated with them.
  * @param {number} jobId the id of the job being run
  * @param {number} lastProcessedUserId the highest ID of the user that was most recently processed
  * @param {string} discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
  * @param {number} moduloBase (DEPRECATED)
  * @param {number} currentModuloSlice (DEPRECATED)
- * @return {Object} { lastProcessedUserId (number), jobFailed (boolean) }
+ * @return {Object} {
+ *   lastProcessedUserId (number),
+ *   jobFailed (boolean),
+ *   users (array of objects),
+ *   unhealthyPeers (set of content node endpoint strings),
+ *   secondarySyncMetrics (object),
+ *   replicaSetNodesToUserClockStatusesMap (object),
+ *   userSecondarySyncMetricsMap (object)
+ * }
  */
 module.exports = async function (
   jobId,
@@ -43,7 +51,7 @@ module.exports = async function (
   })
 
   let jobFailed = false
-  let nodeUsers = []
+  let users = []
   let unhealthyPeers = new Set()
   let replicaSetNodesToUserClockStatusesMap = {}
   let userSecondarySyncMetricsMap = {}
@@ -51,7 +59,7 @@ module.exports = async function (
   // TODO: Remove modulo supports once all DNs update to include https://github.com/AudiusProject/audius-protocol/pull/3071
   try {
     try {
-      nodeUsers = await getNodeUsers(
+      users = await getNodeUsers(
         discoveryNodeEndpoint,
         THIS_CNODE_ENDPOINT,
         lastProcessedUserId,
@@ -61,19 +69,19 @@ module.exports = async function (
       // Backwards compatibility -- DN will return all users if it doesn't have pagination.
       // In that case, we have to manually paginate the full set of users
       // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-      if (nodeUsers.length > USERS_PER_JOB) {
-        nodeUsers = sliceUsers(nodeUsers, moduloBase, currentModuloSlice)
+      if (users.length > USERS_PER_JOB) {
+        users = sliceUsers(users, moduloBase, currentModuloSlice)
       }
 
       _addToDecisionTree(
         decisionTree,
         jobId,
         'getNodeUsers and sliceUsers Success',
-        { nodeUsersLength: nodeUsers?.length }
+        { nodeUsersLength: users?.length }
       )
     } catch (e) {
       // Make the next job try again instead of looping back to userId 0
-      nodeUsers = [{ user_id: lastProcessedUserId }]
+      users = [{ user_id: lastProcessedUserId }]
 
       _addToDecisionTree(
         decisionTree,
@@ -87,7 +95,7 @@ module.exports = async function (
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(nodeUsers)
+      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
       _addToDecisionTree(decisionTree, jobId, 'getUnhealthyPeers Success', {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
@@ -106,7 +114,7 @@ module.exports = async function (
 
     // Build map of <replica set node : [array of wallets that are on this replica set node]>
     const replicaSetNodesToUserWalletsMap =
-      buildReplicaSetNodesToUserWalletsMap(nodeUsers)
+      buildReplicaSetNodesToUserWalletsMap(users)
     _addToDecisionTree(
       decisionTree,
       jobId,
@@ -152,7 +160,7 @@ module.exports = async function (
     // Retrieve success metrics for all users syncing to their secondaries
     try {
       userSecondarySyncMetricsMap =
-        await computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+        await computeUserSecondarySyncSuccessRatesMap(users)
       _addToDecisionTree(
         decisionTree,
         jobId,
@@ -185,13 +193,13 @@ module.exports = async function (
   }
 
   // The next job should start processing where this one ended or loop back around to the first user
-  const lastProcessedUser = nodeUsers[nodeUsers.length - 1] || {
+  const lastProcessedUser = users[users.length - 1] || {
     user_id: 0
   }
   return {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
     jobFailed,
-    nodeUsers,
+    users,
     unhealthyPeers,
     replicaSetNodesToUserClockStatusesMap,
     userSecondarySyncMetricsMap

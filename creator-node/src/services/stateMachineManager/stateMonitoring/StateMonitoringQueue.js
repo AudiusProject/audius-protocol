@@ -10,7 +10,7 @@ const {
 } = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
-const processStateMonitoringJob = require('./processStateMonitoringJob')
+const processStateMonitoringJob = require('./monitorState.jobProcessor')
 
 /**
  * Handles setup and lifecycle management (adding and processing jobs)
@@ -179,7 +179,6 @@ class StateMonitoringQueue {
   }
 
   async processJob(job) {
-    this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
     const {
       id: jobId,
       data: {
@@ -189,6 +188,7 @@ class StateMonitoringQueue {
         currentModuloSlice
       }
     } = job
+    this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
 
     // Default results of this job will be passed to the next job, so default to failure
     let result = {

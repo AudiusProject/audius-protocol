@@ -110,7 +110,7 @@ describe('test StateMonitoringQueue initialization, logging, and events', functi
     const MockStateMonitoringQueue = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue.js',
       {
-        './processStateMonitoringJob': processStateMonitoringJobStub
+        './monitorState.jobProcessor': processStateMonitoringJobStub
       }
     )
 
@@ -143,10 +143,11 @@ describe('test StateMonitoringQueue initialization, logging, and events', functi
     const MockStateMonitoringQueue = proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue.js',
       {
-        './processStateMonitoringJob': processStateMonitoringJobStub,
+        './monitorState.jobProcessor': processStateMonitoringJobStub,
         './../../../logging': {
           logger: {
-            error: logErrorStub
+            error: logErrorStub,
+            info: sandbox.stub()
           }
         }
       }
@@ -170,11 +171,7 @@ describe('test StateMonitoringQueue initialization, logging, and events', functi
       currentModuloSlice: job.data.currentModuloSlice,
       jobFailed: true
     })
-    expect(logErrorStub).to.have.been.calledTwice
-    expect(logErrorStub.getCall(0).args[0]).to.equal(
-      `StateMonitoringQueue ERROR: Failed to log details for jobId=${job.id}: TypeError: logger.info is not a function`
-    )
-    expect(logErrorStub.getCall(1).args[0]).to.equal(
+    expect(logErrorStub).to.have.been.calledOnceWithExactly(
       `StateMonitoringQueue ERROR: Error processing jobId ${job.id}: test error`
     )
   })

@@ -6,12 +6,15 @@ const {
   QUEUE_HISTORY,
   STATE_RECONCILIATION_QUEUE_NAME,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
+  HANDLE_MANUAL_SYNC_REQUEST_QUEUE_NAME,
+  HANDLE_RECURRING_SYNC_REQUEST_QUEUE_NAME,
+  ISSUE_SYNC_REQUESTS_QUEUE_NAME,
+  UPDATE_REPLICA_SETS_QUEUE_NAME,
   SyncType
 } = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
-const { getLatestUserIdFromDiscovery } = require('./StateReconciliationUtils')
 const processIssueSyncRequestsJob = require('./processIssueSyncRequestsJob')
-const processExecuteSyncJob = require('./processExecuteSyncJob')
+const processExecuteSyncJob = require('./handleSyncRequest.jobProcessor')
 const processUpdateReplicaSetsJob = require('./processUpdateReplicaSetsJob')
 
 /**
@@ -22,7 +25,7 @@ const processUpdateReplicaSetsJob = require('./processUpdateReplicaSetsJob')
  * - updating user's replica sets when one or more nodes in their replica set becomes unhealthy
  */
 class StateReconciliationQueue {
-  async init(audiusLibs) {
+  async init() {
     this.queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
@@ -108,7 +111,7 @@ class StateReconciliationQueue {
       this.logError(`stateMachineQueue Job Stalled - ID ${jobId}`)
     })
     queue.on('global:error', (error) => {
-      this.logError(`Queue Job Error - ${error}. Queuing another job...`)
+      this.logError(`Queue Job Error - ${error}`)
     })
 
     // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
@@ -120,29 +123,27 @@ class StateReconciliationQueue {
       )
     })
     queue.on('failed', (job, err) => {
-      this.logError(
-        `Queue Job Failed - ID ${job?.id} - Error ${err}. Queuing another job...`
-      )
+      this.logError(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
     })
 
     // Register the logic that gets executed to process each new job from the queue
     queue.process(
-      'execute-manual-sync',
+      HANDLE_MANUAL_SYNC_REQUEST_QUEUE_NAME,
       config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
     queue.process(
-      'execute-recurring-sync',
+      HANDLE_RECURRING_SYNC_REQUEST_QUEUE_NAME,
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
     queue.process(
-      'issue-sync-requests',
+      ISSUE_SYNC_REQUESTS_QUEUE_NAME,
       1 /** concurrency */,
       processIssueSyncRequests
     )
     queue.process(
-      'update-replica-sets',
+      UPDATE_REPLICA_SETS_QUEUE_NAME,
       1 /** concurrency */,
       processUpdateReplicaSets
     )
@@ -206,7 +207,7 @@ class StateReconciliationQueue {
     } = job
 
     this.log(
-      `New issue-sync-requests job details: jobId=${jobId}, job=${JSON.stringify(
+      `New ${ISSUE_SYNC_REQUESTS_QUEUE_NAME} job details: jobId=${jobId}, job=${JSON.stringify(
         job
       )}`
     )
@@ -222,7 +223,7 @@ class StateReconciliationQueue {
       )
     } catch (error) {
       this.logError(
-        `Error processing issue-sync-requests jobId ${jobId}: ${error}`
+        `Error processing ${ISSUE_SYNC_REQUESTS_QUEUE_NAME} jobId ${jobId}: ${error}`
       )
       result = { error }
     }
@@ -243,7 +244,7 @@ class StateReconciliationQueue {
     } = job
 
     this.log(
-      `New update-replica-sets job details: jobId=${jobId}, job=${JSON.stringify(
+      `New ${UPDATE_REPLICA_SETS_QUEUE_NAME} job details: jobId=${jobId}, job=${JSON.stringify(
         job
       )}`
     )
@@ -260,7 +261,7 @@ class StateReconciliationQueue {
       )
     } catch (error) {
       this.logError(
-        `Error processing update-replica-sets jobId ${jobId}: ${error}`
+        `Error processing ${UPDATE_REPLICA_SETS_QUEUE_NAME} jobId ${jobId}: ${error}`
       )
       result = { error }
     }

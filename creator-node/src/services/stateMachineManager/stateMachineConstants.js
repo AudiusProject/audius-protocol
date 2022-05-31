@@ -9,6 +9,14 @@ module.exports = {
   STATE_MONITORING_QUEUE_INIT_DELAY_MS: 1000 * 30,
   // Name of StateReconciliationQueue
   STATE_RECONCILIATION_QUEUE_NAME: 'state-reconciliation-queue',
+  // Name of queue that handles executing manual syncs on this node
+  HANDLE_MANUAL_SYNC_REQUEST_QUEUE_NAME: 'handle-manual-sync-request',
+  // Name of queue that handles executing recurring syncs on this node
+  HANDLE_RECURRING_SYNC_REQUEST_QUEUE_NAME: 'handle-recurring-sync-request',
+  // Name of queue that issues outgoing sync requests to this node and to other nodes
+  ISSUE_SYNC_REQUESTS_QUEUE_NAME: 'issue-sync-requests',
+  // Name of queue that finds and executes reconfigurations of users' replica sets when they're unhealthy
+  UPDATE_REPLICA_SETS_QUEUE_NAME: 'update-replica-sets',
   // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to timeout request for getting users who have a node as their primary/secondary (60 seconds)
