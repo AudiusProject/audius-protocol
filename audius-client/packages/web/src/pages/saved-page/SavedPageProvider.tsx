@@ -38,6 +38,8 @@ import { profilePage } from 'utils/route'
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
 
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 const messages = {
   title: 'Favorites',
   description: "View tracks that you've favorited"
@@ -78,7 +80,9 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   componentWillUnmount() {
-    this.props.resetSavedTracks()
+    if (!IS_NATIVE_MOBILE) {
+      this.props.resetSavedTracks()
+    }
   }
 
   componentDidUpdate() {
