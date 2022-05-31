@@ -3,7 +3,8 @@ const config = require('./config')
 const {
   requestNotExcludedFromLogging,
   getDuration,
-  createChildLogger
+  createChildLogger,
+  logger: genericLogger
 } = require('./logging')
 const { generateTimestampAndSignature } = require('./apiSigning')
 
@@ -19,7 +20,7 @@ module.exports.handleResponse = (func) => {
       sendResponse(req, res, resp)
       next()
     } catch (error) {
-      console.error('HandleResponse', error)
+      genericLogger.error('HandleResponse', error)
       next(error)
     }
   }
