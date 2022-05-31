@@ -65,7 +65,7 @@ interface Decision {
 
 export class CreatorNodeSelection extends ServiceSelection {
   override decisionTree: Decision[]
-  currentVersion: string = ''
+  currentVersion: string | null = ''
   ethContracts: EthContracts
   creatorNode: CreatorNode
   numberOfNodes: number
@@ -381,7 +381,7 @@ export class CreatorNodeSelection extends ServiceSelection {
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
-          this.currentVersion,
+          this.currentVersion as string,
           resp.response.data.data.version
         )
         const { storagePathSize, storagePathUsed, maxStorageUsedPercent } =
