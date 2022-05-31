@@ -84,6 +84,7 @@ import toastReducer, { ToastState } from 'common/store/ui/toast/slice'
 import favoritesUserListReducer from 'common/store/user-list/favorites/reducers'
 import followersUserListReducer from 'common/store/user-list/followers/reducers'
 import followingUserListReducer from 'common/store/user-list/following/reducers'
+import mutualsUserListReducer from 'common/store/user-list/mutuals/reducers'
 import notificationsUserListReducer from 'common/store/user-list/notifications/reducers'
 import repostsUserListReducer from 'common/store/user-list/reposts/reducers'
 import supportingUserListReducer from 'common/store/user-list/supporting/reducers'
@@ -147,6 +148,7 @@ export const reducers = (ctx: CommonStoreContext) => ({
       following: followingUserListReducer,
       reposts: repostsUserListReducer,
       favorites: favoritesUserListReducer,
+      mutuals: mutualsUserListReducer,
       notifications: notificationsUserListReducer,
       topSupporters: topSupportersUserListReducer,
       supporting: supportingUserListReducer
@@ -227,6 +229,7 @@ export const sagas = (ctx: CommonStoreContext) => ({
   // pages/user-list/following/sagas.ts
   // pages/user-list/reposts/sagas.ts
   // pages/user-list/favorites/sagas.ts
+  // pages/user-list/mutuals/sagas.ts
   // pages/user-list/supporting/sagas.ts
   // pages/user-list/top-supporters/sagas.ts
   // pages/explore-page/store/sagas.ts
@@ -289,6 +292,7 @@ export type CommonState = {
       following: ReturnType<typeof followingUserListReducer>
       reposts: ReturnType<typeof repostsUserListReducer>
       favorites: ReturnType<typeof favoritesUserListReducer>
+      mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>
       topSupporters: ReturnType<typeof topSupportersUserListReducer>
       supporting: ReturnType<typeof supportingUserListReducer>

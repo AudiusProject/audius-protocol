@@ -37,6 +37,7 @@ import feedPageSagas from 'pages/feed-page/store/sagas'
 import followersPageSagas from 'pages/followers-page/sagas'
 import followingPageSagas from 'pages/following-page/sagas'
 import historySagas from 'pages/history-page/store/sagas'
+import mutualsPageSagas from 'pages/mutuals-page/sagas'
 import profileSagas from 'pages/profile-page/sagas'
 import remixesSagas from 'pages/remixes-page/store/sagas'
 import repostPageSagas from 'pages/reposts-page/sagas'
@@ -148,6 +149,7 @@ export default function* rootSaga() {
     followingPageSagas(),
     supportingPageSagas(),
     topSupportersPageSagas(),
+    mutualsPageSagas(),
     notificationUsersPageSagas(),
     remixesSagas(),
     remixSettingsModalSagas(),
