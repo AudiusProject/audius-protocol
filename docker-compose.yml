@@ -21,6 +21,7 @@ services:
         ]
       interval: 5s
       timeout: 5s
+      retries: 10
     deploy:
       mode: global
 
@@ -61,8 +62,8 @@ services:
       context: eth-contracts
       dockerfile: Dockerfile.dev
       args:
-        CONTENT_NODE_VERSION: 0.3.57
-        DISCOVERY_NODE_VERSION: 0.3.57
+        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
+        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
     ports:
@@ -77,6 +78,7 @@ services:
         ]
       interval: 5s
       timeout: 5s
+      retries: 10
     deploy:
       mode: global
 
@@ -117,34 +119,23 @@ services:
       context: solana-programs
       dockerfile: Dockerfile.dev
       args:
-        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_PRIVATE_KEY}"
-        TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_PRIVATE_KEY}"
-        CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_PRIVATE_KEY}"
-        REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_PRIVATE_KEY}"
-        AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_PRIVATE_KEY}"
-        owner_private_key: "${SOLANA_OWNER_PRIVATE_KEY}"
-        feepayer_private_key: "${SOLANA_FEEPAYER_PRIVATE_KEY}"
-        token_private_key: "${SOLANA_TOKEN_MINT_PRIVATE_KEY}"
-        admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_PRIVATE_KEY}"
-        admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_PRIVATE_KEY}"
-        signer_group_private_key: "${SOLANA_SIGNER_GROUP_PRIVATE_KEY}"
-        valid_signer_private_key: "${SOLANA_VALID_SIGNER_PRIVATE_KEY}"
-        reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_PRIVATE_KEY}"
-        reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PRIVATE_KEY}"
-        valid_signer_eth_address: "${SOLANA_VALID_SIGNER_ETH_ADDRESS}"
+        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
+        TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
+        CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
+        REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
+        AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
+        owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
+        feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
+        token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
+        admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
+        admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
+        signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
+        valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
+        reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
+        reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
+        valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
     ports:
       - "8899:8899"
-    healthcheck:
-      # NOTE: The address used below does not matter
-      test:
-        [
-          "CMD",
-          "solana",
-          "balance",
-          "CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU"
-        ]
-      interval: 5s
-      timeout: 5s
     deploy:
       mode: global
 
@@ -207,18 +198,20 @@ services:
       ethOwnerWallet: "${ETH_OWNER_WALLET}"
 
       solanaEndpoint: "http://solana-test-validator:8899"
-      solanaTrackListenCountAddress: "${SOLANA_TRACK_LISTEN_COUNT_ADDRESS}"
-      solanaAudiusEthRegistryAddress: "${SOLANA_AUDIUS_ETH_REGISTRY_ADDRESS}"
-      solanaValidSigner: "${SOLANA_VALID_SIGNER_ADDRESS}"
-      solanaFeePayerWallets: "[{\"privateKey\":${SOLANA_FEEPAYER_PRIVATE_KEY}}]"
-      solanaSignerPrivateKey: "${SOLANA_VALID_SIGNER_ETH_PRIVATE_KEY}"
-      solanaMintAddress: "${SOLANA_TOKEN_MINT_ADDRESS}"
-      solanaClaimableTokenProgramAddress: "${SOLANA_CLAIMABLE_TOKENS_ADDRESS}"
-      solanaRewardsManagerAddress: "${SOLANA_REWARD_MANAGER_ADDRESS}"
-      solanaRewardsManagerProgramPDA: "${SOLANA_REWARD_MANAGER_PDA_ADDRESS}"
-      solanaRewardsManagerTokenPDA: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_ADDRESS}"
-      solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_ADDRESS}"
+      solanaTrackListenCountAddress: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
+      solanaAudiusEthRegistryAddress: "${SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY}"
+      solanaValidSigner: "${SOLANA_VALID_SIGNER_PUBLIC_KEY}"
+      solanaFeePayerWallets: "[{\"privateKey\":${SOLANA_FEEPAYER_SECRET_KEY}}]"
+      solanaSignerPrivateKey: "${ETH_VALID_SIGNER_PRIVATE_KEY}"
+      solanaMintAddress: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      solanaClaimableTokenProgramAddress: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
+      solanaRewardsManagerAddress: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      solanaRewardsManagerProgramPDA: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
+      solanaRewardsManagerTokenPDA: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
+      solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
+      - ./identity-service:/usr/src/app
+      - /usr/src/app/node_modules
       - ./libs:/usr/src/audius-libs
       - poa-contracts-abis:/usr/src/audius-libs/data-contracts/ABIs
       - eth-contracts-abis:/usr/src/audius-libs/eth-contracts/ABIs
@@ -236,6 +229,90 @@ services:
         condition: service_healthy
     deploy:
       mode: global
+
+  # discovery-provider
+
+  discovery-provider:
+    build: discovery-provider
+    command: sh -c ". /tmp/startup/startup.sh && scripts/start.sh"
+    ports:
+      - "5000-5010:5000"
+    environment:
+      audius_web3_host: "poa-ganache"
+      audius_web3_port: "8545"
+      audius_web3_eth_provider_url: "http://eth-ganache:8545"
+      audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
+      audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
+      audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
+
+      audius_solana_endpoint: "http://solana-test-validator:8899"
+      audius_solana_track_listen_count_address: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
+      audius_solana_signer_group_address: "${SOLANA_SIGNER_GROUP_PUBLIC_KEY}"
+      audius_solana_user_bank_program_address: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
+      audius_solana_waudio_mint: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      audius_solana_rewards_manager_program_address: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
+      audius_solana_rewards_manager_account: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
+      audius_solana_anchor_data_program_id: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
+      audius_solana_anchor_admin_storage_public_key: "${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}"
+
+      audius_discprov_dev_mode: "true"
+    volumes:
+      - poa-contracts-abis:/audius-discovery-provider/build/contracts
+      - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
+      - ./dev/startup:/tmp/startup
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+      eth-ganache:
+        condition: service_healthy
+      solana-test-validator:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  # creator-node
+
+  creator-node:
+    build: creator-node
+    command: sh -c ". /tmp/startup/startup.sh && scripts/start.sh"
+    ports:
+      - "4000-4010:4000"
+    environment:
+      logLevel: "debug"
+      devMode: "true"
+      creatorNodeIsDebug: "true"
+      debuggerPort: 10000
+
+      rateLimitingAudiusUserReqLimit: 3000
+      rateLimitingUserReqLimit: 3000
+      rateLimitingMetadataReqLimit: 3000
+      rateLimitingImageReqLimit: 6000
+      rateLimitingTrackReqLimit: 6000
+      rateLimitingBatchCidsExistLimit: 1
+      maxAudioFileSizeBytes: 250000000
+      maxMemoryFileSizeBytes: 50000000
+
+      ethProviderUrl: "http://eth-ganache:8545"
+      ethTokenAddress: "${ETH_TOKEN_ADDRESS}"
+      ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
+      ethOwnerWallet: "${ETH_OWNER_WALLET}"
+
+      dataProviderUrl: "http://poa-ganache:8545"
+      dataRegistryAddress: "${POA_REGISTRY_ADDRESS}"
+    volumes:
+      - ./libs:/usr/src/audius-libs
+      - ./dev/startup:/tmp/startup
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+      eth-ganache:
+        condition: service_healthy
+      solana-test-validator:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 2
 
 volumes:
   poa-contracts-abis:

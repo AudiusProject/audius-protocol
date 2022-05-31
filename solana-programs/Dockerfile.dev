@@ -36,8 +36,7 @@ RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/usr/local/cargo/registry \
     ./scripts/setup-predeployed.sh /usr/db
 
-ARG BUILD_ID
-LABEL prune=true
-LABEL build=$BUILD_ID
+HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
+    CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1
 
 CMD [ "solana-test-validator", "--ledger", "/usr/db" ]

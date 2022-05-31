@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+
+# audius-compose up
+# audius-compose down
+# audius-compose logs
+# audius-compose exec
+
+# audius-cloud create-instance
+# audius-cloud create-image
+
+import subprocess
+import pathlib
+import json
+
+import click
+import eth_account
+import solana.keypair
+
+
+def generate_env(protocol_dir, config):
+    env = {}
+
+    for name, secret_key in config.get("solana-accounts", {}).items():
+        keypair = solana.keypair.Keypair.from_secret_key(bytes(secret_key))
+        env[f"{name}_SECRET_KEY"] = json.dumps(list(keypair.secret_key))
+        env[f"{name}_PUBLIC_KEY"] = keypair.public_key.to_base58()
+
+    for name, private_key in config.get("eth-accounts", {}).items():
+        account = eth_account.Account.from_key(private_key)
+        env[f"{name}_PRIVATE_KEY"] = account.key.hex()
+        env[f"{name}_ADDRESS"] = account.address
+
+    env["CONTENT_NODE_VERSION"] = json.loads(
+        (protocol_dir / "creator-node/.version.json").read_text(),
+    )["version"]
+
+    env["DISCOVERY_NODE_VERSION"] = json.loads(
+        (protocol_dir / "discovery-provider/.version.json").read_text(),
+    )["version"]
+
+    return env
+
+
+@click.group()
+@click.option("--protocol-dir", envvar="PROTOCOL_DIR", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path))
+@click.pass_context
+def cli(ctx, protocol_dir):
+    if protocol_dir is None:
+        protocol_dir = pathlib.Path.cwd().resolve()
+        while protocol_dir.name != "" and not (protocol_dir / "docker-compose.yml").exists():
+            protocol_dir = protocol_dir.parent
+        if protocol_dir.name == "":
+            raise click.ClickException("Unable to find protocol dir")
+        click.confirm(f'Using protocol dir "{protocol_dir}"', default=True, abort=True)
+
+    config = {}
+    if (protocol_dir / "dev/config.json").exists():
+        config = json.load((protocol_dir / "dev/config.json").open())
+    env = generate_env(protocol_dir, config)
+
+    ctx.obj = {
+        "project-directory": protocol_dir,
+        "env": env,
+    }
+
+
+@cli.command()
+@click.pass_obj
+def up(obj):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            obj["project-directory"],
+            "build",
+        ],
+        env=obj["env"],
+    )
+
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            obj["project-directory"],
+            "up",
+            "-d",
+        ],
+        env=obj["env"],
+    )
+
+
+@cli.command()
+@click.pass_obj
+def down(obj):
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            obj["project-directory"],
+            "down",
+            "-v",
+        ],
+        env=obj["env"],
+    )
+
+
+if __name__ == "__main__":
+    cli()
