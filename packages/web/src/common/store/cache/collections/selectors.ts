@@ -106,7 +106,7 @@ export const getTracksFromCollection = (
   // Return tracks & rebuild UIDs for the track so they refer directly to this collection
   return collection.playlist_contents.track_ids
     .map((t, i) => {
-      const trackUid = Uid.fromString(t.uid)
+      const trackUid = Uid.fromString(t.uid ?? '')
       trackUid.source = `${collectionSource}:${trackUid.source}`
       trackUid.count = i
 

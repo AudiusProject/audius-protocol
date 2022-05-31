@@ -76,14 +76,14 @@ export const AccountSettingsScreen = () => {
 
   const handlePressVerification = useCallback(() => {
     navigation.push({
-      native: { screen: 'AccountVerificationScreen', params: undefined },
+      native: { screen: 'AccountVerificationScreen' },
       web: { route: '/settings/account/verification' }
     })
   }, [navigation])
 
   const handlePressChangePassword = useCallback(() => {
     navigation.push({
-      native: { screen: 'ChangePasswordScreen', params: undefined },
+      native: { screen: 'ChangePasswordScreen' },
       web: { route: '/settings/change-password' }
     })
   }, [navigation])

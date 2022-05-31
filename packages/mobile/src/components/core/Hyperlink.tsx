@@ -1,24 +1,12 @@
-import {
-  ComponentProps,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { ComponentProps, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Match } from 'autolinker/dist/es2015'
-import { LayoutRectangle, Linking, Text, View } from 'react-native'
+import { LayoutRectangle, Text, View } from 'react-native'
 import Autolink from 'react-native-autolink'
 
-import { ToastContext } from 'app/components/toast/ToastContext'
 import { makeStyles } from 'app/styles'
-import { EventNames } from 'app/types/analytics'
-import { make, track } from 'app/utils/analytics'
 
-const messages = {
-  error: 'Unable to open this URL'
-}
+import { useOnPressLink } from './Link'
 
 const useStyles = makeStyles(({ palette, typography }) => ({
   root: {
@@ -61,7 +49,6 @@ export const Hyperlink = (props: HyperlinkProps) => {
     ...other
   } = props
   const styles = useStyles()
-  const { toast } = useContext(ToastContext)
 
   const linkContainerRef = useRef<View>(null)
   const linkRefs = useRef<Record<number, Text>>({})
@@ -94,18 +81,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
     }
   }, [linkRefs, linkContainerRef])
 
-  const handlePress = useCallback(
-    async (url: string) => {
-      const supported = await Linking.canOpenURL(url)
-      if (supported) {
-        Linking.openURL(url)
-        track(make({ eventName: EventNames.LINK_CLICKING, url, source }))
-      } else {
-        toast({ content: messages.error, type: 'error' })
-      }
-    },
-    [source, toast]
-  )
+  const handlePress = useOnPressLink(source)
 
   const renderLink = useCallback(
     (text, match, index) => (

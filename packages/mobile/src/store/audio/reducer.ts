@@ -108,13 +108,16 @@ const reducer = (
       // Side-Effect (yes, this shouldn't be in a reducer, but
       // maybe not worth including sagas/thunks)
       if (playing) {
-        track(
-          make({
-            eventName: EventNames.PLAYBACK_PLAY,
-            id: `${state.queue[newIndex].trackId}`,
-            source: PlaybackSource.PASSIVE
-          })
-        )
+        const newTrack = state.queue[newIndex]
+        if (newTrack) {
+          track(
+            make({
+              eventName: EventNames.PLAYBACK_PLAY,
+              id: `${newTrack.trackId}`,
+              source: PlaybackSource.PASSIVE
+            })
+          )
+        }
       }
       return {
         ...state,
@@ -124,18 +127,21 @@ const reducer = (
       }
     }
     case PREVIOUS: {
-      let newIndex = state.index > 0 ? state.index - 1 : -1
+      let newIndex = state.index > 0 ? state.index - 1 : 0
       let newShuffleIndex = state.shuffleIndex
       // Side-Effect (yes, this shouldn't be in a reducer, but
       // maybe not worth including sagas/thunks)
       if (state.playing) {
-        track(
-          make({
-            eventName: EventNames.PLAYBACK_PLAY,
-            id: `${state.queue[newIndex].trackId}`,
-            source: PlaybackSource.PASSIVE
-          })
-        )
+        const newTrack = state.queue[newIndex]
+        if (newTrack) {
+          track(
+            make({
+              eventName: EventNames.PLAYBACK_PLAY,
+              id: `${newTrack.trackId}`,
+              source: PlaybackSource.PASSIVE
+            })
+          )
+        }
       }
       if (state.shuffle) {
         newShuffleIndex =

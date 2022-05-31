@@ -55,7 +55,8 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
 
-  const { id, searchCollection } = params
+  // params is incorrectly typed and can sometimes be undefined
+  const { id, searchCollection } = params ?? {}
 
   const cachedCollection = useSelectorWeb(state =>
     getCollection(state, { id })

@@ -85,14 +85,14 @@ export const ProfileScreen = () => {
 
   const handleNavigateSettings = useCallback(() => {
     navigation.push({
-      native: { screen: 'SettingsScreen', params: undefined },
+      native: { screen: 'SettingsScreen' },
       web: { route: '/settings' }
     })
   }, [navigation])
 
   const handleNavigateAudio = useCallback(() => {
     navigation.push({
-      native: { screen: 'AudioScreen', params: undefined },
+      native: { screen: 'AudioScreen' },
       web: { route: '/audio ' }
     })
   }, [navigation])

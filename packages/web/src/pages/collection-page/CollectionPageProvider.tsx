@@ -239,7 +239,10 @@ class CollectionPage extends Component<
       const collectionId = Uid.fromString(metadata._moved).id
       // TODO: Put fetch collection succeeded and then replace route
       fetchCollectionSucceeded(collectionId, metadata._moved, userUid)
-      const newPath = pathname.replace(`${metadata.playlist_id}`, collectionId)
+      const newPath = pathname.replace(
+        `${metadata.playlist_id}`,
+        collectionId.toString()
+      )
       this.setState(
         {
           playlistId: collectionId,
@@ -920,7 +923,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         socialTracksActions.unsaveTrack(trackId, FavoriteSource.COLLECTION_PAGE)
       ),
     fetchCollectionSucceeded: (
-      collectionId: string,
+      collectionId: ID,
       collectionUid: string,
       userId: string
     ) =>
