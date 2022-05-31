@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
+import { useAppState } from '@react-native-community/hooks'
 import {
   StyleSheet,
   View,
@@ -281,6 +282,24 @@ export const Slider = memo(
         pause()
       }
     }, [isPlaying, play, pause, mediaKey, durationRef])
+
+    const appState = useAppState()
+
+    /**
+     * Ensures the slider handle's position is correctly updated when app
+     * becomes active.
+     */
+    useEffect(() => {
+      if (appState === 'active') {
+        const { currentTime } = global.progress
+        const percentComplete = currentTime / durationRef.current
+        translationAnim.setValue(percentComplete * railWidth)
+        setHandlePosition(percentComplete * railWidth)
+        if (isPlaying && durationRef.current !== undefined) {
+          play((durationRef.current - currentTime) * 1000)
+        }
+      }
+    }, [isPlaying, appState, play, railWidth, translationAnim])
 
     return (
       <View style={styles.root}>
