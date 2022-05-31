@@ -1,6 +1,7 @@
 export * from './FavoritedScreen'
 export * from './FollowersScreen'
 export * from './FollowingScreen'
+export * from './MutualsScreen'
 export * from './NotificationUsersScreen'
 export * from './RepostsScreen'
 export * from './SupportingUsersScreen'

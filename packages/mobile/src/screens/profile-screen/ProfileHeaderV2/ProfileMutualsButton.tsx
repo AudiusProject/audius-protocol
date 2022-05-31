@@ -1,7 +1,12 @@
+import { useCallback } from 'react'
+
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import { Text, Tile } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+
+import { useSelectProfile } from '../selectors'
 
 const messages = {
   mutuals: 'Mutuals'
@@ -20,13 +25,26 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const MutualsButtonTile = () => {
+export const ProfileMutualsButton = () => {
   const styles = useStyles()
   const { neutral } = useThemeColors()
+  const profile = useSelectProfile([
+    'user_id',
+    'current_user_followee_follow_count'
+  ])
+  const { user_id, current_user_followee_follow_count } = profile
+  const navigation = useNavigation()
+
+  const handlePress = useCallback(() => {
+    navigation.navigate({
+      native: { screen: 'Mutuals', params: { userId: user_id } }
+    })
+  }, [navigation, user_id])
 
   return (
     <Tile
       styles={{ root: styles.root, tile: styles.tile, content: styles.content }}
+      onPress={handlePress}
     >
       <IconFollowing
         height={20}
@@ -35,7 +53,7 @@ export const MutualsButtonTile = () => {
         style={styles.icon}
       />
       <Text variant='h3' noGutter>
-        {messages.mutuals}
+        {current_user_followee_follow_count} {messages.mutuals}
       </Text>
     </Tile>
   )
