@@ -109,7 +109,11 @@ export const TracksTab = () => {
   )
 
   return (
-    <WithLoader loading={savedTracksStatus === Status.LOADING}>
+    <WithLoader
+      loading={
+        savedTracksStatus === Status.LOADING && savedTracks.entries.length === 0
+      }
+    >
       <VirtualizedScrollView listKey='favorites-screen'>
         {!savedTracks.entries.length && !filterValue ? (
           <EmptyTab message={messages.emptyTabText} />
