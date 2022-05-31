@@ -828,7 +828,7 @@ export class CreatorNode {
         }
 
         // if the content node returns an invalid auth token error, clear connection and reconnect
-        if (resp?.data?.error?.includes('Invalid authentication token')) {
+        if (resp?.data?.error?.includes?.('Invalid authentication token')) {
           this.clearConnection()
           try {
             await this.ensureConnected()
@@ -994,7 +994,7 @@ export class CreatorNode {
           retries - 1
         )
       } else if (
-        error.response?.data?.error?.includes('Invalid authentication token')
+        error.response?.data?.error?.includes?.('Invalid authentication token')
       ) {
         // if the content node returns an invalid auth token error, clear connection and reconnect
         this.clearConnection()
