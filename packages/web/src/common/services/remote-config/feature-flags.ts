@@ -8,7 +8,6 @@ export enum FeatureFlags {
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
   PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries',
-  REWARDS_NOTIFICATIONS_ENABLED = 'rewards_notifications_enabled',
   ENABLE_SPL_AUDIO = 'enable_spl_audio',
   PLAYLIST_FOLDERS = 'playlist_folders',
   DISABLE_SIGN_UP_CONFIRMATION = 'disable_sign_up_confirmation',
@@ -27,7 +26,6 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true,
-  [FeatureFlags.REWARDS_NOTIFICATIONS_ENABLED]: false,
   [FeatureFlags.ENABLE_SPL_AUDIO]: false,
   [FeatureFlags.PLAYLIST_FOLDERS]: false,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: false,
@@ -59,8 +57,6 @@ export const flagCohortType: {
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]:
     FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]:
-    FeatureFlagCohortType.SESSION_ID,
-  [FeatureFlags.REWARDS_NOTIFICATIONS_ENABLED]:
     FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.ENABLE_SPL_AUDIO]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.PLAYLIST_FOLDERS]: FeatureFlagCohortType.USER_ID,
