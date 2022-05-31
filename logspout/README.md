@@ -1,4 +1,4 @@
-# Build Custom Audius Logstash Sidecar Container
+# Build Custom Audius Logspout Sidecar Container
 
 ```bash
 # .env contains: audius_loggly_token=xxx
