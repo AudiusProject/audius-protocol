@@ -5,6 +5,7 @@ import {
   CastMethod,
   updateMethod
 } from 'audius-client/src/common/store/cast/slice'
+import { getMethod as getCastMethod } from 'common/store/cast/selectors'
 
 import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
 import { SegmentedControl } from 'app/components/core'
@@ -26,6 +27,7 @@ const messages = {
 export const CastSettingsRow = () => {
   const dispatchWeb = useDispatchWeb()
   const accountUser = useSelectorWeb(getAccountUser)
+  const castMethod = useSelectorWeb(getCastMethod)
 
   const setCastMethod = useCallback(
     (method: CastMethod) => {
@@ -53,7 +55,7 @@ export const CastSettingsRow = () => {
         <SegmentedControl
           fullWidth
           options={castOptions}
-          defaultSelected={'airplay'}
+          defaultSelected={castMethod}
           onSelectOption={setCastMethod}
         />
       </SettingsRowContent>
