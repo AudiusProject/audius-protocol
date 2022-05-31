@@ -1,0 +1,93 @@
+import { useCallback } from 'react'
+
+import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
+import { View } from 'react-native'
+
+import { IconAudioBadge, TierText } from 'app/components/audio-rewards'
+import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
+import { Tile, Text } from 'app/components/core'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectTierInfo } from 'app/hooks/useSelectTierInfo'
+import { makeStyles } from 'app/styles/makeStyles'
+
+import { useSelectProfile } from '../selectors'
+
+const messages = {
+  tier: 'tier'
+}
+
+const useStyles = makeStyles(({ spacing, typography, palette }) => ({
+  root: { marginRight: spacing(3) },
+  tile: { height: 50 },
+  content: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 0,
+    paddingHorizontal: spacing(6)
+  },
+  viewContent: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  badge: {
+    marginRight: spacing(2)
+  },
+  tierNumber: {
+    textTransform: 'uppercase',
+    color: palette.neutralLight6
+  },
+  tierText: {
+    fontSize: 18,
+    lineHeight: 20,
+    fontFamily: typography.fontByWeight.heavy,
+    textTransform: 'uppercase'
+  }
+}))
+
+type ProfileTierTileProps = {
+  interactive?: boolean
+}
+
+export const ProfileTierTile = (props: ProfileTierTileProps) => {
+  const { interactive = true } = props
+  const profile = useSelectProfile(['user_id'])
+  const styles = useStyles()
+
+  const { tier, tierNumber } = useSelectTierInfo(profile.user_id)
+
+  const dispatchWeb = useDispatchWeb()
+
+  const handlePress = useCallback(() => {
+    dispatchWeb(setVisibility({ modal: MODAL_NAME, visible: true }))
+  }, [dispatchWeb])
+
+  if (tier === 'none') return null
+
+  const Root = interactive ? Tile : View
+
+  const rootProps = interactive
+    ? {
+        styles: {
+          root: styles.root,
+          tile: styles.tile,
+          content: styles.content
+        },
+        onPress: handlePress
+      }
+    : { style: { ...styles.root, ...styles.viewContent } }
+
+  return (
+    <Root {...rootProps}>
+      <IconAudioBadge tier={tier} height={32} width={32} style={styles.badge} />
+      <View>
+        <Text variant='h3' noGutter style={styles.tierNumber}>
+          {messages.tier} {tierNumber}
+        </Text>
+        <TierText style={styles.tierText} tier={tier}>
+          {tier}
+        </TierText>
+      </View>
+    </Root>
+  )
+}

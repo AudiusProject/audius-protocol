@@ -1,10 +1,10 @@
 import { ComponentProps, useCallback, useEffect, useRef, useState } from 'react'
 
 import { Match } from 'autolinker/dist/es2015'
-import { LayoutRectangle, Text, View } from 'react-native'
+import { LayoutRectangle, Text, TextStyle, View } from 'react-native'
 import Autolink from 'react-native-autolink'
 
-import { makeStyles } from 'app/styles'
+import { makeStyles, StylesProp } from 'app/styles'
 
 import { useOnPressLink } from './Link'
 
@@ -38,6 +38,7 @@ export type HyperlinkProps = ComponentProps<typeof Autolink> & {
   source: 'profile page' | 'track page' | 'collection page'
   // Pass touches through text elements
   allowPointerEventsToPassThrough?: boolean
+  styles?: StylesProp<{ root: TextStyle; link: TextStyle }>
 }
 
 export const Hyperlink = (props: HyperlinkProps) => {
@@ -116,7 +117,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
       >
         <Autolink
           onPress={handlePress}
-          linkStyle={[styles.linkText, styles.link]}
+          linkStyle={[styles.linkText, styles.link, stylesProp?.link]}
           renderLink={allowPointerEventsToPassThrough ? renderLink : undefined}
           email
           url
