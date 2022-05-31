@@ -3,13 +3,15 @@ import { ComponentType } from 'react'
 import { merge } from 'lodash'
 import {
   ButtonProps,
+  TextStyle,
   TouchableOpacity,
-  TouchableOpacityProps
+  TouchableOpacityProps,
+  ViewStyle
 } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
 import { Text } from 'app/components/core'
-import { makeStyles } from 'app/styles'
+import { makeStyles, StylesProp } from 'app/styles'
 
 import { TextProps } from './Text'
 
@@ -48,6 +50,8 @@ type TextButtonProps = TouchableOpacityProps &
     icon?: ComponentType<SvgProps>
     iconPosition?: 'left' | 'right'
     TextProps?: Partial<TextProps>
+    IconProps?: Partial<SvgProps>
+    styles?: StylesProp<{ root: ViewStyle; icon: ViewStyle; text: TextStyle }>
   }
 
 export const TextButton = (props: TextButtonProps) => {
@@ -59,6 +63,8 @@ export const TextButton = (props: TextButtonProps) => {
     style,
     disabled,
     TextProps,
+    IconProps,
+    styles: stylesProp,
     ...other
   } = props
   const styles = useStyles({ variant })
@@ -68,18 +74,26 @@ export const TextButton = (props: TextButtonProps) => {
       height={18}
       width={18}
       fill={styles.icon.fill}
-      style={iconPosition === 'left' ? styles.iconLeft : styles.iconRight}
+      style={[
+        iconPosition === 'left' ? styles.iconLeft : styles.iconRight,
+        stylesProp?.icon
+      ]}
+      {...IconProps}
     />
   ) : null
 
   return (
     <TouchableOpacity
-      style={[styles.root, style]}
+      style={[styles.root, stylesProp?.root, style]}
       disabled={disabled}
       {...other}
     >
       {iconPosition === 'left' ? icon : null}
-      <Text color={variant} style={disabled && styles.disabled} {...TextProps}>
+      <Text
+        color={variant}
+        style={[stylesProp?.text, disabled && styles.disabled]}
+        {...TextProps}
+      >
         {title}
       </Text>
       {iconPosition === 'right' ? icon : null}

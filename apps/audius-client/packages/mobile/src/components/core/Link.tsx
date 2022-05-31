@@ -57,20 +57,24 @@ export const useLink = (url: string) => {
   return { onPress: handlePress }
 }
 
-type LinkProps = PressableProps & {
+export type LinkProps = PressableProps & {
   url: string
+  analytics?: ReturnType<typeof make>
 }
 
 export const Link = (props: LinkProps) => {
-  const { url, onPress, ...other } = props
+  const { url, onPress, analytics, ...other } = props
   const { onPress: onPressLink } = useLink(url)
 
   const handlePress = useCallback(
     (event: GestureResponderEvent) => {
       onPress?.(event)
       onPressLink()
+      if (analytics) {
+        track(analytics)
+      }
     },
-    [onPress, onPressLink]
+    [onPress, onPressLink, analytics]
   )
 
   return <Pressable onPress={handlePress} {...other} />

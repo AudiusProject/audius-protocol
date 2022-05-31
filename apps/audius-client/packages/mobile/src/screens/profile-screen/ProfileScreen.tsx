@@ -8,8 +8,7 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { fetchProfile } from 'audius-client/src/common/store/pages/profile/actions'
 import { getProfileStatus } from 'audius-client/src/common/store/pages/profile/selectors'
 import { requestOpen as requestOpenShareModal } from 'audius-client/src/common/store/ui/share-modal/slice'
-import { Animated, LayoutAnimation, View } from 'react-native'
-import { useToggle } from 'react-use'
+import { Animated, View } from 'react-native'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
@@ -26,31 +25,12 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
-import { ArtistRecommendations } from './ArtistRecommendations/ArtistRecommendations'
-import { CoverPhoto } from './CoverPhoto'
-import { ExpandableBio } from './ExpandableBio'
-import { ProfileInfo } from './ProfileInfo'
-import { ProfileMetrics } from './ProfileMetrics'
-import { ProfilePicture } from './ProfilePicture'
-import { ProfileSocials } from './ProfileSocials'
+import { ProfileHeader } from './ProfileHeader'
+import { ProfileHeaderV2 } from './ProfileHeaderV2'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
-import { TipArtistButton } from './TipArtistButton'
-import { UploadTrackButton } from './UploadTrackButton'
 import { useSelectProfileRoot } from './selectors'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  header: {
-    backgroundColor: palette.neutralLight10,
-    paddingTop: spacing(8),
-    paddingHorizontal: spacing(3),
-    paddingBottom: spacing(3)
-  },
-  profilePicture: {
-    position: 'absolute',
-    top: 37,
-    left: 11,
-    zIndex: 100
-  },
+const useStyles = makeStyles(({ spacing }) => ({
   navigator: {
     height: '100%'
   },
@@ -76,21 +56,20 @@ export const ProfileScreen = () => {
   const dispatchWeb = useDispatchWeb()
   const status = useSelectorWeb(getProfileStatus)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const { neutralLight4, accentOrange } = useThemeColors()
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const { isEnabled: isTippingEnabled } = useFeatureFlag(
     FeatureFlags.TIPPING_ENABLED
   )
 
-  const handleNavigateSettings = useCallback(() => {
+  const handlePressSettings = useCallback(() => {
     navigation.push({
       native: { screen: 'SettingsScreen' },
       web: { route: '/settings' }
     })
   }, [navigation])
 
-  const handleNavigateAudio = useCallback(() => {
+  const handlePressAudio = useCallback(() => {
     navigation.push({
       native: { screen: 'AudioScreen' },
       web: { route: '/audio ' }
@@ -108,18 +87,6 @@ export const ProfileScreen = () => {
       )
     }
   }, [profile, dispatchWeb])
-
-  const handleFollow = useCallback(() => {
-    if (!profile?.does_current_user_follow) {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-      setHasUserFollowed(true)
-    }
-  }, [setHasUserFollowed, profile])
-
-  const handleCloseArtistRecs = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setHasUserFollowed(false)
-  }, [setHasUserFollowed])
 
   const handleRefresh = useCallback(() => {
     if (profile) {
@@ -139,12 +106,12 @@ export const ProfileScreen = () => {
 
   const topbarLeft = isOwner ? (
     <View style={styles.topBarIcons}>
-      <TopBarIconButton icon={IconSettings} onPress={handleNavigateSettings} />
+      <TopBarIconButton icon={IconSettings} onPress={handlePressSettings} />
       <TopBarIconButton
         styles={{ root: styles.iconCrownRoot, icon: styles.iconCrown }}
         fill={accentOrange}
         icon={IconCrown}
-        onPress={handleNavigateAudio}
+        onPress={handlePressAudio}
       />
     </View>
   ) : undefined
@@ -157,37 +124,15 @@ export const ProfileScreen = () => {
     />
   )
 
-  const profileActionButton = isOwner ? (
-    <UploadTrackButton />
-  ) : isTippingEnabled ? (
-    <TipArtistButton />
-  ) : null
-
   const scrollY = useRef(new Animated.Value(0)).current
 
-  const renderHeader = () => {
-    return (
-      // Box-none gets us scrolling on the non-touchable parts of the header
-      // See scroll on header documentation:
-      // https://github.com/PedroBern/react-native-collapsible-tab-view/tree/v2#scroll-on-header
-      // And also known drawbacks:
-      // https://github.com/PedroBern/react-native-collapsible-tab-view/pull/30
-      <>
-        <CoverPhoto scrollY={scrollY} />
-        <ProfilePicture style={styles.profilePicture} />
-        <View pointerEvents='box-none' style={styles.header}>
-          <ProfileInfo onFollow={handleFollow} />
-          <ProfileMetrics />
-          <ProfileSocials />
-          <ExpandableBio />
-          {!hasUserFollowed ? null : (
-            <ArtistRecommendations onClose={handleCloseArtistRecs} />
-          )}
-          {profileActionButton}
-        </View>
-      </>
+  const renderHeader = useCallback(() => {
+    return isTippingEnabled ? (
+      <ProfileHeaderV2 scrollY={scrollY} />
+    ) : (
+      <ProfileHeader scrollY={scrollY} />
     )
-  }
+  }, [isTippingEnabled, scrollY])
 
   return (
     <Screen topbarLeft={topbarLeft} topbarRight={topbarRight}>
