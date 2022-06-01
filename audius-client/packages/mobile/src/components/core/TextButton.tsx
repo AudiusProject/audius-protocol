@@ -44,7 +44,7 @@ const useStyles = makeStyles(({ palette, spacing }, { variant }) => {
   return merge(baseStyles, variantStyles[variant])
 })
 
-type TextButtonProps = TouchableOpacityProps &
+export type TextButtonProps = TouchableOpacityProps &
   ButtonProps & {
     variant: 'primary' | 'secondary' | 'neutralLight4'
     icon?: ComponentType<SvgProps>
@@ -52,6 +52,8 @@ type TextButtonProps = TouchableOpacityProps &
     TextProps?: Partial<TextProps>
     IconProps?: Partial<SvgProps>
     styles?: StylesProp<{ root: ViewStyle; icon: ViewStyle; text: TextStyle }>
+    // If `true` visually grey out text-button
+    showDisabled?: boolean
   }
 
 export const TextButton = (props: TextButtonProps) => {
@@ -62,6 +64,7 @@ export const TextButton = (props: TextButtonProps) => {
     iconPosition,
     style,
     disabled,
+    showDisabled = true,
     TextProps,
     IconProps,
     styles: stylesProp,
@@ -69,11 +72,13 @@ export const TextButton = (props: TextButtonProps) => {
   } = props
   const styles = useStyles({ variant })
 
+  const showDisabledColor = disabled && showDisabled
+
   const icon = Icon ? (
     <Icon
       height={18}
       width={18}
-      fill={styles.icon.fill}
+      fill={showDisabledColor ? styles.disabled.color : styles.icon.fill}
       style={[
         iconPosition === 'left' ? styles.iconLeft : styles.iconRight,
         stylesProp?.icon
@@ -91,7 +96,7 @@ export const TextButton = (props: TextButtonProps) => {
       {iconPosition === 'left' ? icon : null}
       <Text
         color={variant}
-        style={[stylesProp?.text, disabled && styles.disabled]}
+        style={[stylesProp?.text, showDisabledColor && styles.disabled]}
         {...TextProps}
       >
         {title}

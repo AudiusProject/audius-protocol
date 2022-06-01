@@ -4,8 +4,7 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { Animated, LayoutAnimation, View } from 'react-native'
 import { useToggle } from 'react-use'
 
-import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
-import { Divider, TextButton } from 'app/components/core'
+import { Divider } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -19,12 +18,8 @@ import { UploadTrackButton } from '../UploadTrackButton'
 import { useSelectProfileRoot } from '../selectors'
 
 import { CollapsedSection } from './CollapsedSection'
+import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ExpandedSection } from './ExpandedSection'
-
-const messages = {
-  seeMore: 'See More',
-  seeLess: 'See Less'
-}
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
@@ -38,14 +33,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     top: 37,
     left: 11,
     zIndex: 100
-  },
-  expandButton: {
-    width: '100%',
-    justifyContent: 'center',
-    marginVertical: spacing(3)
-  },
-  seeLessIcon: {
-    transform: [{ rotate: '180deg' }]
   },
   divider: { marginHorizontal: -12, marginBottom: 8 }
 }))
@@ -88,18 +75,9 @@ export const ProfileHeaderV2 = (props: ProfileHeaderV2Props) => {
         <ProfileInfo onFollow={handleFollow} />
         <ProfileMetrics />
         {isExpanded ? <ExpandedSection /> : <CollapsedSection />}
-        <TextButton
-          variant='neutralLight4'
-          title={isExpanded ? messages.seeLess : messages.seeMore}
-          icon={IconCaretDown}
-          iconPosition='right'
-          IconProps={{ height: 12, width: 12 }}
-          TextProps={{ fontSize: 'small', weight: 'bold' }}
+        <ExpandHeaderToggleButton
+          isExpanded={isExpanded}
           onPress={handleToggleExpand}
-          styles={{
-            root: styles.expandButton,
-            icon: isExpanded && styles.seeLessIcon
-          }}
         />
         <Divider style={styles.divider} />
         {!hasUserFollowed ? null : (

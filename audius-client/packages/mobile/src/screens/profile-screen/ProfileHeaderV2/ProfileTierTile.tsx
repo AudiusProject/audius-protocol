@@ -64,21 +64,8 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
 
   if (tier === 'none') return null
 
-  const Root = interactive ? Tile : View
-
-  const rootProps = interactive
-    ? {
-        styles: {
-          root: styles.root,
-          tile: styles.tile,
-          content: styles.content
-        },
-        onPress: handlePress
-      }
-    : { style: { ...styles.root, ...styles.viewContent } }
-
-  return (
-    <Root {...rootProps}>
+  const content = (
+    <>
       <IconAudioBadge tier={tier} height={32} width={32} style={styles.badge} />
       <View>
         <Text variant='h3' noGutter style={styles.tierNumber}>
@@ -88,6 +75,27 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
           {tier}
         </TierText>
       </View>
-    </Root>
+    </>
+  )
+
+  if (interactive) {
+    return (
+      <Tile
+        styles={{
+          root: styles.root,
+          tile: styles.tile,
+          content: styles.content
+        }}
+        onPress={handlePress}
+      >
+        {content}
+      </Tile>
+    )
+  }
+
+  return (
+    <View pointerEvents='none' style={[styles.root, styles.viewContent]}>
+      {content}
+    </View>
   )
 }
