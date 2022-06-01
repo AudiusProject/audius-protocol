@@ -54,26 +54,24 @@ processors:
       host: "unix:///var/run/docker.sock"
 
 output.elasticsearch:
-  hosts: '${ELASTIC_ENDPOINT}'
-  username: '${ELASTIC_USER}'
-  password: '${ELASTIC_PASS}'
+  hosts: "${ELASTIC_ENDPOINT}"
+  api_key: "${API_ID}:${API_KEY}"
   indices:
-    - index: "filebeat-5-system-%{[agent.version]}-%{+yyyy.MM.dd}"
-      when.or:
-        - equals:
-            container.name: filebeat
-        - equals:
-            container.name: metricbeat
-    - index: "filebeat-5-app-%{[agent.version]}-%{+yyyy.MM.dd}"
+    # - index: "filebeat-6-system-%{[agent.version]}-%{+yyyy.MM.dd}"
+    #   when.or:
+    #     - equals:
+    #         container.name: filebeat
+    #     - equals:
+    #         container.name: metricbeat
+    - index: "filebeat-6-app-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - equals:
             container.name: dn1_web-server_1
         - equals:
             container.name: cn1_creator-node_1
-    - index: "filebeat-5-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
+    # - index: "filebeat-6-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
 cloud.id: "${ELASTIC_CLOUD_ID}"
-cloud.auth: "${API_ID}:${API_KEY}"
 logging.json: true
 logging.metrics.enabled: false
 setup.ilm.check_exists: false
