@@ -127,7 +127,6 @@ class StateMonitoringQueue {
       this.logError(
         `Queue Job Failed - ID ${job?.id} - Error ${err}. Queuing another job...`
       )
-      console.log(`theo stack: ${err.stack}`)
       jobFailureCallback(queue, job)
     })
 

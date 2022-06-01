@@ -1,5 +1,5 @@
 /**
- * Updates replica sets of users who have one or more unhealthy nodes as their primary or secondaries.
+ * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
  * @param {number} jobId the id of the job being run
  * @param {Object} users { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
  * @param {Set<string>} unhealthyPeers set of unhealthy peers
@@ -9,14 +9,15 @@
  */
 module.exports = async function (
   jobId,
-  users,
+  users, // TODO: This will be updated to only run for one user
   unhealthyPeers,
   userSecondarySyncMetricsMap,
   replicaSetNodesToUserWalletsMap,
   replicaSetNodesToUserClockStatusesMap
 ) {
-  // TODO: Copy from snapback's `_aggregateOps` (decouple from the sync part of this function), `autoSelectCreatorNodes`, `determineNewReplicaSet`, and `issueUpdateReplicaSetOp` steps
+  // TODO: Move snapback's `_aggregateOps` (decouple from the sync part of this function), `autoSelectCreatorNodes`, `determineNewReplicaSet`, and `issueUpdateReplicaSetOp` steps
+  // into the *monitoring queue* and then make them output a single reconfig to execute here
 
-  // TODO: Return data about updated replica sets
+  // TODO: Return data about updated replica set
   return {}
 }

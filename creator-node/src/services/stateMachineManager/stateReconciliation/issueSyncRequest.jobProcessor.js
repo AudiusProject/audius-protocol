@@ -1,6 +1,6 @@
 /**
- * Processes a job to determine which sync requests to make for every given user and then issue them.
- * Only issues requests to a healthy secondary when this node is the user's primary and has a clock value
+ * Processes a job to issue a sync request for a user.
+ * Only issues request to a healthy secondary when this node is the user's primary and has a clock value
  * greater than the secondary's clock value.
  *
  * @param {number} jobId the id of the job being run
@@ -12,13 +12,14 @@
  */
 module.exports = async function (
   jobId,
-  users,
+  users, // TODO: This will change to be for a single user
   unhealthyPeers,
   userSecondarySyncMetricsMap,
   replicaSetNodesToUserClockStatusesMap
 ) {
   // TODO: Extract the part of snapback's _aggregateOps() code that
-  //       finds potentialSyncRequests, and then pass it to snapback's `issueSyncRequestsToSecondaries()`
+  //       finds potentialSyncRequests *into the monitoring queue*, and then
+  //       pass it here (update params here) so that this can copy snapback's `issueSyncRequestsToSecondaries()`
 
   /**
    * TODO: Instead of how snapback currently has issueSyncRequestsToSecondaries() return: {

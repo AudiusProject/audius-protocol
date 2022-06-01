@@ -77,7 +77,7 @@ module.exports = async function (
         decisionTree,
         jobId,
         'getNodeUsers and sliceUsers Success',
-        { nodeUsersLength: users?.length }
+        { usersLength: users?.length }
       )
     } catch (e) {
       // Make the next job try again instead of looping back to userId 0

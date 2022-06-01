@@ -4,18 +4,14 @@ const _ = require('lodash')
 const config = require('../../../config')
 const {
   QUEUE_HISTORY,
-  STATE_RECONCILIATION_QUEUE_NAME,
+  QUEUE_NAMES,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
-  HANDLE_MANUAL_SYNC_REQUEST_QUEUE_NAME,
-  HANDLE_RECURRING_SYNC_REQUEST_QUEUE_NAME,
-  ISSUE_SYNC_REQUESTS_QUEUE_NAME,
-  UPDATE_REPLICA_SETS_QUEUE_NAME,
   SyncType
 } = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
-const processIssueSyncRequestsJob = require('./processIssueSyncRequestsJob')
-const processExecuteSyncJob = require('./handleSyncRequest.jobProcessor')
-const processUpdateReplicaSetsJob = require('./processUpdateReplicaSetsJob')
+const issueSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
+const handleSyncRequestJobProcessor = require('./handleSyncRequest.jobProcessor')
+const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 
 /**
  * Handles setup and lifecycle management (adding and processing jobs)
@@ -60,7 +56,7 @@ class StateReconciliationQueue {
 
   makeQueue(redisHost, redisPort) {
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(STATE_RECONCILIATION_QUEUE_NAME, {
+    return new BullQueue(QUEUE_NAMES.STATE_RECONCILIATION_QUEUE, {
       redis: {
         host: redisHost,
         port: redisPort
@@ -128,22 +124,22 @@ class StateReconciliationQueue {
 
     // Register the logic that gets executed to process each new job from the queue
     queue.process(
-      HANDLE_MANUAL_SYNC_REQUEST_QUEUE_NAME,
+      QUEUE_NAMES.HANDLE_MANUAL_SYNC_REQUEST_JOB,
       config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
     queue.process(
-      HANDLE_RECURRING_SYNC_REQUEST_QUEUE_NAME,
+      QUEUE_NAMES.HANDLE_RECURRING_SYNC_REQUEST_JOB,
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
     queue.process(
-      ISSUE_SYNC_REQUESTS_QUEUE_NAME,
+      QUEUE_NAMES.ISSUE_SYNC_REQUEST_JOB,
       1 /** concurrency */,
       processIssueSyncRequests
     )
     queue.process(
-      UPDATE_REPLICA_SETS_QUEUE_NAME,
+      QUEUE_NAMES.UPDATE_REPLICA_SET_JOB,
       1 /** concurrency */,
       processUpdateReplicaSets
     )
@@ -158,7 +154,7 @@ class StateReconciliationQueue {
 
     let result = {}
     try {
-      result = await processExecuteSyncJob(
+      result = await handleSyncRequestJobProcessor(
         jobId,
         SyncType.Manual,
         syncRequestParameters
@@ -182,7 +178,7 @@ class StateReconciliationQueue {
 
     let result = {}
     try {
-      result = await processExecuteSyncJob(
+      result = await handleSyncRequestJobProcessor(
         jobId,
         SyncType.Recurring,
         syncRequestParameters
@@ -207,14 +203,14 @@ class StateReconciliationQueue {
     } = job
 
     this.log(
-      `New ${ISSUE_SYNC_REQUESTS_QUEUE_NAME} job details: jobId=${jobId}, job=${JSON.stringify(
-        job
-      )}`
+      `New ${
+        QUEUE_NAMES.ISSUE_SYNC_REQUEST_JOB
+      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
     )
 
     let result = {}
     try {
-      result = await processIssueSyncRequestsJob(
+      result = await issueSyncRequestJobProcessor(
         jobId,
         users,
         unhealthyPeers,
@@ -223,7 +219,7 @@ class StateReconciliationQueue {
       )
     } catch (error) {
       this.logError(
-        `Error processing ${ISSUE_SYNC_REQUESTS_QUEUE_NAME} jobId ${jobId}: ${error}`
+        `Error processing ${QUEUE_NAMES.ISSUE_SYNC_REQUEST_JOB} jobId ${jobId}: ${error}`
       )
       result = { error }
     }
@@ -244,14 +240,14 @@ class StateReconciliationQueue {
     } = job
 
     this.log(
-      `New ${UPDATE_REPLICA_SETS_QUEUE_NAME} job details: jobId=${jobId}, job=${JSON.stringify(
-        job
-      )}`
+      `New ${
+        QUEUE_NAMES.UPDATE_REPLICA_SET_JOB
+      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
     )
 
     let result = {}
     try {
-      result = await processUpdateReplicaSetsJob(
+      result = await updateReplicaSetJobProcessor(
         jobId,
         users,
         unhealthyPeers,
@@ -261,7 +257,7 @@ class StateReconciliationQueue {
       )
     } catch (error) {
       this.logError(
-        `Error processing ${UPDATE_REPLICA_SETS_QUEUE_NAME} jobId ${jobId}: ${error}`
+        `Error processing ${QUEUE_NAMES.UPDATE_REPLICA_SET_JOB} jobId ${jobId}: ${error}`
       )
       result = { error }
     }
