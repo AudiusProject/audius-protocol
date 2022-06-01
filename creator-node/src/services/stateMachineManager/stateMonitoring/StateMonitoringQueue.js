@@ -4,7 +4,7 @@ const _ = require('lodash')
 const config = require('../../../config')
 const {
   QUEUE_HISTORY,
-  STATE_MONITORING_QUEUE_NAME,
+  QUEUE_NAMES,
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../stateMachineConstants')
@@ -55,7 +55,7 @@ class StateMonitoringQueue {
 
   makeQueue(redisHost, redisPort) {
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(STATE_MONITORING_QUEUE_NAME, {
+    return new BullQueue(QUEUE_NAMES.STATE_MONITORING, {
       redis: {
         host: redisHost,
         port: redisPort

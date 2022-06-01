@@ -5,6 +5,7 @@ const config = require('../../../config')
 const {
   QUEUE_HISTORY,
   QUEUE_NAMES,
+  JOB_NAMES,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
   SyncType
 } = require('../stateMachineConstants')
@@ -56,7 +57,7 @@ class StateReconciliationQueue {
 
   makeQueue(redisHost, redisPort) {
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(QUEUE_NAMES.STATE_RECONCILIATION_QUEUE, {
+    return new BullQueue(QUEUE_NAMES.STATE_RECONCILIATION, {
       redis: {
         host: redisHost,
         port: redisPort
@@ -124,22 +125,22 @@ class StateReconciliationQueue {
 
     // Register the logic that gets executed to process each new job from the queue
     queue.process(
-      QUEUE_NAMES.HANDLE_MANUAL_SYNC_REQUEST_JOB,
+      JOB_NAMES.HANDLE_MANUAL_SYNC_REQUEST,
       config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
     queue.process(
-      QUEUE_NAMES.HANDLE_RECURRING_SYNC_REQUEST_JOB,
+      JOB_NAMES.HANDLE_RECURRING_SYNC_REQUEST,
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
     queue.process(
-      QUEUE_NAMES.ISSUE_SYNC_REQUEST_JOB,
+      JOB_NAMES.ISSUE_SYNC_REQUEST,
       1 /** concurrency */,
       processIssueSyncRequests
     )
     queue.process(
-      QUEUE_NAMES.UPDATE_REPLICA_SET_JOB,
+      JOB_NAMES.UPDATE_REPLICA_SET,
       1 /** concurrency */,
       processUpdateReplicaSets
     )
@@ -204,7 +205,7 @@ class StateReconciliationQueue {
 
     this.log(
       `New ${
-        QUEUE_NAMES.ISSUE_SYNC_REQUEST_JOB
+        JOB_NAMES.ISSUE_SYNC_REQUEST
       } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
     )
 
@@ -219,7 +220,7 @@ class StateReconciliationQueue {
       )
     } catch (error) {
       this.logError(
-        `Error processing ${QUEUE_NAMES.ISSUE_SYNC_REQUEST_JOB} jobId ${jobId}: ${error}`
+        `Error processing ${JOB_NAMES.ISSUE_SYNC_REQUEST} jobId ${jobId}: ${error}`
       )
       result = { error }
     }
@@ -241,7 +242,7 @@ class StateReconciliationQueue {
 
     this.log(
       `New ${
-        QUEUE_NAMES.UPDATE_REPLICA_SET_JOB
+        JOB_NAMES.UPDATE_REPLICA_SET
       } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
     )
 
@@ -257,7 +258,7 @@ class StateReconciliationQueue {
       )
     } catch (error) {
       this.logError(
-        `Error processing ${QUEUE_NAMES.UPDATE_REPLICA_SET_JOB} jobId ${jobId}: ${error}`
+        `Error processing ${JOB_NAMES.UPDATE_REPLICA_SET} jobId ${jobId}: ${error}`
       )
       result = { error }
     }

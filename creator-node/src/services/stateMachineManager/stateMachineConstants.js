@@ -23,17 +23,19 @@ module.exports = {
   AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE: 500,
   QUEUE_NAMES: Object.freeze({
     // Name of StateMonitoringQueue
-    STATE_MONITORING_QUEUE: 'state-monitoring-queue',
+    STATE_MONITORING: 'state-monitoring-queue',
     // Name of StateReconciliationQueue
-    STATE_RECONCILIATION_QUEUE: 'state-reconciliation-queue',
+    STATE_RECONCILIATION: 'state-reconciliation-queue'
+  }),
+  JOB_NAMES: Object.freeze({
     // Name of job in reconciliation queue that handles executing a manual sync on this node
-    HANDLE_MANUAL_SYNC_REQUEST_JOB: 'handle-manual-sync-request',
+    HANDLE_MANUAL_SYNC_REQUEST: 'handle-manual-sync-request',
     // Name of job in reconciliation queue that handles executing a recurring sync on this node
-    HANDLE_RECURRING_SYNC_REQUEST_JOB: 'handle-recurring-sync-request',
+    HANDLE_RECURRING_SYNC_REQUEST: 'handle-recurring-sync-request',
     // Name of job in reconciliation queue that issues an outgoing sync request to this node or to another node
-    ISSUE_SYNC_REQUEST_JOB: 'issue-sync-request',
+    ISSUE_SYNC_REQUEST: 'issue-sync-request',
     // Name of job in reconciliation queue that executes a reconfiguration of a user's replica set when it's unhealthy
-    UPDATE_REPLICA_SET_JOB: 'update-replica-set'
+    UPDATE_REPLICA_SET: 'update-replica-set'
   }),
   // Modes used in issuing a reconfig. Each successive mode is a superset of the mode prior.
   // The `key` of the reconfig states is used to identify the current reconfig mode.
