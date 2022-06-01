@@ -30,6 +30,7 @@ services:
       - devMode=${DEV_MODE}
       - spOwnerWallet=${spOwnerWallet}
       - openRestyCacheCIDEnabled=${openRestyCacheCIDEnabled}
+      - discoveryProviderWhitelist=${discoveryProviderWhitelist}
     env_file:
       - ./env/base.env
     ports:
