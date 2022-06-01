@@ -9,9 +9,9 @@ USER root
 RUN apt-get update \
     && apt-get install -y gettext-base
 COPY filebeat.docker.yml /tmp/filebeat.yml
-RUN ELASTIC_ENDPOINT=$(echo ${ELASTIC_ENDPOINT} | base64 --decode) \
-    ELASTIC_USER=$(echo ${ELASTIC_USER} | base64 --decode) \
-    ELASTIC_PASS=$(echo ${ELASTIC_PASS} | base64 --decode) \
+RUN ELASTIC_ENDPOINT=$(echo ${ELASTIC_ENDPOINT} | base64 -d) \
+    API_ID=$(echo ${API_ID} | base64 -d) \
+    API_KEY=$(echo ${API_KEY} | base64 -d) \
     envsubst < /tmp/filebeat.yml > /usr/share/filebeat/filebeat.yml \
     && chown root /usr/share/filebeat/filebeat.yml \
     && chmod go-w /usr/share/filebeat/filebeat.yml

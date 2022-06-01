@@ -19,8 +19,9 @@ docker build \
         -t audius/filebeat:${FILEBEAT_VERSION} \
         --build-arg git_sha=$(git rev-parse HEAD) \
         --build-arg ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT} \
-        --build-arg ELASTIC_USER=${API_ID} \
-        --build-arg ELASTIC_PASS=${API_KEY} \
+        --build-arg ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID} \
+        --build-arg API_ID=${API_ID} \
+        --build-arg API_KEY=${API_KEY} \
         . \
     && docker push audius/filebeat:${FILEBEAT_VERSION}
 
@@ -30,8 +31,8 @@ docker build \
         --build-arg git_sha=$(git rev-parse HEAD) \
         --build-arg ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT} \
         --build-arg ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID} \
-        --build-arg ELASTIC_USER=${API_ID} \
-        --build-arg ELASTIC_PASS=${API_KEY} \
+        --build-arg API_ID=${API_ID} \
+        --build-arg API_KEY=${API_KEY} \
         . \
     && docker push audius/metricbeat:${METRICBEAT_VERSION}
 ```
