@@ -79,7 +79,7 @@ const retrieveClockStatusesForUsersAcrossReplicaSet = async (
         // If failed to get response after all attempts, add replica to `unhealthyPeers` set for reconfig
         if (errorMsg) {
           logger.error(
-            `retrieveClockStatusesForUsersAcrossReplicaSet Could not fetch clock values for wallets=${walletsOnReplica} on replica=${replica} ${errorMsg.toString()}`
+            `retrieveClockStatusesForUsersAcrossReplicaSet() Could not fetch clock values for wallets=${walletsOnReplica} on replica=${replica} ${errorMsg.toString()}`
           )
           unhealthyPeers.add(replica)
         }

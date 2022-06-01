@@ -23,12 +23,12 @@ class StateMonitoringQueue {
       config.get('redisHost'),
       config.get('redisPort')
     )
-    this.registerQueueEventHandlers(
-      this.queue,
-      this.enqueueJobAfterSuccess,
-      this.enqueueJobAfterFailure
-    )
-    this.registerQueueJobProcessor(this.queue)
+    this.registerQueueEventHandlersAndJobProcessor({
+      queue: this.queue,
+      jobSuccessCallback: this.enqueueJobAfterSuccess,
+      jobFailureCallback: this.enqueueJobAfterFailure,
+      processJob: this.processJob
+    })
 
     await this.startQueue(
       this.queue,
@@ -80,11 +80,17 @@ class StateMonitoringQueue {
 
   /**
    * Registers event handlers for logging and job success/failure.
-   * @param {Object} queue the queue to register events for
-   * @param {Function<queue, successfulJob, jobResult>} jobSuccessCallback the function to call when a job succeeds
-   * @param {Function<queue, failedJob>} jobFailureCallback the function to call when a job fails
+   * @param {Object} params.queue the queue to register events for
+   * @param {Function<queue, successfulJob, jobResult>} params.jobSuccessCallback the function to call when a job succeeds
+   * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
+   * @param {Function<job>} params.processJob the function to call when processing a job from the queue
    */
-  registerQueueEventHandlers(queue, jobSuccessCallback, jobFailureCallback) {
+  registerQueueEventHandlersAndJobProcessor({
+    queue,
+    jobSuccessCallback,
+    jobFailureCallback,
+    processJob
+  }) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
       this.log(`Queue Job Waiting - ID ${jobId}`)
@@ -123,6 +129,9 @@ class StateMonitoringQueue {
       )
       jobFailureCallback(queue, job)
     })
+
+    // Register the logic that gets executed to process each new job from the queue
+    queue.process(1 /** concurrency */, processJob)
   }
 
   /**
@@ -169,55 +178,47 @@ class StateMonitoringQueue {
     })
   }
 
-  /**
-   * Registers the logic that gets executed to process each new job from the queue.
-   * @param {Object} queue the StateMonitoringQueue to consume jobs from
-   */
-  registerQueueJobProcessor(queue) {
-    // Initialize queue job processor (aka consumer)
-    queue.process(1 /** concurrency */, async (job) => {
-      const {
-        id: jobId,
-        data: {
-          lastProcessedUserId,
-          discoveryNodeEndpoint,
-          moduloBase,
-          currentModuloSlice
-        }
-      } = job
-
-      try {
-        this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
-      } catch (e) {
-        this.logError(`Failed to log details for jobId=${jobId}: ${e}`)
-      }
-
-      // Default results of this job will be passed to the next job, so default to failure
-      let result = {
+  async processJob(job) {
+    const {
+      id: jobId,
+      data: {
         lastProcessedUserId,
-        jobFailed: true,
+        discoveryNodeEndpoint,
         moduloBase,
         currentModuloSlice
       }
-      try {
-        // TODO: Wire up metrics
-        // await redis.set('stateMachineQueueLatestJobStart', Date.now())
-        result = await processStateMonitoringJob(
-          jobId,
-          lastProcessedUserId,
-          discoveryNodeEndpoint,
-          moduloBase,
-          currentModuloSlice
-        )
-        // TODO: Wire up metrics
-        // await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
-      } catch (e) {
-        this.logError(`Error processing jobId ${jobId}: ${e}`)
-        console.log(e.stack)
-      }
+    } = job
 
-      return result
-    })
+    try {
+      this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
+    } catch (e) {
+      this.logError(`Failed to log details for jobId=${jobId}: ${e}`)
+    }
+
+    // Default results of this job will be passed to the next job, so default to failure
+    let result = {
+      lastProcessedUserId,
+      jobFailed: true,
+      moduloBase,
+      currentModuloSlice
+    }
+    try {
+      // TODO: Wire up metrics
+      // await redis.set('stateMachineQueueLatestJobStart', Date.now())
+      result = await processStateMonitoringJob(
+        jobId,
+        lastProcessedUserId,
+        discoveryNodeEndpoint,
+        moduloBase,
+        currentModuloSlice
+      )
+      // TODO: Wire up metrics
+      // await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
+    } catch (e) {
+      this.logError(`Error processing jobId ${jobId}: ${e}`)
+    }
+
+    return result
   }
 
   /**

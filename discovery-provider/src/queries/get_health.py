@@ -85,8 +85,6 @@ def _get_db_conn_state():
         [
             MONITORS[monitor_names.database_connections],
             MONITORS[monitor_names.database_connection_info],
-            MONITORS[monitor_names.database_index_count],
-            MONITORS[monitor_names.database_index_info],
         ]
     )
 

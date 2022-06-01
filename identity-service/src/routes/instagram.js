@@ -4,6 +4,12 @@ const models = require('../models')
 const txRelay = require('../relay/txRelay')
 
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { VerifiedUserReporter } = require('../utils/verifiedUserReporter.js')
+
+const verifiedUserReporter = new VerifiedUserReporter({
+  slackUrl: config.get('verifiedUserReporterSlackUrl'),
+  source: 'instagram'
+})
 
 const getInstagramURL = (username) => {
   const instagramProfileUrl = config.get('instagramProfileUrl') || 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
@@ -106,9 +112,11 @@ module.exports = function (app) {
 
       try {
         // Verify the user user id exists in the DB before updating it
-        const igUser = await models.InstagramUser.findOne({ where: {
-          uuid: profile.username
-        } })
+        const igUser = await models.InstagramUser.findOne({
+          where: {
+            uuid: profile.username
+          }
+        })
         if (!igUser) throw new Error(`Could not find matching ig user in the db: ${profile.username}`)
         igUser.profile = profile
         igUser.verified = profile.is_verified || false
@@ -153,6 +161,7 @@ module.exports = function (app) {
               gasLimit: null
             }
             await txRelay.sendTransaction(req, false, txProps, 'instagramVerified')
+            await verifiedUserReporter.report({ userId, handle })
           } catch (e) {
             return errorResponseBadRequest(e)
           }

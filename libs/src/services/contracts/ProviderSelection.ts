@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { ServiceSelection } from '../../service-selection'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { Web3Manager } from '../web3Manager'
-import type { ContractClient } from './ContractClient'
 
 /**
  * This class provides the logic to select a healthy gateway
@@ -24,7 +24,7 @@ export class ProviderSelection extends ServiceSelection {
    *
    * @param client object used for making transaction calls
    */
-  override async select(client: ContractClient) {
+  override async select(client: { web3Manager: Web3Manager | EthWeb3Manager }) {
     const web3Manager = client.web3Manager as Web3Manager
     const filteredServices = this.filterOutKnownUnhealthy(
       await this.getServices()

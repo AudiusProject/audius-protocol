@@ -53,5 +53,10 @@ module.exports = {
       key: 'ENTIRE_REPLICA_SET',
       value: 4
     }
+  }),
+  // Describes the type of sync operation
+  SyncType: Object.freeze({
+    Recurring: 'RECURRING', // Scheduled background sync to keep secondaries up to date
+    Manual: 'MANUAL' // Triggered by a user data write to primary
   })
 }

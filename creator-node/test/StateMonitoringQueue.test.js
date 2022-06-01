@@ -16,7 +16,7 @@ const {
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test StateMonitoringQueue initialization and logging', function () {
+describe('test StateMonitoringQueue initialization, logging, and events', function () {
   let server, sandbox
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -25,27 +25,35 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     sandbox = sinon.createSandbox()
 
     config.set('spID', 1)
+    nock.disableNetConnect()
   })
 
   afterEach(async function () {
     await server.close()
     nock.cleanAll()
+    nock.enableNetConnect()
     sandbox.restore()
   })
 
   it('creates the queue and registers its event handlers', async function () {
-    // Initialize StateMonitoringQueue and spy on its registerQueueEventHandlers function
-    sandbox.spy(StateMonitoringQueue.prototype, 'registerQueueEventHandlers')
+    // Initialize StateMonitoringQueue and spy on its registerQueueEventHandlersAndJobProcessor function
+    sandbox.spy(
+      StateMonitoringQueue.prototype,
+      'registerQueueEventHandlersAndJobProcessor'
+    )
     const stateMonitoringQueue = new StateMonitoringQueue(config)
     await stateMonitoringQueue.init(getLibsMock())
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
     expect(stateMonitoringQueue.queue).to.exist.and.to.be.instanceOf(BullQueue)
-    expect(stateMonitoringQueue.registerQueueEventHandlers).to.have.been
-      .calledOnce
+    expect(stateMonitoringQueue.registerQueueEventHandlersAndJobProcessor).to
+      .have.been.calledOnce
     expect(
-      stateMonitoringQueue.registerQueueEventHandlers.getCall(0).args[0]
-    ).to.have.deep.property('name', STATE_MONITORING_QUEUE_NAME)
+      stateMonitoringQueue.registerQueueEventHandlersAndJobProcessor.getCall(0)
+        .args[0]
+    )
+      .to.have.property('queue')
+      .that.has.deep.property('name', STATE_MONITORING_QUEUE_NAME)
   })
 
   it('kicks off an initial job when initting', async function () {
@@ -91,6 +99,84 @@ describe('test StateMonitoringQueue initialization and logging', function () {
     expect(isQueuePaused).to.be.true
     return expect(stateMonitoringQueue.queue.getJobs('delayed')).to.eventually
       .be.fulfilled.and.be.empty
+  })
+
+  it('processes jobs with expected data and returns the expected results', async function () {
+    // Mock StateMonitoringQueue to have processStateMonitoringJob return dummy data
+    const expectedResult = { jobFailed: false, test: 'test' }
+    const processStateMonitoringJobStub = sandbox
+      .stub()
+      .resolves(expectedResult)
+    const MockStateMonitoringQueue = proxyquire(
+      '../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue.js',
+      {
+        './processStateMonitoringJob': processStateMonitoringJobStub
+      }
+    )
+
+    // Verify that StateMonitoringQueue returns our dummy data
+    const job = {
+      id: 9,
+      data: {
+        lastProcessedUserId: 2,
+        discoveryNodeEndpoint: 'http://test_endpoint.co',
+        moduloBase: 1,
+        currentModuloSlice: 2
+      }
+    }
+    await expect(
+      new MockStateMonitoringQueue().processJob(job)
+    ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
+    expect(processStateMonitoringJobStub).to.have.been.calledOnceWithExactly(
+      job.id,
+      job.data.lastProcessedUserId,
+      job.data.discoveryNodeEndpoint,
+      job.data.moduloBase,
+      job.data.currentModuloSlice
+    )
+  })
+
+  it('returns default result when processing a job fails or logging fails', async function () {
+    // Mock StateMonitoringQueue to have processStateMonitoringJob return dummy data
+    const logErrorStub = sandbox.stub()
+    const processStateMonitoringJobStub = sandbox.stub().rejects('test error')
+    const MockStateMonitoringQueue = proxyquire(
+      '../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue.js',
+      {
+        './processStateMonitoringJob': processStateMonitoringJobStub,
+        './../../../logging': {
+          logger: {
+            error: logErrorStub
+          }
+        }
+      }
+    )
+
+    // Verify that StateMonitoringQueue throws and returns default data
+    const job = {
+      id: 9,
+      data: {
+        lastProcessedUserId: 2,
+        discoveryNodeEndpoint: 'http://test_endpoint.co',
+        moduloBase: 1,
+        currentModuloSlice: 2
+      }
+    }
+    await expect(
+      new MockStateMonitoringQueue().processJob(job)
+    ).to.eventually.be.fulfilled.and.deep.equal({
+      lastProcessedUserId: job.data.lastProcessedUserId,
+      moduloBase: job.data.moduloBase,
+      currentModuloSlice: job.data.currentModuloSlice,
+      jobFailed: true
+    })
+    expect(logErrorStub).to.have.been.calledTwice
+    expect(logErrorStub.getCall(0).args[0]).to.equal(
+      `StateMonitoringQueue ERROR: Failed to log details for jobId=${job.id}: TypeError: logger.info is not a function`
+    )
+    expect(logErrorStub.getCall(1).args[0]).to.equal(
+      `StateMonitoringQueue ERROR: Error processing jobId ${job.id}: test error`
+    )
   })
 
   it('logs debug, info, warning, and error', function () {
@@ -143,11 +229,13 @@ describe('test StateMonitoringQueue re-enqueuing', function () {
     sandbox = sinon.createSandbox()
 
     config.set('spID', 1)
+    nock.disableNetConnect()
   })
 
   afterEach(async function () {
     await server.close()
     nock.cleanAll()
+    nock.enableNetConnect()
     sandbox.restore()
   })
 

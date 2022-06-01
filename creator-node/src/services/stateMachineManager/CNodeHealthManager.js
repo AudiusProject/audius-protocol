@@ -24,7 +24,7 @@ const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
  * Tracks and caches health of Content Nodes.
  * TODO: Add caching for secondaries similar to how primaries have a threshold of time to remain unhealthy for.
  */
-class NodeHealthManager {
+class CNodeHealthManager {
   constructor() {
     /* We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
       have data that the secondaries lack. This map is used to track the primary and the number of times it has
@@ -39,11 +39,11 @@ class NodeHealthManager {
   }
 
   log(msg) {
-    logger.info(`NodeHealthManager: ${msg}`)
+    logger.info(`CNodeHealthManager: ${msg}`)
   }
 
   logError(msg) {
-    logger.error(`NodeHealthManager ERROR: ${msg}`)
+    logger.error(`CNodeHealthManager ERROR: ${msg}`)
   }
 
   /**
@@ -91,7 +91,9 @@ class NodeHealthManager {
         this.determinePeerHealth(verboseHealthCheckResp)
       }
     } catch (e) {
-      this.logError(`isNodeHealthy peer=${peer} is unhealthy: ${e.toString()}`)
+      this.logError(
+        `isNodeHealthy() peer=${peer} is unhealthy: ${e.toString()}`
+      )
       return false
     }
 
@@ -282,4 +284,4 @@ class NodeHealthManager {
   }
 }
 
-module.exports = new NodeHealthManager()
+module.exports = new CNodeHealthManager()
