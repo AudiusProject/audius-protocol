@@ -12,9 +12,9 @@ import {
 } from './sharedIndexSettings'
 
 export class UserIndexer extends BaseIndexer<UserDoc> {
-  tableName = 'users'
-  idColumn = 'user_id'
-  indexName = indexNames.users
+  constructor() {
+    super('users', 'user_id')
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.users,

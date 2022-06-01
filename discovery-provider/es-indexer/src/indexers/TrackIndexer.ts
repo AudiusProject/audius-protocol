@@ -11,10 +11,10 @@ import {
 } from './sharedIndexSettings'
 
 export class TrackIndexer extends BaseIndexer<TrackDoc> {
-  tableName = 'tracks'
-  idColumn = 'track_id'
-  indexName = indexNames.tracks
-  batchSize = 500
+  constructor() {
+    super('tracks', 'track_id')
+    this.batchSize = 500
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
