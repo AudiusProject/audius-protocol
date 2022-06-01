@@ -1,11 +1,6 @@
 services:
   filebeat:
-    build:
-      context: filebeat
-      args:
-          - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
-          - ELASTIC_USER=${ELASTIC_USER}
-          - ELASTIC_PASS=${ELASTIC_PASS}
+    image: audius/filebeat:8.2.0
     container_name: filebeat
     hostname: "{{.Node.Hostname}}-filebeat"
     user: root
@@ -17,13 +12,7 @@ services:
       - /var/log/:/var/log/:ro
 
   metricbeat:
-    build:
-      context: metricbeat
-      args:
-        - ELASTIC_ENDPOINT=${ELASTIC_ENDPOINT}
-        - ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID}
-        - ELASTIC_USER=${ELASTIC_USER}
-        - ELASTIC_PASS=${ELASTIC_PASS}
+    image: audius/metricbeat:8.2.0
     container_name: metricbeat
     hostname: "{{.Node.Hostname}}-metricbeat"
     user: root

@@ -5,6 +5,7 @@
 set -e
 
 . .env
+ELASTIC_ENDPOINT=$(echo ${ELASTIC_ENDPOINT} | base64 -d)
 BASIC_AUTH_HEADER=$(echo -n "${ELASTIC_USER}:${ELASTIC_PASS}" | base64)
 ROLE=filebeat_writer
 USER=service-provider
@@ -120,14 +121,18 @@ function revoke_api_keys() {
             }' | jq
 }
 
-# # delete_user
-# # delete_role
+if [[ "${1}" == "delete-all" ]]; then
+    revoke_api_keys
+    delete_user
+    delete_role
+else
+    create_role
+    create_user_w_role
+    get_api_key
 
-create_role
-create_user_w_role
-# get_api_key
-# # confirm_privileges
-
-# # revoke_api_keys
-
-echo $KEY_FROM_BASIC_AUTH | jq '{ name, id, api_key }'
+    if [[ "${1}" == "confirm-privileges" ]]; then
+        confirm_privileges
+    else
+        echo $KEY_FROM_BASIC_AUTH | jq '{ name, id, api_key }'
+    fi
+fi
