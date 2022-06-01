@@ -33,9 +33,10 @@ async function processPending(pending: PendingUpdates) {
 }
 
 async function start() {
+  logger.info('booting: waiting for healthy cluster')
   const health = await waitForHealthyCluster()
-  logger.info(health, 'booting')
   await ensureSaneCluterSettings()
+  logger.info(`starting: health ${health.status}`)
 
   // create indexes
   const indexers = Object.values(indexer)
@@ -57,6 +58,10 @@ async function start() {
   // cutover aliases
   logger.info('catchup done... cutting over aliases')
   await Promise.all(indexers.map((ix) => ix.cutoverAlias()))
+
+  // drop old indices
+  logger.info('alias cutover done... dropping any old indices')
+  await Promise.all(indexers.map((ix) => ix.cleanupOldIndices()))
 
   // process events
   logger.info('processing events')

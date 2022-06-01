@@ -102,6 +102,22 @@ export abstract class BaseIndexer<RowType> {
     }
   }
 
+  async cleanupOldIndices() {
+    const { es, logger, indexName, tableName } = this
+    const indices = await es.cat.indices({ format: 'json' })
+    const old = indices.filter(
+      (i) => i.index.startsWith(tableName) && i.index != indexName
+    )
+    for (let { index } of old) {
+      try {
+        await es.indices.delete({ index: index })
+        logger.info(`dropped old index: ${index}`)
+      } catch (e) {
+        logger.error(e, `failed to drop old index: ${index}`)
+      }
+    }
+  }
+
   async indexIds(ids: Array<number>) {
     if (!ids.length) return
     let sql = this.baseSelect()
