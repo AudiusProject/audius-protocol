@@ -11,7 +11,7 @@ const BullQueue = require('bull')
 const config = require('../src/config')
 const StateMonitoringQueue = require('../src/services/stateMachineManager/stateMonitoring/StateMonitoringQueue')
 const {
-  STATE_MONITORING_QUEUE_NAME
+  QUEUE_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
@@ -53,7 +53,7 @@ describe('test StateMonitoringQueue initialization, logging, and events', functi
         .args[0]
     )
       .to.have.property('queue')
-      .that.has.deep.property('name', STATE_MONITORING_QUEUE_NAME)
+      .that.has.deep.property('name', QUEUE_NAMES.STATE_MONITORING)
   })
 
   it('kicks off an initial job when initting', async function () {
