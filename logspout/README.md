@@ -1,5 +1,8 @@
 # Build Custom Audius Logspout Sidecar Container
 
+In the event we want to build the Logspout container by hand
+(for testing purposes, CircleCI is down, etc) run the following:
+
 ```bash
 # .env contains: audius_loggly_token=xxx
 . .env
