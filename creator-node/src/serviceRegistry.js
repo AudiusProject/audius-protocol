@@ -351,7 +351,11 @@ class ServiceRegistry {
     const discoveryNodeUnhealthyBlockDiff = config.get(
       'discoveryNodeUnhealthyBlockDiff'
     )
-    this.logInfo(`discoveryProviderWhitelist: ${discoveryProviderWhitelist}`)
+    this.logInfo(
+      `discoveryProviderWhitelist: ${JSON.stringify(
+        Array.from(discoveryProviderWhitelist)
+      )}`
+    )
 
     const audiusLibs = new AudiusLibs({
       ethWeb3Config: AudiusLibs.configEthWeb3(
