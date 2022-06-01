@@ -7,12 +7,14 @@ if [[ "${audius_loggly_tags}" ]]; then
 fi
 
 # set hostname to ${audius_discprov_url}, else ${creatorNodeEndpoint}
-# use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
-# add extracted domain as a Loggly tag
-hostname=${audius_discprov_url}
-if [[ -z "$hostname" ]]; then
+if [[ "${audius_discprov_url}" ]]; then
+   hostname=${audius_discprov_url}
+elif [[ "${creatorNodeEndpoint}" ]]; then
    hostname=${creatorNodeEndpoint}
 fi
+
+# use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
+# add extracted domain as a Loggly tag
 if [[ "${hostname}" ]]; then
    hostname=$(echo ${hostname} | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
    tag_csv=${tag_csv},${hostname}
