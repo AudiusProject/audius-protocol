@@ -5,7 +5,7 @@ import { ProfileSocials } from './ProfileSocials'
 
 export const CollapsedSection = () => {
   return (
-    <View>
+    <View pointerEvents='box-none'>
       <Bio numberOfLines={2} />
       <ProfileSocials />
     </View>

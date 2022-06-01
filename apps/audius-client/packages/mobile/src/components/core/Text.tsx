@@ -14,6 +14,7 @@ export type TextProps = RNTextProps & {
     | 'neutralLight4'
     | 'inherit'
     | 'error'
+    | 'white'
   weight?: FontWeight
   fontSize?: FontSize | 'inherit'
 }
