@@ -15,7 +15,8 @@ import {
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   sites: {
-    marginBottom: spacing(2)
+    marginBottom: spacing(2),
+    marginRight: spacing(6)
   },
   site: {
     marginTop: spacing(3)

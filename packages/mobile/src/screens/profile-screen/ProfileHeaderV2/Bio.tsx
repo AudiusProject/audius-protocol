@@ -1,3 +1,5 @@
+import { View } from 'react-native'
+
 import { Text, TextProps, Hyperlink } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
@@ -26,9 +28,11 @@ export const Bio = (props: BioProps) => {
 
   if (numberOfLines)
     return (
-      <Text variant='body' style={styles.root} {...props}>
-        {bio}
-      </Text>
+      <View pointerEvents='none'>
+        <Text variant='body' style={styles.root} {...props}>
+          {bio}
+        </Text>
+      </View>
     )
 
   return (

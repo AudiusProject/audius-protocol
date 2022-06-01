@@ -15,8 +15,8 @@ import { useDrawerNavigation } from '../useDrawerNavigation'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   image: {
-    height: spacing(10),
-    width: spacing(10),
+    height: spacing(10) - 2,
+    width: spacing(10) - 2,
     borderRadius: spacing(5),
     borderColor: palette.white,
     borderWidth: 2,
@@ -26,16 +26,25 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-type ProfilePictureProps = ProfilePictureBaseProps
+type ProfilePictureProps = ProfilePictureBaseProps & {
+  navigationType?: 'push' | 'navigate'
+  interactive?: boolean
+}
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
-  const { profile, style, ...other } = props
+  const {
+    profile,
+    style,
+    navigationType = 'navigate',
+    interactive = true,
+    ...other
+  } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useDrawerNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.navigate({
+    navigation[navigationType]({
       native: {
         screen: 'Profile',
         params: { handle: profile.handle, fromNotifications: true }
@@ -43,15 +52,26 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       web: { route: getUserRoute(profile), fromPage: NOTIFICATION_PAGE }
     })
     dispatch(close())
-  }, [navigation, profile, dispatch])
+  }, [navigation, navigationType, profile, dispatch])
 
-  return (
-    <TouchableOpacity activeOpacity={0.7} onPress={handlePress}>
-      <ProfilePictureBase
-        profile={profile}
-        style={[styles.image, style]}
-        {...other}
-      />
-    </TouchableOpacity>
+  const profilePictureElement = (
+    <ProfilePictureBase
+      profile={profile}
+      style={[styles.image, style]}
+      {...other}
+    />
   )
+
+  if (interactive) {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={interactive ? handlePress : undefined}
+      >
+        {profilePictureElement}
+      </TouchableOpacity>
+    )
+  }
+
+  return profilePictureElement
 }

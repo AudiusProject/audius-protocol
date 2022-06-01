@@ -1,5 +1,5 @@
 import { User } from 'audius-client/src/common/models/User'
-import { View } from 'react-native'
+import { StyleProp, View, ViewStyle } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
@@ -16,19 +16,24 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 type ProfilePictureListProps = {
   users: User[]
+  style?: StyleProp<ViewStyle>
+  navigationType?: 'push' | 'navigate'
+  interactive?: boolean
 }
 
 export const ProfilePictureList = (props: ProfilePictureListProps) => {
-  const { users } = props
+  const { users, style, navigationType, interactive } = props
   const styles = useStyles()
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style]}>
       {users.map(user => (
         <ProfilePicture
           profile={user}
           key={user.user_id}
           style={styles.image}
+          navigationType={navigationType}
+          interactive={interactive}
         />
       ))}
     </View>

@@ -1,4 +1,4 @@
-import { StyleProp, ViewStyle } from 'react-native'
+import { StyleProp, View, ViewStyle } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
@@ -25,11 +25,20 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: 28,
     fill: palette.neutral
   },
-  skeleton: {
+  iconSkeleton: {
     height: 28,
     width: 28
   },
-  withText: { flexDirection: 'row', alignItems: 'center' },
+  linkSkeleton: {
+    height: 28,
+    width: 150,
+    marginLeft: spacing(3)
+  },
+  withText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start'
+  },
   text: { marginLeft: spacing(2), marginBottom: 0 },
   hyperlinkText: {
     fontSize: typography.fontSize.medium,
@@ -55,12 +64,19 @@ export const SocialLink = (props: SocialLinkProps) => {
 
   // undefined equates to "LOADING" from backend
   if (text === undefined) {
-    return <Skeleton style={styles.skeleton} />
-  }
-
-  // null means the user does not have this social link
-  if (text === null) {
-    return null
+    if (showText) {
+      return (
+        <View style={[styles.withText, style]}>
+          <Skeleton style={styles.iconSkeleton} />
+          <Skeleton style={styles.linkSkeleton} />
+        </View>
+      )
+    }
+    return (
+      <Skeleton
+        style={[styles.iconSkeleton, showText && styles.withText, style]}
+      />
+    )
   }
 
   const iconButtonElement = <Icon height={28} width={28} fill={neutral} />
