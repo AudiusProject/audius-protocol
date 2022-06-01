@@ -24,11 +24,15 @@ class Utils {
 
   static async timeout(ms, log = true) {
     if (log) {
-      console.log(`starting timeout of ${ms}`)
+      genericLogger.info(`starting timeout of ${ms}`)
     }
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
+  /**
+   * Generates a random number from [0, max)
+   * @param {number} max the max random number. exclusive
+   */
   static getRandomInt(max) {
     return Math.floor(Math.random() * max)
   }

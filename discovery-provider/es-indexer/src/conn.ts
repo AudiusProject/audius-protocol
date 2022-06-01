@@ -43,6 +43,14 @@ export async function waitForHealthyCluster() {
   )
 }
 
+export async function ensureSaneCluterSettings() {
+  return dialEs().cluster.putSettings({
+    persistent: {
+      'action.auto_create_index': false,
+    },
+  })
+}
+
 /**
  * Gets the max(blocknumber) from elasticsearch indexes
  * Used for incremental indexing to understand "where we were" so we can load new data from postgres

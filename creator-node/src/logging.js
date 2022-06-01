@@ -3,13 +3,35 @@ const shortid = require('shortid')
 
 const config = require('./config')
 
+// taken from: https://github.com/trentm/node-bunyan/issues/194#issuecomment-347801909
+// since there is no official support for string-based "level" values
+// response from author: https://github.com/trentm/node-bunyan/issues/194#issuecomment-70397668
+function RawStdOutWithLevelName() {
+  return {
+    write: (log) => {
+      // duplicate log object before sending to stdout
+      const clonedLog = { ...log }
+
+      // add new level (string) to level key
+      clonedLog.logLevel = bunyan.nameFromLevel[clonedLog.level]
+
+      // stringify() uses the safeCycles() replacer, which returns '[Circular]'
+      // when circular references are detected
+      // related code: https://github.com/trentm/node-bunyan/blob/0ff1ae29cc9e028c6c11cd6b60e3b90217b66a10/lib/bunyan.js#L1155-L1200
+      const logLine = JSON.stringify(clonedLog, bunyan.safeCycles()) + '\n'
+      process.stdout.write(logLine)
+    }
+  }
+}
+
 const logLevel = config.get('logLevel') || 'info'
 const logger = bunyan.createLogger({
   name: 'audius_creator_node',
   streams: [
     {
       level: logLevel,
-      stream: process.stdout
+      stream: RawStdOutWithLevelName(),
+      type: 'raw'
     }
   ]
 })
@@ -75,20 +97,13 @@ function loggingMiddleware(req, res, next) {
 }
 
 /**
- * Add fields to a child logger instance
- * @param {*} req
- * @param {Object} options fields to add to child logger
- * @returns a logger instance
+ * Creates and returns a child logger for provided logger
+ * @param {Object} logger bunyan parent logger instance
+ * @param {Object} options optional object to define child logger properties. adds to JSON fields, allowing for better log filtering/querying
+ * @returns {Object} child logger instance with defined options
  */
-function setFieldsInChildLogger(req, options = {}) {
-  const fields = Object.keys(options)
-
-  const childOptions = {}
-  fields.forEach((field) => {
-    childOptions[field] = options[field]
-  })
-
-  return req.logger.child(childOptions)
+function createChildLogger(logger, options = {}) {
+  return logger.child(options)
 }
 
 /**
@@ -129,6 +144,6 @@ module.exports = {
   getRequestLoggingContext,
   getStartTime,
   getDuration,
-  setFieldsInChildLogger,
+  createChildLogger,
   logInfoWithDuration
 }

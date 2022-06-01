@@ -12,7 +12,7 @@ COMMENT
 
 # start ganache container,
 # kill old container instance if tear down did not complete
-if docker ps | grep 'audius_ganache_cli_eth_contracts_test' > /dev/null; then
+if docker ps | grep 'audius_ganache_cli_eth_contracts_test' >/dev/null; then
 	# killing the container seems to be faster than restarting
 	printf 'Remove old containers and build artifacts\n'
 	docker rm -f audius_ganache_cli_eth_contracts_test
@@ -36,18 +36,14 @@ docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 truffles
 ./node_modules/.bin/truffle compile
 
 # run truffle tests
-if [ $# -eq 0 ]
-	then
-		node_modules/.bin/truffle test test/*.js --network=test_local
-elif [ $1 == '--audius-random' ] && [ $# -eq 1 ]
-	then
-		node_modules/.bin/truffle test test/random/random.test.js --network=test_local
-elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]
-	then
-		node_modules/.bin/truffle test test/*.js --network=test_local --verbose-rpc
-elif [ $1 == '--verbose-rpc' ] && [ $# -eq 2 ]
-	then
-		node_modules/.bin/truffle test test/*.js --network=test_local --verbose-rpc $2
+if [ $# -eq 0 ]; then
+	node_modules/.bin/truffle test test/*.js --network=test_local
+elif [ $1 == '--audius-random' ] && [ $# -eq 1 ]; then
+	node_modules/.bin/truffle test test/random/random.test.js --network=test_local
+elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]; then
+	node_modules/.bin/truffle test test/*.js --network=test_local --verbose-rpc
+elif [ $1 == '--verbose-rpc' ] && [ $# -eq 2 ]; then
+	node_modules/.bin/truffle test test/*.js --network=test_local --verbose-rpc $2
 else
 	node_modules/.bin/truffle test test/*.js --network=test_local $1
 fi
