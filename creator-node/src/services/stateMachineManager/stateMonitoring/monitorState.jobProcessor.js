@@ -1,12 +1,10 @@
 const config = require('../../../config')
 const { logger } = require('../../../logging')
 const NodeHealthManager = require('../CNodeHealthManager')
-const NodeToSpIdManager = require('../CNodeToSpIdMapManager')
 const {
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap,
-  aggregateReconfigAndPotentialSyncOps
+  computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
 const {
   retrieveClockStatusesForUsersAcrossReplicaSet
@@ -18,21 +16,29 @@ const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
 /**
  * Processes a job to monitor the current state of `USERS_PER_JOB` users.
- * Returns the syncs and replica set updates that are required for these users.
+ * Returns state data for the slice of users processed and the Content Nodes affiliated with them.
  * @param {number} jobId the id of the job being run
  * @param {number} lastProcessedUserId the highest ID of the user that was most recently processed
  * @param {string} discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
  * @param {number} moduloBase (DEPRECATED)
  * @param {number} currentModuloSlice (DEPRECATED)
- * @return {Object} { lastProcessedUserId (number), jobFailed (boolean) }
+ * @return {Object} {
+ *   lastProcessedUserId (number),
+ *   jobFailed (boolean),
+ *   users (array of objects),
+ *   unhealthyPeers (set of content node endpoint strings),
+ *   secondarySyncMetrics (object),
+ *   replicaSetNodesToUserClockStatusesMap (object),
+ *   userSecondarySyncMetricsMap (object)
+ * }
  */
-const processStateMonitoringJob = async (
+module.exports = async function (
   jobId,
   lastProcessedUserId,
   discoveryNodeEndpoint,
   moduloBase, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
   currentModuloSlice // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-) => {
+) {
   // Record all stages of this function along with associated information for use in logging
   const decisionTree = []
   _addToDecisionTree(decisionTree, jobId, 'BEGIN processStateMonitoringJob', {
@@ -45,12 +51,15 @@ const processStateMonitoringJob = async (
   })
 
   let jobFailed = false
-  let nodeUsers = []
+  let users = []
+  let unhealthyPeers = new Set()
+  let replicaSetNodesToUserClockStatusesMap = {}
+  let userSecondarySyncMetricsMap = {}
   // New DN versions support pagination, so we fall back to modulo slicing for old versions
   // TODO: Remove modulo supports once all DNs update to include https://github.com/AudiusProject/audius-protocol/pull/3071
   try {
     try {
-      nodeUsers = await getNodeUsers(
+      users = await getNodeUsers(
         discoveryNodeEndpoint,
         THIS_CNODE_ENDPOINT,
         lastProcessedUserId,
@@ -60,19 +69,19 @@ const processStateMonitoringJob = async (
       // Backwards compatibility -- DN will return all users if it doesn't have pagination.
       // In that case, we have to manually paginate the full set of users
       // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-      if (nodeUsers.length > USERS_PER_JOB) {
-        nodeUsers = sliceUsers(nodeUsers, moduloBase, currentModuloSlice)
+      if (users.length > USERS_PER_JOB) {
+        users = sliceUsers(users, moduloBase, currentModuloSlice)
       }
 
       _addToDecisionTree(
         decisionTree,
         jobId,
         'getNodeUsers and sliceUsers Success',
-        { nodeUsersLength: nodeUsers?.length }
+        { usersLength: users?.length }
       )
     } catch (e) {
       // Make the next job try again instead of looping back to userId 0
-      nodeUsers = [{ user_id: lastProcessedUserId }]
+      users = [{ user_id: lastProcessedUserId }]
 
       _addToDecisionTree(
         decisionTree,
@@ -85,9 +94,8 @@ const processStateMonitoringJob = async (
       )
     }
 
-    let unhealthyPeers
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(nodeUsers)
+      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
       _addToDecisionTree(decisionTree, jobId, 'getUnhealthyPeers Success', {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
@@ -106,7 +114,7 @@ const processStateMonitoringJob = async (
 
     // Build map of <replica set node : [array of wallets that are on this replica set node]>
     const replicaSetNodesToUserWalletsMap =
-      buildReplicaSetNodesToUserWalletsMap(nodeUsers)
+      buildReplicaSetNodesToUserWalletsMap(users)
     _addToDecisionTree(
       decisionTree,
       jobId,
@@ -117,7 +125,6 @@ const processStateMonitoringJob = async (
     )
 
     // Retrieve clock statuses for all users and their current replica sets
-    let replicaSetNodesToUserClockStatusesMap
     try {
       // Set mapping of replica endpoint to (mapping of wallet to clock value)
       const clockStatusResp =
@@ -151,10 +158,9 @@ const processStateMonitoringJob = async (
     }
 
     // Retrieve success metrics for all users syncing to their secondaries
-    let userSecondarySyncMetricsMap = {}
     try {
       userSecondarySyncMetricsMap =
-        await computeUserSecondarySyncSuccessRatesMap(nodeUsers)
+        await computeUserSecondarySyncSuccessRatesMap(users)
       _addToDecisionTree(
         decisionTree,
         jobId,
@@ -176,25 +182,6 @@ const processStateMonitoringJob = async (
         'processStateMonitoringJob computeUserSecondarySyncSuccessRatesMap Error'
       )
     }
-
-    // Find sync requests that need to be issued and ReplicaSets that need to be updated
-    const { requiredUpdateReplicaSetOps, potentialSyncRequests } =
-      await aggregateReconfigAndPotentialSyncOps(
-        nodeUsers,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        NodeToSpIdManager.getCNodeEndpointToSpIdMap(),
-        THIS_CNODE_ENDPOINT
-      )
-    _addToDecisionTree(
-      decisionTree,
-      jobId,
-      'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
-      {
-        requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps?.length,
-        potentialSyncRequestsLength: potentialSyncRequests?.length
-      }
-    )
   } catch (e) {
     logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
     jobFailed = true
@@ -206,12 +193,16 @@ const processStateMonitoringJob = async (
   }
 
   // The next job should start processing where this one ended or loop back around to the first user
-  const lastProcessedUser = nodeUsers[nodeUsers.length - 1] || {
+  const lastProcessedUser = users[users.length - 1] || {
     user_id: 0
   }
   return {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
-    jobFailed
+    jobFailed,
+    users,
+    unhealthyPeers,
+    replicaSetNodesToUserClockStatusesMap,
+    userSecondarySyncMetricsMap
   }
 }
 
@@ -275,5 +266,3 @@ const sliceUsers = (nodeUsers, moduloBase, currentModuloSlice) => {
     (nodeUser) => nodeUser.user_id % moduloBase === currentModuloSlice
   )
 }
-
-module.exports = processStateMonitoringJob

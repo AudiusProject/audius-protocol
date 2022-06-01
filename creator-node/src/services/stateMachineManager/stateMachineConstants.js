@@ -1,12 +1,12 @@
 module.exports = {
   // Max number of completed/failed jobs to keep in redis
   QUEUE_HISTORY: 500,
-  // Name of StateMonitoringQueue
-  STATE_MONITORING_QUEUE_NAME: 'state-monitoring-queue',
   // Max millis to run a StateMonitoringQueue job for before marking it as stalled (1 hour)
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to delay starting the first job in the StateMonitoringQueue (30 seconds)
   STATE_MONITORING_QUEUE_INIT_DELAY_MS: 1000 * 30,
+  // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
+  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to timeout request for getting users who have a node as their primary/secondary (60 seconds)
   GET_NODE_USERS_TIMEOUT_MS: 1000 * 60,
   // Millis to forcibly cancel getNodeUsers request if axios timeout doesn't work (70 seconds)
@@ -21,6 +21,22 @@ module.exports = {
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES: 5,
   // Number of users to process in each batch when calculating reconfigs and syncs
   AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE: 500,
+  QUEUE_NAMES: Object.freeze({
+    // Name of StateMonitoringQueue
+    STATE_MONITORING: 'state-monitoring-queue',
+    // Name of StateReconciliationQueue
+    STATE_RECONCILIATION: 'state-reconciliation-queue'
+  }),
+  JOB_NAMES: Object.freeze({
+    // Name of job in reconciliation queue that handles executing a manual sync on this node
+    HANDLE_MANUAL_SYNC_REQUEST: 'handle-manual-sync-request',
+    // Name of job in reconciliation queue that handles executing a recurring sync on this node
+    HANDLE_RECURRING_SYNC_REQUEST: 'handle-recurring-sync-request',
+    // Name of job in reconciliation queue that issues an outgoing sync request to this node or to another node
+    ISSUE_SYNC_REQUEST: 'issue-sync-request',
+    // Name of job in reconciliation queue that executes a reconfiguration of a user's replica set when it's unhealthy
+    UPDATE_REPLICA_SET: 'update-replica-set'
+  }),
   // Modes used in issuing a reconfig. Each successive mode is a superset of the mode prior.
   // The `key` of the reconfig states is used to identify the current reconfig mode.
   // The `value` of the reconfig states is used in the superset logic of determining which type of

@@ -4,13 +4,13 @@ const _ = require('lodash')
 const config = require('../../../config')
 const {
   QUEUE_HISTORY,
-  STATE_MONITORING_QUEUE_NAME,
+  QUEUE_NAMES,
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
-const processStateMonitoringJob = require('./processStateMonitoringJob')
+const processStateMonitoringJob = require('./monitorState.jobProcessor')
 
 /**
  * Handles setup and lifecycle management (adding and processing jobs)
@@ -27,7 +27,7 @@ class StateMonitoringQueue {
       queue: this.queue,
       jobSuccessCallback: this.enqueueJobAfterSuccess,
       jobFailureCallback: this.enqueueJobAfterFailure,
-      processJob: this.processJob
+      processJob: this.processJob.bind(this)
     })
 
     await this.startQueue(
@@ -55,7 +55,7 @@ class StateMonitoringQueue {
 
   makeQueue(redisHost, redisPort) {
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(STATE_MONITORING_QUEUE_NAME, {
+    return new BullQueue(QUEUE_NAMES.STATE_MONITORING, {
       redis: {
         host: redisHost,
         port: redisPort
@@ -188,12 +188,7 @@ class StateMonitoringQueue {
         currentModuloSlice
       }
     } = job
-
-    try {
-      this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
-    } catch (e) {
-      this.logError(`Failed to log details for jobId=${jobId}: ${e}`)
-    }
+    this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
 
     // Default results of this job will be passed to the next job, so default to failure
     let result = {
