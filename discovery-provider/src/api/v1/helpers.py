@@ -98,6 +98,27 @@ def add_user_artwork(user):
     return user
 
 
+# Helpers
+def extend_search(resp):
+    if "users" in resp:
+        resp["users"] = list(map(extend_user, resp["users"]))
+    if "followed_users" in resp:
+        resp["followed_users"] = list(map(extend_user, resp["followed_users"]))
+    if "tracks" in resp:
+        resp["tracks"] = list(map(extend_track, resp["tracks"]))
+    if "saved_tracks" in resp:
+        resp["saved_tracks"] = list(map(extend_track, resp["saved_tracks"]))
+    if "playlists" in resp:
+        resp["playlists"] = list(map(extend_playlist, resp["playlists"]))
+    if "saved_playlists" in resp:
+        resp["saved_playlists"] = list(map(extend_playlist, resp["saved_playlists"]))
+    if "albums" in resp:
+        resp["albums"] = list(map(extend_playlist, resp["albums"]))
+    if "saved_albums" in resp:
+        resp["saved_albums"] = list(map(extend_playlist, resp["saved_albums"]))
+    return resp
+
+
 def extend_user(user, current_user_id=None):
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
@@ -302,7 +323,7 @@ def extend_supporter(support: SupportResponse):
 def extend_supporting(support: SupportResponse):
     return {
         "rank": support["rank"],
-        "amount": support["amount"],
+        "amount": to_wei_string(support["amount"]),
         "receiver": extend_user(support["user"]),
     }
 
@@ -476,6 +497,9 @@ full_search_parser.add_argument(
     choices=("all", "users", "tracks", "playlists", "albums"),
     description="The type of response, one of: all, users, tracks, playlists, or albums",
 )
+
+verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+verify_token_parser.add_argument("token", required=True, description="JWT to verify")
 
 full_trending_parser = pagination_parser.copy()
 full_trending_parser.add_argument(

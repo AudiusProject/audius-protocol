@@ -1,10 +1,7 @@
-import logging  # pylint: disable=C0302
+import logging
 
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
-    extend_playlist,
-    extend_track,
-    extend_user,
     format_limit,
     format_offset,
     full_search_parser,
@@ -21,27 +18,6 @@ logger = logging.getLogger(__name__)
 # Models & namespaces
 
 full_ns = Namespace("search", description="Full search operations")
-
-
-# Helpers
-def extend_search(resp):
-    if "users" in resp:
-        resp["users"] = list(map(extend_user, resp["users"]))
-    if "followed_users" in resp:
-        resp["followed_users"] = list(map(extend_user, resp["followed_users"]))
-    if "tracks" in resp:
-        resp["tracks"] = list(map(extend_track, resp["tracks"]))
-    if "saved_tracks" in resp:
-        resp["saved_tracks"] = list(map(extend_track, resp["saved_tracks"]))
-    if "playlists" in resp:
-        resp["playlists"] = list(map(extend_playlist, resp["playlists"]))
-    if "saved_playlists" in resp:
-        resp["saved_playlists"] = list(map(extend_playlist, resp["saved_playlists"]))
-    if "albums" in resp:
-        resp["albums"] = list(map(extend_playlist, resp["albums"]))
-    if "saved_albums" in resp:
-        resp["saved_albums"] = list(map(extend_playlist, resp["saved_albums"]))
-    return resp
 
 
 search_full_response = make_full_response(
@@ -76,8 +52,6 @@ class FullSearch(Resource):
             "only_downloadable": False,
         }
         resp = search(search_args)
-        resp = extend_search(resp)
-
         return success_response(resp)
 
 
@@ -117,6 +91,4 @@ class FullSearchAutocomplete(Resource):
             "only_downloadable": False,
         }
         resp = search(search_args)
-        resp = extend_search(resp)
-
         return success_response(resp)

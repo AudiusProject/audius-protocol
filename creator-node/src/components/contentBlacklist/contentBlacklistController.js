@@ -3,7 +3,8 @@ const express = require('express')
 const {
   getAllContentBlacklist,
   addToContentBlacklist,
-  removeFromContentBlacklist
+  removeFromContentBlacklist,
+  getAllTrackIds
 } = require('./contentBlacklistComponentService')
 const {
   handleResponse,
@@ -23,6 +24,21 @@ const types = models.ContentBlacklist.Types
 const TYPES_SET = new Set([types.cid, types.user, types.track])
 
 // Controllers
+
+const getTracksController = async (req) => {
+  let trackIds
+  try {
+    trackIds = await getAllTrackIds()
+  } catch (e) {
+    req.logger.error(
+      `ContentBlackListController - Could not fetch tracks: ${e.message}`
+    )
+
+    return errorResponseServerError(`Could not fetch tracks`)
+  }
+
+  return successResponse({ values: trackIds })
+}
 
 const contentBlacklistGetAllController = async (req) => {
   const blacklistedContent = await getAllContentBlacklist()
@@ -264,7 +280,7 @@ const filterNonexistantIds = async (libs, type, ids) => {
 }
 
 // Routes
-
+router.get('/blacklist/tracks', handleResponse(getTracksController))
 router.get('/blacklist', handleResponse(contentBlacklistGetAllController))
 router.post('/blacklist/add', handleResponse(contentBlacklistAddController))
 router.post(

@@ -10,6 +10,8 @@ from redis import Redis
 from solana.publickey import PublicKey
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import User, UserBankAccount, UserBankTransaction
 from src.models.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
@@ -26,6 +28,7 @@ from src.solana.solana_parser import (
     parse_instruction_data,
 )
 from src.solana.solana_transaction_types import (
+    ConfirmedTransaction,
     ResultMeta,
     TransactionInfoResult,
     TransactionMessage,
@@ -134,12 +137,20 @@ create_token_account_instr: List[InstructionFormat] = [
 def process_transfer_instruction(
     session: Session,
     redis: Redis,
-    sender_account: str,
-    receiver_account: str,
+    instruction: TransactionMessageInstruction,
+    account_keys: List[str],
     meta: ResultMeta,
     tx_sig: str,
     slot: int,
+    challenge_event_bus: ChallengeEventBus,
+    timestamp: datetime.datetime,
 ):
+    # The transaction might list sender/receiver in a different order in the pubKeys.
+    # The "accounts" field of the instruction has the mapping of accounts to pubKey index
+    sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
+    receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
+    sender_account = account_keys[sender_index]
+    receiver_account = account_keys[receiver_index]
     # Accounts to refresh balance
     logger.info(
         f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
@@ -170,7 +181,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_SENDER_ACCOUNT_INDEX
+                if balance["accountIndex"] == sender_index
             ),
             None,
         )
@@ -178,7 +189,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_RECEIVER_ACCOUNT_INDEX
+                if balance["accountIndex"] == receiver_index
             ),
             None,
         )
@@ -186,7 +197,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_SENDER_ACCOUNT_INDEX
+                if balance["accountIndex"] == sender_index
             ),
             None,
         )
@@ -194,7 +205,7 @@ def process_transfer_instruction(
             (
                 balance
                 for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == TRANSFER_RECEIVER_ACCOUNT_INDEX
+                if balance["accountIndex"] == receiver_index
             ),
             None,
         )
@@ -228,8 +239,11 @@ def process_transfer_instruction(
             sender_user_id=sender_user_id,
             receiver_user_id=receiver_user_id,
             slot=slot,
+            created_at=timestamp,
         )
+        logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
         session.add(user_tip)
+        challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
 
 
 class CreateTokenAccount(TypedDict):
@@ -275,7 +289,12 @@ def get_valid_instruction(
 
 
 def process_user_bank_tx_details(
-    session: Session, redis: Redis, tx_info, tx_sig, timestamp
+    session: Session,
+    redis: Redis,
+    tx_info: ConfirmedTransaction,
+    tx_sig,
+    timestamp,
+    challenge_event_bus: ChallengeEventBus,
 ):
     result: TransactionInfoResult = tx_info["result"]
     meta = result["meta"]
@@ -334,23 +353,25 @@ def process_user_bank_tx_details(
             logger.error(e)
 
     elif has_transfer_instruction:
-        # The transaction might list sender/receiver in a different order in the pubKeys.
-        # The "accounts" field of the instruction has the mapping of accounts to pubKey index
-        sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
-        receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
         process_transfer_instruction(
             session=session,
             redis=redis,
-            sender_account=account_keys[sender_index],
-            receiver_account=account_keys[receiver_index],
+            instruction=instruction,
+            account_keys=account_keys,
             meta=meta,
             tx_sig=tx_sig,
             slot=result["slot"],
+            challenge_event_bus=challenge_event_bus,
+            timestamp=timestamp,
         )
 
 
 def parse_user_bank_transaction(
-    session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis
+    session: Session,
+    solana_client_manager: SolanaClientManager,
+    tx_sig,
+    redis,
+    challenge_event_bus: ChallengeEventBus,
 ):
     tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
     tx_slot = tx_info["result"]["slot"]
@@ -362,7 +383,9 @@ def parse_user_bank_transaction(
     {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
     )
 
-    process_user_bank_tx_details(session, redis, tx_info, tx_sig, parsed_timestamp)
+    process_user_bank_tx_details(
+        session, redis, tx_info, tx_sig, parsed_timestamp, challenge_event_bus
+    )
     session.add(
         UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
     )
@@ -371,6 +394,7 @@ def parse_user_bank_transaction(
 
 def process_user_bank_txs():
     solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
+    challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
     db = index_user_bank.db
     redis = index_user_bank.redis
     logger.info("index_user_bank.py | Acquired lock")
@@ -393,7 +417,7 @@ def process_user_bank_txs():
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
-        latest_global_slot = solana_client_manager.get_block_height()
+        latest_global_slot = solana_client_manager.get_slot()
     except:
         logger.error("index_user_bank.py | Failed to get block height")
 
@@ -484,6 +508,7 @@ def process_user_bank_txs():
                         solana_client_manager,
                         tx_sig,
                         redis,
+                        challenge_bus,
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
@@ -543,7 +568,9 @@ def index_user_bank(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            process_user_bank_txs()
+            challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
+            with challenge_bus.use_scoped_dispatch_queue():
+                process_user_bank_txs()
         else:
             logger.info("index_user_bank.py | Failed to acquire lock")
 

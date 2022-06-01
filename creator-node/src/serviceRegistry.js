@@ -18,6 +18,7 @@ const AsyncProcessingQueue = require('./AsyncProcessingQueue')
 const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 const ImageProcessingQueue = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
+const StateMachineManager = require('./services/stateMachineManager')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -47,6 +48,7 @@ class ServiceRegistry {
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
+    this.stateMachineManager = null
     this.snapbackSM = null
     this.URSMRegistrationManager = null
     this.syncQueue = null
@@ -105,10 +107,13 @@ class ServiceRegistry {
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
+    const stateMonitoringQueue =
+      this.stateMachineManager.getStateMonitoringQueue()
 
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
+        new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -145,6 +150,8 @@ class ServiceRegistry {
     // SnapbackSM init (requires L1 identity)
     // Retries indefinitely
     await this._initSnapbackSM()
+    this.stateMachineManager = new StateMachineManager()
+    await this.stateMachineManager.init(this.libs)
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround

@@ -6,7 +6,6 @@ from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
 from src import api_helpers
-from src.api.v1.users import User
 from src.models import (
     AggregateUser,
     Block,
@@ -21,6 +20,7 @@ from src.models import (
     SaveType,
     SupporterRankUp,
     Track,
+    User,
     UserBalanceChange,
     UserTip,
 )
@@ -1156,6 +1156,7 @@ def solana_notifications():
                         const.notification_entity_id: user_tip.sender_user_id,
                         const.notification_entity_type: "user",
                         const.solana_notification_tip_amount: str(user_tip.amount),
+                        const.solana_notification_tip_signature: user_tip.signature,
                     },
                 }
             )

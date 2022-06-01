@@ -133,7 +133,7 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
     req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
-    console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
 }
 
@@ -232,8 +232,10 @@ const getCID = async (req, res) => {
 
       if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
         // Remove file if it is empty and force fetch from CN network
-        req.logger.warn(`[new path] File is empty -- removing ${CID}`)
         await fs.unlink(storagePath)
+        decisionTree.push({
+          stage: `EMPTY_FILE_FOUND_AND_REMOVED_NEW_PATH`
+        })
       } else {
         fileFoundOnFS = true
       }
@@ -311,8 +313,10 @@ const getCID = async (req, res) => {
         })
         if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
           // Remove file if it is empty and force fetch from CN network
-          req.logger.warn(`[legacy path] File is empty -- removing ${CID}`)
           await fs.unlink(storagePath)
+          decisionTree.push({
+            stage: `EMPTY_FILE_FOUND_AND_REMOVED_LEGACY_PATH`
+          })
         } else {
           fileFoundOnFS = true
         }

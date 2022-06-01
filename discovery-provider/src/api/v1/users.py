@@ -1,5 +1,8 @@
+import base64
+import json
 import logging
 
+from eth_account.messages import encode_defunct
 from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -24,6 +27,7 @@ from src.api.v1.helpers import (
     pagination_with_current_user_parser,
     search_parser,
     success_response,
+    verify_token_parser,
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.support import (
@@ -36,6 +40,7 @@ from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
     connected_wallets,
+    decoded_user_token,
     encoded_user_id,
     user_model,
     user_model_full,
@@ -64,9 +69,11 @@ from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
+from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
 from src.queries.search_queries import SearchKind, search
+from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
@@ -581,9 +588,7 @@ class UserSearchResult(Resource):
             "offset": 0,
         }
         response = search(search_args)
-        users = response["users"]
-        users = list(map(extend_user, users))
-        return success_response(users)
+        return success_response(response)
 
 
 followers_response = make_full_response(
@@ -957,7 +962,7 @@ class GetSupporters(Resource):
         return success_response(support)
 
 
-full_get_supporters_response = make_response(
+full_get_supporters_response = make_full_response(
     "full_get_supporters", full_ns, fields.List(fields.Nested(supporter_response_full))
 )
 
@@ -1009,7 +1014,7 @@ class GetSupporting(Resource):
         return success_response(support)
 
 
-full_get_supporting_response = make_response(
+full_get_supporting_response = make_full_response(
     "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
 )
 
@@ -1034,3 +1039,78 @@ class FullGetSupporting(Resource):
         support = get_support_sent_by_user(args)
         support = list(map(extend_supporting, support))
         return success_response(support)
+
+
+verify_token_response = make_response(
+    "verify_token", ns, fields.List(fields.Nested(decoded_user_token))
+)
+
+
+@ns.route("/verify_token")
+class GetTokenVerification(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Verify ID token""",
+        description="""Verify if the given jwt ID token was signed by the subject (user) in the payload""",
+        responses={
+            200: "Success",
+            400: "Bad input",
+            404: "ID token not valid",
+            500: "Server error",
+        },
+    )
+    @ns.expect(verify_token_parser)
+    @ns.marshal_with(verify_token_response)
+    def get(self):
+        args = verify_token_parser.parse_args()
+        # 1. Break JWT into parts
+        token_parts = args["token"].split(".")
+        if not len(token_parts) == 3:
+            abort_bad_request_param("token", ns)
+
+        # 2. Decode the signature
+        try:
+            signature = base64.urlsafe_b64decode(token_parts[2] + "==")
+        except Exception:
+            ns.abort(400, "The JWT signature could not be decoded.")
+
+        signature = signature.decode()
+        base64_header = token_parts[0]
+        base64_payload = token_parts[1]
+        message = f"{base64_header}.{base64_payload}"
+
+        # 3. Recover message from signature
+        web3 = web3_provider.get_web3()
+
+        wallet = None
+        encoded_message = encode_defunct(text=message)
+        try:
+            wallet = web3.eth.account.recover_message(
+                encoded_message,
+                signature=signature,
+            )
+        except Exception:
+            ns.abort(
+                404, "The JWT signature is invalid - wallet could not be recovered."
+            )
+        if not wallet:
+            ns.abort(
+                404, "The JWT signature is invalid - wallet could not be recovered."
+            )
+
+        # 4. Check that user from payload matches the user from the wallet from the signature
+        try:
+            stringified_payload = base64.urlsafe_b64decode(base64_payload + "==")
+            payload = json.loads(stringified_payload)
+        except Exception:
+            ns.abort(400, "JWT payload could not be decoded.")
+
+        wallet_user_id = get_user_with_wallet(wallet)
+        if not wallet_user_id or wallet_user_id != payload["userId"]:
+            ns.abort(
+                404,
+                "The JWT signature is invalid - the wallet does not match the user.",
+            )
+
+        # 5. Send back the decoded payload
+        return success_response(payload)
