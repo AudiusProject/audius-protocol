@@ -34,13 +34,11 @@ ARG git_sha
 ARG audius_loggly_disable
 ARG audius_loggly_token
 ARG audius_loggly_tags
-ARG audius_enable_rsyslog
 
 ENV GIT_SHA=$git_sha
 ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
-ENV enableRsyslog=$audius_enable_rsyslog
 
 HEALTHCHECK --interval=5s --timeout=5s \
     CMD curl -f http://localhost:7000/health_check || exit 1
