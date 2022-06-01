@@ -189,7 +189,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.tags = row.tags
     row.repost_count = row.reposted_by.length
     row.favorite_count = row.saved_by.length
-    row.duration = Math.ceil(
+    row.length = Math.ceil(
       row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
     )
 
