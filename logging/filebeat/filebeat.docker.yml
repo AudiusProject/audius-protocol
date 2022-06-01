@@ -72,6 +72,8 @@ output.elasticsearch:
             container.name: cn1_creator-node_1
     - index: "filebeat-5-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
+cloud.id: "${ELASTIC_CLOUD_ID}"
+cloud.auth: "${API_ID}:${API_KEY}"
 logging.json: true
 logging.metrics.enabled: false
 setup.ilm.check_exists: false

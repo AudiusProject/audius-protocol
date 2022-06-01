@@ -8,9 +8,8 @@
 set -ex
 
 cd /tmp
-
-ELASTIC_AGENT_URL=$(echo dXNlcgo= | base64 --decode)
-ELASTIC_AGENT_TOKEN=$(echo cGFzcwo= | base64 --decode)
+ELASTIC_AGENT_URL=$(echo aHR0cHM6Ly84MTRhMTcyMzVkMDA0ZDEyYmIzMTVlOGQ0NjZlMzJlMy5mbGVldC51cy1jZW50cmFsMS5nY3AuY2xvdWQuZXMuaW86NDQzCg== | base64 -d)
+ELASTIC_AGENT_TOKEN=$(echo YlVoRlIzWTBRVUpPWkdaamRVVjZWbDlzVUdZNlYwMTJUMDlpUmkxUlpIVkdNV0ZRVDBKdFIzTjJRUT09Cg== | base64 -d)
 
 # install Elastic Agent
 ELASTIC_AGENT_VERSION=elastic-agent-8.2.0-linux-x86_64
