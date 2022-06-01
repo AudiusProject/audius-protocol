@@ -202,14 +202,8 @@ class SnapbackSM {
       this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}`)
     })
 
-    // PeerSetManager instance to determine the peer set and its health state
-    this.peerSetManager = new PeerSetManager({
-      discoveryProviderEndpoint:
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      creatorNodeEndpoint: this.endpoint
-    })
-
     this.updateEnabledReconfigModesSet()
+    this.inittedJobProcessors = false
   }
 
   /**
@@ -223,6 +217,13 @@ class SnapbackSM {
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
 
+    // PeerSetManager instance to determine the peer set and its health state
+    this.peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint:
+        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      creatorNodeEndpoint: this.endpoint
+    })
+
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
 
@@ -230,59 +231,62 @@ class SnapbackSM {
      * Initialize all queue processors
      */
 
-    // Initialize stateMachineQueue job processor (aka consumer)
-    this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
-      this.log('StateMachineQueue: Consuming new job...')
-      const { id: jobId } = job
+    if (!this.inittedJobProcessors) {
+      // Initialize stateMachineQueue job processor (aka consumer)
+      this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
+        this.log('StateMachineQueue: Consuming new job...')
+        const { id: jobId } = job
 
-      try {
-        this.log(
-          `StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(
-            job
-          )}`
-        )
-      } catch (e) {
-        this.logError(
-          `StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`
-        )
-      }
-
-      try {
-        await redis.set('stateMachineQueueLatestJobStart', Date.now())
-        await this.processStateMachineOperation(jobId)
-        await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
-      } catch (e) {
-        this.logError(
-          `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`
-        )
-      }
-
-      return {}
-    })
-
-    // Initialize manualSyncQueue job processor
-    this.manualSyncQueue.process(
-      this.MaxManualRequestSyncJobConcurrency,
-      async (job) => {
         try {
-          await this.processSyncOperation(job, SyncType.Manual)
+          this.log(
+            `StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(
+              job
+            )}`
+          )
         } catch (e) {
-          this.logError(`ManualSyncQueue processing error: ${e}`)
+          this.logError(
+            `StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`
+          )
         }
-      }
-    )
 
-    // Initialize recurringSyncQueue job processor
-    this.recurringSyncQueue.process(
-      this.MaxRecurringRequestSyncJobConcurrency,
-      async (job) => {
         try {
-          await this.processSyncOperation(job, SyncType.Recurring)
+          await redis.set('stateMachineQueueLatestJobStart', Date.now())
+          await this.processStateMachineOperation(jobId)
+          await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
         } catch (e) {
-          this.logError(`RecurringSyncQueue processing error ${e}`)
+          this.logError(
+            `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`
+          )
         }
-      }
-    )
+
+        return {}
+      })
+
+      // Initialize manualSyncQueue job processor
+      this.manualSyncQueue.process(
+        this.MaxManualRequestSyncJobConcurrency,
+        async (job) => {
+          try {
+            await this.processSyncOperation(job, SyncType.Manual)
+          } catch (e) {
+            this.logError(`ManualSyncQueue processing error: ${e}`)
+          }
+        }
+      )
+
+      // Initialize recurringSyncQueue job processor
+      this.recurringSyncQueue.process(
+        this.MaxRecurringRequestSyncJobConcurrency,
+        async (job) => {
+          try {
+            await this.processSyncOperation(job, SyncType.Recurring)
+          } catch (e) {
+            this.logError(`RecurringSyncQueue processing error ${e}`)
+          }
+        }
+      )
+      this.inittedJobProcessors = true
+    }
 
     // Start at a random userId to avoid biased processing of early users
     const latestUserId = await this.getLatestUserId()
