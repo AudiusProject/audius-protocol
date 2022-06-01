@@ -10,18 +10,16 @@ const _ = require('lodash')
 const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const NodeHealthManager = require('../src/services/stateMachineManager/CNodeHealthManager')
-const CNodeToSpIdMapManager = require('../src/services/stateMachineManager/CNodeToSpIdMapManager')
 
 describe('test monitorState job processor', function () {
   let server,
     sandbox,
+    originalContentNodeEndpoint,
     getNodeUsersStub,
     getUnhealthyPeersStub,
     buildReplicaSetNodesToUserWalletsMapStub,
     retrieveClockStatusesForUsersAcrossReplicaSetStub,
     computeUserSecondarySyncSuccessRatesMapStub,
-    aggregateReconfigAndPotentialSyncOpsStub,
     getCNodeEndpointToSpIdMapStub
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -29,18 +27,19 @@ describe('test monitorState job processor', function () {
     server = appInfo.server
     sandbox = sinon.createSandbox()
     config.set('spID', 1)
+    originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
   })
 
   afterEach(async function () {
     await server.close()
     sandbox.restore()
 
+    config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
     getNodeUsersStub = null
     getUnhealthyPeersStub = null
     buildReplicaSetNodesToUserWalletsMapStub = null
     retrieveClockStatusesForUsersAcrossReplicaSetStub = null
     computeUserSecondarySyncSuccessRatesMapStub = null
-    aggregateReconfigAndPotentialSyncOpsStub = null
     getCNodeEndpointToSpIdMapStub = null
   })
 
@@ -105,9 +104,6 @@ describe('test monitorState job processor', function () {
     }
 
     // Make monitorState.jobProcessor.js's imports return our stubs
-    NodeHealthManager.getUnhealthyPeers = getUnhealthyPeersStub
-    CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap =
-      getCNodeEndpointToSpIdMapStub
     return proxyquire(
       '../src/services/stateMachineManager/stateMonitoring/monitorState.jobProcessor.js',
       {
@@ -119,8 +115,12 @@ describe('test monitorState job processor', function () {
           computeUserSecondarySyncSuccessRatesMap:
             computeUserSecondarySyncSuccessRatesMapStub
         },
-        '../CNodeHealthManager': NodeHealthManager,
-        '../CNodeToSpIdMapManager': CNodeToSpIdMapManager,
+        '../CNodeHealthManager': {
+          getUnhealthyPeers: getUnhealthyPeersStub
+        },
+        '../CNodeToSpIdMapManager': {
+          getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
+        },
         '../stateMachineUtils': {
           retrieveClockStatusesForUsersAcrossReplicaSet:
             retrieveClockStatusesForUsersAcrossReplicaSetStub

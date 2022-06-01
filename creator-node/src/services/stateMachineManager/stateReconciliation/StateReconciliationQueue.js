@@ -32,10 +32,10 @@ class StateReconciliationQueue {
     )
     this.registerQueueEventHandlersAndJobProcessor({
       queue: this.queue,
-      processManualSync: this.processManualSyncJob,
-      processRecurringSync: this.processRecurringSyncJob,
-      processIssueSyncRequests: this.processIssueSyncRequestsJob,
-      processUpdateReplicaSets: this.processUpdateReplicaSetsJob
+      processManualSync: this.processManualSyncJob.bind(this),
+      processRecurringSync: this.processRecurringSyncJob.bind(this),
+      processIssueSyncRequests: this.processIssueSyncRequestsJob.bind(this),
+      processUpdateReplicaSets: this.processUpdateReplicaSetsJob.bind(this)
     })
 
     // Clear any old state if redis was running but the rest of the server restarted

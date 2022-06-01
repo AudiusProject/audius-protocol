@@ -27,7 +27,7 @@ class StateMonitoringQueue {
       queue: this.queue,
       jobSuccessCallback: this.enqueueJobAfterSuccess,
       jobFailureCallback: this.enqueueJobAfterFailure,
-      processJob: this.processJob
+      processJob: this.processJob.bind(this)
     })
 
     await this.startQueue(
@@ -127,6 +127,7 @@ class StateMonitoringQueue {
       this.logError(
         `Queue Job Failed - ID ${job?.id} - Error ${err}. Queuing another job...`
       )
+      console.log(`theo stack: ${err.stack}`)
       jobFailureCallback(queue, job)
     })
 
