@@ -1,33 +1,38 @@
 import { createContext, ReactNode } from 'react'
 
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
-import { NavigationProp } from '@react-navigation/native'
+import {
+  DrawerNavigationState,
+  NavigationProp,
+  ParamListBase
+} from '@react-navigation/native'
+
+type ContextType = {
+  drawerHelpers: DrawerNavigationHelpers
+  drawerNavigation?: NavigationProp<any>
+  gesturesDisabled?: boolean
+  setGesturesDisabled?: (gestureDisabled: boolean) => void
+  state?: DrawerNavigationState<ParamListBase>
+}
 
 type NotificationsDrawerNavigationContextValue =
-  | {
-      drawerHelpers: DrawerNavigationHelpers
-      drawerNavigation?: NavigationProp<any>
-    }
+  | ContextType
   | Record<string, never>
 
 export const NotificationsDrawerNavigationContext = createContext<
   NotificationsDrawerNavigationContextValue
 >({})
 
-type ProviderProps = {
-  drawerHelpers: DrawerNavigationHelpers
-  drawerNavigation?: NavigationProp<any>
+type ProviderProps = ContextType & {
   children: ReactNode
 }
 
 export const NotificationsDrawerNavigationContextProvider = (
   props: ProviderProps
 ) => {
-  const { drawerHelpers, drawerNavigation, children } = props
+  const { children, ...other } = props
   return (
-    <NotificationsDrawerNavigationContext.Provider
-      value={{ drawerHelpers, drawerNavigation }}
-    >
+    <NotificationsDrawerNavigationContext.Provider value={other}>
       {children}
     </NotificationsDrawerNavigationContext.Provider>
   )

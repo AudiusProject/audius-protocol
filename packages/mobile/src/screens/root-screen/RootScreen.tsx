@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import {
   createDrawerNavigator,
   DrawerContentComponentProps
@@ -46,14 +48,15 @@ const SignOnStack = () => {
   )
 }
 
+type MainStackProps = {
+  navigation: DrawerNavigationHelpers
+}
+
 /**
  * The main stack after signing up or signing in
  */
-const MainStack = ({
-  navigation: drawerHelpers
-}: {
-  navigation: DrawerNavigationHelpers
-}) => {
+const MainStack = (props: MainStackProps) => {
+  const { navigation: drawerHelpers } = props
   const drawerNavigation = useNavigation()
   return (
     <NotificationsDrawerNavigationContextProvider
@@ -69,14 +72,32 @@ const MainStack = ({
   )
 }
 
+type NotificationDrawerContentsProps = DrawerContentComponentProps & {
+  disableGestures: boolean
+  setDisableGestures: (disabled: boolean) => void
+}
+
 /**
  * The contents of the notifications drawer, which swipes in
  */
-const NotificationsDrawerContents = ({
-  navigation: drawerHelpers
-}: DrawerContentComponentProps) => {
+const NotificationsDrawerContents = (
+  props: NotificationDrawerContentsProps
+) => {
+  const {
+    navigation: drawerHelpers,
+    disableGestures,
+    setDisableGestures,
+    state
+  } = props
+  const drawerNavigation = useNavigation()
   return (
-    <NotificationsDrawerNavigationContextProvider drawerHelpers={drawerHelpers}>
+    <NotificationsDrawerNavigationContextProvider
+      drawerHelpers={drawerHelpers}
+      drawerNavigation={drawerNavigation}
+      gesturesDisabled={disableGestures}
+      setGesturesDisabled={setDisableGestures}
+      state={state}
+    >
       <NotificationsScreen />
     </NotificationsDrawerNavigationContextProvider>
   )
@@ -91,6 +112,7 @@ export const RootScreen = () => {
   const signedIn = useSelector(getIsSignedIn)
   const onSignUp = useSelector(getOnSignUp)
   const isAccountAvailable = useSelector(getAccountAvailable)
+  const [disableGestures, setDisableGestures] = useState(false)
 
   // This check is overly complicated and should probably just check `signedIn`.
   // However, this allows the feed screen to load initially so that when the
@@ -112,9 +134,18 @@ export const RootScreen = () => {
         drawerStyle: {
           width: '100%'
         },
-        swipeEdgeWidth: SCREEN_WIDTH
+        swipeEdgeWidth: SCREEN_WIDTH,
+        gestureHandlerProps: {
+          enabled: !disableGestures
+        }
       }}
-      drawerContent={NotificationsDrawerContents}
+      drawerContent={props => (
+        <NotificationsDrawerContents
+          disableGestures={disableGestures}
+          setDisableGestures={setDisableGestures}
+          {...props}
+        />
+      )}
     >
       <Drawer.Screen name='App' component={MainStack} />
     </Drawer.Navigator>
