@@ -1,9 +1,13 @@
+import logging
 from typing import Any, Dict, List, Tuple, TypedDict
 
-from sqlalchemy import Integer, column, text
+from sqlalchemy import Integer, column, func, text
+from sqlalchemy.orm import aliased
 from src.models import AggregateUserTips
-from src.queries.query_helpers import get_users_by_id
+from src.queries.query_helpers import get_users_by_id, paginate_query
 from src.utils.db_session import get_db_read_replica
+
+logger = logging.getLogger(__name__)
 
 
 class SupportResponse(TypedDict):
@@ -47,22 +51,61 @@ OFFSET :offset;
     AggregateUserTips.amount,
 )
 
+# With supporter_user_id
+# ----------------------------
+# WITH rankings AS (
+#   SELECT
+#     rank() OVER (
+#       ORDER BY
+#         aggregate_user_tips.amount DESC
+#     ) AS rank,
+#     aggregate_user_tips.sender_user_id AS sender_user_id,
+#     aggregate_user_tips.receiver_user_id AS receiver_user_id,
+#     aggregate_user_tips.amount AS amount
+#   FROM
+#     aggregate_user_tips
+#   WHERE
+#     aggregate_user_tips.receiver_user_id = %(receiver_user_id_1) s
+# )
+# SELECT
+#   rankings.rank AS rankings_rank,
+#   rankings.sender_user_id AS rankings_sender_user_id,
+#   rankings.receiver_user_id AS rankings_receiver_user_id,
+#   rankings.amount AS rankings_amount
+# FROM
+#   rankings
+# WHERE
+#   rankings.sender_user_id = %(sender_user_id_1) s
+
 
 def get_support_received_by_user(args) -> List[SupportResponse]:
     support: List[SupportResponse] = []
     receiver_user_id = args.get("user_id")
     current_user_id = args.get("current_user_id")
-    limit = args.get("limit", 100)
-    offset = args.get("offset", 0)
+    supporter_user_id = args.get("supporter_user_id", None)
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        query = (
-            session.query("rank", AggregateUserTips)
-            .from_statement(sql_support_received)
-            .params(receiver_user_id=receiver_user_id, limit=limit, offset=offset)
-        )
+        query = session.query(
+            func.rank().over(order_by=AggregateUserTips.amount.desc()).label("rank"),
+            AggregateUserTips,
+        ).filter(AggregateUserTips.receiver_user_id == receiver_user_id)
+        if supporter_user_id is not None:
+            rankings = query.cte(name="rankings")
+            RankingsAggregateUserTips = aliased(
+                AggregateUserTips, rankings, name="aliased_rankings_tips"
+            )
+            query = (
+                session.query(rankings.c.rank, RankingsAggregateUserTips)
+                .select_from(rankings)
+                .filter(RankingsAggregateUserTips.sender_user_id == supporter_user_id)
+            )
+        else:
+            query = query.order_by(AggregateUserTips.amount.desc())
+            query = paginate_query(query)
+        logger.debug(f"get_support_for_user.py | {query}")
         rows: List[Tuple[int, AggregateUserTips]] = query.all()
+        logger.debug(f"get_support_for_user.py | {rows}")
 
         user_ids = [row[1].sender_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)

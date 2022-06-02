@@ -979,7 +979,7 @@ class FullGetSupporters(Resource):
     @ns.marshal_with(full_get_supporters_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
-        args = pagination_parser.parse_args()
+        args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         current_user_id = get_current_user_id(args)
         args["user_id"] = decoded_id
@@ -987,6 +987,37 @@ class FullGetSupporters(Resource):
         support = get_support_received_by_user(args)
         support = list(map(extend_supporter, support))
         return success_response(support)
+
+
+full_get_supporter_response = make_full_response(
+    "full_get_supporter", full_ns, fields.Nested(supporter_response_full)
+)
+
+
+@full_ns.route("/<string:id>/supporters/<string:supporter_user_id>")
+class FullGetSupporter(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Supporter""",
+        description="""Gets the specified supporter of the given user""",
+        params={"id": "A User ID", "supporter_user_id": "A User ID of a supporter"},
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(full_get_supporter_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str, supporter_user_id: str):
+        args = current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        decoded_supporter_user_id = decode_with_abort(supporter_user_id, full_ns)
+        args["user_id"] = decoded_id
+        args["current_user_id"] = current_user_id
+        args["supporter_user_id"] = decoded_supporter_user_id
+        support = get_support_received_by_user(args)
+        support = list(map(extend_supporter, support))
+        if not support:
+            abort_not_found(supporter_user_id, full_ns)
+        return success_response(support[0])
 
 
 get_supporting_response = make_response(
