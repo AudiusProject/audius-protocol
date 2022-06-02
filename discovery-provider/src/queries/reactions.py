@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple, TypedDict
 
+from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.models import User
 from src.models.reaction import Reaction
@@ -13,9 +14,9 @@ class ReactionResponse(TypedDict):
 
 
 def get_reactions(
-    session: Session, transaction_ids: List[str], type: Optional[str]
+    session: Session, reacted_to_ids: List[str], type: Optional[str]
 ) -> List[ReactionResponse]:
-    filters = [Reaction.reacted_to.in_(transaction_ids), User.is_current == True]
+    filters = [Reaction.reacted_to.in_(reacted_to_ids), User.is_current == True]
     if type:
         filters.append(Reaction.reaction_type == type)
 
@@ -25,7 +26,8 @@ def get_reactions(
         .filter(
             *filters,
         )
-        .all()
+        .order_by(desc(Reaction.slot))
+        .first()
     )
 
     return [
