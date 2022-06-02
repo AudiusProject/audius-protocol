@@ -23,7 +23,7 @@ def is_route_decorator(decorator: ast.Call):
     return isinstance(decorator.func, ast.Attribute) and decorator.func.attr == "route"
 
 
-route_parser_regex = re.compile(".*<[^:]*:?(.*)>.*")
+route_parser_regex = re.compile("<[^:]*:?([^>]*)>")
 
 
 def is_route_decorator_documented(route_decorator: ast.Call):
