@@ -3,7 +3,7 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Tuple, TypedDict, Union
+from typing import Dict, Tuple, TypedDict, Union
 
 import base58
 from redis import Redis
@@ -68,7 +68,9 @@ pub struct TrackData {
 """
 
 
-def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None], int]:
+def parse_instruction_data(
+    data,
+) -> Tuple[Union[int, None], int, Union[str, None], Union[Dict, None], int]:
     decoded = base58.b58decode(data)[1:]
 
     user_id_length = int.from_bytes(decoded[0:4], "little")
@@ -100,7 +102,12 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     # Source is not expected to be null, but may be
     source = None
     try:
-        source = str(decoded[source_start:source_end], "utf-8")
+        sourceDict = json.loads(decoded[source_start:source_end])
+        # TODO add backwards compatibility
+
+        source = sourceDict["source"]
+        location = sourceDict["location"]
+
     except ValueError:
         log = (
             "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
@@ -112,7 +119,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
 
     timestamp = int.from_bytes(decoded[source_end : source_end + 8], "little")
 
-    return user_id, track_id, source, timestamp
+    return user_id, track_id, source, location, timestamp
 
 
 class PlayInfo(TypedDict):
@@ -121,6 +128,9 @@ class PlayInfo(TypedDict):
     created_at: datetime
     updated_at: datetime
     source: str
+    city: str
+    region: str
+    country: str
     slot: int
     signature: str
 
@@ -172,9 +182,13 @@ def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_si
             ]:
                 if instruction["programIdIndex"] == audius_program_index:
                     slot = tx_info["result"]["slot"]
-                    user_id, track_id, source, timestamp = parse_instruction_data(
-                        instruction["data"]
-                    )
+                    (
+                        user_id,
+                        track_id,
+                        source,
+                        location,
+                        timestamp,
+                    ) = parse_instruction_data(instruction["data"])
                     created_at = datetime.utcfromtimestamp(timestamp)
 
                     logger.info(
@@ -188,7 +202,15 @@ def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_si
                     )
 
                     # return the data necessary to create a Play and add to challenge bus
-                    return (user_id, track_id, created_at, source, slot, tx_sig)
+                    return (
+                        user_id,
+                        track_id,
+                        created_at,
+                        source,
+                        location,
+                        slot,
+                        tx_sig,
+                    )
 
             return None
 
@@ -350,7 +372,15 @@ def parse_sol_tx_batch(
                 # can be None so check the value exists
                 result = future.result()
                 if result:
-                    user_id, track_id, created_at, source, slot, tx_sig = result
+                    (
+                        user_id,
+                        track_id,
+                        created_at,
+                        source,
+                        location,
+                        slot,
+                        tx_sig,
+                    ) = result
 
                     # Append plays to a list that will be written if all plays are successfully retrieved
                     # from the rpc pool
@@ -360,6 +390,9 @@ def parse_sol_tx_batch(
                         "created_at": created_at,
                         "updated_at": datetime.now(),
                         "source": source,
+                        "city": location.get("city"),
+                        "region": location.get("region"),
+                        "country": location.get("country"),
                         "slot": slot,
                         "signature": tx_sig,
                     }

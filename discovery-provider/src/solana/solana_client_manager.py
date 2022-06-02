@@ -23,7 +23,7 @@ DELAY_SECONDS = 0.2
 
 class SolanaClientManager:
     def __init__(self, solana_endpoints) -> None:
-        self.endpoints = solana_endpoints.split(",")
+        self.endpoints = ["http://solana:8899"]
         self.clients = [Client(endpoint) for endpoint in self.endpoints]
 
     def get_client(self, randomize=False) -> Client:
