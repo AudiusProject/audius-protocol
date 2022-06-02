@@ -126,10 +126,11 @@ solana_notification_threshold = "threshold"
 solana_notification_tip_rank = "rank"
 solana_notification_tip_amount = "amount"
 solana_notification_tip_signature = "tx_signature"
+solana_notification_tip_sender_id = "tip_sender_id"
 
 solana_notification_reaction_type = "reaction_type"
 solana_notification_reaction_type_tip = "tip"
-solana_notification_reaction_reacted_to = "reacted_to"
+solana_notification_reaction_reacted_to_entity = "reacted_to_entity"
 solana_notification_reaction_reaction_value = "reaction_value"
 
 
