@@ -143,6 +143,7 @@ jobs:
               cd /home/ubuntu/audius-protocol/mad-dog;
               git pull;
               git checkout $CIRCLE_BRANCH;
+              A run init-repos up;
               A up;
               npm run start << parameters.mad-dog-type >> verbose;
               exit;
