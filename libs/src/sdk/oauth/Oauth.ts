@@ -105,13 +105,13 @@ const OAUTH_URL = 'https://audius.co/oauth/auth'
 const CSRF_TOKEN_KEY = 'audiusOauthState'
 
 type OauthConfig = {
-  appName?: string
+  appName: string
   discoveryProvider: DiscoveryProvider
 }
 
 export class Oauth {
   discoveryProvider: DiscoveryProvider
-  appName: string | null
+  appName: string
   activePopupWindow: null | Window
   popupCheckInterval: NodeJS.Timer | null
   loginSuccessCallback: LoginSuccessCallback | null
@@ -125,7 +125,7 @@ export class Oauth {
       )
     }
     this.discoveryProvider = discoveryProvider
-    this.appName = appName ?? null
+    this.appName = appName
     this.activePopupWindow = null
     this.loginSuccessCallback = null
     this.loginErrorCallback = null

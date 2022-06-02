@@ -34,14 +34,14 @@ type SdkConfig = {
 /**
  * The Audius SDK
  */
-export const sdk = async (config?: SdkConfig) => {
+export const sdk = async (config: SdkConfig) => {
   const {
     appName,
     discoveryNodeConfig,
     ethContractsConfig,
     ethWeb3Config,
     identityServiceConfig
-  } = config ?? {}
+  } = config
 
   /** Initialize services */
 
