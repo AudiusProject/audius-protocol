@@ -43,9 +43,9 @@ async function initAudiusLibs(
         ethWeb3ProviderEndpoint,
         ethWallet
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-        new Set(['http://docker.for.mac.localhost:5000'])
-      ),
+      discoveryProviderConfig: {
+        whitelist: new Set(['http://docker.for.mac.localhost:5000'])
+      },
       isServer,
       isDebug
     }
@@ -63,7 +63,6 @@ async function initAudiusLibs(
         ethContractsConfig.ownerWallet
       ),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
       identityServiceConfig: AudiusLibs.configIdentityService(
         identityServiceEndpoint
       ),

@@ -46,15 +46,13 @@ export class EthWeb3Manager {
     this.identityService = identityService
     this.hedgehog = hedgehog
 
-    // Hedgehog might not exist (in the case of @audius/sdk)
-    if (this.hedgehog) {
-      if (this.web3Config.ownerWallet) {
-        this.ownerWallet = this.web3Config.ownerWallet
-      } else {
-        const storedWallet = this.hedgehog.getWallet()
-        if (storedWallet) {
-          this.ownerWallet = storedWallet
-        }
+    if (this.web3Config.ownerWallet) {
+      this.ownerWallet = this.web3Config.ownerWallet
+    } else if (this.hedgehog) {
+      // Hedgehog might not exist (in the case of @audius/sdk)
+      const storedWallet = this.hedgehog.getWallet()
+      if (storedWallet) {
+        this.ownerWallet = storedWallet
       }
     }
   }

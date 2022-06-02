@@ -5,7 +5,7 @@ const { SolanaAudiusData } = require('./services/solanaAudiusData/index')
 const { Web3Manager } = require('./services/web3Manager')
 const { EthContracts } = require('./services/ethContracts')
 const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
-const { AudiusContracts } = require('./services/dataContracts/index')
+const { AudiusContracts } = require('./services/dataContracts')
 const { IdentityService } = require('./services/identity')
 const { Comstock } = require('./services/comstock')
 const { Hedgehog } = require('./services/hedgehog')
@@ -34,44 +34,6 @@ const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
 class AudiusLibs {
-  /**
-   * Configures a discovery provider wrapper
-   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
-   * @param {Set<string>?} blacklist whether or not to exclude specified nodes (default no blacklist)
-   * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
-   * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
-   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   *  @param {function} monitoringCallbacks.request
-   *  @param {function} monitoringCallbacks.healthCheck
-   * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
-   * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
-   * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
-   * @param {number?} unhealthyBlockDiff the number of missed blocks after which we would consider a discovery node unhealthy
-   */
-  static configDiscoveryProvider(
-    whitelist = null,
-    blacklist = null,
-    reselectTimeout = null,
-    selectionCallback = null,
-    monitoringCallbacks = {},
-    selectionRequestTimeout = null,
-    selectionRequestRetries = null,
-    unhealthySlotDiffPlays = null,
-    unhealthyBlockDiff = null
-  ) {
-    return {
-      whitelist,
-      blacklist,
-      reselectTimeout,
-      selectionCallback,
-      monitoringCallbacks,
-      selectionRequestTimeout,
-      selectionRequestRetries,
-      unhealthySlotDiffPlays,
-      unhealthyBlockDiff
-    }
-  }
-
   /**
    * Configures an identity service wrapper
    * @param {string} url
@@ -331,7 +293,7 @@ class AudiusLibs {
    * Unless default-valued, all configs are optional.
    * @example
    *  const audius = AudiusLibs({
-   *    discoveryProviderConfig: configDiscoveryProvider(),
+   *    discoveryProviderConfig: {},
    *    creatorNodeConfig: configCreatorNode('https://my-creator.node')
    *  })
    *  await audius.init()
@@ -525,21 +487,10 @@ class AudiusLibs {
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider({
-        whitelist: this.discoveryProviderConfig.whitelist,
-        blacklist: this.discoveryProviderConfig.blacklist,
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
-        reselectTimeout: this.discoveryProviderConfig.reselectTimeout,
-        selectionCallback: this.discoveryProviderConfig.selectionCallback,
-        monitoringCallbacks: this.discoveryProviderConfig.monitoringCallbacks,
-        selectionRequestTimeout:
-          this.discoveryProviderConfig.selectionRequestTimeout,
-        selectionRequestRetries:
-          this.discoveryProviderConfig.selectionRequestRetries,
-        unhealthySlothDiffPlays:
-          this.discoveryProviderConfig.unhealthySlotDiffPlays,
-        unhealthBlockDiff: this.discoveryProviderConfig.unhealthyBlockDiff
+        ...this.discoveryProviderConfig
       })
       await this.discoveryProvider.init()
     }

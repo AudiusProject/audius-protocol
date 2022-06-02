@@ -49,7 +49,6 @@ const getLibsConfig = overrideConfig => {
       lazyConnect,
       CONTENT_NODE_ALLOWLIST
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
     identityServiceConfig: AudiusLibs.configIdentityService(
       IDENTITY_SERVICE_ENDPOINT,
       useHedgehogLocalStorage
