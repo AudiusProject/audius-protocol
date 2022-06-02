@@ -12,10 +12,6 @@ const messages = {
 
 const useStyles = makeStyles(
   ({ spacing, palette, typography }, { isViewed }) => ({
-    tile: {
-      borderColor: isViewed ? 'none' : palette.primary,
-      borderWidth: isViewed ? 0 : 2
-    },
     content: {
       padding: spacing(4)
     },
@@ -56,14 +52,11 @@ export const NotificationTile = (props: NotificationTileProps) => {
   const styles = useStyles({ isViewed })
 
   return (
-    <Tile
-      onPress={onPress}
-      styles={{ tile: styles.tile, content: styles.content }}
-    >
+    <Tile onPress={onPress} styles={{ content: styles.content }}>
       {children}
       <View style={styles.footer}>
         <Text style={styles.timestamp}>{timeLabel}</Text>
-        {!isViewed ? null : (
+        {isViewed ? null : (
           <View style={styles.newPill}>
             <Text style={styles.newPillText}>{messages.new}</Text>
           </View>

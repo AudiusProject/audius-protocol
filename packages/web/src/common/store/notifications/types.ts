@@ -176,6 +176,7 @@ export type TierChange = BaseNotification & {
 
 export type TipReaction = BaseNotification & {
   type: NotificationType.TipReaction
+  userId: ID
   user: User
   value: number
   reaction: 'heart' | 'fire' | 'party' | 'explode'
@@ -183,24 +184,28 @@ export type TipReaction = BaseNotification & {
 
 export type TipReceived = BaseNotification & {
   type: NotificationType.TipReceived
+  userId: ID
   user: User
   value: number
 }
 
 export type TipSent = BaseNotification & {
   type: NotificationType.TipSent
+  userId: ID
   user: User
   value: number
 }
 
 export type TopSupporter = BaseNotification & {
   type: NotificationType.TopSupporter
+  userId: ID
   user: User
   rank: number
 }
 
 export type TopSupporting = BaseNotification & {
   type: NotificationType.TopSupporting
+  userId: ID
   user: User
   rank: number
 }
