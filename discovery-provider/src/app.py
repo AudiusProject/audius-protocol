@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import ast
 import datetime
 import logging
+import os
 import time
 from collections import defaultdict
 from typing import Any, Dict
@@ -228,6 +229,7 @@ def create(test_config=None, mode="app"):
     configure_flask(test_config, app, mode)
 
     if mode == "app":
+        os.environ["audius_service"] = "server"
         helpers.configure_flask_app_logging(
             app, shared_config["discprov"]["loglevel_flask"]
         )
@@ -239,6 +241,7 @@ def create(test_config=None, mode="app"):
         return app
 
     if mode == "celery":
+        os.environ["audius_service"] = "worker"
         # log level is defined via command line in docker yml files
         helpers.configure_logging()
         configure_celery(celery_app.celery, test_config)
