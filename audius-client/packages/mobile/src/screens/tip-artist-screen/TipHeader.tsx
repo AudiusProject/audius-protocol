@@ -4,7 +4,7 @@ import { View } from 'react-native'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
-import { Text, Audio } from 'app/components/core'
+import { Text, AudioText } from 'app/components/core'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -48,7 +48,7 @@ export const TipHeader = (props: TipHeaderProps) => {
       </Text>
       <Text fontSize='xxxxl' weight='heavy'>
         {formatNumberCommas(sendAmount)}{' '}
-        <Audio fontSize='xxxxl' color='neutralLight4' weight='heavy' />
+        <AudioText fontSize='xxxxl' color='neutralLight4' weight='heavy' />
       </Text>
     </View>
   )

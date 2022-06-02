@@ -2,7 +2,7 @@ import { StringWei } from 'audius-client/src/common/models/Wallet'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
-import { Audio, Text } from 'app/components/core'
+import { AudioText, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -29,7 +29,7 @@ export const Tip = (props: TipProps) => {
         {' '}
         {amount}{' '}
       </Text>
-      <Audio color='neutralLight4' />
+      <AudioText color='neutralLight4' />
     </View>
   )
 }

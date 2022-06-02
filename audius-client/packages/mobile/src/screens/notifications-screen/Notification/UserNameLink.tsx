@@ -32,7 +32,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
   }, [user, navigation, dispatch])
 
   return (
-    <Text fontSize='large' weight='medium' color='secondary' onPress={onPress}>
+    <Text fontSize='large' weight='bold' color='secondary' onPress={onPress}>
       {user.name}
     </Text>
   )

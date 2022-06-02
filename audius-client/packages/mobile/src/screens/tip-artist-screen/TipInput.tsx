@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { formatNumberCommas } from 'audius-client/src/common/utils/formatUtil'
 
-import { Audio, TextInput, TextInputProps } from 'app/components/core'
+import { AudioText, TextInput, TextInputProps } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const messages = {
@@ -50,7 +50,7 @@ export const TipInput = (props: TipInputProps) => {
       }}
       placeholder={messages.placeholder}
       keyboardType='numeric'
-      Icon={() => <Audio weight='bold' fontSize='xl' />}
+      Icon={() => <AudioText weight='bold' fontSize='xl' />}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
       value={formattedValue}
