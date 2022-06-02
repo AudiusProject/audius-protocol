@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List, Tuple, TypedDict
 
-from sqlalchemy import Integer, column, func, text
+from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from src.models import AggregateUserTips
 from src.queries.query_helpers import get_users_by_id, paginate_query
@@ -109,10 +109,7 @@ def get_support_received_by_user(args) -> List[SupportResponse]:
             )
             query = paginate_query(query)
 
-        logger.debug(f"get_support_for_user.py | {query}")
         rows: List[Tuple[int, AggregateUserTips]] = query.all()
-        logger.debug(f"get_support_for_user.py | {rows}")
-
         user_ids = [row[1].sender_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)
 
@@ -235,10 +232,8 @@ def get_support_sent_by_user(args) -> List[SupportResponse]:
                 AggregateUserTipsAlias.receiver_user_id.asc(),
             )
             query = paginate_query(query)
-        logger.debug(f"get_support_for_user.py | {query}")
-        rows: List[Tuple[int, AggregateUserTips]] = query.all()
-        logger.debug(f"get_support_for_user.py | {rows}")
 
+        rows: List[Tuple[int, AggregateUserTips]] = query.all()
         user_ids = [row[1].receiver_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)
 
