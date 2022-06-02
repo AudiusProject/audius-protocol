@@ -11,7 +11,6 @@ ROLE=filebeat_writer
 USER=service-provider
 PASS=$(openssl rand -base64 30)
 API_KEY_NAME=service_provider_api_key
-API_KEY_TTL=1m
 
 function delete_user() {
     # https://www.elastic.co/guide/en/elasticsearch/reference/8.2/security-api-delete-user.html
@@ -71,7 +70,6 @@ function get_api_key() {
         -H "Authorization: Basic ${BASIC_AUTH_HEADER}" \
         -d '{
                 "name": "'"${API_KEY_NAME}"'",
-                "expiration": "'"${API_KEY_TTL}"'",
                 "role_descriptors": {
                     "filebeat_monitoring": {
                         "cluster": ["monitor", "read_pipeline"],
