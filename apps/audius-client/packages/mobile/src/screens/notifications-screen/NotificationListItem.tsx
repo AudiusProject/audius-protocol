@@ -15,7 +15,11 @@ import {
   MilestoneNotification,
   AnnouncementNotification,
   TierChangeNotification,
-  TrendingTrackNotification
+  TrendingTrackNotification,
+  TopSupporterNotification,
+  TopSupportingNotification,
+  TipReactionNotification,
+  TipSentNotification
 } from './Notifications'
 
 type NotificationListItemProps = {
@@ -44,6 +48,14 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <RepostNotification notification={notification} />
       case NotificationType.TierChange:
         return <TierChangeNotification notification={notification} />
+      case NotificationType.TipReaction:
+        return <TipReactionNotification notification={notification} />
+      case NotificationType.TipSent:
+        return <TipSentNotification notification={notification} />
+      case NotificationType.TopSupporter:
+        return <TopSupporterNotification notification={notification} />
+      case NotificationType.TopSupporting:
+        return <TopSupportingNotification notification={notification} />
       case NotificationType.TrendingTrack:
         return <TrendingTrackNotification notification={notification} />
       case NotificationType.UserSubscription:
