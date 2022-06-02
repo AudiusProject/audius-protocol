@@ -209,9 +209,6 @@ log_format = {
     "logLevel": "levelname",
     "msg": "message",
     "timestamp": "asctime",
-    "pathname": "pathname",
-    "funcName": "funcName",
-    "lineno": "lineno",
     "service": os.getenv("audius_service"),
 }
 
