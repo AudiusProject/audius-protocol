@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import Status from 'audius-client/src/common/models/Status'
-import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import {
   fetchNotifications,
   refreshNotifications
@@ -11,20 +10,21 @@ import {
   getNotificationStatus,
   makeGetAllNotifications
 } from 'audius-client/src/common/store/notifications/selectors'
-import { Notification } from 'audius-client/src/common/store/notifications/types'
+import {
+  Notification,
+  NotificationType
+} from 'audius-client/src/common/store/notifications/types'
 import { View } from 'react-native'
 
 import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { EmptyNotifications } from './EmptyNotifications'
-import { NotificationBlock } from './NotificationBlock'
-import { NotificationErrorBoundary } from './NotificationErrorBoundary'
 import { NotificationListItem } from './NotificationListItem'
+import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavigationContext'
 
 const NOTIFICATION_PAGE_SIZE = 10
 
@@ -53,13 +53,39 @@ const getNotifications = makeGetAllNotifications()
 export const NotificationList = () => {
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
-  const notifications = useSelectorWeb(getNotifications, isEqual)
+  const notificationss = useSelectorWeb(getNotifications, isEqual)
   const status = useSelectorWeb(getNotificationStatus)
   const hasMore = useSelectorWeb(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const { isEnabled: isTippingEnabled } = useFeatureFlag(
-    FeatureFlags.TIPPING_ENABLED
-  )
+
+  const { gesturesDisabled } = useContext(NotificationsDrawerNavigationContext)
+
+  const notifications = [
+    {
+      type: NotificationType.TipSent,
+      reaction: 'party',
+      value: 1000,
+      userId: 1077098,
+      id: 'blah blahh',
+      isViewed: false
+    },
+    {
+      type: NotificationType.TipReaction,
+      reaction: 'party',
+      value: 1000,
+      userId: 1077098,
+      id: 'blah blah',
+      isViewed: false
+    },
+    {
+      type: NotificationType.TipReceived,
+      value: 1000,
+      userId: 1077098,
+      id: 'blah blahhh',
+      isViewed: false
+    },
+    ...notificationss
+  ]
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
@@ -88,16 +114,10 @@ export const NotificationList = () => {
       refreshing={isRefreshing}
       onRefresh={handleRefresh}
       data={notifications}
-      keyExtractor={(item: Notification) => `${item.id}`}
+      keyExtractor={(item: Notification, index) => `${item.id} ${index}`}
       renderItem={({ item }) => (
         <View style={styles.itemContainer}>
-          {isTippingEnabled ? (
-            <NotificationListItem notification={item} />
-          ) : (
-            <NotificationErrorBoundary>
-              <NotificationBlock notification={item} />
-            </NotificationErrorBoundary>
-          )}
+          <NotificationListItem notification={item} />
         </View>
       )}
       ListFooterComponent={
@@ -110,6 +130,7 @@ export const NotificationList = () => {
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.8}
       initialNumToRender={10}
+      scrollEnabled={!gesturesDisabled}
     />
   )
 }

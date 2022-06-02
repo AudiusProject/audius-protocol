@@ -19,7 +19,8 @@ import {
   TopSupporterNotification,
   TopSupportingNotification,
   TipReactionNotification,
-  TipSentNotification
+  TipSentNotification,
+  TipReceivedNotification
 } from './Notifications'
 
 type NotificationListItemProps = {
@@ -50,6 +51,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <TierChangeNotification notification={notification} />
       case NotificationType.TipReaction:
         return <TipReactionNotification notification={notification} />
+      case NotificationType.TipReceived:
+        return <TipReceivedNotification notification={notification} />
       case NotificationType.TipSent:
         return <TipSentNotification notification={notification} />
       case NotificationType.TopSupporter:
