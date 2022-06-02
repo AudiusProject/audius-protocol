@@ -349,7 +349,7 @@
     ]
   },
   "logging": {
-    "up": ["./logging/start.sh"],
-    "down": ["./logging/stop.sh"]
+    "up": ["./logging/bin/start.sh"],
+    "down": ["./logging/bin/stop.sh"]
   }
 }
