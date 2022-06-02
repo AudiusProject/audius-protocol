@@ -460,14 +460,14 @@ def configure_celery(celery, test_config=None):
                 "task": "index_solana_plays",
                 "schedule": timedelta(seconds=5),
             },
-            "update_aggregate_user": {
-                "task": "update_aggregate_user",
-                "schedule": timedelta(seconds=30),
-            },
-            "update_aggregate_track": {
-                "task": "update_aggregate_track",
-                "schedule": timedelta(seconds=30),
-            },
+#             "update_aggregate_user": {
+#                 "task": "update_aggregate_user",
+#                 "schedule": timedelta(seconds=30),
+#             },
+#             "update_aggregate_track": {
+#                 "task": "update_aggregate_track",
+#                 "schedule": timedelta(seconds=30),
+#             },
             "update_aggregate_playlist": {
                 "task": "update_aggregate_playlist",
                 "schedule": timedelta(seconds=30),
