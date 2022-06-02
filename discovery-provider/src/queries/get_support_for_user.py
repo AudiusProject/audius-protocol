@@ -46,11 +46,11 @@ def query_result_to_support_response(
 # WHERE
 #   aggregate_user_tips.receiver_user_id = %(receiver_user_id_1) s
 # ORDER BY
-#   aggregate_user_tips.amount DESC
+#   aggregate_user_tips.amount DESC, aggregate_user_tips.sender_user_id ASC
 # LIMIT
 #   %(param_1) s OFFSET %(param_2) s
-#
-#
+
+
 # With supporter_user_id:
 # ----------------------------
 # WITH rankings AS (
@@ -90,6 +90,8 @@ def get_support_received_by_user(args) -> List[SupportResponse]:
             func.rank().over(order_by=AggregateUserTips.amount.desc()).label("rank"),
             AggregateUserTips,
         ).filter(AggregateUserTips.receiver_user_id == receiver_user_id)
+
+        # Filter to supporter we care about after ranking
         if supporter_user_id is not None:
             rankings = query.cte(name="rankings")
             RankingsAggregateUserTips = aliased(
@@ -100,9 +102,13 @@ def get_support_received_by_user(args) -> List[SupportResponse]:
                 .select_from(rankings)
                 .filter(RankingsAggregateUserTips.sender_user_id == supporter_user_id)
             )
+        # Only paginate if not looking for single supporter
         else:
-            query = query.order_by(AggregateUserTips.amount.desc())
+            query = query.order_by(
+                AggregateUserTips.amount.desc(), AggregateUserTips.sender_user_id.asc()
+            )
             query = paginate_query(query)
+
         logger.debug(f"get_support_for_user.py | {query}")
         rows: List[Tuple[int, AggregateUserTips]] = query.all()
         logger.debug(f"get_support_for_user.py | {rows}")
@@ -114,47 +120,124 @@ def get_support_received_by_user(args) -> List[SupportResponse]:
     return support
 
 
-sql_support_sent = text(
-    """
-SELECT rank, sender_user_id, receiver_user_id, amount 
-FROM (
-    SELECT
-        RANK() OVER (PARTITION BY B.receiver_user_id ORDER BY B.amount DESC) AS rank
-        , B.sender_user_id
-        , B.receiver_user_id
-        , B.amount
-    FROM aggregate_user_tips A
-    JOIN aggregate_user_tips B ON A.receiver_user_id = B.receiver_user_id
-    WHERE A.sender_user_id = :sender_user_id
-) rankings
-WHERE sender_user_id = :sender_user_id
-ORDER BY amount DESC, receiver_user_id ASC
-LIMIT :limit
-OFFSET :offset;
-"""
-).columns(
-    column("rank", Integer),
-    AggregateUserTips.sender_user_id,
-    AggregateUserTips.receiver_user_id,
-    AggregateUserTips.amount,
-)
+# Without supported_user_id:
+# ----------------------------
+# SELECT
+#   rankings.rank AS rankings_rank,
+#   rankings.sender_user_id AS rankings_sender_user_id,
+#   rankings.receiver_user_id AS rankings_receiver_user_id,
+#   rankings.amount AS rankings_amount
+# FROM
+#   (
+#     SELECT
+#       rank() OVER (
+#         PARTITION BY joined_aggregate_tips.receiver_user_id
+#         ORDER BY joined_aggregate_tips.amount DESC
+#       ) AS rank,
+#       joined_aggregate_tips.sender_user_id AS sender_user_id,
+#       joined_aggregate_tips.receiver_user_id AS receiver_user_id,
+#       joined_aggregate_tips.amount AS amount
+#     FROM
+#       aggregate_user_tips
+#       JOIN
+#         aggregate_user_tips AS joined_aggregate_tips
+#         ON joined_aggregate_tips.receiver_user_id = aggregate_user_tips.receiver_user_id
+#     WHERE
+#       aggregate_user_tips.sender_user_id = % (sender_user_id_1)s
+#   )
+#   AS rankings
+# WHERE
+#   rankings.sender_user_id = % (sender_user_id_2)s
+# ORDER BY
+#   rankings.amount DESC,
+#   rankings.receiver_user_id ASC LIMIT % (param_1)s OFFSET % (param_2)s
+
+
+# With supported_user_id:
+# ----------------------------
+# SELECT
+#   rankings.rank AS rankings_rank,
+#   rankings.sender_user_id AS rankings_sender_user_id,
+#   rankings.receiver_user_id AS rankings_receiver_user_id,
+#   rankings.amount AS rankings_amount
+# FROM
+#   (
+#     SELECT
+#       rank() OVER (
+#         PARTITION BY joined_aggregate_tips.receiver_user_id
+#         ORDER BY joined_aggregate_tips.amount DESC
+#       ) AS rank,
+#       joined_aggregate_tips.sender_user_id AS sender_user_id,
+#       joined_aggregate_tips.receiver_user_id AS receiver_user_id,
+#       joined_aggregate_tips.amount AS amount
+#     FROM
+#       aggregate_user_tips
+#       JOIN
+#         aggregate_user_tips AS joined_aggregate_tips
+#         ON joined_aggregate_tips.receiver_user_id = aggregate_user_tips.receiver_user_id
+#     WHERE
+#       aggregate_user_tips.sender_user_id = % (sender_user_id_1)s
+#       AND aggregate_user_tips.receiver_user_id = % (receiver_user_id_1)s
+#   )
+#   AS rankings
+# WHERE
+#   rankings.sender_user_id = % (sender_user_id_2)s
 
 
 def get_support_sent_by_user(args) -> List[SupportResponse]:
     support: List[SupportResponse] = []
     sender_user_id = args.get("user_id")
     current_user_id = args.get("current_user_id")
-    limit = args.get("limit")
-    offset = args.get("offset")
+    supported_user_id = args.get("supported_user_id", None)
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
+        AggregateUserTipsB = aliased(AggregateUserTips, name="joined_aggregate_tips")
         query = (
-            session.query("rank", AggregateUserTips)
-            .from_statement(sql_support_sent)
-            .params(sender_user_id=sender_user_id, limit=limit, offset=offset)
+            session.query(
+                func.rank()
+                .over(
+                    partition_by=AggregateUserTipsB.receiver_user_id,
+                    order_by=AggregateUserTipsB.amount.desc(),
+                )
+                .label("rank"),
+                AggregateUserTipsB,
+            )
+            .select_from(AggregateUserTips)
+            .join(
+                AggregateUserTipsB,
+                AggregateUserTipsB.receiver_user_id
+                == AggregateUserTips.receiver_user_id,
+            )
+            .filter(AggregateUserTips.sender_user_id == sender_user_id)
         )
+
+        # Filter to the receiver we care about early
+        if supported_user_id is not None:
+            query = query.filter(
+                AggregateUserTips.receiver_user_id == supported_user_id
+            )
+
+        subquery = query.subquery(name="rankings")
+        AggregateUserTipsAlias = aliased(
+            AggregateUserTips, subquery, name="aggregate_user_tips_alias"
+        )
+        query = (
+            session.query(subquery.c.rank, AggregateUserTipsAlias)
+            .select_from(subquery)
+            .filter(AggregateUserTipsAlias.sender_user_id == sender_user_id)
+        )
+
+        # Only paginate if not looking for single supporting
+        if supported_user_id is None:
+            query = query.order_by(
+                AggregateUserTipsAlias.amount.desc(),
+                AggregateUserTipsAlias.receiver_user_id.asc(),
+            )
+            query = paginate_query(query)
+        logger.debug(f"get_support_for_user.py | {query}")
         rows: List[Tuple[int, AggregateUserTips]] = query.all()
+        logger.debug(f"get_support_for_user.py | {rows}")
 
         user_ids = [row[1].receiver_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)
