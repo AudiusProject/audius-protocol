@@ -212,7 +212,7 @@ log_format = {
     "pathname": "pathname",
     "funcName": "funcName",
     "lineno": "lineno",
-    "service": os.getenv("audius_service"),
+    "service": os.getenv("audius_service", "k8s"),
 }
 
 formatter = JsonFormatter(log_format, ensure_ascii=False, mix_extra=True)
