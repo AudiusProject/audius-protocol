@@ -27,7 +27,7 @@ docker build \
         --build-arg API_KEY=${API_KEY} \
         metricbeat
 
-if [[ "${1}" == "publish" ]]; then
+if [[ "${1}" == "push" ]]; then
     docker push audius/metricbeat:${METRICBEAT_VERSION}
     docker push audius/filebeat:${FILEBEAT_VERSION}
 fi
