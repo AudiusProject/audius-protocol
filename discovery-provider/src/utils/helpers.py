@@ -205,11 +205,10 @@ def tuple_to_model_dictionary(t, model):
 
 
 log_format = {
-    "level": "levelno",
-    "logLevel": "levelname",
+    "levelno": "levelno",
+    "level": "levelname",
     "msg": "message",
     "timestamp": "asctime",
-    "service": os.getenv("audius_service"),
 }
 
 formatter = JsonFormatter(log_format, ensure_ascii=False, mix_extra=True)
