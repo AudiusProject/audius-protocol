@@ -31,27 +31,27 @@ def query_result_to_support_response(
     ]
 
 
-sql_support_received = text(
-    """
-SELECT
-    RANK() OVER (ORDER BY amount DESC) AS rank
-    , sender_user_id
-    , receiver_user_id
-    , amount
-FROM aggregate_user_tips
-WHERE receiver_user_id = :receiver_user_id
-ORDER BY amount DESC
-LIMIT :limit
-OFFSET :offset;
-"""
-).columns(
-    column("rank", Integer),
-    AggregateUserTips.sender_user_id,
-    AggregateUserTips.receiver_user_id,
-    AggregateUserTips.amount,
-)
-
-# With supporter_user_id
+# Without supporter_user_id:
+# ----------------------------
+# SELECT
+#   rank() OVER (
+#     ORDER BY
+#       aggregate_user_tips.amount DESC
+#   ) AS rank,
+#   aggregate_user_tips.sender_user_id AS aggregate_user_tips_sender_user_id,
+#   aggregate_user_tips.receiver_user_id AS aggregate_user_tips_receiver_user_id,
+#   aggregate_user_tips.amount AS aggregate_user_tips_amount
+# FROM
+#   aggregate_user_tips
+# WHERE
+#   aggregate_user_tips.receiver_user_id = %(receiver_user_id_1) s
+# ORDER BY
+#   aggregate_user_tips.amount DESC
+# LIMIT
+#   %(param_1) s OFFSET %(param_2) s
+#
+#
+# With supporter_user_id:
 # ----------------------------
 # WITH rankings AS (
 #   SELECT
