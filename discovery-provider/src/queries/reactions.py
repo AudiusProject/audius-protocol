@@ -22,7 +22,7 @@ def get_reactions(
 
     r: Reaction
     user_id: int
-    r, user_id = (
+    result = (
         session.query(Reaction, User.user_id)
         .join(User, User.wallet == Reaction.sender_wallet)
         .filter(
@@ -32,8 +32,10 @@ def get_reactions(
         .first()
     )
 
-    if not r:
+    if not result:
         return None
+
+    r, user_id = result
 
     return [
         {
