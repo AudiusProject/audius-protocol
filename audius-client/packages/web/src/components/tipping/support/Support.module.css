@@ -86,7 +86,12 @@
 }
 
 .tileBackground {
+  display: flex;
+  align-items: flex-end;
   height: 90px;
+  background-position: center;
+  background-size: cover;
+  border-radius: 8px 8px 0 0;
 }
 
 .tileHeader {
@@ -130,8 +135,7 @@
 }
 
 .profilePictureContainer {
-  position: relative;
-  top: -74px;
+  width: 100%;
 }
 .profilePicture {
   margin-left: 8px;
@@ -152,7 +156,7 @@
   transform: none;
 }
 
-.name {
+.nameAndBadge {
   padding-left: 8px;
   height: 25px;
   background: linear-gradient(
@@ -173,6 +177,11 @@
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
+}
+
+.name {
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .topSupportersContainer {
