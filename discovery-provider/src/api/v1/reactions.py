@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields, marshal_with, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
+    abort_not_found,
     extend_reaction,
     make_response,
     success_response,
@@ -35,7 +36,12 @@ class BulkReactions(Resource):
     @ns.doc(
         id="Bulk get Reactions",
         description="Gets reactions by reacted_to_id and type",
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            404: "No such reaction",
+            500: "Server error",
+        },
     )
     @ns.expect(get_reactions_parser)
     @marshal_with(get_reactions_response)
@@ -46,5 +52,9 @@ class BulkReactions(Resource):
         db = get_db_read_replica()
         with db.scoped_session() as session:
             reactions = get_reactions(session, reacted_to_ids, type)
+
+            if not reactions:
+                abort_not_found(reacted_to_ids, ns)
+
             reactions = list(map(extend_reaction, reactions))
             return success_response(reactions)
