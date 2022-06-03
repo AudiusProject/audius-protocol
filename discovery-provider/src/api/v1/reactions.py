@@ -42,9 +42,9 @@ class BulkReactions(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = get_reactions_parser.parse_args()
-        tx_ids, type = args.get("reacted_to_ids"), args.get("type")
+        reacted_to_ids, type = args.get("reacted_to_ids"), args.get("type")
         db = get_db_read_replica()
         with db.scoped_session() as session:
-            reactions = get_reactions(session, tx_ids, type)
+            reactions = get_reactions(session, reacted_to_ids, type)
             reactions = list(map(extend_reaction, reactions))
             return success_response(reactions)
