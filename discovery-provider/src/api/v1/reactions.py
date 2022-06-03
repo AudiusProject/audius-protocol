@@ -18,7 +18,7 @@ get_reactions_parser.add_argument(
     "type", required=False, description="The type of reactions for which to query."
 )
 get_reactions_parser.add_argument(
-    "tx_signatures",
+    "reacted_to_ids",
     required=True,
     action="split",
     description="The `reacted_to` transaction id(s) of the reactions in question.",
@@ -34,7 +34,7 @@ class BulkReactions(Resource):
     @record_metrics
     @ns.doc(
         id="Bulk get Reactions",
-        description="Gets reactions by transaction_id and type",
+        description="Gets reactions by reacted_to_id and type",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(get_reactions_parser)
