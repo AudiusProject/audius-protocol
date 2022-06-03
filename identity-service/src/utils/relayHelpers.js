@@ -1,6 +1,7 @@
 const models = require('../models')
 const config = require('../config')
-const { SolanaUtils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const SolanaUtils = libs.SolanaUtils
 
 const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
 const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')

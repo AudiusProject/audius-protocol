@@ -211,7 +211,7 @@ function createContractClientWithInternalWeb3() {
       web3ProviderEndpoints: gateways
     }
   }
-  const web3Manager = new Web3Manager()
+  const web3Manager = new Web3Manager({})
   web3Manager.web3 = createWeb3Obj('https://audius.poa.network')
   web3Manager.web3Config = web3Config
   return createContractClient(web3Manager)
@@ -224,7 +224,7 @@ function createContractClientWithExternalWeb3() {
       web3ProviderEndpoints: gateways
     }
   }
-  const web3Manager = new Web3Manager()
+  const web3Manager = new Web3Manager({})
   web3Manager.web3 = createWeb3Obj('https://audius.poa.network')
   web3Manager.web3Config = web3Config
   return createContractClient(web3Manager)
@@ -235,7 +235,7 @@ function createContractClientWithEthWeb3Manager() {
     providers: ['https://audius.eth.network'],
     ownerWallet: '0xwallet'
   }
-  const ethWeb3Manager = new EthWeb3Manager(web3Config)
+  const ethWeb3Manager = new EthWeb3Manager({ web3Config })
   ethWeb3Manager.web3 = createWeb3Obj('https://eth.network')
   return createContractClient(ethWeb3Manager)
 }

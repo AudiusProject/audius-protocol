@@ -21,7 +21,7 @@
   },
   "engineStrict": true,
   "dependencies": {
-    "@audius/libs": "1.2.111",
+    "@audius/sdk": "0.0.2",
     "async-retry": "^1.3.3",
     "axios": "^0.20.0",
     "convict": "^6.0.0",

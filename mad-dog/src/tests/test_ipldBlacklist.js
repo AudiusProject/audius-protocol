@@ -34,7 +34,8 @@ const {
   genRandomString
 } = RandomUtils
 const { logger } = require('../logger.js')
-const { Utils: LibsUtils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const LibsUtils = libs.Utils
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 

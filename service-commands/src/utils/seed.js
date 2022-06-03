@@ -1,6 +1,6 @@
 const fs = require('fs')
 const _ = require('lodash')
-const AudiusLibs = require('@audius/libs')
+const { libs: AudiusLibs } = require('@audius/sdk')
 const {
   TEMP_IMAGE_STORAGE_PATH,
   TEMP_TRACK_STORAGE_PATH,
@@ -20,7 +20,7 @@ const {
   SOLANA_REWARDS_MANAGER_PROGRAM_ID,
   SOLANA_REWARDS_MANAGER_PROGRAM_PDA,
   SOLANA_REWARDS_MANAGER_TOKEN_PDA,
-  SOLANA_FEE_PAYER_SECRET_KEYS,
+  SOLANA_FEE_PAYER_SECRET_KEYS
 } = require('./constants')
 
 const {
@@ -41,15 +41,15 @@ const getLibsConfig = overrideConfig => {
       ETH_OWNER_WALLET
     ),
     web3Config: AudiusLibs.configInternalWeb3(
-        DATA_CONTRACTS_REGISTRY_ADDRESS,
-        DATA_CONTRACTS_PROVIDER_ENDPOINTS
+      DATA_CONTRACTS_REGISTRY_ADDRESS,
+      DATA_CONTRACTS_PROVIDER_ENDPOINTS
     ),
     creatorNodeConfig: AudiusLibs.configCreatorNode(
       USER_METADATA_ENDPOINT,
       lazyConnect,
       CONTENT_NODE_ALLOWLIST
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
+    discoveryProviderConfig: {},
     identityServiceConfig: AudiusLibs.configIdentityService(
       IDENTITY_SERVICE_ENDPOINT,
       useHedgehogLocalStorage
@@ -66,21 +66,21 @@ const getLibsConfig = overrideConfig => {
       feePayerSecretKeys: SOLANA_FEE_PAYER_SECRET_KEYS
     }),
     isServer: true,
-    enableUserReplicaSetManagerContract: true,
+    enableUserReplicaSetManagerContract: true
   }
   return _.merge(audiusLibsConfig, overrideConfig)
 }
 
 const camelToKebabCase = str =>
   str
-  .replace(/([A-Z])([A-Z])/g, '$1-$2')
-  .replace(/([a-z])([A-Z])/g, '$1-$2')
-  .replace(/[\s_]+/g, '-')
-  .toLowerCase()
+    .replace(/([A-Z])([A-Z])/g, '$1-$2')
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase()
 
 const kebabToCamelCase = str => str.replace(/-./g, x => x[1].toUpperCase())
 
-const parseMetadataIntoObject = (commaSeparatedKeyValuePairs) => {
+const parseMetadataIntoObject = commaSeparatedKeyValuePairs => {
   const metadata = {}
   commaSeparatedKeyValuePairs.split(',').forEach(kvPair => {
     let [key, value] = kvPair.split('=')
@@ -109,7 +109,7 @@ const getUserProvidedOrRandomImageFile = async userInputPath => {
   } else {
     path = await getRandomImageFilePath(TEMP_IMAGE_STORAGE_PATH)
   }
-  return null// fs.createReadStream(path) TODO figure this out - has to do with issue referenced here https://github.com/AudiusProject/audius-protocol/blob/926129262e/service-commands/src/commands/users.js#L15-L19
+  return null // fs.createReadStream(path) TODO figure this out - has to do with issue referenced here https://github.com/AudiusProject/audius-protocol/blob/926129262e/service-commands/src/commands/users.js#L15-L19
 }
 
 const getProgressCallback = () => {
@@ -119,7 +119,10 @@ const getProgressCallback = () => {
   return progressCallback
 }
 
-const getUserProvidedOrRandomTrackMetadata = (userProvidedMetadata, seedSession) => {
+const getUserProvidedOrRandomTrackMetadata = (
+  userProvidedMetadata,
+  seedSession
+) => {
   const { userId } = seedSession.cache.getActiveUser()
   let metadataObj = getRandomTrackMetadata(userId)
   if (userProvidedMetadata) {
@@ -134,7 +137,9 @@ const parseSeedActionRepeatCount = userInput => {
     try {
       count = Number(userInput)
     } catch (e) {
-      throw new Error(`${userInput} cannot be converted to a number for repeating seed actions.`)
+      throw new Error(
+        `${userInput} cannot be converted to a number for repeating seed actions.`
+      )
     }
   }
   return count
@@ -149,14 +154,19 @@ const getRandomUserIdFromCurrentSeedSessionCache = (userInput, seedSession) => {
   } else {
     const activeUser = seedSession.cache.getActiveUser()
     const cachedUsers = seedSession.cache.getUsers()
-    const randomUsersPool = cachedUsers.filter(u => u.userId !== activeUser.userId)
+    const randomUsersPool = cachedUsers.filter(
+      u => u.userId !== activeUser.userId
+    )
     const randomUser = _.sample(randomUsersPool)
     userId = randomUser.userId
   }
   return userId
 }
 
-const getRandomTrackIdFromCurrentSeedSessionCache = (userInput, seedSession) => {
+const getRandomTrackIdFromCurrentSeedSessionCache = (
+  userInput,
+  seedSession
+) => {
   let trackId
   if (userInput) {
     trackId = userInput
@@ -181,7 +191,6 @@ const getActiveUserFromSeedSessionCache = (userInput, seedSession) => {
 const getRandomString = () => {
   return r6()
 }
-
 
 module.exports = {
   getLibsConfig,

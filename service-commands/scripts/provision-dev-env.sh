@@ -155,7 +155,7 @@ function setup_audius_repos() {
     cd $HOME
     git clone https://github.com/AudiusProject/audius-client.git
     cd audius-client
-    npm link @audius/libs
+    npm link @audius/sdk
 
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up

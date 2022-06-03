@@ -1,11 +1,16 @@
 import { Hedgehog as HedgehogBase, WalletManager } from '@audius/hedgehog'
 import type { IdentityService } from '../identity'
 
+export type HedgehogConfig = {
+  identityService: IdentityService
+  useLocalStorage?: boolean
+}
 export class Hedgehog {
   identityService: IdentityService
   getFn: IdentityService['getFn']
   setAuthFn: IdentityService['setAuthFn']
   setUserFn: IdentityService['setUserFn']
+  instance: HedgehogBase
 
   // TODO - update this comment
 
@@ -15,7 +20,7 @@ export class Hedgehog {
   // Therefore, we need to define this.audiusServiceEndpoint, to satisfy all the deps of the
   // requestToAudiusService and make it execute correctly
 
-  constructor(identityService: IdentityService, useLocalStorage = true) {
+  constructor({ identityService, useLocalStorage = true }: HedgehogConfig) {
     this.identityService = identityService
 
     this.getFn = async (obj) => {
@@ -86,6 +91,6 @@ export class Hedgehog {
       return recoveryInfo
     }
 
-    return hedgehog
+    this.instance = hedgehog
   }
 }
