@@ -13,9 +13,9 @@ import { Supporter, Supporting } from 'common/models/Tipping'
 import { BNWei, StringAudio, StringWei } from 'common/models/Wallet'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
-  getSendUser,
-  getSupporters,
-  getSupporting
+  getOptimisticSupporters,
+  getOptimisticSupporting,
+  getSendUser
 } from 'common/store/tipping/selectors'
 import { sendTip } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
@@ -49,8 +49,8 @@ const messages = {
 export const SendTip = () => {
   const dispatch = useDispatch()
   const account = useSelector(getAccountUser)
-  const supportersMap = useSelector(getSupporters)
-  const supportingMap = useSelector(getSupporting)
+  const supportersMap = useSelector(getOptimisticSupporters)
+  const supportingMap = useSelector(getOptimisticSupporting)
   const receiver = useSelector(getSendUser)
 
   const accountBalance = (useSelector(getAccountBalance) ??

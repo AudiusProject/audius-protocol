@@ -7,7 +7,7 @@ import { useSelector } from 'common/hooks/useSelector'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { getSupporting } from 'common/store/tipping/selectors'
+import { getOptimisticSupporting } from 'common/store/tipping/selectors'
 import { fetchSupportingForUser } from 'common/store/tipping/slice'
 import { loadMore, reset } from 'common/store/user-list/actions'
 import { stringWeiToBN } from 'common/utils/wallet'
@@ -37,7 +37,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { user_id, supporting_count } = artist
   const dispatch = useDispatch()
 
-  const supportingMap = useSelector(getSupporting)
+  const supportingMap = useSelector(getOptimisticSupporting)
   const hasNotPreviouslyFetchedSupportingForArtist =
     supportingMap[user_id] === undefined
   const supportingForArtist = supportingMap[user_id] ?? {}

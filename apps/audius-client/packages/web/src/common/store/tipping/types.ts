@@ -30,15 +30,17 @@ export type TippingSendStatus =
  * Structured it this way to make it easy to check whether a user
  * is supported by / supports another user.
  */
-type SupportersMapForUser = Record<ID, Supporter>
-type SupportersMap = Record<ID, SupportersMapForUser>
+export type SupportersMapForUser = Record<ID, Supporter>
+export type SupportersMap = Record<ID, SupportersMapForUser>
 
-type SupportingMapForUser = Record<ID, Supporting>
-type SupportingMap = Record<ID, SupportingMapForUser>
+export type SupportingMapForUser = Record<ID, Supporting>
+export type SupportingMap = Record<ID, SupportingMapForUser>
 
 export type TippingState = {
   supporters: SupportersMap
+  supportersOverrides: SupportersMap
   supporting: SupportingMap
+  supportingOverrides: SupportingMap
   send: {
     status: Nullable<TippingSendStatus>
     user: Nullable<User>

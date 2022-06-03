@@ -9,8 +9,8 @@ import { ID } from 'common/models/Identifiers'
 import { StringWei } from 'common/models/Wallet'
 import {
   getMainUser,
-  getSupporters,
-  getSupporting
+  getOptimisticSupporters,
+  getOptimisticSupporting
 } from 'common/store/tipping/selectors'
 import { Nullable } from 'common/utils/typeUtils'
 import { formatWei, stringWeiToBN } from 'common/utils/wallet'
@@ -32,8 +32,8 @@ type ArtistChipTipsProps = {
 
 export const ArtistChipTips = ({ artistId, tag }: ArtistChipTipsProps) => {
   const mainUser = useSelector(getMainUser)
-  const supportingMap = useSelector(getSupporting)
-  const supportersMap = useSelector(getSupporters)
+  const supportingMap = useSelector(getOptimisticSupporting)
+  const supportersMap = useSelector(getOptimisticSupporters)
   const [amount, setAmount] = useState<Nullable<StringWei>>(null)
   const [rank, setRank] = useState<Nullable<number>>(null)
 
