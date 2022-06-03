@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, TypedDict
+from typing import List, Optional, TypedDict
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -20,7 +20,9 @@ def get_reactions(
     if type:
         filters.append(Reaction.reaction_type == type)
 
-    results: List[Tuple[Reaction, int]] = (
+    r: Reaction
+    user_id: int
+    r, user_id = (
         session.query(Reaction, User.user_id)
         .join(User, User.wallet == Reaction.sender_wallet)
         .filter(
@@ -37,5 +39,4 @@ def get_reactions(
             "reacted_to": r.reacted_to,
             "sender_user_id": user_id,
         }
-        for (r, user_id) in results
     ]
