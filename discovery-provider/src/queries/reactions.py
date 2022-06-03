@@ -32,6 +32,9 @@ def get_reactions(
         .first()
     )
 
+    if not r:
+        return None
+
     return [
         {
             "reaction_value": r.reaction_value,
