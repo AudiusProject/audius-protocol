@@ -307,21 +307,6 @@ module.exports = function (app) {
     const redis = req.app.get('redis')
     const trackId = parseInt(req.params.id)
     const userId = req.body.userId
-    const forwardedAddresses = req.headers['x-forwarded-for']
-    let clientIPAddress = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() || req.socket.remoteAddress
-    if (clientIPAddress.startsWith('::ffff:')) {
-      clientIPAddress = clientIPAddress.slice(7)
-    }
-
-    const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get('ipdataAPIKey')}`
-
-    const locationResponse = (await axios.get(url)).data;
-    const location = {
-      city: locationResponse.city,
-      region: locationResponse.region,
-      country: locationResponse.country_name,
-    }
-
     if (!userId || !trackId) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
@@ -348,6 +333,26 @@ module.exports = function (app) {
 
       await redis.incr(trackingRedisKeys.submission)
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
+      let location
+      try {
+        const forwardedAddresses = req.headers['x-forwarded-for']
+        let clientIPAddress = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() || req.socket.remoteAddress
+        if (clientIPAddress.startsWith('::ffff:')) {
+          clientIPAddress = clientIPAddress.slice(7)
+        }
+    
+        const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get("ipdataAPIKey")}`
+    
+        const locationResponse = (await axios.get(url)).data;
+        location = {
+          city: locationResponse.city,
+          region: locationResponse.region,
+          country: locationResponse.country_name,
+        }
+      } catch (e) {
+        req.logger.info(`TrackListen location fetch failed: ${e}`)
+      }
+      req.logger.info(`TrackListen location fetch: ${location}`)
 
       try {
         let trackListenTransaction = await createTrackListenTransaction({

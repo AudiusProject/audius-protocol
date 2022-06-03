@@ -105,8 +105,7 @@ def parse_instruction_data(
     try:
         decoded_source = decoded[source_start:source_end]
         sourceDict = json.loads(decoded_source)
-        # TODO add backwards compatibility
-
+        
         source = sourceDict["source"]
         location = sourceDict["location"]
     
