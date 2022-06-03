@@ -107,6 +107,7 @@ const ArtistChip = ({
             wrapperClassName={styles.profilePictureWrapper}
             className={styles.profilePicture}
             image={profilePicture}
+            onClick={onClickArtistName}
           />
         </ArtistPopover>
       ) : (
@@ -114,6 +115,7 @@ const ArtistChip = ({
           wrapperClassName={styles.profilePictureWrapper}
           className={styles.profilePicture}
           image={profilePicture}
+          onClick={onClickArtistName}
         />
       )}
       <div className={styles.text}>

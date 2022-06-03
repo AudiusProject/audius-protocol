@@ -8,7 +8,7 @@ import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { getSupporters } from 'common/store/tipping/selectors'
+import { getOptimisticSupporters } from 'common/store/tipping/selectors'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import {
   setUsers,
@@ -31,7 +31,7 @@ const messages = {
 export const TopSupporters = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
-  const supportersMap = useSelector(getSupporters)
+  const supportersMap = useSelector(getOptimisticSupporters)
   const supportersForProfile = profile?.user_id
     ? supportersMap[profile.user_id] ?? {}
     : {}

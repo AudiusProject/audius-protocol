@@ -1,9 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'common/models/Identifiers'
-import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
+import { UserTip } from 'common/models/Tipping'
 import { User } from 'common/models/User'
-import { TippingState } from 'common/store/tipping/types'
+import {
+  SupportersMapForUser,
+  SupportingMapForUser,
+  TippingState
+} from 'common/store/tipping/types'
 
 export type RefreshSupportPayloadAction = {
   senderUserId: ID
@@ -14,7 +18,9 @@ export type RefreshSupportPayloadAction = {
 
 const initialState: TippingState = {
   supporters: {},
+  supportersOverrides: {},
   supporting: {},
+  supportingOverrides: {},
   send: {
     status: null,
     user: null,
@@ -35,7 +41,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         id: ID
-        supportersForUser: Record<ID, Supporter>
+        supportersForUser: SupportersMapForUser
       }>
     ) => {
       const { id, supportersForUser } = action.payload
@@ -44,11 +50,24 @@ const slice = createSlice({
         ...supportersForUser
       }
     },
+    setSupportersOverridesForUser: (
+      state,
+      action: PayloadAction<{
+        id: ID
+        supportersOverridesForUser: SupportersMapForUser
+      }>
+    ) => {
+      const { id, supportersOverridesForUser } = action.payload
+      state.supportersOverrides[id] = {
+        ...state.supportersOverrides[id],
+        ...supportersOverridesForUser
+      }
+    },
     setSupportingForUser: (
       state,
       action: PayloadAction<{
         id: ID
-        supportingForUser: Record<ID, Supporting>
+        supportingForUser: SupportingMapForUser
       }>
     ) => {
       const { id, supportingForUser } = action.payload
@@ -57,15 +76,24 @@ const slice = createSlice({
         ...supportingForUser
       }
     },
+    setSupportingOverridesForUser: (
+      state,
+      action: PayloadAction<{
+        id: ID
+        supportingOverridesForUser: SupportingMapForUser
+      }>
+    ) => {
+      const { id, supportingOverridesForUser } = action.payload
+      state.supportingOverrides[id] = {
+        ...state.supportingOverrides[id],
+        ...supportingOverridesForUser
+      }
+    },
     refreshSupport: (
       state,
       action: PayloadAction<RefreshSupportPayloadAction>
     ) => {},
     fetchSupportingForUser: (
-      state,
-      action: PayloadAction<{ userId: ID }>
-    ) => {},
-    fetchSupportersForUser: (
       state,
       action: PayloadAction<{ userId: ID }>
     ) => {},
@@ -132,10 +160,11 @@ const slice = createSlice({
 
 export const {
   setSupportingForUser,
+  setSupportingOverridesForUser,
   setSupportersForUser,
+  setSupportersOverridesForUser,
   refreshSupport,
   fetchSupportingForUser,
-  fetchSupportersForUser,
   beginTip,
   sendTip,
   confirmSendTip,

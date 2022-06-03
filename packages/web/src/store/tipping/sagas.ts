@@ -4,16 +4,20 @@ import { call, put, select, takeEvery } from 'typed-redux-saga/macro'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { Supporter, Supporting, UserTip } from 'common/models/Tipping'
-import { BNWei } from 'common/models/Wallet'
+import { User } from 'common/models/User'
+import { BNWei, StringWei } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { getSendTipData } from 'common/store/tipping/selectors'
+import {
+  getOptimisticSupporters,
+  getOptimisticSupporting,
+  getSendTipData
+} from 'common/store/tipping/selectors'
 import {
   confirmSendTip,
   convert,
   fetchRecentTips,
-  fetchSupportersForUser,
   fetchSupportingForUser,
   refreshSupport,
   RefreshSupportPayloadAction,
@@ -23,12 +27,15 @@ import {
   setRecentTips,
   setSupportersForUser,
   setSupportingForUser,
-  hideTip
+  hideTip,
+  setSupportingOverridesForUser,
+  setSupportersOverridesForUser
 } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
 import {
   parseAudioInputToWei,
+  stringWeiToBN,
   weiToAudioString,
   weiToString
 } from 'common/utils/wallet'
@@ -48,9 +55,93 @@ import {
 } from 'utils/constants'
 import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 
-import { getMinSlotForRecentTips, checkTipToDisplay } from './utils'
+import { getMinSlotForRecentTips, checkTipToDisplay } from './storageUtils'
 
 const { getFeatureEnabled, waitForRemoteConfig } = remoteConfigInstance
+
+function* overrideSupportingForUser({
+  amountBN,
+  sender,
+  receiver
+}: {
+  amountBN: BNWei
+  sender: User
+  receiver: User
+}) {
+  /**
+   * Get supporting map for sender.
+   */
+  const supportingMap = yield* select(getOptimisticSupporting)
+  const supportingForSender = supportingMap[sender.user_id] ?? {}
+
+  /**
+   * Get and update the new amount the sender
+   * is supporting to the receiver.
+   */
+  const previousSupportAmount =
+    supportingForSender[receiver.user_id]?.amount ?? ('0' as StringWei)
+  const newSupportAmountBN = stringWeiToBN(previousSupportAmount).add(
+    amountBN
+  ) as BNWei
+
+  /**
+   * Store the optimistic value.
+   */
+  yield put(
+    setSupportingOverridesForUser({
+      id: sender.user_id,
+      supportingOverridesForUser: {
+        [receiver.user_id]: {
+          receiver_id: receiver.user_id,
+          amount: weiToString(newSupportAmountBN),
+          rank: -1
+        }
+      }
+    })
+  )
+}
+
+function* overrideSupportersForUser({
+  amountBN,
+  sender,
+  receiver
+}: {
+  amountBN: BNWei
+  sender: User
+  receiver: User
+}) {
+  /**
+   * Get supporting map for sender.
+   */
+  const supportersMap = yield* select(getOptimisticSupporters)
+  const supportersForReceiver = supportersMap[receiver.user_id] ?? {}
+
+  /**
+   * Get and update the new amount the sender
+   * is supporting to the receiver.
+   */
+  const previousSupportAmount =
+    supportersForReceiver[sender.user_id]?.amount ?? ('0' as StringWei)
+  const newSupportAmountBN = stringWeiToBN(previousSupportAmount).add(
+    amountBN
+  ) as BNWei
+
+  /**
+   * Store the optimistic value.
+   */
+  yield put(
+    setSupportersOverridesForUser({
+      id: receiver.user_id,
+      supportersOverridesForUser: {
+        [sender.user_id]: {
+          sender_id: sender.user_id,
+          amount: weiToString(newSupportAmountBN),
+          rank: -1
+        }
+      }
+    })
+  )
+}
 
 function* sendTipAsync() {
   yield call(waitForRemoteConfig)
@@ -122,17 +213,25 @@ function* sendTipAsync() {
     )
 
     /**
-     * Refresh the supporting list for sender
-     * and the supporters list for the receiver
+     * Store optimistically updated supporting value for sender
+     * and supporter value for receiver.
      */
-    yield put(
-      refreshSupport({
-        senderUserId: sender.user_id,
-        receiverUserId: recipient.user_id,
-        supportingLimit: sender.supporting_count,
-        supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
+    try {
+      yield call(overrideSupportingForUser, {
+        amountBN: weiBNAmount,
+        sender,
+        receiver: recipient
       })
-    )
+      yield call(overrideSupportersForUser, {
+        amountBN: weiBNAmount,
+        sender,
+        receiver: recipient
+      })
+    } catch (e) {
+      console.error(
+        `Could not optimistically update support: ${(e as Error).message}`
+      )
+    }
   } catch (e) {
     const error = (e as Error).message
     console.error(`Send tip failed: ${error}`)
@@ -198,7 +297,6 @@ function* refreshSupportAsync({
       )
     ]
 
-    // todo: should maybe poll here if right after successful tipping?
     yield call(fetchUsers, userIds, new Set(), true)
 
     const supportingForSenderMap: Record<string, Supporting> = {}
@@ -289,47 +387,6 @@ function* fetchSupportingForUserAsync({
     setSupportingForUser({
       id: userId,
       supportingForUser: map
-    })
-  )
-}
-
-function* fetchSupportersForUserAsync({
-  payload: { userId }
-}: {
-  payload: { userId: ID }
-  type: string
-}) {
-  const encodedUserId = encodeHashId(userId)
-  if (!encodedUserId) {
-    return
-  }
-
-  // todo: need to also get whether this user is supported by logged in user
-  // so that we can have correct 'become top supporter' logic
-  // as-is, cannot rely on response because of pagination
-  const supporters = yield* call(fetchSupporters, {
-    encodedUserId
-  })
-  const userIds = supporters.map(supporter => decodeHashId(supporter.sender.id))
-
-  yield call(fetchUsers, userIds, new Set(), true)
-
-  const map: Record<string, Supporter> = {}
-  supporters.forEach(supporter => {
-    const supporterUserId = decodeHashId(supporter.sender.id)
-    if (supporterUserId) {
-      map[supporterUserId] = {
-        sender_id: supporterUserId,
-        rank: supporter.rank,
-        amount: supporter.amount
-      }
-    }
-  })
-
-  yield put(
-    setSupportersForUser({
-      id: userId,
-      supportersForUser: map
     })
   )
 }
@@ -425,10 +482,6 @@ function* watchFetchSupportingForUser() {
   yield* takeEvery(fetchSupportingForUser.type, fetchSupportingForUserAsync)
 }
 
-function* watchFetchSupportersForUser() {
-  yield* takeEvery(fetchSupportersForUser.type, fetchSupportersForUserAsync)
-}
-
 function* watchRefreshSupport() {
   yield* takeEvery(refreshSupport.type, refreshSupportAsync)
 }
@@ -444,7 +497,6 @@ function* watchFetchRecentTips() {
 const sagas = () => {
   return [
     watchFetchSupportingForUser,
-    watchFetchSupportersForUser,
     watchRefreshSupport,
     watchConfirmSendTip,
     watchFetchRecentTips

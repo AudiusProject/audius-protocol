@@ -7,7 +7,7 @@ import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { ID } from 'common/models/Identifiers'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { getSupporting } from 'common/store/tipping/selectors'
+import { getOptimisticSupporting } from 'common/store/tipping/selectors'
 import { stringWeiToBN } from 'common/utils/wallet'
 import {
   setUsers,
@@ -31,7 +31,7 @@ const messages = {
 export const SupportingList = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
-  const supportingMap = useSelector(getSupporting)
+  const supportingMap = useSelector(getOptimisticSupporting)
   const supportingForProfile = profile?.user_id
     ? supportingMap[profile.user_id] ?? {}
     : {}
