@@ -36,7 +36,12 @@ class BulkReactions(Resource):
     @ns.doc(
         id="Bulk get Reactions",
         description="Gets reactions by reacted_to_id and type",
-        responses={200: "Success", 400: "Bad request", 404: "No such reaction", 500: "Server error"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            404: "No such reaction",
+            500: "Server error",
+        },
     )
     @ns.expect(get_reactions_parser)
     @marshal_with(get_reactions_response)
