@@ -6,6 +6,12 @@ const uuidv4 = require('uuid/v4')
 const txRelay = require('../relay/txRelay')
 
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { VerifiedUserReporter } = require('../utils/verifiedUserReporter.js')
+
+const verifiedUserReporter = new VerifiedUserReporter({
+  slackUrl: config.get('verifiedUserReporterSlackUrl'),
+  source: 'twitter'
+})
 
 /**
  * This file contains the twitter endpoints for oauth
@@ -150,6 +156,7 @@ module.exports = function (app) {
               gasLimit: null
             }
             await txRelay.sendTransaction(req, false, txProps, 'twitterVerified')
+            await verifiedUserReporter.report({ userId, handle })
           } catch (e) {
             return errorResponseBadRequest(e)
           }

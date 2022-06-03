@@ -224,7 +224,7 @@ jobs:
 
   test-contracts:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:16
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
@@ -265,7 +265,7 @@ jobs:
     # uses medium (2vcpu/4gb) by default
     resource_class: medium
     docker:
-      - image: circleci/node:14.17.3
+      - image: circleci/node:16
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
@@ -340,8 +340,9 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            npm run test:unit
-            npm run test:ci
+            npm run test:coverage:ci
+      - coveralls/upload:
+          path_to_lcov: ./creator-node/coverage/lcov.info
 
   test-discovery-provider:
     docker:
@@ -636,6 +637,9 @@ jobs:
     parameters:
       repo:
         type: string
+      logspout-tag:
+        type: string
+        default: ""
     steps:
       - checkout
       - setup_remote_docker:
@@ -644,10 +648,11 @@ jobs:
           name: Get tag or latest
           command: |
             # order of precendence for IMAGE tag is:
-            # 1. CIRCLE_TAG if defined,
-            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
-            # 3. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+            # 1. $(head -n1 logging/logspout/Dockerfile) if << parameters.logspout-tag >> defined,
+            # 2. CIRCLE_TAG if defined,
+            # 3. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 4. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ << parameters.logspout-tag >> ] && echo $(head -n1 logspout/Dockerfile | cut -f 2 -d ':') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -656,7 +661,8 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
+            audius_loggly_token_b64=$(echo ${audius_loggly_token} | base64)
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM --build-arg audius_loggly_token=$audius_loggly_token_b64 .
             docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM --force
       - run:
           name: Docker push << parameters.repo >>
@@ -731,6 +737,15 @@ workflows:
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
+
+      - hold-build-logspout:
+          type: approval
+      - docker-build-and-push:
+          name: build-logspout
+          repo: logspout
+          logspout-tag: "true"
+          requires:
+            - hold-build-logspout
 
       - test-solana-programs:
           name: test-solana-programs

@@ -1,9 +1,21 @@
-const { Utils } = require('../../utils')
-const { Web3Manager } = require('../web3Manager')
-const { ProviderSelection } = require('../contracts/ProviderSelection')
+import { ContractABI, Utils } from '../../utils'
+import { Web3Manager } from '../web3Manager'
+import { ProviderSelection } from '../contracts/ProviderSelection'
+import type { HttpProvider } from 'web3-core'
+import type { Contract } from 'web3-eth-contract'
 
-class RegistryClient {
-  constructor (web3Manager, contractABI, contractAddress) {
+export class RegistryClient {
+  web3Manager: Web3Manager
+  contractABI: ContractABI['abi']
+  contractAddress: string
+  Registry: Contract
+  providerSelector: ProviderSelection | null
+
+  constructor(
+    web3Manager: Web3Manager,
+    contractABI: ContractABI['abi'],
+    contractAddress: string
+  ) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractAddress = contractAddress
@@ -23,7 +35,7 @@ class RegistryClient {
     }
   }
 
-  async getContract (contractRegistryKey) {
+  async getContract(contractRegistryKey: string): Promise<string | undefined> {
     try {
       Utils.checkStrLen(contractRegistryKey, 32)
       const contract = await this.Registry.methods
@@ -40,11 +52,11 @@ class RegistryClient {
         return
       }
 
-      return this.retryInit(contractRegistryKey)
+      return await this.retryInit(contractRegistryKey)
     }
   }
 
-  async retryInit (contractRegistryKey) {
+  async retryInit(contractRegistryKey: string) {
     try {
       await this.selectNewEndpoint()
       const web3 = this.web3Manager.getWeb3()
@@ -54,28 +66,30 @@ class RegistryClient {
       )
       return await this.getContract(contractRegistryKey)
     } catch (e) {
-      console.error(e.message)
+      console.error((e as Error).message)
+      return undefined
     }
   }
 
-  async selectNewEndpoint () {
-    this.providerSelector.addUnhealthy(
-      this.web3Manager.getWeb3().currentProvider.host
-    )
+  async selectNewEndpoint() {
+    const currentHost = (
+      this.web3Manager.getWeb3().currentProvider as HttpProvider
+    ).host
+    if (this.providerSelector) {
+      this.providerSelector.addUnhealthy(currentHost)
 
-    if (
-      this.providerSelector.getUnhealthySize() ===
-      this.providerSelector.getServicesSize()
-    ) {
-      throw new Error(
-        `No available, healthy providers to get contract ${JSON.stringify(
-          this.contractABI
-        )}`
-      )
+      if (
+        this.providerSelector.getUnhealthySize() ===
+        this.providerSelector.getServicesSize()
+      ) {
+        throw new Error(
+          `No available, healthy providers to get contract ${JSON.stringify(
+            this.contractABI
+          )}`
+        )
+      }
+
+      await this.providerSelector.select(this)
     }
-
-    await this.providerSelector.select(this)
   }
 }
-
-module.exports = RegistryClient

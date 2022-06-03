@@ -632,7 +632,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         )
         raise e
 
-    if last_tx:
+    if last_tx and transaction_signatures:
         redis.set(latest_sol_plays_slot_key, last_tx["slot"])
     elif latest_global_slot is not None:
         redis.set(latest_sol_plays_slot_key, latest_global_slot)

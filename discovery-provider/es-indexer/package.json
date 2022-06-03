@@ -6,7 +6,7 @@
     "dev": "ts-node src/main.ts",
     "nuke": "ts-node nuke.ts",
     "start": "tsc && pm2-runtime build/src/main.js --restart-delay=3000",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

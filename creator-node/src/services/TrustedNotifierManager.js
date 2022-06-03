@@ -64,7 +64,7 @@ class TrustedNotifierManager {
 
       this.trustedNotifierData = this.trustedNotifierChainData
     } catch (e) {
-      console.error(e)
+      this.logError(`Failed to initialize: ${e}`)
     }
   }
 
