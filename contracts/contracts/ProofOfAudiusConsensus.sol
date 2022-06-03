@@ -80,8 +80,9 @@ contract ProofOfAudiusConsensus is SigningLogicInitializable {
         currentValidators = pendingList;
 
         for (uint256 i = 0; i < currentValidators.length; i++) {
-            validatorState[currentValidators[i]].isValidator = true;
-            validatorState[currentValidators[i]].isValidatorFinalized = true;
+            if (!validatorState[currentValidators[i]].isValidatorFinalized) {
+                validatorState[currentValidators[i]].isValidatorFinalized = true;
+            }
         }
 
         emit ChangeFinalized(currentValidators);
