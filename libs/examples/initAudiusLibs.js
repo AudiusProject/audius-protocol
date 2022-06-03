@@ -63,6 +63,7 @@ async function initAudiusLibs(
         ethContractsConfig.ownerWallet
       ),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
+      discoveryProviderConfig: {},
       identityServiceConfig: AudiusLibs.configIdentityService(
         identityServiceEndpoint
       ),

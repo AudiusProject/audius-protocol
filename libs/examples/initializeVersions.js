@@ -60,6 +60,7 @@ async function initializeVersionServiceProviderContracts() {
       ethWeb3,
       ownerWallet
     ),
+    discoveryProviderConfig: {},
     isServer: isServer
   }
   let audiusLibs = new AudiusLibs(audiusLibsConfig)

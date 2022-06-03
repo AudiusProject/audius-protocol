@@ -485,13 +485,15 @@ class AudiusLibs {
     }
 
     /** Discovery Provider */
-    this.discoveryProvider = new DiscoveryProvider({
-      userStateManager: this.userStateManager,
-      ethContracts: this.ethContracts,
-      web3Manager: this.web3Manager,
-      ...this.discoveryProviderConfig
-    })
-    await this.discoveryProvider.init()
+    if (this.discoveryProviderConfig) {
+      this.discoveryProvider = new DiscoveryProvider({
+        userStateManager: this.userStateManager,
+        ethContracts: this.ethContracts,
+        web3Manager: this.web3Manager,
+        ...this.discoveryProviderConfig
+      })
+      await this.discoveryProvider.init()
+    }
 
     /** Creator Node */
     if (this.creatorNodeConfig) {

@@ -108,6 +108,8 @@ function LibsWrapper(walletIndex = 0) {
       ETH_PROVIDER_URL,
       ETH_OWNER_WALLET
     )
+    const discoveryProviderConfig = {}
+
     const creatorNodeConfig = AudiusLibs.configCreatorNode(USER_NODE, true)
     const identityServiceConfig = AudiusLibs.configIdentityService(
       IDENTITY_SERVICE
@@ -116,6 +118,7 @@ function LibsWrapper(walletIndex = 0) {
     const libs = new AudiusLibs({
       web3Config,
       ethWeb3Config,
+      discoveryProviderConfig,
       identityServiceConfig,
       creatorNodeConfig,
       isServer: true,
