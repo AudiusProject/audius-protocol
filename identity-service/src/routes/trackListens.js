@@ -313,7 +313,7 @@ module.exports = function (app) {
       clientIPAddress = clientIPAddress.slice(7)
     }
 
-    const url = `https://api.ipdata.co/${clientIPAddress}?api-key={key}`
+    const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get('ipdataAPIKey')}`
 
     const locationResponse = (await axios.get(url)).data;
     const location = {
