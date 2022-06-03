@@ -19,6 +19,7 @@ const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 const ImageProcessingQueue = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
+const StateMachineQueueInterfacer = require('./services/stateMachineManager/QueueInterfacer')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -108,12 +109,15 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
     const stateMonitoringQueue =
-      this.stateMachineManager.getStateMonitoringQueue()
+      StateMachineQueueInterfacer.stateMonitoringQueue
+    const stateReconciliationQueue =
+      StateMachineQueueInterfacer.stateReconciliationQueue
 
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
         new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
+        new BullAdapter(stateReconciliationQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),

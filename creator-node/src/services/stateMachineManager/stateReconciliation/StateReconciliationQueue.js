@@ -1,5 +1,4 @@
 const BullQueue = require('bull')
-const _ = require('lodash')
 
 const config = require('../../../config')
 const {
@@ -10,8 +9,8 @@ const {
   SyncType
 } = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
-const issueSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
-const handleSyncRequestJobProcessor = require('./handleSyncRequest.jobProcessor')
+const enqueueSyncRequestsJobProcessor = require('./enqueueSyncRequests.jobProcessor')
+const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 
 /**
@@ -27,11 +26,11 @@ class StateReconciliationQueue {
       config.get('redisHost'),
       config.get('redisPort')
     )
-    this.registerQueueEventHandlersAndJobProcessor({
+    this.registerQueueEventHandlersAndJobProcessors({
       queue: this.queue,
       processManualSync: this.processManualSyncJob.bind(this),
       processRecurringSync: this.processRecurringSyncJob.bind(this),
-      processIssueSyncRequests: this.processIssueSyncRequestsJob.bind(this),
+      processEnqueueSyncRequests: this.processEnqueueSyncRequestsJob.bind(this),
       processUpdateReplicaSets: this.processUpdateReplicaSetsJob.bind(this)
     })
 
@@ -82,14 +81,14 @@ class StateReconciliationQueue {
    * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
    * @param {Function<job>} params.processManualSync the function to call when processing a manual sync job from the queue
    * @param {Function<job>} params.processRecurringSync the function to call when processing a recurring sync job from the queue
-   * @param {Function<job>} params.processIssueSyncRequests the function to call when processing an issue-sync-requests job from the queue
+   * @param {Function<job>} params.processEnqueueSyncRequests the function to call when processing an issue-sync-requests job from the queue
    * @param {Function<job>} params.processUpdateReplicaSet the function to call when processing an update-replica-set job from the queue
    */
-  registerQueueEventHandlersAndJobProcessor({
+  registerQueueEventHandlersAndJobProcessors({
     queue,
     processManualSync,
     processRecurringSync,
-    processIssueSyncRequests,
+    processEnqueueSyncRequests,
     processUpdateReplicaSets
   }) {
     // Add handlers for logging
@@ -114,9 +113,7 @@ class StateReconciliationQueue {
     // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
     queue.on('completed', (job, result) => {
       this.log(
-        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(
-          result
-        )}. Queuing another job...`
+        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
     })
     queue.on('failed', (job, err) => {
@@ -125,19 +122,19 @@ class StateReconciliationQueue {
 
     // Register the logic that gets executed to process each new job from the queue
     queue.process(
-      JOB_NAMES.HANDLE_MANUAL_SYNC_REQUEST,
+      JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
       config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
     queue.process(
-      JOB_NAMES.HANDLE_RECURRING_SYNC_REQUEST,
+      JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
     queue.process(
-      JOB_NAMES.ISSUE_SYNC_REQUEST,
+      JOB_NAMES.ENQUEUE_SYNC_REQUESTS,
       1 /** concurrency */,
-      processIssueSyncRequests
+      processEnqueueSyncRequests
     )
     queue.process(
       JOB_NAMES.UPDATE_REPLICA_SET,
@@ -192,35 +189,28 @@ class StateReconciliationQueue {
     return result
   }
 
-  async processIssueSyncRequestsJob(job) {
+  async processEnqueueSyncRequestsJob(job) {
     const {
       id: jobId,
-      data: {
-        users,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        replicaSetNodesToUserClockStatusesMap
-      }
+      data: { potentialSyncRequests, replicaSetNodesToUserClockStatusesMap }
     } = job
 
     this.log(
       `New ${
-        JOB_NAMES.ISSUE_SYNC_REQUEST
+        JOB_NAMES.ENQUEUE_SYNC_REQUESTS
       } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
     )
 
     let result = {}
     try {
-      result = await issueSyncRequestJobProcessor(
+      result = await enqueueSyncRequestsJobProcessor(
         jobId,
-        users,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
+        potentialSyncRequests,
         replicaSetNodesToUserClockStatusesMap
       )
     } catch (error) {
       this.logError(
-        `Error processing ${JOB_NAMES.ISSUE_SYNC_REQUEST} jobId ${jobId}: ${error}`
+        `Error processing ${JOB_NAMES.ENQUEUE_SYNC_REQUESTS} jobId ${jobId}: ${error}`
       )
       result = { error }
     }

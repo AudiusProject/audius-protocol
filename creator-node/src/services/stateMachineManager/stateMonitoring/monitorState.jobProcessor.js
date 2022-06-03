@@ -24,7 +24,7 @@ const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
  * @param {number} currentModuloSlice (DEPRECATED)
  * @return {Object} {
  *   lastProcessedUserId (number),
- *   jobFailed (boolean),
+ *   jobSucceeded (boolean),
  *   users (array of objects),
  *   unhealthyPeers (set of content node endpoint strings),
  *   secondarySyncMetrics (object),
@@ -50,7 +50,7 @@ module.exports = async function (
     USERS_PER_JOB
   })
 
-  let jobFailed = false
+  let jobSucceeded = true
   let users = []
   let unhealthyPeers = new Set()
   let replicaSetNodesToUserClockStatusesMap = {}
@@ -184,7 +184,7 @@ module.exports = async function (
     }
   } catch (e) {
     logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
-    jobFailed = true
+    jobSucceeded = false
   } finally {
     _addToDecisionTree(decisionTree, jobId, 'END processStateMachineOperation')
 
@@ -198,9 +198,9 @@ module.exports = async function (
   }
   return {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
-    jobFailed,
+    jobSucceeded,
     users,
-    unhealthyPeers,
+    unhealthyPeers: Array.from(unhealthyPeers),
     replicaSetNodesToUserClockStatusesMap,
     userSecondarySyncMetricsMap
   }

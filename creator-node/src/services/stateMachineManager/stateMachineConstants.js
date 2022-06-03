@@ -1,6 +1,6 @@
 module.exports = {
-  // Max number of completed/failed jobs to keep in redis
-  QUEUE_HISTORY: 500,
+  // Max number of completed/failed jobs to keep in redis for each queue
+  QUEUE_HISTORY: 20,
   // Max millis to run a StateMonitoringQueue job for before marking it as stalled (1 hour)
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to delay starting the first job in the StateMonitoringQueue (30 seconds)
@@ -13,14 +13,20 @@ module.exports = {
   GET_NODE_USERS_CANCEL_TOKEN_MS: 1000 * 70,
   // Max number of users to fetch if no maximum is given
   GET_NODE_USERS_DEFAULT_PAGE_SIZE: 100_000,
-  // Timeout for fetching a clock value for a singular user (2 seconds)
+  // Timeout for fetching a clock value for a single user (2 seconds)
   CLOCK_STATUS_REQUEST_TIMEOUT_MS: 2000,
   // Timeout for fetching batch clock values (10 seconds)
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT: 1000 * 10,
   // Max number of attempts to fetch clock statuses from /users/batch_clock_status
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES: 5,
+  // Number of users to process in each batch when calculating reconfigs
+  FIND_REPLICA_SET_UPDATES_BATCH_SIZE: 500,
   // Number of users to process in each batch when calculating reconfigs and syncs
   AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE: 500,
+  // Retry delay (in millis) between requests while monitoring a sync
+  SYNC_MONITORING_RETRY_DELAY_MS: 15_000,
+  // Max number of attempts to select new replica set in reconfig
+  MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: 5,
   QUEUE_NAMES: Object.freeze({
     // Name of StateMonitoringQueue
     STATE_MONITORING: 'state-monitoring-queue',
@@ -28,12 +34,18 @@ module.exports = {
     STATE_RECONCILIATION: 'state-reconciliation-queue'
   }),
   JOB_NAMES: Object.freeze({
-    // Name of job in reconciliation queue that handles executing a manual sync on this node
-    HANDLE_MANUAL_SYNC_REQUEST: 'handle-manual-sync-request',
-    // Name of job in reconciliation queue that handles executing a recurring sync on this node
-    HANDLE_RECURRING_SYNC_REQUEST: 'handle-recurring-sync-request',
-    // Name of job in reconciliation queue that issues an outgoing sync request to this node or to another node
-    ISSUE_SYNC_REQUEST: 'issue-sync-request',
+    // Name of job in monitoring queue that takes a slice of users and gathers data for them
+    MONITOR_STATE: 'monitor-state',
+    // Name of job in monitoring queue that finds potential sync requests that should be issued for users
+    FIND_POTENTIAL_SYNCS: 'find-potential-syncs',
+    // Name of job in monitoring queue that determines replica set updates that should happen for users
+    FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates',
+    // Name of job in reconciliation queue that issues a manual outgoing sync request to this node or to another node
+    ISSUE_MANUAL_SYNC_REQUEST: 'issue-manual-sync-request',
+    // Name of job in reconciliation queue that issues a recurring outgoing sync request to this node or to another node
+    ISSUE_RECURRING_SYNC_REQUEST: 'issue-recurring-sync-request',
+    // Name of job in reconciliation queue that enqueues outgoing sync requests to be issued
+    ENQUEUE_SYNC_REQUESTS: 'enqueue-sync-requests',
     // Name of job in reconciliation queue that executes a reconfiguration of a user's replica set when it's unhealthy
     UPDATE_REPLICA_SET: 'update-replica-set'
   }),

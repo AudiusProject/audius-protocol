@@ -5,12 +5,15 @@ const config = require('../../../config')
 const {
   QUEUE_HISTORY,
   QUEUE_NAMES,
+  JOB_NAMES,
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../stateMachineConstants')
 const { logger } = require('../../../logging')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
-const processStateMonitoringJob = require('./monitorState.jobProcessor')
+const monitorStateJobProcessor = require('./monitorState.jobProcessor')
+const findPotentialSyncsJobProcessor = require('./findPotentialSyncs.jobProcessor')
+const findReplicaSetUpdatesJobProcessor = require('./findReplicaSetUpdates.jobProcessor')
 
 /**
  * Handles setup and lifecycle management (adding and processing jobs)
@@ -18,16 +21,30 @@ const processStateMonitoringJob = require('./monitorState.jobProcessor')
  * gathering sync metrics, and computing healthy/unhealthy peers).
  */
 class StateMonitoringQueue {
-  async init(audiusLibs) {
+  async init({
+    audiusLibs,
+    monitorStateJobSuccessCallback,
+    findPotentialSyncsJobSuccessCallback,
+    findReplicaSetUpdatesJobSuccessCallback
+  }) {
     this.queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
     )
-    this.registerQueueEventHandlersAndJobProcessor({
+    this.registerQueueEventHandlersAndJobProcessors({
       queue: this.queue,
-      jobSuccessCallback: this.enqueueJobAfterSuccess,
-      jobFailureCallback: this.enqueueJobAfterFailure,
-      processJob: this.processJob.bind(this)
+      monitorStateJobSuccessCallback: (job, result) => {
+        monitorStateJobSuccessCallback(result)
+        this.enqueueMonitorStateJobAfterSuccess(job, result)
+      },
+      findPotentialSyncsJobSuccessCallback,
+      findReplicaSetUpdatesJobSuccessCallback,
+      monitorStateJobFailureCallback: this.enqueueMonitorStateJobAfterFailure,
+      processMonitorStateJob: this.processMonitorStateJob.bind(this),
+      processFindPotentialSyncsJob:
+        this.processFindPotentialSyncsJob.bind(this),
+      processFindReplicaSetUpdatesJob:
+        this.processFindReplicaSetUpdatesJob.bind(this)
     })
 
     await this.startQueue(
@@ -83,13 +100,17 @@ class StateMonitoringQueue {
    * @param {Object} params.queue the queue to register events for
    * @param {Function<queue, successfulJob, jobResult>} params.jobSuccessCallback the function to call when a job succeeds
    * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
-   * @param {Function<job>} params.processJob the function to call when processing a job from the queue
+   * @param {Function<job>} params.processMonitorStateJob the function to call when processing a job from the queue to monitor state
    */
-  registerQueueEventHandlersAndJobProcessor({
+  registerQueueEventHandlersAndJobProcessors({
     queue,
-    jobSuccessCallback,
-    jobFailureCallback,
-    processJob
+    monitorStateJobSuccessCallback,
+    monitorStateJobFailureCallback,
+    findPotentialSyncsJobSuccessCallback,
+    findReplicaSetUpdatesJobSuccessCallback,
+    processMonitorStateJob,
+    processFindPotentialSyncsJob,
+    processFindReplicaSetUpdatesJob
   }) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
@@ -104,50 +125,71 @@ class StateMonitoringQueue {
       )
     })
     queue.on('global:stalled', (jobId) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${jobId}`)
+      this.logError(`Queue Job Stalled - ID ${jobId}`)
     })
     queue.on('global:error', (error) => {
-      this.logError(`Queue Job Error - ${error}. Queuing another job...`)
+      this.logError(`Queue Job Error - ${error}`)
     })
 
     // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
     queue.on('completed', (job, result) => {
       this.log(
-        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(
-          result
-        )}. Queuing another job...`
+        `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
-      if (result?.jobFailed) {
-        jobFailureCallback(queue, job)
-      } else {
-        jobSuccessCallback(queue, job, result)
+      switch (job?.name) {
+        case JOB_NAMES.MONITOR_STATE:
+          if (result?.jobSucceeded) {
+            monitorStateJobSuccessCallback(job, result)
+          } else {
+            monitorStateJobFailureCallback(job)
+          }
+          break
+        case JOB_NAMES.FIND_POTENTIAL_SYNCS:
+          findPotentialSyncsJobSuccessCallback(result)
+          break
+        case JOB_NAMES.FIND_REPLICA_SET_UPDATES:
+          findReplicaSetUpdatesJobSuccessCallback(result)
+          break
       }
     })
     queue.on('failed', (job, err) => {
-      this.logError(
-        `Queue Job Failed - ID ${job?.id} - Error ${err}. Queuing another job...`
-      )
-      jobFailureCallback(queue, job)
+      this.logError(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
+      if (job?.name === JOB_NAMES.MONITOR_STATE) {
+        monitorStateJobFailureCallback(job)
+      }
     })
 
     // Register the logic that gets executed to process each new job from the queue
-    queue.process(1 /** concurrency */, processJob)
+    queue.process(
+      JOB_NAMES.MONITOR_STATE,
+      1 /** concurrency */,
+      processMonitorStateJob
+    )
+    queue.process(
+      JOB_NAMES.FIND_POTENTIAL_SYNCS,
+      1 /** concurrency */,
+      processFindPotentialSyncsJob
+    )
+    queue.process(
+      JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+      1 /** concurrency */,
+      processFindReplicaSetUpdatesJob
+    )
   }
 
   /**
    * Enqueues a job that processes the next slice of users after the slice
    * that the previous job sucessfully processed.
-   * @param queue the StateMonitoringQueue to enqueue a job
    * @param successfulJob the jobData of the previous job that succeeded
    * @param successfulJobResult the result of the previous job that succeeded
    */
-  enqueueJobAfterSuccess(queue, successfulJob, successfulJobResult) {
+  enqueueMonitorStateJobAfterSuccess(successfulJob, successfulJobResult) {
     const {
       data: { discoveryNodeEndpoint, moduloBase, currentModuloSlice }
     } = successfulJob
     const { lastProcessedUserId } = successfulJobResult
 
-    queue.add({
+    this.queue.add(JOB_NAMES.MONITOR_STATE, {
       lastProcessedUserId,
       discoveryNodeEndpoint,
       moduloBase,
@@ -157,10 +199,9 @@ class StateMonitoringQueue {
 
   /**
    * Enqueues a job that picks up where the previous failed job left off.
-   * @param queue the StateMonitoringQueue to enqueue a job
    * @param failedJob the jobData for the previous job that failed
    */
-  enqueueJobAfterFailure(queue, failedJob) {
+  enqueueMonitorStateJobAfterFailure(failedJob) {
     const {
       data: {
         lastProcessedUserId,
@@ -170,7 +211,7 @@ class StateMonitoringQueue {
       }
     } = failedJob
 
-    queue.add({
+    this.queue.add(JOB_NAMES.MONITOR_STATE, {
       lastProcessedUserId,
       discoveryNodeEndpoint,
       moduloBase,
@@ -178,7 +219,7 @@ class StateMonitoringQueue {
     })
   }
 
-  async processJob(job) {
+  async processMonitorStateJob(job) {
     const {
       id: jobId,
       data: {
@@ -188,19 +229,23 @@ class StateMonitoringQueue {
         currentModuloSlice
       }
     } = job
-    this.log(`New job details: jobId=${jobId}, job=${JSON.stringify(job)}`)
+    this.log(
+      `New ${
+        JOB_NAMES.MONITOR_STATE
+      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
+    )
 
     // Default results of this job will be passed to the next job, so default to failure
     let result = {
       lastProcessedUserId,
-      jobFailed: true,
+      jobSucceeded: false,
       moduloBase,
       currentModuloSlice
     }
     try {
       // TODO: Wire up metrics
       // await redis.set('stateMachineQueueLatestJobStart', Date.now())
-      result = await processStateMonitoringJob(
+      result = await monitorStateJobProcessor(
         jobId,
         lastProcessedUserId,
         discoveryNodeEndpoint,
@@ -210,7 +255,82 @@ class StateMonitoringQueue {
       // TODO: Wire up metrics
       // await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
     } catch (e) {
-      this.logError(`Error processing jobId ${jobId}: ${e}`)
+      this.logError(
+        `Error processing ${JOB_NAMES.MONITOR_STATE} jobId ${jobId}: ${e}`
+      )
+    }
+
+    return result
+  }
+
+  async processFindPotentialSyncsJob(job) {
+    const {
+      id: jobId,
+      data: {
+        users,
+        unhealthyPeers,
+        replicaSetNodesToUserClockStatusesMap,
+        userSecondarySyncMetricsMap
+      }
+    } = job
+
+    this.log(
+      `New ${
+        JOB_NAMES.FIND_POTENTIAL_SYNCS
+      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
+    )
+
+    let result = {}
+    try {
+      result = await findPotentialSyncsJobProcessor(
+        jobId,
+        users,
+        unhealthyPeers,
+        replicaSetNodesToUserClockStatusesMap,
+        userSecondarySyncMetricsMap
+      )
+    } catch (error) {
+      this.logError(
+        `Error processing ${JOB_NAMES.FIND_POTENTIAL_SYNCS} jobId ${jobId}: ${error}`
+      )
+      console.log(error.stack)
+      result = { error }
+    }
+
+    return result
+  }
+
+  async processFindReplicaSetUpdatesJob(job) {
+    const {
+      id: jobId,
+      data: {
+        users,
+        unhealthyPeers,
+        replicaSetNodesToUserClockStatusesMap,
+        userSecondarySyncMetricsMap
+      }
+    } = job
+
+    this.log(
+      `New ${
+        JOB_NAMES.FIND_REPLICA_SET_UPDATES
+      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
+    )
+
+    let result = {}
+    try {
+      result = await findReplicaSetUpdatesJobProcessor(
+        jobId,
+        users,
+        unhealthyPeers,
+        replicaSetNodesToUserClockStatusesMap,
+        userSecondarySyncMetricsMap
+      )
+    } catch (error) {
+      this.logError(
+        `Error processing ${JOB_NAMES.FIND_REPLICA_SET_UPDATES} jobId ${jobId}: ${error}`
+      )
+      result = { error }
     }
 
     return result
@@ -242,13 +362,13 @@ class StateMonitoringQueue {
     const lastProcessedUserId = _.random(0, latestUserId)
     const currentModuloSlice = this.randomStartingSlice(moduloBase)
 
-    // Enqueue first job after a delay. This job requeues itself upon completion or failure
+    // Enqueue first monitorState job after a delay. This job requeues itself upon completion or failure
     await queue.add(
+      JOB_NAMES.MONITOR_STATE,
       /** data */
       {
         lastProcessedUserId,
         discoveryNodeEndpoint,
-        prevJobFailed: false,
         moduloBase,
         currentModuloSlice
       },
