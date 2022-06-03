@@ -29,7 +29,7 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { dismissRecentTip } from 'store/tipping/utils'
+import { dismissRecentTip } from 'store/tipping/storageUtils'
 import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 

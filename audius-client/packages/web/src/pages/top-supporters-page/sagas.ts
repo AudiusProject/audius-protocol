@@ -1,10 +1,10 @@
 import { put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
-import { Supporter } from 'common/models/Tipping'
 import { User, UserMetadata } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { setSupportersForUser } from 'common/store/tipping/slice'
+import { SupportersMapForUser } from 'common/store/tipping/types'
 import UserListSagaFactory from 'common/store/user-list/sagas'
 import { getTopSupportersError } from 'common/store/user-list/top-supporters/actions'
 import { watchTopSupportersError } from 'common/store/user-list/top-supporters/errorSagas'
@@ -67,7 +67,7 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
    * in the interface, to update the store.
    */
   processExtra: function* ({ userId, supporters }) {
-    const supportersMap: Record<ID, Supporter> = {}
+    const supportersMap: SupportersMapForUser = {}
     supporters.forEach((supporter: SupporterResponse) => {
       const supporterUserId = decodeHashId(supporter.sender.id)
       if (supporterUserId) {
