@@ -162,7 +162,7 @@ async function createTrackListenTransaction ({
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
 
-  sourceData = location ? JSON.stringify({ source: source, location: location }) : source
+  const sourceData = location ? JSON.stringify({ source: source, location: location }) : source
 
   let trackData = new TrackData({
     userId: userId,

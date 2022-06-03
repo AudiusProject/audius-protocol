@@ -105,16 +105,16 @@ def parse_instruction_data(
     try:
         decoded_source = decoded[source_start:source_end]
         sourceDict = json.loads(decoded_source)
-        
         source = sourceDict["source"]
         location = sourceDict["location"]
-    
     except ValueError:
         try:
             source = str(decoded_source, "utf-8")
         except ValueError:
             log = (
-                "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
+                "Failed to parse source from {!r}".format(
+                    decoded[source_start:source_end]
+                ),
             )
             logger.error(
                 log,
