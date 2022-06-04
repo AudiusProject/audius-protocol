@@ -5,6 +5,7 @@ import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { SearchKind } from 'common/store/pages/search-results/types'
 import { Nullable, removeNullable } from 'common/utils/typeUtils'
 import AudiusBackend, { AuthHeaders } from 'services/AudiusBackend'
+import { SupporterResponse } from 'services/audius-backend/Tipping'
 import {
   getEagerDiscprov,
   waitForLibsInit
@@ -83,7 +84,11 @@ const FULL_ENDPOINT_MAP = {
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
   searchAutocomplete: `/search/autocomplete`,
-  getUserTrackHistory: (userId: OpaqueID) => `/users/${userId}/history/tracks`
+  getUserTrackHistory: (userId: OpaqueID) => `/users/${userId}/history/tracks`,
+  getUserSupporter: (userId: OpaqueID, supporterUserId: OpaqueID) =>
+    `/users/${userId}/supporters/${supporterUserId}`,
+  getUserSupporting: (userId: OpaqueID, supporterUserId: OpaqueID) =>
+    `/users/${userId}/supporting/${supporterUserId}`
 }
 
 const ENDPOINT_MAP = {
@@ -388,6 +393,12 @@ const emptySearchResponse: APIResponse<APISearch> = {
     saved_albums: [],
     albums: []
   }
+}
+
+type GetUserSupporterArgs = {
+  userId: ID
+  supporterUserId: ID
+  currentUserId: Nullable<ID>
 }
 
 class AudiusAPIClient {
@@ -1343,6 +1354,28 @@ class AudiusAPIClient {
       track: adapter.makeTrack(item as APITrack)
     }))
     return adapted
+  }
+
+  async getUserSupporter({
+    currentUserId,
+    userId,
+    supporterUserId
+  }: GetUserSupporterArgs) {
+    const encodedUserId = this._encodeOrThrow(userId)
+    const encodedSupporterUserId = this._encodeOrThrow(supporterUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    this._assertInitialized()
+    const params = {
+      user_id: encodedCurrentUserId || undefined
+    }
+
+    const response: Nullable<APIResponse<
+      SupporterResponse
+    >> = await this._getResponse(
+      FULL_ENDPOINT_MAP.getUserSupporter(encodedUserId, encodedSupporterUserId),
+      params
+    )
+    return response ? response.data : null
   }
 
   init() {
