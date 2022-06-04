@@ -751,6 +751,15 @@ workflows:
           requires:
             - hold-build-logspout
 
+      - hold-bake-gcp-dev-image:
+          type: approval
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image
+          requires:
+            - hold-bake-gcp-dev-image
+
       - test-solana-programs:
           name: test-solana-programs
       - test-solana-programs-anchor:
