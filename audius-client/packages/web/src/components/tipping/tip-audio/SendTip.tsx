@@ -9,7 +9,7 @@ import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCir
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { BadgeTier } from 'common/models/BadgeTier'
 import { ID } from 'common/models/Identifiers'
-import { Supporter, Supporting } from 'common/models/Tipping'
+import { Supporter } from 'common/models/Tipping'
 import { BNWei, StringAudio, StringWei } from 'common/models/Wallet'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
@@ -31,6 +31,7 @@ import {
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import ButtonWithArrow from 'pages/audio-rewards-page/components/ButtonWithArrow'
+import AudiusAPIClient from 'services/audius-api-client/AudiusAPIClient'
 
 import styles from './TipAudio.module.css'
 import { TipProfilePicture } from './TipProfilePicture'
@@ -68,7 +69,9 @@ export const SendTip = () => {
     amountToTipToBecomeTopSupporter,
     setAmountToTipToBecomeTopSupporter
   ] = useState<Nullable<BNWei>>(null)
-  const [supporting, setSupporting] = useState<Nullable<Supporting>>(null)
+  const [supportingAmount, setSupportingAmount] = useState<Nullable<StringWei>>(
+    null
+  )
   const [topSupporter, setTopSupporter] = useState<Nullable<Supporter>>(null)
   const [isFirstSupporter, setIsFirstSupporter] = useState(false)
 
@@ -79,14 +82,27 @@ export const SendTip = () => {
    */
   useEffect(() => {
     if (!account || !receiver) return
+    if (supportingAmount) return
 
     const supportingForAccount = supportingMap[account.user_id] ?? {}
     const accountSupportingReceiver =
       supportingForAccount[receiver.user_id] ?? null
     if (accountSupportingReceiver) {
-      setSupporting(accountSupportingReceiver)
+      setSupportingAmount(accountSupportingReceiver.amount)
+    } else {
+      const fn = async () => {
+        const supporterResponse = await AudiusAPIClient.getUserSupporter({
+          currentUserId: account.user_id,
+          userId: receiver.user_id,
+          supporterUserId: account.user_id
+        })
+        if (supporterResponse) {
+          setSupportingAmount(supporterResponse.amount)
+        }
+      }
+      fn()
     }
-  }, [account, receiver, supportingMap])
+  }, [account, receiver, supportingMap, supportingAmount])
 
   /**
    * Get user who is top supporter to later check whether it is
@@ -145,8 +161,8 @@ export const SendTip = () => {
     let newAmountToTipToBecomeTopSupporter = topSupporterAmountWei.add(
       oneAudioToWeiBN
     ) as BNWei
-    if (supporting) {
-      const supportingAmountWei = stringWeiToBN(supporting.amount)
+    if (supportingAmount) {
+      const supportingAmountWei = stringWeiToBN(supportingAmount)
       newAmountToTipToBecomeTopSupporter = newAmountToTipToBecomeTopSupporter.sub(
         supportingAmountWei
       ) as BNWei
@@ -157,7 +173,7 @@ export const SendTip = () => {
     ) {
       setAmountToTipToBecomeTopSupporter(newAmountToTipToBecomeTopSupporter)
     }
-  }, [hasError, account, topSupporter, supporting, accountBalance])
+  }, [hasError, account, topSupporter, supportingAmount, accountBalance])
 
   const handleSendClick = useCallback(() => {
     dispatch(sendTip({ amount: tipAmount }))
