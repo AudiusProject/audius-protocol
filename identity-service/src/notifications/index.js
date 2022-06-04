@@ -93,6 +93,9 @@ class NotificationProcessor {
         },
         defaultJobOptions
       })
+      this.downloadEmailQueue.pause().then(function () {
+        logger.info('downloadEmailQueue paused')
+      });
     if (errorHandler) {
       this.errorHandler = errorHandler
     } else {
