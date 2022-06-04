@@ -12,7 +12,7 @@ const {
   // calculateTrackListenMilestonesFromDiscovery
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
-const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
+// const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const {
   notificationJobType,
