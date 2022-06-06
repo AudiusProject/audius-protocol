@@ -37,7 +37,7 @@ def track_state_update(
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
     metric = PrometheusMetric(
-        "track_state_update_runtime_seconds",
+        "track_state_update_duration_seconds",
         "Runtimes for src.task.tracks:track_state_update()",
         ("scope",),
     )
