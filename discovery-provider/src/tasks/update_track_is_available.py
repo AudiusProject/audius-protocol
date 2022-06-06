@@ -62,9 +62,8 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
 
     for i in range(0, len(all_unavailable_track_ids), BATCH_SIZE):
         unavailable_track_ids_batch = all_unavailable_track_ids[i : i + BATCH_SIZE]
-        with db.scoped_session() as session:
-            try:
-
+        try:
+            with db.scoped_session() as session:
                 track_ids_to_replica_set = query_replica_set_by_track_id(
                     session, unavailable_track_ids_batch
                 )
@@ -73,6 +72,10 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
 
                 entry: Union[Tuple[int, int, List[int]], Tuple[int, None, List[None]]]
                 for entry in track_ids_to_replica_set:
+                    track_id: int
+                    primary_id: Union[int, None]
+                    secondary_ids: Union[List[int], List[None]]
+
                     track_id = entry[0]
                     primary_id = entry[1]
                     secondary_ids = entry[2]
@@ -105,12 +108,10 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
                         track.is_available = False
                         track.is_delete = True
 
-                session.commit()
-            except Exception as e:
-                logger.warn(
-                    f"update_track_is_available.py | Could not process batch {unavailable_track_ids_batch}: {e}\nContinuing..."
-                )
-                session.rollback()
+        except Exception as e:
+            logger.warn(
+                f"update_track_is_available.py | Could not process batch {unavailable_track_ids_batch}: {e}\nContinuing..."
+            )
 
 
 def fetch_unavailable_track_ids(node: str) -> List[int]:
