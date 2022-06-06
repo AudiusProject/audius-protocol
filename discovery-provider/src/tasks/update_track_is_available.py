@@ -1,15 +1,20 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
 from src.models import Track, URSMContentNode, User
 from src.tasks.celery_app import celery
+from src.utils.redis_constants import (
+    ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
+    UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
+    UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
+)
 
 logger = logging.getLogger(__name__)
 
 UPDATE_TRACK_IS_AVAILABLE_LOCK = "update_track_is_available_lock"
-ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "update_track_is_available:unavailable_tracks_all"
+
 BATCH_SIZE = 1000
 DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
@@ -21,11 +26,13 @@ class ContentNodeInfo(TypedDict):
 
 
 def _get_redis_set_members_as_list(redis: Any, key: str) -> List[int]:
+    """Fetches the unavailable track ids per Content Node"""
     values = redis.smembers(key)
     return [int(value.decode()) for value in values]
 
 
 def fetch_unavailable_track_ids_in_network(session: Any, redis: Any) -> None:
+    """Fetches the unavailable track ids in the Content Node network"""
     content_nodes = query_registered_content_node_info(session)
 
     # Clear redis for existing data
@@ -67,10 +74,16 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
                 entry: Union[Tuple[int, int, List[int]], Tuple[int, None, List[None]]]
                 for entry in track_ids_to_replica_set:
                     track_id = entry[0]
+                    primary_id = entry[1]
+                    secondary_ids = entry[2]
 
                     # Some users are do not have primary_ids or secondary_ids
                     # If these values are null, default to track is available
-                    if entry[1] is None or entry[2][0] is None or entry[2][1] is None:
+                    if (
+                        primary_id is None
+                        or secondary_ids[0] is None
+                        or secondary_ids[1] is None
+                    ):
                         is_available = True
                     else:
                         spID_replica_set = [entry[1], *entry[2]]
@@ -101,7 +114,7 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
 
 
 def fetch_unavailable_track_ids(node: str) -> List[int]:
-    """Fetches unavailable tracks from Content Node. Returns empty list if request fails."""
+    """Fetches unavailable tracks from Content Node. Returns empty list if request fails"""
     unavailable_track_ids = []
 
     try:
@@ -154,7 +167,6 @@ def query_tracks_by_track_ids(session: Any, track_ids: List[int]) -> List[Any]:
 
 def query_registered_content_node_info(
     session: Any,
-    # ) -> List[Dict[str, Union[str, int]]]:
 ) -> List[ContentNodeInfo]:
     """Returns a list of all registered Content Node endpoint and spID"""
     registered_content_nodes = (
@@ -165,10 +177,10 @@ def query_registered_content_node_info(
         .all()
     )
 
-    def create_named_fields(node):
+    def create_node_info_response(node):
         return {"endpoint": node[0], "spID": node[1]}
 
-    return list(map(create_named_fields, registered_content_nodes))
+    return list(map(create_node_info_response, registered_content_nodes))
 
 
 def check_track_is_available(
@@ -205,9 +217,7 @@ def get_unavailable_tracks_redis_key(spID: int) -> str:
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
 def update_track_is_available(self) -> None:
-    """
-    Recurring task that updates whether tracks are available on the network
-    """
+    """Recurring task that updates whether tracks are available on the network"""
 
     db = update_track_is_available.db
     redis = update_track_is_available.redis
@@ -222,8 +232,8 @@ def update_track_is_available(self) -> None:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             redis.set(
-                "update_track_is_available:start",
-                datetime.now().strftime("%m/%d/%Y, %H:%M:%S.%f"),
+                UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
+                datetime.now(tz=timezone.utc).strftime("%m/%d/%Y, %H:%M:%S.%f %Z"),
             )
 
             with db.scoped_session() as session:
@@ -244,7 +254,7 @@ def update_track_is_available(self) -> None:
     finally:
         if have_lock:
             redis.set(
-                "update_track_is_available:finish",
-                datetime.now().strftime("%m/%d/%Y, %H:%M:%S.%f"),
+                UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
+                datetime.now(tz=timezone.utc).strftime("%m/%d/%Y, %H:%M:%S.%f %Z"),
             )
             update_lock.release()
