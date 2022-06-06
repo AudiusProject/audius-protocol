@@ -4,18 +4,18 @@ import { User as UserType } from 'audius-client/src/common/models/User'
 import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 import { useDispatch } from 'react-redux'
 
-import { Text } from 'app/components/core'
+import { Text, TextProps } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { NotificationsDrawerNavigationContext } from 'app/screens/notifications-screen/NotificationsDrawerNavigationContext'
 import { close } from 'app/store/notifications/actions'
 import { getUserRoute } from 'app/utils/routes'
 
-type UserNameLinkProps = {
+type UserNameLinkProps = TextProps & {
   user: UserType
 }
 
 export const UserNameLink = (props: UserNameLinkProps) => {
-  const { user } = props
+  const { user, ...other } = props
   const dispatch = useDispatch()
   const { drawerHelpers } = useContext(NotificationsDrawerNavigationContext)
   const navigation = useNavigation({ customNativeNavigation: drawerHelpers })
@@ -32,7 +32,13 @@ export const UserNameLink = (props: UserNameLinkProps) => {
   }, [user, navigation, dispatch])
 
   return (
-    <Text fontSize='large' weight='bold' color='secondary' onPress={onPress}>
+    <Text
+      fontSize='large'
+      weight='medium'
+      color='secondary'
+      onPress={onPress}
+      {...other}
+    >
       {user.name}
     </Text>
   )
