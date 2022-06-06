@@ -211,6 +211,7 @@ services:
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
       - ./identity-service:/usr/src/app
+      - /usr/src/app/local-storage
       - /usr/src/app/node_modules
       - ./libs:/usr/src/audius-libs
       - poa-contracts-abis:/usr/src/audius-libs/data-contracts/ABIs

@@ -34,8 +34,8 @@ async function main() {
   // Add service types
   await _lib.addServiceType(
     ContentNodeServiceType,
-    200000,
-    10000000,
+    new web3.utils.BN(200000).mul(new web3.utils.BN(10).pow(decimals)).toString(),
+    new web3.utils.BN(10000000).mul(new web3.utils.BN(10).pow(decimals)).toString(),
     governance,
     migrationOutput.proxyDeployerAddress,
     ServiceTypeManagerProxyKey,
@@ -43,8 +43,8 @@ async function main() {
 
   await _lib.addServiceType(
     DiscoveryNodeServiceType,
-    200000,
-    7000000,
+    new web3.utils.BN(200000).mul(new web3.utils.BN(10).pow(decimals)).toString(),
+    new web3.utils.BN(7000000).mul(new web3.utils.BN(10).pow(decimals)).toString(),
     governance,
     migrationOutput.proxyDeployerAddress,
     ServiceTypeManagerProxyKey,

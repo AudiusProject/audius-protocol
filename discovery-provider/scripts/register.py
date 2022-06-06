@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
 
-import os
 import json
+import os
 import pathlib
+import time
+import urllib.parse
+import urllib.request
 
 import web3
 
-
 ETH_CONTRACTS_ABI_DIR = pathlib.Path(__file__).parent / "../build/eth-contracts"
+
+
+def health_check(discprov_url):
+    url = urllib.parse.urljoin(discprov_url, "/health_check")
+
+    try:
+        response = json.load(urllib.request.urlopen(url))
+        return (
+            response["data"]["block_difference"]
+            < response["data"]["maximum_healthy_block_difference"]
+        )
+    except (ConnectionError, urllib.error.URLError, json.JSONDecodeError):
+        return False
 
 
 def main():
@@ -38,6 +53,11 @@ def main():
         ],
     )
 
+    # Wait for health check to pass
+    discprov_url = os.getenv("audius_discprov_url")
+    while not health_check(discprov_url):
+        time.sleep(1)
+
     token.functions.approve(
         staking.address,
         200000 * (10 ** token.functions.decimals().call()),
@@ -46,7 +66,7 @@ def main():
     serviceProviderFactory.functions.register(
         b"discovery-node",
         os.getenv("audius_discprov_url"),
-        200000,
+        200000 * (10 ** token.functions.decimals().call()),
         os.getenv("audius_delegate_owner_wallet"),
     ).transact()
 
