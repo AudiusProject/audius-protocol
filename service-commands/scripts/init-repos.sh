@@ -71,16 +71,16 @@ cd $PROTOCOL_DIR/mad-dog
 npm link @audius/service-commands
 
 cd $PROTOCOL_DIR/service-commands
-npm link @audius/libs
+npm link @audius/sdk
 
 cd $PROTOCOL_DIR/creator-node
-npm link @audius/libs
+npm link @audius/sdk
 
 cd $PROTOCOL_DIR/identity-service
-npm link @audius/libs
+npm link @audius/sdk
 
 cd $PROTOCOL_DIR/..
 if [ -d "audius-client" ]; then
     cd audius-client
-    cd packages/web && npm link @audius/libs
+    cd packages/web && npm link @audius/sdk
 fi

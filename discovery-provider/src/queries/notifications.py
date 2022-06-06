@@ -41,6 +41,7 @@ from src.utils.redis_constants import (
     latest_sol_listen_count_milestones_slot_key,
     latest_sol_rewards_manager_slot_key,
 )
+from src.utils.spl_audio import to_wei_string
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -1155,13 +1156,15 @@ def solana_notifications():
                     const.solana_notification_metadata: {
                         const.notification_entity_id: user_tip.sender_user_id,
                         const.notification_entity_type: "user",
-                        const.solana_notification_tip_amount: str(user_tip.amount),
+                        const.solana_notification_tip_amount: to_wei_string(
+                            user_tip.amount
+                        ),
                         const.solana_notification_tip_signature: user_tip.signature,
                     },
                 }
             )
 
-        reaction_results: List[Reaction] = (
+        reaction_results: List[Tuple[Reaction, int]] = (
             session.query(Reaction, User.user_id)
             .join(User, User.wallet == Reaction.sender_wallet)
             .filter(
@@ -1172,8 +1175,20 @@ def solana_notifications():
             .all()
         )
 
+        # Get tips associated with a given reaction
+        tip_signatures = [
+            e.reacted_to for (e, _) in reaction_results if e.reaction_type == "tip"
+        ]
+        reaction_tips: List[UserTip] = (
+            session.query(UserTip).filter(UserTip.signature.in_(tip_signatures))
+        ).all()
+        tips_map = {e.signature: e for e in reaction_tips}
+
         reactions = []
         for (reaction, user_id) in reaction_results:
+            tip = tips_map[reaction.reacted_to]
+            if not tip:
+                continue
             reactions.append(
                 {
                     const.solana_notification_type: const.solana_notification_type_reaction,
@@ -1182,7 +1197,13 @@ def solana_notifications():
                     const.solana_notification_metadata: {
                         const.solana_notification_reaction_type: reaction.reaction_type,
                         const.solana_notification_reaction_reaction_value: reaction.reaction_value,
-                        const.solana_notification_reaction_reacted_to: reaction.reacted_to,
+                        const.solana_notification_reaction_reacted_to_entity: {
+                            const.solana_notification_tip_signature: tip.signature,
+                            const.solana_notification_tip_amount: to_wei_string(
+                                tip.amount
+                            ),
+                            const.solana_notification_tip_sender_id: tip.sender_user_id,
+                        },
                     },
                 }
             )

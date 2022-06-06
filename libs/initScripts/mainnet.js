@@ -34,29 +34,47 @@ const run = async () => {
         const versionStr = args[5]
         let dryRun = true
         // if args[6] is defined and the value is either bool or string false, set dryRun to false
-        if (args[6] && (['false', false].includes(args[6]))) {
+        if (args[6] && ['false', false].includes(args[6])) {
           dryRun = false
         }
         if (!serviceType || !versionStr) {
-          throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
+          throw new Error(
+            'missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>'
+          )
         }
-        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey, dryRun)
+        await setServiceVersion(
+          audiusLibs,
+          serviceType,
+          versionStr,
+          privateKey,
+          dryRun
+        )
         break
       case 'addservicetype':
         const newServiceType = args[4]
         const serviceTypeMin = args[5]
         const serviceTypeMax = args[6]
         if (!newServiceType || !serviceTypeMin || !serviceTypeMax) {
-          throw new Error('missing arguments - format: node mainnet.js addservicetype <serviceType> <serviceTypeMin> <serviceTypeMax>')
+          throw new Error(
+            'missing arguments - format: node mainnet.js addservicetype <serviceType> <serviceTypeMin> <serviceTypeMax>'
+          )
         }
-        await addServiceType(audiusLibs, newServiceType, serviceTypeMin, serviceTypeMax, privateKey)
+        await addServiceType(
+          audiusLibs,
+          newServiceType,
+          serviceTypeMin,
+          serviceTypeMax,
+          privateKey
+        )
         break
       case 'getclaim':
         await getClaimInfo(audiusLibs)
         break
       case 'fundclaim':
         if (!args[4]) {
-          throw new Error('missing argument - format: node mainnet.js fundclaim <amountOfAuds>')
+          throw new Error(
+            'missing argument - format: node mainnet.js fundclaim <amountOfAuds>'
+          )
         }
 
         const amountOfAuds = args[4]
@@ -77,7 +95,7 @@ const run = async () => {
 
 run()
 
-function getLibsConfig (config, privateKey, ownerWallet) {
+function getLibsConfig(config, privateKey, ownerWallet) {
   let audiusLibsConfig
   if (!privateKey || !ownerWallet) {
     throw new Error('Missing private key or owner wallet')
@@ -86,7 +104,9 @@ function getLibsConfig (config, privateKey, ownerWallet) {
   console.log(privateKey)
   console.log(ownerWallet)
 
-  const dataWeb3 = new Web3(new Web3.providers.HttpProvider(config.dataWeb3ProviderEndpoint))
+  const dataWeb3 = new Web3(
+    new Web3.providers.HttpProvider(config.dataWeb3ProviderEndpoint)
+  )
   const web3DataContractConfig = {
     registryAddress: config.dataRegistryAddress,
     useExternalWeb3: true,
@@ -96,7 +116,9 @@ function getLibsConfig (config, privateKey, ownerWallet) {
     }
   }
 
-  const ethWeb3 = new Web3(new Web3.providers.HttpProvider(config.ethWeb3ProviderEndpoint))
+  const ethWeb3 = new Web3(
+    new Web3.providers.HttpProvider(config.ethWeb3ProviderEndpoint)
+  )
   audiusLibsConfig = {
     web3Config: web3DataContractConfig,
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -105,20 +127,20 @@ function getLibsConfig (config, privateKey, ownerWallet) {
       ethWeb3,
       ownerWallet
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
+    discoveryProviderConfig: {},
     isServer: isServer
   }
   return audiusLibsConfig
 }
 
-async function getAudiusLibs (config, privateKey, ownerWallet) {
+async function getAudiusLibs(config, privateKey, ownerWallet) {
   const audiusLibsConfig = getLibsConfig(config, privateKey, ownerWallet)
   const audiusLibs = new AudiusLibs(audiusLibsConfig)
   await audiusLibs.init()
   return audiusLibs
 }
 
-function _getEnv (env) {
+function _getEnv(env) {
   const value = process.env[env]
   if (typeof value === 'undefined') {
     throw new Error(`${env} has not been set.`)
@@ -126,6 +148,8 @@ function _getEnv (env) {
   return value
 }
 
-function _throwArgError () {
-  throw new Error('missing argument - format: node mainnet.js <configFilePath> [setversion, fundclaim, getclaim, stakeinfo] [additional options]')
+function _throwArgError() {
+  throw new Error(
+    'missing argument - format: node mainnet.js <configFilePath> [setversion, fundclaim, getclaim, stakeinfo] [additional options]'
+  )
 }

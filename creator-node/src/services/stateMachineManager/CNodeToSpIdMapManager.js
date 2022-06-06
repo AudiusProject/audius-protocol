@@ -39,7 +39,7 @@ class CNodeToSpIdMapManager {
     const mapLength = Object.keys(this.cNodeEndpointToSpIdMap).length
     if (mapLength === 0) {
       const errorMessage =
-        'updateCnodeEndpointToSpIdMap Unable to initialize cNodeEndpointToSpIdMap'
+        'updateCnodeEndpointToSpIdMap() Unable to initialize cNodeEndpointToSpIdMap'
       logger.error(errorMessage)
       throw new Error(errorMessage)
     }

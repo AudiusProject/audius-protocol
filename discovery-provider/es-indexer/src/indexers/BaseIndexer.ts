@@ -44,6 +44,12 @@ export abstract class BaseIndexer<RowType> {
     }
   }
 
+  async refreshIndex() {
+    const { es, logger, indexName } = this
+    logger.info('refreshing index: ' + indexName)
+    await es.indices.refresh({ index: indexName })
+  }
+
   async cutoverAlias() {
     const { es, logger, indexName, tableName } = this
 
@@ -173,7 +179,7 @@ export abstract class BaseIndexer<RowType> {
     ])
   }
 
-  async withBatch(rows: Array<RowType>) {}
+  async withBatch(rows: Array<RowType>) { }
 
-  withRow(row: RowType) {}
+  withRow(row: RowType) { }
 }

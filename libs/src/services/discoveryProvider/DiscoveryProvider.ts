@@ -29,6 +29,21 @@ type RequestParams = {
   data?: Record<string, unknown>
 }
 
+export type DiscoveryProviderConfig = {
+  whitelist?: Set<string>
+  blacklist?: Set<string>
+  userStateManager: UserStateManager
+  ethContracts: EthContracts
+  web3Manager?: Web3Manager
+  reselectTimeout?: number
+  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
+  monitoringCallbacks?: DiscoveryProviderSelectionConfig['monitoringCallbacks']
+  selectionRequestTimeout?: number
+  selectionRequestRetries?: number
+  unhealthySlotDiffPlays?: number
+  unhealthyBlockDiff?: number
+}
+
 export type UserProfile = {
   userId: number
   email: string
@@ -61,34 +76,34 @@ export class DiscoveryProvider {
   blacklist: Set<string> | undefined
   userStateManager: UserStateManager
   ethContracts: EthContracts
-  web3Manager: Web3Manager
+  web3Manager: Web3Manager | undefined
   unhealthyBlockDiff: number
   serviceSelector: DiscoveryProviderSelection
-
   selectionRequestTimeout: number
   selectionRequestRetries: number
   unhealthySlotDiffPlays: number | undefined
   request404Count: number
   maxRequestsForTrue404: number
-  monitoringCallbacks: DiscoveryProviderSelection['monitoringCallbacks']
-  discoveryProviderEndpoint?: string
+  monitoringCallbacks:
+    | DiscoveryProviderSelection['monitoringCallbacks']
+    | undefined
 
-  constructor(
-    whitelist: Set<string> | undefined,
-    blacklist: Set<string> | undefined,
-    userStateManager: UserStateManager,
-    ethContracts: EthContracts,
-    web3Manager: Web3Manager,
-    reselectTimeout: number | undefined,
-    selectionCallback:
-      | DiscoveryProviderSelectionConfig['selectionCallback']
-      | undefined,
-    monitoringCallbacks: DiscoveryProviderSelectionConfig['monitoringCallbacks'],
-    selectionRequestTimeout?: number,
-    selectionRequestRetries?: number,
-    unhealthySlotDiffPlays?: number,
-    unhealthyBlockDiff?: number
-  ) {
+  discoveryProviderEndpoint: string | undefined
+
+  constructor({
+    whitelist,
+    blacklist,
+    userStateManager,
+    ethContracts,
+    web3Manager,
+    reselectTimeout,
+    selectionCallback,
+    monitoringCallbacks,
+    selectionRequestTimeout = REQUEST_TIMEOUT_MS,
+    selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
+    unhealthySlotDiffPlays,
+    unhealthyBlockDiff
+  }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
     this.userStateManager = userStateManager
@@ -109,9 +124,8 @@ export class DiscoveryProvider {
       },
       this.ethContracts
     )
-    this.selectionRequestTimeout = selectionRequestTimeout ?? REQUEST_TIMEOUT_MS
-    this.selectionRequestRetries =
-      selectionRequestRetries ?? MAX_MAKE_REQUEST_RETRY_COUNT
+    this.selectionRequestTimeout = selectionRequestTimeout
+    this.selectionRequestRetries = selectionRequestRetries
     this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
 
     // Keep track of the number of times a request 404s so we know when a true 404 occurs
@@ -121,7 +135,7 @@ export class DiscoveryProvider {
     this.request404Count = 0
     this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
-    this.monitoringCallbacks = monitoringCallbacks ?? {}
+    this.monitoringCallbacks = monitoringCallbacks
   }
 
   async init() {
@@ -853,7 +867,7 @@ export class DiscoveryProvider {
       parsedResponse = Utils.parseDataFromResponse(response)
 
       // Fire monitoring callbacks for request success case
-      if ('request' in this.monitoringCallbacks) {
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
             endpoint: url.origin,
@@ -877,7 +891,7 @@ export class DiscoveryProvider {
       const errMsg = error.response?.data ?? error
 
       // Fire monitoring callbaks for request failure case
-      if ('request' in this.monitoringCallbacks) {
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
             endpoint: url.origin,

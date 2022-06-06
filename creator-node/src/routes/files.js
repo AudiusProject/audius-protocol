@@ -38,7 +38,8 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { Utils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 
 const { promisify } = require('util')
 
@@ -133,7 +134,7 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
     req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
-    console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
 }
 

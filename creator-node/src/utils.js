@@ -13,7 +13,8 @@ const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { Utils: LibsUtils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const LibsUtils = libs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
@@ -24,7 +25,7 @@ class Utils {
 
   static async timeout(ms, log = true) {
     if (log) {
-      console.log(`starting timeout of ${ms}`)
+      genericLogger.info(`starting timeout of ${ms}`)
     }
     return new Promise((resolve) => setTimeout(resolve, ms))
   }

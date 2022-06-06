@@ -209,7 +209,8 @@ def get_tracks(args: GetTrackArgs):
         for track in tracks:
             if track["user"][0]["is_deactivated"] or track["is_delete"]:
                 track["track_segments"] = []
-                track["download"]["cid"] = None
+                if track["download"] is not None:
+                    track["download"]["cid"] = None
 
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 

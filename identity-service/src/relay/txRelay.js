@@ -6,7 +6,8 @@ const config = require('../config')
 const { logger } = require('../logging')
 const { Lock } = require('../redis')
 
-const { AudiusABIDecoder } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 

@@ -10,7 +10,8 @@ const crypto = require('crypto')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
-const { Utils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const Utils = libs
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
@@ -94,14 +95,16 @@ describe('test Polling Tracks with mocks', function () {
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService.js',
       {
-        '@audius/libs': {
-          Utils: {
-            fileHasher: {
-              generateNonImageCid: sinon.stub().returns(
-                new Promise((resolve) => {
-                  return resolve(mockCid)
-                })
-              )
+        '@audius/sdk': {
+          libs: {
+            Utils: {
+              fileHasher: {
+                generateNonImageCid: sinon.stub().returns(
+                  new Promise((resolve) => {
+                    return resolve(mockCid)
+                  })
+                )
+              }
             }
           },
           '@global': true

@@ -1,4 +1,4 @@
-import { promisify, callbackify } from 'util'
+import { callbackify, promisify } from 'util'
 import Web3 from '../web3'
 import { shuffle } from 'lodash'
 import type { HttpProvider, AbstractProvider } from 'web3-core'
@@ -11,12 +11,7 @@ const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
   return provider.send
 }
 
-export type Providers = [
-  HttpProvider,
-  ...Array<HttpProvider | AbstractProvider>
-]
-
-type StringProviders = [string, ...string[]]
+type Providers = [HttpProvider, ...Array<HttpProvider | AbstractProvider>]
 
 /**
  * web3 consumes a provider object on initialization
@@ -31,10 +26,10 @@ export class MultiProvider extends Web3.providers.HttpProvider {
    * Creates a MultiProvider
    * @param {Array<string | Provider> | string} - The providers to use.
    */
-  constructor(providers: Providers | string) {
-    let web3Providers: Providers | StringProviders
+  constructor(providers: string[] | string) {
+    let web3Providers: string[]
     if (typeof providers === 'string') {
-      web3Providers = providers.split(',') as StringProviders
+      web3Providers = providers.split(',')
     } else if (!Array.isArray(providers)) {
       web3Providers = [providers]
     } else {

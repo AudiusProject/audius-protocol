@@ -216,7 +216,7 @@ class TransactionHandler {
         errorCode: null
       }
     } catch (e) {
-      logger.warn(`transactionHandler: error in awaitTransactionSignature: ${e}, ${txid}`)
+      logger.warn(`transactionHandler: error in awaitTransactionSignature: ${JSON.stringify(e)}, ${txid}`)
       done = true
       const { message: error } = e
       const errorCode = this._parseSolanaErrorCode(error)
@@ -252,8 +252,9 @@ class TransactionHandler {
               if (done) return
               done = true
               if (result.err) {
-                logger.warn(`transactionHandler: Error in onSignature ${txid}, ${result.err}`)
-                reject(result.err)
+                const err = JSON.stringify(result.err)
+                logger.warn(`transactionHandler: Error in onSignature ${txid}, ${err}`)
+                reject(new Error(err))
               } else {
                 resolve(txid)
               }
@@ -278,11 +279,12 @@ class TransactionHandler {
 
               // End loop if error
               if (result.err) {
+                const err = JSON.stringify(result.err)
                 logger.error(
-                  `transactionHandler: polling saw result error: ${result.err}, tx: ${txid}`
+                  `transactionHandler: polling saw result error: ${err}, tx: ${txid}`
                 )
                 done = true
-                reject(result.err)
+                reject(new Error(err))
                 return
               }
 
@@ -327,7 +329,7 @@ class TransactionHandler {
     // Match on custom solana program errors
     const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
-    if (res && res.length !== 2) return parseInt(res[1], 16) || null
+    if (res && res.length === 2) return parseInt(res[1], 16) || null
     // Match on custom anchor errors
     const matcher2 = /(?:"Custom":)(\d+)/
     const res2 = errorMessage.match(matcher2)

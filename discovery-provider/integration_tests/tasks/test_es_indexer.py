@@ -5,16 +5,12 @@ import time
 
 import pytest
 from elasticsearch import Elasticsearch
-from integration_tests.conftest import DB_URL
 from integration_tests.utils import populate_mock_db
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
 
-os.environ["audius_db_url"] = DB_URL
-os.environ["audius_elasticsearch_url"] = "http://localhost:9200"
-os.environ["audius_elasticsearch_run_indexer"] = "true"
-esclient = Elasticsearch("http://localhost:9200")
+esclient = Elasticsearch(os.environ["audius_elasticsearch_url"])
 
 basic_entities = {
     "aggregate_plays": [{"play_item_id": 1, "count": 1}],
