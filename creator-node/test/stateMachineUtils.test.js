@@ -145,9 +145,11 @@ describe('test retrieveClockValueForUserFromReplica()', function () {
     const { retrieveClockValueForUserFromReplica } = proxyquire(
       '../src/services/stateMachineManager/stateMachineUtils.js',
       {
-        '@audius/libs': {
-          CreatorNode: {
-            getClockValue: getClockValueStub
+        '@audius/sdk': {
+          libs: {
+            CreatorNode: {
+              getClockValue: getClockValueStub
+            }
           }
         }
       }
@@ -169,9 +171,11 @@ describe('test retrieveClockValueForUserFromReplica()', function () {
     const { retrieveClockValueForUserFromReplica } = proxyquire(
       '../src/services/stateMachineManager/stateMachineUtils.js',
       {
-        '@audius/libs': {
-          CreatorNode: {
-            getClockValue: getClockValueStub
+        '@audius/sdk': {
+          libs: {
+            CreatorNode: {
+              getClockValue: getClockValueStub
+            }
           }
         }
       }

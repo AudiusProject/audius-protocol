@@ -2,7 +2,8 @@ const Web3 = require('../src/web3')
 const AudiusLibs = require('../src/index')
 const serviceTypeList = ['discovery-node', 'content-node']
 const dataWeb3ProviderEndpoint = 'https://sokol.poa.network:443'
-const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
+const ethWeb3ProviderEndpoint =
+  'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
 const dataRegistryAddress = '0x09033761774Fe45F40A47191DdF873F18B62DE05'
 const ethRegistryAddress = '0xB631ABAA63a26311366411b2025F0cAca00DE27F'
 const ethTokenAddress = '0xF8e679Aa54361467B12c7394BFF57Eb890f6d934'
@@ -10,7 +11,7 @@ let latestVersionStr = '0.1.0'
 
 const isServer = true
 
-const getEnv = env => {
+const getEnv = (env) => {
   const value = process.env[env]
   if (typeof value === 'undefined') {
     console.log(`${env} has not been set.`)
@@ -25,7 +26,7 @@ const getEnv = env => {
    export AUDIUS_OWNER_WALLET=
  * */
 
-async function initializeVersionServiceProviderContracts () {
+async function initializeVersionServiceProviderContracts() {
   let audiusLibsConfig
   let privateKey = getEnv('AUDIUS_PRIVATE_KEY')
   let ownerWallet = getEnv('AUDIUS_OWNER_WALLET')
@@ -36,7 +37,9 @@ async function initializeVersionServiceProviderContracts () {
   console.log(privateKey)
   console.log(ownerWallet)
 
-  const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoint))
+  const dataWeb3 = new Web3(
+    new Web3.providers.HttpProvider(dataWeb3ProviderEndpoint)
+  )
   let web3DataContractConfig = {
     registryAddress: dataRegistryAddress,
     useExternalWeb3: true,
@@ -46,7 +49,9 @@ async function initializeVersionServiceProviderContracts () {
     }
   }
 
-  const ethWeb3 = new Web3(new Web3.providers.HttpProvider(ethWeb3ProviderEndpoint))
+  const ethWeb3 = new Web3(
+    new Web3.providers.HttpProvider(ethWeb3ProviderEndpoint)
+  )
   audiusLibsConfig = {
     web3Config: web3DataContractConfig,
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -55,7 +60,7 @@ async function initializeVersionServiceProviderContracts () {
       ethWeb3,
       ownerWallet
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
+    discoveryProviderConfig: {},
     isServer: isServer
   }
   let audiusLibs = new AudiusLibs(audiusLibsConfig)
@@ -84,9 +89,17 @@ async function initializeVersionServiceProviderContracts () {
   }
   */
   for (const serviceType of serviceTypeList) {
-    let versionTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getCurrentVersion(serviceType)
-    let numVersionsTx = await audiusLibs.ethContracts.ServiceTypeManagerClient.getNumberOfVersions(serviceType)
-    console.log(`${serviceType} | current version: ${versionTx} | number of versions : ${numVersionsTx}`)
+    let versionTx =
+      await audiusLibs.ethContracts.ServiceTypeManagerClient.getCurrentVersion(
+        serviceType
+      )
+    let numVersionsTx =
+      await audiusLibs.ethContracts.ServiceTypeManagerClient.getNumberOfVersions(
+        serviceType
+      )
+    console.log(
+      `${serviceType} | current version: ${versionTx} | number of versions : ${numVersionsTx}`
+    )
   }
 
   console.log('/----version init---')

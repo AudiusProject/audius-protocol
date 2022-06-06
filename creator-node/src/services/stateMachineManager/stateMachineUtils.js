@@ -1,4 +1,5 @@
-const { CreatorNode } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 

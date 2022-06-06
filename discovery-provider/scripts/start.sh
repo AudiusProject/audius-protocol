@@ -1,12 +1,18 @@
 #!/bin/bash
 set -e
 
-mkdir -p /var/log
-mkdir -p /var/spool/rsyslog
-mkdir -p /etc/rsyslog.d
+# enable rsyslog if not explicitly disabled by audius-docker-compose
+: "${audius_enable_rsyslog:=true}"
 
-if [[ -z "$audius_loggly_disable" ]]; then
-    if [[ -n "$audius_loggly_token" ]]; then
+# $audius_enable_rsyslog should be true
+if $audius_enable_rsyslog; then
+    mkdir -p /var/log
+    mkdir -p /var/spool/rsyslog
+    mkdir -p /etc/rsyslog.d
+
+    # $logglyDisable should be empty/null
+    # $logglyToken should be a nonzero length string
+    if [[ -z "$audius_loggly_disable" && -n "$audius_loggly_token" ]]; then
         # use regex to extract domain in url (source: https://stackoverflow.com/a/2506635/8674706)
         audius_discprov_hostname=$(echo $audius_discprov_url | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
 
@@ -34,15 +40,14 @@ if [[ -z "$audius_loggly_disable" ]]; then
 \$ActionResumeRetryCount -1         # infinite retries if host is down
 
 template(name="LogglyFormat" type="string"
- string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags] %msg%\n")
+string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags] %msg%\n")
 
 # Send messages to Loggly over TCP using the template.
 action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
 EOF
     fi
-fi
 
-cat >/etc/rsyslog.d/20-file.conf <<EOF
+    cat >/etc/rsyslog.d/20-file.conf <<EOF
 \$WorkDirectory /var/spool/rsyslog  # where to place spool files
 \$ActionQueueFileName file          # unique name prefix for spool files
 \$ActionQueueMaxDiskSpace 1g        # 1gb space limit (use as much as possible)
@@ -59,7 +64,8 @@ if \$programname == 'worker' then :omfile:\$worker_log
 if \$programname == 'beat' then   :omfile:\$beat_log
 EOF
 
-rsyslogd
+    rsyslogd
+fi
 
 if [ -z "$audius_redis_url" ]; then
     redis-server --daemonize yes
@@ -96,30 +102,26 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 # used to remove data that may have been persisted via a k8s emptyDir
 export audius_prometheus_container=server
 
+# run alembic migrations
+if [ "$audius_db_run_migrations" != false ]; then
+    echo "Running alembic migrations"
+    export PYTHONPATH='.'
+    alembic upgrade head
+    echo "Finished running migrations"
+fi
+
 # start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
-    # run alembic migrations
-    if [ "$audius_db_run_migrations" != false ]; then
-        echo "Running alembic migrations"
-        export PYTHONPATH='.'
-        alembic upgrade head
-        echo "Finished running migrations"
-    fi
-
-    # filter tail to server/worker/beat logs with
-    # docker exec -it <container> tail -f /var/log/discprov-server.log
-    # docker exec -it <container> tail -f /var/log/discprov-worker.log
-    # docker exec -it <container> tail -f /var/log/discprov-beat.log
-    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
+    audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
-        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
+        audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
-    ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
-        celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
+        audius_service=worker celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 fi
 

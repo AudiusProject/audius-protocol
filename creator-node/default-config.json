@@ -31,7 +31,7 @@
   "ethWallets": "",
   "spOwnerWalletIndex": 1,
   "spOwnerWallet": "",
-  "discoveryProviderWhitelist": "http://dn1_web-server_1:5000",
+  "discoveryProviderWhitelist": "",
   "identityService": "http://audius-identity-service_identity-service_1:7000",
   "dataRegistryAddress": "",
   "dataProviderUrl": "http://docker.for.mac.localhost:8545",

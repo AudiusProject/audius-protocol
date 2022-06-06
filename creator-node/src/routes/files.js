@@ -42,7 +42,8 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { Utils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 
 const { promisify } = require('util')
 
@@ -180,7 +181,7 @@ function getStoragePaths({ CID, logger, logPrefix }) {
     const storagePath = DiskManager.computeFilePath(CID, false)
     storagePaths.push(storagePath)
   } catch (e) {
-    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
+    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
 
   try {
