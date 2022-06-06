@@ -668,7 +668,8 @@ jobs:
             audius_loggly_token_b64=$(echo ${audius_loggly_token} | base64)
             # two -t's are needed to ensure that the image is tagged with IMAGE_TAG and git SHA
             docker build \
-              -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) \
+              -t audius/<< parameters.repo >>:$IMAGE_TAG \
+              -t audius/<< parameters.repo>>:$(git rev-parse HEAD) \
               --build-arg git_sha=$(git rev-parse HEAD) \
               --build-arg audius_loggly_disable=$audius_loggly_disable \
               --build-arg audius_loggly_tags=$audius_loggly_tags \
