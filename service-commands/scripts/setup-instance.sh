@@ -115,7 +115,7 @@ case "$service" in
 
 		IP=$(get_ip_addr $provider $name)
 		echo -e "\nLog into ${IP} using:\n"
-		echo -e "gcloud compute ssh $user@$name\n"
+		echo -e "ssh $user@$name\n"
 		;;
 		
 esac
