@@ -1,5 +1,5 @@
 /* globals web3, localStorage, fetch, Image */
-import { IdentityAPI, DiscoveryAPI } from '@audius/libs/dist/core'
+import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   PublicKey,
@@ -398,18 +398,19 @@ class AudiusBackend {
     // Wait for optimizely to load if necessary
     await waitForRemoteConfig()
 
-    const { libs, libsUtils, libsSanityChecks } = await import(
-      './audius-backend/AudiusLibsLazyLoader'
-    ).then(libs => {
-      return {
-        libs: libs.default,
-        libsUtils: libs.Utils,
-        libsSanityChecks: libs.SanityChecks
+    const { libs } = await import('./audius-backend/AudiusLibsLazyLoader').then(
+      libs => {
+        return {
+          libs: libs.default,
+          libsUtils: libs.Utils,
+          libsSanityChecks: libs.SanityChecks
+        }
       }
-    })
+    )
+
     AudiusLibs = libs
-    Utils = libsUtils
-    SanityChecks = libsSanityChecks
+    Utils = libs.Utils
+    SanityChecks = libs.SanityChecks
     SolanaUtils = libs.SolanaUtils
 
     // initialize libs
@@ -448,17 +449,26 @@ class AudiusBackend {
         solanaWeb3Config,
         solanaAudiusDataConfig,
         wormholeConfig,
-        discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-          null,
-          discoveryNodeBlockList,
-          getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
-          AudiusBackend.discoveryProviderSelectionCallback,
-          monitoringCallbacks.discoveryNode,
-          getRemoteVar(IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT),
-          getRemoteVar(IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES),
-          getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS),
-          getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF)
-        ),
+        discoveryProviderConfig: {
+          blacklist: discoveryNodeBlockList,
+          reselectTimeout: getRemoteVar(
+            IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS
+          ),
+          selectionCallback: AudiusBackend.discoveryProviderSelectionCallback,
+          monitoringCallbacks: monitoringCallbacks.discoveryNode,
+          selectionRequestTimeout: getRemoteVar(
+            IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT
+          ),
+          selectionRequestRetries: getRemoteVar(
+            IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES
+          ),
+          unhealthySlotDiffPlays: getRemoteVar(
+            IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS
+          ),
+          unhealthyBlockDiff: getRemoteVar(
+            IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF
+          )
+        },
         identityServiceConfig: AudiusLibs.configIdentityService(
           IDENTITY_SERVICE
         ),
