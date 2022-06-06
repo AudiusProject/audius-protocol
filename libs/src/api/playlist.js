@@ -110,8 +110,12 @@ class Playlists extends Base {
       const account = await this.Account.getUserAccountOnSolana({ userId, wallet })
       const userHasClaimedAccount = userAccount !== null && await this.Account.userHasClaimedSolAccount({ account, userId, wallet 
       })
-
+      
       if (userHasClaimedAccount) {
+        const metadata = {
+          playlist_contents:
+        }
+        this._validatePlaylistMetadata(metadata)
         const {
           metadataMultihash,
           metadataFileUUID
@@ -134,6 +138,7 @@ class Playlists extends Base {
         })
 
         const id = await this.Playlist.findUsablePlaylistId()
+
         const response = await this.anchorAudiusData.createPlaylist({ 
           userId,
           id,

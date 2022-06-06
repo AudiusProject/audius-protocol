@@ -404,12 +404,10 @@ export class CreatorNode {
 
   /**
    * Uploads playlist metadata to a creator node
-   * The metadata object must include a `playlist_id` field or a
-   * source file must be provided (returned from uploading playlist content).
+   * The metadata object must include a `playlist_id` field.
    * @param metadata
-   * @param sourceFile
    */
-  async uploadPlaylistMetadata(metadata: Metadata, sourceFile: string) {
+  async uploadPlaylistMetadata(metadata: Metadata) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -423,8 +421,7 @@ export class CreatorNode {
         url: '/playlists/metadata',
         method: 'post',
         data: {
-          metadata,
-          sourceFile
+          metadata
         }
       },
       true
