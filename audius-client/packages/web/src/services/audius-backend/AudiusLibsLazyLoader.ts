@@ -1,4 +1,3 @@
-import AudiusLibs, { Utils, SanityChecks } from '@audius/libs'
+import { libs } from '@audius/sdk/dist/legacy'
 
-export { Utils, SanityChecks }
-export default AudiusLibs
+export default libs
