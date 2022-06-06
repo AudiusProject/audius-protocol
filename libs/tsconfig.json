@@ -5,6 +5,8 @@
     "checkJs": false,
     "resolveJsonModule": true,
     "typeRoots": ["./types", "./node_modules/@types"],
-    "exactOptionalPropertyTypes": false
+    "exactOptionalPropertyTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
 }

@@ -7,6 +7,7 @@ import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
 import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
+import { Configuration, TracksApi } from './full'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -80,6 +81,16 @@ export const sdk = async (config: SdkConfig) => {
   // know when the sdk is initialized
   await discoveryNode.init()
 
+  const tracks = new TracksApi(
+    new Configuration({
+      fetchApi: (info: RequestInfo) => {
+        return discoveryNode._makeRequest({
+          endpoint: typeof info === 'string' ? info : (info as Request).url
+        }) as Promise<Response>
+      }
+    })
+  )
+
   const oauth =
     typeof window !== 'undefined'
       ? new Oauth({ discoveryProvider: discoveryNode, appName })
@@ -87,7 +98,8 @@ export const sdk = async (config: SdkConfig) => {
 
   return {
     oauth,
-    discoveryNode
+    discoveryNode,
+    tracks
   }
 }
 
