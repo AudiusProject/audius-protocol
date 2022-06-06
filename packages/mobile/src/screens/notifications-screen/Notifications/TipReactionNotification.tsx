@@ -3,6 +3,7 @@ import { TipReaction } from 'audius-client/src/common/store/notifications/types'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
+import UserBadges from 'app/components/user-badges'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
@@ -33,6 +34,10 @@ const useStyles = makeStyles(() => ({
     right: 0,
     height: 26,
     width: 26
+  },
+  userNameLink: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   content: {
     flex: 1
@@ -67,7 +72,10 @@ export const TipReactionNotification = (
           <ProfilePicture profile={user} style={styles.profilePicture} />
         </View>
         <View style={styles.content}>
-          <UserNameLink user={user} />
+          <View style={styles.userNameLink}>
+            <UserNameLink user={user} weight='bold' />
+            <UserBadges user={user} hideName />
+          </View>
           <NotificationText>
             {messages.react}
             <TipText value={value} />

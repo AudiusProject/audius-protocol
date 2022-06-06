@@ -13,7 +13,8 @@ import { TopBar } from './TopBar'
 
 const useStyles = makeStyles(({ palette }) => ({
   root: {
-    backgroundColor: palette.background
+    backgroundColor: palette.background,
+    height: '100%'
   }
 }))
 

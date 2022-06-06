@@ -12,12 +12,19 @@ import {
 } from '../Notification'
 
 const useStyles = makeStyles(({ typography, palette }) => ({
+  title: {
+    ...typography.h1,
+    marginBottom: 0,
+    color: palette.secondary
+  },
   body: {
-    fontSize: typography.fontSize.medium,
-    fontFamily: typography.fontByWeight.medium
+    fontSize: typography.fontSize.large,
+    fontFamily: typography.fontByWeight.medium,
+    lineHeight: 27,
+    color: palette.neutral
   },
   link: {
-    fontSize: typography.fontSize.medium,
+    fontSize: typography.fontSize.large,
     fontFamily: typography.fontByWeight.medium,
     color: palette.secondary
   }
@@ -38,7 +45,9 @@ export const AnnouncementNotification = (
     <NotificationTile notification={notification}>
       <NotificationHeader icon={IconAudius}>
         <NotificationTitle>
-          <Markdown>{title}</Markdown>
+          <Markdown style={{ body: styles.title, link: styles.title }}>
+            {title}
+          </Markdown>
         </NotificationTitle>
       </NotificationHeader>
       <NotificationText>
