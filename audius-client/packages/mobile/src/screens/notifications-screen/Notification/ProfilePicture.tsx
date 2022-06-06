@@ -8,6 +8,7 @@ import {
   ProfilePicture as ProfilePictureBase,
   ProfilePictureProps as ProfilePictureBaseProps
 } from 'app/components/user'
+import { close } from 'app/store/notifications/actions'
 import { makeStyles } from 'app/styles'
 import { getUserRoute } from 'app/utils/routes'
 
