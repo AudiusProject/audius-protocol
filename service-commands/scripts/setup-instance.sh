@@ -114,8 +114,14 @@ case "$service" in
 		fi
 
 		IP=$(get_ip_addr $provider $name)
+		echo 'Setup /etc/hosts using these commands:'
+		echo '    echo "export AUDIUS_REMOTE_DEV_HOST='"${IP}"'" >> ~/.zshenv'
+		echo '    echo "export AUDIUS_REMOTE_DEV_HOST='"${IP}"'" >> ~/.bashrc'
+		echo '    sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove'
+		echo '    sudo -E AUDIUS_REMOTE_DEV_HOST='"${IP}"' node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host'
+		
 		echo -e "\nLog into ${IP} using:\n"
-		echo -e "ssh -i ~/.ssh/google_compute_engine ${user}@${IP}\n"
+		echo -e "    ssh -i ~/.ssh/google_compute_engine ${user}@${IP}\n"
 		;;
 		
 esac
