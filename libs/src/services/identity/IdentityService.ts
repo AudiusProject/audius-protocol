@@ -206,27 +206,11 @@ export class IdentityService {
     signatureData?: { signature: string; timestamp: string },
     solanaListen = false
   ) {
-    // fetch location
-    // let location;
-    // try {
-    //   const res = await fetch('https://ipapi.co/json/')
-    //   const json = await res.json()
-    //   location = `${json.city}, ${json.region_code}`
-    // } catch (e) {
-    //   console.error(
-    //     `Got error during getLocation call: ${e} | Error message is: ${
-    //       (e as any)?.message ?? null
-    //     }`
-    //   )
-
-    // }
-
     const data: {
       userId: number
       solanaListen: boolean
       signature?: string
       timestamp?: string
-      // location?: string
     } = { userId, solanaListen }
     if (signatureData) {
       data.signature = signatureData.signature
