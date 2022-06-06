@@ -115,7 +115,7 @@ case "$service" in
 
 		IP=$(get_ip_addr $provider $name)
 		echo -e "\nLog into ${IP} using:\n"
-		echo -e "ssh ${user}@${IP}\n"
+		echo -e "ssh -i ~/.ssh/google_compute_engine ${user}@${IP}\n"
 		;;
 		
 esac
