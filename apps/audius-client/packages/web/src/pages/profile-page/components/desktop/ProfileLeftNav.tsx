@@ -7,7 +7,6 @@ import { animated } from 'react-spring'
 import { useSelector } from 'common/hooks/useSelector'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
-import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
@@ -70,10 +69,6 @@ type ProfileLeftNavProps = {
   twitterVerified: boolean
   instagramVerified: boolean
   tags: string[]
-  followeeFollows: User[]
-  followeeFollowsLoading: boolean
-  followeeFollowsCount: number
-  loadMoreFolloweeFollows: () => void
   isOwner: boolean
 }
 
@@ -104,10 +99,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     twitterVerified,
     instagramVerified,
     tags,
-    followeeFollows,
-    followeeFollowsLoading,
-    followeeFollowsCount,
-    loadMoreFolloweeFollows,
     isOwner
   } = props
 
@@ -241,15 +232,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         {isTippingEnabled && <SupportingList />}
         {isTippingEnabled && <TopSupporters />}
         {isArtist ? <ProfileTags goToRoute={goToRoute} tags={tags} /> : null}
-        {followeeFollows.length > 0 && !isOwner && (
-          <ProfileMutuals
-            users={followeeFollows}
-            usersLoading={followeeFollowsLoading}
-            usersCount={followeeFollowsCount}
-            loadMoreUsers={loadMoreFolloweeFollows}
-            goToRoute={goToRoute}
-          />
-        )}
+        <ProfileMutuals />
         {isOwner && !isArtist && (
           <UploadChip type='track' variant='nav' onClick={onClickUploadChip} />
         )}

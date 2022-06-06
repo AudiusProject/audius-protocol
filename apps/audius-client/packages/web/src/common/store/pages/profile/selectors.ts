@@ -81,7 +81,6 @@ export const makeGetProfile = () => {
       getProfileCollectionSortMode,
       getProfileFollowers,
       getProfileFollowees,
-      getFolloweeFollows,
       getProfileMostUsedTags,
       // External
       getUsers,
@@ -95,7 +94,6 @@ export const makeGetProfile = () => {
       sortMode,
       followers,
       followees,
-      followeeFollows,
       mostUsedTags,
       users,
       collections
@@ -154,22 +152,12 @@ export const makeGetProfile = () => {
           return null
         })
         .filter(removeNullable)
-      const followeeFollowsPopulated = followeeFollows.userIds
-        .map(({ id }) => {
-          if (id in users) return users[id]
-          return null
-        })
-        .filter(removeNullable)
 
       return {
         profile: {
           ...users[userId],
           followers: { status: followers.status, users: followersPopulated },
-          followees: { status: followees.status, users: followeesPopulated },
-          followeeFollows: {
-            status: followeeFollows.status,
-            users: followeeFollowsPopulated
-          }
+          followees: { status: followees.status, users: followeesPopulated }
         },
         mostUsedTags,
         playlists,
