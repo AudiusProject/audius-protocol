@@ -72,29 +72,26 @@ def update_tracks_is_available_status(db: Any, redis: Any) -> None:
 
                 entry: Union[Tuple[int, int, List[int]], Tuple[int, None, List[None]]]
                 for entry in track_ids_to_replica_set:
-                    track_id: int
-                    primary_id: Union[int, None]
-                    secondary_ids: Union[List[int], List[None]]
-
                     track_id = entry[0]
                     primary_id = entry[1]
                     secondary_ids = entry[2]
 
                     # Some users are do not have primary_ids or secondary_ids
-                    # If these values are null, default to track is available
+                    # If these values are not null, check if track is available
+                    # Else, default to track as available
                     if (
-                        primary_id is None
-                        or secondary_ids[0] is None
-                        or secondary_ids[1] is None
+                        primary_id is not None
+                        and secondary_ids[0] is not None
+                        and secondary_ids[1] is not None
                     ):
-                        is_available = True
-                    else:
                         spID_replica_set = [entry[1], *entry[2]]
                         is_available = check_track_is_available(
                             redis=redis,
                             track_id=track_id,
                             spID_replica_set=spID_replica_set,
                         )
+                    else:
+                        is_available = True
 
                     track_id_to_is_available_status[track_id] = is_available
 
