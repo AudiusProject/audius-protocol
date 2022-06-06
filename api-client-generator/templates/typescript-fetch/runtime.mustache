@@ -33,9 +33,9 @@ export class BaseAPI {
         return this.withMiddleware<T>(...middlewares);
     }
 
-    protected async <T>request(context: RequestOpts, initOverrides?: RequestInit): Promise<T> {
+    protected async request(context: RequestOpts, initOverrides?: RequestInit) {
         const { url, init } = this.createFetchParams(context, initOverrides);
-        return this.fetchApi(url, init);
+        return this.fetchApi(url, init) as any;
     }
 
     private createFetchParams(context: RequestOpts, initOverrides?: RequestInit) {

@@ -7,6 +7,7 @@
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "importsNotUsedAsValues": "remove"
   }
 }
