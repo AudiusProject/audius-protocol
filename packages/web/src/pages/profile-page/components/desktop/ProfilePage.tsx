@@ -12,7 +12,6 @@ import { ID, UID } from 'common/models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import { LineupState } from 'common/models/Lineup'
 import Status from 'common/models/Status'
-import { User } from 'common/models/User'
 import { feedActions } from 'common/store/pages/profile/lineups/feed/actions'
 import { tracksActions } from 'common/store/pages/profile/lineups/tracks/actions'
 import { ProfileUser, Tabs } from 'common/store/pages/profile/types'
@@ -77,10 +76,7 @@ export type ProfilePageProps = {
   profilePictureSizes: ProfilePictureSizes | null
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
-  followeeFollows: User[]
   activeTab: Tabs | null
-  followeeFollowsCount: number
-  followeeFollowsLoading: boolean
   dropdownDisabled: boolean
   following: boolean
   isSubscribed: boolean
@@ -126,7 +122,6 @@ export type ProfilePageProps = {
     tracks: number,
     isPrivate?: boolean
   ) => string
-  fetchFolloweeFollows: () => void
   openCreatePlaylistModal: () => void
   updateProfile: (metadata: any) => void
   updateProfilePicture: (
@@ -186,7 +181,6 @@ const ProfilePage = ({
   onCancel,
   onSortByRecent,
   onSortByPopular,
-  fetchFolloweeFollows,
   isArtist,
   status: profileLoadingStatus,
   activeTab,
@@ -215,9 +209,6 @@ const ProfilePage = ({
   profilePictureSizes,
   updatedProfilePicture,
   hasProfilePicture,
-  followeeFollows,
-  followeeFollowsCount,
-  followeeFollowsLoading,
   dropdownDisabled,
   following,
   isSubscribed,
@@ -638,10 +629,6 @@ const ProfilePage = ({
           updatedProfilePicture={updatedProfilePicture}
           hasProfilePicture={hasProfilePicture}
           doesFollowCurrentUser={profile?.does_follow_current_user || false}
-          followeeFollows={followeeFollows}
-          followeeFollowsCount={followeeFollowsCount}
-          followeeFollowsLoading={followeeFollowsLoading}
-          loadMoreFolloweeFollows={fetchFolloweeFollows}
           isOwner={isOwner}
           isArtist={isArtist}
           editMode={editMode}

@@ -19,7 +19,7 @@ export enum TracksSortMode {
   POPULAR = 1
 }
 
-type Follow = {
+export type Follow = {
   userIds: Array<{ id: ID; uid: UID }>
   status: Status
 }
@@ -82,6 +82,5 @@ type FollowerGroup = {
 }
 export interface ProfileUser extends User {
   followers: FollowerGroup
-  followeeFollows: FollowerGroup
   followees: FollowerGroup
 }

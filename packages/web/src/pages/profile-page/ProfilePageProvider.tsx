@@ -682,17 +682,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     fetchFollowUsers(FollowType.FOLLOWEES, 22, followees.length)
   }
 
-  fetchFolloweeFollows = () => {
-    const {
-      fetchFollowUsers,
-      profile: { profile }
-    } = this.props
-    const followeeFollows = profile ? profile.followeeFollows.users : []
-    // TODO: Add a check to compare the total number w/ the length of the current users in the store
-    if (!profile || profile.followeeFollows.status === Status.LOADING) return
-    fetchFollowUsers(FollowType.FOLLOWEE_FOLLOWS, 22, followeeFollows.length)
-  }
-
   getIsArtist = () => {
     const { profile } = this.props.profile
     return !!profile && profile.track_count > 0
@@ -817,18 +806,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       ? profile.followers.status === Status.LOADING
       : false
     const followees = profile ? profile.followees.users : []
-    const followeesLoading = profile
-      ? profile.followees.status === Status.LOADING
-      : false
-    const followeeFollows = profile ? profile.followeeFollows.users : []
-
-    // TODO: update this value to be the total number of followee follow from the user metadata
-    const followeeFollowsCount = profile
-      ? profile.current_user_followee_follow_count
-      : 0
-    const followeeFollowsLoading = profile
-      ? profile.followeeFollows.status === Status.LOADING
-      : false
 
     const dropdownDisabled =
       activeTab === Tabs.REPOSTS || activeTab === Tabs.COLLECTIBLES
@@ -886,7 +863,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       fetchFollowees: this.fetchFollowees,
       setFollowingUserId,
       setFollowersUserId,
-      fetchFolloweeFollows: this.fetchFolloweeFollows,
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
       onShare: this.onShare,
@@ -938,10 +914,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       pauseUserFeedTrack,
 
       followees,
-      followeesLoading,
-      followeeFollows,
-      followeeFollowsCount,
-      followeeFollowsLoading,
       dropdownDisabled,
       updatedCoverPhoto,
       updatedProfilePicture,
