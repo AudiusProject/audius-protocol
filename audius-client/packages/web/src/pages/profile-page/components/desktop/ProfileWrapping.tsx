@@ -5,7 +5,6 @@ import cn from 'classnames'
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes } from 'common/models/ImageSizes'
-import { User } from 'common/models/User'
 import { Nullable } from 'common/utils/typeUtils'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
@@ -23,10 +22,6 @@ type ProfileWrappingProps = {
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
   doesFollowCurrentUser: boolean
-  followeeFollows: User[]
-  followeeFollowsCount: number
-  followeeFollowsLoading: boolean
-  loadMoreFolloweeFollows: () => void
   isOwner: boolean
   isArtist: boolean
   editMode: boolean
@@ -68,10 +63,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     updatedProfilePicture,
     hasProfilePicture,
     doesFollowCurrentUser,
-    followeeFollows,
-    followeeFollowsCount,
-    followeeFollowsLoading,
-    loadMoreFolloweeFollows,
     isOwner,
     isArtist,
     editMode,
@@ -145,10 +136,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             userId={userId}
             isDeactivated={isDeactivated}
             loading={loading}
-            followeeFollows={followeeFollows}
-            followeeFollowsCount={followeeFollowsCount}
-            followeeFollowsLoading={followeeFollowsLoading}
-            loadMoreFolloweeFollows={loadMoreFolloweeFollows}
             isOwner={isOwner}
             isArtist={isArtist}
             editMode={editMode}

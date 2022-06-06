@@ -1,46 +1,77 @@
-import React, { useState, useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { IconFollowing, IconArrow } from '@audius/stems'
-import cn from 'classnames'
+import { useDispatch, useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
-import { User } from 'common/models/User'
-import UserListModal from 'components/artist/UserListModal'
+import { getUserId } from 'common/store/account/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
+import {
+  getFolloweeFollows,
+  getProfileUserId
+} from 'common/store/pages/profile/selectors'
+import { removeNullable } from 'common/utils/typeUtils'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
-import { profilePage } from 'utils/route'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListEntityType,
+  UserListType
+} from 'store/application/ui/userListModal/types'
 
 import styles from './ProfileMutuals.module.css'
 
 const messages = {
   mutuals: 'Mutuals',
-  viewAll: 'View All',
-  topTags: 'Top Tags'
+  viewAll: 'View All'
 }
 
 const MAX_MUTUALS = 5
 
-type MutualsProps = {
-  followers: User[]
-  setShowMutualConnectionsModal: (value: boolean) => void
-}
-const Mutuals = ({
-  followers,
-  setShowMutualConnectionsModal
-}: MutualsProps) => {
-  const handleMutualsClick = useCallback(() => {
-    setShowMutualConnectionsModal(true)
-  }, [setShowMutualConnectionsModal])
+const selectMutuals = createSelector(
+  [getFolloweeFollows, getUsers],
+  (followeeFollows, users) => {
+    return followeeFollows.userIds
+      .map(({ id }) => users[id])
+      .filter(removeNullable)
+  }
+)
+
+export const ProfileMutuals = () => {
+  const userId = useSelector(getProfileUserId)
+  const accountId = useSelector(getUserId)
+  // @ts-ignore -- fixed in typescript v4
+  const mutuals = useSelector(selectMutuals)
+  const dispatch = useDispatch()
+
+  const handleClick = useCallback(() => {
+    dispatch(
+      setUsers({
+        userListType: UserListType.MUTUAL_FOLLOWER,
+        entityType: UserListEntityType.USER,
+        id: userId
+      })
+    )
+    dispatch(setVisibility(true))
+  }, [dispatch, userId])
+
+  if (userId === accountId || mutuals.length === 0) {
+    return null
+  }
 
   return (
     <div className={styles.mutualsContainer}>
       <div className={styles.titleContainer}>
         <IconFollowing className={styles.followingIcon} />
         <span className={styles.titleText}>{messages.mutuals}</span>
-        <span className={cn(styles.line, styles.line)} />
+        <span className={styles.line} />
       </div>
-      <div className={styles.contentContainer} onClick={handleMutualsClick}>
+      <div className={styles.contentContainer} onClick={handleClick}>
         <UserProfilePictureList
-          users={followers}
-          totalUserCount={followers.length}
+          users={mutuals}
+          totalUserCount={mutuals.length}
           limit={MAX_MUTUALS}
           profilePictureClassname={styles.profilePictureWrapper}
         />
@@ -50,45 +81,5 @@ const Mutuals = ({
         </div>
       </div>
     </div>
-  )
-}
-
-type ProfileMutualsProps = {
-  users: User[]
-  usersLoading: boolean
-  usersCount: number
-  loadMoreUsers: () => void
-  goToRoute: (route: string) => void
-}
-export const ProfileMutuals = ({
-  users,
-  usersLoading,
-  usersCount,
-  loadMoreUsers,
-  goToRoute
-}: ProfileMutualsProps) => {
-  const [showMutualConnectionsModal, setShowMutualConnectionsModal] = useState(
-    false
-  )
-
-  return (
-    <>
-      <Mutuals
-        followers={users}
-        setShowMutualConnectionsModal={setShowMutualConnectionsModal}
-      />
-      <UserListModal
-        id={messages.mutuals}
-        title={messages.mutuals}
-        visible={showMutualConnectionsModal}
-        onClose={() => setShowMutualConnectionsModal(false)}
-        users={users}
-        loading={usersLoading}
-        hasMore={users.length < usersCount}
-        loadMore={loadMoreUsers}
-        onClickArtistName={handle => goToRoute(profilePage(handle))}
-        initialLoad={false}
-      />
-    </>
   )
 }
