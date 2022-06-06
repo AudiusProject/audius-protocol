@@ -59,6 +59,12 @@ export class Utils {
     return Web3.utils.BN
   }
 
+  static randomEntityId() {
+    const PG_INT_MAX_VALUE = 2147483647
+    const randomInt = Math.floor(Math.random() * PG_INT_MAX_VALUE)
+    return this.toBN(randomInt, 10)
+  }
+
   static checkStrLen(str: string, maxLen: number, minLen = 1) {
     if (
       str === undefined ||

@@ -316,7 +316,7 @@ export class CreatorNode {
     trackFile: File,
     coverArtFile: File,
     metadata: Metadata,
-    onProgress: ProgressCB = () => {}
+    onProgress: ProgressCB = () => { }
   ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
@@ -403,6 +403,36 @@ export class CreatorNode {
   }
 
   /**
+   * Uploads playlist metadata to a creator node
+   * The metadata object must include a `playlist_id` field or a
+   * source file must be provided (returned from uploading playlist content).
+   * @param metadata
+   * @param sourceFile
+   */
+  async uploadPlaylistMetadata(metadata: Metadata, sourceFile: string) {
+    // this does the actual validation before sending to the creator node
+    // if validation fails, validate() will throw an error
+    try {
+      this.schemas[playlistSchemaType].validate?.(metadata)
+    } catch (e) {
+      console.error('Error validating playlist metadata', e)
+    }
+
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/playlists/metadata',
+        method: 'post',
+        data: {
+          metadata,
+          sourceFile
+        }
+      },
+      true
+    )
+    return body
+  }
+
+  /**
    * Creates a track on the content node, associating track id with file content
    * @param audiusTrackId returned by track creation on-blockchain
    * @param metadataFileUUID unique ID for metadata file
@@ -424,6 +454,29 @@ export class CreatorNode {
         metadataFileUUID,
         blockNumber: this.maxBlockNumber,
         transcodedTrackUUID
+      }
+    })
+  }
+
+  /**
+   * Creates a Playlist on the content node, associating Playlist id with file content
+   * @param audiusPlaylistId returned by playlist creation on-blockchain
+   * @param metadataFileUUID unique ID for metadata file
+   * @param blockNumber
+   */
+  async associatePlaylist(
+    audiusPlaylistId: number,
+    metadataFileUUID: string,
+    blockNumber: number,
+  ) {
+    this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
+    await this._makeRequest({
+      url: '/playlists',
+      method: 'post',
+      data: {
+        blockchainTrackId: audiusPlaylistId,
+        metadataFileUUID,
+        blockNumber: this.maxBlockNumber,
       }
     })
   }
@@ -908,7 +961,7 @@ export class CreatorNode {
   async _uploadFile(
     file: File,
     route: string,
-    onProgress: ProgressCB = () => {},
+    onProgress: ProgressCB = () => { },
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
@@ -1018,9 +1071,8 @@ export class CreatorNode {
     if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
-        e.response.data.error
-      }] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error
+        }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)

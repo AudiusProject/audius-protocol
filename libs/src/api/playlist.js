@@ -60,6 +60,7 @@ class Playlists extends Base {
     return this.discoveryProvider.getSavedPlaylists(limit, offset, withUsers)
   }
 
+
   /**
    * Return saved albums for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
@@ -69,6 +70,23 @@ class Playlists extends Base {
   async getSavedAlbums (limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return this.discoveryProvider.getSavedAlbums(limit, offset, withUsers)
+  }
+
+  // TODO possibly move to utils
+  async playlistIdIsTaken(playlistId) {
+    const existingPlaylistWithId = await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
+    const idIsTaken = existingPlaylistWithId.length
+    return idIsTaken
+  }
+
+  async findUsablePlaylistId() {
+    let foundUsableId = false
+    let newPlaylistId = null
+    while (!foundUsableId) {
+      newPlaylistId = Utils.randomEntityId()
+      foundUsableId = !this.playlistIdIsTaken(newPlaylistId)
+    }
+    return newPlaylistId
   }
 
   /* ------- SETTERS ------- */
@@ -88,20 +106,63 @@ class Playlists extends Base {
     let playlistId
     let receipt = {}
     try {
-      const response = await this.contracts.PlaylistFactoryClient.createPlaylist(
-        userId, playlistName, isPrivate, isAlbum, createInitialIdsArray
-      )
-      playlistId = response.playlistId
-      receipt = response.txReceipt
+      const wallet = this.Account.hedgehog.wallet.getChecksumAddressString()
+      const account = await this.Account.getUserAccountOnSolana({ userId, wallet })
+      const userHasClaimedAccount = userAccount !== null && await this.Account.userHasClaimedSolAccount({ account, userId, wallet 
+      })
 
-      // Add remaining tracks
-      await Promise.all(postInitialIdsArray.map(trackId => {
-        return this.contracts.PlaylistFactoryClient.addPlaylistTrack(playlistId, trackId)
-      }))
+      if (userHasClaimedAccount) {
+        const {
+          metadataMultihash,
+          metadataFileUUID
+        } = await retry(async (bail, num) => {
+          return this.creatorNode.uploadPlaylistMetadata(
+            metadata
+          )
+        }, {
+          // Retry function 3x
+          // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+          minTimeout: 500,
+          maxTimeout: 4000,
+          factor: 3,
+          retries: 3,
+          onRetry: (err, i) => {
+            if (err) {
+              console.log('uploadTrackContent retry error: ', err)
+            }
+          }
+        })
 
-      // Order tracks
-      if (postInitialIdsArray.length > 0) {
-        receipt = await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
+        const id = await this.Playlist.findUsablePlaylistId()
+        const response = await this.anchorAudiusData.createPlaylist({ 
+          userId,
+          id,
+          metadata: metadataMultihash
+        })
+        if (response.error !== null) {
+          const { error, error_code } = response
+          throw new Error(`Error code: ${error_code} \n| Error: ${error}`
+          // error handling
+        } else {
+          const { res } = response
+          await this.creatorNode.associatePlaylist(playlistId, metadataFileUUID, txReceipt.blockNumber)
+        }
+      } else {
+        const response = await this.contracts.PlaylistFactoryClient.createPlaylist(
+          userId, playlistName, isPrivate, isAlbum, createInitialIdsArray
+        )
+        playlistId = response.playlistId
+        receipt = response.txReceipt
+
+        // Add remaining tracks
+        await Promise.all(postInitialIdsArray.map(trackId => {
+          return this.contracts.PlaylistFactoryClient.addPlaylistTrack(playlistId, trackId)
+        }))
+
+        // Order tracks
+        if (postInitialIdsArray.length > 0) {
+          receipt = await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
+        }
       }
     } catch (e) {
       console.debug(`Reached libs createPlaylist catch block with playlist id ${playlistId}`)
