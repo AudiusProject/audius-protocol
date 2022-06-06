@@ -32,23 +32,24 @@ class StateMachineManager {
     // Initialize queues
     const stateMonitoringQueue = new StateMonitoringQueue()
     const stateReconciliationQueue = new StateReconciliationQueue()
-    await stateMonitoringQueue.init({
-      audiusLibs,
+    const stateMonitoringQueueQueue = await stateMonitoringQueue.init({
+      discoveryNodeEndpoint:
+        audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       monitorStateJobSuccessCallback:
-        this._enqueueFindSyncsAndReplicaSetUpdates.bind(this),
+        this._enqueueFindPotentialSyncsAndReplicaSetUpdates.bind(this),
       findPotentialSyncsJobSuccessCallback:
         this._enqueueEnqueueSyncRequests.bind(this),
       findReplicaSetUpdatesJobSuccessCallback:
         this._enqueueUpdateReplicaSets.bind(this)
     })
-    await stateReconciliationQueue.init()
+    const stateReconciliationQueueQueue = await stateReconciliationQueue.init()
 
     // Set up interfacer for job processors to use. This is a slightly hacky workaround
     // because job processors get their data from Redis and thus can't be passed the queue
     QueueInterfacer.init(
       audiusLibs,
-      stateMonitoringQueue.queue,
-      stateReconciliationQueue.queue
+      stateMonitoringQueueQueue,
+      stateReconciliationQueueQueue
     )
   }
 
@@ -91,7 +92,14 @@ class StateMachineManager {
     this.enabledReconfigModesSet = enabledReconfigModesSet
   }
 
-  _enqueueFindSyncsAndReplicaSetUpdates(monitorStateJobResult) {
+  /**
+   * After a monitorState job completes, this function gets called to
+   * enqueue findPotentialSyncs and findReplicaSetUpdates jobs, which each
+   * find state anomalies that need to be reconciled for the slice of users that
+   * the monitorState job queried.
+   * @param {Object} monitorStateJobResult the monitorState job that successfully completed
+   */
+  _enqueueFindPotentialSyncsAndReplicaSetUpdates(monitorStateJobResult) {
     const {
       users,
       unhealthyPeers,
@@ -121,6 +129,12 @@ class StateMachineManager {
     )
   }
 
+  /**
+   * After a findPotentialSyncs job completes, this function gets called to
+   * enqueue an enqueueSyncRequests job, which takes each potential sync request
+   * and adds it to the queue to be issued if it's needed (based on the clock values)
+   * @param {Object} findPotentialSyncsJobResult the findPotentialSyncs job that successfully completed
+   */
   _enqueueEnqueueSyncRequests(findPotentialSyncsJobResult) {
     const { potentialSyncRequests, replicaSetNodesToUserClockStatusesMap } =
       findPotentialSyncsJobResult
@@ -136,6 +150,11 @@ class StateMachineManager {
     )
   }
 
+  /**
+   * After a findReplicaSetUpdates job completes, this function gets called to
+   * enqueue a new job for each replica set update.
+   * @param {Object} findReplicaSetUpdatesJobResult the findReplicaSetUpdates job that successfully completed
+   */
   _enqueueUpdateReplicaSets(findReplicaSetUpdatesJobResult) {
     const { updateReplicaSetOps, replicaSetNodesToUserClockStatusesMap } =
       findReplicaSetUpdatesJobResult

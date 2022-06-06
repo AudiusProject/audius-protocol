@@ -1,6 +1,5 @@
 const _ = require('lodash')
 
-const { logger } = require('../../../logging')
 const config = require('../../../config')
 const {
   SyncType,
@@ -18,18 +17,20 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
 
 /**
  * Updates replica sets of a user who has one or more unhealthy nodes as their primary or secondaries.
- * @param {number} jobId the id of the job being run
- * @param {number} wallet the public key of the user whose replica set will be reconfigured
- * @param {number} userId the id of the user whose replica set will be reconfigured
- * @param {number} primary the current primary endpoint of the user whose replica set will be reconfigured
- * @param {number} secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
- * @param {number} secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
- * @param {Set<string>} unhealthyReplicasSet the endpoints of the user's replica set that are currently unhealthy
- * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
- * @param {string[]} enabledReconfigModes array of which reconfig modes are enabled
+ *
+ * @param {Object} param job data
+ * @param {Object} param.logger the logger that can be filtered by jobName and jobId
+ * @param {number} param.wallet the public key of the user whose replica set will be reconfigured
+ * @param {number} param.userId the id of the user whose replica set will be reconfigured
+ * @param {number} param.primary the current primary endpoint of the user whose replica set will be reconfigured
+ * @param {number} param.secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
+ * @param {number} param.secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
+ * @param {Set<string>} param.unhealthyReplicasSet the endpoints of the user's replica set that are currently unhealthy
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
 module.exports = async function (
-  jobId,
+  logger,
   wallet,
   userId,
   primary,
@@ -39,6 +40,18 @@ module.exports = async function (
   replicaSetNodesToUserClockStatusesMap,
   enabledReconfigModes
 ) {
+  _validateJobData(
+    logger,
+    primary,
+    secondary1,
+    secondary2,
+    wallet,
+    unhealthyReplicasSet,
+    healthyNodes,
+    replicaSetNodesToUserClockStatusesMap,
+    enabledReconfigModes
+  )
+
   /**
    * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
    * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
@@ -75,7 +88,8 @@ module.exports = async function (
       primary,
       secondary1,
       secondary2,
-      newReplicaSet
+      newReplicaSet,
+      logger
     )
   } catch (e) {
     logger.error(
@@ -104,14 +118,15 @@ module.exports = async function (
  * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on the curretly enabled reconfig mode. See `RECONFIG_MODE` variable for more information.
  *
  * @param {Object} param
+ * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {string} param.primary current user's primary endpoint
  * @param {string} param.secondary1 current user's first secondary endpoint
  * @param {string} param.secondary2 current user's second secondary endpoint
  * @param {string} param.wallet current user's wallet address
  * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
  * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
- * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
- * @param {string[]} enabledReconfigModes array of which reconfig modes are enabled
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  * @returns {Object}
  * {
  *  newPrimary: {string | null} the endpoint of the newly selected primary or null,
@@ -121,6 +136,7 @@ module.exports = async function (
  * }
  */
 const determineNewReplicaSet = async ({
+  logger,
   primary,
   secondary1,
   secondary2,
@@ -138,7 +154,8 @@ const determineNewReplicaSet = async ({
     healthyReplicaSet,
     unhealthyReplicasSet.size,
     healthyNodes,
-    wallet
+    wallet,
+    logger
   )
 
   if (unhealthyReplicasSet.size === 1) {
@@ -170,6 +187,67 @@ const determineNewReplicaSet = async ({
     newSecondary2: null,
     issueReconfig: false,
     reconfigType: null
+  }
+}
+
+const _validateJobData = (
+  logger,
+  primary,
+  secondary1,
+  secondary2,
+  wallet,
+  unhealthyReplicasSet,
+  healthyNodes,
+  replicaSetNodesToUserClockStatusesMap,
+  enabledReconfigModes
+) => {
+  if (typeof logger !== 'object') {
+    throw new Error(
+      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
+    )
+  }
+  if (typeof primary !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof primary}") or value ("${primary}") of primary param`
+    )
+  }
+  if (typeof secondary1 !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof secondary1}") or value ("${secondary1}") of secondary1 param`
+    )
+  }
+  if (typeof secondary2 !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof secondary2}") or value ("${secondary2}") of secondary2 param`
+    )
+  }
+  if (typeof wallet !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof wallet}") or value ("${wallet}") of wallet param`
+    )
+  }
+  if (!(unhealthyReplicasSet instanceof Set)) {
+    throw new Error(
+      `Invalid type ("${typeof unhealthyReplicasSet}") or value ("${unhealthyReplicasSet}") of unhealthyReplicasSet param`
+    )
+  }
+  if (!(healthyNodes instanceof Array)) {
+    throw new Error(
+      `Invalid type ("${typeof healthyNodes}") or value ("${healthyNodes}") of healthyNodes param`
+    )
+  }
+  if (
+    typeof replicaSetNodesToUserClockStatusesMap !== 'object' ||
+    replicaSetNodesToUserClockStatusesMap instanceof Array
+  ) {
+    throw new Error(
+      `Invalid type ("${typeof replicaSetNodesToUserClockStatusesMap}") or value ("${replicaSetNodesToUserClockStatusesMap}") of replicaSetNodesToUserClockStatusesMap`
+    )
+  }
+  if (!(enabledReconfigModes instanceof Array)) {
+    throw new Error(
+      `Invalid type ("${typeof enabledReconfigModes}") or value ("${enabledReconfigModes}") of enabledReconfigModes param`
+    )
   }
 }
 
@@ -286,13 +364,15 @@ const determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  * @param {number} numberOfUnhealthyReplicas the number of unhealthy replica set endpoints
  * @param {string[]} healthyNodes an array of all the healthy nodes available on the network
  * @param {string} wallet the wallet of the current user
+ * @param {Object} logger a logger that can be filtered on jobName and jobId
  * @returns {string[]} a string[] of the new replica set nodes
  */
 const selectRandomReplicaSetNodes = async (
   healthyReplicaSet,
   numberOfUnhealthyReplicas,
   healthyNodes,
-  wallet
+  wallet,
+  logger
 ) => {
   const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
@@ -354,6 +434,7 @@ const selectRandomReplicaSetNodes = async (
  * @param {string} secondary1 endpoint of the current first secondary node on replica set
  * @param {string} secondary2 endpoint of the current second secondary node on replica set
  * @param {Object} newReplicaSet {newPrimary, newSecondary1, newSecondary2, issueReconfig, reconfigType}
+ * @param {Object} logger a logger that can be filtered on jobName and jobId
  */
 const issueUpdateReplicaSetOp = async (
   userId,
@@ -361,7 +442,8 @@ const issueUpdateReplicaSetOp = async (
   primary,
   secondary1,
   secondary2,
-  newReplicaSet
+  newReplicaSet,
+  logger
 ) => {
   const response = { errorMsg: null, issuedReconfig: false }
   let newReplicaSetEndpoints = []

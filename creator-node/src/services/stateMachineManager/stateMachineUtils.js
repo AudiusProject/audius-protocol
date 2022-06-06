@@ -4,7 +4,7 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const config = require('../../config')
-const { logger } = require('../../logging')
+const { logger, createChildLogger } = require('../../logging')
 const { generateTimestampAndSignature } = require('../../apiSigning')
 const {
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
@@ -21,7 +21,7 @@ const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 /**
  * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair.
  * Also returns a set of any nodes that were unhealthy when queried for clock values.
- * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
+ * @param {Object} replicasToWalletsMap map of <replica set node : wallets>
  *
  * @returns {Object} { replicasToUserClockStatusMap: map(replica node => map(wallet => clockValue)), unhealthyPeers: Set<string> }
  */
@@ -126,7 +126,31 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   return clockValue
 }
 
+const processJob = async (
+  jobName,
+  job,
+  jobProcessor,
+  parentLogger,
+  defaultResult = {}
+) => {
+  const { id: jobId, data: jobData } = job
+
+  const jobLogger = createChildLogger(parentLogger, { jobName, jobId })
+  jobLogger.info(`New job: ${JSON.stringify(job)}`)
+
+  let result = defaultResult
+  try {
+    result = await jobProcessor({ logger: jobLogger, ...jobData })
+  } catch (error) {
+    jobLogger.error(`Error processing job: ${error}`)
+    result = { error }
+  }
+
+  return result
+}
+
 module.exports = {
   retrieveClockStatusesForUsersAcrossReplicaSet,
-  retrieveClockValueForUserFromReplica
+  retrieveClockValueForUserFromReplica,
+  processJob
 }

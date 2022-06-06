@@ -1,6 +1,5 @@
 const axios = require('axios')
 
-const { logger } = require('../../../logging')
 const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
@@ -22,11 +21,14 @@ const maxSyncMonitoringDurationInMs = config.get(
  * Processes a job to issue a request to perform a manual or recurring sync (determined by syncType param).
  * The sync request syncs a user's data from this node (the user's primary)
  * to another node (one of the user's secondaries).
- * @param {number} jobId the id of the job being run
- * @param {string} syncType the type of sync (manual or recurring)
- * @param {Object} syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
+ *
+ * @param {Object} param job data
+ * @param {Object} param.logger the logger that can be filtered by jobName and jobId
+ * @param {string} param.syncType the type of sync (manual or recurring)
+ * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  */
-module.exports = async function (jobId, syncType, syncRequestParameters) {
+module.exports = async function ({ logger, syncType, syncRequestParameters }) {
+  _validateJobData(logger, syncType, syncRequestParameters)
   const isValidSyncJobData =
     'baseURL' in syncRequestParameters &&
     'url' in syncRequestParameters &&
@@ -73,7 +75,7 @@ module.exports = async function (jobId, syncType, syncRequestParameters) {
   ]
 
   logger.info(
-    `------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue} | jobId: ${jobId}------------------`
+    `------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue}------------------`
   )
 
   // Issue sync request to secondary
@@ -89,7 +91,8 @@ module.exports = async function (jobId, syncType, syncRequestParameters) {
     userWallet,
     primaryClockValue,
     secondaryEndpoint,
-    syncType
+    syncType,
+    logger
   )
 
   // Re-enqueue sync if required
@@ -103,9 +106,30 @@ module.exports = async function (jobId, syncType, syncRequestParameters) {
   }
 
   logger.info(
-    `------------------END Process SYNC | ${logMsgString} | jobId: ${jobId}------------------`
+    `------------------END Process SYNC | ${logMsgString}------------------`
   )
   return {}
+}
+
+const _validateJobData = (logger, syncType, syncRequestParameters) => {
+  if (typeof logger !== 'object') {
+    throw new Error(
+      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
+    )
+  }
+  if (typeof syncType !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof syncType}") or value ("${syncType}") of syncType param`
+    )
+  }
+  if (
+    typeof syncRequestParameters !== 'object' ||
+    syncRequestParameters instanceof Array
+  ) {
+    throw new Error(
+      `Invalid type ("${typeof syncRequestParameters}") or value ("${syncRequestParameters}") of syncRequestParameters`
+    )
+  }
 }
 
 /**
@@ -147,7 +171,8 @@ const _additionalSyncIsRequired = async (
   userWallet,
   primaryClockValue = -1,
   secondaryUrl,
-  syncType
+  syncType,
+  logger
 ) => {
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 

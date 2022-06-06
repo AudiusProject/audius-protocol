@@ -50,7 +50,6 @@ const enqueueSyncRequest = async ({
   const jobProps = {
     syncType,
     syncRequestParameters
-    // addStateReconciliationJob: addJobToQueueFunc
   }
 
   const startTimeMs = Date.now()

@@ -12,18 +12,28 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * Processes a job to find and return sync requests that
  * should potentially be issued for the given array of users.
  *
- * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
- * @param {string[]} unhealthyPeers array of unhealthy peers
- * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
+ * @param {Object} param job data
+ * @param {Object} param.logger the logger that can be filtered by jobName and jobId
+ * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
+ * @param {string[]} param.unhealthyPeers array of unhealthy peers
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
-module.exports = async function (
-  jobId,
+module.exports = async function ({
+  logger,
   users,
   unhealthyPeers,
   replicaSetNodesToUserClockStatusesMap,
   userSecondarySyncMetricsMap
-) {
+}) {
+  _validateJobData(
+    logger,
+    users,
+    unhealthyPeers,
+    replicaSetNodesToUserClockStatusesMap,
+    userSecondarySyncMetricsMap
+  )
+
   const potentialSyncRequests = []
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
 
@@ -43,6 +53,46 @@ module.exports = async function (
   return {
     potentialSyncRequests,
     replicaSetNodesToUserClockStatusesMap
+  }
+}
+
+const _validateJobData = (
+  logger,
+  users,
+  unhealthyPeers,
+  replicaSetNodesToUserClockStatusesMap,
+  userSecondarySyncMetricsMap
+) => {
+  if (typeof logger !== 'object') {
+    throw new Error(
+      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
+    )
+  }
+  if (!(users instanceof Array)) {
+    throw new Error(
+      `Invalid type ("${typeof users}") or value ("${users}") of users param`
+    )
+  }
+  if (!(unhealthyPeers instanceof Array)) {
+    throw new Error(
+      `Invalid type ("${typeof unhealthyPeers}") or value ("${unhealthyPeers}") of unhealthyPeers param`
+    )
+  }
+  if (
+    typeof replicaSetNodesToUserClockStatusesMap !== 'object' ||
+    replicaSetNodesToUserClockStatusesMap instanceof Array
+  ) {
+    throw new Error(
+      `Invalid type ("${typeof replicaSetNodesToUserClockStatusesMap}") or value ("${replicaSetNodesToUserClockStatusesMap}") of replicaSetNodesToUserClockStatusesMap`
+    )
+  }
+  if (
+    typeof userSecondarySyncMetricsMap !== 'object' ||
+    userSecondarySyncMetricsMap instanceof Array
+  ) {
+    throw new Error(
+      `Invalid type ("${typeof userSecondarySyncMetricsMap}") or value ("${userSecondarySyncMetricsMap}") of userSecondarySyncMetricsMap`
+    )
   }
 }
 

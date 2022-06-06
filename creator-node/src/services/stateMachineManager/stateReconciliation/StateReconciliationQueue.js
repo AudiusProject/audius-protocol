@@ -5,13 +5,17 @@ const {
   QUEUE_HISTORY,
   QUEUE_NAMES,
   JOB_NAMES,
-  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
-  SyncType
+  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
 } = require('../stateMachineConstants')
-const { logger } = require('../../../logging')
+const { processJob } = require('../stateMachineUtils')
+const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const enqueueSyncRequestsJobProcessor = require('./enqueueSyncRequests.jobProcessor')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
+
+const logger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.STATE_RECONCILIATION
+})
 
 /**
  * Handles setup and lifecycle management (adding and processing jobs)
@@ -22,12 +26,12 @@ const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
  */
 class StateReconciliationQueue {
   async init() {
-    this.queue = this.makeQueue(
+    const queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
     )
     this.registerQueueEventHandlersAndJobProcessors({
-      queue: this.queue,
+      queue,
       processManualSync: this.processManualSyncJob.bind(this),
       processRecurringSync: this.processRecurringSyncJob.bind(this),
       processEnqueueSyncRequests: this.processEnqueueSyncRequestsJob.bind(this),
@@ -35,23 +39,9 @@ class StateReconciliationQueue {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await this.queue.obliterate({ force: true })
-  }
+    await queue.obliterate({ force: true })
 
-  logDebug(msg) {
-    logger.debug(`StateReconciliationQueue DEBUG: ${msg}`)
-  }
-
-  log(msg) {
-    logger.info(`StateReconciliationQueue: ${msg}`)
-  }
-
-  logWarn(msg) {
-    logger.warn(`StateReconciliationQueue WARNING: ${msg}`)
-  }
-
-  logError(msg) {
-    logger.error(`StateReconciliationQueue ERROR: ${msg}`)
+    return queue
   }
 
   makeQueue(redisHost, redisPort) {
@@ -93,31 +83,31 @@ class StateReconciliationQueue {
   }) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
-      this.log(`Queue Job Waiting - ID ${jobId}`)
+      logger.info(`Queue Job Waiting - ID ${jobId}`)
     })
     queue.on('global:active', (jobId, jobPromise) => {
-      this.log(`Queue Job Active - ID ${jobId}`)
+      logger.info(`Queue Job Active - ID ${jobId}`)
     })
     queue.on('global:lock-extension-failed', (jobId, err) => {
-      this.logError(
+      logger.error(
         `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
       )
     })
     queue.on('global:stalled', (jobId) => {
-      this.logError(`stateMachineQueue Job Stalled - ID ${jobId}`)
+      logger.error(`stateMachineQueue Job Stalled - ID ${jobId}`)
     })
     queue.on('global:error', (error) => {
-      this.logError(`Queue Job Error - ${error}`)
+      logger.error(`Queue Job Error - ${error}`)
     })
 
     // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
     queue.on('completed', (job, result) => {
-      this.log(
+      logger.info(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
     })
     queue.on('failed', (job, err) => {
-      this.logError(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
+      logger.error(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
     })
 
     // Register the logic that gets executed to process each new job from the queue
@@ -143,117 +133,44 @@ class StateReconciliationQueue {
     )
   }
 
+  /*
+   * Job processor boilerplate
+   */
+
   async processManualSyncJob(job) {
-    const { id: jobId, data: syncRequestParameters } = job
-
-    this.log(
-      `New manual sync job details: jobId=${jobId}, job=${JSON.stringify(job)}`
+    return processJob(
+      JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
+      job,
+      handleSyncRequestJobProcessor,
+      logger
     )
-
-    let result = {}
-    try {
-      result = await handleSyncRequestJobProcessor(
-        jobId,
-        SyncType.Manual,
-        syncRequestParameters
-      )
-    } catch (error) {
-      this.logError(`Error processing manual sync jobId ${jobId}: ${error}`)
-      result = { error }
-    }
-
-    return result
   }
 
   async processRecurringSyncJob(job) {
-    const { id: jobId, data: syncRequestParameters } = job
-
-    this.log(
-      `New recurring sync job details: jobId=${jobId}, job=${JSON.stringify(
-        job
-      )}`
+    return processJob(
+      JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
+      job,
+      handleSyncRequestJobProcessor,
+      logger
     )
-
-    let result = {}
-    try {
-      result = await handleSyncRequestJobProcessor(
-        jobId,
-        SyncType.Recurring,
-        syncRequestParameters
-      )
-    } catch (error) {
-      this.logError(`Error processing recurring sync jobId ${jobId}: ${error}`)
-      result = { error }
-    }
-
-    return result
   }
 
   async processEnqueueSyncRequestsJob(job) {
-    const {
-      id: jobId,
-      data: { potentialSyncRequests, replicaSetNodesToUserClockStatusesMap }
-    } = job
-
-    this.log(
-      `New ${
-        JOB_NAMES.ENQUEUE_SYNC_REQUESTS
-      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
+    return processJob(
+      JOB_NAMES.ENQUEUE_SYNC_REQUESTS,
+      job,
+      enqueueSyncRequestsJobProcessor,
+      logger
     )
-
-    let result = {}
-    try {
-      result = await enqueueSyncRequestsJobProcessor(
-        jobId,
-        potentialSyncRequests,
-        replicaSetNodesToUserClockStatusesMap
-      )
-    } catch (error) {
-      this.logError(
-        `Error processing ${JOB_NAMES.ENQUEUE_SYNC_REQUESTS} jobId ${jobId}: ${error}`
-      )
-      result = { error }
-    }
-
-    return result
   }
 
   async processUpdateReplicaSetsJob(job) {
-    const {
-      id: jobId,
-      data: {
-        users,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        replicaSetNodesToUserWalletsMap,
-        replicaSetNodesToUserClockStatusesMap
-      }
-    } = job
-
-    this.log(
-      `New ${
-        JOB_NAMES.UPDATE_REPLICA_SET
-      } job details: jobId=${jobId}, job=${JSON.stringify(job)}`
+    return processJob(
+      JOB_NAMES.UPDATE_REPLICA_SET,
+      job,
+      updateReplicaSetJobProcessor,
+      logger
     )
-
-    let result = {}
-    try {
-      result = await updateReplicaSetJobProcessor(
-        jobId,
-        users,
-        unhealthyPeers,
-        userSecondarySyncMetricsMap,
-        replicaSetNodesToUserWalletsMap,
-        replicaSetNodesToUserClockStatusesMap
-      )
-    } catch (error) {
-      this.logError(
-        `Error processing ${JOB_NAMES.UPDATE_REPLICA_SET} jobId ${jobId}: ${error}`
-      )
-      result = { error }
-    }
-
-    return result
   }
 }
 

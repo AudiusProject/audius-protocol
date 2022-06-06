@@ -1,3 +1,8 @@
+/**
+ * Singleton for interfacing with all the queues. Job processors must be functions
+ * that take simple, serializable types, so job processors that need to enqueue other jobs
+ * will use this interfacer instead of being passed a non-serializable queue.
+ */
 class QueueInterfacer {
   init(audiusLibs, stateMonitoringQueue, stateReconciliationQueue) {
     this.audiusLibs = audiusLibs

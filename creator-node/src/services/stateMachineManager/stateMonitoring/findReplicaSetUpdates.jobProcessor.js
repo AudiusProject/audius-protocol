@@ -5,7 +5,6 @@ const {
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
-const { logger } = require('../../../logging')
 const config = require('../../../config')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -19,18 +18,28 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * Processes a job to find and return reconfigurations of replica sets that
  * need to occur for the given array of users.
  *
- * @param {Object[]} users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
- * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
- * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
+ * @param {Object} param job data
+ * @param {Object} param.logger a logger that can be filtered by jobName and jobId
+ * @param {Object[]} param.users array of { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
+ * @param {Set<string>} param.unhealthyPeers set of unhealthy peers
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} param.userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
  */
-module.exports = async function (
-  jobId,
+module.exports = async function ({
+  logger,
   users,
   unhealthyPeers,
   replicaSetNodesToUserClockStatusesMap,
   userSecondarySyncMetricsMap
-) {
+}) {
+  _validateJobData(
+    logger,
+    users,
+    unhealthyPeers,
+    replicaSetNodesToUserClockStatusesMap,
+    userSecondarySyncMetricsMap
+  )
+
   // Parallelize calling _findReplicaSetUpdatesForUser on chunks of 500 users at a time
   const userBatches = _.chunk(users, FIND_REPLICA_SET_UPDATES_BATCH_SIZE)
   const results = []
@@ -80,6 +89,46 @@ module.exports = async function (
   }
 }
 
+const _validateJobData = (
+  logger,
+  users,
+  unhealthyPeers,
+  replicaSetNodesToUserClockStatusesMap,
+  userSecondarySyncMetricsMap
+) => {
+  if (typeof logger !== 'object') {
+    throw new Error(
+      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
+    )
+  }
+  if (!(users instanceof Array)) {
+    throw new Error(
+      `Invalid type ("${typeof users}") or value ("${users}") of users param`
+    )
+  }
+  if (!(unhealthyPeers instanceof Array)) {
+    throw new Error(
+      `Invalid type ("${typeof unhealthyPeers}") or value ("${unhealthyPeers}") of unhealthyPeers param`
+    )
+  }
+  if (
+    typeof replicaSetNodesToUserClockStatusesMap !== 'object' ||
+    replicaSetNodesToUserClockStatusesMap instanceof Array
+  ) {
+    throw new Error(
+      `Invalid type ("${typeof replicaSetNodesToUserClockStatusesMap}") or value ("${replicaSetNodesToUserClockStatusesMap}") of replicaSetNodesToUserClockStatusesMap`
+    )
+  }
+  if (
+    typeof userSecondarySyncMetricsMap !== 'object' ||
+    userSecondarySyncMetricsMap instanceof Array
+  ) {
+    throw new Error(
+      `Invalid type ("${typeof userSecondarySyncMetricsMap}") or value ("${userSecondarySyncMetricsMap}") of userSecondarySyncMetricsMap`
+    )
+  }
+}
+
 /**
  * Determines which replica set update operations should be performed for a given user.
  *
@@ -89,6 +138,7 @@ module.exports = async function (
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetrics mapping of each secondary to the success metrics the nodeUser has had syncing to it
  * * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
+ * @param {Object} param.logger a logger that can be filtered by jobName and jobId
  */
 const _findReplicaSetUpdatesForUser = async (
   user,
@@ -96,7 +146,8 @@ const _findReplicaSetUpdatesForUser = async (
   unhealthyPeers,
   userSecondarySyncMetrics,
   minSecondaryUserSyncSuccessPercent,
-  minFailedSyncRequestsBeforeReconfig
+  minFailedSyncRequestsBeforeReconfig,
+  logger
 ) => {
   const requiredUpdateReplicaSetOps = []
   const unhealthyReplicas = new Set()
