@@ -291,8 +291,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
     except Exception as e:
         logger.error(f"Could not get latest track unavailability job timestamps: {e}")
-        last_track_unavailability_job_start_time = str(None)
-        last_track_unavailability_job_end_time = str(None)
+        last_track_unavailability_job_start_time = None
+        last_track_unavailability_job_end_time = None
 
     # Get system information monitor values
     sys_info = monitors.get_monitors(
