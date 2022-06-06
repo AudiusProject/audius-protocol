@@ -181,7 +181,7 @@ function getStoragePaths({ CID, logger, logPrefix }) {
     const storagePath = DiskManager.computeFilePath(CID, false)
     storagePaths.push(storagePath)
   } catch (e) {
-    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+    logger.warn(`${logPrefix} Could not compute storage path: ${e.message}`)
   }
 
   try {
