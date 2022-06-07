@@ -15,7 +15,7 @@ class ReactionResponse(TypedDict):
 
 def get_reactions(
     session: Session, reacted_to_ids: List[str], type: Optional[str]
-) -> List[ReactionResponse]:
+) -> Optional[List[ReactionResponse]]:
     filters = [Reaction.reacted_to.in_(reacted_to_ids), User.is_current == True]
     if type:
         filters.append(Reaction.reaction_type == type)
