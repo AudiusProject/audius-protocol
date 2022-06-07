@@ -40,39 +40,39 @@ def upgrade():
     DROP INDEX IF EXISTS track_owner_id_idx;
     CREATE INDEX IF NOT EXISTS track_owner_id_idx ON tracks (owner_id);
 
-    -- add index for track_created_at
+
     drop index if exists track_created_at_idx;
     CREATE INDEX IF NOT EXISTS track_created_at_idx ON tracks (created_at);
 
-    -- add index for playlist owner
+
     drop index if exists playlist_owner_id_idx;
     CREATE INDEX IF NOT EXISTS playlist_owner_id_idx ON playlists (playlist_owner_id);
 
-    -- add index for playlist_created_at
+
     drop index if exists playlist_created_at_idx;
     CREATE INDEX IF NOT EXISTS playlist_created_at_idx ON playlists (created_at);
 
-    -- make repost_user_id a partial index
+
     DROP INDEX IF EXISTS repost_user_id_idx;
     CREATE INDEX IF NOT EXISTS repost_user_id_idx ON reposts (user_id, repost_type);
 
-    -- make repost_item_id a partial index
+
     DROP INDEX IF EXISTS repost_item_id_idx;
     CREATE INDEX IF NOT EXISTS repost_item_id_idx ON reposts (repost_item_id, repost_type);
 
-    -- add index for repost_created_at
+
     drop index if exists repost_created_at_idx;
     CREATE INDEX IF NOT EXISTS repost_created_at_idx ON reposts (created_at);
 
-    -- make followee_user_id a partial index
+
     DROP INDEX IF EXISTS ix_follows_followee_user_id;
     CREATE INDEX IF NOT EXISTS ix_follows_followee_user_id ON follows (followee_user_id);
 
-    -- make follower_user_id a partial index
+
     DROP INDEX IF EXISTS ix_follows_follower_user_id;
     CREATE INDEX IF NOT EXISTS ix_follows_follower_user_id ON follows (follower_user_id);
 
-    -- saves
+
     DROP INDEX IF EXISTS save_item_id_idx;
     CREATE INDEX IF NOT EXISTS save_item_id_idx ON saves (save_item_id, save_type);
     DROP INDEX IF EXISTS save_user_id_idx;
