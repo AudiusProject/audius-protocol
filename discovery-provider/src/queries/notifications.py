@@ -1,5 +1,4 @@
 import logging  # pylint: disable=C0302
-import json
 from datetime import date, datetime, timedelta
 from typing import List, Tuple
 
@@ -34,8 +33,8 @@ from src.queries.query_helpers import (
     get_save_counts,
 )
 from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
-from src.utils.config import shared_config
 from src.utils import web3_provider
+from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import (
@@ -48,7 +47,7 @@ from src.utils.spl_audio import to_wei_string
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
-max_block_diff = int(shared_config["discprov"]["notifications_max_block_diff"])
+max_block_diff = 10000
 max_slot_diff = int(shared_config["discprov"]["notifications_max_slot_diff"])
 
 
@@ -883,9 +882,10 @@ def notifications():
         track_ids = []
         for entry in playlist_track_added_results:
             # Get the track_ids from entry["playlist_contents"]
-            if "playlist_contents" not in entry:
+            if not entry.playlist_contents["track_ids"]:
+                # skip empty playlists
                 continue
-            playlist_contents = json.loads(entry.playlist_contents)
+            playlist_contents = entry.playlist_contents
             playlist_blocknumber = entry.blocknumber
             playlist_block = web3.eth.get_block(playlist_blocknumber)
             playlist_block_timestamp = playlist_block.timestamp
@@ -904,10 +904,14 @@ def notifications():
                     }
                     metadata = {
                         const.notification_entity_id: track_id,
-                        const.notification_entity_type: "track"
+                        const.notification_entity_type: "track",
                     }
-                    notification[const.notification_metadata] = metadata
-                    track_added_to_playlist_notification.append(track_added_to_playlist_notification)
+                    track_added_to_playlist_notification[
+                        const.notification_metadata
+                    ] = metadata
+                    track_added_to_playlist_notifications.append(
+                        track_added_to_playlist_notification
+                    )
 
         tracks = (
             session.query(Track.owner_id, Track.track_id)
@@ -921,16 +925,21 @@ def notifications():
         )
         track_owner_map = {}
         for track in tracks:
-            [ owner_id, track_id ] = track
+            owner_id, track_id = track
             track_owner_map[track_id] = owner_id
 
         # Loop over notifications and populate their metadata
         for notification in track_added_to_playlist_notifications:
-            track_id = notification[const.notification_metadata][const.notification_entity_id]
+            track_id = notification[const.notification_metadata][
+                const.notification_entity_id
+            ]
             track_owner_id = track_owner_map[track_id]
-            notification[const.notification_metadata][const.notification_entity_owner_id] = \
-                track_owner_id
-            created_notifications.append(notification)
+            if track_owner_id != notification[const.notification_initiator]:
+                # add tracks that don't belong to the playlist owner
+                notification[const.notification_metadata][
+                    const.notification_entity_owner_id
+                ] = track_owner_id
+                created_notifications.append(notification)
 
         notifications_unsorted.extend(created_notifications)
 
