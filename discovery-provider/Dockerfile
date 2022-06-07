@@ -35,6 +35,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' \
         npm \
         postgresql-client=11.12-r0 \
         postgresql-contrib=11.12-r0 \
+        postgresql-dev=11.12-r0 \
         postgresql-libs=11.12-r0 \
         postgresql=11.12-r0 \
         py3-pip=20.3.4-r1 \
