@@ -82,6 +82,13 @@ def upgrade():
 
     -- add some new indexes that can help with expensive queries
     create index follows_inbound_idx on follows (followee_user_id, follower_user_id, is_current, is_delete);
+    
+    create index if not exists follows_blocknumber_idx on follows(blocknumber);
+    create index if not exists saves_blocknumber_idx on saves(blocknumber);
+    create index if not exists reposts_blocknumber_idx on reposts(blocknumber);
+    create index if not exists tracks_blocknumber_idx on tracks(blocknumber);
+    create index if not exists users_blocknumber_idx on users(blocknumber);
+    create index if not exists playlists_blocknumber_idx on playlists(blocknumber);
 
     COMMIT;
     """
