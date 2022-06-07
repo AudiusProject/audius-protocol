@@ -101,15 +101,6 @@ const browserDistFileConfig = {
   external: ['web3']
 }
 
-const browserDistFileOutputConfig = {
-  globals: {
-    web3: 'window.Web3'
-  },
-  format: 'iife',
-  esModule: false,
-  sourcemap: true
-}
-
 const browserLegacyConfig = {
   plugins: [
     ignore(['web3', 'graceful-fs', 'node-localstorage']),
@@ -174,11 +165,12 @@ export default [
     output: [
       {
         file: pkg.sdkBrowserDistFile,
-        ...browserDistFileOutputConfig
-      },
-      {
-        file: pkg.sdkBrowserDistFileMini,
-        ...browserDistFileOutputConfig,
+        globals: {
+          web3: 'window.Web3'
+        },
+        format: 'iife',
+        esModule: false,
+        sourcemap: true,
         plugins: [terser()]
       }
     ],
