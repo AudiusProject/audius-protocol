@@ -51,7 +51,9 @@ def fetch_unavailable_track_ids_in_network(session: Any, redis: Any) -> None:
             logger.info(
                 f"update_track_is_available.py | vicky | Adding batch to key={spID_unavailable_tracks_key}"
             )
-            logger.info(*unavailable_track_ids_batch)
+            # logger.info(*unavailable_track_ids_batch)
+            for id in range(len(unavailable_track_ids_batch)):
+                logger.info(f"vicky | {unavailable_track_ids_batch[id]}")
 
             redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids_batch)
 
