@@ -39,7 +39,7 @@ def user_state_update(
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
     metric = PrometheusMetric(
-        "user_state_update_runtime_seconds",
+        "user_state_update_duration_seconds",
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
     )
@@ -148,7 +148,7 @@ def process_user_txs_serial(
     skipped_tx_count,
 ):
     metric = PrometheusMetric(
-        "user_state_update_runtime_seconds",
+        "user_state_update_duration_seconds",
         "Runtimes for src.task.users:user_state_update()",
         ("scope",),
     )
