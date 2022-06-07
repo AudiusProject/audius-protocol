@@ -48,6 +48,11 @@ def fetch_unavailable_track_ids_in_network(session: Any, redis: Any) -> None:
 
         for i in range(0, len(unavailable_track_ids), BATCH_SIZE):
             unavailable_track_ids_batch = unavailable_track_ids[i : i + BATCH_SIZE]
+            logger.info(
+                f"update_track_is_available.py | vicky | Adding batch to key={spID_unavailable_tracks_key}"
+            )
+            logger.info(*unavailable_track_ids_batch)
+
             redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids_batch)
 
             # Aggregate a set of unavailable tracks
