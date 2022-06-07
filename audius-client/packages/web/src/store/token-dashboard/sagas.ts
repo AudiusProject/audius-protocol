@@ -65,6 +65,7 @@ import connectWeb3Wallet, {
 } from 'services/web3-modal/index'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
+import { getErrorMessage } from 'utils/error'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
@@ -286,10 +287,10 @@ function* connectWallet() {
     } else {
       yield call(connectEthWallet, web3Instance)
     }
-  } catch (err) {
+  } catch (error) {
     // if error is "Cannot use 'in' operator to search for 'message' in Modal closed by user",
     // do not show error message because user closed the modal
-    const errorMessage = err.message.includes('Modal closed by user')
+    const errorMessage = getErrorMessage(error).includes('Modal closed by user')
       ? null
       : 'An error occured while connecting a wallet with your account.'
     yield put(
