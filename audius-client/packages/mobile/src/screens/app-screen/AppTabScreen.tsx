@@ -26,7 +26,8 @@ import {
   RepostsScreen,
   NotificationUsersScreen,
   MutualsScreen,
-  TopSupportersScreen
+  TopSupportersScreen,
+  SupportingUsersScreen
 } from 'app/screens/user-list-screen'
 import { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
@@ -128,7 +129,8 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
               !e.target?.includes('SearchResults')
             ) &&
             !e.target?.includes('TipArtist') &&
-            !e.target?.includes('TopSupporters')
+            !e.target?.includes('TopSupporters') &&
+            !e.target?.includes('SupportingUsers')
           ) {
             // When a screen is removed, notify the web layer to pop navigation
             dispatchWeb({
@@ -227,6 +229,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen
         name='TopSupporters'
         component={TopSupportersScreen}
+        options={screenOptions}
+      />
+      <Stack.Screen
+        name='SupportingUsers'
+        component={SupportingUsersScreen}
         options={screenOptions}
       />
     </Stack.Navigator>

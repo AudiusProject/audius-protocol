@@ -4,6 +4,7 @@ import { Name, PlaybackSource } from 'audius-client/src/common/models/Analytics'
 import { ID, UID } from 'audius-client/src/common/models/Identifiers'
 import Kind from 'audius-client/src/common/models/Kind'
 import Status from 'audius-client/src/common/models/Status'
+import { getShowTip } from 'audius-client/src/common/store/tipping/selectors'
 import { range } from 'lodash'
 import {
   Dimensions,
@@ -20,11 +21,15 @@ import {
 } from 'app/components/lineup-tile'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { make, track } from 'app/utils/analytics'
+
+import { FeedTipTile } from '../feed-tip-tile/FeedTipTile'
 
 import { Delineator } from './Delineator'
 import { delineateByTime } from './delineate'
 import {
+  FeedTipLineupItem,
   LineupItem,
   LineupProps,
   LineupVariant,
@@ -104,7 +109,7 @@ type Section = {
   delineate: boolean
   hasLeadingElement?: boolean
   title?: string
-  data: Array<LineupItem | LoadingLineupItem>
+  data: Array<LineupItem | LoadingLineupItem | FeedTipLineupItem>
 }
 
 /** `Lineup` encapsulates the logic for displaying a list of items such as Tracks (e.g. prefetching items
@@ -118,6 +123,7 @@ export const Lineup = ({
   fetchPayload,
   header,
   isTrending,
+  isFeed,
   leadingElementId,
   leadingElementDelineator,
   lineup,
@@ -134,6 +140,7 @@ export const Lineup = ({
   limit = Infinity,
   ...listProps
 }: LineupProps) => {
+  const showTip = useSelectorWeb(getShowTip)
   const dispatchWeb = useDispatchWeb()
   const ref = useRef<RNSectionList>(null)
   const [isPastLoadThreshold, setIsPastLoadThreshold] = useState(false)
@@ -280,10 +287,13 @@ export const Lineup = ({
     item
   }: {
     index: number
-    item: LineupItem | LoadingLineupItem
+    item: LineupItem | LoadingLineupItem | FeedTipLineupItem
   }) => {
     if (!item) return null
-    if ('_loading' in item) {
+
+    if ('_feedTip' in item) {
+      return <FeedTipTile />
+    } else if ('_loading' in item) {
       if (item._loading) {
         return (
           <View style={styles.item}>
@@ -349,33 +359,54 @@ export const Lineup = ({
       () => ({ _loading: true } as LoadingLineupItem)
     )
 
+    const prependFeedTipTileIfNeeded = (
+      data: Array<LineupItem | LoadingLineupItem | FeedTipLineupItem>
+    ) => {
+      if (isFeed && showTip) {
+        const newData = { _feedTip: true } as FeedTipLineupItem
+        return [newData, ...data]
+      }
+      return data
+    }
+
     if (delineate) {
-      return [
+      const result: Section[] = [
         ...delineateByTime(items),
         {
           delineate: false,
           data: skeletonItems
         }
       ]
+      result[0].data = prependFeedTipTileIfNeeded(result[0].data)
+      return result
     }
 
     if (leadingElementId && showLeadingElementArtistPick) {
       const [artistPick, ...restEntries] = [...items, ...skeletonItems]
 
-      return [
+      const result: Section[] = [
         { delineate: false, data: [artistPick] },
         { delineate: true, data: restEntries, hasLeadingElement: true }
       ]
+      result[0].data = prependFeedTipTileIfNeeded(result[0].data)
+      return result
     }
 
     const data = [...items, ...skeletonItems]
 
-    if (data.length === 0) return []
+    if (data.length === 0) {
+      return [
+        {
+          delineate: false,
+          data: prependFeedTipTileIfNeeded([])
+        }
+      ]
+    }
 
     return [
       {
         delineate: false,
-        data: data
+        data: prependFeedTipTileIfNeeded(data)
       }
     ]
   }, [
@@ -388,7 +419,9 @@ export const Lineup = ({
     leadingElementId,
     showLeadingElementArtistPick,
     start,
-    limit
+    limit,
+    isFeed,
+    showTip
   ])
 
   const handleScroll = useCallback(

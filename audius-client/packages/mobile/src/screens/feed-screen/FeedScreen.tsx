@@ -80,6 +80,7 @@ export const FeedScreen = () => {
         refreshing={isRefreshing}
         selfLoad={!!signedIn}
         showsVerticalScrollIndicator={false}
+        isFeed
       />
     </Screen>
   )

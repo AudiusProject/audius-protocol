@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
 import { WidthSizes } from 'audius-client/src/common/models/ImageSizes'
-import { User } from 'audius-client/src/common/models/User'
+import { Supporting } from 'audius-client/src/common/models/Tipping'
+import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
+import { TIPPING_TOP_RANK_THRESHOLD } from 'audius-client/src/utils/constants'
 import { profilePage } from 'audius-client/src/utils/route'
 import { ImageBackground, StyleProp, View, ViewStyle } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -12,6 +14,7 @@ import { Text, Tile } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useUserCoverPhoto } from 'app/hooks/useUserCoverPhoto'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -56,31 +59,36 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type TopSupporterTileProps = {
-  supporter: User
-  rank: number
+type SupportingTileProps = {
+  supporting: Supporting
   style?: StyleProp<ViewStyle>
 }
 
-export const TopSupporterTile = (props: TopSupporterTileProps) => {
-  const { supporter, rank, style } = props
-  const { user_id, handle, name, _cover_photo_sizes } = supporter
+export const SupportingTile = (props: SupportingTileProps) => {
+  const { supporting, style } = props
   const styles = useStyles()
-  const { secondary, neutralLight4 } = useThemeColors()
-  const isTopSupporter = rank === 1
   const navigation = useNavigation()
+  const { secondary, neutralLight4 } = useThemeColors()
+  const user = useSelectorWeb(state => {
+    return getUser(state, { id: supporting.receiver_id })
+  })
+  const { user_id, handle, name, _cover_photo_sizes } = user || {}
+  const isTopRank =
+    supporting.rank >= 1 && supporting.rank <= TIPPING_TOP_RANK_THRESHOLD
 
   const coverPhoto = useUserCoverPhoto({
     id: user_id,
-    sizes: _cover_photo_sizes,
+    sizes: _cover_photo_sizes ?? null,
     size: WidthSizes.SIZE_640
   })
 
   const handlePress = useCallback(() => {
-    navigation.push({
-      native: { screen: 'Profile', params: { handle } },
-      web: { route: profilePage(handle) }
-    })
+    if (handle) {
+      navigation.push({
+        native: { screen: 'Profile', params: { handle } },
+        web: { route: profilePage(handle) }
+      })
+    }
   }, [navigation, handle])
 
   const iconProps = {
@@ -89,13 +97,13 @@ export const TopSupporterTile = (props: TopSupporterTileProps) => {
     marginRight: 6
   }
 
-  const supporterIcon = isTopSupporter ? (
+  const supporterIcon = isTopRank ? (
     <IconTrophy fill={secondary} {...iconProps} />
   ) : (
     <IconTip fill={neutralLight4} {...iconProps} />
   )
 
-  return (
+  return user ? (
     <Tile style={[styles.root, style]} onPress={handlePress}>
       <ImageBackground
         style={styles.supporterInfo}
@@ -108,11 +116,11 @@ export const TopSupporterTile = (props: TopSupporterTileProps) => {
           angleCenter={{ x: 0.5, y: 0.5 }}
           style={styles.supporterInfoRoot}
         >
-          <ProfilePicture style={styles.profilePicture} profile={supporter} />
+          <ProfilePicture style={styles.profilePicture} profile={user} />
           <Text variant='h3' noGutter color='white' numberOfLines={1}>
             {name}
           </Text>
-          <UserBadges user={supporter} hideName />
+          <UserBadges user={user} hideName />
         </LinearGradient>
       </ImageBackground>
       <View style={styles.rankRoot}>
@@ -120,11 +128,12 @@ export const TopSupporterTile = (props: TopSupporterTileProps) => {
         <Text
           style={styles.rankText}
           variant='label'
-          color={isTopSupporter ? 'secondary' : 'neutral'}
+          color={isTopRank ? 'secondary' : 'neutral'}
         >
-          {isTopSupporter ? `#${rank}` : null} {messages.supporter}
+          {isTopRank ? `#${supporting.rank} ` : null}
+          {messages.supporter}
         </Text>
       </View>
     </Tile>
-  )
+  ) : null
 }
