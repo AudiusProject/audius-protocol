@@ -33,20 +33,9 @@
 }
 
 .scrollable {
-  display: flex;
   min-height: 0;
   max-height: 690px;
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.scrollable :global(.simplebar-scrollbar) {
-  width: 6px;
-  border-radius: 4px;
-  opacity: 0.5;
-}
-
-.scrollable :global(.simplebar-scrollbar:before) {
-  width: 6px;
 }

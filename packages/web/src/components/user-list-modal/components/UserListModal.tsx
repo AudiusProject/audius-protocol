@@ -1,7 +1,6 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement, useRef } from 'react'
 
-import { Modal, IconTrophy, IconUser } from '@audius/stems'
-import SimpleBar from 'simplebar-react-legacy'
+import { Modal, IconTrophy, IconUser, Scrollbar } from '@audius/stems'
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
@@ -29,8 +28,6 @@ import { AppState } from 'store/types'
 
 import styles from './UserListModal.module.css'
 
-const SIMPLE_BAR_ID = 'USER_LIST_SIMPLE_BAR'
-
 type UserListModalProps = {
   userListType: UserListType
   isOpen: boolean
@@ -46,11 +43,6 @@ const messages = {
   supporting: 'Supporting'
 }
 
-const getScrollParent = () => {
-  const simpleBarElement = window.document.getElementById(SIMPLE_BAR_ID)
-  return simpleBarElement || null
-}
-
 const UserListModal = ({
   userListType,
   isOpen,
@@ -60,6 +52,7 @@ const UserListModal = ({
   let selector: (state: AppState) => UserListStoreState
   let title: ReactElement | string
   const notificationTitle = useSelector(getPageTitle)
+  const scrollParentRef = useRef<HTMLElement>()
 
   switch (userListType) {
     case UserListType.FAVORITE:
@@ -142,20 +135,19 @@ const UserListModal = ({
       headerContainerClassName={styles.modalHeader}
       showDismissButton
     >
-      {/* Typescript complains about no valid constructor, possibly
-        due to the two simplebar packages we maintain.
-      // @ts-ignore */}
-      <SimpleBar
-        scrollableNodeProps={{ id: SIMPLE_BAR_ID }}
+      <Scrollbar
         className={styles.scrollable}
+        containerRef={containerRef => {
+          scrollParentRef.current = containerRef
+        }}
       >
         <UserList
           stateSelector={selector!}
           tag={tag}
-          getScrollParent={getScrollParent}
+          getScrollParent={() => scrollParentRef.current || null}
           beforeClickArtistName={onClose}
         />
-      </SimpleBar>
+      </Scrollbar>
     </Modal>
   )
 }
