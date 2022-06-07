@@ -8,6 +8,7 @@ const {
 const {
   retrieveClockStatusesForUsersAcrossReplicaSet
 } = require('../stateMachineUtils')
+const { QUEUE_NAMES, JOB_NAMES } = require('../stateMachineConstants')
 
 // Number of users to process each time processStateMonitoringJob is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -21,15 +22,7 @@ const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {number} param.lastProcessedUserId the highest ID of the user that was most recently processed
  * @param {string} param.discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
- * @return {Object} {
- *   lastProcessedUserId (number),
- *   jobSucceeded (boolean),
- *   users (array of objects),
- *   unhealthyPeers (set of content node endpoint strings),
- *   secondarySyncMetrics (object),
- *   replicaSetNodesToUserClockStatusesMap (object),
- *   userSecondarySyncMetricsMap (object)
- * }
+ * @return {Object} object containing an array of jobs to add to the state monitoring queue
  */
 module.exports = async function ({
   logger,
@@ -185,12 +178,38 @@ module.exports = async function ({
     user_id: 0
   }
   return {
-    lastProcessedUserId: lastProcessedUser?.user_id || 0,
-    jobSucceeded,
-    users,
-    unhealthyPeers: Array.from(unhealthyPeers),
-    replicaSetNodesToUserClockStatusesMap,
-    userSecondarySyncMetricsMap
+    jobsToEnqueue: {
+      [QUEUE_NAMES.STATE_MONITORING]: [
+        // Enqueue findFindSyncRequests and findReplicaSetUpdates jobs to find which state anomalies
+        // need to be reconciled for the slice of users we just monitored
+        {
+          jobName: JOB_NAMES.FIND_SYNC_REQUESTS,
+          jobData: {
+            users,
+            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+            replicaSetNodesToUserClockStatusesMap,
+            userSecondarySyncMetricsMap
+          }
+        },
+        {
+          jobName: JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+          jobData: {
+            users,
+            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+            replicaSetNodesToUserClockStatusesMap,
+            userSecondarySyncMetricsMap
+          }
+        },
+        // Enqueue another monitorState job to monitor the next slice of users
+        {
+          jobName: JOB_NAMES.MONITOR_STATE,
+          jobData: {
+            lastProcessedUserId: lastProcessedUser?.user_id || 0,
+            discoveryNodeEndpoint
+          }
+        }
+      ]
+    }
   }
 }
 

@@ -4,12 +4,13 @@ const config = require('../../../config')
 const {
   SyncType,
   RECONFIG_MODES,
-  MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS
+  MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS,
+  QUEUE_NAMES
 } = require('../stateMachineConstants')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const QueueInterfacer = require('../QueueInterfacer')
-const { enqueueSyncRequest } = require('./stateReconciliationUtils')
+const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 
 const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
   ? new Set(config.get('reconfigNodeWhitelist').split(','))
@@ -71,8 +72,12 @@ module.exports = async function (
       'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
     )
 
+  let errorMsg = ''
+  let issuedReconfig = false
+  let syncJobsToEnqueue = []
+  let newReplicaSet = {}
   try {
-    const newReplicaSet = await determineNewReplicaSet({
+    newReplicaSet = await determineNewReplicaSet({
       wallet,
       primary,
       secondary1,
@@ -82,23 +87,35 @@ module.exports = async function (
       replicaSetNodesToUserClockStatusesMap,
       enabledReconfigModes
     })
-    const { errorMsg, issuedReconfig } = await issueUpdateReplicaSetOp(
-      userId,
-      wallet,
-      primary,
-      secondary1,
-      secondary2,
-      newReplicaSet,
-      logger
-    )
+    ;({ errorMsg, issuedReconfig, syncJobsToEnqueue } =
+      await issueUpdateReplicaSetOp(
+        userId,
+        wallet,
+        primary,
+        secondary1,
+        secondary2,
+        newReplicaSet,
+        logger
+      ))
   } catch (e) {
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
     )
   }
 
-  // TODO: Return data about updated replica set or failure
-  return {}
+  return {
+    errorMsg,
+    issuedReconfig,
+    newReplicaSet,
+    healthyNodes,
+    jobsToEnqueue: syncJobsToEnqueue?.length
+      ? {
+          jobsToEnqueue: {
+            [QUEUE_NAMES.STATE_RECONCILIATION]: syncJobsToEnqueue
+          }
+        }
+      : {}
+  }
 }
 
 /**
@@ -426,7 +443,7 @@ const selectRandomReplicaSetNodes = async (
 
 /**
  * 1. Write new replica set to URSM
- * 2. Sync data to new replica set
+ * 2. Return sync jobs that can be enqueued to write data to new replica set
  *
  * @param {number} userId user id to issue a reconfiguration for
  * @param {string} wallet wallet address of user id
@@ -445,7 +462,11 @@ const issueUpdateReplicaSetOp = async (
   newReplicaSet,
   logger
 ) => {
-  const response = { errorMsg: null, issuedReconfig: false }
+  const response = {
+    errorMsg: null,
+    issuedReconfig: false,
+    syncJobsToEnqueue: []
+  }
   let newReplicaSetEndpoints = []
   const newReplicaSetSPIds = []
   try {
@@ -510,21 +531,26 @@ const issueUpdateReplicaSetOp = async (
     }
 
     // Enqueue a sync for new primary to new secondaries. If there is no diff, then this is a no-op.
-    // TODO: this fn performs a web request to enqueue a sync. this is not necessary for enqueuing syncs for the local node.
-    // Add some logic to check if current node has a sync to be enqueued, and if so, locally add sync without a network request.
-    await enqueueSyncRequest({
-      userWallet: wallet,
-      primaryEndpoint: newPrimary,
-      secondaryEndpoint: newSecondary1,
-      syncType: SyncType.Recurring
-    })
+    const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
+      getNewOrExistingSyncReq({
+        userWallet: wallet,
+        primaryEndpoint: newPrimary,
+        secondaryEndpoint: newSecondary1,
+        syncType: SyncType.Recurring
+      })
 
-    await enqueueSyncRequest({
-      userWallet: wallet,
-      primaryEndpoint: newPrimary,
-      secondaryEndpoint: newSecondary2,
-      syncType: SyncType.Recurring
-    })
+    const { duplicateSyncReq: _, syncReqToEnqueue: syncToEnqueueToSecondary2 } =
+      getNewOrExistingSyncReq({
+        userWallet: wallet,
+        primaryEndpoint: newPrimary,
+        secondaryEndpoint: newSecondary2,
+        syncType: SyncType.Recurring
+      })
+
+    response.syncJobsToEnqueue.push(
+      syncToEnqueueToSecondary1,
+      syncToEnqueueToSecondary2
+    )
 
     logger.info(
       `[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`

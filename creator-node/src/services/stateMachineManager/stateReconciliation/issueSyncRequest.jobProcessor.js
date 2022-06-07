@@ -4,10 +4,13 @@ const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
 const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
-const { enqueueSyncRequest } = require('./stateReconciliationUtils')
+const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
-const { SYNC_MONITORING_RETRY_DELAY_MS } = require('../stateMachineConstants')
+const {
+  SYNC_MONITORING_RETRY_DELAY_MS,
+  QUEUE_NAMES
+} = require('../stateMachineConstants')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -96,19 +99,39 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
   )
 
   // Re-enqueue sync if required
+  let error = {}
+  let additionalSyncReq = {}
   if (additionalSyncIsRequired) {
-    await enqueueSyncRequest({
+    const { syncReqToEnqueue, duplicateSyncReq } = getNewOrExistingSyncReq({
       userWallet,
       secondaryEndpoint,
       primaryEndpoint: thisContentNodeEndpoint,
       syncType
     })
+    if (duplicateSyncReq) {
+      error = {
+        message:
+          'Additional sync request was required but not able to be enqueued due to a duplicate',
+        duplicateSyncReq
+      }
+    } else if (syncReqToEnqueue) {
+      additionalSyncReq = syncReqToEnqueue
+    }
   }
 
   logger.info(
     `------------------END Process SYNC | ${logMsgString}------------------`
   )
-  return {}
+  return {
+    error,
+    jobsToEnqueue: additionalSyncReq
+      ? {
+          jobsToEnqueue: {
+            [QUEUE_NAMES.STATE_RECONCILIATION]: [additionalSyncReq]
+          }
+        }
+      : {}
+  }
 }
 
 const _validateJobData = (logger, syncType, syncRequestParameters) => {

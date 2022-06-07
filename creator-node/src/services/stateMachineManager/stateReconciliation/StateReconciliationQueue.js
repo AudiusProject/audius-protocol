@@ -2,14 +2,13 @@ const BullQueue = require('bull')
 
 const config = require('../../../config')
 const {
-  QUEUE_HISTORY,
+  RECONCILIATION_QUEUE_HISTORY,
   QUEUE_NAMES,
   JOB_NAMES,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
 } = require('../stateMachineConstants')
 const { processJob } = require('../stateMachineUtils')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
-const enqueueSyncRequestsJobProcessor = require('./enqueueSyncRequests.jobProcessor')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 
@@ -34,7 +33,6 @@ class StateReconciliationQueue {
       queue,
       processManualSync: this.processManualSyncJob.bind(this),
       processRecurringSync: this.processRecurringSyncJob.bind(this),
-      processEnqueueSyncRequests: this.processEnqueueSyncRequestsJob.bind(this),
       processUpdateReplicaSets: this.processUpdateReplicaSetsJob.bind(this)
     })
 
@@ -52,8 +50,8 @@ class StateReconciliationQueue {
         port: redisPort
       },
       defaultJobOptions: {
-        removeOnComplete: QUEUE_HISTORY,
-        removeOnFail: QUEUE_HISTORY
+        removeOnComplete: RECONCILIATION_QUEUE_HISTORY,
+        removeOnFail: RECONCILIATION_QUEUE_HISTORY
       },
       settings: {
         // Should be sufficiently larger than expected job runtime
@@ -71,14 +69,12 @@ class StateReconciliationQueue {
    * @param {Function<queue, failedJob>} params.jobFailureCallback the function to call when a job fails
    * @param {Function<job>} params.processManualSync the function to call when processing a manual sync job from the queue
    * @param {Function<job>} params.processRecurringSync the function to call when processing a recurring sync job from the queue
-   * @param {Function<job>} params.processEnqueueSyncRequests the function to call when processing an issue-sync-requests job from the queue
    * @param {Function<job>} params.processUpdateReplicaSet the function to call when processing an update-replica-set job from the queue
    */
   registerQueueEventHandlersAndJobProcessors({
     queue,
     processManualSync,
     processRecurringSync,
-    processEnqueueSyncRequests,
     processUpdateReplicaSets
   }) {
     // Add handlers for logging
@@ -122,11 +118,6 @@ class StateReconciliationQueue {
       processRecurringSync
     )
     queue.process(
-      JOB_NAMES.ENQUEUE_SYNC_REQUESTS,
-      1 /** concurrency */,
-      processEnqueueSyncRequests
-    )
-    queue.process(
       JOB_NAMES.UPDATE_REPLICA_SET,
       1 /** concurrency */,
       processUpdateReplicaSets
@@ -151,15 +142,6 @@ class StateReconciliationQueue {
       JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
       job,
       handleSyncRequestJobProcessor,
-      logger
-    )
-  }
-
-  async processEnqueueSyncRequestsJob(job) {
-    return processJob(
-      JOB_NAMES.ENQUEUE_SYNC_REQUESTS,
-      job,
-      enqueueSyncRequestsJobProcessor,
       logger
     )
   }

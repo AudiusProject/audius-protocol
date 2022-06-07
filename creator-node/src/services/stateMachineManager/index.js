@@ -1,9 +1,11 @@
+const _ = require('lodash')
+
 const config = require('../../config')
-const { logger } = require('../../logging')
+const { logger: baseLogger, createChildLogger } = require('../../logging')
 const StateMonitoringQueue = require('./stateMonitoring/StateMonitoringQueue')
 const StateReconciliationQueue = require('./stateReconciliation/StateReconciliationQueue')
 const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
-const { RECONFIG_MODES, JOB_NAMES } = require('./stateMachineConstants')
+const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
 
 /**
@@ -26,31 +28,40 @@ class StateMachineManager {
       this.updateEnabledReconfigModesSet(
         /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
       )
-      logger.error(`updateEndpointToSpIdMap Error: ${e.message}`)
+      baseLogger.error(`updateEndpointToSpIdMap Error: ${e.message}`)
     }
 
     // Initialize queues
     const stateMonitoringQueue = new StateMonitoringQueue()
     const stateReconciliationQueue = new StateReconciliationQueue()
-    const stateMonitoringQueueQueue = await stateMonitoringQueue.init({
-      discoveryNodeEndpoint:
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      monitorStateJobSuccessCallback:
-        this._enqueueFindPotentialSyncsAndReplicaSetUpdates.bind(this),
-      findPotentialSyncsJobSuccessCallback:
-        this._enqueueEnqueueSyncRequests.bind(this),
-      findReplicaSetUpdatesJobSuccessCallback:
-        this._enqueueUpdateReplicaSets.bind(this)
-    })
+    const stateMonitoringQueueQueue = await stateMonitoringQueue.init(
+      audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    )
     const stateReconciliationQueueQueue = await stateReconciliationQueue.init()
 
-    // Set up interfacer for job processors to use. This is a slightly hacky workaround
-    // because job processors get their data from Redis and thus can't be passed the queue
-    QueueInterfacer.init(
-      audiusLibs,
-      stateMonitoringQueueQueue,
-      stateReconciliationQueueQueue
+    // Make jobs enqueue other jobs as necessary upon completion
+    stateMonitoringQueueQueue.on(
+      'global:completed',
+      this._makeEnqueueJobsOnCompletion(
+        stateMonitoringQueueQueue,
+        stateReconciliationQueueQueue
+      ).bind(this)
     )
+    stateReconciliationQueueQueue.on(
+      'global:completed',
+      this._makeEnqueueJobsOnCompletion(
+        stateMonitoringQueueQueue,
+        stateReconciliationQueueQueue
+      ).bind(this)
+    )
+
+    // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
+    QueueInterfacer.init(audiusLibs)
+
+    return {
+      stateMonitoringQueue: stateMonitoringQueueQueue,
+      stateReconciliationQueue: stateReconciliationQueueQueue
+    }
   }
 
   /**
@@ -92,86 +103,59 @@ class StateMachineManager {
     this.enabledReconfigModesSet = enabledReconfigModesSet
   }
 
-  /**
-   * After a monitorState job completes, this function gets called to
-   * enqueue findPotentialSyncs and findReplicaSetUpdates jobs, which each
-   * find state anomalies that need to be reconciled for the slice of users that
-   * the monitorState job queried.
-   * @param {Object} monitorStateJobResult the monitorState job that successfully completed
-   */
-  _enqueueFindPotentialSyncsAndReplicaSetUpdates(monitorStateJobResult) {
-    const {
-      users,
-      unhealthyPeers,
-      replicaSetNodesToUserClockStatusesMap,
-      userSecondarySyncMetricsMap
-    } = monitorStateJobResult
+  _makeEnqueueJobsOnCompletion(monitoringQueue, reconciliationQueue) {
+    return async function (jobId, resultString) {
+      const logger = createChildLogger(baseLogger, { jobId })
 
-    QueueInterfacer.addStateMonitoringJob(
-      JOB_NAMES.FIND_REPLICA_SET_UPDATES,
-      /** data */
-      {
-        users,
-        unhealthyPeers,
-        replicaSetNodesToUserClockStatusesMap,
-        userSecondarySyncMetricsMap
-      }
-    )
-    QueueInterfacer.addStateMonitoringJob(
-      JOB_NAMES.FIND_POTENTIAL_SYNCS,
-      /** data */
-      {
-        users,
-        unhealthyPeers,
-        replicaSetNodesToUserClockStatusesMap,
-        userSecondarySyncMetricsMap
-      }
-    )
-  }
-
-  /**
-   * After a findPotentialSyncs job completes, this function gets called to
-   * enqueue an enqueueSyncRequests job, which takes each potential sync request
-   * and adds it to the queue to be issued if it's needed (based on the clock values)
-   * @param {Object} findPotentialSyncsJobResult the findPotentialSyncs job that successfully completed
-   */
-  _enqueueEnqueueSyncRequests(findPotentialSyncsJobResult) {
-    const { potentialSyncRequests, replicaSetNodesToUserClockStatusesMap } =
-      findPotentialSyncsJobResult
-    if (!potentialSyncRequests) return
-
-    QueueInterfacer.addStateReconciliationJob(
-      JOB_NAMES.ENQUEUE_SYNC_REQUESTS,
-      /** data */
-      {
-        potentialSyncRequests,
-        replicaSetNodesToUserClockStatusesMap
-      }
-    )
-  }
-
-  /**
-   * After a findReplicaSetUpdates job completes, this function gets called to
-   * enqueue a new job for each replica set update.
-   * @param {Object} findReplicaSetUpdatesJobResult the findReplicaSetUpdates job that successfully completed
-   */
-  _enqueueUpdateReplicaSets(findReplicaSetUpdatesJobResult) {
-    const { updateReplicaSetOps, replicaSetNodesToUserClockStatusesMap } =
-      findReplicaSetUpdatesJobResult
-    for (const updateReplicaSetOp of updateReplicaSetOps) {
-      QueueInterfacer.addStateReconciliationJob(
-        JOB_NAMES.UPDATE_REPLICA_SET,
-        /** data */
-        {
-          wallet: updateReplicaSetOp.wallet,
-          userId: updateReplicaSetOp.user_id,
-          primary: updateReplicaSetOp.primary,
-          secondary1: updateReplicaSetOp.secondary1,
-          secondary2: updateReplicaSetOp.secondary2,
-          unhealthyReplicasSet: updateReplicaSetOp.unhealthyReplicas,
-          replicaSetNodesToUserClockStatusesMap
+      let jobsToEnqueue = {}
+      try {
+        jobsToEnqueue = JSON.parse(resultString)?.jobsToEnqueue
+        if (!jobsToEnqueue) {
+          logger.info(
+            `No jobs to enqueue after successful completion. Result: ${resultString}`
+          )
+          return
         }
+      } catch (e) {
+        logger.warn(`Failed to parse job result string: ${resultString}`)
+        return
+      }
+
+      const monitoringJobs = jobsToEnqueue[QUEUE_NAMES.STATE_MONITORING] || []
+      const reconciliationJobs =
+        jobsToEnqueue[QUEUE_NAMES.STATE_RECONCILIATION] || []
+      logger.info(
+        `Attempting to enqueue ${monitoringJobs?.length} monitoring jobs and ${reconciliationJobs.length} reconciliation jobs in bulk`
       )
+
+      try {
+        const monitoringBulkAddResult = await monitoringQueue.addBulk(
+          monitoringJobs.map((job) => {
+            return { name: job.jobName, data: job.jobData }
+          })
+        )
+        logger.info(
+          `Enqueued ${monitoringBulkAddResult.length} monitoring jobs in bulk after successful completion`
+        )
+      } catch (e) {
+        logger.error(
+          `Failed to bulk-enqueue monitoring jobs after successful completion: ${e}`
+        )
+      }
+      try {
+        const reconciliationBulkAddResult = await reconciliationQueue.addBulk(
+          reconciliationJobs.map((job) => {
+            return { name: job.jobName, data: job.jobData }
+          })
+        )
+        logger.info(
+          `Enqueued ${reconciliationBulkAddResult.length} reconciliation jobs in bulk after successful completion`
+        )
+      } catch (e) {
+        logger.error(
+          `Failed to bulk-enqueue reconciliation jobs after successful completion: ${e}`
+        )
+      }
     }
   }
 }

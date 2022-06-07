@@ -1,12 +1,16 @@
 const { logger } = require('../../../logging')
 const { SyncType, JOB_NAMES } = require('../stateMachineConstants')
-const QueueInterfacer = require('../QueueInterfacer')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 
 /**
- * Enqueues a sync request to secondary on specified syncQueue and returns job info
+ * Returns a job can be enqueued to add a sync request for the given user to the given secondary,
+ * or returns the duplicate job if one already exists to for the same user and secondary.
+ * @Returns {
+ *   duplicateSyncReq,
+ *   syncReqToEnqueue
+ * }
  */
-const enqueueSyncRequest = async ({
+const getNewOrExistingSyncReq = ({
   userWallet,
   primaryEndpoint,
   secondaryEndpoint,
@@ -21,10 +25,12 @@ const enqueueSyncRequest = async ({
   )
   if (duplicateSyncJobInfo) {
     logger.info(
-      `enqueueSyncRequest() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
+      `getNewOrExistingSyncReq() Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`
     )
 
-    return duplicateSyncJobInfo
+    return {
+      duplicateSyncReq: duplicateSyncJobInfo
+    }
   }
 
   // Define axios params for sync request to secondary
@@ -51,28 +57,22 @@ const enqueueSyncRequest = async ({
     syncType,
     syncRequestParameters
   }
-
-  const startTimeMs = Date.now()
-  const jobInfo = await QueueInterfacer.addStateReconciliationJob(
+  const syncReqToEnqueue = {
     jobName,
     jobProps
-  )
-  const timeElapsedMs = Date.now() - startTimeMs
-  logger.info(
-    `enqueueSync waited ${timeElapsedMs}ms for sync type ${syncType} Bull job to be added to queue for user wallet ${userWallet}`
-  )
+  }
 
   // Record sync in syncDeDuplicator
   SyncRequestDeDuplicator.recordSync(
     syncType,
     userWallet,
     secondaryEndpoint,
-    jobInfo
+    jobProps
   )
 
-  return jobInfo
+  return { syncReqToEnqueue }
 }
 
 module.exports = {
-  enqueueSyncRequest
+  getNewOrExistingSyncReq
 }

@@ -1,6 +1,8 @@
 module.exports = {
-  // Max number of completed/failed jobs to keep in redis for each queue
-  QUEUE_HISTORY: 20,
+  // Max number of completed/failed jobs to keep in redis for the state monitoring queue
+  MONITORING_QUEUE_HISTORY: 20,
+  // Max number of completed/failed jobs to keep in redis for the state monitoring queue
+  RECONCILIATION_QUEUE_HISTORY: 300,
   // Max millis to run a StateMonitoringQueue job for before marking it as stalled (1 hour)
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to delay starting the first job in the StateMonitoringQueue (30 seconds)
@@ -36,16 +38,14 @@ module.exports = {
   JOB_NAMES: Object.freeze({
     // Name of job in monitoring queue that takes a slice of users and gathers data for them
     MONITOR_STATE: 'monitor-state',
-    // Name of job in monitoring queue that finds potential sync requests that should be issued for users
-    FIND_POTENTIAL_SYNCS: 'find-potential-syncs',
+    // Name of job in monitoring queue that finds sync requests that should be issued for users
+    FIND_SYNC_REQUESTS: 'find-sync-requests',
     // Name of job in monitoring queue that determines replica set updates that should happen for users
     FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates',
     // Name of job in reconciliation queue that issues a manual outgoing sync request to this node or to another node
     ISSUE_MANUAL_SYNC_REQUEST: 'issue-manual-sync-request',
     // Name of job in reconciliation queue that issues a recurring outgoing sync request to this node or to another node
     ISSUE_RECURRING_SYNC_REQUEST: 'issue-recurring-sync-request',
-    // Name of job in reconciliation queue that enqueues outgoing sync requests to be issued
-    ENQUEUE_SYNC_REQUESTS: 'enqueue-sync-requests',
     // Name of job in reconciliation queue that executes a reconfiguration of a user's replica set when it's unhealthy
     UPDATE_REPLICA_SET: 'update-replica-set'
   }),

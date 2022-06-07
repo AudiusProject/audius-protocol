@@ -1,5 +1,9 @@
 const config = require('../../../config')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
+const { SyncType, QUEUE_NAMES } = require('../stateMachineConstants')
+const {
+  getNewOrExistingSyncReq
+} = require('../stateReconciliation/stateReconciliationUtils')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const minSecondaryUserSyncSuccessPercent =
@@ -9,8 +13,7 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
 )
 
 /**
- * Processes a job to find and return sync requests that
- * should potentially be issued for the given array of users.
+ * Processes a job to find and return sync requests that should be issued for the given array of users.
  *
  * @param {Object} param job data
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
@@ -19,7 +22,7 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
-module.exports = async function ({
+module.exports = function ({
   logger,
   users,
   unhealthyPeers,
@@ -34,25 +37,41 @@ module.exports = async function ({
     userSecondarySyncMetricsMap
   )
 
-  const potentialSyncRequests = []
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
 
+  // Find any syncs that should be performed from each user to any of their secondaries
+  let syncReqsToEnqueue = []
+  let duplicateSyncReqs = []
+  let errors = []
   for (const user of users) {
-    potentialSyncRequests.push(
-      ..._findPotentialSyncRequestsForUser(
-        user,
-        thisContentNodeEndpoint,
-        unhealthyPeersSet,
-        userSecondarySyncMetricsMap,
-        minSecondaryUserSyncSuccessPercent,
-        minFailedSyncRequestsBeforeReconfig
-      )
+    const {
+      syncReqsToEnqueues: userSyncReqsToEnqueue,
+      duplicateSyncReqs: userDuplicateSyncReqs,
+      errors: userErrors
+    } = _findSyncsForUser(
+      user,
+      thisContentNodeEndpoint,
+      unhealthyPeersSet,
+      userSecondarySyncMetricsMap[user.wallet],
+      minSecondaryUserSyncSuccessPercent,
+      minFailedSyncRequestsBeforeReconfig,
+      replicaSetNodesToUserClockStatusesMap
     )
+    if (userSyncReqsToEnqueue) {
+      syncReqsToEnqueue = syncReqsToEnqueue.concat(userSyncReqsToEnqueue)
+    } else if (userDuplicateSyncReqs) {
+      duplicateSyncReqs = duplicateSyncReqs.concat(userDuplicateSyncReqs)
+    } else if (userErrors) errors = errors.concat(userErrors)
   }
 
   return {
-    potentialSyncRequests,
-    replicaSetNodesToUserClockStatusesMap
+    duplicateSyncReqs,
+    errors,
+    jobsToEnqueue: syncReqsToEnqueue?.length
+      ? {
+          [QUEUE_NAMES.STATE_RECONCILIATION]: syncReqsToEnqueue
+        }
+      : {}
   }
 }
 
@@ -97,31 +116,34 @@ const _validateJobData = (
 }
 
 /**
- * Determines which sync requests should potentially be executed for a given user.
- * "Potentially" because an additional clock value check will be performed later before executing the sync.
+ * Determines which sync requests should be sent for a given user to any of their secondaries.
  *
  * @param {Object} user { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
  * @param {string} thisContentNodeEndpoint URL or IP address of this Content Node
  * @param {Set<string>} unhealthyPeers set of unhealthy peers
- * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
+ * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetricsMap mapping of each secondary to the success metrics the user has had syncing to it
  * @param {number} minSecondaryUserSyncSuccessPercent 0-1 minimum sync success rate a secondary must have to perform a sync to it
  * @param {number} minFailedSyncRequestsBeforeReconfig minimum number of failed sync requests to a secondary before the user's replica set gets updated to not include the secondary
+ * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
  */
-const _findPotentialSyncRequestsForUser = (
+const _findSyncsForUser = (
   user,
   thisContentNodeEndpoint,
   unhealthyPeers,
   userSecondarySyncMetricsMap,
   minSecondaryUserSyncSuccessPercent,
-  minFailedSyncRequestsBeforeReconfig
+  minFailedSyncRequestsBeforeReconfig,
+  replicaSetNodesToUserClockStatusesMap
 ) => {
-  const potentialSyncRequests = []
+  const syncReqsToEnqueue = []
+  const duplicateSyncReqs = []
+  const errors = []
 
   const { primary, secondary1, secondary2, secondary1SpID, secondary2SpID } =
     user
 
   // Only sync from this node to other nodes if this node is the user's primary
-  if (primary !== thisContentNodeEndpoint) return []
+  if (primary !== thisContentNodeEndpoint) return {}
 
   const replicaSetNodesToObserve = [
     { endpoint: secondary1, spId: secondary1SpID },
@@ -139,10 +161,10 @@ const _findPotentialSyncRequestsForUser = (
 
     const { successRate, failureCount } = userSecondarySyncMetricsMap[secondary]
 
-    // Secondary is unhealthy if we already marked it as unhealthy previously
+    // Secondary is unhealthy if we already marked it as unhealthy previously -- don't sync to it
     if (unhealthyPeers.has(secondary)) continue
 
-    // Secondary is unhealthy if its spID is mismatched
+    // Secondary is unhealthy if its spID is mismatched -- don't sync to it
     if (
       CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
       secondaryInfo.spId
@@ -150,7 +172,7 @@ const _findPotentialSyncRequestsForUser = (
       continue
     }
 
-    // No sync potential if syncs to this secondary have too low of a success rate
+    // Secondary have too low of a success rate -- don't sync to it
     if (
       failureCount >= minFailedSyncRequestsBeforeReconfig &&
       successRate < minSecondaryUserSyncSuccessPercent
@@ -158,9 +180,35 @@ const _findPotentialSyncRequestsForUser = (
       continue
     }
 
-    // Secondary is healthy so we can potentially sync the user's data to it from this primary
-    potentialSyncRequests.push({ ...user, endpoint: secondary })
+    // Determine if secondary requires a sync by comparing clock values against primary (this node)
+    const { wallet } = user
+    const userPrimaryClockVal =
+      replicaSetNodesToUserClockStatusesMap[primary][wallet]
+    const userSecondaryClockVal =
+      replicaSetNodesToUserClockStatusesMap[secondary][wallet]
+
+    // Secondary is healthy and has lower clock value, so we want to sync the user's data to it from this primary
+    if (userPrimaryClockVal > userSecondaryClockVal) {
+      try {
+        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+          userWallet: wallet,
+          secondaryEndpoint: secondary,
+          primaryEndpoint: thisContentNodeEndpoint,
+          syncType: SyncType.Recurring
+        })
+        if (syncReqToEnqueue) syncReqsToEnqueue.push(syncReqToEnqueue)
+        else if (duplicateSyncReq) duplicateSyncReqs.push(duplicateSyncReq)
+      } catch (e) {
+        errors.push(
+          `Error getting new or existing sync request for user ${wallet} and secondary ${secondary} - ${e.message}`
+        )
+      }
+    }
   }
 
-  return potentialSyncRequests
+  return {
+    syncReqsToEnqueue,
+    duplicateSyncReqs,
+    errors
+  }
 }

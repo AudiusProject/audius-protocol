@@ -1,23 +1,12 @@
 /**
- * Singleton for interfacing with all the queues. Job processors must be functions
- * that take simple, serializable types, so job processors that need to enqueue other jobs
- * will use this interfacer instead of being passed a non-serializable queue.
+ * Currently just a singleton wrapper for the updateReplicaSet job processor to be able
+ * to access libs/sdk
  */
+// TODO: Change this to maybe init a new libs instance inside the updateReplicaSet job processor.
+//       Or set it somewhere directly if Bull's separate processing contexts allow for that
 class QueueInterfacer {
-  init(audiusLibs, stateMonitoringQueue, stateReconciliationQueue) {
+  init(audiusLibs) {
     this.audiusLibs = audiusLibs
-    this.stateMonitoringQueue = stateMonitoringQueue
-    this.stateReconciliationQueue = stateReconciliationQueue
-  }
-
-  async addStateMonitoringJob(jobName, jobData) {
-    const jobInfo = await this.stateMonitoringQueue.add(jobName, jobData)
-    return jobInfo
-  }
-
-  async addStateReconciliationJob(jobName, jobData) {
-    const jobInfo = await this.stateReconciliationQueue.add(jobName, jobData)
-    return jobInfo
   }
 
   getAudiusLibs() {

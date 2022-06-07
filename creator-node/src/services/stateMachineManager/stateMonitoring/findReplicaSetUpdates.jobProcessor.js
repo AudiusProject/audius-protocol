@@ -1,7 +1,9 @@
 const _ = require('lodash')
 
 const {
-  FIND_REPLICA_SET_UPDATES_BATCH_SIZE
+  FIND_REPLICA_SET_UPDATES_BATCH_SIZE,
+  QUEUE_NAMES,
+  JOB_NAMES
 } = require('../stateMachineConstants')
 const CNodeHealthManager = require('../CNodeHealthManager')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
@@ -40,6 +42,8 @@ module.exports = async function ({
     userSecondarySyncMetricsMap
   )
 
+  const unhealthyPeersSet = new Set(unhealthyPeers || [])
+
   // Parallelize calling _findReplicaSetUpdatesForUser on chunks of 500 users at a time
   const userBatches = _.chunk(users, FIND_REPLICA_SET_UPDATES_BATCH_SIZE)
   const results = []
@@ -49,7 +53,7 @@ module.exports = async function ({
         _findReplicaSetUpdatesForUser(
           user,
           thisContentNodeEndpoint,
-          unhealthyPeers,
+          unhealthyPeersSet,
           userSecondarySyncMetricsMap[user.wallet],
           minSecondaryUserSyncSuccessPercent,
           minFailedSyncRequestsBeforeReconfig
@@ -59,13 +63,13 @@ module.exports = async function ({
     results.push(...resultBatch)
   }
 
-  // Combine each batch's requiredUpdateReplicaSetOps
-  let updateReplicaSetOps = []
+  // Combine each batch's updateReplicaSet jobs that need to be enqueued
+  const updateReplicaSetJobs = []
   for (const promiseResult of results) {
     // Skip and log failed promises
     const {
       status: promiseStatus,
-      value: updateReplicaSetOpsFromPromise,
+      value: updateReplicaSetOps,
       reason: promiseError
     } = promiseResult
     if (promiseStatus !== 'fulfilled') {
@@ -77,15 +81,29 @@ module.exports = async function ({
       continue
     }
 
-    // Combine each promise's updateReplicaSetOps
-    updateReplicaSetOps = updateReplicaSetOps.concat(
-      updateReplicaSetOpsFromPromise
-    )
+    // Combine each promise's updateReplicaSetOps into a job
+    for (const updateReplicaSetOp of updateReplicaSetOps) {
+      updateReplicaSetJobs.push({
+        jobName: JOB_NAMES.UPDATE_REPLICA_SET,
+        jobData: {
+          wallet: updateReplicaSetOp.wallet,
+          userId: updateReplicaSetOp.user_id,
+          primary: updateReplicaSetOp.primary,
+          secondary1: updateReplicaSetOp.secondary1,
+          secondary2: updateReplicaSetOp.secondary2,
+          unhealthyReplicasSet: updateReplicaSetOp.unhealthyReplicas,
+          replicaSetNodesToUserClockStatusesMap
+        }
+      })
+    }
   }
 
   return {
-    updateReplicaSetOps,
-    replicaSetNodesToUserClockStatusesMap
+    jobsToEnqueue: updateReplicaSetJobs?.length
+      ? {
+          [QUEUE_NAMES.STATE_RECONCILIATION]: updateReplicaSetJobs
+        }
+      : {}
   }
 }
 
@@ -143,7 +161,7 @@ const _validateJobData = (
 const _findReplicaSetUpdatesForUser = async (
   user,
   thisContentNodeEndpoint,
-  unhealthyPeers,
+  unhealthyPeersSet,
   userSecondarySyncMetrics,
   minSecondaryUserSyncSuccessPercent,
   minFailedSyncRequestsBeforeReconfig,
@@ -201,7 +219,7 @@ const _findReplicaSetUpdatesForUser = async (
         unhealthyReplicas.add(secondary)
 
         // Error case 2 - already marked unhealthy
-      } else if (unhealthyPeers.has(secondary)) {
+      } else if (unhealthyPeersSet.has(secondary)) {
         logger.error(
           `_findReplicaSetUpdatesForUser(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
         )
@@ -249,7 +267,7 @@ const _findReplicaSetUpdatesForUser = async (
         replica.spId
       ) {
         unhealthyReplicas.add(replica.endpoint)
-      } else if (unhealthyPeers.has(replica.endpoint)) {
+      } else if (unhealthyPeersSet.has(replica.endpoint)) {
         // Else, continue with conducting extra health check if the current observed node is a primary, and
         // add to `unhealthyReplicas` if observed node is a secondary
         let addToUnhealthyReplicas = true
