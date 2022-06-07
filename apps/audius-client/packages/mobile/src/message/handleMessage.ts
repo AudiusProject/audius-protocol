@@ -18,6 +18,7 @@ import { messageHandlers as oauth } from './handlers/oauth'
 import { messageHandlers as search } from './handlers/search'
 import { messageHandlers as signon } from './handlers/signon'
 import { messageHandlers as theme } from './handlers/theme'
+import { messageHandlers as tipping } from './handlers/tipping'
 import { messageHandlers as version } from './handlers/version'
 import { Message, MessageHandlers } from './types'
 
@@ -38,7 +39,8 @@ const messageHandlers: Partial<MessageHandlers> = {
   ...search,
   ...signon,
   ...theme,
-  ...version
+  ...version,
+  ...tipping
 }
 
 export const handleMessage = async (

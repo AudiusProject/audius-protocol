@@ -1,7 +1,6 @@
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { User } from 'audius-client/src/common/models/User'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { getSupporterForUser } from 'audius-client/src/common/store/tipping/selectors'
+import { getSupporters } from 'audius-client/src/common/store/tipping/selectors'
+import { getId as getSupportersId } from 'common/store/user-list/top-supporters/selectors'
 import { View } from 'react-native'
 
 import IconTrending from 'app/assets/images/iconTrending.svg'
@@ -13,38 +12,68 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { Tip } from './Tip'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    marginTop: spacing(1)
+  },
+  rankText: {
+    marginLeft: spacing(1),
+    fontSize: typography.fontSize.small
+  },
+  rankContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center'
   }
 }))
 
-type TopSupportingInfoProps = {
+type SupporterInfoProps = {
   user: User
 }
 
-export const TopSupportingInfo = (props: TopSupportingInfoProps) => {
-  const { user } = props
-  const { user_id: supporterUserId } = user
-  const currentUserId = useSelectorWeb(getUserId) as ID
-  const supporter = useSelectorWeb(state =>
-    getSupporterForUser(state, currentUserId, supporterUserId)
-  )
+export const SupporterInfo = (props: SupporterInfoProps) => {
   const styles = useStyles()
-  const { secondary } = useThemeColors()
+  const { secondary, neutralLight4 } = useThemeColors()
+  const supportersMap = useSelectorWeb(getSupporters)
+  const supportersId = useSelectorWeb(getSupportersId)
+  const supportersForUser = supportersId
+    ? supportersMap[supportersId] ?? null
+    : null
+  const supporter = supportersForUser?.[props.user.user_id] ?? null
 
   if (!supporter) return null
 
   const { rank, amount } = supporter
 
-  const RankIcon = rank < 5 ? IconTrophy : IconTrending
+  const isTopRank = rank <= 5
+  const RankIcon = isTopRank ? IconTrophy : IconTrending
 
   return (
     <View style={styles.root}>
-      <Text variant='body' color='secondary'>
-        <RankIcon fill={secondary} height={12} width={12} /> #{rank}
-      </Text>
+      <View style={styles.rankContainer}>
+        <RankIcon
+          fill={isTopRank ? secondary : neutralLight4}
+          height={12}
+          width={12}
+        />
+        <Text
+          style={styles.rankText}
+          color={isTopRank ? 'secondary' : 'neutralLight4'}
+          weight='bold'
+        >
+          #{rank}
+        </Text>
+        {isTopRank ? (
+          <Text
+            style={styles.rankText}
+            color={isTopRank ? 'secondary' : 'neutralLight4'}
+          >
+            Supporter
+          </Text>
+        ) : null}
+      </View>
       <Tip amount={amount} />
     </View>
   )

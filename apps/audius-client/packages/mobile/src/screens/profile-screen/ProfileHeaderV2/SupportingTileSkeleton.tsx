@@ -14,13 +14,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type TopSupporterTileSkeletonProps = {
+type SupportingTileSkeletonProps = {
   style?: StyleProp<ViewStyle>
 }
 
-export const TopSupporterTileSkeleton = (
-  props: TopSupporterTileSkeletonProps
-) => {
+export const SupportingTileSkeleton = (props: SupportingTileSkeletonProps) => {
   const { style } = props
   const styles = useStyles()
   return <Skeleton style={[styles.root, style]} />

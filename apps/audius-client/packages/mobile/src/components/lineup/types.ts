@@ -26,6 +26,10 @@ export type LoadingLineupItem = {
   _loading: true
 }
 
+export type FeedTipLineupItem = {
+  _feedTip: true
+}
+
 export type LineupProps = {
   /** Object containing lineup actions such as setPage */
   actions: LineupActions
@@ -56,6 +60,9 @@ export type LineupProps = {
 
   /** Are we in a trending lineup? Allows tiles to specialize their rendering */
   isTrending?: boolean
+
+  /** Whether we are in the feed lineup */
+  isFeed?: boolean
 
   /**
    * Indicator if a track should be displayed differently (ie. artist pick)

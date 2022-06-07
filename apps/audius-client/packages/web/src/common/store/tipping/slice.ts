@@ -1,13 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'common/models/Identifiers'
-import { UserTip } from 'common/models/Tipping'
+import { RecentTipsStorage, UserTip } from 'common/models/Tipping'
 import { User } from 'common/models/User'
 import {
   SupportersMapForUser,
   SupportingMapForUser,
   TippingState
 } from 'common/store/tipping/types'
+import { Nullable } from 'common/utils/typeUtils'
 
 export type RefreshSupportPayloadAction = {
   senderUserId: ID
@@ -28,9 +29,9 @@ const initialState: TippingState = {
     error: null
   },
   recentTips: [],
+  storage: null,
   tipToDisplay: null,
-  showTip: true,
-  mainUser: null
+  showTip: true
 }
 
 const slice = createSlice({
@@ -136,7 +137,12 @@ const slice = createSlice({
       state.send.amount = '0'
       state.send.error = null
     },
-    fetchRecentTips: _ => {},
+    fetchRecentTips: (
+      state,
+      action: PayloadAction<{
+        storage: Nullable<RecentTipsStorage>
+      }>
+    ) => {},
     setRecentTips: (
       state,
       action: PayloadAction<{ recentTips: UserTip[] }>
@@ -151,9 +157,6 @@ const slice = createSlice({
     },
     hideTip: state => {
       state.showTip = false
-    },
-    setMainUser: (state, action: PayloadAction<{ user: User }>) => {
-      state.mainUser = action.payload.user
     }
   }
 })
@@ -175,8 +178,7 @@ export const {
   fetchRecentTips,
   setRecentTips,
   setTipToDisplay,
-  hideTip,
-  setMainUser
+  hideTip
 } = slice.actions
 
 export default slice.reducer

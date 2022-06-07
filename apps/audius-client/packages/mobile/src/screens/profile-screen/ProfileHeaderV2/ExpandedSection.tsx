@@ -8,10 +8,10 @@ import { Bio } from './Bio'
 import { ProfileMutualsButton } from './ProfileMutualsButton'
 import { ProfileTierTile } from './ProfileTierTile'
 import { SocialsAndSites } from './SocialsAndSites'
-import { TopSupportersList } from './TopSupportersList'
+import { SupportingList } from './SupportingList'
 
 export const ExpandedSection = () => {
-  const { supporter_count } = useSelectProfile(['supporter_count'])
+  const { supporting_count } = useSelectProfile(['supporting_count'])
   return (
     <View pointerEvents='box-none'>
       <Bio />
@@ -20,7 +20,7 @@ export const ExpandedSection = () => {
         <ProfileTierTile />
         <ProfileMutualsButton />
       </View>
-      {supporter_count > 0 ? <TopSupportersList /> : null}
+      {supporting_count > 0 ? <SupportingList /> : null}
     </View>
   )
 }

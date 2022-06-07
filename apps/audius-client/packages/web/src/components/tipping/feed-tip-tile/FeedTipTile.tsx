@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import { Button } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -10,12 +10,7 @@ import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getShowTip, getTipToDisplay } from 'common/store/tipping/selectors'
-import {
-  beginTip,
-  fetchRecentTips,
-  hideTip,
-  setMainUser
-} from 'common/store/tipping/slice'
+import { beginTip, fetchRecentTips, hideTip } from 'common/store/tipping/slice'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -29,7 +24,10 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { dismissRecentTip } from 'store/tipping/storageUtils'
+import {
+  dismissRecentTip,
+  getRecentTipsStorage
+} from 'store/tipping/storageUtils'
 import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 
@@ -175,22 +173,10 @@ export const FeedTipTile = () => {
   const usersMap = useSelector<AppState, { [id: number]: User }>(state =>
     getUsers(state, { ids: tipToDisplay ? tipperIds : [] })
   )
-  const [hasSetMainUser, setHasSetMainUser] = useState(false)
 
   useEffect(() => {
-    if (
-      isTippingEnabled &&
-      !hasSetMainUser &&
-      tipToDisplay &&
-      usersMap[tipToDisplay.receiver_id]
-    ) {
-      dispatch(setMainUser({ user: usersMap[tipToDisplay.receiver_id] }))
-      setHasSetMainUser(true)
-    }
-  }, [isTippingEnabled, hasSetMainUser, tipToDisplay, usersMap, dispatch])
-
-  useEffect(() => {
-    dispatch(fetchRecentTips())
+    const storage = getRecentTipsStorage()
+    dispatch(fetchRecentTips({ storage }))
   }, [dispatch])
 
   const handleClick = useCallback(() => {

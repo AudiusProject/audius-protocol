@@ -129,7 +129,11 @@ export enum MessageType {
   SYNC_COMMON_STATE = 'sync-common-state',
 
   // hCaptcha
-  UPDATE_HCAPTCHA_SCORE = 'update-hcaptcha-score'
+  UPDATE_HCAPTCHA_SCORE = 'update-hcaptcha-score',
+
+  // Tipping
+  FETCH_RECENT_TIPS = 'fetch-recent-tips',
+  UPDATE_TIPS_STORAGE = 'update-tips-storage'
 }
 
 export interface Message {
