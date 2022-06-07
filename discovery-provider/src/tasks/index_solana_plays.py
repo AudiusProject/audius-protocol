@@ -100,6 +100,8 @@ def parse_instruction_data(
     source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
 
     # Source is not expected to be null, but may be
+    # First try to parse source as json
+    # Fallback to parse source as normal string
     source = None
     location = {}
     try:
@@ -107,19 +109,21 @@ def parse_instruction_data(
         sourceDict = json.loads(decoded_source)
         source = sourceDict["source"]
         location = sourceDict["location"]
+    except Exception:
+        pass
+    
+    try:
+        source = str(decoded_source, "utf-8")
     except ValueError:
-        try:
-            source = str(decoded_source, "utf-8")
-        except ValueError:
-            log = (
-                "Failed to parse source from {!r}".format(
-                    decoded[source_start:source_end]
-                ),
-            )
-            logger.error(
-                log,
-                exc_info=True,
-            )
+        log = (
+            "Failed to parse source from {!r}".format(
+                decoded[source_start:source_end]
+            ),
+        )
+        logger.error(
+            log,
+            exc_info=True,
+        )
 
     timestamp = int.from_bytes(decoded[source_end : source_end + 8], "little")
 
