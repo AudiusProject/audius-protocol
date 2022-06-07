@@ -531,7 +531,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_track_is_available": {
                 "task": "update_track_is_available",
-                "schedule": timedelta(minutes=10),
+                "schedule": timedelta(minutes=2),
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
