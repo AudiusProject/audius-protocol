@@ -27,12 +27,6 @@ export const getSupportingOverrides = (state: CommonState) =>
 export const getSupportingForUser = (state: CommonState, userId: ID) =>
   getSupporting(state)[userId]
 
-export const getSupportedUserByUser = (
-  state: CommonState,
-  userId: ID,
-  supportingId: ID
-) => getSupporting(state)?.[userId]?.[supportingId]
-
 export const getSendStatus = (state: CommonState) => state.tipping.send.status
 export const getSendAmount = (state: CommonState) => state.tipping.send.amount
 export const getSendUser = (state: CommonState) => state.tipping.send.user
@@ -42,7 +36,6 @@ export const getRecentTips = (state: CommonState) => state.tipping.recentTips
 export const getTipToDisplay = (state: CommonState) =>
   state.tipping.tipToDisplay
 export const getShowTip = (state: CommonState) => state.tipping.showTip
-export const getMainUser = (state: CommonState) => state.tipping.mainUser
 
 const mergeMaps = <
   MapType extends Record<ID, Record<ID, Supporter | Supporting>>

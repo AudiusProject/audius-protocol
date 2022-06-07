@@ -1,27 +1,22 @@
-import { ID } from 'audius-client/src/common/models/Identifiers'
 import { User } from 'audius-client/src/common/models/User'
-import { getUserId } from 'audius-client/src/common/store/account/selectors'
-import { getSupportedUserByUser } from 'audius-client/src/common/store/tipping/selectors'
+import { getSupporting } from 'audius-client/src/common/store/tipping/selectors'
+import { getId as getSupportingId } from 'common/store/user-list/supporting/selectors'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import { Tip } from './Tip'
 
-type SupporterInfoProps = {
+type SupportingInfoProps = {
   user: User
 }
 
-export const SupportingInfo = (props: SupporterInfoProps) => {
-  const { user } = props
-  const { user_id: supportingUserId } = user
-  const currentUserId = useSelectorWeb(getUserId) as ID
-  const supporter = useSelectorWeb(state =>
-    getSupportedUserByUser(state, currentUserId, supportingUserId)
-  )
+export const SupportingInfo = (props: SupportingInfoProps) => {
+  const supportingMap = useSelectorWeb(getSupporting)
+  const supportingId = useSelectorWeb(getSupportingId)
+  const supportingForUser = supportingId
+    ? supportingMap[supportingId] ?? null
+    : null
+  const supporting = supportingForUser?.[props.user.user_id] ?? null
 
-  if (!supporter) return null
-
-  const { amount } = supporter
-
-  return <Tip amount={amount} />
+  return supporting ? <Tip amount={supporting.amount} /> : null
 }
