@@ -12,7 +12,7 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 
-describe('Test AudiusUsers', function () {
+describe.only('Test AudiusUsers', function () {
   let app, server, session, libsMock
 
   beforeEach(async () => {

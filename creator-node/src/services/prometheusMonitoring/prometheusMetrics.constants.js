@@ -10,7 +10,8 @@ const MetricTypes = Object.freeze({
 const MetricNames = Object.freeze({
   HTTP_REQUEST_DURATION_SECONDS_HISTOGRAM: 'http_request_duration_seconds',
   STORAGE_PATH_SIZE_GAUGE: 'storage_path_size_UNIT_TODO_gauge',
-  STORAGE_PATH_USED_GAUGE: 'storage_path_used_UNIT_TODO_gauge'
+  STORAGE_PATH_USED_GAUGE: 'storage_path_used_UNIT_TODO_gauge',
+  ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM: 'route_post_tracks_duration_seconds'
 })
 
 const Metrics = Object.freeze({
@@ -36,7 +37,16 @@ const Metrics = Object.freeze({
       name: MetricNames.STORAGE_PATH_USED_GAUGE,
       help: 'asdf'
     }
-  }
+  },
+  [MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: MetricTypes.HISTOGRAM,
+    metricConfig: {
+      name: MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
+      help: 'TODO Runtimes for src.routes.tracks:/tracks',
+      labelNames: ['code'],
+      buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10] // 0.1 to 10 seconds
+    }
+  },
 })
 
 module.exports.MetricTypes = MetricTypes

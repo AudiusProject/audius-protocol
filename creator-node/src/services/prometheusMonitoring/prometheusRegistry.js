@@ -1,10 +1,10 @@
-const promClient = require('prom-client')
+const prometheusClient = require('prom-client')
 
 const { Metrics, MetricNames } = require('./prometheusMetrics.constants')
 
 module.exports = class PrometheusRegistry {
-  init({ collectDefaultMetrics = true }) {
-    this.registry = promClient.register
+  constructor(collectDefaultMetrics = true) {
+    this.registry = prometheusClient.register
     this.metricNames = MetricNames
 
     // Add a default label which is added to all metrics
@@ -13,10 +13,10 @@ module.exports = class PrometheusRegistry {
     })
 
     if (collectDefaultMetrics) {
-      promClient.collectDefaultMetrics()
+      prometheusClient.collectDefaultMetrics()
     }
 
-    this.setupCustomMetrics()
+    this._setupCustomMetrics()
   }
 
   /**
@@ -36,7 +36,9 @@ module.exports = class PrometheusRegistry {
    */
 
   _setupCustomMetrics() {
-    for (const { metricType: MetricType, metricConfig } of Metrics) {
+    for (const { metricType: MetricType, metricConfig } of Object.values(
+      Metrics
+    )) {
       const metric = new MetricType(metricConfig)
       this.registry.registerMetric(metric)
     }

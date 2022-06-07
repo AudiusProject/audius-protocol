@@ -146,7 +146,6 @@ class ServiceRegistry {
    */
   async initServicesThatRequireServer(app) {
     this.prometheusRegistry = new PrometheusRegistry()
-    this.prometheusRegistry.init({ collectDefaultMetrics: true })
 
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
