@@ -365,6 +365,7 @@ class Track(Base):
             f"track_id={self.track_id},"
             f"is_current={self.is_current},"
             f"is_delete={self.is_delete},"
+            f"is_unlisted={self.is_unlisted},"
             f"owner_id={self.owner_id},"
             f"route_id={self.route_id},"
             f"title={self.title},"
