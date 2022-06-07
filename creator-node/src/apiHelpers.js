@@ -13,10 +13,11 @@ module.exports.handleResponse = (func) => {
     try {
       const prometheusRegistry =
         req.app.get('serviceRegistry').prometheusRegistry
-      const httpRequestTimerMetric = await prometheusRegistry.getMetricInstance(
-        'http_request_duration_seconds'
-      )
-      const endTimer = httpRequestTimerMetric.startTimer()
+      const httpRequestDurationSecondsHistogramMetric =
+        prometheusRegistry.getMetricInstance(
+          prometheusRegistry.metricNames.HTTP_REQUEST_DURATION_SECONDS_HISTOGRAM
+        )
+      const endTimerFn = httpRequestDurationSecondsHistogramMetric.startTimer()
 
       const resp = await func(req, res, next)
 
@@ -26,7 +27,7 @@ module.exports.handleResponse = (func) => {
 
       sendResponse(req, res, resp)
 
-      endTimer({ method: req.method, route: req.path, code: res.statusCode })
+      endTimerFn({ method: req.method, route: req.path, code: res.statusCode })
 
       next()
     } catch (error) {

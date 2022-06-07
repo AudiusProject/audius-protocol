@@ -1,43 +1,44 @@
 const promClient = require('prom-client')
 
+const { Metrics, MetricNames } = require('./prometheusMetrics.constants')
+
 module.exports = class PrometheusRegistry {
   init({ collectDefaultMetrics = true }) {
-    this.register = new promClient.Registry()
+    this.registry = promClient.register
+    this.metricNames = MetricNames
 
     // Add a default label which is added to all metrics
-    this.register.setDefaultLabels({
+    this.registry.setDefaultLabels({
       serviceType: 'audius_content_node'
     })
 
-    this.setupDefaultMetrics(collectDefaultMetrics)
-  }
-
-  getAllMetricData() {
-    return this.register.metrics()
-  }
-
-  async getMetricInstance(name) {
-    return this.register.getSingleMetric(name)
-  }
-
-  setupDefaultMetrics(collectDefaultMetrics) {
     if (collectDefaultMetrics) {
-      promClient.collectDefaultMetrics({
-        register: this.register
-      })
+      promClient.collectDefaultMetrics()
     }
 
-    this._createHTTPRequestTimerMetric()
+    this.setupCustomMetrics()
   }
 
-  _createHTTPRequestTimerMetric() {
-    const timer = new promClient.Histogram({
-      name: 'http_request_duration_seconds',
-      help: 'http_request_duration_seconds',
-      labelNames: ['method', 'route', 'code'],
-      buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10] // 0.1 to 10 seconds
-    })
+  /**
+   * Getters
+   */
 
-    this.register.registerMetric(timer)
+  getAllMetricData() {
+    return this.registry.metrics()
+  }
+
+  getMetricInstance(name) {
+    return this.registry.getSingleMetric(name)
+  }
+
+  /**
+   * Internal
+   */
+
+  _setupCustomMetrics() {
+    for (const { metricType: MetricType, metricConfig } of Metrics) {
+      const metric = new MetricType(metricConfig)
+      this.registry.registerMetric(metric)
+    }
   }
 }
