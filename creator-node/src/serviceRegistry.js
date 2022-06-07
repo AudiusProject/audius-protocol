@@ -2,7 +2,7 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
-const AudiusLibs = require('@audius/libs')
+const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
@@ -370,17 +370,10 @@ class ServiceRegistry {
         // TODO - formatting this private key here is not ideal
         config.get('delegatePrivateKey').replace('0x', '')
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-        discoveryProviderWhitelist,
-        /* blacklist */ null,
-        /* reselectTimeout */ null,
-        /* selectionCallback */ null,
-        /* monitoringCallbacks */ {},
-        /* selectionRequestTimeout */ null,
-        /* selectionRequestRetries */ null,
-        /* unhealthySlotDiffPlays */ null,
-        discoveryNodeUnhealthyBlockDiff
-      ),
+      discoveryProviderConfig: {
+        whitelist: discoveryProviderWhitelist,
+        unhealthyBlockDiff: discoveryNodeUnhealthyBlockDiff
+      },
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
       identityServiceConfig: identityService
         ? AudiusLibs.configIdentityService(identityService)

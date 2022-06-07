@@ -15,6 +15,13 @@ import type { DecodedLog } from 'abi-decoder'
 
 const DEFAULT_GAS_LIMIT = 2000000
 
+export type Web3ManagerConfig = {
+  web3Config: Web3Config
+  identityService: IdentityService
+  hedgehog: Hedgehog
+  isServer?: boolean
+}
+
 /** singleton class to be instantiated and persisted with every AudiusLibs */
 export class Web3Manager {
   web3Config: Web3Config
@@ -27,12 +34,12 @@ export class Web3Manager {
   // @ts-expect-error an error is thrown if it's not provided
   ownerWallet: EthereumWallet
 
-  constructor(
-    web3Config: Web3Config,
-    identityService: IdentityService,
-    hedgehog: Hedgehog,
-    isServer: boolean
-  ) {
+  constructor({
+    web3Config,
+    identityService,
+    hedgehog,
+    isServer = false
+  }: Web3ManagerConfig) {
     this.web3Config = web3Config
     this.isServer = isServer
 

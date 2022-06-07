@@ -2,8 +2,8 @@ const fs = require('fs')
 const untildify = require('untildify')
 const Web3 = require('web3')
 const axios = require('axios')
-const AudiusLibs = require('@audius/libs')
-const { CreatorNode, Utils } = require('@audius/libs')
+const { libs: AudiusLibs } = require('@audius/sdk')
+const { CreatorNode, Utils } = AudiusLibs
 const config = require('../config/config')
 
 const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'
@@ -49,7 +49,7 @@ loadLibsVars()
  * Each method may throw.
  * @param {int} walletIndex Ganache can be setup with multiple pre-created wallets. WalletIndex lets you pick which wallet to use for libs.
  */
-function LibsWrapper (walletIndex = 0) {
+function LibsWrapper(walletIndex = 0) {
   this.libsInstance = null
 
   const assertLibsDidInit = () => {
@@ -108,7 +108,7 @@ function LibsWrapper (walletIndex = 0) {
       ETH_PROVIDER_URL,
       ETH_OWNER_WALLET
     )
-    const discoveryProviderConfig = AudiusLibs.configDiscoveryProvider()
+    const discoveryProviderConfig = {}
 
     const creatorNodeConfig = AudiusLibs.configCreatorNode(USER_NODE, true)
     const identityServiceConfig = AudiusLibs.configIdentityService(
@@ -137,7 +137,9 @@ function LibsWrapper (walletIndex = 0) {
 
   this.getLatestBlockOnChain = async () => {
     assertLibsDidInit()
-    const { number: latestBlock } = await this.libsInstance.web3Manager.web3.eth.getBlock('latest')
+    const {
+      number: latestBlock
+    } = await this.libsInstance.web3Manager.web3.eth.getBlock('latest')
     return latestBlock
   }
 
@@ -200,7 +202,7 @@ function LibsWrapper (walletIndex = 0) {
     })
   }
 
-  this.setCreatorNodeEndpoint = async (primary) => {
+  this.setCreatorNodeEndpoint = async primary => {
     assertLibsDidInit()
     return this.libsInstance.creatorNode.setEndpoint(primary)
   }
@@ -216,7 +218,7 @@ function LibsWrapper (walletIndex = 0) {
    * - Add what user props might be missing to normalize
    * - Only keep core fields in USER_PROPS and 'user_id'.
    */
-  this.cleanUserMetadata = (metadata) => {
+  this.cleanUserMetadata = metadata => {
     assertLibsDidInit()
     return this.libsInstance.User.cleanUserMetadata(metadata)
   }
@@ -246,12 +248,16 @@ function LibsWrapper (walletIndex = 0) {
    * such as track content, cover art are already on creator node.
    * @param {Object} metadata json of the track metadata with all fields, missing fields will error
    */
-  this.updateTrackOnChainAndCnode = async (metadata) => {
-    const { blockHash, blockNumber, trackId } = await this.libsInstance.Track.updateTrack(metadata)
+  this.updateTrackOnChainAndCnode = async metadata => {
+    const {
+      blockHash,
+      blockNumber,
+      trackId
+    } = await this.libsInstance.Track.updateTrack(metadata)
     return { blockHash, blockNumber, trackId }
   }
 
-  this.uploadTrackCoverArt = async (coverArtFilePath) => {
+  this.uploadTrackCoverArt = async coverArtFilePath => {
     const coverArtFile = fs.createReadStream(coverArtFilePath)
     const resp = await this.libsInstance.File.uploadImage(
       coverArtFile,
@@ -350,7 +356,9 @@ function LibsWrapper (walletIndex = 0) {
    */
   this.getUserAccount = async wallet => {
     assertLibsDidInit()
-    const userAccount = await this.libsInstance.discoveryProvider.getUserAccount(wallet)
+    const userAccount = await this.libsInstance.discoveryProvider.getUserAccount(
+      wallet
+    )
 
     if (!userAccount) {
       throw new Error('No user account found.')
@@ -382,10 +390,10 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
-  * Gets the primary off the user metadata and then sets the primary
-  * on the CreatorNode instance in libs
-  * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
-  */
+   * Gets the primary off the user metadata and then sets the primary
+   * on the CreatorNode instance in libs
+   * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
+   */
   this.getPrimaryAndSetLibs = contentNodeEndpointField => {
     assertLibsDidInit()
     const primary = CreatorNode.getPrimary(contentNodeEndpointField)
@@ -419,7 +427,10 @@ function LibsWrapper (walletIndex = 0) {
    */
   this.updateAndUploadMetadata = async ({ newMetadata, userId }) => {
     assertLibsDidInit()
-    return await this.libsInstance.User.updateAndUploadMetadata({ newMetadata, userId })
+    return await this.libsInstance.User.updateAndUploadMetadata({
+      newMetadata,
+      userId
+    })
   }
 
   /**
@@ -578,10 +589,7 @@ function LibsWrapper (walletIndex = 0) {
    * @param {number} playlistId
    * @param {number} trackId
    */
-  this.addPlaylistTrack = async (
-    playlistId,
-    trackId
-  ) => {
+  this.addPlaylistTrack = async (playlistId, trackId) => {
     assertLibsDidInit()
     const addPlaylistTrackTxReceipt = await this.libsInstance.contracts.PlaylistFactoryClient.addPlaylistTrack(
       playlistId,
@@ -590,7 +598,7 @@ function LibsWrapper (walletIndex = 0) {
     return addPlaylistTrackTxReceipt
   }
 
-  this.uploadPlaylistCoverPhoto = async (coverPhotoFile) => {
+  this.uploadPlaylistCoverPhoto = async coverPhotoFile => {
     assertLibsDidInit()
     const dirCid = await this.libsInstance.Playlist.uploadPlaylistCoverPhoto(
       coverPhotoFile
@@ -643,8 +651,10 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.web3Manager.getWalletAddress()
   }
 
-  this.getServices = async (type) => {
-    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
+  this.getServices = async type => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+      type
+    )
   }
 
   this.getServiceEndpointInfo = async (serviceType, serviceId) => {
@@ -654,12 +664,16 @@ function LibsWrapper (walletIndex = 0) {
     )
   }
 
-  this.getUserReplicaSet = async (userId) => {
-    return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  this.getUserReplicaSet = async userId => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+      userId
+    )
   }
 
-  this.getContentNodeWallets = async (cnodeId) => {
-    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnodeId)
+  this.getContentNodeWallets = async cnodeId => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
+      cnodeId
+    )
   }
 
   this.updateReplicaSet = async (userId, primary, secondaries) => {
@@ -671,18 +685,24 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   this.updateBio = async (userId, bioString) => {
-    return this.libsInstance.contracts.UserFactoryClient.updateBio(userId, bioString)
+    return this.libsInstance.contracts.UserFactoryClient.updateBio(
+      userId,
+      bioString
+    )
   }
 
   this.updateName = async (userId, userName) => {
-    return this.libsInstance.contracts.UserFactoryClient.updateBio(userId, userName)
+    return this.libsInstance.contracts.UserFactoryClient.updateBio(
+      userId,
+      userName
+    )
   }
 
   this.getDiscoveryNodeEndpoint = () => {
     return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
   }
 
-  this.getURSMContentNodes = (ownerWallet) => {
+  this.getURSMContentNodes = ownerWallet => {
     return this.libsInstance.discoveryProvider.getURSMContentNodes(ownerWallet)
   }
 
@@ -704,11 +724,13 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
-  * Wait for the discovery node to catch up to the latest block on chain up to a max
-  * indexing timeout of default 10000ms. Used to check regular block indexing.
-  * @param {number} [maxIndexingTimeout=10000] max time indexing window
-  */
-  this.waitForLatestBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+   * Wait for the discovery node to catch up to the latest block on chain up to a max
+   * indexing timeout of default 10000ms. Used to check regular block indexing.
+   * @param {number} [maxIndexingTimeout=10000] max time indexing window
+   */
+  this.waitForLatestBlock = async (
+    maxIndexingTimeout = MAX_INDEXING_TIMEOUT
+  ) => {
     let latestBlockOnChain = -1
     let latestIndexedBlock = -1
 
@@ -719,13 +741,17 @@ function LibsWrapper (walletIndex = 0) {
       // close block without having to change libs API.
       latestBlockOnChain = await this.getLatestBlockOnChain()
 
-      console.log(`[Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+      console.log(
+        `[Block Check] Waiting for #${latestBlockOnChain} to be indexed...`
+      )
 
       const startTime = Date.now()
       while (Date.now() - startTime < maxIndexingTimeout) {
         latestIndexedBlock = await this._getLatestIndexedBlock()
         if (latestIndexedBlock >= latestBlockOnChain) {
-          console.log(`[Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+          console.log(
+            `[Block Check] Discovery Node has indexed #${latestBlockOnChain}!`
+          )
           return
         }
       }
@@ -734,15 +760,19 @@ function LibsWrapper (walletIndex = 0) {
       console.error(errorMsg, e)
       throw new Error(`${errorMsg}\n${e}`)
     }
-    console.warn(`[Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+    console.warn(
+      `[Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`
+    )
   }
 
   /**
-  * Wait for the discovery node to catch up to the latest block on chain up to a max
-  * indexing timeout of default 10000ms.
-  * @param {number} [maxIndexingTimeout=10000] max time indexing window
-  */
-  this.waitForLatestIPLDBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+   * Wait for the discovery node to catch up to the latest block on chain up to a max
+   * indexing timeout of default 10000ms.
+   * @param {number} [maxIndexingTimeout=10000] max time indexing window
+   */
+  this.waitForLatestIPLDBlock = async (
+    maxIndexingTimeout = MAX_INDEXING_TIMEOUT
+  ) => {
     let latestBlockOnChain = -1
     let latestIndexedBlock = -1
 
@@ -753,43 +783,61 @@ function LibsWrapper (walletIndex = 0) {
       // close block without having to change libs API.
       latestBlockOnChain = await this.getLatestBlockOnChain()
 
-      console.log(`[IPLD Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+      console.log(
+        `[IPLD Block Check] Waiting for #${latestBlockOnChain} to be indexed...`
+      )
 
       const startTime = Date.now()
       while (Date.now() - startTime < maxIndexingTimeout) {
         latestIndexedBlock = await this._getLatestIndexedIpldBlock()
         if (latestIndexedBlock >= latestBlockOnChain) {
-          console.log(`[IPLD Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+          console.log(
+            `[IPLD Block Check] Discovery Node has indexed #${latestBlockOnChain}!`
+          )
           return
         }
       }
     } catch (e) {
-      const errorMsg = '[IPLD Block Check] Error with checking latest indexed block'
+      const errorMsg =
+        '[IPLD Block Check] Error with checking latest indexed block'
       console.error(errorMsg, e)
       throw new Error(`${errorMsg}\n${e}`)
     }
-    console.warn(`[IPLD Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+    console.warn(
+      `[IPLD Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`
+    )
   }
 
   this._getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
-    return (await axios({
-      method: 'get',
-      baseURL: endpoint,
-      url: '/health_check'
-    })).data.latest_indexed_block
+    return (
+      await axios({
+        method: 'get',
+        baseURL: endpoint,
+        url: '/health_check'
+      })
+    ).data.latest_indexed_block
   }
 
-  this._getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
-    return (await axios({
-      method: 'get',
-      baseURL: endpoint,
-      url: '/ipld_block_check'
-    })).data.data.db.number
+  this._getLatestIndexedIpldBlock = async (
+    endpoint = DISCOVERY_NODE_ENDPOINT
+  ) => {
+    return (
+      await axios({
+        method: 'get',
+        baseURL: endpoint,
+        url: '/ipld_block_check'
+      })
+    ).data.data.db.number
   }
 
-  this.updateUserStateManagerToChainData = async (userId) => {
-    const users = await this.libsInstance.discoveryProvider.getUsers(1, 0, [userId])
-    if (!users || !users[0]) throw new Error(`[updateUserStateManagerToChainData] Cannot update user because no current record exists for user id ${userId}`)
+  this.updateUserStateManagerToChainData = async userId => {
+    const users = await this.libsInstance.discoveryProvider.getUsers(1, 0, [
+      userId
+    ])
+    if (!users || !users[0])
+      throw new Error(
+        `[updateUserStateManagerToChainData] Cannot update user because no current record exists for user id ${userId}`
+      )
 
     const metadata = users[0]
 

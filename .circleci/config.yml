@@ -140,9 +140,13 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              cd /home/ubuntu/audius-protocol/mad-dog;
+              cd /home/ubuntu/audius-protocol;
               git pull;
               git checkout $CIRCLE_BRANCH;
+              cd ./service-commands;
+              npm i
+              cd ../mad-dog;
+              A run init-repos up;
               A up;
               npm run start << parameters.mad-dog-type >> verbose;
               exit;
@@ -341,8 +345,8 @@ jobs:
             export spOwnerWallet='yes'
             export isCIBuild=true
             npm run test:coverage:ci
-      - coveralls/upload:
-          path_to_lcov: ./creator-node/coverage/lcov.info
+      # - coveralls/upload:
+      #     path_to_lcov: ./creator-node/coverage/lcov.info
 
   test-discovery-provider:
     docker:

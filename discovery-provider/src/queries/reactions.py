@@ -15,14 +15,14 @@ class ReactionResponse(TypedDict):
 
 def get_reactions(
     session: Session, reacted_to_ids: List[str], type: Optional[str]
-) -> List[ReactionResponse]:
+) -> Optional[List[ReactionResponse]]:
     filters = [Reaction.reacted_to.in_(reacted_to_ids), User.is_current == True]
     if type:
         filters.append(Reaction.reaction_type == type)
 
     r: Reaction
     user_id: int
-    r, user_id = (
+    result = (
         session.query(Reaction, User.user_id)
         .join(User, User.wallet == Reaction.sender_wallet)
         .filter(
@@ -31,6 +31,11 @@ def get_reactions(
         .order_by(desc(Reaction.slot))
         .first()
     )
+
+    if not result:
+        return None
+
+    r, user_id = result
 
     return [
         {

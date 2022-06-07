@@ -1,4 +1,7 @@
-import type { DiscoveryProvider, UserProfile } from '../discoveryProvider'
+import type {
+  DiscoveryProvider,
+  UserProfile
+} from '../../services/discoveryProvider'
 
 export type LoginSuccessCallback = (profile: UserProfile) => void
 export type LoginErrorCallback = (errorMessage: string) => void
@@ -101,15 +104,20 @@ const generateAudiusLogoSvg = (size: 'small' | 'medium' | 'large') => {
 const OAUTH_URL = 'https://audius.co/oauth/auth'
 const CSRF_TOKEN_KEY = 'audiusOauthState'
 
+type OauthConfig = {
+  appName: string
+  discoveryProvider: DiscoveryProvider
+}
+
 export class Oauth {
   discoveryProvider: DiscoveryProvider
-  appName: string | null
+  appName: string
   activePopupWindow: null | Window
   popupCheckInterval: NodeJS.Timer | null
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
 
-  constructor(discoveryProvider: DiscoveryProvider) {
+  constructor({ discoveryProvider, appName }: OauthConfig) {
     if (typeof window === 'undefined') {
       // TODO(nkang): Add link to documentation once written
       throw new Error(
@@ -117,7 +125,7 @@ export class Oauth {
       )
     }
     this.discoveryProvider = discoveryProvider
-    this.appName = null
+    this.appName = appName
     this.activePopupWindow = null
     this.loginSuccessCallback = null
     this.loginErrorCallback = null
@@ -125,11 +133,9 @@ export class Oauth {
   }
 
   init(
-    appName: string,
     successCallback: LoginSuccessCallback,
     errorCallback?: LoginErrorCallback
   ) {
-    this.appName = appName
     this.loginSuccessCallback = successCallback
     this.loginErrorCallback = errorCallback ?? null
     window.addEventListener(

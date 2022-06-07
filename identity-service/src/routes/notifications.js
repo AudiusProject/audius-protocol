@@ -247,7 +247,7 @@ const formatReaction = (notification) => ({
   entityId: notification.entityId,
   reactionType: notification.metadata.reactionType,
   reactionValue: notification.metadata.reactionValue,
-  reactedTo: notification.metadata.reactedTo,
+  reactedToEntity: notification.metadata.reactedToEntity,
   entityType: Entity.User
 })
 

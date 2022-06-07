@@ -12,7 +12,7 @@ const {
   // calculateTrackListenMilestonesFromDiscovery
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
-const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
+// const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const {
   notificationJobType,
@@ -249,8 +249,9 @@ class NotificationProcessor {
       logger.info('processDownloadEmails')
       let error = null
       try {
-        await processDownloadAppEmail(expressApp, audiusLibs)
-        await this.redis.set(NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+        logger.info(`processDownloadEmails disabled`)
+        // await processDownloadAppEmail(expressApp, audiusLibs)
+        // await this.redis.set(NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
         logger.error(`processDownloadEmails - Problem with processing emails: ${e}`)

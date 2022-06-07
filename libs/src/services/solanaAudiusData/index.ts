@@ -1187,5 +1187,3 @@ export class SolanaAudiusData {
     return await this.sendTx(tx)
   }
 }
-
-module.exports = SolanaAudiusData
