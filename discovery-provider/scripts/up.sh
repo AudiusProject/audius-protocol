@@ -2,6 +2,8 @@
  
 set -xe
 
+shopt -s expand_aliases
+
 ITERATION=${1}
 
 if [[ "$UP" == true || "$RESTART" == true ]]; then
