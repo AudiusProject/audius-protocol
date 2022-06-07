@@ -1,7 +1,7 @@
 import bs58 from 'bs58'
 import Web3 from '../web3'
 import axios, { AxiosResponse } from 'axios'
-import Hashids from 'hashids/cjs'
+const Hashids = require('hashids/cjs')
 import { MultiProvider } from './multiProvider'
 import { uuid } from './uuid'
 import {

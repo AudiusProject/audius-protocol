@@ -3,6 +3,7 @@ import babel from '@rollup/plugin-babel'
 import json from '@rollup/plugin-json'
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
+import { terser } from 'rollup-plugin-terser'
 import dts from 'rollup-plugin-dts'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import alias from '@rollup/plugin-alias'
@@ -71,6 +72,42 @@ const browserConfig = {
     typescript()
   ],
   external: external.filter((dep) => !browserInternal.includes(dep))
+}
+
+const browserDistFileConfig = {
+  plugins: [
+    ignore(['web3', 'graceful-fs', 'node-localstorage']),
+    resolve({ extensions, preferBuiltins: false, browser: true }),
+    commonjs({
+      extensions,
+      transformMixedEsModules: true,
+      dynamicRequireTargets: [
+        'data-contracts/ABIs/*.json',
+        'eth-contracts/ABIs/*.json'
+      ]
+    }),
+    alias({
+      entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+    }),
+    nodePolyfills(),
+    babel({
+      babelHelpers: 'runtime',
+      extensions,
+      plugins: ['@babel/plugin-transform-runtime']
+    }),
+    json(),
+    typescript()
+  ],
+  external: ['web3']
+}
+
+const browserDistFileOutputConfig = {
+  globals: {
+    web3: 'window.Web3'
+  },
+  format: 'iife',
+  esModule: false,
+  sourcemap: true
 }
 
 const browserLegacyConfig = {
@@ -147,6 +184,26 @@ export default [
       { file: pkg.browser, format: 'cjs', exports: 'auto', sourcemap: true }
     ],
     ...browserConfig
+  },
+
+  /**
+   * SDK bundled for prebuilt package file to be used in browser
+   * Does not include libs but does include polyfills and all deps/dev deps
+   */
+  {
+    input: 'src/sdk/sdkBrowserDist.ts',
+    output: [
+      {
+        file: pkg.sdkBrowserDistFile,
+        ...browserDistFileOutputConfig
+      },
+      {
+        file: pkg.sdkBrowserDistFileMini,
+        ...browserDistFileOutputConfig,
+        plugins: [terser()]
+      }
+    ],
+    ...browserDistFileConfig
   },
 
   /**
