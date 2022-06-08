@@ -42,3 +42,7 @@
 .subscribeButton {
   margin-right: 6px;
 }
+
+.followButton {
+  text-transform: uppercase;
+}
