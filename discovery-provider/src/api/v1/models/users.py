@@ -117,6 +117,16 @@ challenge_response = ns.model(
     },
 )
 
+user_token_profile_picture = ns.model(
+    "profilePicture",
+    {
+        "150x150": fields.String(required=False),
+        "480x480": fields.String(required=False),
+        "1000x1000": fields.String(required=False),
+        "misc": fields.String(required=False)
+    },
+)
+
 decoded_user_token = ns.model(
     "decoded_user_token",
     {
@@ -125,7 +135,7 @@ decoded_user_token = ns.model(
         "name": fields.String(required=True),
         "handle": fields.String(required=True),
         "verified": fields.Boolean(required=True),
-        "imageUrl": fields.String(required=False),
+        "profilePicture": fields.Nested(user_token_profile_picture, allow_null=True),
         "sub": fields.String(required=True),
         "iat": fields.String(required=True),
     },
