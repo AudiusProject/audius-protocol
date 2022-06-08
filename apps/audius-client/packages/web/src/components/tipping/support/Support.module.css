@@ -92,6 +92,7 @@
   background-position: center;
   background-size: cover;
   border-radius: 8px 8px 0 0;
+  background-blend-mode: multiply, normal;
 }
 
 .tileHeader {
@@ -159,13 +160,6 @@
 .nameAndBadge {
   padding-left: 8px;
   height: 25px;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.02) 30%,
-    rgba(0, 0, 0, 0.1) 60%,
-    rgba(0, 0, 0, 0.2) 100%
-  );
-  background-blend-mode: multiply;
   color: var(--white);
   font-weight: var(--font-bold);
   font-size: var(--font-s);
