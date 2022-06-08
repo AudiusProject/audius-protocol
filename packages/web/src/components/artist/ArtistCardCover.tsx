@@ -20,10 +20,11 @@ const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0,
 type ArtistCoverProps = {
   artist: User
   isArtist: boolean
+  onNavigateAway?: () => void
 }
 
 export const ArtistCardCover = (props: ArtistCoverProps) => {
-  const { isArtist, artist } = props
+  const { isArtist, artist, onNavigateAway } = props
 
   const {
     user_id,
@@ -49,8 +50,11 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
   const darkenedCoverPhoto = `${gradient}, url(${coverPhoto})`
 
   const handleClickUser = useCallback(() => {
+    if (onNavigateAway) {
+      onNavigateAway()
+    }
     dispatch(push(profilePage(handle)))
-  }, [dispatch, handle])
+  }, [dispatch, handle, onNavigateAway])
 
   return (
     <DynamicImage
