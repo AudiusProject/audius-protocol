@@ -12,7 +12,7 @@ if [[ "$RESTART" == true ]]; then
     docker-compose -f compose/docker-compose.yml down --remove-orphans
 
     (
-        cd libs/
+        cd ${PROTOCOL_DIR}/creator-node/
         npm run init-local update-cnode-config ${ITERATION}
     )
 fi
