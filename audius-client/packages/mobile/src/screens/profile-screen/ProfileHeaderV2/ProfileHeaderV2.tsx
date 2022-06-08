@@ -20,6 +20,7 @@ import { useSelectProfileRoot } from '../selectors'
 import { CollapsedSection } from './CollapsedSection'
 import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ExpandedSection } from './ExpandedSection'
+import { TopSupporters } from './TopSupporters'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
@@ -84,6 +85,7 @@ export const ProfileHeaderV2 = (props: ProfileHeaderV2Props) => {
           <ArtistRecommendations onClose={handleCloseArtistRecs} />
         )}
         {isOwner ? <UploadTrackButton /> : <TipArtistButton />}
+        <TopSupporters />
       </View>
     </>
   )
