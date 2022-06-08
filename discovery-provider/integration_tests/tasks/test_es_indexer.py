@@ -55,11 +55,16 @@ def clean_up_es():
 
 
 def test_es_indexer_catchup(app):
+    """
+    Tests initial catchup.
+    """
+
     with app.app_context():
         db = get_db()
 
     populate_mock_db(db, basic_entities)
 
+    # run indexer until timeout and validate catchup completed
     try:
         output = subprocess.run(
             ["npm", "run", "dev"],
@@ -81,6 +86,10 @@ def test_es_indexer_catchup(app):
 
 
 def test_es_indexer_processing(app):
+    """
+    Tests indexing after initial catchup.
+    """
+
     with app.app_context():
         db = get_db()
     try:
@@ -91,9 +100,12 @@ def test_es_indexer_processing(app):
             text=True,
             stdout=subprocess.PIPE,
         )
-        time.sleep(4)
+        time.sleep(3)
+
+        # add new records
         populate_mock_db(db, basic_entities)
-        proc.communicate(timeout=2)
+
+        proc.communicate(timeout=5)  # timeout indexer
     except subprocess.TimeoutExpired as timeout:
         if "processed new updates" not in timeout.output.decode("utf-8"):
             raise Exception("Elasticsearch failed to process updates")
