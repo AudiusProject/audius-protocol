@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
 import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -10,8 +9,6 @@ import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
-import { getProfileUser } from 'common/store/pages/profile/selectors'
-import { setMainUser } from 'common/store/tipping/slice'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { SupportingList } from 'components/tipping/support/SupportingList'
@@ -109,17 +106,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     isOwner
   } = props
 
-  const dispatch = useDispatch()
   const record = useRecord()
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
   const accountUser = useSelector(getAccountUser)
-  const profile = useSelector(getProfileUser)
-
-  useEffect(() => {
-    if (isTippingEnabled && profile) {
-      dispatch(setMainUser({ user: profile }))
-    }
-  }, [isTippingEnabled, dispatch, profile])
 
   const onClickUploadChip = useCallback(() => {
     goToRoute(UPLOAD_PAGE)
