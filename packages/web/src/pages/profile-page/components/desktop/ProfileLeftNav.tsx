@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -12,7 +12,6 @@ import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { setMainUser } from 'common/store/tipping/slice'
-import { Nullable } from 'common/utils/typeUtils'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { SupportingList } from 'components/tipping/support/SupportingList'
@@ -21,7 +20,6 @@ import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import UploadChip from 'components/upload/UploadChip'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
-import { useCollapse } from 'hooks/useCollapse'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTags } from 'pages/profile-page/components/desktop/ProfileTags'
@@ -116,10 +114,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
   const accountUser = useSelector(getAccountUser)
   const profile = useSelector(getProfileUser)
-  const bioRef = useRef<Nullable<HTMLDivElement>>(null)
-  const { isCollapsible, isCollapsed, handleToggleCollapse } = useCollapse({
-    ref: bioRef
-  })
 
   useEffect(() => {
     if (isTippingEnabled && profile) {
@@ -221,10 +215,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
       <div className={styles.about}>
         <ProfilePageBadge userId={userId} className={styles.badge} />
         <ProfileBio
-          forwardRef={bioRef}
-          isCollapsible={isCollapsible}
-          isCollapsed={isCollapsed}
-          handleToggleCollapse={handleToggleCollapse}
           handle={handle}
           bio={bio}
           location={location}
