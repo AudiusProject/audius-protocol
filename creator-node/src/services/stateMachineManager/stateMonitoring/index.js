@@ -9,7 +9,7 @@ const {
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS,
   STATE_MONITORING_QUEUE_INIT_DELAY_MS
 } = require('../stateMachineConstants')
-const { processJob } = require('../stateMachineUtils')
+const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const { getLatestUserIdFromDiscovery } = require('./stateMonitoringUtils')
 const monitorStateJobProcessor = require('./monitorState.jobProcessor')
@@ -21,11 +21,12 @@ const logger = createChildLogger(baseLogger, {
 })
 
 /**
- * Handles setup and lifecycle management (adding and processing jobs)
- * of the queue that calculates required syncs and replica set updates (handles user slicing, clocks,
- * gathering sync metrics, and computing healthy/unhealthy peers).
+ * Handles setup and job processing of the queue with jobs for:
+ * - fetching a slice of users and gathering their state
+ * - finding syncs that should be issued for users to sync their data from their primary to their secondaries
+ * - finding users who need a replica set update (when an unhealthy primary or secondary should be replaced)
  */
-class StateMonitoringQueue {
+class StateMonitoringManager {
   async init(discoveryNodeEndpoint) {
     const queue = this.makeQueue(
       config.get('redisHost'),
@@ -195,11 +196,7 @@ class StateMonitoringQueue {
       JOB_NAMES.MONITOR_STATE,
       job,
       monitorStateJobProcessor,
-      logger,
-      {
-        lastProcessedUserId: job.data.lastProcessedUserId,
-        jobSucceeded: false
-      }
+      logger
     )
   }
 
@@ -222,4 +219,4 @@ class StateMonitoringQueue {
   }
 }
 
-module.exports = StateMonitoringQueue
+module.exports = StateMonitoringManager

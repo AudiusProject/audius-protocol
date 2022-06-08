@@ -7,7 +7,7 @@ const {
   JOB_NAMES,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
 } = require('../stateMachineConstants')
-const { processJob } = require('../stateMachineUtils')
+const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
@@ -17,13 +17,11 @@ const logger = createChildLogger(baseLogger, {
 })
 
 /**
- * Handles setup and lifecycle management (adding and processing jobs)
- * of the queue with jobs for:
+ * Handles setup and job processing of the queue with jobs for:
  * - issuing sync requests to nodes (this can be other nodes or this node)
- * - executing syncs from these requests
  * - updating user's replica sets when one or more nodes in their replica set becomes unhealthy
  */
-class StateReconciliationQueue {
+class StateReconciliationManager {
   async init() {
     const queue = this.makeQueue(
       config.get('redisHost'),
@@ -33,7 +31,7 @@ class StateReconciliationQueue {
       queue,
       processManualSync: this.processManualSyncJob.bind(this),
       processRecurringSync: this.processRecurringSyncJob.bind(this),
-      processUpdateReplicaSets: this.processUpdateReplicaSetsJob.bind(this)
+      processUpdateReplicaSet: this.processUpdateReplicaSetJob.bind(this)
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
@@ -75,7 +73,7 @@ class StateReconciliationQueue {
     queue,
     processManualSync,
     processRecurringSync,
-    processUpdateReplicaSets
+    processUpdateReplicaSet
   }) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
@@ -120,7 +118,7 @@ class StateReconciliationQueue {
     queue.process(
       JOB_NAMES.UPDATE_REPLICA_SET,
       1 /** concurrency */,
-      processUpdateReplicaSets
+      processUpdateReplicaSet
     )
   }
 
@@ -146,7 +144,7 @@ class StateReconciliationQueue {
     )
   }
 
-  async processUpdateReplicaSetsJob(job) {
+  async processUpdateReplicaSetJob(job) {
     return processJob(
       JOB_NAMES.UPDATE_REPLICA_SET,
       job,
@@ -156,4 +154,4 @@ class StateReconciliationQueue {
   }
 }
 
-module.exports = StateReconciliationQueue
+module.exports = StateReconciliationManager

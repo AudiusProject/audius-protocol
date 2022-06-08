@@ -4,7 +4,7 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const config = require('../../config')
-const { logger, createChildLogger } = require('../../logging')
+const { logger } = require('../../logging')
 const { generateTimestampAndSignature } = require('../../apiSigning')
 const {
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
@@ -126,31 +126,7 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   return clockValue
 }
 
-const processJob = async (
-  jobName,
-  job,
-  jobProcessor,
-  parentLogger,
-  defaultResult = {}
-) => {
-  const { id: jobId, data: jobData } = job
-
-  const jobLogger = createChildLogger(parentLogger, { jobName, jobId })
-  jobLogger.info(`New job: ${JSON.stringify(job)}`)
-
-  let result = defaultResult
-  try {
-    result = await jobProcessor({ logger: jobLogger, ...jobData })
-  } catch (error) {
-    jobLogger.error(`Error processing job: ${error}`)
-    result = { error }
-  }
-
-  return result
-}
-
 module.exports = {
   retrieveClockStatusesForUsersAcrossReplicaSet,
-  retrieveClockValueForUserFromReplica,
-  processJob
+  retrieveClockValueForUserFromReplica
 }

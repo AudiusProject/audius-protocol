@@ -1,12 +1,13 @@
 const _ = require('lodash')
 
 const config = require('../../config')
-const { logger: baseLogger, createChildLogger } = require('../../logging')
-const StateMonitoringQueue = require('./stateMonitoring/StateMonitoringQueue')
-const StateReconciliationQueue = require('./stateReconciliation/StateReconciliationQueue')
+const { logger: baseLogger } = require('../../logging')
+const StateMonitoringManager = require('./stateMonitoring')
+const StateReconciliationManager = require('./stateReconciliation')
 const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
-const { RECONFIG_MODES, QUEUE_NAMES } = require('./stateMachineConstants')
+const { RECONFIG_MODES } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
+const makeCompletedJobEnqueueOtherJobs = require('./makeCompletedJobEnqueueOtherJobs')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -32,26 +33,26 @@ class StateMachineManager {
     }
 
     // Initialize queues
-    const stateMonitoringQueue = new StateMonitoringQueue()
-    const stateReconciliationQueue = new StateReconciliationQueue()
-    const stateMonitoringQueueQueue = await stateMonitoringQueue.init(
+    const stateMonitoringManager = new StateMonitoringManager()
+    const stateReconciliationManager = new StateReconciliationManager()
+    const stateMonitoringQueue = await stateMonitoringManager.init(
       audiusLibs.discoveryProvider.discoveryProviderEndpoint
     )
-    const stateReconciliationQueueQueue = await stateReconciliationQueue.init()
+    const stateReconciliationQueue = await stateReconciliationManager.init()
 
     // Make jobs enqueue other jobs as necessary upon completion
-    stateMonitoringQueueQueue.on(
+    stateMonitoringQueue.on(
       'global:completed',
-      this._makeEnqueueJobsOnCompletion(
-        stateMonitoringQueueQueue,
-        stateReconciliationQueueQueue
+      makeCompletedJobEnqueueOtherJobs(
+        stateMonitoringQueue,
+        stateReconciliationQueue
       ).bind(this)
     )
-    stateReconciliationQueueQueue.on(
+    stateReconciliationQueue.on(
       'global:completed',
-      this._makeEnqueueJobsOnCompletion(
-        stateMonitoringQueueQueue,
-        stateReconciliationQueueQueue
+      makeCompletedJobEnqueueOtherJobs(
+        stateMonitoringQueue,
+        stateReconciliationQueue
       ).bind(this)
     )
 
@@ -59,8 +60,8 @@ class StateMachineManager {
     QueueInterfacer.init(audiusLibs)
 
     return {
-      stateMonitoringQueue: stateMonitoringQueueQueue,
-      stateReconciliationQueue: stateReconciliationQueueQueue
+      stateMonitoringQueue,
+      stateReconciliationQueue
     }
   }
 
@@ -101,62 +102,6 @@ class StateMachineManager {
     // Update class variables for external access
     this.highestEnabledReconfigMode = highestEnabledReconfigMode
     this.enabledReconfigModesSet = enabledReconfigModesSet
-  }
-
-  _makeEnqueueJobsOnCompletion(monitoringQueue, reconciliationQueue) {
-    return async function (jobId, resultString) {
-      const logger = createChildLogger(baseLogger, { jobId })
-
-      let jobsToEnqueue = {}
-      try {
-        jobsToEnqueue = JSON.parse(resultString)?.jobsToEnqueue
-        if (!jobsToEnqueue) {
-          logger.info(
-            `No jobs to enqueue after successful completion. Result: ${resultString}`
-          )
-          return
-        }
-      } catch (e) {
-        logger.warn(`Failed to parse job result string: ${resultString}`)
-        return
-      }
-
-      const monitoringJobs = jobsToEnqueue[QUEUE_NAMES.STATE_MONITORING] || []
-      const reconciliationJobs =
-        jobsToEnqueue[QUEUE_NAMES.STATE_RECONCILIATION] || []
-      logger.info(
-        `Attempting to enqueue ${monitoringJobs?.length} monitoring jobs and ${reconciliationJobs.length} reconciliation jobs in bulk`
-      )
-
-      try {
-        const monitoringBulkAddResult = await monitoringQueue.addBulk(
-          monitoringJobs.map((job) => {
-            return { name: job.jobName, data: job.jobData }
-          })
-        )
-        logger.info(
-          `Enqueued ${monitoringBulkAddResult.length} monitoring jobs in bulk after successful completion`
-        )
-      } catch (e) {
-        logger.error(
-          `Failed to bulk-enqueue monitoring jobs after successful completion: ${e}`
-        )
-      }
-      try {
-        const reconciliationBulkAddResult = await reconciliationQueue.addBulk(
-          reconciliationJobs.map((job) => {
-            return { name: job.jobName, data: job.jobData }
-          })
-        )
-        logger.info(
-          `Enqueued ${reconciliationBulkAddResult.length} reconciliation jobs in bulk after successful completion`
-        )
-      } catch (e) {
-        logger.error(
-          `Failed to bulk-enqueue reconciliation jobs after successful completion: ${e}`
-        )
-      }
-    }
   }
 }
 

@@ -40,7 +40,6 @@ module.exports = async function ({
     USERS_PER_JOB
   })
 
-  let jobSucceeded = true
   let users = []
   let unhealthyPeers = new Set()
   let replicaSetNodesToUserClockStatusesMap = {}
@@ -165,7 +164,6 @@ module.exports = async function ({
     }
   } catch (e) {
     logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
-    jobSucceeded = false
   } finally {
     _addToDecisionTree(decisionTree, 'END processStateMachineOperation', logger)
 

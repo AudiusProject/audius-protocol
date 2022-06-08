@@ -11,7 +11,7 @@ const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test monitorState job processor', function () {
+describe.skip('test monitorState job processor', function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,
