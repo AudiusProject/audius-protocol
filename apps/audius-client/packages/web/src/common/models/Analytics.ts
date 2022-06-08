@@ -1186,6 +1186,7 @@ type AudiusOauthStart = {
   redirectUriParam: string | string[]
   originParam: string | string[] | undefined | null
   appNameParam: string | string[]
+  responseMode: string | string[] | undefined | null
 }
 
 type AudiusOauthSubmit = {

@@ -22,11 +22,13 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
 import { Name } from 'common/models/Analytics'
+import { SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
 import { getAccountUser } from 'common/store/account/selectors'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TipProfilePicture } from 'components/tipping/tip-audio/TipProfilePicture'
+import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import AudiusBackend from 'services/AudiusBackend'
 import { make, useRecord } from 'store/analytics/actions'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
@@ -59,7 +61,9 @@ const messages = {
   originInvalidError:
     'Whoops, this is an invalid link (redirect URI is set to `postMessage` but origin is missing).',
   noWindowError:
-    'Whoops, something went wrong. Please close this window and try again.'
+    'Whoops, something went wrong. Please close this window and try again.',
+  responseModeError:
+    'Whoops, this is an invalid link (response mode invalid - if set, must be "fragment" or "query").'
 }
 
 const CTAButton = ({
@@ -98,8 +102,10 @@ export const OAuthLoginPage = () => {
     state,
     redirect_uri,
     app_name,
+    response_mode,
     origin: originParam
   } = queryString.parse(search)
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const parsedRedirectUri = useMemo(() => {
@@ -108,7 +114,7 @@ export const OAuthLoginPage = () => {
         return 'postmessage'
       }
       try {
-        return new URL(redirect_uri)
+        return new URL(decodeURIComponent(redirect_uri))
       } catch {
         return null
       }
@@ -116,6 +122,11 @@ export const OAuthLoginPage = () => {
     return null
   }, [redirect_uri])
   const account = useSelector(getAccountUser)
+  const imageURL = useUserProfilePicture(
+    account?.user_id || null,
+    account?._profile_picture_sizes || null,
+    SquareSizes.SIZE_150_BY_150
+  )
   const isLoggedIn = Boolean(account)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   useEffect(() => {
@@ -227,6 +238,12 @@ export const OAuthLoginPage = () => {
     queryParamsError = messages.missingAppNameError
   } else if (scope !== 'read') {
     queryParamsError = messages.scopeError
+  } else if (
+    response_mode &&
+    response_mode !== 'query' &&
+    response_mode !== 'fragment'
+  ) {
+    queryParamsError = messages.responseModeError
   }
 
   useEffect(() => {
@@ -236,7 +253,8 @@ export const OAuthLoginPage = () => {
           redirectUriParam:
             parsedRedirectUri === 'postmessage' ? 'postmessage' : redirect_uri!,
           originParam: originParam,
-          appNameParam: app_name!
+          appNameParam: app_name!,
+          responseMode: response_mode
         })
       )
     }
@@ -246,7 +264,8 @@ export const OAuthLoginPage = () => {
     parsedRedirectUri,
     queryParamsError,
     record,
-    redirect_uri
+    redirect_uri,
+    response_mode
   ])
 
   const formOAuthResponse = async (account: User) => {
@@ -269,8 +288,7 @@ export const OAuthLoginPage = () => {
       name: account?.name,
       handle: account?.handle,
       verified: account?.is_verified,
-      // TODO(nkang): Get profile pic URL
-      // imageURL: account?._profile_picture_sizes,
+      imageURL,
       sub: account?.user_id,
       iat: timestamp
     }
@@ -313,9 +331,16 @@ export const OAuthLoginPage = () => {
         }
       } else {
         record(make(Name.AUDIUS_OAUTH_COMPLETE, {}))
-        const statePart = state != null ? `state=${state}&` : ''
-        const fragment = `#${statePart}token=${jwt}`
-        window.location.href = `${redirect_uri}${fragment}`
+        if (response_mode && response_mode === 'query') {
+          if (state != null) {
+            parsedRedirectUri!.searchParams.append('state', state as string)
+          }
+          parsedRedirectUri!.searchParams.append('token', jwt)
+        } else {
+          const statePart = state != null ? `state=${state}&` : ''
+          parsedRedirectUri!.hash = `#${statePart}token=${jwt}`
+        }
+        window.location.href = parsedRedirectUri!.toString()
       }
     }
   }
