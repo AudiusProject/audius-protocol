@@ -16,7 +16,7 @@ const messages = {
   topTags: 'Top Tags'
 }
 
-const MAX_MUTUALS = 5
+const MAX_MUTUALS = 4
 
 type MutualsProps = {
   followers: User[]
