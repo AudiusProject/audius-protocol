@@ -48,13 +48,6 @@ def fetch_unavailable_track_ids_in_network(session: Any, redis: Any) -> None:
 
         for i in range(0, len(unavailable_track_ids), BATCH_SIZE):
             unavailable_track_ids_batch = unavailable_track_ids[i : i + BATCH_SIZE]
-            logger.info(
-                f"update_track_is_available.py | vicky | Adding batch to key={spID_unavailable_tracks_key}"
-            )
-            # logger.info(*unavailable_track_ids_batch)
-            for id in range(len(unavailable_track_ids_batch)):
-                logger.info(f"vicky | {unavailable_track_ids_batch[id]}")
-
             redis.sadd(spID_unavailable_tracks_key, *unavailable_track_ids_batch)
 
             # Aggregate a set of unavailable tracks
@@ -220,8 +213,6 @@ def get_unavailable_tracks_redis_key(spID: int) -> str:
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
 def update_track_is_available(self) -> None:
-
-    logger.info("update_track | vicky | starting task")
     """Recurring task that updates whether tracks are available on the network"""
 
     db = update_track_is_available.db
