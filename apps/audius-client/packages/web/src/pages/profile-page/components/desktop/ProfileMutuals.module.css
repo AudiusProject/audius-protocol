@@ -42,9 +42,11 @@
 }
 .contentContainer:hover .viewAll {
   color: var(--secondary);
+  transition: color 0.18s ease-out;
 }
 .contentContainer:hover .viewAll path {
   fill: var(--secondary);
+  transition: fill 0.18s ease-out;
 }
 .profilePictureWrapper:hover {
   transform: none;
