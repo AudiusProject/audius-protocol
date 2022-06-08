@@ -248,6 +248,7 @@
 }
 
 .truncateContainer {
+  width: fit-content;
   display: flex;
   align-items: center;
   font-weight: var(--font-bold);
@@ -260,6 +261,14 @@
 }
 .truncateContainer svg {
   margin-left: 8px;
+}
+.truncateContainer:hover span {
+  color: var(--secondary);
+  transition: color 0.07s ease-out;
+}
+.truncateContainer:hover svg path {
+  fill: var(--secondary);
+  transition: fill 0.07s ease-out;
 }
 
 .socialsTruncated div {
