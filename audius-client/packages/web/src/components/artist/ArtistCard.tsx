@@ -18,10 +18,11 @@ const { getFeatureEnabled } = remoteConfigInstance
 
 type ArtistCardProps = {
   artist: User
+  onNavigateAway: () => void
 }
 
 export const ArtistCard = (props: ArtistCardProps) => {
-  const { artist } = props
+  const { artist, onNavigateAway } = props
   const {
     user_id,
     bio,
@@ -84,7 +85,11 @@ export const ArtistCard = (props: ArtistCardProps) => {
   return (
     <div className={styles.popoverContainer} onClick={handleClick}>
       <div className={styles.artistCardContainer}>
-        <ArtistCardCover artist={artist} isArtist={isArtist} />
+        <ArtistCardCover
+          artist={artist}
+          isArtist={isArtist}
+          onNavigateAway={onNavigateAway}
+        />
         <div className={styles.artistStatsContainer}>
           <Stats
             userId={user_id}
@@ -95,7 +100,12 @@ export const ArtistCard = (props: ArtistCardProps) => {
         </div>
         <div className={styles.contentContainer}>
           <div>
-            {isTippingEnabled ? <ArtistSupporting artist={artist} /> : null}
+            {isTippingEnabled ? (
+              <ArtistSupporting
+                artist={artist}
+                onNavigateAway={onNavigateAway}
+              />
+            ) : null}
             <div className={styles.description}>{bio}</div>
             <FollowButton
               className={styles.followButton}
