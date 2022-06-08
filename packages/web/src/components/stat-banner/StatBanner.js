@@ -88,6 +88,7 @@ const StatBanner = props => {
             onFollow={props.onFollow}
             onUnfollow={props.onUnfollow}
             widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+            className={styles.followButton}
           />
           <ArtistRecommendationsPopup
             anchorRef={followButtonRef}
