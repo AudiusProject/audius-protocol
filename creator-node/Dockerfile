@@ -68,10 +68,9 @@ RUN npm install --loglevel verbose
 
 FROM base
 
-COPY . .
-
 # overwrite locally copied node_modules with docker-built node_modules
 COPY --from=builder /app/node_modules node_modules
+COPY . .
 
 # Compile js code to typescript based on tsconfig.json
 RUN node_modules/.bin/tsc --project ./
