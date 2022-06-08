@@ -350,6 +350,7 @@ module.exports = function (app) {
         }
       } catch (e) {
         req.logger.info(`TrackListen location fetch failed: ${e}`)
+        location = {}
       }
 
       try {
