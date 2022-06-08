@@ -9,7 +9,6 @@
 }
 
 .wrapper {
-  margin-left: 8px;
   display: inline-flex;
   transition: all 0.18 ease-in-out;
 }
