@@ -20,14 +20,10 @@ const useStyles = makeStyles(({ palette }) => ({
 
 export type ProfilePictureProps = Partial<DynamicImageProps> & {
   profile: User
-  profilePhotoStyles?: {
-    width?: number | string | undefined
-    height?: number | string | undefined
-  }
 }
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
-  const { styles: stylesProp, profilePhotoStyles, profile, ...other } = props
+  const { styles: stylesProp, profile, ...other } = props
   const styles = useStyles()
 
   const profilePicture = useUserProfilePicture({
@@ -43,8 +39,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
         ...stylesProp,
         ...{
           root: {
-            ...styles.profilePhoto,
-            ...profilePhotoStyles
+            ...styles.profilePhoto
           }
         }
       }}

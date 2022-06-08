@@ -24,7 +24,7 @@ export const TopSupportersScreen = () => {
   const { userId } = params
   const dispatchWeb = useDispatchWeb()
 
-  const handleSetSupporting = useCallback(() => {
+  const handleSetSupporters = useCallback(() => {
     dispatchWeb(setTopSupporters(userId))
   }, [dispatchWeb, userId])
 
@@ -33,7 +33,7 @@ export const TopSupportersScreen = () => {
       <UserList
         userSelector={getUserList}
         tag='TOP SUPPORTERS'
-        setUserList={handleSetSupporting}
+        setUserList={handleSetSupporters}
       />
     </Screen>
   )

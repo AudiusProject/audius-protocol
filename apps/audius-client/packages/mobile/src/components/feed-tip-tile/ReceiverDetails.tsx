@@ -78,10 +78,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
   return (
     <View style={styles.receiver}>
       <TouchableOpacity onPress={goToReceiverProfile}>
-        <ProfilePicture
-          profile={receiver}
-          profilePhotoStyles={styles.profilePicture}
-        />
+        <ProfilePicture profile={receiver} style={styles.profilePicture} />
       </TouchableOpacity>
       <View style={styles.receiverInfo}>
         <Text

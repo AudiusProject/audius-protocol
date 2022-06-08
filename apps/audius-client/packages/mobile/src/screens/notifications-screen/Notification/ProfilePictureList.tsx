@@ -19,10 +19,14 @@ type ProfilePictureListProps = {
   style?: StyleProp<ViewStyle>
   navigationType?: 'push' | 'navigate'
   interactive?: boolean
+  imageStyles?: {
+    width?: number | string | undefined
+    height?: number | string | undefined
+  }
 }
 
 export const ProfilePictureList = (props: ProfilePictureListProps) => {
-  const { users, style, navigationType, interactive } = props
+  const { users, style, navigationType, interactive, imageStyles } = props
   const styles = useStyles()
 
   return (
@@ -31,7 +35,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
         <ProfilePicture
           profile={user}
           key={user.user_id}
-          style={styles.image}
+          style={{ ...styles.image, ...imageStyles }}
           navigationType={navigationType}
           interactive={interactive}
         />

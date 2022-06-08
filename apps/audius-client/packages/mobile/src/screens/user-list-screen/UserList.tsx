@@ -8,6 +8,7 @@ import { getUserId } from 'audius-client/src/common/store/account/selectors'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import {
   loadMore,
+  reset,
   setLoading
 } from 'audius-client/src/common/store/user-list/actions'
 import { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
@@ -86,6 +87,10 @@ export const UserList = (props: UserListProps) => {
       setUserList()
       dispatchWeb(setLoading(tag, true))
       dispatchWeb(loadMore(tag))
+
+      return () => {
+        dispatchWeb(reset(tag))
+      }
     }, [dispatchWeb, setUserList, tag])
   )
 
@@ -112,7 +117,7 @@ export const UserList = (props: UserListProps) => {
   }, [hasMore, isFocused, dispatchWeb, tag])
 
   const data =
-    isRefreshing || loading || !isFocused || users.length === 0
+    isEmpty || isRefreshing || loading || !isFocused
       ? cachedUsers.current
       : users
 
