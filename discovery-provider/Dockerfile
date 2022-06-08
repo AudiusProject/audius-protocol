@@ -81,7 +81,6 @@ RUN python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-# RUN mkdir -p build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
 
 ARG git_sha
