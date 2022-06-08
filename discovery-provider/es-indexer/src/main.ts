@@ -12,6 +12,7 @@ import {
   getBlocknumberCheckpoints,
   waitForHealthyCluster,
 } from './conn'
+import { program } from 'commander'
 
 export const indexer = {
   playlists: new PlaylistIndexer(),
@@ -33,7 +34,12 @@ async function processPending(pending: PendingUpdates) {
 }
 
 async function start() {
-  logger.info('booting: waiting for healthy cluster')
+  const cliFlags = program
+    .option('--no-listen', 'exit after catchup is complete')
+    .parse()
+    .opts()
+
+  logger.info(cliFlags, 'booting')
   const health = await waitForHealthyCluster()
   await ensureSaneCluterSettings()
   logger.info(`starting: health ${health.status}`)
@@ -62,6 +68,11 @@ async function start() {
   // drop old indices
   logger.info('alias cutover done... dropping any old indices')
   await Promise.all(indexers.map((ix) => ix.cleanupOldIndices()))
+
+  if (!cliFlags.listen) {
+    logger.info('--no-listen: exiting')
+    process.exit(0)
+  }
 
   // process events
   logger.info('processing events')
