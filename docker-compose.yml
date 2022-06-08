@@ -139,6 +139,17 @@ services:
     deploy:
       mode: global
 
+  # build libs
+
+  build-audius-libs:
+    build: libs
+    command: npm run dev
+    volumes:
+      - audius-libs:/usr/src/app
+      - poa-contracts-abis:/usr/src/app/data-contracts/ABIs
+      - eth-contracts-abis:/usr/src/app/eth-contracts/ABIs
+      - ./libs/src:/usr/src/app/src
+
   # identity-service
 
   identity-service-db:
@@ -210,13 +221,8 @@ services:
       solanaRewardsManagerTokenPDA: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
-      - ./identity-service:/usr/src/app
-      - /usr/src/app/local-storage
-      - /usr/src/app/node_modules
-      - ./libs:/usr/src/audius-libs
-      - poa-contracts-abis:/usr/src/audius-libs/data-contracts/ABIs
-      - eth-contracts-abis:/usr/src/audius-libs/eth-contracts/ABIs
-      - ./solana-programs:/usr/src/solana-programs
+      - ./identity-service/src:/usr/src/app/src
+      - audius-libs:/usr/src/audius-libs
     depends_on:
       identity-service-db:
         condition: service_healthy
@@ -228,6 +234,8 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: global
 
@@ -239,6 +247,8 @@ services:
     ports:
       - "5000-5010:5000"
     environment:
+      PYTHONPYCACHEPREFIX: /tmp/pycache
+
       audius_web3_host: "poa-ganache"
       audius_web3_port: "8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
@@ -258,6 +268,7 @@ services:
 
       audius_discprov_dev_mode: "true"
     volumes:
+      - ./discovery-provider:/audius-discovery-provider
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - ./dev/startup:/tmp/startup
@@ -302,7 +313,8 @@ services:
       dataProviderUrl: "http://poa-ganache:8545"
       dataRegistryAddress: "${POA_REGISTRY_ADDRESS}"
     volumes:
-      - ./libs:/usr/src/audius-libs
+      - ./creator-node/src:/usr/src/app/src
+      - audius-libs:/usr/src/audius-libs
       - ./dev/startup:/tmp/startup
     depends_on:
       poa-ganache:
@@ -311,6 +323,8 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 2
@@ -318,3 +332,4 @@ services:
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
+  audius-libs:
