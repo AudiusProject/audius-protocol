@@ -100,6 +100,7 @@ const ArtistChip = ({
       className={cn(styles.artistChip, {
         [className]: !!className
       })}
+      onClick={onClickArtistName}
     >
       {showPopover ? (
         <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
