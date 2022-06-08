@@ -256,8 +256,8 @@ def update_track_is_available(self) -> None:
         raise e
     finally:
         if have_lock:
+            update_lock.release()
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
             )
-            update_lock.release()
