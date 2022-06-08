@@ -197,8 +197,10 @@
 .topSupportersContainer:hover .viewAll {
   cursor: pointer;
   color: var(--secondary);
+  transition: color 0.18s ease-out;
 }
 
 .topSupportersContainer:hover .viewAll path {
   fill: var(--secondary);
+  transition: fill 0.18s ease-out;
 }
