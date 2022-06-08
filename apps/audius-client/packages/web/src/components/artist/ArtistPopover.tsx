@@ -1,4 +1,4 @@
-import React, { useCallback, ReactNode } from 'react'
+import React, { useCallback, ReactNode, useState } from 'react'
 
 import Popover from 'antd/lib/popover'
 import cn from 'classnames'
@@ -47,6 +47,7 @@ export const ArtistPopover = ({
   mouseEnterDelay = 0.5,
   component: Component = 'div'
 }: ArtistPopoverProps) => {
+  const [isPopupVisible, setIsPopupVisible] = useState(false)
   const creator = useSelector((state: CommonState) =>
     getUser(state, { handle: handle.toLowerCase() })
   )
@@ -74,7 +75,12 @@ export const ArtistPopover = ({
 
   const content =
     creator && userId !== creator.user_id ? (
-      <ArtistCard artist={creator} />
+      <ArtistCard
+        artist={creator}
+        onNavigateAway={() => {
+          setIsPopupVisible(false)
+        }}
+      />
     ) : null
 
   let popupContainer
@@ -101,6 +107,11 @@ export const ArtistPopover = ({
         overlayClassName={styles.overlayStyle}
         placement={placement}
         getPopupContainer={popupContainer}
+        defaultVisible={false}
+        visible={isPopupVisible}
+        onVisibleChange={visible => {
+          setIsPopupVisible(visible)
+        }}
       >
         {children}
       </Popover>
