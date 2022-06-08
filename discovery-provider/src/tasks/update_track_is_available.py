@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 UPDATE_TRACK_IS_AVAILABLE_LOCK = "update_track_is_available_lock"
 
 BATCH_SIZE = 1000
-DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
+DEFAULT_LOCK_TIMEOUT_SECONDS = 30  # 30 seconds
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
@@ -220,6 +220,8 @@ def get_unavailable_tracks_redis_key(spID: int) -> str:
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
 def update_track_is_available(self) -> None:
+
+    logger.info("update_track | vicky | starting task")
     """Recurring task that updates whether tracks are available on the network"""
 
     db = update_track_is_available.db
