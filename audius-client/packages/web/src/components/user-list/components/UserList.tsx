@@ -9,6 +9,7 @@ import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import ArtistChip from 'components/artist/ArtistChip'
 import FollowButton from 'components/follow-button/FollowButton'
+import { MountPlacement } from 'components/types'
 
 import styles from './UserList.module.css'
 
@@ -55,6 +56,7 @@ const UserList = (props: UserListProps) => {
               showPopover={!props.isMobile}
               tag={props.tag}
               className={styles.artistChipContainer}
+              popoverMount={MountPlacement.BODY}
             />
             {user.user_id !== props.userId ? (
               <FollowButton

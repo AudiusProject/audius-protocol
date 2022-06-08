@@ -7,6 +7,7 @@ import { SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { USER_LIST_TAG as SUPPORTING_USER_LIST_TAG } from 'pages/supporting-page/sagas'
@@ -26,16 +27,18 @@ type ArtistIdentifierProps = {
   name: string
   handle: string
   showPopover: boolean
+  popoverMount?: MountPlacement
 } & ComponentPropsWithoutRef<'div'>
 const ArtistIdentifier = ({
   userId,
   name,
   handle,
-  showPopover
+  showPopover,
+  popoverMount
 }: ArtistIdentifierProps) => {
   return showPopover ? (
     <div>
-      <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
+      <ArtistPopover handle={handle} mouseEnterDelay={0.1} mount={popoverMount}>
         <div className={styles.name}>
           <span>{name}</span>
           <UserBadges
@@ -46,7 +49,7 @@ const ArtistIdentifier = ({
           />
         </div>
       </ArtistPopover>
-      <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
+      <ArtistPopover handle={handle} mouseEnterDelay={0.1} mount={popoverMount}>
         <div className={styles.handle}>@{handle}</div>
       </ArtistPopover>
     </div>
@@ -72,13 +75,15 @@ type ArtistChipProps = {
   showPopover?: boolean
   tag?: string
   className?: string
+  popoverMount?: MountPlacement
 }
 const ArtistChip = ({
   user,
   onClickArtistName,
   showPopover = true,
   tag,
-  className = ''
+  className = '',
+  popoverMount = MountPlacement.PAGE
 }: ArtistChipProps) => {
   const {
     user_id: userId,
@@ -103,7 +108,11 @@ const ArtistChip = ({
       onClick={onClickArtistName}
     >
       {showPopover ? (
-        <ArtistPopover handle={handle} mouseEnterDelay={0.1}>
+        <ArtistPopover
+          handle={handle}
+          mouseEnterDelay={0.1}
+          mount={popoverMount}
+        >
           <DynamicImage
             wrapperClassName={styles.profilePictureWrapper}
             className={styles.profilePicture}
@@ -129,6 +138,7 @@ const ArtistChip = ({
             name={name}
             handle={handle}
             showPopover
+            popoverMount={popoverMount}
           />
         </div>
         <ArtistChipFollowers
