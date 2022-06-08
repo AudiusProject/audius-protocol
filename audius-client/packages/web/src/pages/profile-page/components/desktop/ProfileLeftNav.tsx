@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback } from 'react'
 
 import cn from 'classnames'
 import { animated } from 'react-spring'
@@ -8,7 +8,6 @@ import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
-import { Nullable } from 'common/utils/typeUtils'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { SupportingList } from 'components/tipping/support/SupportingList'
@@ -17,7 +16,6 @@ import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import UploadChip from 'components/upload/UploadChip'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
-import { useCollapse } from 'hooks/useCollapse'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTags } from 'pages/profile-page/components/desktop/ProfileTags'
@@ -102,10 +100,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   const record = useRecord()
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
   const accountUser = useSelector(getAccountUser)
-  const bioRef = useRef<Nullable<HTMLDivElement>>(null)
-  const { isCollapsible, isCollapsed, handleToggleCollapse } = useCollapse({
-    ref: bioRef
-  })
 
   const onClickUploadChip = useCallback(() => {
     goToRoute(UPLOAD_PAGE)
@@ -201,10 +195,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
       <div className={styles.about}>
         <ProfilePageBadge userId={userId} className={styles.badge} />
         <ProfileBio
-          forwardRef={bioRef}
-          isCollapsible={isCollapsible}
-          isCollapsed={isCollapsed}
-          handleToggleCollapse={handleToggleCollapse}
           handle={handle}
           bio={bio}
           location={location}
