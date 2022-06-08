@@ -11,14 +11,6 @@ const { generateTimestampAndSignature } = require('./apiSigning')
 module.exports.handleResponse = (func) => {
   return async function (req, res, next) {
     try {
-      const prometheusRegistry =
-        req.app.get('serviceRegistry').prometheusRegistry
-      const httpRequestDurationSecondsHistogramMetric =
-        prometheusRegistry.getMetricInstance(
-          prometheusRegistry.metricNames.HTTP_REQUEST_DURATION_SECONDS_HISTOGRAM
-        )
-      const endTimerFn = httpRequestDurationSecondsHistogramMetric.startTimer()
-
       const resp = await func(req, res, next)
 
       if (!isValidResponse(resp)) {
@@ -26,8 +18,6 @@ module.exports.handleResponse = (func) => {
       }
 
       sendResponse(req, res, resp)
-
-      endTimerFn({ method: req.method, route: req.path, code: res.statusCode })
 
       next()
     } catch (error) {

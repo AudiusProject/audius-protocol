@@ -1,22 +1,16 @@
-const prometheusClient = require('prom-client')
+const PrometheusClient = require('prom-client')
 
-const { Metrics, MetricNames } = require('./prometheusMetrics.constants')
+const { METRIC_PREFIX, Metrics, MetricNames } = require('./prometheus.constants')
 
 module.exports = class PrometheusRegistry {
-  constructor(collectDefaultMetrics = true) {
-    this.registry = prometheusClient.register
+  constructor() {
+    this.registry = PrometheusClient.register
     this.metricNames = MetricNames
 
-    // Add a default label which is added to all metrics
-    this.registry.setDefaultLabels({
-      serviceType: 'audius_content_node'
-    })
+    // Enable collection of default metrics (e.g. heap, cpu, event loop)
+    PrometheusClient.collectDefaultMetrics({ prefix: METRIC_PREFIX })
 
-    if (collectDefaultMetrics) {
-      prometheusClient.collectDefaultMetrics()
-    }
-
-    this._setupCustomMetrics()
+    this._createAllCustomMetrics()
   }
 
   /**
@@ -35,10 +29,14 @@ module.exports = class PrometheusRegistry {
    * Internal
    */
 
-  _setupCustomMetrics() {
+  /**
+   * Creates and registers every custom metric, for use throughout Content Node
+   */
+  _createAllCustomMetrics() {
     for (const { metricType: MetricType, metricConfig } of Object.values(
       Metrics
     )) {
+      metricConfig.name = METRIC_PREFIX + metricConfig.name
       const metric = new MetricType(metricConfig)
       this.registry.registerMetric(metric)
     }
