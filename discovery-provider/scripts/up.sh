@@ -6,6 +6,8 @@ shopt -s expand_aliases
 
 ITERATION=${1}
 
+cd ${PROTOCOL_DIR}/discovery-provider
+
 if [[ "$UP" == true || "$RESTART" == true ]]; then
     alias dc="docker-compose \
         -f compose/docker-compose.db.yml \
@@ -23,7 +25,6 @@ else
 fi
 
 if [[ "$RESTART" == true ]]; then
-    cd ${PROTOCOL_DIR}/discovery-provider
     . compose/env/unsetShellEnv.sh
     . compose/env/tmp/shellEnv${ITERATION}.sh
     dc down
@@ -37,39 +38,44 @@ if [[ "$RESTART" == true ]]; then
     sudo rm -f discovery-provider/*.log
 fi
 
-cd ${PROTOCOL_DIR}/libs/initScripts
-node configureLocalDiscProv.js
+(
+    cd ${PROTOCOL_DIR}/libs/initScripts
+    node configureLocalDiscProv.js
+)
 
 if [[ "$UP" == true || "$UP_WEB_SERVER" == true ]]; then
-    cd ${PROTOCOL_DIR}/libs
-    npm run init-local configure-discprov-wallet ${ITERATION}
+    (
+        cd ${PROTOCOL_DIR}/libs
+        npm run init-local configure-discprov-wallet ${ITERATION}
+    )
 fi
 
 if [[ "$UP" == true || "$RESTART" == true ]]; then
-    cd ${PROTOCOL_DIR}/discovery-provider
     [ ! -e celerybeat.pid ] || rm celerybeat.pid
     rm -f *_dump
 fi
 
-# mv ./node_modules away, temporarily
-cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
-mv node_modules /tmp/dn-node_modules
+(
+    # mv ./node_modules away, temporarily
+    cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
+    mv node_modules /tmp/dn-node_modules
+)
 
 function return_node_modules() {
-    cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
-    rm -rf node_modules
-    mv /tmp/dn-node_modules node_modules
+    (
+        cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
+        rm -rf node_modules
+        mv /tmp/dn-node_modules node_modules
+    )
 }
 
 # build docker image without node_modules
-cd ${PROTOCOL_DIR}/discovery-provider
 . compose/env/tmp/shellEnv${ITERATION}.sh
 # build image and always return ./node_modules
 time dc build --parallel \
     && return_node_modules \
     || (return_node_modules && exit 1)
 
-cd ${PROTOCOL_DIR}/discovery-provider
 . compose/env/tmp/shellEnv${ITERATION}.sh
 time dc up -d
 
