@@ -123,8 +123,6 @@
 .info .socialsTruncated {
   display: flex;
   align-items: center;
-  flex-flow: wrap;
-  height: 24px;
 }
 
 .titleContainer {
@@ -271,8 +269,9 @@
   transition: fill 0.07s ease-out;
 }
 
-.socialsTruncated div {
-  margin-right: 16px;
+.socialsTruncated > div {
+  margin-right: 32px;
+  margin-bottom: 0;
 }
 
 .tipAudioButtonContainer {
