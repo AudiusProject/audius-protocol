@@ -22,15 +22,14 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
 import { Name } from 'common/models/Analytics'
-import { SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
 import { getAccountUser } from 'common/store/account/selectors'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TipProfilePicture } from 'components/tipping/tip-audio/TipProfilePicture'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import AudiusBackend from 'services/AudiusBackend'
 import { make, useRecord } from 'store/analytics/actions'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { signOut } from 'utils/signOut'
 
@@ -122,11 +121,6 @@ export const OAuthLoginPage = () => {
     return null
   }, [redirect_uri])
   const account = useSelector(getAccountUser)
-  const imageURL = useUserProfilePicture(
-    account?.user_id || null,
-    account?._profile_picture_sizes || null,
-    SquareSizes.SIZE_150_BY_150
-  )
   const isLoggedIn = Boolean(account)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   useEffect(() => {
@@ -281,6 +275,22 @@ export const OAuthLoginPage = () => {
       email = userEmail
     }
 
+    const gateways = getCreatorNodeIPFSGateways(account.creator_node_endpoint)
+    const cNode = gateways[0]
+    let profilePicture:
+      | { '150x150': string; '480x480': string; '1000x1000': string }
+      | { misc: string }
+      | undefined
+    if (account.profile_picture_sizes) {
+      const base = `${cNode}${account.profile_picture_sizes}/`
+      profilePicture = {
+        '150x150': `${base}150x150.jpg`,
+        '480x480': `${base}480x480.jpg`,
+        '1000x1000': `${base}1000x1000.jpg`
+      }
+    } else if (account.profile_picture) {
+      profilePicture = { misc: `${cNode}${account.profile_picture}` }
+    }
     const timestamp = Math.round(new Date().getTime() / 1000)
     const response = {
       userId: account?.user_id,
@@ -288,7 +298,7 @@ export const OAuthLoginPage = () => {
       name: account?.name,
       handle: account?.handle,
       verified: account?.is_verified,
-      imageURL,
+      profilePicture,
       sub: account?.user_id,
       iat: timestamp
     }
