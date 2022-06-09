@@ -4,10 +4,11 @@ import { IconFollowing, IconArrow } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { getAccountUser } from 'common/store/account/selectors'
+import { getUserId } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import {
   getFolloweeFollows,
+  getProfileUser,
   getProfileUserId
 } from 'common/store/pages/profile/selectors'
 import { removeNullable } from 'common/utils/typeUtils'
@@ -41,8 +42,8 @@ const selectMutuals = createSelector(
 
 export const ProfileMutuals = () => {
   const userId = useSelector(getProfileUserId)
-  const account = useSelector(getAccountUser)
-  const accountId = account?.user_id ?? null
+  const accountId = useSelector(getUserId)
+  const profile = useSelector(getProfileUser)
 
   // @ts-ignore -- fixed in typescript v4
   const mutuals = useSelector(selectMutuals)
@@ -59,7 +60,7 @@ export const ProfileMutuals = () => {
     dispatch(setVisibility(true))
   }, [dispatch, userId])
 
-  if (!account || userId === accountId || mutuals.length === 0) {
+  if (!profile || userId === accountId || mutuals.length === 0) {
     return null
   }
 
@@ -73,7 +74,7 @@ export const ProfileMutuals = () => {
       <div className={styles.contentContainer} onClick={handleClick}>
         <UserProfilePictureList
           users={mutuals}
-          totalUserCount={account.current_user_followee_follow_count}
+          totalUserCount={profile.current_user_followee_follow_count}
           limit={MAX_MUTUALS}
           profilePictureClassname={styles.profilePictureWrapper}
         />
