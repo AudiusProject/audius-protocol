@@ -76,7 +76,7 @@ export const ProfileMutuals = () => {
           users={mutuals}
           totalUserCount={profile.current_user_followee_follow_count}
           limit={MAX_MUTUALS}
-          profilePictureClassname={styles.profilePictureWrapper}
+          disableProfileClick
         />
         <div className={styles.viewAll}>
           <span>{messages.viewAll}</span>
