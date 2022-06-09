@@ -33,8 +33,9 @@ const router = express.Router()
 const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 const numberOfCPUs = os.cpus().length
 
-// Max # of millis that we consider healthy since the last successful Snapback job
-const SNAPBACK_HEALTHY_LAST_RUN_MS = 1000 * 60 * 60 // 1 hour
+const SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
+  'snapbackMaxLastSuccessfulRunDelayMs'
+)
 
 // Helper Functions
 /**
@@ -114,9 +115,9 @@ const healthCheckController = async (req) => {
   if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
     const delta =
       Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
-    if (delta > SNAPBACK_HEALTHY_LAST_RUN_MS) {
+    if (delta > SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS) {
       return errorResponseServerError(
-        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${SNAPBACK_HEALTHY_LAST_RUN_MS}ms`
+        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
       )
     }
   }
