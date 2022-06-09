@@ -6,7 +6,7 @@ VOLUME "/file_storage"
 ENV storagePath=/file_storage
 
 HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
-    CMD curl -f http://localhost:4000/health_check || exit 1
+    CMD curl -f http://localhost:${port}/health_check || exit 1
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
@@ -84,6 +84,7 @@ ENV GIT_SHA=$git_sha
 ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
+ENV port=4000
 
 # CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
 CMD ["bash", "scripts/start.sh"]
