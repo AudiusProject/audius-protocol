@@ -5,9 +5,8 @@ WORKDIR /usr/src/app
 VOLUME "/file_storage"
 ENV storagePath=/file_storage
 
-COPY scripts/healthcheck.sh /
 HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
-    CMD /healthcheck.sh
+    CMD curl -f http://localhost:${port}/health_check || exit 1
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
