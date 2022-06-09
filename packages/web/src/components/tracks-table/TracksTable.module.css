@@ -95,9 +95,9 @@
 
 :global(.ant-table-tbody > tr > td) .textContainer {
   position: relative;
-  width: 100%;
+  max-width: 100%;
   height: 18px;
-  display: flex;
+  display: inline-flex;
 }
 
 :global(.ant-table-tbody > tr > td) .textCell {
@@ -292,7 +292,8 @@ tr.deleted:hover td {
 }
 
 .badges {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
   margin-left: 4px;
 }
 
