@@ -20,11 +20,7 @@ fi
 mkdir -p compose/env/tmp/file-storage-${ITERATION}
 . compose/env/tmp/shellEnv${ITERATION}.sh
 
-# build docker image without node_modules
-if [[ "${ITERATION}" == 1 ]]; then
-    # build image and always return ./node_modules
-    time docker-compose -f compose/docker-compose.yml build
-fi
+time docker-compose -f compose/docker-compose.yml build
 
 . compose/env/tmp/shellEnv${ITERATION}.sh
 time docker-compose -f compose/docker-compose.yml up -d
