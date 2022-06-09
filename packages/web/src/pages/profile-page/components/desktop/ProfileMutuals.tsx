@@ -21,10 +21,12 @@ const MAX_MUTUALS = 4
 type MutualsProps = {
   followers: User[]
   setShowMutualConnectionsModal: (value: boolean) => void
+  followersTotalCount: number
 }
 const Mutuals = ({
   followers,
-  setShowMutualConnectionsModal
+  setShowMutualConnectionsModal,
+  followersTotalCount
 }: MutualsProps) => {
   const handleMutualsClick = useCallback(() => {
     setShowMutualConnectionsModal(true)
@@ -40,7 +42,7 @@ const Mutuals = ({
       <div className={styles.contentContainer} onClick={handleMutualsClick}>
         <UserProfilePictureList
           users={followers}
-          totalUserCount={followers.length}
+          totalUserCount={followersTotalCount}
           limit={MAX_MUTUALS}
           profilePictureClassname={styles.profilePictureWrapper}
         />
@@ -76,6 +78,7 @@ export const ProfileMutuals = ({
       <Mutuals
         followers={users}
         setShowMutualConnectionsModal={setShowMutualConnectionsModal}
+        followersTotalCount={usersCount}
       />
       <UserListModal
         id={messages.mutuals}
