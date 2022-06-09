@@ -6,7 +6,6 @@ services:
       context: grafana
       args:
         - GRAFANA_VERSION=latest
-        - GF_INSTALL_PLUGINS=grafana-athena-datasource
         - GF_INSTALL_IMAGE_RENDERER_PLUGIN=true
     user: 0:0
     env_file:
