@@ -29,13 +29,22 @@ const FollowButton = props => {
     [styles.medium]: props.size === 'medium',
     [styles.small]: props.size === 'small'
   }
-  const { following, onUnfollow, onFollow, isDisabled } = props
+  const { following, onUnfollow, onFollow, isDisabled, stopPropagation } = props
 
-  const onClick = useCallback(() => {
-    if (following) onUnfollow()
-    else onFollow()
-    setIsHoveringClicked(true)
-  }, [following, onUnfollow, onFollow, setIsHoveringClicked])
+  const onClick = useCallback(
+    e => {
+      if (following) {
+        onUnfollow()
+      } else {
+        onFollow()
+      }
+      setIsHoveringClicked(true)
+      if (stopPropagation) {
+        e.stopPropagation()
+      }
+    },
+    [following, onUnfollow, onFollow, setIsHoveringClicked, stopPropagation]
+  )
 
   useEffect(() => {
     if (!isHovering && isHoveringClicked) setIsHoveringClicked(false)
@@ -102,7 +111,8 @@ FollowButton.propTypes = {
   following: PropTypes.bool,
   onFollow: PropTypes.func,
   onUnfollow: PropTypes.func,
-  isDisabled: PropTypes.bool
+  isDisabled: PropTypes.bool,
+  stopPropagation: PropTypes.bool
 }
 
 FollowButton.defaultProps = {
@@ -111,7 +121,8 @@ FollowButton.defaultProps = {
   showIcon: true,
   size: 'medium',
   messages: messages,
-  isDisabled: false
+  isDisabled: false,
+  stopPropagation: false
 }
 
 export default FollowButton
