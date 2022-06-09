@@ -5,6 +5,7 @@
   "scripts": {
     "build": "tsc",
     "catchup": "node build/src/main.js --no-listen",
+    "catchup:ci": "ts-node --transpileOnly src/main.ts --no-listen",
     "dev": "ts-node src/main.ts",
     "nuke": "ts-node scripts/nuke.ts",
     "sql-ts": "ts-node scripts/sql-ts.ts",
