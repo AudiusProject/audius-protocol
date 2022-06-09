@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import time
 
 import pytest
 from elasticsearch import Elasticsearch
@@ -73,5 +74,6 @@ def test_es_indexer_catchup(app):
         timeout=5,
     )
     esclient.indices.refresh(index="*")
+    time.sleep(2)
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
     assert len(search_res) == 6
