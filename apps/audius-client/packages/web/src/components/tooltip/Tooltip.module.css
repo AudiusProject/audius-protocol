@@ -35,6 +35,7 @@
 .tooltip:global(.ant-tooltip-placement-bottom .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-bottomLeft .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-bottomRight .ant-tooltip-arrow) {
+  top: 4.5px;
   border-top-color: var(--tooltip-background-color);
   border-left-color: var(--tooltip-background-color);
 }
@@ -49,6 +50,7 @@
 .tooltip:global(.ant-tooltip-placement-top .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-topLeft .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-topRight .ant-tooltip-arrow) {
+  bottom: 4.2px;
   border-right-color: var(--tooltip-background-color);
   border-bottom-color: var(--tooltip-background-color);
 }
