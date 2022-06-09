@@ -48,9 +48,6 @@
   fill: var(--secondary);
   transition: fill 0.07s ease-out;
 }
-.profilePictureWrapper:hover {
-  transform: none;
-}
 .followingIcon {
   width: 32px;
 }

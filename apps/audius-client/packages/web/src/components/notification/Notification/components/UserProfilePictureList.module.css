@@ -7,8 +7,8 @@
   transform: scale3d(1, 1, 1);
 }
 
-.profilePictureBase:hover {
-  transform: scale3d(0.95, 0.95, 0.95);
+.profilePictureBase:not(.disabled):hover {
+  transform: scale3d(1.05, 1.05, 1.05);
 }
 
 .userHeader {
@@ -26,16 +26,30 @@
 }
 
 .profilePictureExtraRoot {
+  composes: profilePicture;
   position: relative;
+  width: 40px;
+  height: 40px;
 }
 
 .profilePictureExtra {
-  composes: profilePicture;
   position: absolute;
 }
 
+.profilePictureExtra::after {
+  content: ' ';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 2px;
+  border-radius: 50%;
+  z-index: 3;
+}
+
 .profilePictureCount {
-  composes: profilePictureBase;
   position: absolute;
   z-index: 2;
   height: 40px;
