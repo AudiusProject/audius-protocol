@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "build": "tsc",
     "catchup": "node build/src/main.js --no-listen",
     "dev": "ts-node src/main.ts",
     "nuke": "ts-node scripts/nuke.ts",
-    "postinstall": "tsc",
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
     "test": "tsc --noEmit"
