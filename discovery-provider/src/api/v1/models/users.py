@@ -135,7 +135,9 @@ decoded_user_token = ns.model(
         "name": fields.String(required=True),
         "handle": fields.String(required=True),
         "verified": fields.Boolean(required=True),
-        "profilePicture": fields.Nested(user_token_profile_picture, allow_null=True, skip_none=True),
+        "profilePicture": fields.Nested(
+            user_token_profile_picture, allow_null=True, skip_none=True
+        ),
         "sub": fields.String(required=True),
         "iat": fields.String(required=True),
     },
