@@ -46,6 +46,10 @@ domains.getUserReplicaSetManagerDomain = function (chainId, contractAddress) {
   return getDomainData('User Replica Set Manager', '1', chainId, contractAddress)
 }
 
+domains.getAudiusDataDomain = function (chainId, contractAddress) {
+  return getDomainData("Audius Data", "1", chainId, contractAddress)
+}
+
 const schemas = {}
 
 /* contract signing domain */
@@ -230,6 +234,13 @@ schemas.updateReplicaSet = [
   { name: 'oldPrimaryId', type: 'uint' },
   { name: 'oldSecondaryIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
+]
+
+schemas.manageUser = [
+  { name: 'userId', type: 'uint' },
+  { name: 'action', type: 'string' },
+  { name: 'metadata', type: 'string'},
+  { name: 'nonce', type: 'bytes32'}
 ]
 
 const generators = {}
@@ -846,6 +857,30 @@ generators.getUpdateReplicaSetRequestData = function (
     contractAddress,
     'UpdateReplicaSet',
     schemas.updateReplicaSet,
+    message
+  )
+}
+
+generators.getManageUserData = function (
+  chainId,
+  contractAddress,
+  userId,
+  action,
+  metadata,
+  nonce
+) {
+  const message = {
+    userId,
+    action,
+    metadata,
+    nonce,
+  }
+  return getRequestData(
+    domains.getAudiusDataDomain,
+    chainId,
+    contractAddress,
+    'ManageUser',
+    schemas.manageUser,
     message
   )
 }
