@@ -41,6 +41,7 @@ const FollowButton = props => {
       setIsHoveringClicked(true)
       if (stopPropagation) {
         e.stopPropagation()
+        e.nativeEvent.stopImmediatePropagation()
       }
     },
     [following, onUnfollow, onFollow, setIsHoveringClicked, stopPropagation]
