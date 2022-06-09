@@ -1,0 +1,5 @@
+:root,
+root {
+  --grow: perspective(1px) scale3d(1.04, 1.04, 1.04);
+  --shrink: scale(0.95);
+}
