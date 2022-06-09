@@ -25,6 +25,7 @@
 | ----------------------------- | ---------------------------------------- |
 | [`web`](./packages/web)       | The decentralized Audius web application |
 | [`mobile`](./packages/mobile) | The Audius mobile application            |
+| [`stems`](./packages/stems)   | The Audius client component library      |
 
 ### Getting Started
 

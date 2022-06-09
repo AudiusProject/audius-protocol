@@ -1,0 +1,10 @@
+/**
+ * Audius Animation Options
+ *
+ * In order to provider consistent animations durations and
+ * easings across the app, prefer using predefined values.
+ */
+
+:root, root {
+  --quick: 0.07s ease-in-out;
+}
