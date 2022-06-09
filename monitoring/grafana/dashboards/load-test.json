@@ -990,7 +990,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "audius_dn_index_metrics_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}",
+            "expr": "audius_dn_index_metrics_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}",
             "interval": "",
             "legendFormat": "{{task_name}}",
             "refId": "A"
@@ -1080,7 +1080,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "rate(audius_dn_index_metrics_runtime_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_index_metrics_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m])",
+            "expr": "rate(audius_dn_index_metrics_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_index_metrics_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m])",
             "interval": "",
             "legendFormat": "{{task_name}}",
             "refId": "A"
@@ -1170,7 +1170,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "max by (scope) (rate(audius_dn_index_blocks_runtime_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_index_blocks_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "max by (scope) (rate(audius_dn_index_blocks_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_index_blocks_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "interval": "",
             "legendFormat": "{{host}}{{scope}}",
             "refId": "A"
@@ -1273,7 +1273,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "max by (scope) (rate(audius_dn_track_state_update_runtime_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_track_state_update_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "max by (scope) (rate(audius_dn_track_state_update_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_track_state_update_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "interval": "",
             "legendFormat": "{{host}}{{scope}}",
             "refId": "A"
@@ -1363,7 +1363,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "max by (scope) (rate(audius_dn_user_state_update_runtime_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_user_state_update_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "max by (scope) (rate(audius_dn_user_state_update_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_user_state_update_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "interval": "",
             "legendFormat": "{{host}}{{scope}}",
             "refId": "A"
@@ -1442,7 +1442,7 @@
                 "options": {
                   "mode": "exclude",
                   "names": [
-                    "index_trending_runtime"
+                    "index_trending_duration"
                   ],
                   "prefix": "All except:",
                   "readOnly": true
@@ -1491,9 +1491,9 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "max by (service) (rate(audius_dn_index_trending_runtime_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_index_trending_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "max by (service) (rate(audius_dn_index_trending_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_index_trending_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "interval": "",
-            "legendFormat": "index_trending_runtime",
+            "legendFormat": "index_trending_duration",
             "refId": "A"
           }
         ],
@@ -1581,7 +1581,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "max by (mat_view_name) (rate(audius_dn_update_trending_view_runtime_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_update_trending_view_runtime_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "max by (mat_view_name) (rate(audius_dn_update_trending_view_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_update_trending_view_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "interval": "",
             "legendFormat": "{{mat_view_name}}",
             "refId": "A"
@@ -1773,7 +1773,7 @@
         "pluginVersion": "8.4.1",
         "targets": [
           {
-            "expr": "histogram_quantile(0.5, rate(audius_loadtest_population_runtime_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
+            "expr": "histogram_quantile(0.5, rate(audius_loadtest_population_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
             "format": "time_series",
             "intervalFactor": 2,
             "legendFormat": "median",
@@ -1781,7 +1781,7 @@
             "step": 60
           },
           {
-            "expr": "histogram_quantile(0.95, rate(audius_loadtest_population_runtime_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
+            "expr": "histogram_quantile(0.95, rate(audius_loadtest_population_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
             "format": "time_series",
             "intervalFactor": 2,
             "legendFormat": "p95",
@@ -1789,7 +1789,7 @@
             "step": 60
           },
           {
-            "expr": "histogram_quantile(0.99, rate(audius_loadtest_population_runtime_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
+            "expr": "histogram_quantile(0.99, rate(audius_loadtest_population_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
             "format": "time_series",
             "intervalFactor": 2,
             "legendFormat": "p99",
@@ -1797,7 +1797,7 @@
             "step": 60
           },
           {
-            "expr": "histogram_quantile(0.999, rate(audius_loadtest_population_runtime_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
+            "expr": "histogram_quantile(0.999, rate(audius_loadtest_population_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\"}[10m]))",
             "format": "time_series",
             "intervalFactor": 2,
             "legendFormat": "p999",
