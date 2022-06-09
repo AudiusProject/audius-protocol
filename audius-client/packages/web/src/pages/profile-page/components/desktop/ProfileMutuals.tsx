@@ -4,7 +4,7 @@ import { IconFollowing, IconArrow } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { getUserId } from 'common/store/account/selectors'
+import { getAccountUser } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import {
   getFolloweeFollows,
@@ -41,7 +41,9 @@ const selectMutuals = createSelector(
 
 export const ProfileMutuals = () => {
   const userId = useSelector(getProfileUserId)
-  const accountId = useSelector(getUserId)
+  const account = useSelector(getAccountUser)
+  const accountId = account?.user_id ?? null
+
   // @ts-ignore -- fixed in typescript v4
   const mutuals = useSelector(selectMutuals)
   const dispatch = useDispatch()
@@ -57,7 +59,7 @@ export const ProfileMutuals = () => {
     dispatch(setVisibility(true))
   }, [dispatch, userId])
 
-  if (userId === accountId || mutuals.length === 0) {
+  if (!account || userId === accountId || mutuals.length === 0) {
     return null
   }
 
@@ -71,7 +73,7 @@ export const ProfileMutuals = () => {
       <div className={styles.contentContainer} onClick={handleClick}>
         <UserProfilePictureList
           users={mutuals}
-          totalUserCount={mutuals.length}
+          totalUserCount={account.current_user_followee_follow_count}
           limit={MAX_MUTUALS}
           profilePictureClassname={styles.profilePictureWrapper}
         />
