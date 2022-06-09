@@ -65,6 +65,7 @@ const UserList = (props: UserListProps) => {
                 onFollow={() => props.onFollow(user.user_id)}
                 onUnfollow={() => props.onUnfollow(user.user_id)}
                 showIcon
+                stopPropagation
               />
             ) : null}
           </div>
