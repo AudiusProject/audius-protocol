@@ -253,7 +253,7 @@ function* watchFetchProfilePicture() {
     inProgress.add(key)
 
     try {
-      let user = yield select(getUser, { id: userId })
+      const user = yield select(getUser, { id: userId })
       if (!user || (!user.profile_picture_sizes && !user.profile_picture))
         return
       const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
@@ -264,14 +264,20 @@ function* watchFetchProfilePicture() {
           size,
           gateways
         )
+
         if (url) {
-          user = yield select(getUser, { id: userId })
-          user._profile_picture_sizes = {
-            ...user._profile_picture_sizes,
-            [size]: url
+          const updatedUser = yield select(getUser, { id: userId })
+          const userWithProfilePicture = {
+            ...updatedUser,
+            _profile_picture_sizes: {
+              ...user._profile_picture_sizes,
+              [size]: url
+            }
           }
           yield put(
-            cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
+            cacheActions.update(Kind.USERS, [
+              { id: userId, metadata: userWithProfilePicture }
+            ])
           )
         }
       } else if (user.profile_picture) {
@@ -282,13 +288,18 @@ function* watchFetchProfilePicture() {
           gateways
         )
         if (url) {
-          user = yield select(getUser, { id: userId })
-          user._profile_picture_sizes = {
-            ...user._profile_picture_sizes,
-            [DefaultSizes.OVERRIDE]: url
+          const updatedUser = yield select(getUser, { id: userId })
+          const userWithProfilePicture = {
+            ...updatedUser,
+            _profile_picture_sizes: {
+              ...user._profile_picture_sizes,
+              [DefaultSizes.OVERRIDE]: url
+            }
           }
           yield put(
-            cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
+            cacheActions.update(Kind.USERS, [
+              { id: userId, metadata: userWithProfilePicture }
+            ])
           )
         }
       }
