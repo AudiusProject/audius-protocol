@@ -113,6 +113,8 @@ const healthCheckController = async (req) => {
 
   const { stateMachineQueueLatestJobSuccess } = response
   if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
+    response.snapbackMaxLastSuccessfulRunDelayMs =
+      SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
     const delta =
       Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
     if (delta > SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS) {
