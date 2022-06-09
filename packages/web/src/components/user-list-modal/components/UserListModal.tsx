@@ -1,8 +1,7 @@
 import React, { ReactElement, useRef } from 'react'
 
-import { Modal, IconTrophy, IconUser, Scrollbar } from '@audius/stems'
+import { Modal, Scrollbar } from '@audius/stems'
 
-import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { getUserList as favoritesSelector } from 'common/store/user-list/favorites/selectors'
 import { getUserList as followersSelector } from 'common/store/user-list/followers/selectors'
@@ -70,7 +69,7 @@ const UserListModal = ({
       selector = followersSelector
       title = (
         <div className={styles.titleContainer}>
-          <IconUser className={styles.icon} />
+          {/* <IconUser className={styles.icon} /> */}
           <span>{messages.followers}</span>
         </div>
       )
@@ -80,7 +79,7 @@ const UserListModal = ({
       selector = followingSelector
       title = (
         <div className={styles.titleContainer}>
-          <IconUser className={styles.icon} />
+          {/* <IconUser className={styles.icon} /> */}
           <span>{messages.following}</span>
         </div>
       )
@@ -90,7 +89,7 @@ const UserListModal = ({
       selector = notificationSelector
       title = (
         <div className={styles.titleContainer}>
-          <IconUser className={styles.icon} />
+          {/* <IconUser className={styles.icon} /> */}
           <span>{notificationTitle}</span>
         </div>
       )
@@ -100,7 +99,7 @@ const UserListModal = ({
       selector = topSupportersSelector
       title = (
         <div className={styles.titleContainer}>
-          <IconTrophy className={styles.icon} />
+          {/* <IconTrophy className={styles.icon} /> */}
           <span>{messages.topSupporters}</span>
         </div>
       )
@@ -110,7 +109,7 @@ const UserListModal = ({
       selector = supportingSelector
       title = (
         <div className={styles.titleContainer}>
-          <IconTip className={styles.icon} />
+          {/* <IconTip className={styles.icon} /> */}
           <span>{messages.supporting}</span>
         </div>
       )
