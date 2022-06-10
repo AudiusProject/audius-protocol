@@ -126,6 +126,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   const popupRef: React.MutableRefObject<HTMLDivElement> = useClickOutside(
     handleClose,
     checkIfClickInside,
+    isVisible,
     typeof ref === 'function' ? undefined : ref
   )
 
