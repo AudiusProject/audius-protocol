@@ -28,10 +28,10 @@ export const NotificationUsersScreen = () => {
   }, [notificationType, count])
 
   return (
-    <Screen title={getTitle()} variant='secondary'>
+    <Screen title={getTitle()} variant='white'>
       <UserList
         userSelector={getUserList}
-        tag='NOTIFICATION_USERS_SCREEN'
+        tag='NOTIFICATION'
         setUserList={handleSetNotificationId}
       />
     </Screen>
