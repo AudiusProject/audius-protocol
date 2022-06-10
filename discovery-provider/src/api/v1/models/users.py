@@ -123,7 +123,6 @@ user_token_profile_picture = ns.model(
         "150x150": fields.String(required=False),
         "480x480": fields.String(required=False),
         "1000x1000": fields.String(required=False),
-        "misc": fields.String(required=False),
     },
 )
 
