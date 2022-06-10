@@ -10,35 +10,33 @@ module.exports = class PrometheusRegistry {
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
     PrometheusClient.collectDefaultMetrics({ prefix: METRIC_PREFIX })
 
-    this._createAllCustomMetrics()
+    createAllCustomMetrics(this.registry)
   }
 
-  /**
-   * Getters
-   */
+  /** Getters */
 
   getAllMetricData() {
     return this.registry.metrics()
   }
 
-  getMetricInstance(name) {
+  /** Returns single metric instance by name */
+  getMetric(name) {
     return this.registry.getSingleMetric(name)
   }
+}
 
-  /**
-   * Internal
-   */
+/**
+ * Creates and registers every custom metric, for use throughout Content Node
+ */
+ const createAllCustomMetrics = function () {
+  for (const { metricType: MetricType, metricConfig } of Object.values(
+    Metrics
+  )) {
+    // Add standard prefix to metric name
+    metricConfig.name = METRIC_PREFIX + metricConfig.name
 
-  /**
-   * Creates and registers every custom metric, for use throughout Content Node
-   */
-  _createAllCustomMetrics() {
-    for (const { metricType: MetricType, metricConfig } of Object.values(
-      Metrics
-    )) {
-      metricConfig.name = METRIC_PREFIX + metricConfig.name
-      const metric = new MetricType(metricConfig)
-      this.registry.registerMetric(metric)
-    }
+    // Create and register instance of MetricType, with provided metricConfig
+    const metric = new MetricType(metricConfig)
+    registry.registerMetric(metric)
   }
 }

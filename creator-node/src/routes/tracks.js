@@ -307,7 +307,7 @@ module.exports = function (app) {
       const prometheusRegistry =
         req.app.get('serviceRegistry').prometheusRegistry
       const routePostTracksDurationSecondsMetric =
-        prometheusRegistry.getMetricInstance(
+        prometheusRegistry.getMetric(
           prometheusRegistry.metricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM
         )
       const metricEndTimerFn = routePostTracksDurationSecondsMetric.startTimer()

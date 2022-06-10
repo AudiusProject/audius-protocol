@@ -3,7 +3,9 @@ const promClient = require('prom-client')
 const METRIC_PREFIX = 'cn_'
 
 /**
- * @notice Summary metric type is disabled currently, since it should pretty much never be used in place of a histogram. explanation from docs:
+ * @notice Counter and Summary metric types are currently disabled, since we should almost never be using them.
+ *  - Gauge should always be used over Counter since it can be decreased, with no performance overhead.
+ *  - Histogram should always be used over Summary, per docs below
  * https://prometheus.io/docs/tutorials/understanding_metric_types/
  */
 const MetricTypes = Object.freeze({
@@ -40,7 +42,7 @@ const Metrics = Object.freeze({
       name: MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
       help: 'Duration for POST /tracks route (seconds)',
       labelNames: ['code'],
-      buckets: [0.1, 0.3, 0.5, 0.7, 1, 3, 5, 7, 10] // 0.1 to 10 seconds
+      buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
     }
   },
 })

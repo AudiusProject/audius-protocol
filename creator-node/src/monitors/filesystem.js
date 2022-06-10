@@ -10,7 +10,7 @@ const getStoragePathSize = async () => {
   const storagePath = DiskManager.getConfigStoragePath()
   const { total } = await disk.check(storagePath)
 
-  const storagePathSizeGaugeMetric = prometheusRegistry.getMetricInstance(
+  const storagePathSizeGaugeMetric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames.STORAGE_PATH_SIZE_GAUGE
   )
   storagePathSizeGaugeMetric.set(total)
@@ -23,7 +23,7 @@ const getStoragePathUsed = async () => {
   const { available, total } = await disk.check(storagePath)
   const used = total - available
 
-  const storagePathUsedGaugeMetric = prometheusRegistry.getMetricInstance(
+  const storagePathUsedGaugeMetric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames.STORAGE_PATH_USED_GAUGE
   )
   storagePathUsedGaugeMetric.set(total)
