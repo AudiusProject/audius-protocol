@@ -63,7 +63,7 @@ export const ArtistChipTips = ({ artistId, tag }: ArtistChipTipsProps) => {
           {rank && rank >= 1 && rank <= TIPPING_TOP_RANK_THRESHOLD ? (
             <div className={styles.topSupporter}>
               <IconTrophy className={styles.icon} />
-              <span className={styles.rankNumber}>#{rank}</span>
+              <span className={styles.topRankNumber}>#{rank}</span>
               <span>{messages.supporter}</span>
             </div>
           ) : (
