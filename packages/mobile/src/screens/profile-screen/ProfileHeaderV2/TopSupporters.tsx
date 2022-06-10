@@ -89,7 +89,7 @@ export const TopSupporters = () => {
     })
   }, [navigation, user_id])
 
-  return (
+  return rankedSupporters.length > 0 ? (
     <View style={styles.root}>
       <ProfilePictureList
         users={rankedSupporters.slice(0, MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS)}
@@ -111,5 +111,5 @@ export const TopSupporters = () => {
         </TouchableOpacity>
       </View>
     </View>
-  )
+  ) : null
 }
