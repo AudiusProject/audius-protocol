@@ -107,22 +107,24 @@
 }
 
 .tipContainer .rank {
-  margin-right: 4px;
+  margin-right: 24px;
 }
 .tipContainer .topSupporter,
 .tipContainer .supporter {
   display: flex;
   align-items: center;
-  width: 128px;
   font-size: var(--font-s);
   font-weight: var(--font-medium);
 }
 .tipContainer .topSupporter {
   color: var(--secondary);
 }
-.tipContainer .rankNumber {
+.tipContainer .topRankNumber {
   font-weight: var(--font-bold);
   margin-right: 4px;
+}
+.tipContainer .rankNumber {
+  font-weight: var(--font-bold);
 }
 .tipContainer .topSupporter .icon path {
   fill: var(--secondary);
