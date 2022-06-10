@@ -121,7 +121,7 @@ export const getNotificationScreen = (
     case NotificationType.Announcement:
       return null
     case NotificationType.Follow: {
-      const users = notification.users
+      const { userIds, users } = notification
       const isMultiUser = !!users && users.length > 1
       if (isMultiUser) {
         return {
@@ -129,7 +129,7 @@ export const getNotificationScreen = (
           params: {
             ...contextualParams,
             notificationType: notification.type,
-            count: users.length,
+            count: userIds.length,
             id: notification.id
           }
         }
