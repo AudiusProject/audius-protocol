@@ -56,6 +56,7 @@ class ServiceRegistry {
     this.trustedNotifierManager = null
 
     this.servicesInitialized = false
+    this.asynchronousServicesInitialized = false
     this.servicesThatRequireServerInitialized = false
   }
 
@@ -63,8 +64,6 @@ class ServiceRegistry {
    * Configure all services
    */
   async initServices() {
-    await this.blacklistManager.init()
-
     // init libs
     this.libs = await this._initAudiusLibs()
 
@@ -83,6 +82,21 @@ class ServiceRegistry {
   }
 
   /**
+   * These services do not need to be awaited and do not require the server.
+   */
+  async initServicesAsynchronously() {
+    try {
+      await this.blacklistManager.init()
+    } catch (e) {
+      this.logError(`Could not initialize BlacklistManager: ${e.message}`)
+      process.exit(1)
+    }
+
+    this.asynchronousServicesInitialized = true
+    this.logInfo('Initialized asynchronous services')
+  }
+
+  /**
    * Initializes the blacklistManager if it is not already initialized, and then returns it
    * @returns initialized blacklistManager instance
    */
@@ -95,7 +109,7 @@ class ServiceRegistry {
   }
 
   setupBullMonitoring(app, stateMonitoringQueue, stateReconciliationQueue) {
-    logger.info('Setting up Bull queue monitoring...')
+    this.logInfo('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
     const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
@@ -170,9 +184,6 @@ class ServiceRegistry {
     )
     await this.skippedCIDsRetryQueue.init()
 
-    this.servicesThatRequireServerInitialized = true
-    this.logInfo(`All services that require server successfully initialized!`)
-
     try {
       this.setupBullMonitoring(
         app,
@@ -180,8 +191,13 @@ class ServiceRegistry {
         stateReconciliationQueue
       )
     } catch (e) {
-      logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
+      this.logError(
+        `Failed to initialize bull monitoring UI: ${e.message || e}`
+      )
     }
+
+    this.servicesThatRequireServerInitialized = true
+    this.logInfo('Initialized services that require server')
   }
 
   logInfo(msg) {
