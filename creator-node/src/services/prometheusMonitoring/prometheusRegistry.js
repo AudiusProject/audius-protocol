@@ -1,6 +1,10 @@
 const PrometheusClient = require('prom-client')
 
-const { METRIC_PREFIX, Metrics, MetricNames } = require('./prometheus.constants')
+const {
+  METRIC_PREFIX,
+  Metrics,
+  MetricNames
+} = require('./prometheus.constants')
 
 module.exports = class PrometheusRegistry {
   constructor() {
@@ -15,7 +19,7 @@ module.exports = class PrometheusRegistry {
 
   /** Getters */
 
-  getAllMetricData() {
+  async getAllMetricData() {
     return this.registry.metrics()
   }
 
@@ -28,7 +32,7 @@ module.exports = class PrometheusRegistry {
 /**
  * Creates and registers every custom metric, for use throughout Content Node
  */
- const createAllCustomMetrics = function () {
+const createAllCustomMetrics = function (registry) {
   for (const { metricType: MetricType, metricConfig } of Object.values(
     Metrics
   )) {

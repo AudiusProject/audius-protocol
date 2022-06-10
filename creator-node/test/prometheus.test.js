@@ -1,20 +1,17 @@
 const assert = require('assert')
 const request = require('supertest')
 
-const BlacklistManager = require('../src/blacklistManager')
-
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test Users', async function () {
+describe('test Prometheus metrics', async function () {
   let app, server, libsMock
 
   /** Setup app + global test vars */
   beforeEach(async () => {
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(libsMock, BlacklistManager)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock)
 
     app = appInfo.app
     server = appInfo.server
@@ -25,9 +22,9 @@ describe('test Users', async function () {
   })
 
   it('checks for a healthy prometheus metrics endpoint', async function () {
-    const prometheusResp = await request(app)
+    const resp = await request(app)
       .get('/prometheus_metrics')
       .expect(200)
-    assert.ok(prometheusResp.text.includes('audius_cn_process_cpu_user_seconds_total'))
+    assert.ok(resp.text.includes('audius_cn_process_cpu_user_seconds_total'))
   })
 })
