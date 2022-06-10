@@ -16,7 +16,7 @@ const getAbuseAttestation = async (challengeId, handle, reqIP) => {
     }
   })
 
-  logger.info(`aao response: ${JSON.stringify(res)}`)
+  logger.info(`antiAbuse: aao response: ${JSON.stringify(res)}`)
   return res
 }
 
@@ -25,8 +25,14 @@ const detectAbuse = async (challengeId, walletAddress, reqIP) => {
 
   const user = await models.User.findOne({
     where: { walletAddress },
-    attributes: ['blockchainUserId', 'walletAddress', 'handle', 'isAbusive']
+    attributes: ['id', 'blockchainUserId', 'walletAddress', 'handle', 'isAbusive']
   })
+
+  if (!user) {
+    logger.info(`antiAbuse: no user for wallet ${walletAddress}`)
+    return
+  }
+
   if (!user.handle) {
     // Something went wrong during sign up and identity has no knowledge
     // of this user's handle. Flag them as abusive.
