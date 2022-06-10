@@ -15,6 +15,7 @@ import { MutableRefObject, useEffect, useRef } from 'react'
 export const useClickOutside = (
   onClick: () => void,
   ignoreClick: (target: EventTarget) => boolean = () => false,
+  isVisible: boolean,
   defaultRef?: MutableRefObject<any> | null
 ) => {
   const ref = useRef(defaultRef?.current ?? null)
@@ -33,9 +34,11 @@ export const useClickOutside = (
       onClick()
     }
 
-    document.addEventListener('click', handleClick)
+    if (isVisible) {
+      document.addEventListener('click', handleClick)
+    }
     return () => document.removeEventListener('click', handleClick)
-  }, [onClick, ignoreClick])
+  }, [onClick, ignoreClick, isVisible])
 
   return ref
 }

@@ -226,7 +226,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
         return isModalWrapper && !isThisModalWrapper
       }
       return false
-    }
+    },
+    isOpen
   )
 
   const handleEscape = useCallback(() => {
