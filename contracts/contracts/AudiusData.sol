@@ -26,6 +26,11 @@ contract AudiusData is SigningLogicInitializable {
         string _action
     );
 
+    event ManageIsVerified(
+        uint _userId,
+        bool _isVerified
+    );
+
     /// @notice EIP-712 Typehash definitions
     //          Used to validate identity with gasless transaction submission
     bytes32 constant MANAGE_USER_REQUEST_TYPEHASH = keccak256(
@@ -41,7 +46,10 @@ contract AudiusData is SigningLogicInitializable {
         uint _networkId
     ) public initializer
     {
-        require(_verifierAddress != address(0x00), "");
+        require(
+            _verifierAddress != address(0x00),
+            "Must provide verifier address"
+        );
         verifierAddress = _verifierAddress;
         SigningLogicInitializable.initialize(
             "Audius Data",
@@ -58,14 +66,19 @@ contract AudiusData is SigningLogicInitializable {
         bytes calldata _subjectSig
     ) external
     {
-       address signer = _recoverManageUserSignerAddress(
-           _userId,
-           _action,
-           _metadata,
-           _nonce,
-           _subjectSig
+        address signer = _recoverManageUserSignerAddress(
+            _userId,
+            _action,
+            _metadata,
+            _nonce,
+            _subjectSig
         );
-        emit ManageUser(_userId, signer, _metadata, _action);
+        emit ManageUser(
+            _userId,
+            signer,
+            _metadata,
+            _action
+        );
     }
 
     function manageEntity(
@@ -76,7 +89,8 @@ contract AudiusData is SigningLogicInitializable {
         string calldata _metadata,
         bytes32 _nonce,
         bytes calldata _subjectSig
-    ) external {
+    ) external
+    {
         address signer = _recoverManageEntitySignerAddress(
             _userId,
             _entityType,
@@ -86,7 +100,23 @@ contract AudiusData is SigningLogicInitializable {
             _nonce,
             _subjectSig
         );
-        emit ManageEntity(_userId, signer, _entityType, _entityId, _metadata, _action);
+        emit ManageEntity(
+            _userId,
+            signer,
+            _entityType,
+            _entityId,
+            _metadata,
+            _action
+        );
+    }
+
+    function manageIsVerified(
+        uint _userId,
+        bool _isVerified
+    ) external
+    {
+        require(msg.sender == verifierAddress, "Invalid verifier");
+        emit ManageIsVerified(_userId, _isVerified);
     }
 
     function _recoverManageUserSignerAddress(

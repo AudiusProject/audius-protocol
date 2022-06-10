@@ -21,7 +21,7 @@ const encodeCall = (name, args, values) => {
 
 const toBN = (val) => web3.utils.toBN(val)
 
-contract.only('AudiusData', async (accounts) => {
+contract('AudiusData', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     // Proxy deployer is explicitly set
@@ -86,7 +86,7 @@ contract.only('AudiusData', async (accounts) => {
     )
    })
 
-   it('Manage entity basic test', async () => {
+   it('Manage entity', async () => {
      const action = 'Create'
      const metadata = 'QmctAdxYym12fghF16DErS79GWPP5orEZoVXPC8F6XJwe9'
      const userId = 1
@@ -124,6 +124,24 @@ contract.only('AudiusData', async (accounts) => {
             _action: action
         }
     )
+   })
+
+   it('Verifier basic test', async () => {
+        await expectRevert(
+           audiusDataContract.manageIsVerified(1, false),
+           'Invalid verifier'
+        )
+
+        let verifyTx = await audiusDataContract.manageIsVerified(1, true, { from: verifierAddress })
+        await expectEvent.inTransaction(
+            verifyTx.tx,
+            AudiusData,
+            'ManageIsVerified',
+            {
+                _userId: toBN(1),
+                _isVerified: true
+            }
+        )
    })
 
 })
