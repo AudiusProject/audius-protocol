@@ -3,21 +3,25 @@ const models = require('../models')
 const { REMOTE_VARS, getRemoteVar } = require('../remoteConfig')
 const config = require('../config.js')
 
-const aaoEndpoint = getRemoteVar(
-  optimizely, REMOTE_VARS.ORACLE_ENDPOINT
-) || config.get('aaoEndpoint')
+const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
-const getAbuseAttestation = async (challengeId, handle) => {
+const getAbuseAttestation = async (challengeId, handle, reqIP) => {
   const res = await axios.post(`${aaoEndpoint}/attestation/${handle}`, {
     challengeId,
     challengeSpecifier: handle,
     amount: 0
+  }, {
+    headers: {
+      'X-Forwarded-For': reqIP
+    }
   })
+
+  console.log('AAO said', res)
 
   return res
 }
 
-const detectAbuse = async (challengeId, walletAddress) => {
+const detectAbuse = async (challengeId, walletAddress, reqIP) => {
   let isAbusive = false
 
   const user = await models.User.findOne({
@@ -29,7 +33,7 @@ const detectAbuse = async (challengeId, walletAddress) => {
     // of this user's handle. Flag them as abusive.
     isAbusive = true
   } else {
-    const { result } = await getAbuseAttestation(challengeId, handle)
+    const { result } = await getAbuseAttestation(challengeId, handle, reqIP)
     if (!result) {
       // The anti abuse system deems them abusive. Flag them as such.
       isAbusive = true

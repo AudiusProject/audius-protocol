@@ -50,7 +50,8 @@ module.exports = function (app) {
         }
       }
 
-      recordAbuse('relay', body.senderAddress) // fired & forgotten
+      const reqIP = req.get('X-Forwarded-For')
+      detectAbuse('relay', body.senderAddress, reqIP) // fired & forgotten
       return successResponse({ receipt: receipt })
     }
 
