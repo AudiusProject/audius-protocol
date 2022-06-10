@@ -2,11 +2,11 @@ import React, { useState, useCallback } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
-import commonPasswordList from 'fxa-common-password-list'
 
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/status-message/StatusMessage'
 import { OpenLinkMessage } from 'services/native-mobile-interface/linking'
+import { commonPasswordCheck } from 'utils/commonPasswordCheck'
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BASE_URL } from 'utils/route'
 
 import styles from './PasswordPage.module.css'
@@ -57,9 +57,9 @@ const getMatchRequirement = (pwd: string, confirm: string) => {
   return CheckState.VALID
 }
 
-const getCommonPasswordCheck = (pwd: string) => {
+const getCommonPasswordCheck = async (pwd: string) => {
   if (pwd.length < MIN_PASSWORD_LEN) return CheckState.DEFAULT
-  if (commonPasswordList.test(pwd)) return CheckState.ERROR
+  if (await commonPasswordCheck(pwd)) return CheckState.ERROR
   return CheckState.VALID
 }
 
@@ -90,14 +90,16 @@ const PasswordPage = ({
     common: CheckState.DEFAULT
   })
 
-  const onPasswordBlur = useCallback(() => {
+  const onPasswordBlur = useCallback(async () => {
+    const commonCheck = await getCommonPasswordCheck(password)
+
     // When the password blurs, check if the number and length req are met
     if (password) {
       setRequirements(requirements => ({
         ...requirements,
         number: getNumberRequirement(password),
         length: getLenRequirement(password),
-        common: getCommonPasswordCheck(password),
+        common: commonCheck,
         match:
           passwordConfirm === ''
             ? CheckState.DEFAULT
@@ -116,48 +118,41 @@ const PasswordPage = ({
     }
   }, [password, passwordConfirm])
 
-  const onValidatePasswordChange = useCallback(
-    (password: string) => {
-      const number =
-        requirements.number === CheckState.DEFAULT
-          ? getNumberRequirement(password) === CheckState.VALID
-            ? CheckState.VALID
-            : CheckState.DEFAULT
-          : getNumberRequirement(password)
-      const length =
-        requirements.length === CheckState.DEFAULT
-          ? getLenRequirement(password) === CheckState.VALID
-            ? CheckState.VALID
-            : CheckState.DEFAULT
-          : getLenRequirement(password)
-      const common =
-        requirements.common === CheckState.DEFAULT
-          ? getCommonPasswordCheck(password) === CheckState.VALID
-            ? CheckState.VALID
-            : CheckState.DEFAULT
-          : getCommonPasswordCheck(password)
+  const handlePasswordChange = (password: string) => {
+    setPassword(password)
+    validatePassword()
+  }
 
-      setPassword(password)
-      onPasswordChange(password)
-      setRequirements(requirements => ({
-        ...requirements,
-        number,
-        length,
-        common,
-        match:
-          passwordConfirm === ''
-            ? CheckState.DEFAULT
-            : getMatchRequirement(password, passwordConfirm)
-      }))
-    },
-    [
-      requirements,
-      passwordConfirm,
-      setPassword,
-      setRequirements,
-      onPasswordChange
-    ]
-  )
+  const validatePassword = useCallback(async () => {
+    const number =
+      requirements.number === CheckState.DEFAULT
+        ? getNumberRequirement(password) === CheckState.VALID
+          ? CheckState.VALID
+          : CheckState.DEFAULT
+        : getNumberRequirement(password)
+    const length =
+      requirements.length === CheckState.DEFAULT
+        ? getLenRequirement(password) === CheckState.VALID
+          ? CheckState.VALID
+          : CheckState.DEFAULT
+        : getLenRequirement(password)
+    const common =
+      requirements.common === CheckState.DEFAULT
+        ? (await getCommonPasswordCheck(password)) === CheckState.VALID
+          ? CheckState.VALID
+          : CheckState.DEFAULT
+        : await getCommonPasswordCheck(password)
+    setRequirements(requirements => ({
+      ...requirements,
+      number,
+      length,
+      common,
+      match:
+        passwordConfirm === ''
+          ? CheckState.DEFAULT
+          : getMatchRequirement(password, passwordConfirm)
+    }))
+  }, [requirements, passwordConfirm, setRequirements])
 
   const onPasswordConfirmChange = useCallback(
     (passwordConfirm: string) => {
@@ -190,12 +185,12 @@ const PasswordPage = ({
     [requirements]
   )
 
-  const onClickContinue = useCallback(() => {
+  const onClickContinue = useCallback(async () => {
     if (fulfillsRequirements()) {
-      onValidatePasswordChange(password)
+      await onPasswordChange(password)
       onNextPage()
     }
-  }, [password, onValidatePasswordChange, onNextPage, fulfillsRequirements])
+  }, [fulfillsRequirements, onPasswordChange, password, onNextPage])
 
   onTermsOfServiceClick = () => {
     if (NATIVE_MOBILE) {
@@ -247,7 +242,7 @@ const PasswordPage = ({
           autoComplete='new-password'
           value={password}
           variant={'normal'}
-          onChange={onValidatePasswordChange}
+          onChange={handlePasswordChange}
           className={cn(styles.passwordInput, {
             [styles.placeholder]: password === '',
             [styles.inputError]: inputStatus === CheckState.ERROR,
