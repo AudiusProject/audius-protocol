@@ -1,4 +1,4 @@
-
+# Audius Network Monitoring
 ### Launch Grafana
 
 ```bash
@@ -8,3 +8,11 @@ docker-compose up -d grafana prometheus
 ```
 
 Visit `http://${REMOTE_DEV_HOST}:3000`.
+
+### Deploy Changes
+
+```bash
+ssh prometheus-grafana-metrics
+cd ~/audius-protocol/monitoring
+./deploy.sh
+```
