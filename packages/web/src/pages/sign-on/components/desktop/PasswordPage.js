@@ -1,12 +1,12 @@
-import React, { Component } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
-import commonPasswordList from 'fxa-common-password-list'
 import PropTypes from 'prop-types'
 
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/status-message/StatusMessage'
+import { commonPasswordCheck } from 'utils/commonPasswordCheck'
 import { TERMS_OF_SERVICE, PRIVACY_POLICY } from 'utils/route'
 
 import styles from './PasswordPage.module.css'
@@ -57,61 +57,62 @@ const getMatchRequirement = (pwd, confirm) => {
   return checkState.VALID
 }
 
-const getCommonPasswordCheck = pwd => {
+const getCommonPasswordCheck = async pwd => {
   if (pwd.length < MIN_PASSWORD_LEN) return checkState.DEFAULT
-  if (commonPasswordList.test(pwd)) return checkState.ERROR
+  if (await commonPasswordCheck(pwd)) return checkState.ERROR
   return checkState.VALID
 }
 
-window.pwdText = commonPasswordList
+export const PasswordPage = ({
+  isMobile,
+  onPasswordChange,
+  onNextPage,
+  inputStatus,
+  email
+}) => {
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [requirements, setRequirements] = useState({
+    number: checkState.DEFAULT,
+    length: checkState.DEFAULT,
+    match: checkState.DEFAULT,
+    common: checkState.DEFAULT
+  })
 
-export class PasswordPage extends Component {
-  state = {
-    isSubmitted: false,
-    password: '',
-    passwordConfirm: '',
-    requirements: {
-      number: checkState.DEFAULT,
-      length: checkState.DEFAULT,
-      match: checkState.DEFAULT,
-      common: checkState.DEFAULT
-    }
-  }
-
-  onPasswordBlur = () => {
+  const onPasswordBlur = async () => {
     // When the password blurs, check if the number and length req are met
-    const { password, passwordConfirm, requirements } = this.state
     if (password) {
-      this.setState({
-        requirements: {
-          ...requirements,
-          number: getNumberRequirement(password),
-          length: getLenRequirement(password),
-          common: getCommonPasswordCheck(password),
-          match:
-            passwordConfirm === ''
-              ? checkState.DEFAULT
-              : getMatchRequirement(password, passwordConfirm)
-        }
-      })
+      const commonCheck = await getCommonPasswordCheck(password)
+      setRequirements(requirements => ({
+        ...requirements,
+        number: getNumberRequirement(password),
+        length: getLenRequirement(password),
+        common: commonCheck,
+        match:
+          passwordConfirm === ''
+            ? checkState.DEFAULT
+            : getMatchRequirement(password, passwordConfirm)
+      }))
     }
   }
 
-  onPasswordConfirmBlur = () => {
-    // When the password blurs, check if the number and length req are met
-    const { password, passwordConfirm, requirements } = this.state
+  const onPasswordConfirmBlur = () => {
+    // When the password confirm blurs, check if the match req is met
     if (password && passwordConfirm) {
-      this.setState({
-        requirements: {
-          ...requirements,
-          match: getMatchRequirement(password, passwordConfirm)
-        }
-      })
+      setRequirements(requirements => ({
+        ...requirements,
+        match: getMatchRequirement(password, passwordConfirm)
+      }))
     }
   }
 
-  onPasswordChange = password => {
-    const { requirements, passwordConfirm } = this.state
+  const handlePasswordChange = password => {
+    setPassword(password)
+    validatePassword()
+  }
+
+  const validatePassword = useCallback(async () => {
     const number =
       requirements.number === checkState.DEFAULT
         ? getNumberRequirement(password) === checkState.VALID
@@ -126,187 +127,166 @@ export class PasswordPage extends Component {
         : getLenRequirement(password)
     const common =
       requirements.common === checkState.DEFAULT
-        ? getCommonPasswordCheck(password) === checkState.VALID
+        ? (await getCommonPasswordCheck(password)) === checkState.VALID
           ? checkState.VALID
           : checkState.DEFAULT
-        : getCommonPasswordCheck(password)
-    this.setState({
-      password,
-      requirements: {
+        : await getCommonPasswordCheck(password)
+    setRequirements(requirements => ({
+      ...requirements,
+      number,
+      length,
+      common,
+      match:
+        passwordConfirm === ''
+          ? checkState.DEFAULT
+          : getMatchRequirement(password, passwordConfirm)
+    }))
+  }, [password, passwordConfirm, requirements])
+
+  const onPasswordConfirmChange = passwordConfirm => {
+    setPasswordConfirm(passwordConfirm)
+    if (
+      requirements.match !== checkState.DEFAULT ||
+      password.length <= passwordConfirm.length
+    ) {
+      setRequirements(requirements => ({
         ...requirements,
-        number,
-        length,
-        common,
         match:
           passwordConfirm === ''
             ? checkState.DEFAULT
             : getMatchRequirement(password, passwordConfirm)
-      }
-    })
-  }
-
-  onPasswordConfirmChange = passwordConfirm => {
-    const { requirements, password } = this.state
-    if (requirements.match !== checkState.DEFAULT) {
-      this.setState({
-        passwordConfirm,
-        requirements: {
-          ...requirements,
-          match:
-            passwordConfirm === ''
-              ? checkState.DEFAULT
-              : getMatchRequirement(password, passwordConfirm)
-        }
-      })
-    } else if (password.length <= passwordConfirm.length) {
-      this.setState({
-        passwordConfirm,
-        requirements: {
-          ...requirements,
-          match: getMatchRequirement(password, passwordConfirm)
-        }
-      })
-    } else {
-      this.setState({ passwordConfirm })
+      }))
     }
   }
 
-  onClickContinue = () => {
-    const { password } = this.state
-    if (this.fulfillsRequirements() && !this.state.isSubmitted) {
-      this.props.onPasswordChange(password)
-      this.props.onNextPage()
-      this.setState({ isSubmitted: true })
+  const onClickContinue = async () => {
+    if (fulfillsRequirements() && !isSubmitted) {
+      await onPasswordChange(password)
+      onNextPage()
+      setIsSubmitted(true)
     }
   }
 
-  onConfirmKeyDown = e => {
-    if (e.keyCode === 13 /** enter */) {
-      this.onClickContinue()
-    }
+  const onConfirmKeyDown = e => {
+    if (e.key === 'Enter') onClickContinue()
   }
 
-  fulfillsRequirements = () =>
-    Object.keys(this.state.requirements).every(
-      req => this.state.requirements[req] === checkState.VALID
+  const fulfillsRequirements = () =>
+    Object.keys(requirements).every(
+      req => requirements[req] === checkState.VALID
     )
 
-  onTermsOfServiceClick = () => {
+  const onTermsOfServiceClick = () => {
     const win = window.open(TERMS_OF_SERVICE, '_blank')
     win.focus()
   }
 
-  onPrivacyPolicyClick = () => {
+  const onPrivacyPolicyClick = () => {
     const win = window.open(PRIVACY_POLICY, '_blank')
     win.focus()
   }
 
-  render() {
-    const { password, passwordConfirm, requirements } = this.state
-    const { isMobile, inputStatus } = this.props
+  const pwdChecks = [
+    { status: requirements.number, label: messages.checks[0] },
+    { status: requirements.length, label: messages.checks[1] },
+    { status: requirements.common, label: messages.checks[3] },
+    { status: requirements.match, label: messages.checks[2] }
+  ]
+  const isValid = Object.keys(requirements).every(
+    req => requirements[req] === checkState.VALID
+  )
+  const hasError = Object.keys(requirements).some(
+    req => requirements[req] === checkState.ERROR
+  )
 
-    const pwdChecks = [
-      { status: requirements.number, label: messages.checks[0] },
-      { status: requirements.length, label: messages.checks[1] },
-      { status: requirements.common, label: messages.checks[3] },
-      { status: requirements.match, label: messages.checks[2] }
-    ]
-    const isValid = Object.keys(requirements).every(
-      req => requirements[req] === checkState.VALID
-    )
-    const hasError = Object.keys(requirements).some(
-      req => requirements[req] === checkState.ERROR
-    )
-
-    return (
-      <div
-        className={cn(styles.container, {
-          [styles.isMobile]: isMobile
-        })}
-      >
-        <h2 className={styles.header}>{messages.header}</h2>
-        <div className={styles.warning}>
-          <p className={styles.text}>
-            {isMobile ? messages.warning.mobile : messages.warning.desktop}
-          </p>
-        </div>
-        <div className={styles.passwordContainer}>
-          <Input
-            value={this.props.email.value}
-            autoComplete='username'
-            className={styles.hiddenEmailInput}
-          />
-          <Input
-            placeholder='Password'
-            size='medium'
-            type='password'
-            name='password'
-            id='password-input'
-            autoComplete='new-password'
-            value={password}
-            variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
-            onChange={this.onPasswordChange}
-            className={cn(styles.passwordInput, {
-              [styles.placeholder]: password === '',
-              [styles.inputError]: inputStatus === checkState.ERROR,
-              [styles.validInput]: inputStatus === checkState.VALID
-            })}
-            error={hasError}
-            onBlur={this.onPasswordBlur}
-          />
-          <Input
-            placeholder='Confirm Password'
-            size='medium'
-            type='password'
-            name='variantconfirmPassword'
-            id='confirm-password-input'
-            autoComplete='new-password'
-            value={passwordConfirm}
-            variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
-            onChange={this.onPasswordConfirmChange}
-            onKeyDown={this.onConfirmKeyDown}
-            className={cn(styles.passwordInput, {
-              [styles.placeholder]: passwordConfirm === '',
-              [styles.inputError]: inputStatus === checkState.ERROR,
-              [styles.validInput]: inputStatus === checkState.VALID
-            })}
-            error={hasError}
-            onBlur={this.onPasswordConfirmBlur}
-          />
-        </div>
-        <div className={styles.pwdCheckContainer}>
-          {pwdChecks.map((check, ind) => (
-            <StatusMessage
-              key={ind}
-              containerClassName={styles.statusContainer}
-              status={check.status}
-              label={check.label}
-            />
-          ))}
-        </div>
-        <div className={styles.termsAndPrivacy}>
-          {messages.termsAndPrivacy}
-          <span className={styles.link} onClick={this.onTermsOfServiceClick}>
-            {messages.terms}
-          </span>
-          {messages.and}
-          <span className={styles.link} onClick={this.onPrivacyPolicyClick}>
-            {messages.privacy}
-          </span>
-        </div>
-        <Button
-          text='Continue'
-          name='continue'
-          rightIcon={<IconArrow />}
-          type={isValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}
-          disabled={!isValid}
-          onClick={this.onClickContinue}
-          className={styles.continueButton}
-          textClassName={styles.continueButtonText}
+  return (
+    <div
+      className={cn(styles.container, {
+        [styles.isMobile]: isMobile
+      })}
+    >
+      <h2 className={styles.header}>{messages.header}</h2>
+      <div className={styles.warning}>
+        <p className={styles.text}>
+          {isMobile ? messages.warning.mobile : messages.warning.desktop}
+        </p>
+      </div>
+      <div className={styles.passwordContainer}>
+        <Input
+          value={email.value}
+          autoComplete='username'
+          className={styles.hiddenEmailInput}
+        />
+        <Input
+          placeholder='Password'
+          size='medium'
+          type='password'
+          name='password'
+          id='password-input'
+          autoComplete='new-password'
+          value={password}
+          variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
+          onChange={handlePasswordChange}
+          className={cn(styles.passwordInput, {
+            [styles.placeholder]: password === '',
+            [styles.inputError]: inputStatus === checkState.ERROR,
+            [styles.validInput]: inputStatus === checkState.VALID
+          })}
+          error={hasError}
+          onBlur={onPasswordBlur}
+        />
+        <Input
+          placeholder='Confirm Password'
+          size='medium'
+          type='password'
+          name='variantconfirmPassword'
+          id='confirm-password-input'
+          autoComplete='new-password'
+          value={passwordConfirm}
+          variant={isMobile ? 'normal' : 'elevatedPlaceholder'}
+          onChange={onPasswordConfirmChange}
+          onKeyDown={onConfirmKeyDown}
+          className={cn(styles.passwordInput, {
+            [styles.placeholder]: passwordConfirm === '',
+            [styles.inputError]: inputStatus === checkState.ERROR,
+            [styles.validInput]: inputStatus === checkState.VALID
+          })}
+          error={hasError}
+          onBlur={onPasswordConfirmBlur}
         />
       </div>
-    )
-  }
+      <div className={styles.pwdCheckContainer}>
+        {pwdChecks.map((check, ind) => (
+          <StatusMessage
+            key={ind}
+            containerClassName={styles.statusContainer}
+            status={check.status}
+            label={check.label}
+          />
+        ))}
+      </div>
+      <div className={styles.termsAndPrivacy}>
+        {messages.termsAndPrivacy}
+        <span className={styles.link} onClick={onTermsOfServiceClick}>
+          {messages.terms}
+        </span>
+        {messages.and}
+        <span className={styles.link} onClick={onPrivacyPolicyClick}>
+          {messages.privacy}
+        </span>
+      </div>
+      <Button
+        text='Continue'
+        name='continue'
+        rightIcon={<IconArrow />}
+        type={isValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}
+        disabled={!isValid}
+        onClick={onClickContinue}
+        className={styles.continueButton}
+        textClassName={styles.continueButtonText}
+      />
+    </div>
+  )
 }
 
 PasswordPage.propTypes = {
