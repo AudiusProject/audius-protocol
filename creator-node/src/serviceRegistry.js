@@ -96,7 +96,7 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
-  setupBullMonitoring(app) {
+  setupBullMonitoring(app, stateMonitoringQueue, stateReconciliationQueue) {
     logger.info('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
@@ -109,13 +109,12 @@ class ServiceRegistry {
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
-    const stateMonitoringQueue =
-      this.stateMachineManager.getStateMonitoringQueue()
 
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
         new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
+        new BullAdapter(stateReconciliationQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -155,7 +154,8 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
     this.stateMachineManager = new StateMachineManager()
-    await this.stateMachineManager.init(this.libs)
+    const { stateMonitoringQueue, stateReconciliationQueue } =
+      await this.stateMachineManager.init(this.libs)
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -178,7 +178,11 @@ class ServiceRegistry {
     this.logInfo(`All services that require server successfully initialized!`)
 
     try {
-      this.setupBullMonitoring(app)
+      this.setupBullMonitoring(
+        app,
+        stateMonitoringQueue,
+        stateReconciliationQueue
+      )
     } catch (e) {
       logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
     }

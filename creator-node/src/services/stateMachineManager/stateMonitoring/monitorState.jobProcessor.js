@@ -1,5 +1,4 @@
 const config = require('../../../config')
-const { logger } = require('../../../logging')
 const NodeHealthManager = require('../CNodeHealthManager')
 const {
   getNodeUsers,
@@ -9,6 +8,7 @@ const {
 const {
   retrieveClockStatusesForUsersAcrossReplicaSet
 } = require('../stateMachineUtils')
+const { QUEUE_NAMES, JOB_NAMES } = require('../stateMachineConstants')
 
 // Number of users to process each time processStateMonitoringJob is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -17,46 +17,33 @@ const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
 /**
  * Processes a job to monitor the current state of `USERS_PER_JOB` users.
  * Returns state data for the slice of users processed and the Content Nodes affiliated with them.
- * @param {number} jobId the id of the job being run
- * @param {number} lastProcessedUserId the highest ID of the user that was most recently processed
- * @param {string} discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
- * @param {number} moduloBase (DEPRECATED)
- * @param {number} currentModuloSlice (DEPRECATED)
- * @return {Object} {
- *   lastProcessedUserId (number),
- *   jobFailed (boolean),
- *   users (array of objects),
- *   unhealthyPeers (set of content node endpoint strings),
- *   secondarySyncMetrics (object),
- *   replicaSetNodesToUserClockStatusesMap (object),
- *   userSecondarySyncMetricsMap (object)
- * }
+ *
+ * @param {Object} param job data
+ * @param {Object} param.logger the logger that can be filtered by jobName and jobId
+ * @param {number} param.lastProcessedUserId the highest ID of the user that was most recently processed
+ * @param {string} param.discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
+ * @return {Object} object containing an array of jobs to add to the state monitoring queue
  */
-module.exports = async function (
-  jobId,
+module.exports = async function ({
+  logger,
   lastProcessedUserId,
-  discoveryNodeEndpoint,
-  moduloBase, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-  currentModuloSlice // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-) {
+  discoveryNodeEndpoint
+}) {
+  _validateJobData(logger, lastProcessedUserId, discoveryNodeEndpoint)
+
   // Record all stages of this function along with associated information for use in logging
   const decisionTree = []
-  _addToDecisionTree(decisionTree, jobId, 'BEGIN processStateMonitoringJob', {
+  _addToDecisionTree(decisionTree, 'BEGIN processStateMonitoringJob', logger, {
     lastProcessedUserId,
     discoveryNodeEndpoint,
-    moduloBase, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-    currentModuloSlice, // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
     THIS_CNODE_ENDPOINT,
     USERS_PER_JOB
   })
 
-  let jobFailed = false
   let users = []
   let unhealthyPeers = new Set()
   let replicaSetNodesToUserClockStatusesMap = {}
   let userSecondarySyncMetricsMap = {}
-  // New DN versions support pagination, so we fall back to modulo slicing for old versions
-  // TODO: Remove modulo supports once all DNs update to include https://github.com/AudiusProject/audius-protocol/pull/3071
   try {
     try {
       users = await getNodeUsers(
@@ -66,17 +53,10 @@ module.exports = async function (
         USERS_PER_JOB
       )
 
-      // Backwards compatibility -- DN will return all users if it doesn't have pagination.
-      // In that case, we have to manually paginate the full set of users
-      // TODO: Remove. https://linear.app/audius/issue/CON-146/clean-up-modulo-slicing-after-all-dns-update-to-support-pagination
-      if (users.length > USERS_PER_JOB) {
-        users = sliceUsers(users, moduloBase, currentModuloSlice)
-      }
-
       _addToDecisionTree(
         decisionTree,
-        jobId,
         'getNodeUsers and sliceUsers Success',
+        logger,
         { usersLength: users?.length }
       )
     } catch (e) {
@@ -85,8 +65,8 @@ module.exports = async function (
 
       _addToDecisionTree(
         decisionTree,
-        jobId,
         'getNodeUsers or sliceUsers Error',
+        logger,
         { error: e.message }
       )
       throw new Error(
@@ -96,15 +76,15 @@ module.exports = async function (
 
     try {
       unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
-      _addToDecisionTree(decisionTree, jobId, 'getUnhealthyPeers Success', {
+      _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e) {
       _addToDecisionTree(
         decisionTree,
-        jobId,
         'processStateMonitoringJob getUnhealthyPeers Error',
+        logger,
         { error: e.message }
       )
       throw new Error(
@@ -117,8 +97,8 @@ module.exports = async function (
       buildReplicaSetNodesToUserWalletsMap(users)
     _addToDecisionTree(
       decisionTree,
-      jobId,
       'buildReplicaSetNodesToUserWalletsMap Success',
+      logger,
       {
         numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap)?.length
       }
@@ -142,14 +122,14 @@ module.exports = async function (
 
       _addToDecisionTree(
         decisionTree,
-        jobId,
-        'retrieveClockStatusesForUsersAcrossReplicaSet Success'
+        'retrieveClockStatusesForUsersAcrossReplicaSet Success',
+        logger
       )
     } catch (e) {
       _addToDecisionTree(
         decisionTree,
-        jobId,
         'retrieveClockStatusesForUsersAcrossReplicaSet Error',
+        logger,
         { error: e.message }
       )
       throw new Error(
@@ -163,8 +143,8 @@ module.exports = async function (
         await computeUserSecondarySyncSuccessRatesMap(users)
       _addToDecisionTree(
         decisionTree,
-        jobId,
         'computeUserSecondarySyncSuccessRatesMap Success',
+        logger,
         {
           userSecondarySyncMetricsMapLength: Object.keys(
             userSecondarySyncMetricsMap
@@ -174,8 +154,8 @@ module.exports = async function (
     } catch (e) {
       _addToDecisionTree(
         decisionTree,
-        jobId,
         'computeUserSecondarySyncSuccessRatesMap Error',
+        logger,
         { error: e.message }
       )
       throw new Error(
@@ -184,12 +164,11 @@ module.exports = async function (
     }
   } catch (e) {
     logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
-    jobFailed = true
   } finally {
-    _addToDecisionTree(decisionTree, jobId, 'END processStateMachineOperation')
+    _addToDecisionTree(decisionTree, 'END processStateMachineOperation', logger)
 
     // Log decision tree
-    _printDecisionTree(decisionTree, jobId)
+    _printDecisionTree(decisionTree, logger)
   }
 
   // The next job should start processing where this one ended or loop back around to the first user
@@ -197,25 +176,67 @@ module.exports = async function (
     user_id: 0
   }
   return {
-    lastProcessedUserId: lastProcessedUser?.user_id || 0,
-    jobFailed,
-    users,
-    unhealthyPeers,
-    replicaSetNodesToUserClockStatusesMap,
-    userSecondarySyncMetricsMap
+    jobsToEnqueue: {
+      [QUEUE_NAMES.STATE_MONITORING]: [
+        // Enqueue findFindSyncRequests and findReplicaSetUpdates jobs to find which state anomalies
+        // need to be reconciled for the slice of users we just monitored
+        {
+          jobName: JOB_NAMES.FIND_SYNC_REQUESTS,
+          jobData: {
+            users,
+            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+            replicaSetNodesToUserClockStatusesMap,
+            userSecondarySyncMetricsMap
+          }
+        },
+        {
+          jobName: JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+          jobData: {
+            users,
+            unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
+            replicaSetNodesToUserClockStatusesMap,
+            userSecondarySyncMetricsMap
+          }
+        },
+        // Enqueue another monitorState job to monitor the next slice of users
+        {
+          jobName: JOB_NAMES.MONITOR_STATE,
+          jobData: {
+            lastProcessedUserId: lastProcessedUser?.user_id || 0,
+            discoveryNodeEndpoint
+          }
+        }
+      ]
+    }
   }
 }
 
-const _addToDecisionTree = (
-  decisionTree,
-  jobId,
-  stage,
-  data = {},
-  log = true
+const _validateJobData = (
+  logger,
+  lastProcessedUserId,
+  discoveryNodeEndpoint
 ) => {
+  if (typeof logger !== 'object') {
+    throw new Error(
+      `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
+    )
+  }
+  if (typeof lastProcessedUserId !== 'number') {
+    throw new Error(
+      `Invalid type ("${typeof lastProcessedUserId}") or value ("${lastProcessedUserId}") of lastProcessedUserId`
+    )
+  }
+  if (typeof discoveryNodeEndpoint !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof discoveryNodeEndpoint}") or value ("${discoveryNodeEndpoint}") of discoveryNodeEndpoint`
+    )
+  }
+}
+
+const _addToDecisionTree = (decisionTree, stage, logger, data = {}) => {
   const obj = { stage, data, time: Date.now() }
 
-  let logStr = `jobId ${jobId} processStateMonitoringJob ${stage} - Data ${JSON.stringify(
+  let logStr = `monitorState.jobProcessor ${stage} - Data ${JSON.stringify(
     data
   )}`
 
@@ -230,12 +251,12 @@ const _addToDecisionTree = (
   }
   decisionTree.push(obj)
 
-  if (log) {
+  if (logger) {
     logger.info(logStr)
   }
 }
 
-const _printDecisionTree = (decisionTree, jobId, msg = '') => {
+const _printDecisionTree = (decisionTree, logger) => {
   // Compute and record `fullDuration`
   if (decisionTree.length > 2) {
     const startTime = decisionTree[0].time
@@ -245,24 +266,11 @@ const _printDecisionTree = (decisionTree, jobId, msg = '') => {
   }
   try {
     logger.info(
-      `jobId ${jobId} processStateMonitoringJob Decision Tree${
-        msg ? ` - ${msg} - ` : ''
-      }${JSON.stringify(decisionTree)}`
+      `monitorState.jobProcessor Decision Tree${JSON.stringify(decisionTree)}`
     )
   } catch (e) {
     logger.error(
-      `Error printing jobId ${jobId} processStateMonitoringJob Decision Tree ${decisionTree}`
+      `Error printing monitorState.jobProcessor Decision Tree ${decisionTree}`
     )
   }
-}
-
-/**
- * Select chunk of users to process in this run
- *  - User is selected if (user_id % moduloBase = currentModuloSlice)
- * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
- */
-const sliceUsers = (nodeUsers, moduloBase, currentModuloSlice) => {
-  return nodeUsers.filter(
-    (nodeUser) => nodeUser.user_id % moduloBase === currentModuloSlice
-  )
 }

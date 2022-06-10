@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 UPDATE_TRACK_IS_AVAILABLE_LOCK = "update_track_is_available_lock"
 
 BATCH_SIZE = 1000
-DEFAULT_LOCK_TIMEOUT_SECONDS = 86400  # 24 hour -- the max duration of 1 worker
+DEFAULT_LOCK_TIMEOUT_SECONDS = 30  # 30 seconds
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
@@ -249,8 +249,8 @@ def update_track_is_available(self) -> None:
         raise e
     finally:
         if have_lock:
+            update_lock.release()
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
             )
-            update_lock.release()

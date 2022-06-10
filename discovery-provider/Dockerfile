@@ -1,98 +1,87 @@
 # requires authentication to Dockerhub
-FROM audius/contracts:1.0.0 as contracts
+FROM audius/contracts:1.0.0 AS contracts
 
 FROM alpine:3.15
 LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
-RUN mkdir -p $INSTALL_PATH
 WORKDIR $INSTALL_PATH
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
+RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
+    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
+
+# Add the wait script to the image
+# Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
+COPY scripts/wait /wait
+
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' \
+        >> /etc/apk/repositories && \
+    echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/community' \
+        >> /etc/apk/repositories && \
     apk update && \
-    apk add alpine-sdk && \
-    apk add linux-headers && \
-    apk add bash && \
-    apk add libffi-dev && \
-    apk add redis && \
-    apk add sudo && \
-    apk add go-ipfs && \
-    apk add libpq=11.12-r0 && \
-    apk add postgresql=11.12-r0 && \
-    apk add postgresql-client=11.12-r0 && \
-    apk add postgresql-contrib=11.12-r0 && \
-    apk add postgresql-libs=11.12-r0 && \
-    apk add python3 && \
-    apk add python3-dev && \
-    apk add py3-pip && \
-    apk add py3-wheel && \
-    apk add rsyslog && \
-    apk add docker && \
-    apk add nodejs && \
-    apk add npm && \
-    apk add curl && \
-    apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0
+    apk add \
+        alpine-sdk=1.0-r1 \
+        bash=5.1.16-r0 \
+        curl \
+        docker \
+        libffi-dev=3.4.2-r1 \
+        libpq=11.12-r0 \
+        libseccomp-dev \
+        linux-headers=5.10.41-r0 \
+        nodejs \
+        npm \
+        postgresql-client=11.12-r0 \
+        postgresql-contrib=11.12-r0 \
+        postgresql-dev=11.12-r0 \
+        postgresql-libs=11.12-r0 \
+        postgresql=11.12-r0 \
+        py3-pip=20.3.4-r1 \
+        py3-wheel=0.36.2-r2 \
+        python3-dev=3.9.7-r4 \
+        python3=3.9.7-r4 \
+        redis=6.2.7-r0 \
+        rsyslog \
+        sudo=1.9.8_p2-r1 && \
+    apk add \
+        --virtual .build-deps \
+            gcc \
+            musl-dev \
+            postgresql-dev=11.12-r0
 
-COPY requirements.txt requirements.txt
-
-RUN apk add libseccomp-dev && \
-    # Upgrade pip to accomodate anchor.py installation
-    python3 -m pip install --upgrade pip && \
-    python3 -m pip install -r requirements.txt --no-cache-dir && \
-    apk --purge del .build-deps
-
-RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' \
+        >> /etc/apk/repositories && \
     apk add wget && \
     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
     source /etc/os-release && \
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
-    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
+    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" \
+        | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add openresty && \
-    apk add openresty-opm && \
+    apk add openresty=1.19.9.1-r0 \
+        openresty-opm && \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
     mkdir /usr/local/openresty/conf && \
     mkdir /usr/local/openresty/logs
 
-# versions
-# alpine-sdk 1.0-r1
-# linux-headers 5.10.41-r0
-# bash 5.1.16-r0
-# libffi-dev 3.4.2-r1
-# redis 6.2.7-r0
-# sudo 1.9.8_p2-r1
-# go-ipfs 0.10.0-r2
-# python3 3.9.7-r4
-# python3-dev 3.9.7-r4	
-# py3-pip 20.3.4-r1
-# py3-wheel 0.36.2-r2
+COPY nginx_conf /usr/local/openresty/conf/
 
-# libpq 14.2-r0
-# postgresql 11.12-r0
-# postgresql-client 11.12-r0
-# postgresql-contrib 11.12-r0
-# postgresql-libs 11.12-r0
+COPY scripts/init-db.sh scripts/init-db.sh
+RUN bash scripts/init-db.sh
 
-# openresty 1.19.9.1-r0
+# Upgrade pip first to accomodate anchor.py installation
+RUN python3 -m pip install --upgrade pip && \
+    apk --purge del .build-deps
+COPY requirements.txt requirements.txt
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-RUN cp ./nginx_conf/* /usr/local/openresty/conf/
-
-# Add the wait script to the image
-# Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
-COPY scripts/wait /wait
-RUN chmod +x /wait
-
-# Permission scripts directory
-RUN chmod +x scripts/*
-
-RUN mkdir -p ./build/contracts
-COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
-
-RUN bash scripts/init-db.sh
+COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
 
 ARG git_sha
 ARG audius_loggly_disable
@@ -103,11 +92,5 @@ ENV GIT_SHA=$git_sha
 ENV audius_loggly_disable=$audius_loggly_disable
 ENV audius_loggly_token=$audius_loggly_token
 ENV audius_loggly_tags=$audius_loggly_tags
-
-ENV PROMETHEUS_MULTIPROC_DIR /prometheus_data
-RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
-
-HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
-    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
