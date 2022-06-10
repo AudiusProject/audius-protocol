@@ -2,7 +2,6 @@
 
 set -ex
 
-git checkout master
 git pull
 docker-compose build
 

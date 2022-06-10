@@ -14,5 +14,6 @@ Visit `http://${REMOTE_DEV_HOST}:3000`.
 ```bash
 ssh prometheus-grafana-metrics
 cd ~/audius-protocol/monitoring
+git checkout master
 ./deploy.sh
 ```
