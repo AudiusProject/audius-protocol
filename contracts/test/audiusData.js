@@ -1,5 +1,4 @@
 import * as _lib from './_lib/lib.js'
-import { getNetworkIdForContractInstance } from './utils/getters'
 import {
     AudiusData,
     AdminUpgradeabilityProxy
@@ -21,10 +20,9 @@ const encodeCall = (name, args, values) => {
 
 const toBN = (val) => web3.utils.toBN(val)
 
-contract('AudiusData', async (accounts) => {
+contract.only('AudiusData', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
-    // Proxy deployer is explicitly set
     const proxyAdminAddress = accounts[25]
     let testSigner = accounts[10]
 
@@ -56,34 +54,6 @@ contract('AudiusData', async (accounts) => {
         )
 
         audiusDataContract = await AudiusData.at(proxyContractDeployTx.address)
-   })
-
-   it('Manage user basic test', async () => {
-     const action = 'Create'
-     const metadata = 'QmctAdxYym12fghF16DErS79GWPP5orEZoVXPC8F6XJwe9'
-     const userId = 1
-     const nonce = signatureSchemas.getNonce()
-     const signatureData = signatureSchemas.generators.getManageUserData(
-        networkId,
-        audiusDataContract.address,
-        userId,
-        action,
-        metadata,
-        nonce
-    )
-    const sig = await eth_signTypedData(testSigner, signatureData)
-    let manageTx = await audiusDataContract.manageUser(userId, action, metadata, nonce, sig)
-    await expectEvent.inTransaction(
-        manageTx.tx,
-        AudiusData,
-        'ManageUser',
-        {
-            _userId: toBN(userId),
-            _signer: testSigner,
-            _metadata: metadata,
-            _action: action
-        }
-    )
    })
 
    it('Manage entity', async () => {

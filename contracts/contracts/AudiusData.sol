@@ -31,12 +31,6 @@ contract AudiusData is SigningLogicInitializable {
         bool _isVerified
     );
 
-    /// @notice EIP-712 Typehash definitions
-    //          Used to validate identity with gasless transaction submission
-    bytes32 constant MANAGE_USER_REQUEST_TYPEHASH = keccak256(
-        "ManageUser(uint userId,string action,string metadata,bytes32 nonce)"
-    );
-
     bytes32 constant MANAGE_ENTITY_REQUEST_TYPEHASH = keccak256(
         "ManageEntity(uint userId,string entityType,uint entityId,string action,string metadata,bytes32 nonce)"
     );
@@ -58,29 +52,14 @@ contract AudiusData is SigningLogicInitializable {
         );
     }
 
-    function manageUser(
-        uint _userId,
-        string calldata _action,
-        string calldata _metadata,
-        bytes32 _nonce,
-        bytes calldata _subjectSig
-    ) external
-    {
-        address signer = _recoverManageUserSignerAddress(
-            _userId,
-            _action,
-            _metadata,
-            _nonce,
-            _subjectSig
-        );
-        emit ManageUser(
-            _userId,
-            signer,
-            _metadata,
-            _action
-        );
-    }
-
+    /// @notice Manage an entity (ex. User/Track/Playlist)
+    /// @param _userId User performing action
+    /// @param _entityType Entity type being manipulated, ex. User/Track/Playlist
+    /// @param _entityId Entity id being manipulated. For new entities, ID assignment will be handled by submitter
+    /// @param _action Action being performed, ex. Create/Update/Delete
+    /// @param _metadata Metadata associated with action
+    /// @param _nonce Nonce used client side for signature generation
+    /// @param _subjectSig Signed data used to recover operation signer
     function manageEntity(
         uint _userId,
         string calldata _entityType,
@@ -110,6 +89,9 @@ contract AudiusData is SigningLogicInitializable {
         );
     }
 
+    /// @notice Manage user verified status
+    /// @param _userId User status being modified
+    /// @param _isVerified Boolean indicating verified status
     function manageIsVerified(
         uint _userId,
         bool _isVerified
@@ -117,30 +99,6 @@ contract AudiusData is SigningLogicInitializable {
     {
         require(msg.sender == verifierAddress, "Invalid verifier");
         emit ManageIsVerified(_userId, _isVerified);
-    }
-
-    function _recoverManageUserSignerAddress(
-        uint _userId,
-        string memory _action,
-        string memory _metadata,
-        bytes32 _nonce,
-        bytes memory _subjectSig
-    ) internal returns (address)
-    {
-        bytes32 signatureDigest = generateSchemaHash(
-            keccak256(
-                abi.encode(
-                    MANAGE_USER_REQUEST_TYPEHASH,
-                    _userId,
-                    keccak256(bytes(_action)),
-                    keccak256(bytes(_metadata)),
-                    _nonce
-                )
-            )
-        );
-        address signer = recoverSigner(signatureDigest, _subjectSig);
-        burnSignatureDigest(signatureDigest, signer);
-        return signer;
     }
 
     function _recoverManageEntitySignerAddress(
