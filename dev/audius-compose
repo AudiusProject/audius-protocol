@@ -73,7 +73,7 @@ def cli(ctx, protocol_dir):
     }
 
 
-@cli.command
+@cli.command()
 @click.pass_obj
 def build(obj):
     subprocess.run(
