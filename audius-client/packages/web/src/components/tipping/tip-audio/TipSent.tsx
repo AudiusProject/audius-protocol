@@ -27,7 +27,7 @@ export const TipSent = () => {
   const record = useRecord()
   const account = useSelector(getAccountUser)
   const sendTipData = useSelector(getSendTipData)
-  const { user: recipient, amount: sendAmount } = sendTipData
+  const { user: recipient, amount: sendAmount, source } = sendTipData
 
   const handleShareClick = useCallback(() => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
@@ -44,11 +44,13 @@ export const TipSent = () => {
           recipientWallet: recipient.spl_wallet,
           senderHandle: account.handle,
           recipientHandle: recipient.handle,
-          amount: sendAmount
+          amount: sendAmount,
+          device: 'web',
+          source
         })
       )
     }
-  }, [account, recipient, record, sendAmount])
+  }, [account, recipient, record, sendAmount, source])
 
   const renderSentAudio = () => (
     <>

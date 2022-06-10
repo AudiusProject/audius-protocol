@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 
 import { User } from 'audius-client/src/common/models/User'
 import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
+import { getAccountUser } from 'audius-client/src/common/store/account/selectors'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import {
   getShowTip,
@@ -21,6 +22,8 @@ import {
   getRecentTipsStorage
 } from 'app/store/tipping/storageUtils'
 import { makeStyles } from 'app/styles'
+import { EventNames } from 'app/types/analytics'
+import { make, track } from 'app/utils/analytics'
 
 import { LineupTileSkeleton } from '../lineup-tile'
 
@@ -51,6 +54,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const FeedTipTile = () => {
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
+  const account = useSelectorWeb(getAccountUser)
   const showTip = useSelectorWeb(getShowTip)
   const tipToDisplay = useSelectorWeb(getTipToDisplay)
   const tipperIds = tipToDisplay
@@ -81,7 +85,17 @@ export const FeedTipTile = () => {
   const handlePressClose = useCallback(() => {
     dismissRecentTip()
     dispatchWeb(hideTip())
-  }, [dispatchWeb])
+    if (account && tipToDisplay) {
+      track(
+        make({
+          eventName: EventNames.TIP_FEED_TILE_DISMISS,
+          accountId: `${account.user_id}`,
+          receiverId: `${tipToDisplay.receiver_id}`,
+          device: 'native'
+        })
+      )
+    }
+  }, [dispatchWeb, account, tipToDisplay])
 
   if (!isTippingEnabled || !showTip) {
     return null

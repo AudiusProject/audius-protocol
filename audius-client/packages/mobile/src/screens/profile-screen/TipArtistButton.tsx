@@ -20,7 +20,7 @@ export const TipArtistButton = () => {
   const dispatchWeb = useDispatchWeb()
 
   const handlePress = useCallback(() => {
-    dispatchWeb(beginTip({ user: profile }))
+    dispatchWeb(beginTip({ user: profile, source: 'profile' }))
     navigation.navigate({ native: { screen: 'TipArtist' } })
   }, [dispatchWeb, profile, navigation])
 

@@ -249,6 +249,7 @@ export enum Name {
   TIP_AUDIO_SUCCESS = 'TIP_AUDIO_SUCCESS',
   TIP_AUDIO_FAILURE = 'TIP_AUDIO_FAILURE',
   TIP_AUDIO_TWITTER_SHARE = 'TIP_AUDIO_TWITTER_SHARE',
+  TIP_FEED_TILE_DISMISS = 'TIP_FEED_TILE_DISMISS',
 
   // Social Proof
   SOCIAL_PROOF_OPEN = 'Social Proof: Open',
@@ -1131,6 +1132,8 @@ type TipAudioRequest = {
   recipientWallet: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
+  source: 'profile' | 'feed'
+  device: 'web' | 'native'
 }
 
 type TipAudioSuccess = {
@@ -1140,6 +1143,8 @@ type TipAudioSuccess = {
   recipientWallet: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
+  source: 'profile' | 'feed'
+  device: 'web' | 'native'
 }
 
 type TipAudioFailure = {
@@ -1150,6 +1155,8 @@ type TipAudioFailure = {
   senderHandle: string
   recipientHandle: string
   error: string
+  source: 'profile' | 'feed'
+  device: 'web' | 'native'
 }
 
 type TipAudioTwitterShare = {
@@ -1159,6 +1166,15 @@ type TipAudioTwitterShare = {
   recipientWallet: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
+  source: 'profile' | 'feed'
+  device: 'web' | 'native'
+}
+
+type TipFeedTileDismiss = {
+  eventName: Name.TIP_FEED_TILE_DISMISS
+  accountId: string
+  receiverId: string
+  device: 'web' | 'native'
 }
 
 type SocialProofOpen = {
@@ -1351,6 +1367,7 @@ export type AllTrackingEvents =
   | TipAudioSuccess
   | TipAudioFailure
   | TipAudioTwitterShare
+  | TipFeedTileDismiss
   | SocialProofOpen
   | SocialProofSuccess
   | SocialProofError

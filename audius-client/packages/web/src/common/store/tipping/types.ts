@@ -51,6 +51,7 @@ export type TippingState = {
     user: Nullable<User>
     amount: StringAudio
     error: Nullable<string>
+    source: 'profile' | 'feed'
   }
   recentTips: UserTip[]
   storage: Nullable<RecentTipsStorage> // what is cached in the web or mobile local storage

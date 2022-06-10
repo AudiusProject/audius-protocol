@@ -26,7 +26,8 @@ const initialState: TippingState = {
     status: null,
     user: null,
     amount: '0',
-    error: null
+    error: null,
+    source: 'profile'
   },
   recentTips: [],
   storage: null,
@@ -98,11 +99,15 @@ const slice = createSlice({
       state,
       action: PayloadAction<{ userId: ID }>
     ) => {},
-    beginTip: (state, action: PayloadAction<{ user: User | null }>) => {
+    beginTip: (
+      state,
+      action: PayloadAction<{ user: User | null; source: 'profile' | 'feed' }>
+    ) => {
       if (!action.payload.user) {
         return
       }
       state.send.status = 'SEND'
+      state.send.source = action.payload.source
       state.send.user = action.payload.user
     },
     sendTip: (state, action: PayloadAction<{ amount: string }>) => {

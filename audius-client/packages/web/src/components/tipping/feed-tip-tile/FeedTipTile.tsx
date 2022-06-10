@@ -6,8 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconClose } from 'assets/img/iconClose.svg'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import { Name } from 'common/models/Analytics'
 import { User } from 'common/models/User'
 import { FeatureFlags } from 'common/services/remote-config'
+import { getAccountUser } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getShowTip, getTipToDisplay } from 'common/store/tipping/selectors'
 import { beginTip, fetchRecentTips, hideTip } from 'common/store/tipping/slice'
@@ -16,6 +18,7 @@ import { ProfilePicture } from 'components/notification/Notification/components/
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { useRecord, make } from 'store/analytics/actions'
 import {
   setUsers,
   setVisibility
@@ -115,7 +118,7 @@ const SendTipToButton = ({ user }: SendTipToButtonProps) => {
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
-    dispatch(beginTip({ user }))
+    dispatch(beginTip({ user, source: 'feed' }))
   }, [dispatch, user])
 
   return (
@@ -144,11 +147,23 @@ const SendTipToButton = ({ user }: SendTipToButtonProps) => {
 
 const DismissTipButton = () => {
   const dispatch = useDispatch()
+  const record = useRecord()
+  const account = useSelector(getAccountUser)
+  const tipToDisplay = useSelector(getTipToDisplay)
 
   const handleClick = useCallback(() => {
     dismissRecentTip()
     dispatch(hideTip())
-  }, [dispatch])
+    if (account && tipToDisplay) {
+      record(
+        make(Name.TIP_FEED_TILE_DISMISS, {
+          accountId: `${account.user_id}`,
+          receiverId: `${tipToDisplay.receiver_id}`,
+          device: 'web'
+        })
+      )
+    }
+  }, [dispatch, account, tipToDisplay, record])
 
   return (
     <div className={styles.dismissButton} onClick={handleClick}>
