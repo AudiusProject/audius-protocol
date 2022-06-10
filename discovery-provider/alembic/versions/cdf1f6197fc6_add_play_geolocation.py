@@ -1,7 +1,7 @@
 """add play geolocation
 
 Revision ID: cdf1f6197fc6
-Revises: 5e17e0480ca7
+Revises: 88daa6a4f269
 Create Date: 2022-06-02 22:45:25.750913
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "cdf1f6197fc6"
-down_revision = "5e17e0480ca7"
+down_revision = "88daa6a4f269"
 branch_labels = None
 depends_on = None
 
