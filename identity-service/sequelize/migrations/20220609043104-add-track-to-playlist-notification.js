@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 const models = require('../../src/models')
 
 module.exports = {
@@ -22,4 +22,4 @@ module.exports = {
       await queryInterface.removeColumn('Notifications', 'metadata')
     })
   }
-};
+}

@@ -150,7 +150,7 @@ function formatTrackAddedToPlaylist (notification, metadata) {
     type: NotificationType.TrackAddedToPlaylist,
     track: metadata.tracks[notification.entityId],
     playlist: metadata.collections[notification.metadata.playlistId],
-    playlistOwner: metadata.users[notification.metadata.playlistOwnerId],
+    playlistOwner: metadata.users[notification.metadata.playlistOwnerId]
   }
 }
 
@@ -225,7 +225,7 @@ const notificationResponseMap = {
   [NotificationType.MilestoneFollow]: formatMilestone('follow'),
   [NotificationType.TrackAddedToPlaylist]: (notification, metadata) => {
     return formatTrackAddedToPlaylist(notification, metadata)
-  },
+  }
 
 }
 
@@ -292,7 +292,7 @@ const notificationResponseTitleMap = {
   [NotificationType.RemixCreate]: () => RemixCreateTitle,
   [NotificationType.RemixCosign]: () => RemixCosignTitle,
   [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title,
-  [NotificationType.TrackAddedToPlaylist]: () => TrackAddedToPlaylistTitle,
+  [NotificationType.TrackAddedToPlaylist]: () => TrackAddedToPlaylistTitle
 }
 
 function formatNotificationProps (notifications, metadata) {

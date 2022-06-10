@@ -31,7 +31,7 @@ const notificationMapping = {
   [notificationTypes.Tip]: processTipNotification,
   [notificationTypes.Reaction]: processReactionNotification,
   [notificationTypes.SupporterRankUp]: processSupporterRankChangeNotification,
-  [notificationTypes.TrackAddedToPlaylist]: processTrackAddedToPlaylistNotification,
+  [notificationTypes.TrackAddedToPlaylist]: processTrackAddedToPlaylistNotification
 
 }
 

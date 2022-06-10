@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
           'RemixCosign',
           'TrendingTrack',
           'ChallengeReward',
-          'TrackAddedToPlaylist',
+          'TrackAddedToPlaylist'
         ]
       }),
       allowNull: false

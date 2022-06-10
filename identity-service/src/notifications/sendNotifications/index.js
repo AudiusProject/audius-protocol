@@ -4,7 +4,7 @@ const { fetchNotificationMetadata } = require('../fetchNotificationMetadata')
 const formatNotification = require('./formatNotification')
 const publishNotifications = require('./publishNotifications')
 
-function getUserIdsToNotify(notifications) {
+function getUserIdsToNotify (notifications) {
   return notifications.reduce((userIds, notification) => {
     // Add user id from notification based on notification type
     switch (notification.type) {

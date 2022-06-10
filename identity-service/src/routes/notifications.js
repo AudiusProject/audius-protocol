@@ -258,7 +258,7 @@ const formatTrackAddedToPlaylist = (notification) => ({
   type: notification.type,
   playlistId: notification.metadata.playlistId,
   playlistOwnerId: notification.metadata.playlistOwnerId,
-  trackId: notification.metadata.trackId,
+  trackId: notification.metadata.trackId
 })
 
 const getCommonNotificationsFields = (notification) => ({
@@ -294,7 +294,7 @@ const notificationResponseMap = {
   [NotificationType.Reaction]: formatReaction,
   [NotificationType.SupporterRankUp]: formatSupporterRankUp,
   [NotificationType.SupportingRankUp]: formatSupportingRankUp,
-  [NotificationType.TrackAddedToPlaylist]: formatTrackAddedToPlaylist,
+  [NotificationType.TrackAddedToPlaylist]: formatTrackAddedToPlaylist
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).

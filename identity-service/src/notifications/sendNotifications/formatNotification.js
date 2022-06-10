@@ -232,7 +232,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
             playlistOwnerId: notif.initiator,
             blocknumber
           }],
-          entityId: notif.metadata.entity_id,
+          entityId: notif.metadata.entity_id
         }
         formattedNotifications.push(formattedTrackAddedToPlaylistNotification)
         userIds.add(notificationTarget)

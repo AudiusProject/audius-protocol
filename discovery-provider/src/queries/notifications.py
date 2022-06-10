@@ -47,7 +47,7 @@ from src.utils.spl_audio import to_wei_string
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
-max_block_diff = int(shared_config["discprov"]["notifications_max_block_diff"])
+max_block_diff = 10000
 max_slot_diff = int(shared_config["discprov"]["notifications_max_slot_diff"])
 
 
@@ -886,15 +886,17 @@ def notifications():
                 # skip empty playlists
                 continue
             playlist_contents = entry.playlist_contents
-            playlist_blocknumber = entry.blocknumber
-            playlist_block = web3.eth.get_block(playlist_blocknumber)
-            playlist_block_timestamp = playlist_block.timestamp
+            min_block = web3.eth.get_block(min_block_number)
+            max_block = web3.eth.get_block(max_block_number)
 
             for track in playlist_contents["track_ids"]:
                 track_id = track["track"]
                 track_timestamp = track["time"]
                 # We know that this track was added to the playlist at this specific update
-                if track_timestamp == playlist_block_timestamp:
+                if (
+                    min_block.timestamp < track_timestamp
+                    and track_timestamp <= max_block.timestamp
+                ):
                     track_ids.append(track_id)
                     track_added_to_playlist_notification = {
                         const.notification_type: const.notification_type_track_added_to_playlist,

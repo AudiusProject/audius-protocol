@@ -1,4 +1,3 @@
-const { logger } = require('../../logging')
 const moment = require('moment')
 const models = require('../../models')
 const {
@@ -11,14 +10,14 @@ const {
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processTrackAddedToPlaylistNotification(notifications, tx) {
+async function processTrackAddedToPlaylistNotification (notifications, tx) {
   const validNotifications = []
 
   for (const notification of notifications) {
     const {
       playlist_id: playlistId,
       track_id: trackId,
-      track_owner_id: trackOwnerId,
+      track_owner_id: trackOwnerId
     } = notification.metadata
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const momentTimestamp = moment(timestamp)
@@ -51,7 +50,6 @@ async function processTrackAddedToPlaylistNotification(notifications, tx) {
     })
 
     validNotifications.push(addTrackToPlaylistNotification)
-
   }
 
   return validNotifications
