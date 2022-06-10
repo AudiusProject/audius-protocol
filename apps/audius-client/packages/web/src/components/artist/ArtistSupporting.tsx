@@ -120,5 +120,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
         profilePictureClassname={styles.profilePictureWrapper}
       />
     </div>
+  ) : supporting_count > 0 ? (
+    <div className={styles.emptyContainer} />
   ) : null
 }
