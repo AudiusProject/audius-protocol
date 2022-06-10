@@ -33,7 +33,7 @@ contract AudiusData is SigningLogicInitializable {
         require(_verifierAddress != address(0x00), "");
         verifierAddress = _verifierAddress;
         SigningLogicInitializable.initialize(
-            "AudiusData",
+            "Audius Data",
             "1",
             _networkId
         );
