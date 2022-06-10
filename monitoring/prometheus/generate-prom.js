@@ -92,15 +92,15 @@ scrape_configs:
   # monitor canary nodes
 
   - job_name: 'discoveryprovider4-audius-co'
-  scheme: https
-  metrics_path: '/prometheus_metrics'
-  static_configs:
-    - targets: ['discoveryprovider4.audius.co']
-      labels:
-        host: 'discoveryprovider4.audius.co'
-        environment: 'prod'
-        service: 'audius'
-        component: 'discover-provider'
+    scheme: https
+    metrics_path: '/prometheus_metrics'
+    static_configs:
+      - targets: ['discoveryprovider4.audius.co']
+        labels:
+          host: 'discoveryprovider4.audius.co'
+          environment: 'prod'
+          service: 'audius'
+          component: 'discover-provider'
 `)
 
   for (const env of ENVS) {
