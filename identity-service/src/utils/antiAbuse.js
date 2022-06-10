@@ -16,9 +16,6 @@ const getAbuseAttestation = async (challengeId, handle, reqIP) => {
     }
   })
 
-  if (res.status != 200) {
-    throw new Error(`bad aao status: ${res.status}`)
-  }
   const data = res.data
   logger.info(`antiAbuse: aao response: ${JSON.stringify(data)}`)
   return data
@@ -48,8 +45,8 @@ const detectAbuse = async (challengeId, walletAddress, reqIP) => {
         // The anti abuse system deems them abusive. Flag them as such.
         isAbusive = true
       }
-    } catch(e) {
-      logger.warn(`antiAbuse: aao request failed ${e}`)
+    } catch (e) {
+      logger.warn(`antiAbuse: aao request failed ${e.message}`)
     }
   }
   if (user.isAbusive !== isAbusive) {
