@@ -37,7 +37,8 @@ const NotificationType = Object.freeze({
   TipSend: 'TipSend',
   Reaction: 'Reaction',
   SupporterRankUp: 'SupporterRankUp',
-  SupportingRankUp: 'SupportingRankUp'
+  SupportingRankUp: 'SupportingRankUp',
+  TrackAddedToPlaylist: 'TrackAddedToPlaylist'
 })
 
 const ClientNotificationTypes = new Set([
@@ -49,7 +50,8 @@ const ClientNotificationTypes = new Set([
   NotificationType.Milestone,
   NotificationType.TrendingTrack,
   NotificationType.ChallengeReward,
-  NotificationType.TierChange
+  NotificationType.TierChange,
+  NotificationType.TrackAddedToPlaylist
 ])
 
 const Entity = Object.freeze({
@@ -251,6 +253,14 @@ const formatReaction = (notification) => ({
   entityType: Entity.User
 })
 
+const formatTrackAddedToPlaylist = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  playlistId: notification.metadata.playlistId,
+  playlistOwnerId: notification.metadata.playlistOwnerId,
+  trackId: notification.metadata.trackId,
+})
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -283,7 +293,8 @@ const notificationResponseMap = {
   [NotificationType.TipSend]: formatTipSend,
   [NotificationType.Reaction]: formatReaction,
   [NotificationType.SupporterRankUp]: formatSupporterRankUp,
-  [NotificationType.SupportingRankUp]: formatSupportingRankUp
+  [NotificationType.SupportingRankUp]: formatSupportingRankUp,
+  [NotificationType.TrackAddedToPlaylist]: formatTrackAddedToPlaylist,
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).

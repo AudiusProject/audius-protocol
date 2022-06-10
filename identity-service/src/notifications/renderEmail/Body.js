@@ -128,6 +128,8 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
   return "".concat(parentTrackUser.name, " Co-signed your Remix of ").concat(parentTrack.title);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.ChallengeReward, function (notification) {
   return "You've earned $AUDIO for completing challenges";
+}), _defineProperty(_snippetMap, _Notification.NotificationType.TrackAddedToPlaylist, function (notification) {
+  return "".concat(notification.playlistOwner.name, " added your track track ").concat(notification.track.title, " to their playlist ").concat(notification.playlist.playlist_name);
 }), _snippetMap);
 
 var mapNotification = function mapNotification(notification) {

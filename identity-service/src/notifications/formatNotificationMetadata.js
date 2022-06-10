@@ -145,6 +145,15 @@ function formatChallengeReward (notification) {
   }
 }
 
+function formatTrackAddedToPlaylist (notification, metadata) {
+  return {
+    type: NotificationType.TrackAddedToPlaylist,
+    track: metadata.tracks[notification.entityId],
+    playlist: metadata.collections[notification.metadata.playlistId],
+    playlistOwner: metadata.users[notification.metadata.playlistOwnerId],
+  }
+}
+
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
   [NotificationType.FavoriteTrack]: (notification, metadata) => {
@@ -213,7 +222,11 @@ const notificationResponseMap = {
   [NotificationType.MilestoneRepost]: formatMilestone('repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('favorite'),
   [NotificationType.MilestoneListen]: formatMilestone('listen'),
-  [NotificationType.MilestoneFollow]: formatMilestone('follow')
+  [NotificationType.MilestoneFollow]: formatMilestone('follow'),
+  [NotificationType.TrackAddedToPlaylist]: (notification, metadata) => {
+    return formatTrackAddedToPlaylist(notification, metadata)
+  },
+
 }
 
 const NewFavoriteTitle = 'New Favorite'
@@ -225,6 +238,7 @@ const NewSubscriptionUpdateTitle = 'New Artist Update'
 const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
+const TrackAddedToPlaylistTitle = 'Your track was added to a playlist! 🎧'
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -277,7 +291,8 @@ const notificationResponseTitleMap = {
   [NotificationType.TrendingTrack]: () => TrendingTrackTitle,
   [NotificationType.RemixCreate]: () => RemixCreateTitle,
   [NotificationType.RemixCosign]: () => RemixCosignTitle,
-  [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title
+  [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title,
+  [NotificationType.TrackAddedToPlaylist]: () => TrackAddedToPlaylistTitle,
 }
 
 function formatNotificationProps (notifications, metadata) {

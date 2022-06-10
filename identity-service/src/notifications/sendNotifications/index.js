@@ -4,7 +4,7 @@ const { fetchNotificationMetadata } = require('../fetchNotificationMetadata')
 const formatNotification = require('./formatNotification')
 const publishNotifications = require('./publishNotifications')
 
-function getUserIdsToNotify (notifications) {
+function getUserIdsToNotify(notifications) {
   return notifications.reduce((userIds, notification) => {
     // Add user id from notification based on notification type
     switch (notification.type) {
@@ -18,6 +18,7 @@ function getUserIdsToNotify (notifications) {
         return userIds.concat(notification.metadata.remix_parent_track_user_id)
       case notificationTypes.ChallengeReward:
       case notificationTypes.MilestoneListen:
+      case notificationTypes.TrackAddedToPlaylist:
       case notificationTypes.TierChange:
         return userIds.concat(notification.initiator)
       default:
