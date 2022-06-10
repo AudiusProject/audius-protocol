@@ -112,6 +112,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
               following={does_current_user_follow}
               onFollow={handleFollow}
               onUnfollow={handleUnfollow}
+              stopPropagation
             />
           </div>
         </div>
