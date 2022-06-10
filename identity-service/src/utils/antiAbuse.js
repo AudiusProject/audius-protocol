@@ -1,7 +1,7 @@
 const axios = require('axios')
 const models = require('../models')
-const { REMOTE_VARS, getRemoteVar } = require('../remoteConfig')
 const config = require('../config.js')
+const { logger } = require('../logging')
 
 const aaoEndpoint = config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
@@ -16,8 +16,7 @@ const getAbuseAttestation = async (challengeId, handle, reqIP) => {
     }
   })
 
-  console.log('AAO said', res)
-
+  logger.info(`aao response: ${JSON.stringify(res)}`)
   return res
 }
 
@@ -33,7 +32,7 @@ const detectAbuse = async (challengeId, walletAddress, reqIP) => {
     // of this user's handle. Flag them as abusive.
     isAbusive = true
   } else {
-    const { result } = await getAbuseAttestation(challengeId, handle, reqIP)
+    const { result } = await getAbuseAttestation(challengeId, user.handle, reqIP)
     if (!result) {
       // The anti abuse system deems them abusive. Flag them as such.
       isAbusive = true

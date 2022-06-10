@@ -1,4 +1,5 @@
 const { deviceType, notificationTypes } = require('../constants')
+const models = require('../../models')
 const {
   notificationResponseMap,
   notificationResponseTitleMap,
@@ -6,6 +7,7 @@ const {
 } = require('../formatNotificationMetadata')
 const { publish, publishSolanaNotification } = require('../notificationQueue')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../../featureFlag')
+const { logger } = require('../../logging')
 
 // Maps a notification type to it's base notification
 const getPublishNotifBaseType = (notification) => {
@@ -148,12 +150,14 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     // Don't publish events for deactivated users
     const isReceiverDeactivated = metadata.users[userId] && metadata.users[userId].is_deactivated
     const isInitiatorAbusive = initiatorMap[initiatorUserId] && initiatorMap[initiatorUserId].isAbusive
-    if (
-      isReceiverDeactivated
-      // || isInitiatorAbusive
-    ) {
+    if (isReceiverDeactivated) {
       continue
     }
+    if (isInitiatorAbusive) {
+      logger.info(`isInitiatorAbusive true would skip notif`)
+      // continue // skip notif from abusive initiator
+    }
+
     const shouldFilter = shouldFilterOutNotification(notification.type, optimizelyClient)
     if (shouldFilter) {
       continue
