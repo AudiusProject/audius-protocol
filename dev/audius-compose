@@ -42,12 +42,21 @@ def generate_env(protocol_dir, config):
 
 
 @click.group()
-@click.option("--protocol-dir", envvar="PROTOCOL_DIR", type=click.Path(exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path))
+@click.option(
+    "--protocol-dir",
+    envvar="PROTOCOL_DIR",
+    type=click.Path(
+        exists=True, file_okay=False, resolve_path=True, path_type=pathlib.Path
+    ),
+)
 @click.pass_context
 def cli(ctx, protocol_dir):
     if protocol_dir is None:
         protocol_dir = pathlib.Path.cwd().resolve()
-        while protocol_dir.name != "" and not (protocol_dir / "docker-compose.yml").exists():
+        while (
+            protocol_dir.name != ""
+            and not (protocol_dir / "docker-compose.yml").exists()
+        ):
             protocol_dir = protocol_dir.parent
         if protocol_dir.name == "":
             raise click.ClickException("Unable to find protocol dir")
@@ -64,9 +73,9 @@ def cli(ctx, protocol_dir):
     }
 
 
-@cli.command()
+@cli.command
 @click.pass_obj
-def up(obj):
+def build(obj):
     subprocess.run(
         [
             "docker",
@@ -78,6 +87,10 @@ def up(obj):
         env=obj["env"],
     )
 
+
+@cli.command()
+@click.pass_obj
+def up(obj):
     subprocess.run(
         [
             "docker",
@@ -85,6 +98,7 @@ def up(obj):
             "--project-directory",
             obj["project-directory"],
             "up",
+            "--build",
             "-d",
         ],
         env=obj["env"],
@@ -105,6 +119,54 @@ def down(obj):
         ],
         env=obj["env"],
     )
+
+
+@cli.command()
+@click.argument("service")
+@click.argument("command")
+@click.argument("args", nargs=-1)
+@click.pass_obj
+def exec(obj, service, command, args):
+    index = 1
+    split = service.rsplit("-", 1)
+    if split[-1].isdigit():
+        service, index = split
+
+    subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            obj["project-directory"],
+            "exec",
+            "--index",
+            str(index),
+            service,
+            command,
+            *args,
+        ],
+        env=obj["env"],
+    )
+
+
+@cli.command()
+@click.argument("service")
+def logs(obj, service):
+    split = service.rsplit("-", 1)
+    if split[-1].isdigit():
+        subprocess.run()
+    else:
+        subprocess.run(
+            [
+                "docker",
+                "compose",
+                "--project-directory",
+                obj["project-directory"],
+                "logs",
+                service,
+            ],
+            env=obj["env"],
+        )
 
 
 if __name__ == "__main__":
