@@ -1,3 +1,5 @@
+// this script generates prometheus.yml dynamically
+// it uses audiusLibs to add known service providers to prometheus.yml
 
 const fs = require('fs');
 const dotenv = require('dotenv');
@@ -86,6 +88,19 @@ scrape_configs:
           service: 'audius'
           component: 'discover-provider'
           job: 'census'
+
+  # monitor canary nodes
+
+  - job_name: 'discoveryprovider4-audius-co'
+  scheme: https
+  metrics_path: '/prometheus_metrics'
+  static_configs:
+    - targets: ['discoveryprovider4.audius.co']
+      labels:
+        host: 'discoveryprovider4.audius.co'
+        environment: 'prod'
+        service: 'audius'
+        component: 'discover-provider'
 `)
 
   for (const env of ENVS) {
