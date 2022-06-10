@@ -20,7 +20,7 @@ export const TipAudioButton = () => {
   const profile = useSelector(getProfileUser)
 
   const handleClick = useCallback(() => {
-    dispatch(beginTip({ user: profile }))
+    dispatch(beginTip({ user: profile, source: 'profile' }))
   }, [dispatch, profile])
 
   return (

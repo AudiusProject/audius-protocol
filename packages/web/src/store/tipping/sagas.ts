@@ -167,7 +167,7 @@ function* sendTipAsync() {
   }
 
   const sendTipData = yield* select(getSendTipData)
-  const { user: recipient, amount } = sendTipData
+  const { user: recipient, amount, source } = sendTipData
   if (!recipient) {
     return
   }
@@ -190,7 +190,9 @@ function* sendTipAsync() {
         recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: recipient.handle,
-        amount: weiToAudioString(weiBNAmount)
+        amount: weiToAudioString(weiBNAmount),
+        device: NATIVE_MOBILE ? 'native' : 'web',
+        source
       })
     )
     // If transferring spl wrapped audio and there are insufficent funds with only the
@@ -219,7 +221,9 @@ function* sendTipAsync() {
         recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: recipient.handle,
-        amount: weiToAudioString(weiBNAmount)
+        amount: weiToAudioString(weiBNAmount),
+        device: NATIVE_MOBILE ? 'native' : 'web',
+        source
       })
     )
 
@@ -254,7 +258,9 @@ function* sendTipAsync() {
         senderHandle: sender.handle,
         recipientHandle: recipient.handle,
         amount: weiToAudioString(weiBNAmount),
-        error
+        error,
+        device: NATIVE_MOBILE ? 'native' : 'web',
+        source
       })
     )
   }

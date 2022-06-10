@@ -69,7 +69,7 @@ export const ConfirmSendTip = () => {
 
   const handleGoBackClick = useCallback(() => {
     if (!isDisabled) {
-      dispatch(beginTip({ user: receiver }))
+      dispatch(beginTip({ user: receiver, source: 'profile' }))
     }
   }, [isDisabled, dispatch, receiver])
 
