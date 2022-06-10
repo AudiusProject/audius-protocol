@@ -57,7 +57,7 @@ export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
   const [isActive, setIsActive] = useState(false)
 
   const handlePress = useCallback(() => {
-    dispatchWeb(beginTip({ user: receiver }))
+    dispatchWeb(beginTip({ user: receiver, source: 'feed' }))
     navigation.navigate({ native: { screen: 'TipArtist' } })
   }, [dispatchWeb, receiver, navigation])
 

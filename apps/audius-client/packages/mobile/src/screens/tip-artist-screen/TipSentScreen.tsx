@@ -11,6 +11,8 @@ import { TextButton } from 'app/components/core'
 import { TwitterButton } from 'app/components/twitter-button'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+import { EventNames } from 'app/types/analytics'
+import { make } from 'app/utils/analytics'
 
 import { TopBarIconButton } from '../app-screen'
 
@@ -38,7 +40,9 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const TipSentScreen = () => {
   const account = useSelectorWeb(getAccountUser)
-  const { user: recipient, amount: sendAmount } = useSelectorWeb(getSendTipData)
+  const { user: recipient, amount: sendAmount, source } = useSelectorWeb(
+    getSendTipData
+  )
   const styles = useStyles()
   const navigation = useNavigation()
 
@@ -71,6 +75,20 @@ export const TipSentScreen = () => {
         fullWidth
         styles={{ root: styles.twitter }}
         shareText={getTwitterShareText()}
+        analytics={
+          account && recipient
+            ? make({
+                eventName: EventNames.TIP_AUDIO_TWITTER_SHARE,
+                senderWallet: account.spl_wallet,
+                recipientWallet: recipient.spl_wallet,
+                senderHandle: account.handle,
+                recipientHandle: recipient.handle,
+                amount: sendAmount,
+                device: 'native',
+                source
+              })
+            : undefined
+        }
       />
       <TextButton
         variant='neutralLight4'
