@@ -243,6 +243,15 @@ schemas.manageUser = [
   { name: 'nonce', type: 'bytes32'}
 ]
 
+schemas.manageEntity = [
+  { name: 'userId', type: 'uint'},
+  { name: 'entityType', type: 'string'},
+  { name: 'entityId', type: 'uint'},
+  { name: 'action', type: 'string'},
+  { name: 'metadata', type: 'string'},
+  { name: 'nonce', type: 'bytes32'},
+]
+
 const generators = {}
 
 function getRequestData (domainDataFn, chainId, contractAddress, messageTypeName, messageSchema, message) {
@@ -881,6 +890,34 @@ generators.getManageUserData = function (
     contractAddress,
     'ManageUser',
     schemas.manageUser,
+    message
+  )
+}
+
+generators.getManageEntityData = function(
+  chainId,
+  contractAddress,
+  userId,
+  entityType,
+  entityId,
+  action,
+  metadata,
+  nonce
+) {
+  const message = {
+    userId,
+    entityType,
+    entityId,
+    action,
+    metadata,
+    nonce
+  }
+  return getRequestData(
+    domains.getAudiusDataDomain,
+    chainId,
+    contractAddress,
+    'ManageEntity',
+    schemas.manageEntity,
     message
   )
 }

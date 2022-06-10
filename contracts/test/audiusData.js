@@ -19,13 +19,14 @@ const encodeCall = (name, args, values) => {
     return '0x' + methodId + params
 }
 
-const addressZero = '0x0000000000000000000000000000000000000000'
+const toBN = (val) => web3.utils.toBN(val)
 
 contract.only('AudiusData', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     // Proxy deployer is explicitly set
     const proxyAdminAddress = accounts[25]
+    let testSigner = accounts[10]
 
     let networkId
     // Contract objects
@@ -58,14 +59,12 @@ contract.only('AudiusData', async (accounts) => {
    })
 
    it('Manage user basic test', async () => {
-     let testSigner = accounts[10]
-     console.log(`Signer=${testSigner}`)
-     const action = "Create"
-     const metadata = "QmctAdxYym12fghF16DErS79GWPP5orEZoVXPC8F6XJwe9"
+     const action = 'Create'
+     const metadata = 'QmctAdxYym12fghF16DErS79GWPP5orEZoVXPC8F6XJwe9'
      const userId = 1
      const nonce = signatureSchemas.getNonce()
      const signatureData = signatureSchemas.generators.getManageUserData(
-        getNetworkIdForContractInstance(audiusDataContract),
+        networkId,
         audiusDataContract.address,
         userId,
         action,
@@ -73,8 +72,58 @@ contract.only('AudiusData', async (accounts) => {
         nonce
     )
     const sig = await eth_signTypedData(testSigner, signatureData)
-    let tx = await audiusDataContract.manageUser(userId, action, metadata, nonce, sig)
-    console.dir(tx, { depth: 5 })
+    let manageTx = await audiusDataContract.manageUser(userId, action, metadata, nonce, sig)
+    await expectEvent.inTransaction(
+        manageTx.tx,
+        AudiusData,
+        'ManageUser',
+        {
+            _userId: toBN(userId),
+            _signer: testSigner,
+            _metadata: metadata,
+            _action: action
+        }
+    )
+   })
+
+   it('Manage entity basic test', async () => {
+     const action = 'Create'
+     const metadata = 'QmctAdxYym12fghF16DErS79GWPP5orEZoVXPC8F6XJwe9'
+     const userId = 1
+     const entityType = 'Track'
+     const entityId = 1
+     const nonce = signatureSchemas.getNonce()
+     const signatureData = signatureSchemas.generators.getManageEntityData(
+        networkId,
+        audiusDataContract.address,
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadata,
+        nonce
+     )
+     const sig = await eth_signTypedData(testSigner, signatureData)
+     let manageTx = await audiusDataContract.manageEntity(
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadata,
+        nonce,
+        sig
+    )
+    await expectEvent.inTransaction(
+        manageTx.tx,
+        AudiusData,
+        'ManageEntity',
+        {
+            _userId: toBN(userId),
+            _signer: testSigner,
+            _metadata: metadata,
+            _action: action
+        }
+    )
    })
 
 })
