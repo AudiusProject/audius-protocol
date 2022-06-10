@@ -2,6 +2,7 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 const txRelay = require('../relay/txRelay')
 const crypto = require('crypto')
 const captchaMiddleware = require('../captchaMiddleware')
+const { detectAbuse } = require('../utils/antiAbuse')
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -49,7 +50,10 @@ module.exports = function (app) {
         }
       }
 
+      recordAbuse('relay', body.senderAddress) // fired & forgotten
       return successResponse({ receipt: receipt })
-    } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
+    }
+
+    return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
   }))
 }
