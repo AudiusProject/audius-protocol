@@ -20,7 +20,7 @@ const encodeCall = (name, args, values) => {
 
 const toBN = (val) => web3.utils.toBN(val)
 
-contract.only('AudiusData', async (accounts) => {
+contract('AudiusData', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const proxyAdminAddress = accounts[25]
