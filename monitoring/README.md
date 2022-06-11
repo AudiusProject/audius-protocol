@@ -1,17 +1,23 @@
-### Launch Prometheus & Grafana
+### Launch Prometheus & Grafana Locally
 
 ```bash
+docker-compose build
 docker-compose up -d prometheus grafana
 ./grafana/bin/create-data-sources.sh
 ./grafana/bin/upload-dashboards.sh
 ```
 
-Prometheus is accessible at port 9090, and Grafana at port 3000
+Ports:
 
-### Deploy Changes
+* Prometheus binds to :9090
+* Grafana binds to :3000
 
-Inside `monitoring-tools repo`
+### Deploy Production Changes
+
 ```bash
+ssh prometheus-grafana-metrics
+cd ~/audius-protocol/monitoring
 git checkout master
+
 ./deploy.sh
 ```
