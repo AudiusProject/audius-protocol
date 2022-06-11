@@ -12,6 +12,7 @@ from src.api.v1.helpers import (
 from src.api.v1.models.search import search_model
 from src.queries.search_queries import search
 from src.utils.redis_cache import cache
+from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ class FullSearch(Resource):
     @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_full_response)
     @cache(ttl_sec=5)
+    @record_metrics
     def get(self):
         args = full_search_parser.parse_args()
         offset = format_offset(args)
@@ -69,6 +71,7 @@ class FullSearchAutocomplete(Resource):
     @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_autocomplete_response)
     @cache(ttl_sec=5)
+    @record_metrics
     def get(self):
         """
         Get Users/Tracks/Playlists/Albums that best match the search query
