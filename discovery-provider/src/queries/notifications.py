@@ -47,7 +47,7 @@ from src.utils.spl_audio import to_wei_string
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
-max_block_diff = 10000
+max_block_diff = int(shared_config["discprov"]["notifications_max_block_diff"])
 max_slot_diff = int(shared_config["discprov"]["notifications_max_slot_diff"])
 
 

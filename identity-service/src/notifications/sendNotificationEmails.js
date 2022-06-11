@@ -341,7 +341,7 @@ async function renderAndSendNotificationEmail (
       5)
     const timeAfterEmailNotifications = Date.now()
     const getEmailDuration = (timeAfterEmailNotifications - timeBeforeEmailNotifications) / 1000
-    logger.info(`renderAndSendNotificationEmail | time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${getEmailDuration} | ${notificationCount} unread notifications`)
+    logger.info(`renderAndSendNotificationEmail | ${userId} time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${getEmailDuration} | ${notificationCount} unread notifications`)
 
     const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
     if (notificationCount === 0) {
@@ -380,6 +380,7 @@ async function renderAndSendNotificationEmail (
     }
 
     renderProps['subject'] = subject
+    logger.info(`renderAndSendNotificationEmail | ${userId} renderProps ${JSON.stringify(renderProps)}`)
     const notifHtml = renderEmail(renderProps)
 
     const emailParams = {
@@ -400,7 +401,7 @@ async function renderAndSendNotificationEmail (
     logger.info({ job: 'renderAndSendNotificationEmail', totalDuration, getEmailDuration }, `renderAndSendNotificationEmail | ${userId}, ${userEmail}, in ${totalDuration} sec`)
     return true
   } catch (e) {
-    logger.error(`Error in renderAndSendNotificationEmail ${e}`)
+    logger.error(`Error in renderAndSendNotificationEmail ${e.stack}`)
     return false
   }
 }

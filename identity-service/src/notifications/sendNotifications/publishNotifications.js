@@ -59,6 +59,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
   else if (baseType === notificationTypes.Milestone) return notif.initiator
   else if (baseType === notificationTypes.TierChange) return notif.initiator
+  else if (baseType === notificationTypes.TrackAddedToPlaylist) return notif.metadata.track_owner_id
 }
 
 // Notification types that always get send a notification, regardless of settings

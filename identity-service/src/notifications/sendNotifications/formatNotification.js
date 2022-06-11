@@ -229,10 +229,9 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         const formattedTrackAddedToPlaylistNotification = {
           ...notif,
           actions: [{
-            playlistOwnerId: notif.initiator,
             blocknumber
           }],
-          entityId: notif.metadata.entity_id
+          trackId: notif.metadata.track_id
         }
         formattedNotifications.push(formattedTrackAddedToPlaylistNotification)
         userIds.add(notificationTarget)

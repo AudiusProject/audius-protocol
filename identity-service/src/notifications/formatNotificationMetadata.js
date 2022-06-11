@@ -1,6 +1,7 @@
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
+const { logger } = require('../logging')
 const { actionEntityTypes, notificationTypes } = require('./constants')
 
 const getRankSuffix = (num) => {
@@ -146,12 +147,27 @@ function formatChallengeReward (notification) {
 }
 
 function formatTrackAddedToPlaylist (notification, metadata) {
-  return {
+  logger.info(`formatTrackAddedToPlaylist | notification ${JSON.stringify(notification)}`)
+
+  logger.info(`formatTrackAddedToPlaylist | notification.metadata ${JSON.stringify(notification.metadata)}`)
+  
+  logger.info(`formatTrackAddedToPlaylist | metadata ${JSON.stringify(metadata)}`)
+  
+  logger.info(`formatTrackAddedToPlaylist | notification.metadata.playlistId ${JSON.stringify(notification.metadata.playlistId)}`)
+
+  
+  logger.info(`formatTrackAddedToPlaylist | playlist ${JSON.stringify(metadata.collections[notification.metadata.playlistId])}`)
+
+
+  const res = {
     type: NotificationType.TrackAddedToPlaylist,
     track: metadata.tracks[notification.entityId],
     playlist: metadata.collections[notification.metadata.playlistId],
     playlistOwner: metadata.users[notification.metadata.playlistOwnerId]
   }
+  logger.info(`formatTrackAddedToPlaylist | res ${JSON.stringify(res)}`)
+
+  return res
 }
 
 const notificationResponseMap = {
@@ -238,7 +254,7 @@ const NewSubscriptionUpdateTitle = 'New Artist Update'
 const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
-const TrackAddedToPlaylistTitle = 'Your track was added to a playlist! 🎧'
+const TrackAddedToPlaylistTitle = 'Your track was added to a playlist! 💿'
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -351,7 +367,11 @@ const pushNotificationMessagesMap = {
     return notification.challengeId === 'referred'
       ? `You’ve received ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
+  },
+  [notificationTypes.TrackAddedToPlaylist] (notification) {
+    return `${notification.playlistOwner.name} added your track track ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   }
+
 }
 
 module.exports = {
