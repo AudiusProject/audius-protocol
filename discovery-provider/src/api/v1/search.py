@@ -28,6 +28,7 @@ search_full_response = make_full_response(
 
 @full_ns.route("/full")
 class FullSearch(Resource):
+    @record_metrics
     @full_ns.doc(
         id="Search",
         description="""Get Users/Tracks/Playlists/Albums that best match the search query""",
@@ -36,7 +37,6 @@ class FullSearch(Resource):
     @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_full_response)
     @cache(ttl_sec=5)
-    @record_metrics
     def get(self):
         args = full_search_parser.parse_args()
         offset = format_offset(args)
@@ -64,6 +64,7 @@ search_autocomplete_response = make_full_response(
 
 @full_ns.route("/autocomplete")
 class FullSearchAutocomplete(Resource):
+    @record_metrics
     @full_ns.doc(
         id="Search Autocomplete",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
@@ -71,7 +72,6 @@ class FullSearchAutocomplete(Resource):
     @full_ns.expect(full_search_parser)
     @full_ns.marshal_with(search_autocomplete_response)
     @cache(ttl_sec=5)
-    @record_metrics
     def get(self):
         """
         Get Users/Tracks/Playlists/Albums that best match the search query
