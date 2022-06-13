@@ -42,7 +42,7 @@ const Metrics = Object.freeze({
     metricType: MetricTypes.HISTOGRAM,
     metricConfig: {
       name: MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
-      help: 'Duration for POST /tracks route (seconds)',
+      help: 'Duration for POST /tracks route',
       labelNames: ['code'],
       buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
     }
