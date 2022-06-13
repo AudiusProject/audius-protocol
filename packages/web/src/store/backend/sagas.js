@@ -6,12 +6,10 @@ import {
   takeEvery,
   select,
   call,
-  race,
-  spawn
+  race
 } from 'redux-saga/effects'
 
 import * as accountActions from 'common/store/account/reducer'
-import { hydrateStoreFromCache } from 'common/store/cache/sagas'
 import * as reachabilityActions from 'common/store/reachability/actions'
 import { getIsReachable } from 'common/store/reachability/selectors'
 import AudiusBackend from 'services/AudiusBackend'
@@ -88,7 +86,6 @@ export function* setupBackend() {
     yield put(backendActions.libsError(libsError))
     return
   }
-  yield spawn(hydrateStoreFromCache)
   yield put(backendActions.setupBackendSucceeded(web3Error))
 }
 
