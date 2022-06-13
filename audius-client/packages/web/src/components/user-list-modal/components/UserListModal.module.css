@@ -40,3 +40,14 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+.titleNameContainer {
+  display: flex;
+  align-items: center;
+}
+
+.titleName {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

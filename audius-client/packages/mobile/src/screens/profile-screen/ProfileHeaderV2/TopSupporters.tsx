@@ -88,7 +88,10 @@ export const TopSupporters = () => {
 
   const handlePress = useCallback(() => {
     navigation.push({
-      native: { screen: 'TopSupporters', params: { userId: user_id } }
+      native: {
+        screen: 'TopSupporters',
+        params: { userId: user_id, source: 'profile' }
+      }
     })
   }, [navigation, user_id])
 
