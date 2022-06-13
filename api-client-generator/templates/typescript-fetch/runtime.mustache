@@ -13,7 +13,7 @@ export class BaseAPI {
 
     private middleware: Middleware[];
 
-    constructor(protected configuration = new Configuration()) {
+    constructor(protected configuration: Configuration) {
         this.middleware = configuration.middleware;
     }
 
@@ -61,7 +61,7 @@ export class BaseAPI {
         return { url, init };
     }
 
-    private fetchApi = async (url: string, init: RequestInit) => {
+    private fetchApi = async (url: string, init?: RequestInit) => {
         let fetchParams = { url, init };
         for (const middleware of this.middleware) {
             if (middleware.pre) {
@@ -71,7 +71,7 @@ export class BaseAPI {
                 }) || fetchParams;
             }
         }
-        let response = await (this.configuration.fetchApi || fetch)(fetchParams.url, fetchParams.init);
+        let response = await this.configuration.fetchApi(fetchParams.url, fetchParams.init);
         for (const middleware of this.middleware) {
             if (middleware.post) {
                 response = await middleware.post({
@@ -111,11 +111,12 @@ export const COLLECTION_FORMATS = {
     pipes: "|",
 };
 
-export type FetchAPI = {{#typescriptThreePlus}}WindowOrWorkerGlobalScope{{/typescriptThreePlus}}{{^typescriptThreePlus}}GlobalFetch{{/typescriptThreePlus}}['fetch'];
+
+export type FetchAPI = (url: string, init?: RequestInit) => Promise<Response>
 
 export interface ConfigurationParameters {
     basePath?: string; // override base path
-    fetchApi?: FetchAPI; // override for fetch implementation
+    fetchApi: FetchAPI; // fetch implementation
     middleware?: Middleware[]; // middleware to apply before/after fetch requests
     queryParamsStringify?: (params: HTTPQuery) => string; // stringify function for query strings
     username?: string; // parameter for basic security
@@ -127,7 +128,7 @@ export interface ConfigurationParameters {
 }
 
 export class Configuration {
-    constructor(private configuration: ConfigurationParameters = {}) {}
+    constructor(private configuration: ConfigurationParameters) {}
 
     get basePath(): string {
         return this.configuration.basePath != null ? this.configuration.basePath : BASE_PATH;

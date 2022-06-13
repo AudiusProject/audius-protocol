@@ -7,7 +7,21 @@ import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
 import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
-import { Configuration, TracksApi } from './full'
+import {
+  Configuration,
+  PlaylistsApi,
+  TracksApi,
+  UsersApi,
+  TipsApi
+} from './default'
+import {
+  PlaylistsApi as PlaylistsApiFull,
+  ReactionsApi as ReactionsApiFull,
+  SearchApi as SearchApiFull,
+  TracksApi as TracksApiFull,
+  UsersApi as UsersApiFull,
+  TipsApi as TipsApiFull
+} from './full'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -81,15 +95,27 @@ export const sdk = async (config: SdkConfig) => {
   // know when the sdk is initialized
   await discoveryNode.init()
 
-  const tracks = new TracksApi(
-    new Configuration({
-      fetchApi: (info: RequestInfo) => {
-        return discoveryNode._makeRequest({
-          endpoint: typeof info === 'string' ? info : (info as Request).url
-        }) as Promise<Response>
-      }
-    })
-  )
+  const generatedApiClientConfig = new Configuration({
+    fetchApi: (url: string) => {
+      return discoveryNode._makeRequest({
+        endpoint: url
+      }) as Promise<Response>
+    }
+  })
+
+  const tracks = new TracksApi(generatedApiClientConfig)
+  const users = new UsersApi(generatedApiClientConfig)
+  const playlists = new PlaylistsApi(generatedApiClientConfig)
+  const tips = new TipsApi(generatedApiClientConfig)
+
+  const full = {
+    tracks: new TracksApiFull(generatedApiClientConfig as any),
+    users: new UsersApiFull(generatedApiClientConfig as any),
+    search: new SearchApiFull(generatedApiClientConfig as any),
+    playlists: new PlaylistsApiFull(generatedApiClientConfig as any),
+    reactions: new ReactionsApiFull(generatedApiClientConfig as any),
+    tips: new TipsApiFull(generatedApiClientConfig as any)
+  }
 
   const oauth =
     typeof window !== 'undefined'
@@ -98,8 +124,11 @@ export const sdk = async (config: SdkConfig) => {
 
   return {
     oauth,
-    discoveryNode,
-    tracks
+    tracks,
+    users,
+    playlists,
+    tips,
+    full
   }
 }
 
