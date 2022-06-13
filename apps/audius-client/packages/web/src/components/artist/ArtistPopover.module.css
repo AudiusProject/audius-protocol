@@ -31,6 +31,7 @@
 
 .overlayStyle :global(.ant-popover-inner) {
   border-radius: 6px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 }
 
 .overlayStyle :global(.ant-popover-inner-content) {

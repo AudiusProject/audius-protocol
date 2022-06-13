@@ -577,6 +577,7 @@ class TracksTable extends Component {
       >
         <DragDropContext onDragEnd={this.onDragEnd}>
           <Table
+            showSorterTooltip={false}
             dataSource={dataSource}
             columns={columns}
             components={

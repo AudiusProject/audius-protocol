@@ -33,22 +33,24 @@ export const shouldShowDark = (theme?: Theme | null) => {
   )
 }
 
-export const setTheme = (theme: Theme) => {
-  const themeFile = (() => {
-    switch (theme) {
-      case Theme.DARK:
+const getThemeColors = (theme: Theme | null) => {
+  switch (theme) {
+    case Theme.DARK:
+      return DarkTheme
+    case Theme.MATRIX:
+      return MatrixTheme
+    case Theme.AUTO:
+      if (doesPreferDarkMode()) {
         return DarkTheme
-      case Theme.MATRIX:
-        return MatrixTheme
-      case Theme.AUTO:
-        if (doesPreferDarkMode()) {
-          return DarkTheme
-        }
-        return DefaultTheme
-      default:
-        return DefaultTheme
-    }
-  })()
+      }
+      return DefaultTheme
+    default:
+      return DefaultTheme
+  }
+}
+
+export const setTheme = (theme: Theme) => {
+  const themeFile = getThemeColors(theme)
   applyTheme(themeFile)
   window.localStorage.setItem(THEME_KEY, theme)
 }
@@ -59,6 +61,11 @@ export const getTheme = (): Theme | null => {
     return theme as Theme
   }
   return null
+}
+
+export const getCurrentThemeColors = () => {
+  const theme = getTheme()
+  return getThemeColors(theme)
 }
 
 export const isDarkMode = () => shouldShowDark(getTheme())

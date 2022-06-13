@@ -1,4 +1,5 @@
 .searchBarResultContainer {
+  height: 48px;
   width: 100%;
   position: relative;
   display: inline-flex;
@@ -7,8 +8,9 @@
 .imageContainer {
   margin-right: 8px;
   width: 33px;
-  height: 33px;
-  display: block;
+  height: 48px;
+  display: flex;
+  align-items: center;
 }
 
 .image {

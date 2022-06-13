@@ -34,10 +34,12 @@
   user-select: none;
 }
 
+:global(.ant-table-thead > tr > th:before) {
+  content: none !important;
+}
+
 /* Header Cell Hover Color */
-:global(.ant-table-thead
-    > tr
-    > th.ant-table-column-has-actions.ant-table-column-has-sorters:hover) {
+:global(.ant-table-thead > tr > th.ant-table-column-has-sorters:hover) {
   background: var(--neutral-light-10) !important;
 }
 
@@ -57,24 +59,37 @@
   display: none !important;
 }
 
+:global(.ant-table-thead > tr > th .ant-table-column-sorters) {
+  display: block;
+}
+
 /* Caret formatting in header */
 :global(.ant-table-thead > tr > th .ant-table-column-sorter) {
-  position: absolute !important;
-  right: unset !important;
-  width: 14px !important;
-  height: 17px !important;
-  text-align: center !important;
-  transition: all 0.3s !important;
-  display: inline-block !important;
+  position: absolute;
+  z-index: 1;
+  right: unset;
+  width: 14px;
+  height: 12px;
+  text-align: center;
+  transition: all 0.3s;
+  display: inline-block;
+  margin-left: 8px;
 }
 :global(.ant-table-thead > tr > th .ant-table-column-sorter-up),
 :global(.ant-table-thead > tr > th .ant-table-column-sorter-down) {
+  display: none;
   color: var(--neutral-light-1) !important;
   font-size: 14px !important;
+  margin: 0 !important;
 }
-
-:global(.ant-table-thead > tr > th .ant-table-column-sorter-up) {
-  margin-top: 1px !important;
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-up.active),
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-down.active) {
+  display: inline-block;
+}
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-up svg),
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-down svg) {
+  height: 13px;
+  width: 13px;
 }
 
 /* Body Cell */
@@ -258,7 +273,7 @@ tr.deleted td {
 
 tr.deleted td,
 tr.deleted:hover td {
-  background-color: var(--neutral-light-9);
+  background-color: var(--neutral-light-9) !important;
 }
 
 :global(.ant-table-tbody) > tr.deleted:hover > td {

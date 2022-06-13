@@ -39,8 +39,6 @@
 
 .dropdownInput > :global(.ant-select) div {
   width: 100%;
-  height: 100%;
-  box-shadow: none;
 }
 
 .wrapper.large > .dropdownInput {
@@ -61,54 +59,88 @@
 .wrapper.small > .dropdownInput > :global(.ant-select) {
   font-size: var(--font-xs);
 }
-.wrapper.small > .dropdownInput :global(.ant-select-selection-selected-value),
-.wrapper.small > .dropdownInput :global(.ant-select-search) {
-  line-height: 24px;
+
+.wrapper > .dropdownInput :global(.ant-select-selection-item),
+.wrapper > .dropdownInput :global(.ant-select-selection-search) {
+  height: 100%;
+}
+.wrapper.large > .dropdownInput :global(.ant-select-selection-item),
+.wrapper.large > .dropdownInput :global(.ant-select-selection-search) {
+  line-height: 48px;
+}
+.wrapper.medium > .dropdownInput :global(.ant-select-selection-item),
+.wrapper.medium > .dropdownInput :global(.ant-select-selection-search) {
+  line-height: 32px;
+}
+.wrapper.small > .dropdownInput :global(.ant-select-selection-item),
+.wrapper.small > .dropdownInput :global(.ant-select-selection-search) {
+  line-height: 22px;
 }
 
-.dropdownInput :global(.ant-select-search input) {
+.wrapper .dropdownInput :global(.ant-select-selection-search input) {
+  height: calc(100% - 2px) !important;
+  font-weight: 500;
   color: var(--neutral);
 }
+.wrapper.large .dropdownInput :global(.ant-select-selection-search input) {
+  line-height: 48px;
+}
+.wrapper.medium .dropdownInput :global(.ant-select-selection-search input) {
+  line-height: 32px;
+}
+.wrapper.small .dropdownInput :global(.ant-select-selection-search input) {
+  line-height: 22px;
+}
 
-.dropdownInput :global(.ant-select-selection) {
+.wrapper .dropdownInput :global(.ant-select-selection-search) {
+  left: 16px;
+  right: 16px;
+}
+.wrapper .dropdownInput :global(.ant-select-selector) {
+  height: 100%;
   background-color: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-8);
+  border: 1px solid var(--neutral-light-8) !important;
   border-radius: 4px;
   transition: border ease-in-out 0.1s;
-  padding-left: 7px;
+  padding: 0 16px;
+  box-shadow: none !important;
 }
-.alternative .dropdownInput :global(.ant-select-selection) {
+.alternative .dropdownInput :global(.ant-select-selector) {
   background-color: var(--white);
 }
 
-.dropdownInput:hover :global(.ant-select-selection) {
-  border-color: var(--neutral-light-6);
+.wrapper .dropdownInput:hover :global(.ant-select-selector) {
+  border-color: var(--neutral-light-6) !important;
 }
-.focused .dropdownInput :global(.ant-select-selection) {
-  border-color: var(--secondary);
+.wrapper.focused .dropdownInput :global(.ant-select-selector) {
+  border-color: var(--secondary) !important;
 }
-.error .dropdownInput :global(.ant-select-selection) {
-  border-color: var(--accent-red);
+.wrapper.error .dropdownInput :global(.ant-select-selector) {
+  border-color: var(--accent-red) !important;
 }
-.error .dropdownInput :global(.ant-select-selection:hover) {
-  border-color: var(--accent-red-dark-1);
+.wrapper.error .dropdownInput :global(.ant-select-selector:hover) {
+  border-color: var(--accent-red-dark-1) !important;
 }
-.disabled .dropdownInput :global(.ant-select-selection) {
+.wrapper.disabled .dropdownInput :global(.ant-select-selector) {
   background-color: var(--neutral-light-8);
   cursor: default !important;
 }
 
 .placeholder {
+  height: 100%;
   color: var(--neutral-light-4);
   font-weight: 500;
 }
 .wrapper.large .placeholder {
+  line-height: 48px;
   font-size: var(--font-m);
 }
 .wrapper.medium .placeholder {
+  line-height: 32px;
   font-size: var(--font-xs);
 }
 .wrapper.small .placeholder {
+  line-height: 22px;
   font-size: var(--font-xs);
 }
 
@@ -126,7 +158,7 @@
   fill: var(--neutral);
 }
 
-.dropdownInput :global(.ant-select-selection-selected-value) {
+.dropdownInput :global(.ant-select-selection-item) {
   opacity: 1 !important;
   position: absolute;
   /* This is pretty hacky, but we can't override display: flex here to center since
@@ -136,29 +168,25 @@
   color: var(--neutral);
   font-weight: 500;
 }
-.wrapper.large .dropdownInput :global(.ant-select-selection-selected-value) {
-  transform: translateY(20%);
+.wrapper.large .dropdownInput :global(.ant-select-selection-item) {
   font-size: var(--font-m);
 }
-.wrapper.large .dropdownInput :global(.ant-select-selection__rendered) {
-  margin-left: 10px;
-}
-.wrapper.medium .dropdownInput :global(.ant-select-selection-selected-value) {
+.wrapper.medium .dropdownInput :global(.ant-select-selection-item) {
   font-size: var(--font-xs);
 }
-.wrapper.medium .dropdownInput :global(.ant-select-selection__rendered) {
-  margin-left: 8px;
-}
-.wrapper.small .dropdownInput :global(.ant-select-selection-selected-value) {
+.wrapper.small .dropdownInput :global(.ant-select-selection-item) {
   font-size: var(--font-xs);
-}
-.wrapper.small .dropdownInput :global(.ant-select-selection__rendered) {
-  margin-left: 8px;
 }
 
 /* Dropdown */
+.select {
+  padding: 8px 0;
+  border-radius: 6px;
+}
+.select :global(.rc-virtual-list-holder-inner) {
+  padding: 0 8px;
+}
 .select :global(.ant-select-dropdown) {
-  border-radius: 4px;
   background-color: var(--white);
   box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
@@ -167,15 +195,15 @@
 .select > div {
   background: var(--white);
 }
-.select :global(.ant-select-dropdown-menu) {
-  box-shadow: none;
+.select :global(.ant-select-dropdown) {
   padding: 8px 0;
   margin-top: 4px;
   text-align: left;
   background: var(--white);
 }
-.select :global(.ant-select-dropdown-menu-item) {
-  margin: 0 8px;
+.select :global(.ant-select-item) {
+  min-height: unset;
+  text-align: left;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: var(--font-xs);
@@ -183,16 +211,20 @@
   color: var(--neutral);
   transition: all ease-in-out 0.04s;
 }
-.select :global(.ant-select-dropdown-menu-item-selected) {
-  background: var(--neutral-light-10);
+
+.select
+  :global(.ant-select-item-option-selected:not(.ant-select-item-option-active)) {
+  background-color: unset;
 }
-.select :global(.ant-select-dropdown-menu-item-active),
-.select :global(.ant-select-dropdown-menu-item:hover) {
+
+.select :global(.ant-select-item-option-active),
+.select
+  :global(.ant-select-item-option-selected.ant-select-item-option-active) {
   background: var(--secondary);
   color: var(--white);
 }
 
-.large.select :global(.ant-select-dropdown-menu-item) {
+.large.select :global(.ant-select-item) {
   font-size: var(--font-m);
   line-height: 28px;
   height: 32px;

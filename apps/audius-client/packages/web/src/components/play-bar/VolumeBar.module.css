@@ -28,8 +28,7 @@
 
 .volumeBar :global(.ant-slider) {
   padding: 0;
-  margin-left: 0;
-  margin-right: 0;
+  margin: 14px 0 10px;
 }
 
 .volumeBar :global(.ant-slider-rail),

@@ -19,7 +19,7 @@
     "@sentry/integrations": "6.16.1",
     "@walletconnect/web3-provider": "1.4.1",
     "amplitude-js": "8.10.0",
-    "antd": "3.20.4",
+    "antd": "4.20.6",
     "array-pack-2d": "0.1.1",
     "array-range": "1.0.1",
     "bitski": "0.10.9",

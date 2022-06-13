@@ -36,10 +36,6 @@
   height: 100%;
 }
 
-.tooltip {
-  --tooltip-background-color: var(--white);
-}
-
 .tooltip :global(.ant-tooltip-inner) {
   padding: 8px 16px;
   overflow: hidden;
