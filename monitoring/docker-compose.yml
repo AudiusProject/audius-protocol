@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  grafana:
+    build:
+      context: grafana
+      args:
+        - GRAFANA_VERSION=latest
+        - GF_INSTALL_IMAGE_RENDERER_PLUGIN=true
+    user: 0:0
+    env_file:
+      - grafana/.env
+    links:
+      - prometheus:prometheus
+    ports:
+      - "80:3000"
+    restart: always
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+
+  prometheus:
+    build: prometheus
+    user: 0:0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./data/prometheus:/prometheus

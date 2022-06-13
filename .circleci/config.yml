@@ -573,6 +573,7 @@ jobs:
       #     paths:
       #       - solana-programs/track_listen_count/target
       #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+
   test-solana-programs-anchor:
     resource_class: large # 4vcpu/8gb
     machine:
@@ -715,15 +716,6 @@ workflows:
           name: build-identity-service
           repo: identity-service
 
-      - hold-build-logspout:
-          type: approval
-      - docker-build-and-push:
-          name: build-logspout
-          repo: logspout
-          logspout-tag: "true"
-          requires:
-            - hold-build-logspout
-
       - test-solana-programs:
           name: test-solana-programs
       - test-solana-programs-anchor:
@@ -733,15 +725,27 @@ workflows:
           context:
             - GCP2
           mad-dog-type: test
-      - hold-test-mad-dog-e2e-full:
-          type: approval
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          name: test-mad-dog-e2e-full
-          mad-dog-type: test-nightly
-          requires:
-            - hold-test-mad-dog-e2e-full
+
+      # Commenting this out since we almost never run this job, and it ruins our nice green check marks.
+      # - hold-test-mad-dog-e2e-full:
+      #     type: approval
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     name: test-mad-dog-e2e-full
+      #     mad-dog-type: test-nightly
+      #     requires:
+      #       - hold-test-mad-dog-e2e-full
+
+      # Commenting this out since we almost never need to build this manually, and it ruins our nice green check marks.
+      # - hold-build-logspout:
+      #     type: approval
+      # - docker-build-and-push:
+      #     name: build-logspout
+      #     repo: logspout
+      #     logspout-tag: "true"
+      #     requires:
+      #       - hold-build-logspout
 
   # test master at midnight daily
   test-nightly:

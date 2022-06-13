@@ -1,5 +1,5 @@
-import sys
 import json
+import sys
 
 for line in sys.stdin:
     message = line.strip()

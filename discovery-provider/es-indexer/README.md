@@ -24,7 +24,6 @@ If you are adding a new denormalization (attaching data from a related model), t
 When working on mapping changes, I might put code like this at top of `main.ts main()` function:
 
 ```ts
-await new Promise((r) => setTimeout(r, 100)) // don't ask... will fix haha
 await indexer.playlists.createIndex({ drop: true })
 await indexer.playlists.catchup()
 process.exit(0)

@@ -148,6 +148,7 @@ async function createTrackListenTransaction ({
   userId,
   trackId,
   source,
+  location,
   connection
 }) {
   validSigner = validSigner || VALID_SIGNER
@@ -161,10 +162,12 @@ async function createTrackListenTransaction ({
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
 
+  const sourceData = JSON.stringify({ source: source, location: location })
+
   let trackData = new TrackData({
     userId: userId,
     trackId: trackId,
-    source: source,
+    source: sourceData, // max sol tx size is 1232 bytes
     timestamp: (await getListenTimestamp(connection)) || Math.round(new Date().getTime() / 1000)
   })
 
