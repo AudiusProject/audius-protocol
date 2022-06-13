@@ -110,7 +110,7 @@ def parse_instruction_data(
 
         location = sourceDict["location"]
     except Exception:
-        logger.info(f"index_solana_plays.py | Missing location: {sourceDict}")
+        logger.info(f"index_solana_plays.py | Missing location: {decoded_source}")
 
     if not source:
         # Fallback to parse source as normal string
