@@ -26,7 +26,7 @@ const getStoragePathUsed = async () => {
   const storagePathUsedGaugeMetric = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames.STORAGE_PATH_USED_GAUGE
   )
-  storagePathUsedGaugeMetric.set(total)
+  storagePathUsedGaugeMetric.set(used)
 
   return used
 }

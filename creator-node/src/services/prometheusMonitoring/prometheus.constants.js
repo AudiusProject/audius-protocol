@@ -1,6 +1,6 @@
 const promClient = require('prom-client')
 
-const METRIC_PREFIX = 'cn_'
+const METRIC_PREFIX = 'audius_cn_'
 
 /**
  * @notice Counter and Summary metric types are currently disabled, since we should almost never be using them.

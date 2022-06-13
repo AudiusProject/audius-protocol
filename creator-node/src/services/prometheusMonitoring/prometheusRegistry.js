@@ -11,8 +11,12 @@ module.exports = class PrometheusRegistry {
     this.registry = PrometheusClient.register
     this.metricNames = MetricNames
 
+    this.registry.clear()
+
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
-    PrometheusClient.collectDefaultMetrics({ prefix: METRIC_PREFIX })
+    PrometheusClient.collectDefaultMetrics({
+      prefix: METRIC_PREFIX + 'default_'
+    })
 
     createAllCustomMetrics(this.registry)
   }

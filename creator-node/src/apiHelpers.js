@@ -18,7 +18,6 @@ module.exports.handleResponse = (func) => {
       }
 
       sendResponse(req, res, resp)
-
       next()
     } catch (error) {
       genericLogger.error('HandleResponse', error)

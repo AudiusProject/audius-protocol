@@ -29,7 +29,7 @@ async function getApp (libsClient, blacklistManager = new BlacklistManager(), se
     nodeConfig,
     syncQueue: new SyncQueue(nodeConfig, redisClient),
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
-    prometheusRegistry: new PrometheusRegistry(false)
+    prometheusRegistry: new PrometheusRegistry()
   }
 
   // Update the import to be the mocked ServiceRegistry instance
