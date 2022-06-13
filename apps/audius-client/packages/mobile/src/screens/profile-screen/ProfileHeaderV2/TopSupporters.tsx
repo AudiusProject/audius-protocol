@@ -66,7 +66,10 @@ export const TopSupporters = () => {
   const styles = useStyles()
   const { secondary, neutral } = useThemeColors()
   const navigation = useNavigation()
-  const { user_id } = useSelectProfile(['user_id'])
+  const { user_id, supporter_count } = useSelectProfile([
+    'user_id',
+    'supporter_count'
+  ])
   const supportersForProfile: SupportersMapForUser =
     useSelectorWeb(state => getSupportersForUser(state, user_id)) || {}
   const rankedSupporterIds = Object.keys(supportersForProfile)
@@ -92,7 +95,9 @@ export const TopSupporters = () => {
   return rankedSupporters.length > 0 ? (
     <View style={styles.root}>
       <ProfilePictureList
-        users={rankedSupporters.slice(0, MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS)}
+        users={rankedSupporters}
+        totalUserCount={supporter_count}
+        limit={MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS}
         style={styles.profilePictureList}
         navigationType='push'
         interactive={false}
