@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { IconTrophy, IconArrow } from '@audius/stems'
-import cn from 'classnames'
+import { IconTrophy } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ID } from 'common/models/Identifiers'
@@ -9,7 +8,8 @@ import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { getOptimisticSupporters } from 'common/store/tipping/selectors'
-import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
+import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
+import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {
   setUsers,
   setVisibility
@@ -24,8 +24,7 @@ import { MAX_PROFILE_TOP_SUPPORTERS } from 'utils/constants'
 import styles from './Support.module.css'
 
 const messages = {
-  topSupporters: 'Top Supporters',
-  viewAll: 'View All'
+  topSupporters: 'Top Supporters'
 }
 
 export const TopSupporters = () => {
@@ -63,26 +62,23 @@ export const TopSupporters = () => {
     }
   }, [profile, dispatch])
 
-  return profile && rankedSupporters.length > 0 ? (
+  if (!profile || rankedSupporters.length === 0) {
+    return null
+  }
+
+  return (
     <div className={styles.container}>
-      <div className={styles.titleContainer}>
-        <IconTrophy className={styles.trophyIcon} />
-        <span className={styles.titleText}>{messages.topSupporters}</span>
-        <span className={cn(styles.line, styles.topSupportersLine)} />
-      </div>
-      <div className={styles.topSupportersContainer} onClick={handleClick}>
-        <UserProfilePictureList
-          users={rankedSupporters}
-          totalUserCount={profile.supporter_count}
-          limit={MAX_PROFILE_TOP_SUPPORTERS}
-          stopPropagation
-          profilePictureClassname={styles.profilePictureWrapper}
-        />
-        <div className={styles.viewAll}>
-          <span>{messages.viewAll}</span>
-          <IconArrow className={styles.arrowIcon} />
-        </div>
-      </div>
+      <ProfilePageNavSectionTitle
+        title={messages.topSupporters}
+        titleIcon={<IconTrophy className={styles.trophyIcon} />}
+      />
+      <ProfilePictureListTile
+        onClick={handleClick}
+        users={rankedSupporters}
+        totalUserCount={profile.supporter_count}
+        limit={MAX_PROFILE_TOP_SUPPORTERS}
+        stopPropagation
+      />
     </div>
-  ) : null
+  )
 }

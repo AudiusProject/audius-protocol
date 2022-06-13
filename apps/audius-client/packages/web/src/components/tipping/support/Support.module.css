@@ -6,9 +6,6 @@
   display: flex;
   align-items: center;
 }
-.titleContainer .tipIcon path {
-  fill: var(--neutral) !important;
-}
 .titleText {
   margin-left: 6px;
   font-weight: var(--font-bold);
@@ -46,8 +43,11 @@
 }
 
 .tipIcon {
-  width: 32px;
+  width: 18px;
   height: 18px;
+}
+.tipIcon path {
+  fill: var(--neutral);
 }
 .trophyIcon {
   width: 18px;
@@ -65,21 +65,18 @@
   height: 122px;
   border-radius: 8px;
 }
-.tileContainer,
-.topSupportersContainer {
+.tileContainer {
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
   transition: all 0.18s ease-in-out 0s;
 }
-.tileContainer:hover,
-.topSupportersContainer:hover {
+.tileContainer:hover {
   box-shadow: 1px 10px 20px var(--tile-shadow-1-alt),
     0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
   transform: scale3d(1.01, 1.01, 1.01);
   cursor: pointer;
 }
-.tileContainer:active,
-.topSupportersContainer:active {
+.tileContainer:active {
   box-shadow: 0px 0px 1px -2px var(--tile-shadow-2),
     0px 1px 0px -2px var(--tile-shadow-2), 1px 2px 5px var(--tile-shadow-2);
   transform: scale3d(0.99, 0.99, 0.99);
@@ -107,6 +104,7 @@
   border-bottom-left-radius: 8px;
 }
 .tileHeader .trophyIcon,
+.tileHeader .tipIcon,
 .tileHeader .tokenBadgeIcon {
   margin-right: 8px;
 }
@@ -117,7 +115,7 @@
   width: 14px;
 }
 .tileHeader .tipIcon path {
-  fill: var(--neutral-light-4) !important;
+  fill: var(--neutral-light-4);
 }
 
 .badge {
@@ -149,13 +147,6 @@
   background-repeat: no-repeat;
   background-color: var(--default-profile-picture-background);
 }
-.profilePictureWrapper {
-  width: 39px;
-  height: 39px;
-}
-.profilePictureWrapper:hover {
-  transform: none;
-}
 
 .nameAndBadge {
   padding-left: 8px;
@@ -178,13 +169,6 @@
   overflow: hidden;
 }
 
-.topSupportersContainer {
-  margin-top: 16px;
-  padding: 16px 8px 8px;
-  background: var(--white);
-  border-radius: 8px;
-}
-
 .viewAll {
   display: flex;
   align-items: center;
@@ -192,15 +176,4 @@
   font-weight: var(--font-bold);
   font-size: var(--font-s);
   color: var(--neutral-light-4);
-}
-
-.topSupportersContainer:hover .viewAll {
-  cursor: pointer;
-  color: var(--secondary);
-  transition: color 0.07s ease-out;
-}
-
-.topSupportersContainer:hover .viewAll path {
-  fill: var(--secondary);
-  transition: fill 0.07s ease-out;
 }

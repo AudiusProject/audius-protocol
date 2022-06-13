@@ -15,7 +15,7 @@ const messages = {
   viewAllTooltip: 'View All'
 }
 
-type UserProfileListProps = {
+export type UserProfileListProps = {
   /**
    * Here we have both users and totalUserCount because we need the total number
    * of users which is different that the number users whose profile pictures
@@ -43,13 +43,25 @@ export const UserProfilePictureList = ({
   profilePictureClassname
 }: UserProfileListProps) => {
   const showUserListModal = totalUserCount > limit
-  const remainingUsersCount = totalUserCount - limit
+  /**
+   * We add a +1 because the remaining users count includes
+   * the tile that has the +N itself.
+   */
+  const remainingUsersCount = totalUserCount - limit + 1
+  /**
+   * If the total user count is greater than the limit, then
+   * we slice at limit -1 to exclude the tile with the +N, since
+   * that tile will be handled separately.
+   * Otherwise, we slice at the limit, which would include all
+   * users.
+   */
+  const sliceLimit = showUserListModal ? limit - 1 : limit
 
   return (
     <div className={styles.root}>
       {users
         .filter(u => !u.is_deactivated)
-        .slice(0, limit)
+        .slice(0, sliceLimit)
         .map(user => (
           <ProfilePicture
             key={user.user_id}
@@ -75,7 +87,7 @@ export const UserProfilePictureList = ({
                 styles.profilePictureExtra,
                 profilePictureClassname
               )}
-              user={users[limit]}
+              user={users[limit - 1]}
             />
             <span className={styles.profilePictureCount}>
               {`+${formatCount(remainingUsersCount)}`}

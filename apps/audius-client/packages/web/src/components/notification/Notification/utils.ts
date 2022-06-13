@@ -42,7 +42,7 @@ export const getTwitterHandleByUserHandle = async (userHandle: string) => {
   return twitterHandle || ''
 }
 
-export const USER_LENGTH_LIMIT = 8
+export const USER_LENGTH_LIMIT = 9
 
 export const entityToUserListEntity = {
   [Entity.Track]: UserListEntityType.TRACK,

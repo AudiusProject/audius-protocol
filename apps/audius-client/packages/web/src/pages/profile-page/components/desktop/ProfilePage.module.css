@@ -129,9 +129,6 @@
   display: flex;
   align-items: center;
 }
-.titleContainer .tipIcon path {
-  fill: var(--neutral) !important;
-}
 .titleText {
   margin-left: 6px;
   font-weight: var(--font-bold);
