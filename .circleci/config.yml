@@ -758,9 +758,11 @@ workflows:
       #     context:
       #       - GCP2
       #     mad-dog-type: test
+  hold-workflows:
+    when: << pipeline.parameters.full_ci >>
+    jobs:
       - hold-test-mad-dog-e2e-full:
           type: approval
-          when: << pipeline.parameters.full_ci >>
       - test-mad-dog-e2e:
           context:
             - GCP2
@@ -768,18 +770,14 @@ workflows:
           mad-dog-type: test-nightly
           requires:
             - hold-test-mad-dog-e2e-full
-          when: << pipeline.parameters.full_ci >>
-
       - hold-build-logspout:
           type: approval
-          when: << pipeline.parameters.full_ci >>
       - docker-build-and-push:
           name: build-logspout
           repo: logspout
           logspout-tag: "true"
           requires:
             - hold-build-logspout
-          when: << pipeline.parameters.full_ci >>
 
   # test master at midnight daily
   test-nightly:
