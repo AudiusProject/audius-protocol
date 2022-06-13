@@ -1,4 +1,9 @@
+import { useEffect } from 'react'
+
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { resetSend } from 'audius-client/src/common/store/tipping/slice'
+
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
@@ -12,6 +17,14 @@ const screenOptionOverrides = { headerRight: () => null }
 
 export const TipArtistModal = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
+  const dispatchWeb = useDispatchWeb()
+
+  useEffect(() => {
+    return () => {
+      dispatchWeb(resetSend())
+    }
+  }, [dispatchWeb])
+
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name='SendTip' component={SendTipScreen} />

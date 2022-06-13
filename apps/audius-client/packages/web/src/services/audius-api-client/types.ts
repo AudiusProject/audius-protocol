@@ -7,7 +7,7 @@ import {
 } from 'common/models/ImageSizes'
 import { StemCategory } from 'common/models/Stems'
 import { Download, FieldVisibility, TrackSegment } from 'common/models/Track'
-import { SolanaWalletAddress } from 'common/models/Wallet'
+import { SolanaWalletAddress, WalletAddress } from 'common/models/Wallet'
 import { Nullable } from 'common/utils/typeUtils'
 
 export type OpaqueID = string
@@ -43,6 +43,7 @@ export type APIUser = {
   profile_picture_sizes: Nullable<CID>
   profile_picture_legacy: Nullable<CID>
   metadata_multihash: Nullable<CID>
+  erc_wallet: WalletAddress
   spl_wallet: SolanaWalletAddress
   has_collectibles: boolean
   supporter_count: number

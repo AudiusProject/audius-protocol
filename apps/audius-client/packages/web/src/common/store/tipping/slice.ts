@@ -154,6 +154,14 @@ const slice = createSlice({
     ) => {
       state.recentTips = action.payload.recentTips
     },
+    fetchUserSupporter: (
+      state,
+      action: PayloadAction<{
+        currentUserId: ID
+        userId: ID
+        supporterUserId: ID
+      }>
+    ) => {},
     setTipToDisplay: (
       state,
       action: PayloadAction<{ tipToDisplay: UserTip }>
@@ -182,6 +190,7 @@ export const {
   resetSend,
   fetchRecentTips,
   setRecentTips,
+  fetchUserSupporter,
   setTipToDisplay,
   hideTip
 } = slice.actions
