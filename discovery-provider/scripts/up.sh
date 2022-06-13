@@ -58,6 +58,7 @@ fi
 (
     # mv ./node_modules away, temporarily
     cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
+    npm i
     mv node_modules /tmp/dn-node_modules
 )
 
