@@ -19,7 +19,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 type UserListTitleProps = {
   icon: ComponentType<SvgProps>
-  title: string
+  title: JSX.Element | string
 }
 export const UserListTitle = (props: UserListTitleProps) => {
   const { icon: Icon, title } = props
