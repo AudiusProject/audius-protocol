@@ -1,20 +1,14 @@
 import { pick } from 'lodash'
-import { all, call, put, select, takeEvery, spawn } from 'redux-saga/effects'
+import { all, call, put, select, takeEvery } from 'redux-saga/effects'
 
-import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 import * as cacheActions from 'common/store/cache/actions'
-import { getCollections } from 'common/store/cache/collections/selectors'
 import { CACHE_PRUNE_MIN } from 'common/store/cache/config'
 import { getCache } from 'common/store/cache/selectors'
-import { getTracks } from 'common/store/cache/tracks/selectors'
-import { getUsers } from 'common/store/cache/users/selectors'
 import { makeUids, getIdFromKindId } from 'common/utils/uid'
 import { getConfirmCalls } from 'store/confirmer/selectors'
-import * as persistentCache from 'utils/persistentCache'
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
-const REFRESH_BLACKLIST_INTERVAL_MS = 3 /* seconds */ * 1000 /* ms */
 
 const isMissingFields = (cacheEntry, requiredFields) => {
   if (!requiredFields) return false
@@ -30,28 +24,6 @@ const isMissingFields = (cacheEntry, requiredFields) => {
 const isExpired = timestamp => {
   if (timestamp) return timestamp + DEFAULT_ENTRY_TTL < Date.now()
   return false
-}
-
-// Makes a transformer function for persistent cache.
-// Removes UIDs from a collection's trackIds.
-const makeTransformer = kind => metadata => {
-  if (kind !== Kind.COLLECTIONS || !metadata.playlist_contents) return metadata
-
-  return {
-    ...metadata,
-    playlist_contents: {
-      track_ids: metadata.playlist_contents.track_ids.map(c => ({
-        track: c.track,
-        time: c.time
-      }))
-    }
-  }
-}
-
-const cooldownBlacklist = {
-  users: new Set(),
-  tracks: new Set(),
-  collections: new Set()
 }
 
 /**
@@ -144,85 +116,10 @@ export function* retrieve({
   // Get the final cached items
   const entries = yield call(selectFromCache, uniqueIds)
 
-  // Refresh items that were cached
-  if (persistentCache.isCacheEnabled()) {
-    yield spawn(refreshCachedItems, {
-      kind,
-      cachedEntries,
-      idField,
-      retrieveFromSource,
-      onBeforeAddToCache,
-      onAfterAddToCache,
-      deleteExistingEntry,
-      uids
-    })
-  }
-
   return {
     entries,
     uids
   }
-}
-
-function* refreshCachedItems({
-  kind,
-  cachedEntries,
-  idField,
-  retrieveFromSource,
-  onBeforeAddToCache,
-  onAfterAddToCache,
-  deleteExistingEntry,
-  uids
-}) {
-  const idBlacklist = (() => {
-    switch (kind) {
-      case Kind.COLLECTIONS:
-        return cooldownBlacklist.collections
-      case Kind.TRACKS:
-        return cooldownBlacklist.tracks
-      case Kind.USERS:
-      default:
-        return cooldownBlacklist.users
-    }
-  })()
-
-  // Find non-blacklisted IDs. We do this bc we don't want to hammer
-  // the BE with repeated requests for the same IDs, so we add a cooldown
-  // period per request before we can request it again.
-  //
-  // This part is a bit weird because cachedEntries may actually be keyed
-  // by handle (not ID) for users, but we want the idBlacklist to only ever
-  // contain IDs. But we need to pass whatever keys cachedEntries into
-  // retrieveFromSource, since it expects that format (e.g. handles)
-  const keysToRefresh = Object.keys(cachedEntries).filter(key => {
-    const id = cachedEntries[key][idField]
-    return !idBlacklist.has(id)
-  })
-
-  if (!keysToRefresh.length) return
-
-  // Add them to the blacklist
-  keysToRefresh.forEach(key => idBlacklist.add(cachedEntries[key][idField]))
-  // Clear them from the blacklist after a timeout
-  setTimeout(() => {
-    keysToRefresh.forEach(key => {
-      const entry = cachedEntries[key]
-      if (!entry) return
-      idBlacklist.delete(entry[idField])
-    })
-  }, REFRESH_BLACKLIST_INTERVAL_MS)
-
-  yield call(retrieveFromSourceThenCache, {
-    idsToFetch: keysToRefresh,
-    kind,
-    retrieveFromSource,
-    onBeforeAddToCache,
-    onAfterAddToCache,
-    shouldSetLoading: false,
-    deleteExistingEntry: false,
-    idField,
-    uids
-  })
 }
 
 function* retrieveFromSourceThenCache({
@@ -335,37 +232,6 @@ function* watchAdd() {
   })
 }
 
-// Adds to the persistent cache
-function* watchAddSucceeded() {
-  yield takeEvery(cacheActions.ADD_SUCCEEDED, function* ({
-    kind,
-    entries,
-    replace,
-    persist
-  }) {
-    if (!persist) return
-
-    // Adding to cache can be fire and forget
-    yield entries.forEach(e =>
-      persistentCache.add(
-        kind,
-        e.id,
-        e.metadata,
-        replace,
-        makeTransformer(kind)
-      )
-    )
-  })
-}
-
-function* watchUpdate() {
-  yield takeEvery(cacheActions.UPDATE, function* ({ kind, entries }) {
-    yield entries.forEach(e =>
-      persistentCache.update(kind, e.id, e.metadata, makeTransformer(kind))
-    )
-  })
-}
-
 // Prune cache entries if there are no more subscribers.
 function* watchUnsubscribe() {
   yield takeEvery(cacheActions.UNSUBSCRIBE, function* (action) {
@@ -439,58 +305,8 @@ function* watchRemove() {
   })
 }
 
-export function* hydrateStoreFromCache() {
-  const { collections, users, tracks } = yield call(persistentCache.getAllItems)
-
-  // Only add items that aren't in the store already, because getAllItems
-  // runs async, so these entities may be already in the store.
-  const existingTracks = yield select(getTracks)
-  const existingUsers = yield select(getUsers)
-  const existingCollections = yield select(getCollections)
-
-  const filteredTracks = tracks.filter(({ id }) => !existingTracks[id])
-  const filteredUsers = users.filter(({ id }) => !existingUsers[id])
-  const filteredCollections = collections.filter(
-    ({ id }) => !existingCollections[id]
-  )
-
-  yield all([
-    put(
-      cacheActions.add(
-        Kind.TRACKS,
-        filteredTracks,
-        /* replace */ false,
-        /*  persist */ false
-      )
-    ),
-    put(
-      cacheActions.add(
-        Kind.USERS,
-        filteredUsers,
-        /* replace */ false,
-        /*  persist */ false
-      )
-    ),
-    put(
-      cacheActions.add(
-        Kind.COLLECTIONS,
-        filteredCollections,
-        /* replace */ false,
-        /*  persist */ false
-      )
-    )
-  ])
-}
-
 const sagas = () => {
-  return [
-    watchAdd,
-    watchAddSucceeded,
-    watchUnsubscribe,
-    watchUnsubscribeSucceeded,
-    watchRemove,
-    watchUpdate
-  ]
+  return [watchAdd, watchUnsubscribe, watchUnsubscribeSucceeded, watchRemove]
 }
 
 export default sagas
