@@ -75,9 +75,9 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              A run init-repos up || exit;
-              A up || exit;
-              A down || exit;
+              A run init-repos up;
+              A up;
+              A down;
               exit;
             EOF
 
@@ -784,12 +784,6 @@ workflows:
           logspout-tag: "true"
           requires:
             - hold-build-logspout
-      - hold-bake-gcp-dev-image:
-          type: approval
-      - bake-gcp-dev-image:
-          context:
-            - GCP2
-          name: bake-gcp-dev-image
 
   # test master at midnight daily
   test-nightly:
