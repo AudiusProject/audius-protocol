@@ -20,10 +20,6 @@
   padding: 8px 12px;
 }
 
-.tooltip {
-  --tooltip-background-color: var(--secondary);
-}
-
 .tooltip :global(.ant-tooltip-inner) {
   padding: 0px;
   overflow: hidden;

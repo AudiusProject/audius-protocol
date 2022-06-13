@@ -164,7 +164,6 @@ export const PlaylistNavItem = ({
                 className={navColumnStyles.updateDotTooltip}
                 shouldWrapContent={true}
                 shouldDismissOnClick={false}
-                mount={null}
                 mouseEnterDelay={0.1}
                 text={messages.recentlyUpdatedTooltip}
               >

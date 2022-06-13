@@ -89,7 +89,6 @@
   background-color: var(--white);
   box-shadow: none;
   padding: 8px 0;
-  margin-top: 4px;
 }
 .dropdown :global(.ant-dropdown-menu-item) {
   margin: 0 8px;

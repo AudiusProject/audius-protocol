@@ -18,9 +18,6 @@ import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 
 import styles from './SearchBar.module.css'
 
-const Option = AutoComplete.Option
-const OptGroup = AutoComplete.OptGroup
-
 const SEARCH_BAR_OPTION = 'SEARCH_BAR_OPTION'
 const ALL_RESULTS_OPTION = 'ALL_RESULTS_OPTION'
 const NO_RESULTS_OPTION = 'NO_RESULTS_OPTION'
@@ -128,7 +125,7 @@ class SearchBar extends Component {
   onFocus = () => {
     this.setState({ shouldDismissTagPopup: false })
     this.searchBarRef.current
-      .getElementsByClassName('ant-input')[0]
+      .getElementsByClassName('ant-select-selection-search')[0]
       .classList.add('expanded')
     if (this.state.value !== '') {
       // Delay search results open animation while the search bar expands.
@@ -152,12 +149,12 @@ class SearchBar extends Component {
         setTimeout(() => {
           this.searchBarRef.current &&
             this.searchBarRef.current
-              .getElementsByClassName('ant-input')[0]
+              .getElementsByClassName('ant-select-selection-search')[0]
               .classList.remove('expanded')
         }, 200)
       } else {
         this.searchBarRef.current
-          .getElementsByClassName('ant-input')[0]
+          .getElementsByClassName('ant-select-selection-search')[0]
           .classList.remove('expanded')
       }
       this.setState({ open: false })
@@ -276,16 +273,13 @@ class SearchBar extends Component {
         }
         return true
       })
-      .map(group => (
-        <OptGroup key={group.title} label={this.renderTitle(group.title)}>
-          {group.children
-            .slice(0, Math.min(3, group.children.length))
-            .map(opt => (
-              <Option
-                className={styles.option}
-                key={opt.key || opt.primary}
-                value={(opt.key || opt.primary).toString()}
-              >
+      .map(group => ({
+        label: this.renderTitle(group.title),
+        options: group.children
+          .slice(0, Math.min(3, group.children.length))
+          .map(opt => ({
+            label: (
+              <div className={styles.option} key={opt.key || opt.primary}>
                 <SearchBarResult
                   kind={
                     group.title === 'Profiles'
@@ -306,30 +300,32 @@ class SearchBar extends Component {
                   isVerifiedUser={opt.isVerifiedUser}
                   tier={opt.tier}
                 />
-              </Option>
-            ))}
-        </OptGroup>
-      ))
-    const searchBarOption = (
-      <Option key={SEARCH_BAR_OPTION} className={styles.searchBarDummyOption} />
-    )
-    let options = [searchBarOption]
+              </div>
+            ),
+            value: (opt.key || opt.primary).toString()
+          }))
+      }))
+
+    let options = []
     if (resultsCount > 0) {
-      const allResultsOption = (
-        <Option key={ALL_RESULTS_OPTION} className={styles.allResultsOption}>
-          <div className={styles.allResultsOptionWrapper}>
-            <div>
-              <span>View More Results</span>
-              <IconArrow
-                height={'7px'}
-                width={'7px'}
-                className={styles.iconArrow}
-              />
+      const allResultsOption = {
+        label: (
+          <div key={ALL_RESULTS_OPTION} className={styles.allResultsOption}>
+            <div className={styles.allResultsOptionWrapper}>
+              <div>
+                <span>View More Results</span>
+                <IconArrow
+                  height={'7px'}
+                  width={'7px'}
+                  className={styles.iconArrow}
+                />
+              </div>
             </div>
           </div>
-        </Option>
-      )
-      options = [searchBarOption].concat(searchResults).concat(allResultsOption)
+        ),
+        value: ALL_RESULTS_OPTION
+      }
+      options = searchResults.concat(allResultsOption)
     } else {
       if (status !== Status.LOADING && searchText !== '') {
         // Need to ensure searchText !== '' in this case,
@@ -337,13 +333,18 @@ class SearchBar extends Component {
         // causing status to be set to SUCCESS,
         // but we don't want to show the no results box.
 
-        options = [
-          <Option key={NO_RESULTS_OPTION} className={styles.noResultsOption}>
-            <div className={styles.noResults}>
-              <span>No Results</span>
+        const noResultOption = {
+          label: (
+            <div key={NO_RESULTS_OPTION} className={styles.noResultsOption}>
+              <div className={styles.noResults}>
+                <span>No Results</span>
+              </div>
             </div>
-          </Option>
-        ]
+          ),
+          value: NO_RESULTS_OPTION
+        }
+
+        options = [noResultOption]
       }
     }
 
@@ -377,11 +378,12 @@ class SearchBar extends Component {
         )}
         <AutoComplete
           ref={this.autoCompleteRef}
-          dropdownClassName={styles.searchBox}
-          defaultActiveFirstOption
+          dropdownClassName={cn(styles.searchBox, {
+            [styles.hasResults]: searchResults.length
+          })}
           dropdownMatchSelectWidth={false}
-          dataSource={options}
-          optionLabelProp='value'
+          options={options}
+          optionLabelProp='label'
           onFocus={this.onFocus}
           onBlur={this.onBlur}
           onSelect={this.onSelect}
