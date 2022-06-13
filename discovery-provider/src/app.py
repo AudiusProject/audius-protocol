@@ -531,7 +531,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_track_is_available": {
                 "task": "update_track_is_available",
-                "schedule": crontab(minute=0, hour=0),  # daily at midnight
+                "schedule": timedelta(hours=12),  # run every 12 hours
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {

@@ -288,12 +288,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         last_track_unavailability_job_start_time = str(
             redis.get(UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY).decode()
         )
+    except Exception as e:
+        logger.error(
+            f"Could not get latest track unavailability job start timestamp: {e}"
+        )
+        last_track_unavailability_job_start_time = None
+
+    try:
         last_track_unavailability_job_end_time = str(
             redis.get(UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY).decode()
         )
     except Exception as e:
-        logger.error(f"Could not get latest track unavailability job timestamps: {e}")
-        last_track_unavailability_job_start_time = None
+        logger.error(
+            f"Could not get latest track unavailability job end timestamp: {e}"
+        )
         last_track_unavailability_job_end_time = None
 
     # Get system information monitor values

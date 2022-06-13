@@ -21,7 +21,7 @@ const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 /**
  * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair.
  * Also returns a set of any nodes that were unhealthy when queried for clock values.
- * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
+ * @param {Object} replicasToWalletsMap map of <replica set node : wallets>
  *
  * @returns {Object} { replicasToUserClockStatusMap: map(replica node => map(wallet => clockValue)), unhealthyPeers: Set<string> }
  */
