@@ -1,24 +1,25 @@
-.tooltip {
-  --tooltip-background-color: var(--secondary-transparent);
-  z-index: 10000;
-}
-
-.nonWrappingTooltip:global(.ant-tooltip) {
+.nonWrappingTooltip {
   max-width: none;
 }
 
-.tooltip :global(.ant-tooltip-inner) {
+.tooltip {
+  z-index: 10000;
   color: var(--static-white);
   font-family: var(--font-family);
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   user-select: none;
   text-transform: none;
+  border-radius: 4px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12))
+    drop-shadow(0 6px 16px rgba(0, 0, 0, 0.08))
+    drop-shadow(0 9px 28px rgba(0, 0, 0, 0.05));
 }
 
 .tooltip :global(.ant-tooltip-inner) {
   border-radius: 4px;
   background-color: var(--tooltip-background-color);
+  box-shadow: none;
 }
 
 /* The little tooltip arrow is a square rotated 45 deg
@@ -35,7 +36,6 @@
 .tooltip:global(.ant-tooltip-placement-bottom .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-bottomLeft .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-bottomRight .ant-tooltip-arrow) {
-  top: 4.5px;
   border-top-color: var(--tooltip-background-color);
   border-left-color: var(--tooltip-background-color);
 }
@@ -50,7 +50,6 @@
 .tooltip:global(.ant-tooltip-placement-top .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-topLeft .ant-tooltip-arrow),
 .tooltip:global(.ant-tooltip-placement-topRight .ant-tooltip-arrow) {
-  bottom: 4.2px;
   border-right-color: var(--tooltip-background-color);
   border-bottom-color: var(--tooltip-background-color);
 }

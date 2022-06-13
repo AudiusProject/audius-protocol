@@ -64,19 +64,24 @@ class DropdownInput extends Component {
     const options = menu.items.map((item, i) => {
       if (item.id && item.text) {
         return (
-          <Option key={item.id} value={item.id} query={item.text}>
+          <Option key={item.id} value={item.id} query={item.text} role='option'>
             {item.text}
           </Option>
         )
       } else if (item.text && item.el) {
         return (
-          <Option key={item.text} value={item.text} query={item.text}>
+          <Option
+            key={item.text}
+            value={item.text}
+            query={item.text}
+            role='option'
+          >
             {item.el}
           </Option>
         )
       } else {
         return (
-          <Option key={item} value={item} query={item}>
+          <Option key={item} value={item} query={item} role='option'>
             {item}
           </Option>
         )
