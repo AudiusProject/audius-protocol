@@ -5,6 +5,7 @@ import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
 import { getSupportingForUser } from 'audius-client/src/common/store/tipping/selectors'
 import { SupportingMapForUser } from 'audius-client/src/common/store/tipping/types'
 import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
+import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Tile, TextButton } from 'app/components/core'
@@ -43,7 +44,10 @@ export const ViewAllSupportingTile = () => {
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const { user_id } = useSelectProfile(['user_id'])
+  const { user_id, supporting_count } = useSelectProfile([
+    'user_id',
+    'supporting_count'
+  ])
   const supportingForProfile: SupportingMapForUser =
     useSelectorWeb(state => getSupportingForUser(state, user_id)) || {}
   const rankedSupportingIds = Object.keys(supportingForProfile)
@@ -78,7 +82,9 @@ export const ViewAllSupportingTile = () => {
       onPress={handlePress}
     >
       <ProfilePictureList
-        users={rankedSupporting.slice(0, MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS)}
+        users={rankedSupporting.slice(MAX_PROFILE_SUPPORTING_TILES)}
+        totalUserCount={supporting_count - MAX_PROFILE_SUPPORTING_TILES}
+        limit={MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS}
         style={styles.profilePictureList}
         navigationType='push'
         interactive={false}
