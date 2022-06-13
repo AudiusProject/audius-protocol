@@ -10,13 +10,6 @@ contract AudiusData is SigningLogicInitializable {
     /// @notice Address permissioned to verify users
     address verifierAddress;
 
-    event ManageUser(
-        uint _userId,
-        address _signer,
-        string _metadata,
-        string _action
-    );
-
     event ManageEntity(
         uint _userId,
         address _signer,
@@ -52,7 +45,7 @@ contract AudiusData is SigningLogicInitializable {
         );
     }
 
-    /// @notice Manage an entity (ex. User/Track/Playlist)
+    /// @notice Manage an entity (ex. User/Track/Playlist/Follow/Repost etc.)
     /// @param _userId User performing action
     /// @param _entityType Entity type being manipulated, ex. User/Track/Playlist
     /// @param _entityId Entity id being manipulated. For new entities, ID assignment will be handled by submitter
