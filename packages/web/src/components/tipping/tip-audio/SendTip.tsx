@@ -8,8 +8,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { BadgeTier } from 'common/models/BadgeTier'
-import { ID } from 'common/models/Identifiers'
-import { Supporter } from 'common/models/Tipping'
 import { BNWei, StringAudio, StringWei } from 'common/models/Wallet'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
@@ -17,21 +15,14 @@ import {
   getOptimisticSupporting,
   getSendUser
 } from 'common/store/tipping/selectors'
-import { sendTip } from 'common/store/tipping/slice'
+import { fetchUserSupporter, sendTip } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { getTierAndNumberForBalance } from 'common/store/wallet/utils'
-import { parseWeiNumber } from 'common/utils/formatUtil'
-import { Nullable } from 'common/utils/typeUtils'
-import {
-  formatWei,
-  parseAudioInputToWei,
-  stringWeiToBN,
-  weiToString
-} from 'common/utils/wallet'
+import { formatWei, stringWeiToBN, weiToString } from 'common/utils/wallet'
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { useGetFirstOrTopSupporter } from 'hooks/useGetFirstOrTopSupporter'
 import ButtonWithArrow from 'pages/audio-rewards-page/components/ButtonWithArrow'
-import AudiusAPIClient from 'services/audius-api-client/AudiusAPIClient'
 
 import styles from './TipAudio.module.css'
 import { TipProfilePicture } from './TipProfilePicture'
@@ -63,82 +54,38 @@ export const SendTip = () => {
   const audioBadge = audioTierMapPng[tier as BadgeTier]
 
   const [isDisabled, setIsDisabled] = useState(true)
-  const [hasError, setHasError] = useState(false)
 
-  const [
+  const {
     amountToTipToBecomeTopSupporter,
-    setAmountToTipToBecomeTopSupporter
-  ] = useState<Nullable<BNWei>>(null)
-  const [supportingAmount, setSupportingAmount] = useState<Nullable<StringWei>>(
-    null
-  )
-  const [topSupporter, setTopSupporter] = useState<Nullable<Supporter>>(null)
-  const [isFirstSupporter, setIsFirstSupporter] = useState(false)
+    shouldFetchUserSupporter,
+    isFirstSupporter,
+    tipAmountWei,
+    hasInsufficientBalance
+  } = useGetFirstOrTopSupporter({
+    tipAmount,
+    accountBalance,
+    account,
+    receiver,
+    supportingMap,
+    supportersMap
+  })
 
-  /**
-   * Get supporting info if current user is already supporting receiver
-   * so that the already supported amount can be used to determine
-   * how much is left to tip to become top supporter
-   */
   useEffect(() => {
-    if (!account || !receiver) return
-    if (supportingAmount) return
-
-    const supportingForAccount = supportingMap[account.user_id] ?? {}
-    const accountSupportingReceiver =
-      supportingForAccount[receiver.user_id] ?? null
-    if (accountSupportingReceiver) {
-      setSupportingAmount(accountSupportingReceiver.amount)
-    } else {
-      const fn = async () => {
-        const supporterResponse = await AudiusAPIClient.getUserSupporter({
+    if (shouldFetchUserSupporter && account && receiver) {
+      dispatch(
+        fetchUserSupporter({
           currentUserId: account.user_id,
           userId: receiver.user_id,
           supporterUserId: account.user_id
         })
-        if (supporterResponse) {
-          setSupportingAmount(supporterResponse.amount)
-        }
-      }
-      fn()
+      )
     }
-  }, [account, receiver, supportingMap, supportingAmount])
-
-  /**
-   * Get user who is top supporter to later check whether it is
-   * not the same as the current user
-   */
-  useEffect(() => {
-    if (!receiver) return
-
-    const supportersForReceiver = supportersMap[receiver.user_id] ?? {}
-    const rankedSupportersList = Object.keys(supportersForReceiver)
-      .sort((k1, k2) => {
-        return (
-          supportersForReceiver[(k1 as unknown) as ID].rank -
-          supportersForReceiver[(k2 as unknown) as ID].rank
-        )
-      })
-      .map(k => supportersForReceiver[(k as unknown) as ID])
-    const theTopSupporter =
-      rankedSupportersList.length > 0 ? rankedSupportersList[0] : null
-
-    if (theTopSupporter) {
-      setIsFirstSupporter(false)
-      setTopSupporter(theTopSupporter)
-    } else {
-      setIsFirstSupporter(true)
-    }
-  }, [receiver, supportersMap])
+  }, [shouldFetchUserSupporter, account, receiver, dispatch])
 
   useEffect(() => {
     const zeroWei = stringWeiToBN('0' as StringWei)
-    const newAmountWei = parseAudioInputToWei(tipAmount) ?? zeroWei
-
-    const hasInsufficientBalance = newAmountWei.gt(accountBalance)
-    setIsDisabled(hasInsufficientBalance || newAmountWei.lte(zeroWei))
-    setHasError(hasInsufficientBalance)
-  }, [tipAmount, accountBalance])
+    setIsDisabled(hasInsufficientBalance || tipAmountWei.lte(zeroWei))
+  }, [hasInsufficientBalance, tipAmountWei])
 
   const handleTipAmountChange = useCallback(
     (value: string) => {
@@ -146,34 +93,6 @@ export const SendTip = () => {
     },
     [setTipAmount]
   )
-
-  /**
-   * Check whether or not to display prompt to become top or first supporter
-   */
-  useEffect(() => {
-    if (hasError || !account || !topSupporter) return
-
-    const isAlreadyTopSupporter = account.user_id === topSupporter.sender_id
-    if (isAlreadyTopSupporter) return
-
-    const topSupporterAmountWei = stringWeiToBN(topSupporter.amount)
-    const oneAudioToWeiBN = parseWeiNumber('1') as BNWei
-    let newAmountToTipToBecomeTopSupporter = topSupporterAmountWei.add(
-      oneAudioToWeiBN
-    ) as BNWei
-    if (supportingAmount) {
-      const supportingAmountWei = stringWeiToBN(supportingAmount)
-      newAmountToTipToBecomeTopSupporter = newAmountToTipToBecomeTopSupporter.sub(
-        supportingAmountWei
-      ) as BNWei
-    }
-    if (
-      accountBalance.gte(newAmountToTipToBecomeTopSupporter) &&
-      newAmountToTipToBecomeTopSupporter.gte(oneAudioToWeiBN)
-    ) {
-      setAmountToTipToBecomeTopSupporter(newAmountToTipToBecomeTopSupporter)
-    }
-  }, [hasError, account, topSupporter, supportingAmount, accountBalance])
 
   const handleSendClick = useCallback(() => {
     dispatch(sendTip({ amount: tipAmount }))
@@ -231,8 +150,10 @@ export const SendTip = () => {
   return (
     <div className={styles.container}>
       <TipProfilePicture user={receiver} />
-      {!hasError && isFirstSupporter ? renderBecomeFirstSupporter() : null}
-      {!hasError && amountToTipToBecomeTopSupporter
+      {!hasInsufficientBalance && isFirstSupporter
+        ? renderBecomeFirstSupporter()
+        : null}
+      {!hasInsufficientBalance && amountToTipToBecomeTopSupporter
         ? renderBecomeTopSupporter()
         : null}
       <div className={styles.amountToSend}>
@@ -259,7 +180,7 @@ export const SendTip = () => {
           disabled={isDisabled}
         />
       </div>
-      {hasError && (
+      {hasInsufficientBalance && (
         <div className={cn(styles.flexCenter, styles.error)}>
           {messages.insufficientBalance}
         </div>

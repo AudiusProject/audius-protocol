@@ -17,7 +17,9 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import {
   getOptimisticSupporters,
   getOptimisticSupporting,
-  getSendTipData
+  getSendTipData,
+  getSupporters,
+  getSupporting
 } from 'common/store/tipping/selectors'
 import {
   confirmSendTip,
@@ -34,7 +36,8 @@ import {
   setSupportingForUser,
   hideTip,
   setSupportingOverridesForUser,
-  setSupportersOverridesForUser
+  setSupportersOverridesForUser,
+  fetchUserSupporter
 } from 'common/store/tipping/slice'
 import { getAccountBalance } from 'common/store/wallet/selectors'
 import { decreaseBalance } from 'common/store/wallet/slice'
@@ -45,6 +48,7 @@ import {
   weiToAudioString,
   weiToString
 } from 'common/utils/wallet'
+import AudiusAPIClient from 'services/audius-api-client/AudiusAPIClient'
 import {
   fetchRecentUserTips,
   fetchSupporters,
@@ -633,6 +637,59 @@ function* fetchRecentTipsAsync(action: ReturnType<typeof fetchRecentTips>) {
   yield put(setRecentTips({ recentTips }))
 }
 
+function* fetchUserSupporterAsync(
+  action: ReturnType<typeof fetchUserSupporter>
+) {
+  const { currentUserId, userId, supporterUserId } = action.payload
+  try {
+    const response = yield* call(
+      [AudiusAPIClient, AudiusAPIClient.getUserSupporter],
+      {
+        currentUserId,
+        userId,
+        supporterUserId
+      }
+    )
+    if (response) {
+      const supportingMap = yield* select(getSupporting)
+      yield put(
+        setSupportingForUser({
+          id: supporterUserId,
+          supportingForUser: {
+            ...supportingMap[supporterUserId],
+            [userId]: {
+              receiver_id: userId,
+              amount: response.amount,
+              rank: response.rank
+            }
+          }
+        })
+      )
+
+      const supportersMap = yield* select(getSupporters)
+      yield put(
+        setSupportersForUser({
+          id: userId,
+          supportersForUser: {
+            ...supportersMap[userId],
+            [supporterUserId]: {
+              sender_id: supporterUserId,
+              amount: response.amount,
+              rank: response.rank
+            }
+          }
+        })
+      )
+    }
+  } catch (e) {
+    console.error(
+      `Could not fetch user supporter for user id ${userId}, supporter user id ${supporterUserId}, and current user id ${currentUserId}: ${
+        (e as Error).message
+      }`
+    )
+  }
+}
+
 function* watchFetchSupportingForUser() {
   yield* takeEvery(fetchSupportingForUser.type, fetchSupportingForUserAsync)
 }
@@ -649,12 +706,17 @@ function* watchFetchRecentTips() {
   yield* takeEvery(fetchRecentTips.type, fetchRecentTipsAsync)
 }
 
+function* watchFetchUserSupporter() {
+  yield takeEvery(fetchUserSupporter.type, fetchUserSupporterAsync)
+}
+
 const sagas = () => {
   const sagas = [
     watchFetchSupportingForUser,
     watchRefreshSupport,
     watchConfirmSendTip,
-    watchFetchRecentTips
+    watchFetchRecentTips,
+    watchFetchUserSupporter
   ]
   return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }
