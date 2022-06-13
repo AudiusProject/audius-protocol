@@ -753,26 +753,26 @@ workflows:
             - GCP2
           mad-dog-type: test
 
-      # Commenting this out since we almost never run this job, and it ruins our nice green check marks.
-      # - hold-test-mad-dog-e2e-full:
-      #     type: approval
-      # - test-mad-dog-e2e:
-      #     context:
-      #       - GCP2
-      #     name: test-mad-dog-e2e-full
-      #     mad-dog-type: test-nightly
-      #     requires:
-      #       - hold-test-mad-dog-e2e-full
+  hold-jobs:
+    jobs:
+      - hold-test-mad-dog-e2e-full:
+          type: approval
+      - test-mad-dog-e2e:
+          context:
+            - GCP2
+          name: test-mad-dog-e2e-full
+          mad-dog-type: test-nightly
+          requires:
+            - hold-test-mad-dog-e2e-full
 
-      # Commenting this out since we almost never need to build this manually, and it ruins our nice green check marks.
-      # - hold-build-logspout:
-      #     type: approval
-      # - docker-build-and-push:
-      #     name: build-logspout
-      #     repo: logspout
-      #     logspout-tag: "true"
-      #     requires:
-      #       - hold-build-logspout
+      - hold-build-logspout:
+          type: approval
+      - docker-build-and-push:
+          name: build-logspout
+          repo: logspout
+          logspout-tag: "true"
+          requires:
+            - hold-build-logspout
 
   # test master at midnight daily
   test-nightly:
