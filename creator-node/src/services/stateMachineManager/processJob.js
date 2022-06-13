@@ -1,7 +1,7 @@
 import { createChildLogger } from '../../logging'
 
 /**
- * HOF to wrap a job processor with a logger and a try-catch.
+ * Higher order function to wrap a job processor with a logger and a try-catch.
  *
  * @param {string} jobName used to filter by `jobName` tag in the logger
  * @param {Object{id, data}} job `job.id` is used to filter by `jobId` tag in the logger
@@ -20,7 +20,7 @@ module.exports = async function (jobName, job, jobProcessor, parentLogger) {
     result = await jobProcessor({ logger: jobLogger, ...jobData })
   } catch (error) {
     jobLogger.error(`Error processing job: ${error}`)
-    result = { error }
+    result = { error: `${error}` }
   }
 
   return result

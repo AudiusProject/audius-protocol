@@ -2,8 +2,8 @@ const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES } = require('./stateMachineConstants')
 
 /**
- * HOF that creates a function that can be used as a Bull Queue onComplete callback to take a job
- * that successfully created and read its output for new jobs that will be enqueued in bulk.
+ * Higher order function that creates a function that can be used as a Bull Queue onComplete callback to take
+ * a job that successfully completed and read its output for new jobs that will be enqueued in bulk.
  * The expected syntax that a job result must output in order to for this function to enqueue more
  * jobs upon completion is:
  * {
