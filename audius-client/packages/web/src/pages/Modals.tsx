@@ -1,5 +1,3 @@
-import React from 'react'
-
 import Client from 'common/models/Client'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'

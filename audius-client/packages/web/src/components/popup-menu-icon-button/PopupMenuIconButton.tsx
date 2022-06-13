@@ -1,4 +1,4 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 import { PopupMenu, PopupMenuProps, IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -7,7 +7,7 @@ import styles from './PopupMenuIconButton.module.css'
 
 type PopupMenuIconButtonProps = {
   disabled?: boolean
-  icon?: React.ReactNode | Element
+  icon?: ReactNode | Element
   iconClassName?: string
 } & Omit<PopupMenuProps, 'renderTrigger'>
 

@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useEffect,
   useRef,
@@ -6,7 +6,11 @@ import React, {
   forwardRef,
   ReactNode,
   memo,
-  useMemo
+  useMemo,
+  CSSProperties,
+  RefObject,
+  Ref,
+  createRef
 } from 'react'
 
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
@@ -21,7 +25,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import styles from './TabStyles.module.css'
 
 type TabHeader = {
-  icon?: React.ReactNode
+  icon?: ReactNode
   text: string
   label: string
   disabled?: boolean
@@ -31,7 +35,7 @@ type TabProps = {
   onClick: () => void
   isActive: boolean
   isMobile: boolean
-  icon?: React.ReactNode
+  icon?: ReactNode
   text: string
   label: string
   disabled: boolean
@@ -40,7 +44,7 @@ type TabProps = {
 const Tab = forwardRef(
   (
     { onClick, icon, text, isActive, isMobile, disabled }: TabProps,
-    ref?: React.Ref<HTMLDivElement>
+    ref?: Ref<HTMLDivElement>
   ) => (
     <div
       className={cn(
@@ -102,7 +106,7 @@ const TabBar = memo(
     const refsArr = useRef<any[]>([])
 
     if (!refsArr.current || !refsArr.current.length) {
-      tabs.forEach(() => refsArr.current.push(React.createRef()))
+      tabs.forEach(() => refsArr.current.push(createRef()))
     }
 
     // @ts-ignore
@@ -336,9 +340,9 @@ type BodyContainerProps = {
   activeIndex: number
   setActiveIndex: (updater: (index: number) => number) => void
   onChangeComplete: (oldIndex: number, to: number) => void
-  elements: React.ReactNode[]
-  containerStyle: React.CSSProperties
-  elementStyle: React.CSSProperties
+  elements: ReactNode[]
+  containerStyle: CSSProperties
+  elementStyle: CSSProperties
   containerClassName?: string
   elementClassName?: string
   shouldAnimate: boolean
@@ -656,7 +660,7 @@ const GestureSupportingBodyContainer = memo(
           containerClassName
         )}
         ref={containerCallbackRef}
-        style={containerStyle as React.CSSProperties}
+        style={containerStyle as CSSProperties}
       >
         <animated.div
           className={styles.elementScrollContainer}
@@ -690,7 +694,7 @@ const GestureSupportingBodyContainer = memo(
               // non-visible elements to 1px height so they don't
               // impact scrolling behavior. For some reason setting to 0px
               // breaks touch events in iOS *facepalm*
-              const style: React.CSSProperties = {
+              const style: CSSProperties = {
                 width: containerWidth,
                 height:
                   !isOngoingAnimation && i !== activeIndex ? '1px' : 'auto'
@@ -925,7 +929,7 @@ type UseTabsResult = {
 
   // Plug this ref into the object you with to
   // have a full width transition in.
-  fullWidthContainerRef: React.RefObject<HTMLDivElement>
+  fullWidthContainerRef: RefObject<HTMLDivElement>
 
   // Manually recalculate body dimensions.
   // You shouldn't need this except in rare circumstances.

@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent } from 'react'
+import { forwardRef, useState, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
@@ -61,7 +61,7 @@ const iconMap = {
   }
 }
 
-const RepostButton = React.forwardRef<HTMLButtonElement, RepostButtonProps>(
+const RepostButton = forwardRef<HTMLButtonElement, RepostButtonProps>(
   (
     {
       isDarkMode,

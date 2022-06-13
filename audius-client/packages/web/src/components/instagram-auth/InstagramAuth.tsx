@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback } from 'react'
+import { ReactNode, useCallback, MouseEvent } from 'react'
 
 import * as Sentry from '@sentry/browser'
 import cn from 'classnames'
@@ -242,7 +242,7 @@ const InstagramAuth = ({
   }, [onClick, onFailure, getProfile])
 
   const onButtonClick = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       e.preventDefault()
       if (onClick) onClick()
       return getRequestToken()

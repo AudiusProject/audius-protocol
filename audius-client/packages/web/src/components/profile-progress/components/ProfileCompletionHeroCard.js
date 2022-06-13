@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import PropTypes from 'prop-types'
 import { useSpring, animated } from 'react-spring'
@@ -67,4 +67,4 @@ ProfileCompletionHeroCard.propTypes = {
   onDismiss: PropTypes.func.isRequired
 }
 
-export default React.memo(ProfileCompletionHeroCard)
+export default memo(ProfileCompletionHeroCard)

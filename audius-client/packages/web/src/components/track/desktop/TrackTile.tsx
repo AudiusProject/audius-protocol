@@ -1,4 +1,4 @@
-import React, { memo, MouseEvent, useCallback } from 'react'
+import { memo, MouseEvent, useCallback } from 'react'
 
 import { IconCrown, IconHidden } from '@audius/stems'
 import cn from 'classnames'

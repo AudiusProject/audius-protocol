@@ -1,5 +1,3 @@
-import React from 'react'
-
 import styles from './TrackingBar.module.css'
 
 type TrackingBarProps = {

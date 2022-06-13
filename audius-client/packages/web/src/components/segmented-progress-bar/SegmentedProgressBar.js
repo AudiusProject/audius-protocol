@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 import { range } from 'lodash'
 import PropTypes from 'prop-types'

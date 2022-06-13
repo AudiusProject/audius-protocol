@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,10 +19,13 @@ import { getFrameFromGif } from '../ethCollectibleHelpers'
 import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'
 
-const CollectibleDetails: React.FC<{
+type CollectibleDetailsProps = {
   collectible: Collectible
   onClick: () => void
-}> = ({ collectible, onClick }) => {
+}
+
+const CollectibleDetails = (props: CollectibleDetailsProps) => {
+  const { collectible, onClick } = props
   const dispatch = useDispatch()
   const { mediaType, frameUrl, videoUrl, gifUrl, name } = collectible
 

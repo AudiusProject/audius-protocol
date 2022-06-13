@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useCallback } from 'react'
+import { MouseEventHandler, useCallback } from 'react'
 
 import cn from 'classnames'
 import { push } from 'connected-react-router'

@@ -1,4 +1,4 @@
-import React, { ReactElement, useCallback, useEffect, useMemo } from 'react'
+import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'

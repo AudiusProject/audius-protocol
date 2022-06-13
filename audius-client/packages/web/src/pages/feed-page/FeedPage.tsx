@@ -1,4 +1,4 @@
-import React from 'react'
+import { RefObject } from 'react'
 
 import { connect } from 'react-redux'
 
@@ -10,7 +10,7 @@ import FeedPageContent from './components/desktop/FeedPageContent'
 import FeedPageMobileContent from './components/mobile/FeedPageContent'
 
 interface OwnProps {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
 }
 
 type FeedPageContentProps = ReturnType<typeof mapStateToProps> & OwnProps

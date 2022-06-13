@@ -1,5 +1,3 @@
-import React from 'react'
-
 import FeedFilter from 'common/models/FeedFilter'
 import HeaderButton from 'components/header-button/HeaderButton'
 

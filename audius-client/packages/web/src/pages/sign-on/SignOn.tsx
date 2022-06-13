@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { replace as replaceRoute } from 'connected-react-router'
 import { connect } from 'react-redux'

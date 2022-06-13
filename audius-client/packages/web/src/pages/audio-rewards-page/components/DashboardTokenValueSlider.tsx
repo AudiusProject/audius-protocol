@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { TokenValueSlider } from '@audius/stems'
 import BN from 'bn.js'
 

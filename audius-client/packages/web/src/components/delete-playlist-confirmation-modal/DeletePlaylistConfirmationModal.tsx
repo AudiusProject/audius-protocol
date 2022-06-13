@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'

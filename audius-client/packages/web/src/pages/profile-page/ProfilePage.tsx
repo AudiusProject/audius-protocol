@@ -1,4 +1,4 @@
-import React from 'react'
+import { RefObject } from 'react'
 
 import { useIsMobile } from 'utils/clientUtil'
 
@@ -7,7 +7,7 @@ import DesktopProfilePage from './components/desktop/ProfilePage'
 import MobileProfilePage from './components/mobile/ProfilePage'
 
 type ProfilePageProps = {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
 }
 
 const ProfilePage = ({ containerRef }: ProfilePageProps) => {

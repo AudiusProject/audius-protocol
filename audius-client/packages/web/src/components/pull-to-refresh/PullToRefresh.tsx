@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode, memo } from 'react'
+import { useState, useEffect, ReactNode, memo } from 'react'
 
 import cn from 'classnames'
 import Lottie, { EventListener } from 'react-lottie'

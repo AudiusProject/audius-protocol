@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonSize, ButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'
 

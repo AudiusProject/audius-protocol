@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
@@ -84,4 +84,4 @@ EmptyFeed.propTypes = {
   )
 }
 
-export default React.memo(EmptyFeed)
+export default memo(EmptyFeed)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import appIcon from 'assets/img/appIcon.png'
 import { ReactComponent as IconCareers } from 'assets/img/iconCareers.svg'

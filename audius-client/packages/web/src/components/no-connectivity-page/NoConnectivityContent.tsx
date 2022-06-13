@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'

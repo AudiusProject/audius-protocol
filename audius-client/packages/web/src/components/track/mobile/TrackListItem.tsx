@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, MouseEvent } from 'react'
 
 import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -149,13 +149,13 @@ const TrackListItem = ({
     if (uid && !isDeleted && togglePlay) togglePlay(uid, trackId)
   }
 
-  const onSaveTrack = (e: React.MouseEvent) => {
+  const onSaveTrack = (e: MouseEvent) => {
     e.stopPropagation()
     if (isDeleted && !isSaved) return
     if (onSave) onSave(isSaved, trackId)
   }
 
-  const onRemoveTrack = (e: React.MouseEvent<Element, MouseEvent>) => {
+  const onRemoveTrack = (e: MouseEvent<Element>) => {
     e.stopPropagation()
     if (onRemove) onRemove(index)
   }
@@ -218,7 +218,7 @@ const TrackListItem = ({
             aria-label='more actions'
             icon={<IconKebabHorizontal />}
             className={styles.kebabContainer}
-            onClick={(e: React.MouseEvent<Element, MouseEvent>) => {
+            onClick={e => {
               e.stopPropagation()
               onClickOverflow()
             }}

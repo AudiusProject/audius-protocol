@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 
 import { BNWei, WalletAddress } from 'common/models/Wallet'

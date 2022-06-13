@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component, ComponentType } from 'react'
 
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -84,8 +84,8 @@ const getRemixParentTrackId = (track: Track | null) =>
 
 type OwnProps = {
   children:
-    | React.ComponentType<MobileTrackPageProps>
-    | React.ComponentType<DesktopTrackPageProps>
+    | ComponentType<MobileTrackPageProps>
+    | ComponentType<DesktopTrackPageProps>
 }
 
 type mapStateProps = ReturnType<typeof makeMapStateToProps>

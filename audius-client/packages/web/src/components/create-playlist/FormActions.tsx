@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonType, IconCheck } from '@audius/stems'
 
 import styles from './FormActions.module.css'

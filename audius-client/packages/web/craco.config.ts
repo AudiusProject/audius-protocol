@@ -2,15 +2,24 @@ import { addBeforeLoader, loaderByName, when } from '@craco/craco'
 import { Configuration } from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
+const isNative = process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
+
 export default {
   babel: {
-    plugins: ['lodash']
+    plugins: [
+      'lodash',
+      ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+    ]
   },
   webpack: {
     plugins: when(process.env.BUNDLE_ANALYZE === 'true', () => [
       new BundleAnalyzerPlugin()
     ]),
     configure: (webpackConfig: Configuration) => {
+      if (isNative && webpackConfig?.resolve?.alias) {
+        webpackConfig.resolve.alias.react = 'react16'
+      }
+
       const wasmExtensionRegExp = /\.wasm$/
       webpackConfig.resolve?.extensions?.push('.wasm')
 

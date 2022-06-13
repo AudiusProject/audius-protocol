@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 
 import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
@@ -38,7 +38,7 @@ const springProps = {
   config: { tension: 240, friction: 25 }
 }
 
-const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
+const PlayingTrackInfo = ({
   trackId,
   isOwner,
   trackTitle,
@@ -46,14 +46,12 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
   profilePictureSizes,
   artistUserId,
   artistName,
-  artistHandle,
   onClickTrackTitle,
   onClickArtistName,
-  isVerified,
   isTrackUnlisted,
   hasShadow,
   dominantColor
-}) => {
+}: PlayingTrackInfoProps) => {
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
   const image = useUserProfilePicture(
@@ -135,4 +133,4 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
   )
 }
 
-export default React.memo(PlayingTrackInfo)
+export default memo(PlayingTrackInfo)

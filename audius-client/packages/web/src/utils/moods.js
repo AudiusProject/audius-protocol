@@ -1,5 +1,3 @@
-import React from 'react'
-
 export const moodMap = {
   Peaceful: (
     <div>

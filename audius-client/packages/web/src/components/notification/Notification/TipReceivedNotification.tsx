@@ -1,4 +1,4 @@
-import React, { ComponentType, useCallback, useState } from 'react'
+import { ComponentType, useCallback, useState } from 'react'
 
 import { TipReceived } from 'common/store/notifications/types'
 

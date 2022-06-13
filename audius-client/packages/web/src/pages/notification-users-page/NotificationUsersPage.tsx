@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'

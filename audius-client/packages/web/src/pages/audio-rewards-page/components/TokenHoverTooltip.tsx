@@ -1,11 +1,11 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 import { BNWei } from 'common/models/Wallet'
 import { formatWei } from 'common/utils/wallet'
 import Tooltip from 'components/tooltip/Tooltip'
 
 type TokenHoverTooltipProps = {
-  children: React.ReactNode
+  children: ReactNode
   balance: BNWei
   parentMount?: boolean
 }

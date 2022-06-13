@@ -1,11 +1,7 @@
-import React from 'react'
-
 import cn from 'classnames'
-import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
 import Client from 'common/models/Client'
-import { AppState } from 'store/types'
 import { getClient } from 'utils/clientUtil'
 
 import styles from './Navigator.module.css'
@@ -16,11 +12,9 @@ interface OwnProps {
   className?: string
 }
 
-type NavigatorProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  RouteComponentProps
+type NavigatorProps = OwnProps & RouteComponentProps
 
-const Navigator: React.FC<NavigatorProps> = ({ className }) => {
+const Navigator = ({ className }: NavigatorProps) => {
   const client = getClient()
 
   const isMobile = client === Client.MOBILE
@@ -40,8 +34,4 @@ const Navigator: React.FC<NavigatorProps> = ({ className }) => {
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {}
-}
-
-export default withRouter(connect(mapStateToProps)(Navigator))
+export default withRouter(Navigator)

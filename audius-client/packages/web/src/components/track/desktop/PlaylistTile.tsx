@@ -1,4 +1,4 @@
-import React, { memo, ReactChildren, useCallback } from 'react'
+import { memo, ReactChildren, useCallback } from 'react'
 
 import { IconArrow } from '@audius/stems'
 import cn from 'classnames'

@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'

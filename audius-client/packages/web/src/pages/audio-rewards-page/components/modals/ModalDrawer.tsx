@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Modal, ModalProps } from '@audius/stems'
 import cn from 'classnames'
 

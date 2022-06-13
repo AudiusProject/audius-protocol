@@ -1,5 +1,3 @@
-import React from 'react'
-
 import Tooltip from 'components/tooltip/Tooltip'
 import { getCurrentThemeColors } from 'utils/theme/theme'
 

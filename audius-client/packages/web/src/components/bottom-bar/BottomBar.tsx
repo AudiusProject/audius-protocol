@@ -1,10 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useContext,
-  useState,
-  useEffect
-} from 'react'
+import { memo, useCallback, useContext, useState, useEffect } from 'react'
 
 import { useHistory } from 'react-router-dom'
 

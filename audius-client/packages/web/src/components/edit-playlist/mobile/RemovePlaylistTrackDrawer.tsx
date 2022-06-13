@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonType } from '@audius/stems'
 
 import Drawer from 'components/drawer/Drawer'

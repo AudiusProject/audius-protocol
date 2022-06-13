@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-  useState
-} from 'react'
+import { useEffect, useCallback, useRef, ReactNode, useState } from 'react'
 
 import { IconRemove } from '@audius/stems'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'

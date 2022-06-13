@@ -1,10 +1,11 @@
-import React, {
+import {
   useContext,
   useEffect,
   ReactNode,
   useRef,
   useState,
-  useCallback
+  useCallback,
+  CSSProperties
 } from 'react'
 
 import { Switch, useHistory } from 'react-router-dom'
@@ -168,7 +169,7 @@ const AnimatedSwitch = ({
     getAnimation()
   )
 
-  const extraStyles: React.CSSProperties = {}
+  const extraStyles: CSSProperties = {}
   if (disabled) {
     extraStyles.transform = 'none'
   }

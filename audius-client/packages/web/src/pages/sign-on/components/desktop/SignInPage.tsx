@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, KeyboardEvent } from 'react'
+import {
+  createRef,
+  useState,
+  useEffect,
+  useCallback,
+  KeyboardEvent
+} from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
@@ -63,7 +69,7 @@ export const SignInPage = ({
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [getInitialEmail] = useInstanceVar(email)
 
-  const passwordInput = React.createRef<HTMLInputElement>()
+  const passwordInput = createRef<HTMLInputElement>()
 
   useEffect(() => {
     const email = getInitialEmail()

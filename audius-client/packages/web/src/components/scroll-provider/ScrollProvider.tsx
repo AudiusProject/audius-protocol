@@ -1,4 +1,4 @@
-import React, { memo, createContext, useCallback } from 'react'
+import { memo, createContext, useCallback } from 'react'
 
 import { matchPath } from 'react-router-dom'
 

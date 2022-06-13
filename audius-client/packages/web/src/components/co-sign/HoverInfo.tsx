@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { ID } from 'common/models/Identifiers'

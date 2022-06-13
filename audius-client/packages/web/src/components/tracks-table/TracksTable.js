@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import Table from 'antd/lib/table'
 import cn from 'classnames'

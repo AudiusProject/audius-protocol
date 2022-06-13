@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
 

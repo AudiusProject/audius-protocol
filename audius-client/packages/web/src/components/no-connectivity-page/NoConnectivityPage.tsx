@@ -1,5 +1,3 @@
-import React from 'react'
-
 import NoConnectivityContent from './NoConnectivityContent'
 import styles from './NoConnectivityPage.module.css'
 

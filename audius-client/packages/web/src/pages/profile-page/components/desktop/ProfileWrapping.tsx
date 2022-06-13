@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'

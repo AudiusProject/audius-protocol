@@ -1,4 +1,4 @@
-import React, { createContext, memo, useRef, MutableRefObject } from 'react'
+import { createContext, memo, useRef, MutableRefObject } from 'react'
 
 export const MainContentContext = createContext({
   mainContentRef: {} as MutableRefObject<HTMLDivElement | undefined>

@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useCallback, useMemo } from 'react'
+import { MouseEventHandler, useCallback, useMemo } from 'react'
 
 import { useDispatch } from 'react-redux'
 

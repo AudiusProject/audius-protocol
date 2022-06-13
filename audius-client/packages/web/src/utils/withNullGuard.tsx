@@ -1,4 +1,4 @@
-import React from 'react'
+import { ComponentType } from 'react'
 
 /**
  * `withNullGuard` wraps a component that takes a 'wide' set of props (W) with nullable
@@ -44,7 +44,7 @@ export function withNullGuard<W, N>(
 export function withClassNullGuard<W, N>(
   propMapper: (wide: W) => N | undefined | null | false
 ) {
-  return (Component: React.ComponentType<N>) => (wideProps: W) => {
+  return (Component: ComponentType<N>) => (wideProps: W) => {
     const narrowProps = propMapper(wideProps)
     if (!narrowProps) return null
     return <Component {...narrowProps} />

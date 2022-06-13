@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { createRef, Component } from 'react'
 
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
@@ -69,8 +69,8 @@ class SearchBar extends Component {
       shouldDismissTagPopup: false,
       tagPopupFocused: false
     }
-    this.autoCompleteRef = React.createRef()
-    this.searchBarRef = React.createRef()
+    this.autoCompleteRef = createRef()
+    this.searchBarRef = createRef()
   }
 
   componentDidMount() {

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { IconInstagram, IconTwitterBird, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 

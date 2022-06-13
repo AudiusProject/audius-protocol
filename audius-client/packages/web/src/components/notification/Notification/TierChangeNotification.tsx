@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { TierChange } from 'common/store/notifications/types'
 import { BadgeTierInfo, badgeTiers } from 'common/store/wallet/utils'

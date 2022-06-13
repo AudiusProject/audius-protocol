@@ -1,4 +1,4 @@
-import React from 'react'
+import { ChangeEvent, KeyboardEvent } from 'react'
 
 import cn from 'classnames'
 import Lottie from 'react-lottie'
@@ -74,7 +74,7 @@ const SearchBar = ({
     }
   }
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     onSearch(e.target.value)
   }
 
@@ -95,7 +95,7 @@ const SearchBar = ({
     }
   }
 
-  const handleKeyPress = ({ key }: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyPress = ({ key }: KeyboardEvent<HTMLDivElement>) => {
     if (key === 'Enter' && value.trimLeft() !== '') beginSearch()
   }
 

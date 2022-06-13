@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, MutableRefObject } from 'react'
 
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
@@ -50,7 +50,7 @@ const messages = {
 }
 
 type NotificationPanelProps = {
-  anchorRef: React.MutableRefObject<HTMLElement>
+  anchorRef: MutableRefObject<HTMLElement>
 }
 
 // The threshold of distance from the bottom of the scroll container in the

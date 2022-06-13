@@ -1,5 +1,3 @@
-import React from 'react'
-
 import Footer from 'components/public-site/Footer'
 import NavBanner from 'components/public-site/NavBanner'
 

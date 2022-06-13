@@ -1,4 +1,4 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 import { Button, IconArrow, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -29,7 +29,7 @@ const Title = ({
   children,
   className
 }: {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
 }) => <h2 className={cn(styles.title, className)}>{children}</h2>
 
@@ -37,7 +37,7 @@ const Subtitle = ({
   children,
   className
 }: {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
 }) => <div className={cn(styles.subtitle, className)}>{children}</div>
 

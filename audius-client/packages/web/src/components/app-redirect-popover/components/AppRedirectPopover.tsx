@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import { matchPath } from 'react-router-dom'
@@ -157,7 +157,7 @@ const AppRedirectPopover = ({
                       {elementTransitions.map(
                         ({ item: newItem, props, key }) => {
                           return (
-                            <React.Fragment key={key}>
+                            <Fragment key={key}>
                               <div
                                 className={styles.clickableArea}
                                 onClick={onClick}
@@ -194,7 +194,7 @@ const AppRedirectPopover = ({
                                   {messages.notNow}
                                 </animated.div>
                               )}
-                            </React.Fragment>
+                            </Fragment>
                           )
                         }
                       )}

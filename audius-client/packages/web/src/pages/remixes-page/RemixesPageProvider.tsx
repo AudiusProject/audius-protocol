@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -30,10 +30,10 @@ const messages = {
 }
 
 type OwnProps = {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
   children:
-    | React.ComponentType<DesktopRemixesPageProps>
-    | React.ComponentType<MobileRemixesPageProps>
+    | ComponentType<DesktopRemixesPageProps>
+    | ComponentType<MobileRemixesPageProps>
 }
 
 type mapStateProps = ReturnType<typeof makeMapStateToProps>

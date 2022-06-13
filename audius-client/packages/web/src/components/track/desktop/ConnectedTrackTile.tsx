@@ -1,4 +1,4 @@
-import React, { memo, useState, useCallback, useEffect } from 'react'
+import { memo, useState, useCallback, useEffect } from 'react'
 
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'

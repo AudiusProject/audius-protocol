@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
 
@@ -27,4 +27,4 @@ const AchievementTile = props => {
   )
 }
 
-export default React.memo(AchievementTile)
+export default memo(AchievementTile)

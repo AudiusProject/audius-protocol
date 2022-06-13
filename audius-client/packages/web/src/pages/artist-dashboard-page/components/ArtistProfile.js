@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 
@@ -49,4 +49,4 @@ const ArtistProfile = props => {
   )
 }
 
-export default React.memo(ArtistProfile)
+export default memo(ArtistProfile)

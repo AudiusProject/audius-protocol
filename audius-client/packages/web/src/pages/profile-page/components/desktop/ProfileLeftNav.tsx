@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import cn from 'classnames'
 import { animated } from 'react-spring'

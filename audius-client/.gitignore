@@ -7,3 +7,4 @@ lerna-debug.log
 **/.hooks/*.local.json
 
 **/.hooks/*.local.json
+.log

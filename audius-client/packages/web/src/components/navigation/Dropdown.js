@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import AntDropdown from 'antd/lib/dropdown'
 import AntMenu from 'antd/lib/menu'

@@ -1,4 +1,11 @@
-import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
+import {
+  memo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  MouseEvent
+} from 'react'
 
 import cn from 'classnames'
 import Lottie from 'react-lottie'
@@ -8,7 +15,7 @@ import useInstanceVar from 'common/hooks/useInstanceVar'
 import styles from './AnimatedButtonProvider.module.css'
 
 export type BaseAnimatedButtonProps = {
-  onClick: ((e: React.MouseEvent) => void) | (() => void)
+  onClick: ((e: MouseEvent) => void) | (() => void)
   uniqueKey: string
   isActive: boolean
   isDisabled?: boolean
@@ -72,7 +79,7 @@ const AnimatedButton = ({
   }
 
   const handleClick = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       if (stopPropagation) {
         e.stopPropagation()
       }
