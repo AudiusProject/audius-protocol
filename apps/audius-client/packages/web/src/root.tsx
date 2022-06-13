@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy } from 'react'
+import { Suspense, useState, useEffect, useCallback, lazy } from 'react'
 
 import { getCurrentUserExists } from 'services/LocalStorage'
 import { setupMobileLogging } from 'services/Logging'
@@ -80,16 +80,14 @@ const Root = () => {
     !shouldRedirectToApp
   ) {
     return (
-      <React.Suspense
-        fallback={<div style={{ width: '100vw', height: '100vh' }} />}
-      >
+      <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <PublicSite
           isMobile={isMobileClient}
           onClickAppRedirect={() => setShouldShowPopover(false)}
           onDismissAppRedirect={() => setShouldShowPopover(false)}
           setRenderPublicSite={setRenderPublicSite}
         />
-      </React.Suspense>
+      </Suspense>
     )
   }
 

@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react'
+import { lazy, createRef, Component, Suspense } from 'react'
 
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -171,7 +171,7 @@ import TopSupportersPage from './top-supporters-page/TopSupportersPage'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
-const SignOn = React.lazy(() => import('pages/sign-on/SignOn'))
+const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazyWithPreload(
   () => import('pages/upload-page/UploadPage'),
@@ -210,7 +210,7 @@ class App extends Component {
 
   ipc = null
 
-  headerGutterRef = React.createRef()
+  headerGutterRef = createRef()
 
   scrollToTop = () => {
     this.props.mainContentRef.current &&

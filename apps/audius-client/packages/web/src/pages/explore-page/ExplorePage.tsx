@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { connect, useSelector } from 'react-redux'
 
 import { isRemoteConfigLoaded } from 'common/store/remote-config/selectors'

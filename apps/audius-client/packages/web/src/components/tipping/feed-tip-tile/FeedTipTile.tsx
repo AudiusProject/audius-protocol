@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { Button } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

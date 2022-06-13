@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { createRef, Component } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -10,7 +10,7 @@ class TextArea extends Component {
     value: this.props.defaultValue
   }
 
-  textareaRef = React.createRef()
+  textareaRef = createRef()
 
   growTextArea = () => {
     if (this.textareaRef.current) {

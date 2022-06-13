@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import {
   IconShare,
@@ -59,8 +59,8 @@ const ActionsBar = ({
           className={cn(styles.icon, styles.iconCast)}
           activeClassName={styles.activeButton}
           icon={isAirplay ? <IconAirplay /> : <IconChromecast />}
-          onClick={(e: React.MouseEvent<Element, MouseEvent>) => {
-            e.stopPropagation()
+          onClick={event => {
+            event.stopPropagation()
             const message = isAirplay
               ? new AirplayMessage()
               : new ShowGoogleCastPickerMessage()
@@ -99,8 +99,8 @@ const ActionsBar = ({
         aria-label='more actions'
         icon={<IconKebabHorizontal />}
         className={styles.icon}
-        onClick={(e: React.MouseEvent<Element, MouseEvent>) => {
-          e.stopPropagation()
+        onClick={event => {
+          event.stopPropagation()
           onClickOverflow()
         }}
       />
@@ -108,4 +108,4 @@ const ActionsBar = ({
   )
 }
 
-export default React.memo(ActionsBar)
+export default memo(ActionsBar)

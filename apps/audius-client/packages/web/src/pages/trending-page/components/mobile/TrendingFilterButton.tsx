@@ -1,5 +1,3 @@
-import React from 'react'
-
 import HeaderButton from 'components/header-button/HeaderButton'
 
 import styles from './TrendingFilterButton.module.css'

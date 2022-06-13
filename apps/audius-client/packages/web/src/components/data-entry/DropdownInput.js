@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import Select from 'antd/lib/select'
 import cn from 'classnames'

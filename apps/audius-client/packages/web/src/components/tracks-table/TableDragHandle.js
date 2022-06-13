@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 
 import styles from './TableDragHandle.module.css'

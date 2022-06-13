@@ -1,4 +1,5 @@
-import React, {
+import {
+  Fragment,
   useContext,
   useEffect,
   useMemo,
@@ -137,7 +138,7 @@ const ExplorePage = ({
 
   const justForYouTiles = justForYou.map(
     (t: SmartCollection | ExploreCollection) => {
-      const Icon = t.icon ? t.icon : React.Fragment
+      const Icon = t.icon ? t.icon : Fragment
       if (t.variant === CollectionVariant.SMART) {
         return (
           <ColorTile

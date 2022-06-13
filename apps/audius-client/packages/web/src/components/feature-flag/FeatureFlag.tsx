@@ -1,4 +1,4 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 import { FeatureFlags } from 'common/services/remote-config'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -10,7 +10,7 @@ type FeatureFlagProps = {
   /* Invert the flag test - if inverted && flag is true, do *not* render the component. */
   inverted?: boolean
 
-  children?: React.ReactNode
+  children?: ReactNode
 }
 
 /* FeatureFlag renders children only if the `flag` prop evaluates to true,

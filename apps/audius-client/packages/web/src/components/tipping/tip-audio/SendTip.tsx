@@ -1,4 +1,4 @@
-import React, { cloneElement, useCallback, useEffect, useState } from 'react'
+import { cloneElement, useCallback, useEffect, useState } from 'react'
 
 import { Format, IconTrophy, TokenValueInput } from '@audius/stems'
 import BN from 'bn.js'

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import { useContext, useEffect } from 'react'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { useMobileHeader } from 'components/header/mobile/hooks'

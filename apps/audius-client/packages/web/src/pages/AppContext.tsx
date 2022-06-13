@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { HeaderContextProvider } from 'components/header/mobile/HeaderContextProvider'
 import { NavProvider } from 'components/nav/store/context'

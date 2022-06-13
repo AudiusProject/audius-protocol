@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback, useEffect } from 'react'
+import { useState, useContext, useCallback, useEffect } from 'react'
 
 import {
   IconCaretRight,

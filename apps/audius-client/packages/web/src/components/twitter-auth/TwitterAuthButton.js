@@ -1,5 +1,3 @@
-import React from 'react'
-
 import PropTypes from 'prop-types'
 
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'

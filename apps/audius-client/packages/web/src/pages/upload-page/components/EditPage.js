@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import { mapValues } from 'lodash'

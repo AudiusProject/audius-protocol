@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
@@ -15,10 +15,10 @@ import {
 
 const BASENAME = process.env.PUBLIC_URL
 
-const PrivacyPolicyPage = React.lazy(() =>
+const PrivacyPolicyPage = lazy(() =>
   import('pages/privacy-policy-page/PrivacyPolicyPage')
 )
-const TermsOfUsePage = React.lazy(() =>
+const TermsOfUsePage = lazy(() =>
   import('pages/terms-of-use-page/TermsOfUsePage')
 )
 
@@ -98,9 +98,7 @@ const PublicSite = ({
           setRenderPublicSite={setRenderPublicSite}
         />
       )}
-      <React.Suspense
-        fallback={<div style={{ width: '100vw', height: '100vh' }} />}
-      >
+      <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <Router basename={BASENAME}>
           <Route
             exact
@@ -151,7 +149,7 @@ const PublicSite = ({
             render={() => <LoadingSpinnerFullPage />}
           />
         </Router>
-      </React.Suspense>
+      </Suspense>
     </>
   )
 }

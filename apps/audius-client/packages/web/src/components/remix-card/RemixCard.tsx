@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ID } from 'common/models/Identifiers'
 import { Remix } from 'common/models/Track'
 import { ArtistPopover } from 'components/artist/ArtistPopover'

@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useContext } from 'react'
+import { MutableRefObject, useContext } from 'react'
 
 import { Popup, PopupPosition } from '@audius/stems'
 import { useSelector } from 'react-redux'

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react';
 import { push as pushRoute } from 'connected-react-router'
 import { AppState } from 'store/types'
 import { Dispatch } from 'redux'

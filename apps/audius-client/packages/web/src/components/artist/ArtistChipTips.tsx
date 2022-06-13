@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { IconTrophy, IconTrending } from '@audius/stems'
 import cn from 'classnames'

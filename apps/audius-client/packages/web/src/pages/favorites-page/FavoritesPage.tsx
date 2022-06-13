@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 
 import { getUserList } from 'common/store/user-list/favorites/selectors'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'

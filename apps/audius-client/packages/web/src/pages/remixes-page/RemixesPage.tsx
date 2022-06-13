@@ -1,4 +1,4 @@
-import React from 'react'
+import { RefObject } from 'react'
 
 import { useIsMobile } from 'utils/clientUtil'
 
@@ -7,7 +7,7 @@ import RemixesPageDesktopContent from './components/desktop/RemixesPage'
 import RemixesPageMobileContent from './components/mobile/RemixesPage'
 
 type RemixesPageProps = {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
 }
 
 const RemixesPage = ({ containerRef }: RemixesPageProps) => {

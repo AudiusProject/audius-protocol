@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 
 import { ReactComponent as IconPodcastForward } from 'assets/img/iconPodcastForward.svg'

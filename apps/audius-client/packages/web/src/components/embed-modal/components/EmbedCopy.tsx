@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'

@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'

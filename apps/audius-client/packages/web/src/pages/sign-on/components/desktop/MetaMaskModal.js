@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import Tooltip from 'antd/lib/tooltip'

@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'

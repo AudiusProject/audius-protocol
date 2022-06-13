@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Parallax } from 'react-scroll-parallax'
 
 import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile@2x.jpg'

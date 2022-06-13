@@ -1,4 +1,4 @@
-import React, { useCallback, ReactNode, useState } from 'react'
+import { useCallback, ReactNode, useState } from 'react'
 
 import Popover from 'antd/lib/popover'
 import cn from 'classnames'

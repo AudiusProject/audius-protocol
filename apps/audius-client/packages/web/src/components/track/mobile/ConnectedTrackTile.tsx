@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo, MouseEvent } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -124,12 +124,12 @@ const ConnectedTrackTile = memo(
       }
     }
 
-    const goToTrackPage = (e: React.MouseEvent<HTMLElement>) => {
+    const goToTrackPage = (e: MouseEvent<HTMLElement>) => {
       e.stopPropagation()
       goToRoute(permalink)
     }
 
-    const goToArtistPage = (e: React.MouseEvent<HTMLElement>) => {
+    const goToArtistPage = (e: MouseEvent<HTMLElement>) => {
       e.stopPropagation()
       goToRoute(profilePage(handle))
     }
@@ -139,7 +139,7 @@ const ConnectedTrackTile = memo(
     }
 
     const makeGoToRepostsPage = (trackId: ID) => (
-      e: React.MouseEvent<HTMLElement>
+      e: MouseEvent<HTMLElement>
     ) => {
       e.stopPropagation()
       setRepostTrackId(trackId)
@@ -147,7 +147,7 @@ const ConnectedTrackTile = memo(
     }
 
     const makeGoToFavoritesPage = (trackId: ID) => (
-      e: React.MouseEvent<HTMLElement>
+      e: MouseEvent<HTMLElement>
     ) => {
       e.stopPropagation()
       setFavoriteTrackId(trackId)

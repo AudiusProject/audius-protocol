@@ -1,5 +1,3 @@
-import React from 'react'
-
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './LoadingSpinnerFullPage.module.css'

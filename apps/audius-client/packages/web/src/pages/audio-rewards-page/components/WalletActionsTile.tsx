@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'

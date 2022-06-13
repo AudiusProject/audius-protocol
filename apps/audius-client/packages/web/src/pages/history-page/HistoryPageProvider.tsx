@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  ChangeEvent,
+  ComponentType
+} from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -35,8 +42,8 @@ const messages = {
 
 type OwnProps = {
   children:
-    | React.ComponentType<MobileHistoryPageProps>
-    | React.ComponentType<DesktopHistoryPageProps>
+    | ComponentType<MobileHistoryPageProps>
+    | ComponentType<DesktopHistoryPageProps>
 }
 
 type HistoryPageProps = OwnProps &
@@ -70,7 +77,7 @@ const HistoryPage = g(props => {
 
   const [filterText, setFilterText] = useState('')
   const onFilterChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: ChangeEvent<HTMLInputElement>) => {
       setFilterText(e.target.value)
     },
     [setFilterText]

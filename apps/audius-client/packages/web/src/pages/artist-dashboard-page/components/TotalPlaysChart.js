@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { createRef, Component } from 'react'
 
 import moment from 'moment'
 import numeral from 'numeral'
@@ -186,8 +186,8 @@ export class TotalPlaysChart extends Component {
     yearOptions: [{ text: messages.thisYear }]
   }
 
-  chartContainer = React.createRef()
-  chart = React.createRef()
+  chartContainer = createRef()
+  chart = createRef()
 
   setChartWidthHeight = () => {
     if (this.chartContainer) {

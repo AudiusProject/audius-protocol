@@ -1,4 +1,4 @@
-import React, { Component, useState, useCallback } from 'react'
+import { Component, useState, useCallback } from 'react'
 
 import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
 import cn from 'classnames'

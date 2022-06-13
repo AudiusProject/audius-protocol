@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

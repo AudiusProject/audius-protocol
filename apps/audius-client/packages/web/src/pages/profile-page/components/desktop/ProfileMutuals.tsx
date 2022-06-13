@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { IconFollowing } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'

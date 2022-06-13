@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'

@@ -1,4 +1,4 @@
-import React from 'react'
+import { RefObject } from 'react'
 
 import { connect } from 'react-redux'
 
@@ -10,7 +10,7 @@ import DesktopSettingsPage from './components/desktop/SettingsPage'
 import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
 
 type OwnProps = {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
   subPage?: SubPage
 }
 

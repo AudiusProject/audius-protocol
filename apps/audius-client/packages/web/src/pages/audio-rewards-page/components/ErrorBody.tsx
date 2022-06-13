@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'

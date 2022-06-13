@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useContext, useMemo } from 'react'
+import { useCallback, useEffect, useContext, useMemo } from 'react'
 
 import {
   Button,

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import AudiusAPI from 'assets/img/audiusAPI.png'
 import { useModalState } from 'common/hooks/useModalState'

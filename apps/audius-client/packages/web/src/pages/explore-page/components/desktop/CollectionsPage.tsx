@@ -1,4 +1,4 @@
-import React, { useCallback, MouseEvent } from 'react'
+import { useCallback, MouseEvent } from 'react'
 
 import { UserCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'

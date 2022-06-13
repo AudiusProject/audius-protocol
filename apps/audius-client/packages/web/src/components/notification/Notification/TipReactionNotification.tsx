@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { TipReaction } from 'common/store/notifications/types'
 
 import styles from './TipReactionNotification.module.css'

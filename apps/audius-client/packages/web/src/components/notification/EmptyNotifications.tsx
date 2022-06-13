@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ReactComponent as IconAnnouncement } from 'assets/img/iconAnnouncement.svg'
 
 import styles from './EmptyNotifications.module.css'

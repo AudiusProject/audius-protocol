@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component, ComponentType } from 'react'
 
 import {
   push as pushRoute,
@@ -55,9 +55,7 @@ const META_MASK_SETUP_URL =
   'https://medium.com/@audius/configuring-metamask-for-use-with-audius-91e24bf6840'
 
 type OwnProps = {
-  children:
-    | React.ComponentType<MobileSignOnProps>
-    | React.ComponentType<DesktopSignOnProps>
+  children: ComponentType<MobileSignOnProps> | ComponentType<DesktopSignOnProps>
   signIn: boolean
   initialPage: boolean
   isMobile: boolean
@@ -449,14 +447,10 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       recordInstagramStart: this.onRecordInstagramStart
     }
     if (this.props.isMobile) {
-      const Children = this.props.children as React.ComponentType<
-        MobileSignOnProps
-      >
+      const Children = this.props.children as ComponentType<MobileSignOnProps>
       return <Children {...childProps} {...mobileProps} />
     } else {
-      const Children = this.props.children as React.ComponentType<
-        DesktopSignOnProps
-      >
+      const Children = this.props.children as ComponentType<DesktopSignOnProps>
       return <Children {...childProps} {...desktopProps} />
     }
   }

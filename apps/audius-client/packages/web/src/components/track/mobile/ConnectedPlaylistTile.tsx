@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo, MouseEvent } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -129,7 +129,7 @@ const ConnectedPlaylistTile = memo(
     }, [collection, user])
 
     const goToCollectionPage = useCallback(
-      (e: React.MouseEvent<HTMLElement>) => {
+      (e: MouseEvent<HTMLElement>) => {
         e.stopPropagation()
         const route = getRoute()
         goToRoute(route)
@@ -138,7 +138,7 @@ const ConnectedPlaylistTile = memo(
     )
 
     const goToArtistPage = useCallback(
-      (e: React.MouseEvent<HTMLElement>) => {
+      (e: MouseEvent<HTMLElement>) => {
         e.stopPropagation()
         goToRoute(profilePage(user.handle))
       },
@@ -219,7 +219,7 @@ const ConnectedPlaylistTile = memo(
     ])
 
     const makeGoToRepostsPage = (collectionId: ID) => (
-      e: React.MouseEvent<HTMLElement>
+      e: MouseEvent<HTMLElement>
     ) => {
       e.stopPropagation()
       setRepostPlaylistId(collectionId)
@@ -227,7 +227,7 @@ const ConnectedPlaylistTile = memo(
     }
 
     const makeGoToFavoritesPage = (collectionId: ID) => (
-      e: React.MouseEvent<HTMLElement>
+      e: MouseEvent<HTMLElement>
     ) => {
       e.stopPropagation()
       setFavoritePlaylistId(collectionId)

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { ChangeEvent, Component, ComponentType } from 'react'
 
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -99,8 +99,8 @@ type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
   children:
-    | React.ComponentType<MobileCollectionPageProps>
-    | React.ComponentType<DesktopCollectionPageProps>
+    | ComponentType<MobileCollectionPageProps>
+    | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
   smartCollection?: SmartCollection
@@ -360,7 +360,7 @@ class CollectionPage extends Component<
     this.fetchCollection(getPathname(this.props.location), true)
   }
 
-  onFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  onFilterChange = (e: ChangeEvent<HTMLInputElement>) => {
     this.setState({ filterText: e.target.value })
   }
 

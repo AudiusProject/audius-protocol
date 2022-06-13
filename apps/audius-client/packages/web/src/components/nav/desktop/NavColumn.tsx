@@ -1,4 +1,4 @@
-import React, { MouseEvent, useCallback, useRef, useState } from 'react'
+import { MouseEvent, useCallback, useRef, useState } from 'react'
 
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'

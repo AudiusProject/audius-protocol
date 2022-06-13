@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

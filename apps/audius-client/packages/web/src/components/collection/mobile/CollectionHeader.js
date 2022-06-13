@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 

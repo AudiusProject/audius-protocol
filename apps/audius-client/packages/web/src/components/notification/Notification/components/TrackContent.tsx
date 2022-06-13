@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { SquareSizes } from 'common/models/ImageSizes'
 import { TrackEntity } from 'common/store/notifications/types'
 import CoSign, { Size } from 'components/co-sign/CoSign'

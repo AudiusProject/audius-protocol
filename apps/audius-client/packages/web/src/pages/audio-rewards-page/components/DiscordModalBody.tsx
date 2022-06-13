@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonType, IconDiscord } from '@audius/stems'
 
 import { ModalBodyWrapper } from '../WalletModal'

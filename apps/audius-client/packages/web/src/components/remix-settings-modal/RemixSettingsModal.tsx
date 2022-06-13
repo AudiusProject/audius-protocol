@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { debounce } from 'lodash'

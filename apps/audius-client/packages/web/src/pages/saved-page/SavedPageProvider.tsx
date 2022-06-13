@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import { ComponentType, PureComponent } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -47,8 +47,8 @@ const messages = {
 
 type OwnProps = {
   children:
-    | React.ComponentType<MobileSavedPageProps>
-    | React.ComponentType<DesktopSavedPageProps>
+    | ComponentType<MobileSavedPageProps>
+    | ComponentType<DesktopSavedPageProps>
 }
 
 type SavedPageProps = OwnProps &

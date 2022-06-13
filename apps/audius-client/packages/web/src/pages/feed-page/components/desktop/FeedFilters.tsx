@@ -1,5 +1,3 @@
-import React from 'react'
-
 import FeedFilter from 'common/models/FeedFilter'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
 

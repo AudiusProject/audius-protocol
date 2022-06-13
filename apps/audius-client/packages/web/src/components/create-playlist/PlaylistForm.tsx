@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Collection, CollectionMetadata } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'

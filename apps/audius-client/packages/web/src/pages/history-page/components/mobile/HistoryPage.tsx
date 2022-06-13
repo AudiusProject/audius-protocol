@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useCallback, useContext } from 'react'
+import { memo, useEffect, useCallback, useContext } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 

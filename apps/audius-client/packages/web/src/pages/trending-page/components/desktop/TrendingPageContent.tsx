@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 import { Name } from 'common/models/Analytics'
 import Status from 'common/models/Status'

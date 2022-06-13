@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { createRef, Component } from 'react'
 
 import Slider from 'antd/lib/slider'
 import PropTypes from 'prop-types'
@@ -33,7 +33,7 @@ class VolumeBar extends Component {
     volumeLevel: getSavedVolume(this.props.defaultValue)
   }
 
-  volumeBarRef = React.createRef()
+  volumeBarRef = createRef()
 
   componentDidMount() {
     const volumeUp = () => {

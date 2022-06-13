@@ -1,4 +1,4 @@
-import React, { useMemo, ReactNode, RefObject } from 'react'
+import { useMemo, ReactNode, RefObject } from 'react'
 
 import cn from 'classnames'
 

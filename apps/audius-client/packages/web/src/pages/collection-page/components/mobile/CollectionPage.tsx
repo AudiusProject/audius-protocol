@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import { memo, useEffect, useContext } from 'react'
 
 import { Collection, SmartCollection, Variant } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
@@ -298,4 +298,4 @@ const CollectionPage = ({
   )
 }
 
-export default React.memo(CollectionPage)
+export default memo(CollectionPage)

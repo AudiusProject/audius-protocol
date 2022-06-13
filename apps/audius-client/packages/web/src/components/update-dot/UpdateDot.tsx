@@ -1,10 +1,8 @@
-import React from 'react'
-
 import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './UpdateDot.module.css'
 
-const UpdateDot: React.FC = () => {
+const UpdateDot = () => {
   const isMobile = useIsMobile()
 
   return isMobile ? (

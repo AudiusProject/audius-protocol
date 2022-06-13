@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useContext } from 'react'
+import { useEffect, useCallback, useContext } from 'react'
 
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'

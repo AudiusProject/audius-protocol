@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useProfileTier } from 'common/hooks/wallet'

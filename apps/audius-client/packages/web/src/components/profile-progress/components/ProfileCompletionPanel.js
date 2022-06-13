@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import PropTypes from 'prop-types'
 import { useSpring, animated } from 'react-spring'
@@ -53,4 +53,4 @@ ProfileCompletionPanel.propTypes = {
   onDismiss: PropTypes.func.isRequired
 }
 
-export default React.memo(ProfileCompletionPanel)
+export default memo(ProfileCompletionPanel)

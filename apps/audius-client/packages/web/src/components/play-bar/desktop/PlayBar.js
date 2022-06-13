@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'

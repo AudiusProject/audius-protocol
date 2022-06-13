@@ -1,5 +1,3 @@
-import React from 'react'
-
 import AntModal from 'antd/lib/modal'
 import ReactMarkdown from 'react-markdown'
 import SimpleBar from 'simplebar-react'

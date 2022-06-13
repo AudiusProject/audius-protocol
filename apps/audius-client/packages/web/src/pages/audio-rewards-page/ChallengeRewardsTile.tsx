@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 
 import { ProgressBar } from '@audius/stems'
 import cn from 'classnames'

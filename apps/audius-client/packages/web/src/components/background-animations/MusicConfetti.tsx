@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 
 import heartIconPrimary from 'assets/img/particles/particleHeartPrimary.svg'
 import heartIconSecondary from 'assets/img/particles/particleHeartSecondary.svg'

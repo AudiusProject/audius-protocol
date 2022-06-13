@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -56,12 +56,15 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const MODEL_VIEWER_SCRIPT_URL =
   'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'
 
-const CollectibleMedia: React.FC<{
+type CollectibleMediaProps = {
   collectible: Collectible
   isMuted: boolean
   toggleMute: () => void
   isMobile: boolean
-}> = ({ collectible, isMuted, toggleMute, isMobile }) => {
+}
+
+const CollectibleMedia = (props: CollectibleMediaProps) => {
+  const { collectible, isMuted, toggleMute, isMobile } = props
   // if it becomes possible to render more than 1 collectible detail (model or mobile drawer), then
   // update useScript hook to handle multiple in-flight requests
   const scriptLoaded = useScript(MODEL_VIEWER_SCRIPT_URL, true)

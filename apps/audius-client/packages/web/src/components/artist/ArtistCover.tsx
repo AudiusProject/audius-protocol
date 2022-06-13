@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import { ID } from 'common/models/Identifiers'
 import {

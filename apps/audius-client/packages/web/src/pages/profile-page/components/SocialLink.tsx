@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 
 import {
   IconTwitterBird,

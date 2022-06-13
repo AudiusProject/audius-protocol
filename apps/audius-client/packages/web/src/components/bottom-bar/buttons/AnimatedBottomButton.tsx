@@ -1,5 +1,3 @@
-import React from 'react'
-
 import AnimatedButtonProvider, {
   AnimatedButtonProviderProps
 } from 'components/animated-button/AnimatedButtonProvider'

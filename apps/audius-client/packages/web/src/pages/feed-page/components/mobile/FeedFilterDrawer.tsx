@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import FeedFilter from 'common/models/FeedFilter'
 import ActionDrawer from 'components/action-drawer/ActionDrawer'

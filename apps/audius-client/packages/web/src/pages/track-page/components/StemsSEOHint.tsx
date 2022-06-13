@@ -1,5 +1,3 @@
-import React from 'react'
-
 const keywords = ['sound', 'kit', 'sample', 'pack', 'stems', 'mix']
 
 const StemsSEOHint = () => {

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { WalletAddress, BNWei } from 'common/models/Wallet'
 import { formatWei } from 'common/utils/wallet'
 
