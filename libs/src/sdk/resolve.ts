@@ -1,0 +1,44 @@
+import {
+  Configuration,
+  HTTPHeaders,
+  Playlist,
+  RequiredError,
+  Track,
+  User
+} from './default'
+import {
+  ResolveApi as GeneratedResolveApi,
+  ResolveRequest
+} from './default/apis/ResolveApi'
+
+export class ResolveApi extends GeneratedResolveApi {
+  constructor(configuration: Configuration) {
+    super(configuration)
+  }
+
+  async resolve<T extends Track | Playlist | User>(
+    requestParameters: ResolveRequest
+  ): Promise<T> {
+    if (requestParameters.url === null || requestParameters.url === undefined) {
+      throw new RequiredError(
+        'trackId',
+        'Required parameter requestParameters.url was null or undefined when calling resolve.'
+      )
+    }
+
+    const queryParameters: any = {}
+
+    if (requestParameters.url !== undefined) {
+      queryParameters['url'] = requestParameters.url
+    }
+
+    const headerParameters: HTTPHeaders = {}
+
+    return this.request({
+      path: `/resolve`,
+      method: 'GET',
+      headers: headerParameters,
+      query: queryParameters
+    }) as Promise<T>
+  }
+}

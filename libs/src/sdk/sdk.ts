@@ -8,13 +8,8 @@ import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
 import { TracksApi } from './tracks'
-import {
-  Configuration,
-  PlaylistsApi,
-  UsersApi,
-  TipsApi,
-  ResolveApi
-} from './default'
+import { ResolveApi } from './resolve'
+import { Configuration, PlaylistsApi, UsersApi, TipsApi } from './default'
 import {
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
