@@ -131,8 +131,22 @@ const healthCheckController = async (req) => {
  * Controller for `health_check/sync` route, calls
  * syncHealthCheckController
  */
-const syncHealthCheckController = async () => {
+const syncHealthCheckController = async (req) => {
   const response = await syncHealthCheck(serviceRegistry)
+
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const syncQueueJobCountsMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE
+  )
+  syncQueueJobCountsMetric.set(
+    { status: 'manualWaiting' },
+    response.manualWaitingCount
+  )
+  syncQueueJobCountsMetric.set(
+    { status: 'recurringWaiting' },
+    response.recurringWaitingCount
+  )
+
   return successResponse(response)
 }
 

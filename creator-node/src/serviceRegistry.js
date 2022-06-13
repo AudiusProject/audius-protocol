@@ -46,6 +46,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
+    this.prometheusRegistry = new PrometheusRegistry()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
@@ -55,7 +56,6 @@ class ServiceRegistry {
     this.syncQueue = null
     this.skippedCIDsRetryQueue = null
     this.trustedNotifierManager = null
-    this.prometheusRegistry = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -144,8 +144,6 @@ class ServiceRegistry {
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
   async initServicesThatRequireServer(app) {
-    this.prometheusRegistry = new PrometheusRegistry()
-
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()

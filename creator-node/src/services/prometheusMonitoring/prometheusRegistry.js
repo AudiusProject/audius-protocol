@@ -49,9 +49,6 @@ const createAllCustomMetrics = function (registry) {
   for (const { metricType: MetricType, metricConfig } of Object.values(
     Metrics
   )) {
-    // Add standard prefix to metric name
-    metricConfig.name = METRIC_PREFIX + metricConfig.name
-
     // Create and register instance of MetricType, with provided metricConfig
     const metric = new MetricType(metricConfig)
     registry.registerMetric(metric)

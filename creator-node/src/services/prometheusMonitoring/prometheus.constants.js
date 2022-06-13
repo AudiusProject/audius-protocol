@@ -1,4 +1,5 @@
 const promClient = require('prom-client')
+const _ = require('lodash')
 
 /**
  * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -16,28 +17,25 @@ const MetricTypes = Object.freeze({
   // SUMMARY: promClient.Summary
 })
 
-const MetricNames = Object.freeze({
-  STORAGE_PATH_SIZE_GAUGE: 'storage_path_size_bytes',
-  STORAGE_PATH_USED_GAUGE: 'storage_path_used_bytes',
+let MetricNames = {
+  SYNC_QUEUE_JOB_COUNTS_GAUGE: 'sync_queue_job_counts',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds'
-})
+}
+MetricNames = Object.freeze(
+  _.mapValues(MetricNames, (metricName) => METRIC_PREFIX + metricName)
+)
 
 const Metrics = Object.freeze({
-  [MetricNames.STORAGE_PATH_SIZE_GAUGE]: {
+  [MetricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE]: {
     metricType: MetricTypes.GAUGE,
     metricConfig: {
-      name: MetricNames.STORAGE_PATH_SIZE_GAUGE,
-      help: 'Total disk space (free + used) (bytes)'
+      name: MetricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE,
+      help: 'Current job counts for SyncQueue by status',
+      labelNames: ['status']
     }
   },
-  [MetricNames.STORAGE_PATH_USED_GAUGE]: {
-    metricType: MetricTypes.GAUGE,
-    metricConfig: {
-      name: MetricNames.STORAGE_PATH_USED_GAUGE,
-      help: 'Used disk space (bytes)'
-    }
-  },
+  /** @notice This metric will eventually be replaced by an express route metrics middleware */
   [MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
     metricType: MetricTypes.HISTOGRAM,
     metricConfig: {

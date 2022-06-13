@@ -2,19 +2,10 @@ const si = require('systeminformation')
 const disk = require('diskusage')
 
 const DiskManager = require('../diskManager')
-const serviceRegistry = require('../serviceRegistry')
-
-const prometheusRegistry = serviceRegistry.prometheusRegistry
 
 const getStoragePathSize = async () => {
   const storagePath = DiskManager.getConfigStoragePath()
   const { total } = await disk.check(storagePath)
-
-  const storagePathSizeGaugeMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.STORAGE_PATH_SIZE_GAUGE
-  )
-  storagePathSizeGaugeMetric.set(total)
-
   return total
 }
 
@@ -22,12 +13,6 @@ const getStoragePathUsed = async () => {
   const storagePath = DiskManager.getConfigStoragePath()
   const { available, total } = await disk.check(storagePath)
   const used = total - available
-
-  const storagePathUsedGaugeMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.STORAGE_PATH_USED_GAUGE
-  )
-  storagePathUsedGaugeMetric.set(used)
-
   return used
 }
 
