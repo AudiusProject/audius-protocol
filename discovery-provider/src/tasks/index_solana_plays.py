@@ -110,7 +110,7 @@ def parse_instruction_data(
 
         location = sourceDict["location"]
     except Exception:
-        logger.info(f"index_solana_plays.py | Missing location: {sourceDict}")
+        logger.info("index_solana_plays.py | Failed to parse json source")
 
     if not source:
         # Fallback to parse source as normal string
@@ -206,7 +206,7 @@ def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_si
                         f"user_id: {user_id} "
                         f"track_id: {track_id} "
                         f"source: {source} "
-                        f"location: {location}"
+                        f"location: {location} "
                         f"created_at: {created_at} "
                         f"slot: {slot} "
                         f"sig: {tx_sig}"
