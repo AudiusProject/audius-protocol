@@ -70,11 +70,11 @@ const Feature = (props: FeatureProps) => {
   )
 }
 
-type PlatformFeatures = {
+type PlatformFeaturesProps = {
   isMobile: boolean
 }
 
-const PlatformFeatures = (props: PlatformFeatures) => {
+const PlatformFeatures = (props: PlatformFeaturesProps) => {
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 

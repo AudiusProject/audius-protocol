@@ -1,6 +1,35 @@
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 import { isElectron } from 'utils/clientUtil'
 
+export enum Permission {
+  DEFAULT = 'default',
+  GRANTED = 'granted',
+  DENIED = 'denied'
+}
+
+type SafariWindow = {
+  safari: {
+    pushNotification: {
+      permission: (
+        safariPushId?: string
+      ) => {
+        permission: Permission
+        deviceToken: string
+      }
+      requestPermission: (
+        webServiceUrl: string,
+        safariWebPushID: string | undefined,
+        data: Record<string, unknown>,
+        resolve: (value: unknown) => void
+      ) => void
+    }
+  }
+}
+
+declare global {
+  interface Window extends SafariWindow {}
+}
+
 /*
  * Push Notifications
  * For browsers the implement the Push API
@@ -23,15 +52,9 @@ export const isSafariPushAvailable =
   !isElectron() &&
   !NATIVE_MOBILE &&
   'safari' in window &&
-  'pushNotification' in (window as any).safari
+  'pushNotification' in window.safari
 export const isBrowserPushAvailable =
   isPushManagerAvailable || isSafariPushAvailable
-
-export enum Permission {
-  DEFAULT = 'default',
-  GRANTED = 'granted',
-  DENIED = 'denied'
-}
 
 let swRegistration: any = null
 
@@ -81,7 +104,7 @@ export const subscribeSafariPushBrowser = async (): Promise<SafariPermissionData
   try {
     if (isSafariPushAvailable) {
       const subscription = await new Promise(resolve => {
-        ;(window as any).safari.pushNotification.requestPermission(
+        window.safari.pushNotification.requestPermission(
           webServiceUrl, // The web service URL.
           safariWebPushID, // The Website Push ID.
           {}, // Data that you choose to send to your server to help you identify the user.
@@ -163,11 +186,11 @@ export const registerServiceWorker = async () => {
 }
 
 export const getSafariPushBrowser = () => {
-  return (window as any).safari.pushNotification.permission(safariWebPushID)
+  return window.safari.pushNotification.permission(safariWebPushID)
 }
 
 export const getSafariPushPermission = (): Permission => {
-  const permissionData = (window as any).safari.pushNotification.permission(
+  const permissionData = window.safari.pushNotification.permission(
     safariWebPushID
   )
   return permissionData.permission

@@ -1,4 +1,4 @@
-import { call, put, select } from 'redux-saga/effects'
+import { call, put, select } from 'typed-redux-saga/macro'
 
 import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { getNotificationById } from 'common/store/notifications/selectors'
@@ -14,24 +14,33 @@ import { watchRepostsError } from './errorSagas'
 import { USER_LIST_TAG } from './types'
 
 function* errorDispatcher(error: Error) {
-  const id = yield select(getId)
-  yield put(getNotificationError(id, error.message))
+  const id = yield* select(getId)
+  if (id) {
+    yield* put(getNotificationError(id, error.message))
+  }
 }
 
 function* fetchUsers(currentPage: number, pageSize: number) {
-  const notificationId = yield select(getId)
-  const notification = yield select(getNotificationById, notificationId)
-  if (!notification) return { userIds: [], hasMore: false }
+  const emptyUsers = { userIds: [], hasMore: false }
+
+  const notificationId = yield* select(getId)
+  if (!notificationId) return emptyUsers
+
+  const notification = yield* select(getNotificationById, notificationId)
+  if (!notification) return emptyUsers
+
+  if (!('userIds' in notification)) return emptyUsers
+
   const { userIds } = notification
   const offset = currentPage * pageSize
   const hasMore = userIds.length > offset + pageSize
   const paginatedUserIds = userIds.slice(offset, offset + pageSize)
 
   // Retrieve the users in case they're not yet cached
-  yield call(retrieveUsers, paginatedUserIds)
+  yield* call(retrieveUsers, paginatedUserIds)
 
   // Append new users to existing ones
-  const existingUserIds = yield select(getUserIds)
+  const existingUserIds = yield* select(getUserIds)
   const fullList = [...existingUserIds, ...paginatedUserIds]
 
   return { userIds: fullList, hasMore }

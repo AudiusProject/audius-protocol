@@ -1,4 +1,3 @@
-/* global Event */
 import Hls from 'hls.js'
 
 import AudioStream from 'audio/AudioStream'

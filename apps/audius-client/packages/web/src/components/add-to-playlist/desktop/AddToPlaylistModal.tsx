@@ -48,7 +48,7 @@ const AddToPlaylistModal = () => {
   const trackTitle = useSelector(getTrackTitle)
   const currentCollectionId = useSelector(getCollectionId)
   const account = useSelector((state: AppState) =>
-    getAccountWithOwnPlaylists(state, {})
+    getAccountWithOwnPlaylists(state)
   )
 
   const [searchValue, setSearchValue] = useState('')

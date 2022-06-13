@@ -465,7 +465,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 function makeMapStateToProps(state: AppState) {
   const getSuggestedFollows = makeGetFollowArtists()
   return {
-    suggestedFollows: getSuggestedFollows(state, {}),
+    suggestedFollows: getSuggestedFollows(state),
     fields: getSignOn(state),
     isMobileSignOnVisible: getIsMobileSignOnVisible(state),
     toastText: getToastText(state),

@@ -309,7 +309,7 @@ const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => ({
     userId: getUserId(state),
-    tracks: getLineupMetadatas(state, {}),
+    tracks: getLineupMetadatas(state),
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state)

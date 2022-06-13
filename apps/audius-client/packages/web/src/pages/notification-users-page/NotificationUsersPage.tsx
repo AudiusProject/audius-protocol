@@ -17,12 +17,12 @@ import { AppState } from 'store/types'
 
 export type OwnProps = {}
 
-type NotificationUsersPage = OwnProps &
+type NotificationUsersPageProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps> &
   RouteComponentProps<{ notificationId: string }>
 
-const NotificationUsersPage = ({ pageTitle }: NotificationUsersPage) => {
+const NotificationUsersPage = ({ pageTitle }: NotificationUsersPageProps) => {
   // Set the Nav Header
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {

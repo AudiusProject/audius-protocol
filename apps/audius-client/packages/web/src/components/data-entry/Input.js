@@ -1,4 +1,3 @@
-/* globals Element */
 import React, { Component } from 'react'
 
 import cn from 'classnames'

@@ -1,4 +1,4 @@
-import { call, select } from 'redux-saga/effects'
+import { call, select } from 'typed-redux-saga/macro'
 
 import { ID } from 'common/models/Identifiers'
 import { User, UserMetadata } from 'common/models/User'
@@ -62,32 +62,32 @@ export function createUserListProvider<T, U = void>({
     currentPage: number
     pageSize: number
   }) {
-    const existingEntity: T | null = yield select(getExistingEntity, { id })
+    const existingEntity: T | null = yield* select(getExistingEntity, { id })
     if (!existingEntity) return { userIds: [], hasMore: false }
 
     const subsetIds = extractUserIDSubsetFromEntity(existingEntity)
     const subsetIdSet = new Set(subsetIds)
 
-    const userId = yield select(getUserId)
+    const userId = yield* select(getUserId)
     // Get the next page of users
     const offset = currentPage * pageSize
-    const {
-      users: allUsers,
-      extra
-    }: { users: User[]; extra: any } = yield call(fetchAllUsersForEntity, {
+    const { users: allUsers, extra } = yield* call(fetchAllUsersForEntity, {
       limit: pageSize,
       offset,
       entityId: id,
       currentUserId: userId
     })
     if (includeCurrentUser(existingEntity)) {
-      const currentUser = yield select(getAccountUser)
-      allUsers.push(currentUser)
+      const currentUser = yield* select(getAccountUser)
+      if (currentUser) {
+        allUsers.push(currentUser)
+      }
     }
 
     // Perform extra processing if applicable
     if (processExtra) {
-      yield call(processExtra, extra)
+      // @ts-ignore -- TODO: this is a tough one
+      yield* call(processExtra, extra)
     }
 
     // Filter out users from subsetIdSet
@@ -96,7 +96,7 @@ export function createUserListProvider<T, U = void>({
       .filter(id => !subsetIdSet.has(id))
 
     // Get the existing users in the store
-    const existingUserIDs: number[] = yield select(selectCurrentUserIDsInList)
+    const existingUserIDs = yield* select(selectCurrentUserIDsInList)
 
     // Construct a new user list,
     // only prepending the subset users if
@@ -110,7 +110,7 @@ export function createUserListProvider<T, U = void>({
     combinedUserIds = [...new Set(combinedUserIds)]
 
     // Insert new users into the cache
-    yield processAndCacheUsers(allUsers)
+    yield* processAndCacheUsers(allUsers as User[])
     const hasMoreUsers = canFetchMoreUsers(existingEntity, combinedUserIds)
 
     return { userIds: combinedUserIds, hasMore: hasMoreUsers }

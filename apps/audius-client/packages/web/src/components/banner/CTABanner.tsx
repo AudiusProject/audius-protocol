@@ -10,12 +10,12 @@ const messages = {
   cta: 'Download the Audius App'
 }
 
-type CTABanner = {
+type CTABannerProps = {
   onAccept: () => void
   onClose: () => void
 }
 
-const CTABanner = (props: CTABanner) => {
+const CTABanner = (props: CTABannerProps) => {
   return (
     <Banner {...props}>
       <div className={styles.ctaBanner} onClick={props.onAccept}>

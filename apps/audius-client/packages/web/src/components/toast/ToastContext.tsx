@@ -34,7 +34,7 @@ type ToastContextProps = {
   clear: () => void
 }
 
-type Toast = {
+type ToastType = {
   content: string | JSX.Element
   key: string
 }
@@ -60,12 +60,12 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
   }, [dispatch])
 
   const transitions = useTransition(toasts, toast => toast.key, {
-    from: (toast: Toast) => ({ y: FROM_POSITION, opacity: 0 }),
-    enter: (toast: Toast) => ({
+    from: (toast: ToastType) => ({ y: FROM_POSITION, opacity: 0 }),
+    enter: (toast: ToastType) => ({
       y: ENTER_POSITION + getSafeArea(SafeAreaDirection.TOP),
       opacity: 1
     }),
-    leave: (toast: Toast) => ({ y: FROM_POSITION, opacity: 0 }),
+    leave: (toast: ToastType) => ({ y: FROM_POSITION, opacity: 0 }),
     unique: true,
     config: animationConfig
   })

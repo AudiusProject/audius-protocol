@@ -800,7 +800,7 @@ function makeMapStateToProps() {
 
   const mapStateToProps = (state: AppState) => {
     return {
-      tracks: getTracksLineup(state, {}),
+      tracks: getTracksLineup(state),
       collectionUid: getCollectionUid(state) || '',
       collection: getCollection(state) as Collection,
       user: getUser(state),
@@ -808,7 +808,7 @@ function makeMapStateToProps() {
       status: getCollectionStatus(state) || '',
       order: getLineupOrder(state),
       userId: getUserId(state),
-      userPlaylists: getAccountCollections(state, {}),
+      userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),

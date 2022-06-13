@@ -1,4 +1,4 @@
-import { call, select, takeEvery, put } from 'redux-saga/effects'
+import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
@@ -14,7 +14,7 @@ import {
   getCollection
 } from 'common/store/cache/collections/selectors'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import { getUser, getUserByHandle } from 'common/store/cache/users/selectors'
+import { getUser } from 'common/store/cache/users/selectors'
 import * as notificationActions from 'common/store/notifications/actions'
 import { removeFromPlaylistLibrary } from 'common/store/playlist-library/helpers'
 import * as socialActions from 'common/store/social/collections/actions'
@@ -35,28 +35,30 @@ import watchCollectionErrors from './errorSagas'
 /* REPOST COLLECTION */
 
 export function* watchRepostCollection() {
-  yield takeEvery(socialActions.REPOST_COLLECTION, repostCollectionAsync)
+  yield* takeEvery(socialActions.REPOST_COLLECTION, repostCollectionAsync)
 }
 
 export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
-  yield call(waitForBackendSetup)
-  const userId = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const userId = yield* select(getUserId)
   if (!userId) {
-    yield put(signOnActions.openSignOn(false))
-    yield put(signOnActions.showRequiresAccountModal())
-    yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
 
   // increment the repost count on the user
-  const user = yield select(getUser, { id: userId })
-  yield call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
+  const user = yield* select(getUser, { id: userId })
+  if (!user) return
+
+  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
 
   let collection = action.metadata
   if (!collection) {
-    const collections = yield select(getCollections, {
+    const collections = yield* select(getCollections, {
       ids: [action.collectionId]
     })
     collection = collections[action.collectionId]
@@ -67,16 +69,16 @@ export function* repostCollectionAsync(
     source: action.source,
     id: action.collectionId
   })
-  yield put(event)
+  yield* put(event)
 
-  yield call(
+  yield* call(
     confirmRepostCollection,
     collection.playlist_owner_id,
     action.collectionId,
     user
   )
 
-  yield put(
+  yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
         id: action.collectionId,
@@ -94,15 +96,19 @@ export function* confirmRepostCollection(
   collectionId: ID,
   user: User
 ) {
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           AudiusBackend.repostCollection,
           collectionId
         )
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm repost collection for collection id ${collectionId}`
@@ -114,12 +120,12 @@ export function* confirmRepostCollection(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the incremented repost count
-        yield call(adjustUserField, {
+        yield* call(adjustUserField, {
           user,
           fieldName: 'repost_count',
           delta: -1
         })
-        yield put(
+        yield* put(
           socialActions.repostCollectionFailed(
             collectionId,
             timeout ? 'Timeout' : message
@@ -131,7 +137,7 @@ export function* confirmRepostCollection(
 }
 
 export function* watchUndoRepostCollection() {
-  yield takeEvery(
+  yield* takeEvery(
     socialActions.UNDO_REPOST_COLLECTION,
     undoRepostCollectionAsync
   )
@@ -140,20 +146,22 @@ export function* watchUndoRepostCollection() {
 export function* undoRepostCollectionAsync(
   action: ReturnType<typeof socialActions.undoRepostCollection>
 ) {
-  yield call(waitForBackendSetup)
-  const userId = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const userId = yield* select(getUserId)
   if (!userId) {
-    yield put(signOnActions.openSignOn(false))
-    yield put(signOnActions.showRequiresAccountModal())
-    yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
 
   // decrement the repost count on the user
-  const user = yield select(getUser, { id: userId })
-  yield call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
+  const user = yield* select(getUser, { id: userId })
+  if (!user) return
 
-  const collections = yield select(getCollections, {
+  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
+
+  const collections = yield* select(getCollections, {
     ids: [action.collectionId]
   })
   const collection = collections[action.collectionId]
@@ -163,16 +171,16 @@ export function* undoRepostCollectionAsync(
     source: action.source,
     id: action.collectionId
   })
-  yield put(event)
+  yield* put(event)
 
-  yield call(
+  yield* call(
     confirmUndoRepostCollection,
     collection.playlist_owner_id,
     action.collectionId,
     user
   )
 
-  yield put(
+  yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
         id: action.collectionId,
@@ -190,15 +198,19 @@ export function* confirmUndoRepostCollection(
   collectionId: ID,
   user: User
 ) {
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           AudiusBackend.undoRepostCollection,
           collectionId
         )
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm undo repost collection for collection id ${collectionId}`
@@ -210,12 +222,12 @@ export function* confirmUndoRepostCollection(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the decrement
-        yield call(adjustUserField, {
+        yield* call(adjustUserField, {
           user,
           fieldName: 'repost_count',
           delta: 1
         })
-        yield put(
+        yield* put(
           socialActions.repostCollectionFailed(
             collectionId,
             timeout ? 'Timeout' : message
@@ -229,34 +241,33 @@ export function* confirmUndoRepostCollection(
 /* SAVE COLLECTION */
 
 export function* watchSaveCollection() {
-  yield takeEvery(socialActions.SAVE_COLLECTION, function* (
+  yield* takeEvery(socialActions.SAVE_COLLECTION, function* (
     action: ReturnType<typeof socialActions.saveCollection>
   ) {
-    yield call(saveCollectionAsync, action)
+    yield* call(saveCollectionAsync, action)
   })
 }
 
 export function* watchSaveSmartCollection() {
-  yield takeEvery(socialActions.SAVE_SMART_COLLECTION, function* (
+  yield* takeEvery(socialActions.SAVE_SMART_COLLECTION, function* (
     action: ReturnType<typeof socialActions.saveSmartCollection>
   ) {
-    yield call(saveSmartCollection, action)
+    yield* call(saveSmartCollection, action)
   })
 }
 
 export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
-  yield call(waitForBackendSetup)
-  const userId = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const userId = yield* select(getUserId)
   if (!userId) {
-    yield put(signOnActions.showRequiresAccountModal())
-    yield put(signOnActions.openSignOn(false))
-    yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  const playlistLibrary: PlaylistLibrary =
-    (yield select(getPlaylistLibrary)) || {}
+  const playlistLibrary = yield* select(getPlaylistLibrary)
   const newPlaylistLibrary: PlaylistLibrary = {
     ...playlistLibrary,
     contents: [
@@ -264,54 +275,55 @@ export function* saveSmartCollection(
         type: 'explore_playlist',
         playlist_id: action.smartCollectionName as SmartCollectionVariant
       },
-      ...(playlistLibrary.contents || [])
+      ...(playlistLibrary?.contents || [])
     ]
   }
-  yield put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
+  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
 
   const event = make(Name.FAVORITE, {
     kind: 'playlist',
     source: action.source,
     id: action.smartCollectionName
   })
-  yield put(event)
+  yield* put(event)
 }
 
 export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
-  yield call(waitForBackendSetup)
-  const userId = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const userId = yield* select(getUserId)
   if (!userId) {
-    yield put(signOnActions.showRequiresAccountModal())
-    yield put(signOnActions.openSignOn(false))
-    yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
 
-  const collections = yield select(getCollections, {
+  const collections = yield* select(getCollections, {
     ids: [action.collectionId]
   })
   const collection = collections[action.collectionId]
-  const user = yield select(getUser, { id: collection.playlist_owner_id })
+  const user = yield* select(getUser, { id: collection.playlist_owner_id })
+  if (!user) return
 
-  yield put(accountActions.didFavoriteItem())
+  yield* put(accountActions.didFavoriteItem())
 
   const event = make(Name.FAVORITE, {
     kind: collection.is_album ? 'album' : 'playlist',
     source: action.source,
     id: action.collectionId
   })
-  yield put(event)
+  yield* put(event)
 
-  yield call(
+  yield* call(
     confirmSaveCollection,
     collection.playlist_owner_id,
     action.collectionId
   )
 
   if (!collection.is_album) {
-    yield put(
+    yield* put(
       notificationActions.updatePlaylistLastViewedAt(action.collectionId)
     )
   }
@@ -321,13 +333,13 @@ export function* saveCollectionAsync(
     collection.playlist_id,
     'account'
   )
-  yield put(
+  yield* put(
     cacheActions.subscribe(Kind.COLLECTIONS, [
       { uid: subscribedUid, id: collection.playlist_id }
     ])
   )
 
-  yield put(
+  yield* put(
     accountActions.addAccountPlaylist({
       id: collection.playlist_id,
       name: collection.playlist_name,
@@ -335,7 +347,7 @@ export function* saveCollectionAsync(
       user: { id: user.user_id, handle: user.handle }
     })
   )
-  yield put(
+  yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
         id: action.collectionId,
@@ -346,19 +358,23 @@ export function* saveCollectionAsync(
       }
     ])
   )
-  yield put(socialActions.saveCollectionSucceeded(action.collectionId))
+  yield* put(socialActions.saveCollectionSucceeded(action.collectionId))
 }
 
 export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           AudiusBackend.saveCollection,
           collectionId
         )
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm save collection for collection id ${collectionId}`
@@ -369,7 +385,7 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
       function* () {},
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
-        yield put(
+        yield* put(
           socialActions.saveCollectionFailed(
             collectionId,
             timeout ? 'Timeout' : message
@@ -381,44 +397,47 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
 }
 
 export function* watchUnsaveCollection() {
-  yield takeEvery(socialActions.UNSAVE_COLLECTION, function* (
+  yield* takeEvery(socialActions.UNSAVE_COLLECTION, function* (
     action: ReturnType<typeof socialActions.unsaveCollection>
   ) {
-    yield call(unsaveCollectionAsync, action)
+    yield* call(unsaveCollectionAsync, action)
   })
 }
 
 export function* watchUnsaveSmartCollection() {
-  yield takeEvery(socialActions.UNSAVE_SMART_COLLECTION, function* (
+  yield* takeEvery(socialActions.UNSAVE_SMART_COLLECTION, function* (
     action: ReturnType<typeof socialActions.unsaveSmartCollection>
   ) {
-    yield call(unsaveSmartCollection, action)
+    yield* call(unsaveSmartCollection, action)
   })
 }
 
 export function* unsaveSmartCollection(
   action: ReturnType<typeof socialActions.unsaveSmartCollection>
 ) {
-  yield call(waitForBackendSetup)
-  const playlistLibrary: PlaylistLibrary = yield select(getPlaylistLibrary)
+  yield* call(waitForBackendSetup)
+
+  const playlistLibrary = yield* select(getPlaylistLibrary)
+  if (!playlistLibrary) return
+
   const newPlaylistLibrary = removeFromPlaylistLibrary(
     playlistLibrary,
     action.smartCollectionName as SmartCollectionVariant
   ).library
-  yield put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
+  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
   const event = make(Name.UNFAVORITE, {
     kind: 'playlist',
     source: action.source,
     id: action.smartCollectionName
   })
-  yield put(event)
+  yield* put(event)
 }
 
 export function* unsaveCollectionAsync(
   action: ReturnType<typeof socialActions.unsaveCollection>
 ) {
-  yield call(waitForBackendSetup)
-  const collections = yield select(getCollections, {
+  yield* call(waitForBackendSetup)
+  const collections = yield* select(getCollections, {
     ids: [action.collectionId]
   })
   const collection = collections[action.collectionId]
@@ -428,18 +447,18 @@ export function* unsaveCollectionAsync(
     source: action.source,
     id: action.collectionId
   })
-  yield put(event)
+  yield* put(event)
 
-  yield call(
+  yield* call(
     confirmUnsaveCollection,
     collection.playlist_owner_id,
     action.collectionId
   )
 
-  yield put(
+  yield* put(
     accountActions.removeAccountPlaylist({ collectionId: action.collectionId })
   )
-  yield put(
+  yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
         id: action.collectionId,
@@ -450,19 +469,23 @@ export function* unsaveCollectionAsync(
       }
     ])
   )
-  yield put(socialActions.unsaveCollectionSucceeded(action.collectionId))
+  yield* put(socialActions.unsaveCollectionSucceeded(action.collectionId))
 }
 
 export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           AudiusBackend.unsaveCollection,
           collectionId
         )
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm unsave collection for collection id ${collectionId}`
@@ -473,7 +496,7 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
       function* () {},
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
-        yield put(
+        yield* put(
           socialActions.unsaveCollectionFailed(
             collectionId,
             timeout ? 'Timeout' : message
@@ -485,12 +508,16 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
 }
 
 export function* watchShareCollection() {
-  yield takeEvery(socialActions.SHARE_COLLECTION, function* (
+  yield* takeEvery(socialActions.SHARE_COLLECTION, function* (
     action: ReturnType<typeof socialActions.shareCollection>
   ) {
     const { collectionId } = action
-    const collection = yield select(getCollection, { id: collectionId })
-    const user = yield select(getUser, { id: collection.playlist_owner_id })
+    const collection = yield* select(getCollection, { id: collectionId })
+    if (!collection) return
+
+    const user = yield* select(getUser, { id: collection.playlist_owner_id })
+    if (!user) return
+
     const link = collection.is_album
       ? albumPage(user.handle, collection.playlist_name, collection.playlist_id)
       : playlistPage(
@@ -506,16 +533,16 @@ export function* watchShareCollection() {
       id: collection.playlist_id,
       url: link
     })
-    yield put(event)
+    yield* put(event)
   })
 }
 
 export function* watchShareAudioNftPlaylist() {
-  yield takeEvery(socialActions.SHARE_AUDIO_NFT_PLAYLIST, function* (
+  yield* takeEvery(socialActions.SHARE_AUDIO_NFT_PLAYLIST, function* (
     action: ReturnType<typeof socialActions.shareAudioNftPlaylist>
   ) {
     const { handle } = action
-    const user: User = yield select(getUserByHandle, { handle })
+    const user = yield* select(getUser, { handle })
 
     const link = audioNftPlaylistPage(handle)
     share(link, formatShareText('Audio NFT Playlist', user?.name ?? handle))
@@ -525,7 +552,7 @@ export function* watchShareAudioNftPlaylist() {
       source: action.source,
       url: link
     })
-    yield put(event)
+    yield* put(event)
   })
 }
 

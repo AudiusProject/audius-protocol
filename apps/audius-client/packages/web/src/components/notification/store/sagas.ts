@@ -10,7 +10,7 @@ import {
   takeEvery,
   select,
   takeLatest
-} from 'redux-saga/effects'
+} from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
@@ -45,6 +45,7 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { isElectron } from 'utils/clientUtil'
+import { getErrorMessage } from 'utils/error'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { watchNotificationError } from './errorSagas'
@@ -100,8 +101,8 @@ const getTimeAgo = (now: moment.Moment, date: string) => {
 const NOTIFICATION_LIMIT_DEFAULT = 20
 
 function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
-  const existingUpdates: ID[] = yield select(getPlaylistUpdates)
-  yield put(notificationActions.setPlaylistUpdates(playlistUpdates))
+  const existingUpdates: ID[] = yield* select(getPlaylistUpdates)
+  yield* put(notificationActions.setPlaylistUpdates(playlistUpdates))
   if (
     playlistUpdates.length > 0 &&
     existingUpdates.length !== playlistUpdates.length
@@ -109,7 +110,7 @@ function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
     const event = make(Name.PLAYLIST_LIBRARY_HAS_UPDATE, {
       count: playlistUpdates.length
     })
-    yield put(event)
+    yield* put(event)
   }
 }
 
@@ -121,16 +122,16 @@ export function* fetchNotifications(
   action: notificationActions.FetchNotifications
 ) {
   try {
-    yield put(notificationActions.fetchNotificationsRequested())
+    yield* put(notificationActions.fetchNotificationsRequested())
     const limit = action.limit || NOTIFICATION_LIMIT_DEFAULT
-    const lastNotification = yield select(getLastNotification)
+    const lastNotification = yield* select(getLastNotification)
     const timeOffset = lastNotification
       ? lastNotification.timestamp
       : moment().toISOString()
     const withTips = remoteConfigInstance.getFeatureEnabled(
       FeatureFlags.TIPPING_ENABLED
     )
-    const notificationsResponse: NotificationsResponse = yield call(
+    const notificationsResponse: NotificationsResponse = yield* call(
       AudiusBackend.getNotifications,
       {
         limit,
@@ -139,7 +140,7 @@ export function* fetchNotifications(
       }
     )
     if ('error' in notificationsResponse) {
-      yield put(
+      yield* put(
         notificationActions.fetchNotificationsFailed(
           notificationsResponse.error.message
         )
@@ -152,12 +153,12 @@ export function* fetchNotifications(
       playlistUpdates
     } = notificationsResponse
 
-    const notifications = yield parseAndProcessNotifications(notificationItems)
+    const notifications = yield* parseAndProcessNotifications(notificationItems)
 
     const hasMore = notifications.length >= limit
 
-    yield fork(recordPlaylistUpdatesAnalytics, playlistUpdates)
-    yield put(
+    yield* fork(recordPlaylistUpdatesAnalytics, playlistUpdates)
+    yield* put(
       notificationActions.fetchNotificationSucceeded(
         notifications,
         totalUnviewed,
@@ -165,11 +166,11 @@ export function* fetchNotifications(
       )
     )
   } catch (error) {
-    const isReachable = yield select(getIsReachable)
+    const isReachable = yield* select(getIsReachable)
     if (isReachable) {
-      yield put(
+      yield* put(
         notificationActions.fetchNotificationsFailed(
-          `Error in fetch notifications requested: ${error.message}`
+          `Error in fetch notifications requested: ${getErrorMessage(error)}`
         )
       )
     }
@@ -254,7 +255,7 @@ export function* parseAndProcessNotifications(
     }
   })
 
-  const [tracks]: [Track[]] = yield all([
+  const [tracks]: Track[][] = yield* all([
     call(retrieveTracks, { trackIds: trackIdsToFetch }),
     call(
       retrieveCollections,
@@ -276,7 +277,8 @@ export function* parseAndProcessNotifications(
    * Attach a `timeLabel` to each notification as well to be displayed ie. 2 Hours Ago
    */
   const now = moment()
-  const userId = yield select(getUserId)
+  const userId = yield* select(getUserId)
+  if (!userId) return []
   const remixTrackParents: Array<ID> = []
   const processedNotifications = notifications.map(notif => {
     if (
@@ -286,14 +288,14 @@ export function* parseAndProcessNotifications(
       notif.entityId = userId
     } else if (notif.type === NotificationType.RemixCreate) {
       const childTrack = tracks.find(
-        (track: Track) => track.track_id === notif.childTrackId
+        track => track.track_id === notif.childTrackId
       )
       if (childTrack) {
         notif.userId = childTrack.owner_id
       }
     } else if (notif.type === NotificationType.RemixCosign) {
       const childTrack = tracks.find(
-        (track: Track) => track.track_id === notif.childTrackId
+        track => track.track_id === notif.childTrackId
       )
       if (childTrack && childTrack.remix_of) {
         const parentTrackIds = childTrack.remix_of.tracks.map(
@@ -307,7 +309,7 @@ export function* parseAndProcessNotifications(
     return notif
   })
   if (remixTrackParents.length > 0)
-    yield call(retrieveTracks, { trackIds: remixTrackParents })
+    yield* call(retrieveTracks, { trackIds: remixTrackParents })
   return processedNotifications
 }
 
@@ -321,7 +323,7 @@ export function* handleNewNotifications(
     notification => notification.type === NotificationType.ChallengeReward
   )
   if (hasRewardsNotification) {
-    yield put(getBalance)
+    yield* put(getBalance)
   }
 }
 
@@ -329,57 +331,59 @@ export function* fetchNotificationUsers(
   action: notificationActions.FetchNotificationUsers
 ) {
   try {
-    const userList = yield select(getNotificationUserList)
+    const userList = yield* select(getNotificationUserList)
     if (userList.status === Status.LOADING) return
-    yield put(notificationActions.fetchNotificationUsersRequested())
-    const { userIds, limit } = yield select(getNotificationUserList)
+    yield* put(notificationActions.fetchNotificationUsersRequested())
+    const { userIds, limit } = yield* select(getNotificationUserList)
     const newLimit = limit + action.limit
     const userIdsToFetch = userIds.slice(limit, newLimit)
-    yield call(
+    yield* call(
       fetchUsers,
       userIdsToFetch,
       new Set(),
       /* forceRetrieveFromSource */ true
     )
-    yield put(notificationActions.fetchNotificationUsersSucceeded(newLimit))
+    yield* put(notificationActions.fetchNotificationUsersSucceeded(newLimit))
   } catch (error) {
-    yield put(notificationActions.fetchNotificationUsersFailed(error.message))
+    yield* put(
+      notificationActions.fetchNotificationUsersFailed(getErrorMessage(error))
+    )
   }
 }
 
 export function* subscribeUserSettings(
   action: notificationActions.SubscribeUser
 ) {
-  yield call(AudiusBackend.updateUserSubscription, action.userId, true)
+  yield* call(AudiusBackend.updateUserSubscription, action.userId, true)
 }
 
 export function* unsubscribeUserSettings(
   action: notificationActions.UnsubscribeUser
 ) {
-  yield call(AudiusBackend.updateUserSubscription, action.userId, false)
+  yield* call(AudiusBackend.updateUserSubscription, action.userId, false)
 }
 
 export function* updatePlaylistLastViewedAt(
   action: notificationActions.UpdatePlaylistLastViewedAt
 ) {
-  yield call(AudiusBackend.updatePlaylistLastViewedAt, action.playlistId)
+  yield* call(AudiusBackend.updatePlaylistLastViewedAt, action.playlistId)
 }
 
 // Action Watchers
 function* watchFetchNotifications() {
-  yield takeEvery(notificationActions.FETCH_NOTIFICATIONS, fetchNotifications)
+  yield* takeEvery(notificationActions.FETCH_NOTIFICATIONS, fetchNotifications)
 }
 
 function* watchRefreshNotifications() {
-  yield takeLatest(notificationActions.REFRESH_NOTIFICATIONS, function* () {
-    yield put(notificationActions.fetchNotificationsRequested())
+  yield* takeLatest(notificationActions.REFRESH_NOTIFICATIONS, function* () {
+    yield* put(notificationActions.fetchNotificationsRequested())
     // Add an artificial timeout here for the sake of debouncing the sync to
     // react native store. Currently this refresh saga should only be called by
     // notifications on mobile.
     // TODO: This should be removed when we move common store to react native
-    yield delay(1000)
-    yield call(getNotifications, true)
-    yield put(
+    yield* delay(1000)
+    yield* call(getNotifications, true)
+    yield* put(
       notificationActions.fetchNotificationSucceeded(
         [], // notifications
         0, // totalUnviewed
@@ -390,29 +394,32 @@ function* watchRefreshNotifications() {
 }
 
 function* watchFetchNotificationUsers() {
-  yield takeEvery(
+  yield* takeEvery(
     notificationActions.FETCH_NOTIFICATIONS_USERS,
     fetchNotificationUsers
   )
 }
 
 function* watchMarkAllNotificationsViewed() {
-  yield takeEvery(
+  yield* takeEvery(
     notificationActions.MARK_ALL_AS_VIEWED,
     markAllNotificationsViewed
   )
 }
 
 function* watchSubscribeUserSettings() {
-  yield takeEvery(notificationActions.SUBSCRIBE_USER, subscribeUserSettings)
+  yield* takeEvery(notificationActions.SUBSCRIBE_USER, subscribeUserSettings)
 }
 
 function* watchUnsubscribeUserSettings() {
-  yield takeEvery(notificationActions.UNSUBSCRIBE_USER, unsubscribeUserSettings)
+  yield* takeEvery(
+    notificationActions.UNSUBSCRIBE_USER,
+    unsubscribeUserSettings
+  )
 }
 
 function* watchUpdatePlaylistLastViewedAt() {
-  yield takeEvery(
+  yield* takeEvery(
     notificationActions.UPDATE_PLAYLIST_VIEW,
     updatePlaylistLastViewedAt
   )
@@ -421,7 +428,7 @@ function* watchUpdatePlaylistLastViewedAt() {
 // Notifications have changed if some of the incoming ones have
 // different ids or changed length in unique entities/users
 const checkIfNotificationsChanged = (
-  current: ResponseNotification[],
+  current: Notification[],
   incoming: ResponseNotification[]
 ): boolean => {
   return (
@@ -430,10 +437,12 @@ const checkIfNotificationsChanged = (
       const notif = current[index]
       const isIdDifferent = notif.id !== item.id
       const isEntitySizeDiff =
+        'entityIds' in notif &&
         notif.entityIds &&
         item.entityIds &&
         new Set(notif.entityIds).size !== new Set(item.entityIds).size
       const isUsersSizeDiff =
+        'userIds' in notif &&
         notif.userIds &&
         item.userIds &&
         new Set(notif.userIds).size !== new Set(item.userIds).size
@@ -447,10 +456,10 @@ const checkIfNotificationsChanged = (
  */
 export function* getNotifications(isFirstFetch: boolean) {
   try {
-    const isOpen: ReturnType<typeof getNotificationPanelIsOpen> = yield select(
+    const isOpen: ReturnType<typeof getNotificationPanelIsOpen> = yield* select(
       getNotificationPanelIsOpen
     )
-    const status: ReturnType<typeof getNotificationStatus> = yield select(
+    const status: ReturnType<typeof getNotificationStatus> = yield* select(
       getNotificationStatus
     )
     if (
@@ -459,7 +468,7 @@ export function* getNotifications(isFirstFetch: boolean) {
     ) {
       isFirstFetch = false
       const limit = NOTIFICATION_LIMIT_DEFAULT
-      const hasAccount: ReturnType<typeof getHasAccount> = yield select(
+      const hasAccount: ReturnType<typeof getHasAccount> = yield* select(
         getHasAccount
       )
       if (!hasAccount) return
@@ -470,7 +479,7 @@ export function* getNotifications(isFirstFetch: boolean) {
 
       const notificationsResponse:
         | NotificationsResponse
-        | undefined = yield call(AudiusBackend.getNotifications, {
+        | undefined = yield* call(AudiusBackend.getNotifications, {
         limit,
         timeOffset,
         withTips
@@ -480,11 +489,11 @@ export function* getNotifications(isFirstFetch: boolean) {
         ('error' in notificationsResponse &&
           'isRequestError' in notificationsResponse)
       ) {
-        const isReachable: ReturnType<typeof getIsReachable> = yield select(
+        const isReachable: ReturnType<typeof getIsReachable> = yield* select(
           getIsReachable
         )
         if (isReachable) {
-          yield put(
+          yield* put(
             notificationActions.fetchNotificationsFailed(
               `Error in notification polling daemon, server returned error: ${
                 notificationsResponse?.error?.message ?? 'no error defined'
@@ -492,7 +501,7 @@ export function* getNotifications(isFirstFetch: boolean) {
             )
           )
         }
-        yield delay(getPollingIntervalMs())
+        yield* delay(getPollingIntervalMs())
         return
       }
       const {
@@ -501,31 +510,31 @@ export function* getNotifications(isFirstFetch: boolean) {
         playlistUpdates
       } = notificationsResponse
 
-      yield fork(recordPlaylistUpdatesAnalytics, playlistUpdates)
+      yield* fork(recordPlaylistUpdatesAnalytics, playlistUpdates)
 
       if (notificationItems.length > 0) {
-        const currentNotifications = yield select(makeGetAllNotifications())
+        const currentNotifications = yield* select(makeGetAllNotifications())
         const isChanged = checkIfNotificationsChanged(
           currentNotifications,
           notificationItems
         )
         if (isChanged) {
-          const notifications = yield parseAndProcessNotifications(
+          const notifications = yield* parseAndProcessNotifications(
             notificationItems
           )
 
           const hasMore = notifications.length >= limit
-          yield put(
+          yield* put(
             notificationActions.setNotifications(
               notifications,
               totalUnviewed,
               hasMore
             )
           )
-          yield handleNewNotifications(notificationItems)
+          yield* handleNewNotifications(notificationItems)
         }
       } else if (status !== Status.SUCCESS) {
-        yield put(
+        yield* put(
           notificationActions.fetchNotificationSucceeded(
             [], // notifications
             0, // totalUnviewed
@@ -534,12 +543,12 @@ export function* getNotifications(isFirstFetch: boolean) {
         )
       }
     }
-  } catch (e) {
-    const isReachable = yield select(getIsReachable)
+  } catch (error) {
+    const isReachable = yield* select(getIsReachable)
     if (isReachable) {
-      yield put(
+      yield* put(
         notificationActions.fetchNotificationsFailed(
-          `Notification Polling Daemon Error: ${e.message}`
+          `Notification Polling Daemon Error: ${getErrorMessage(error)}`
         )
       )
     }
@@ -547,9 +556,9 @@ export function* getNotifications(isFirstFetch: boolean) {
 }
 
 function* notificationPollingDaemon() {
-  yield call(waitForBackendSetup)
-  yield call(waitForValue, getHasAccount, {})
-  yield call(AudiusBackend.getEmailNotificationSettings)
+  yield* call(waitForBackendSetup)
+  yield* call(waitForValue, getHasAccount, {})
+  yield* call(AudiusBackend.getEmailNotificationSettings)
 
   // Set up daemon that will watch for browser into focus and refetch notifications
   // as soon as it goes into focus
@@ -573,10 +582,10 @@ function* notificationPollingDaemon() {
     }
     return () => {}
   })
-  yield fork(function* () {
+  yield* fork(function* () {
     while (true) {
-      yield take(visibilityChannel)
-      yield call(getNotifications, false)
+      yield* take(visibilityChannel)
+      yield* call(getNotifications, false)
     }
   })
 
@@ -598,15 +607,15 @@ function* notificationPollingDaemon() {
 
   while (true) {
     if (!isBrowserInBackground || isElectron()) {
-      yield call(getNotifications, isFirstFetch)
+      yield* call(getNotifications, isFirstFetch)
     }
-    yield delay(getPollingIntervalMs())
+    yield* delay(getPollingIntervalMs())
   }
 }
 
 export function* markAllNotificationsViewed() {
-  yield call(waitForBackendSetup)
-  yield call(AudiusBackend.markAllNotificationAsViewed)
+  yield* call(waitForBackendSetup)
+  yield* call(AudiusBackend.markAllNotificationAsViewed)
   if (NATIVE_MOBILE) {
     const message = new ResetNotificationsBadgeCount()
     message.send()
@@ -614,13 +623,13 @@ export function* markAllNotificationsViewed() {
 }
 
 function* watchTogglePanel() {
-  yield call(waitForBackendSetup)
-  yield takeEvery(notificationActions.TOGGLE_NOTIFICATION_PANEL, function* () {
-    const isOpen = yield select(getNotificationPanelIsOpen)
+  yield* call(waitForBackendSetup)
+  yield* takeEvery(notificationActions.TOGGLE_NOTIFICATION_PANEL, function* () {
+    const isOpen = yield* select(getNotificationPanelIsOpen)
     if (isOpen) {
-      yield put(notificationActions.setTotalUnviewedToZero())
+      yield* put(notificationActions.setTotalUnviewedToZero())
     } else {
-      yield put(notificationActions.markAllAsViewed())
+      yield* put(notificationActions.markAllAsViewed())
     }
   })
 }

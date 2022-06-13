@@ -1,4 +1,3 @@
-/* globals fetch */
 import { push as pushRoute } from 'connected-react-router'
 import {
   all,

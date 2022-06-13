@@ -1,4 +1,4 @@
-import { put, select } from 'redux-saga/effects'
+import { put, select } from 'typed-redux-saga'
 
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
@@ -77,20 +77,22 @@ const getTrackReposts = createUserListProvider<Track>({
 })
 
 function* errorDispatcher(error: Error) {
-  const repostType = yield select(getRepostsType)
-  const id = yield select(getId)
+  const repostType = yield* select(getRepostsType)
+  const id = yield* select(getId)
+  if (!id) return
+
   if (repostType === RepostType.TRACK) {
-    yield put(trackRepostError(id, error.message))
+    yield* put(trackRepostError(id, error.message))
   } else {
-    yield put(playlistRepostError(id, error.message))
+    yield* put(playlistRepostError(id, error.message))
   }
 }
 
 function* getReposts(currentPage: number, pageSize: number) {
-  const id: number | null = yield select(getId)
+  const id: number | null = yield* select(getId)
   if (!id) return { userIds: [], hasMore: false }
-  const repostType = yield select(getRepostsType)
-  return yield (repostType === RepostType.TRACK
+  const repostType = yield* select(getRepostsType)
+  return yield* (repostType === RepostType.TRACK
     ? getTrackReposts
     : getPlaylistReposts)({ id, currentPage, pageSize })
 }

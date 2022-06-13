@@ -37,7 +37,6 @@ const Artist = (props: AristProps) => {
     <div
       className={styles.cardMoveContainer}
       ref={props.containerRef}
-      // @ts-ignore
       onMouseMove={onMove}
       onMouseEnter={props.setSelectedIndex}
       onMouseLeave={onLeave}
@@ -47,6 +46,7 @@ const Artist = (props: AristProps) => {
           src={props.imageUrl}
           className={styles.artistImage}
           style={{
+            // @ts-ignore
             transform,
             boxShadow: `0 10px 50px -2px ${props.color}`
           }}

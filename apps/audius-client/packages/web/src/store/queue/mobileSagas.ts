@@ -1,8 +1,6 @@
-import { all, put, select, takeEvery, call } from 'redux-saga/effects'
+import { all, put, select, takeEvery, call } from 'typed-redux-saga/macro'
 
 import { ID, UID } from 'common/models/Identifiers'
-import { Track } from 'common/models/Track'
-import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
@@ -22,6 +20,7 @@ import {
   shuffle,
   updateIndex
 } from 'common/store/queue/slice'
+import { removeNullable } from 'common/utils/typeUtils'
 import {
   PersistQueueMessage,
   RepeatModeMessage,
@@ -42,9 +41,15 @@ const getImageUrl = (cid: string, gateway: string | null): string => {
 }
 
 function* getTrackInfo(id: ID, uid: UID) {
-  const currentUserId = yield select(getUserId)
-  const track: Track = yield select(getTrack, { id })
-  const owner: User = yield select(getUser, { id: track.owner_id })
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return null
+
+  const track = yield* select(getTrack, { id })
+  if (!track) return null
+
+  const owner = yield* select(getUser, { id: track.owner_id })
+  if (!owner) return null
+
   const gateways = owner
     ? getCreatorNodeIPFSGateways(owner.creator_node_endpoint)
     : []
@@ -69,31 +74,33 @@ function* getTrackInfo(id: ID, uid: UID) {
     isDelete: track.is_delete || owner.is_deactivated,
     ownerId: track.owner_id,
     trackId: id,
+    id,
     genre: track.genre,
     uri: m3u8
   }
 }
 
 function* persistQueue() {
-  const queueOrder: ReturnType<typeof getOrder> = yield select(getOrder)
-  const queueIndex: ReturnType<typeof getIndex> = yield select(getIndex)
-  const shuffle: ReturnType<typeof getShuffle> = yield select(getShuffle)
-  const shuffleIndex: ReturnType<typeof getShuffleIndex> = yield select(
+  const queueOrder: ReturnType<typeof getOrder> = yield* select(getOrder)
+  const queueIndex: ReturnType<typeof getIndex> = yield* select(getIndex)
+  const shuffle: ReturnType<typeof getShuffle> = yield* select(getShuffle)
+  const shuffleIndex: ReturnType<typeof getShuffleIndex> = yield* select(
     getShuffleIndex
   )
-  const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield select(
+  const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield* select(
     getShuffleOrder
   )
-  const queueAutoplay: ReturnType<typeof getQueueAutoplay> = yield select(
+  const queueAutoplay: ReturnType<typeof getQueueAutoplay> = yield* select(
     getQueueAutoplay
   )
-  const tracks = yield all(
+  const tracks = yield* all(
     queueOrder.map((queueItem: any) => {
       return call(getTrackInfo, queueItem.id, queueItem.uid)
     })
   )
+
   const message = new PersistQueueMessage(
-    tracks,
+    tracks.filter(removeNullable),
     queueIndex,
     shuffle,
     shuffleIndex,
@@ -104,25 +111,25 @@ function* persistQueue() {
 }
 
 function* watchPersist() {
-  yield takeEvery(persist.type, function* () {
-    yield call(persistQueue)
+  yield* takeEvery(persist.type, function* () {
+    yield* call(persistQueue)
   })
 }
 
 function* watchRepeat() {
-  yield takeEvery(repeat.type, (action: any) => {
+  yield* takeEvery(repeat.type, (action: any) => {
     const message = new RepeatModeMessage(action.payload.mode)
     message.send()
   })
 }
 
 function* watchShuffle() {
-  yield takeEvery(shuffle.type, function* (action: any) {
-    const shuffle: ReturnType<typeof getShuffle> = yield select(getShuffle)
-    const shuffleIndex: ReturnType<typeof getShuffleIndex> = yield select(
+  yield* takeEvery(shuffle.type, function* (action: any) {
+    const shuffle: ReturnType<typeof getShuffle> = yield* select(getShuffle)
+    const shuffleIndex: ReturnType<typeof getShuffleIndex> = yield* select(
       getShuffleIndex
     )
-    const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield select(
+    const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield* select(
       getShuffleOrder
     )
     const message = new ShuffleMessage(shuffle, shuffleIndex, shuffleOrder)
@@ -131,8 +138,8 @@ function* watchShuffle() {
 }
 
 function* watchSyncQueue() {
-  yield takeEvery(MessageType.SYNC_QUEUE, function* (action: Message) {
-    const currentIndex = yield select(getIndex)
+  yield* takeEvery(MessageType.SYNC_QUEUE, function* (action: Message) {
+    const currentIndex = yield* select(getIndex)
     const { index, info } = action
     if (info) {
       console.info(`
@@ -141,48 +148,54 @@ function* watchSyncQueue() {
         id: ${info.trackId},
         uid: ${info.uid},
         title: ${info.title}`)
-      yield put(updateIndex({ index }))
+      yield* put(updateIndex({ index }))
       // Update currently playing track.
       if (!info.isDelete) {
-        yield put(playerActions.set({ uid: info.uid, trackId: info.trackId }))
+        yield* put(playerActions.set({ uid: info.uid, trackId: info.trackId }))
       } else {
-        yield put(playerActions.stop({}))
+        yield* put(playerActions.stop({}))
       }
       // Only change the play counter for a different song
       if (index !== currentIndex) {
-        yield put(playerActions.incrementCount())
+        yield* put(playerActions.incrementCount())
       }
     }
   })
 }
 
 function* watchSyncPlayer() {
-  yield takeEvery(MessageType.SYNC_PLAYER, function* (action: Message) {
+  yield* takeEvery(MessageType.SYNC_PLAYER, function* (action: Message) {
     const { isPlaying, incrementCounter } = action
-    const id: ID = yield select(getQueueTrackId)
-    const track: Track = yield select(getTrack, { id })
-    const owner: User = yield select(getUser, { id: track?.owner_id })
+    const id = yield* select(getQueueTrackId)
+    if (!id) return
+
+    const track = yield* select(getTrack, { id: id as number })
+    if (!track) return
+
+    const owner = yield* select(getUser, { id: track?.owner_id })
+    if (!owner) return
+
     console.info(`Syncing player: isPlaying ${isPlaying}`)
     if (track?.is_delete || owner?.is_deactivated) {
-      yield put(playerActions.stop({}))
+      yield* put(playerActions.stop({}))
     } else if (isPlaying) {
-      yield put(playerActions.playSucceeded({}))
+      yield* put(playerActions.playSucceeded({}))
     } else {
-      yield put(playerActions.pause({ onlySetState: true }))
+      yield* put(playerActions.pause({ onlySetState: true }))
     }
     if (incrementCounter) {
-      yield put(playerActions.incrementCount())
+      yield* put(playerActions.incrementCount())
     }
   })
 }
 
 export function* watchRequestQueueAutoplay() {
-  yield takeEvery(MessageType.REQUEST_QUEUE_AUTOPLAY, function* (
+  yield* takeEvery(MessageType.REQUEST_QUEUE_AUTOPLAY, function* (
     action: Message
   ) {
     const { genre, trackId } = action
-    const userId = yield select(getUserId)
-    yield put(
+    const userId = yield* select(getUserId)
+    yield* put(
       queueAutoplay({
         genre,
         exclusionList: trackId ? [trackId] : [],

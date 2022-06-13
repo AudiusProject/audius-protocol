@@ -79,7 +79,7 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       account: getAccountUser(state),
-      explore: getExplore(state, {})
+      explore: getExplore(state)
     }
   }
   return mapStateToProps

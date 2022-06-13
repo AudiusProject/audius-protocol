@@ -420,8 +420,8 @@ function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
     return {
-      account: getAccountWithSavedPlaylistsAndAlbums(state, {}),
-      tracks: getLineupMetadatas(state, {}),
+      account: getAccountWithSavedPlaylistsAndAlbums(state),
+      tracks: getLineupMetadatas(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),

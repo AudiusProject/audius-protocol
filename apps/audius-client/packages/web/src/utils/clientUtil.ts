@@ -6,6 +6,7 @@ import { OS, MobileOS } from 'common/models/OS'
 declare global {
   interface Window {
     opera: any
+    MSStream: boolean
   }
 }
 

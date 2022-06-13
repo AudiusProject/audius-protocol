@@ -299,8 +299,6 @@ type GetTrendingPlaylistsArgs = {
   time: 'week' | 'month' | 'year'
 }
 
-type TrendingPlaylistsResponse = APIPlaylist[]
-
 type GetAssociatedWalletsArgs = {
   userID: number
 }
@@ -838,9 +836,11 @@ class AudiusAPIClient {
       params
     )
 
-    if (!remixesResponse) return []
+    if (!remixesResponse) return { count: 0, tracks: [] }
 
-    const tracks = remixesResponse.data.tracks.map(adapter.makeTrack)
+    const tracks = remixesResponse.data.tracks
+      .map(adapter.makeTrack)
+      .filter(removeNullable)
     return { count: remixesResponse.data.count, tracks }
   }
 

@@ -1,5 +1,5 @@
 import { eventChannel } from 'redux-saga'
-import { take, put } from 'redux-saga/effects'
+import { take, put } from 'typed-redux-saga/macro'
 
 import { uuid } from 'common/utils/uid'
 import { getIsIOS } from 'utils/browser'
@@ -38,7 +38,7 @@ const SPAMMY_MESSAGES = new Set([MessageType.GET_POSITION])
 
 export function* initInterface() {
   const globalWindow = getIsIOS() ? window : document
-  const channel = eventChannel(emitter => {
+  const channel = eventChannel<Message>(emitter => {
     // Attach messages to the window
     globalWindow.addEventListener('message', data => {
       try {
@@ -58,7 +58,7 @@ export function* initInterface() {
   message.send()
 
   while (true) {
-    const message = yield take(channel)
+    const message = yield* take(channel)
 
     // Log it if it isn't spammy
     if (!SPAMMY_MESSAGES.has(message.type)) {
@@ -66,11 +66,7 @@ export function* initInterface() {
     }
 
     if (message.isAction) {
-      yield put({
-        // Action type = Message type
-        type: message.type,
-        ...message
-      })
+      yield* put(message)
     }
     receiveMessage(message)
   }

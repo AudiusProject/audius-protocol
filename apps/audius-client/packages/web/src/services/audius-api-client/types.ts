@@ -11,9 +11,6 @@ import { SolanaWalletAddress } from 'common/models/Wallet'
 import { Nullable } from 'common/utils/typeUtils'
 
 export type OpaqueID = string
-type PlaylistContents = {
-  track_ids: Array<{ time: number; track: number }>
-}
 
 export type APIUser = {
   album_count: number

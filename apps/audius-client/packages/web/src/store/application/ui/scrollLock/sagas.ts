@@ -1,4 +1,4 @@
-import { takeEvery, select } from 'redux-saga/effects'
+import { takeEvery, select } from 'typed-redux-saga/macro'
 
 import { isMobile } from 'utils/clientUtil'
 
@@ -10,7 +10,7 @@ const SCROLL_LOCK_CLASS = 'scrollLock'
 const MOBILE_CLASS = 'isMobile'
 
 export function* incrementScrollCount() {
-  const lockCount = yield select(getScrollLockCount)
+  const lockCount = yield* select(getScrollLockCount)
   if (lockCount === 1) {
     const el = document.getElementById(ROOT_ID)
     if (!el) return
@@ -23,7 +23,7 @@ export function* incrementScrollCount() {
 }
 
 export function* decrementScrollCount() {
-  const lockCount = yield select(getScrollLockCount)
+  const lockCount = yield* select(getScrollLockCount)
   if (lockCount === 0) {
     const el = document.getElementById(ROOT_ID)
     if (!el) return
@@ -38,11 +38,11 @@ export function* decrementScrollCount() {
 }
 
 function* watchDecrement() {
-  yield takeEvery(scrollLockActions.DECREMENT_COUNT, decrementScrollCount)
+  yield* takeEvery(scrollLockActions.DECREMENT_COUNT, decrementScrollCount)
 }
 
 function* watchIncrement() {
-  yield takeEvery(scrollLockActions.INCREMENT_COUNT, incrementScrollCount)
+  yield* takeEvery(scrollLockActions.INCREMENT_COUNT, incrementScrollCount)
 }
 
 export default function sagas() {

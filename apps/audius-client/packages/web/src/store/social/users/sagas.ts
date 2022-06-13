@@ -1,9 +1,8 @@
-import { call, select, takeEvery, put } from 'redux-saga/effects'
+import { call, select, takeEvery, put } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
-import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -24,29 +23,29 @@ import errorSagas from './errorSagas'
 /* FOLLOW */
 
 export function* watchFollowUser() {
-  yield takeEvery(socialActions.FOLLOW_USER, followUser)
+  yield* takeEvery(socialActions.FOLLOW_USER, followUser)
 }
 
 export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
   /* Make Async Backend Call */
-  yield call(waitForBackendSetup)
-  const accountId = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const accountId = yield* select(getUserId)
   if (!accountId) {
-    yield put(signOnActions.openSignOn(false))
-    yield put(signOnActions.showRequiresAccountModal())
-    yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
 
-  const users = yield select(getUsers, { ids: [action.userId, accountId] })
+  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
   const followedUser = users[action.userId]
   const currentUser = users[accountId]
 
   if (followedUser) {
     // Increment the followed user's follower count
-    yield put(
+    yield* put(
       cacheActions.update(Kind.USERS, [
         {
           id: action.userId,
@@ -59,28 +58,32 @@ export function* followUser(
     )
   }
   // Increment the signed in user's followee count
-  yield call(adjustUserField, {
+  yield* call(adjustUserField, {
     user: currentUser,
     fieldName: 'followee_count',
     delta: 1
   })
 
   const event = make(Name.FOLLOW, { id: action.userId, source: action.source })
-  yield put(event)
+  yield* put(event)
 
-  yield call(confirmFollowUser, action.userId, accountId)
+  yield* call(confirmFollowUser, action.userId, accountId)
 }
 
 export function* confirmFollowUser(userId: ID, accountId: ID) {
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           AudiusBackend.followUser,
           userId
         )
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm follow user for user id ${userId} and account id ${accountId}`
@@ -88,20 +91,19 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
         }
         return accountId
       },
-      // @ts-ignore: remove when confirmer is typed
       function* () {
-        yield put(socialActions.followUserSucceeded(userId))
+        yield* put(socialActions.followUserSucceeded(userId))
       },
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
-        yield put(
+        yield* put(
           socialActions.followUserFailed(userId, timeout ? 'Timeout' : message)
         )
-        const users = yield select(getUsers, { ids: [userId, accountId] })
+        const users = yield* select(getUsers, { ids: [userId, accountId] })
         const followedUser = users[userId]
         const currentUser = users[accountId]
         if (followedUser) {
           // Revert the incremented follower count on the followed user
-          yield put(
+          yield* put(
             cacheActions.update(Kind.USERS, [
               {
                 id: userId,
@@ -115,7 +117,7 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
         }
 
         // Revert the incremented followee count on the current user
-        yield call(adjustUserField, {
+        yield* call(adjustUserField, {
           user: currentUser,
           fieldName: 'followee_count',
           delta: -1
@@ -126,28 +128,28 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
 }
 
 export function* watchUnfollowUser() {
-  yield takeEvery(socialActions.UNFOLLOW_USER, unfollowUser)
+  yield* takeEvery(socialActions.UNFOLLOW_USER, unfollowUser)
 }
 
 export function* unfollowUser(
   action: ReturnType<typeof socialActions.unfollowUser>
 ) {
   /* Make Async Backend Call */
-  yield call(waitForBackendSetup)
-  const accountId = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const accountId = yield* select(getUserId)
   if (!accountId) {
-    yield put(signOnActions.openSignOn(false))
-    yield put(signOnActions.showRequiresAccountModal())
-    yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    yield* put(signOnActions.openSignOn(false))
+    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
 
-  const users = yield select(getUsers, { ids: [action.userId, accountId] })
+  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
   const unfollowedUser = users[action.userId]
   const currentUser = users[accountId]
 
   // Decrement the follower count on the unfollowed user
-  yield put(
+  yield* put(
     cacheActions.update(Kind.USERS, [
       {
         id: action.userId,
@@ -160,7 +162,7 @@ export function* unfollowUser(
   )
 
   // Decrement the followee count on the current user
-  yield call(adjustUserField, {
+  yield* call(adjustUserField, {
     user: currentUser,
     fieldName: 'followee_count',
     delta: -1
@@ -170,21 +172,25 @@ export function* unfollowUser(
     id: action.userId,
     source: action.source
   })
-  yield put(event)
+  yield* put(event)
 
-  yield call(confirmUnfollowUser, action.userId, accountId)
+  yield* call(confirmUnfollowUser, action.userId, accountId)
 }
 
 export function* confirmUnfollowUser(userId: ID, accountId: ID) {
-  yield put(
+  yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        const { blockHash, blockNumber } = yield call(
+        const { blockHash, blockNumber } = yield* call(
           AudiusBackend.unfollowUser,
           userId
         )
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        const confirmed = yield* call(
+          confirmTransaction,
+          blockHash,
+          blockNumber
+        )
         if (!confirmed) {
           throw new Error(
             `Could not confirm unfollow user for user id ${userId} and account id ${accountId}`
@@ -192,23 +198,22 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
         }
         return accountId
       },
-      // @ts-ignore: remove when confirmer is typed
       function* () {
-        yield put(socialActions.unfollowUserSucceeded(userId))
+        yield* put(socialActions.unfollowUserSucceeded(userId))
       },
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
-        yield put(
+        yield* put(
           socialActions.unfollowUserFailed(
             userId,
             timeout ? 'Timeout' : message
           )
         )
-        const users = yield select(getUsers, { ids: [userId, accountId] })
+        const users = yield* select(getUsers, { ids: [userId, accountId] })
         const unfollowedUser = users[userId]
         const currentUser = users[accountId]
 
         // Revert decremented follower count on unfollowed user
-        yield put(
+        yield* put(
           cacheActions.update(Kind.USERS, [
             {
               id: userId,
@@ -221,7 +226,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
         )
 
         // Revert decremented followee count on current user
-        yield call(adjustUserField, {
+        yield* call(adjustUserField, {
           user: currentUser,
           fieldName: 'followee_count',
           delta: 1
@@ -232,11 +237,14 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
 }
 
 export function* watchShareUser() {
-  yield takeEvery(socialActions.SHARE_USER, function* (
+  yield* takeEvery(socialActions.SHARE_USER, function* (
     action: ReturnType<typeof socialActions.shareUser>
   ) {
     const { userId, source } = action
-    const user: User = yield select(getUser, { id: userId })
+
+    const user = yield* select(getUser, { id: userId })
+    if (!user) return
+
     const link = profilePage(user.handle)
     share(link, user.name)
 
@@ -246,7 +254,7 @@ export function* watchShareUser() {
       url: link,
       source
     })
-    yield put(event)
+    yield* put(event)
   })
 }
 

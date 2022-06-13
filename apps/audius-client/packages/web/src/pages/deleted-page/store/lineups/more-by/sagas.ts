@@ -1,4 +1,4 @@
-import { call, select } from 'redux-saga/effects'
+import { call, select } from 'typed-redux-saga/macro'
 
 import { getUserId } from 'common/store/account/selectors'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
@@ -17,8 +17,8 @@ function* getTracks({
   payload: { handle: string }
 }) {
   const { handle } = payload
-  const currentUserId = yield select(getUserId)
-  const processed = yield call(retrieveUserTracks, {
+  const currentUserId = yield* select(getUserId)
+  const processed = yield* call(retrieveUserTracks, {
     handle,
     currentUserId,
     sort: 'plays',
