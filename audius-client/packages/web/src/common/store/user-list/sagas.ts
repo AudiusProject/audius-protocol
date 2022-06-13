@@ -1,6 +1,7 @@
 import { call, put, takeLatest, select, all } from 'redux-saga/effects'
 
 import { AppState } from 'store/types'
+import { toErrorWithMessage } from 'utils/error'
 
 import * as userListActions from './actions'
 import { FetchUserIdsSaga, UserListStoreState } from './types'
@@ -32,8 +33,8 @@ const UserListSagaFactory = {
           put(userListActions.setUserIds(tag, userIds, hasMore)),
           put(userListActions.incrementPage(tag))
         ])
-      } catch (e) {
-        yield errorDispatcher(e)
+      } catch (error) {
+        yield errorDispatcher(toErrorWithMessage(error))
       }
     }
 

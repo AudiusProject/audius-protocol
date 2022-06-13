@@ -1,10 +1,11 @@
-import { select, call, put } from 'redux-saga/effects'
+import { select, call, put } from 'typed-redux-saga/macro'
 
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { UserTrackMetadata } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
+import { removeNullable } from 'common/utils/typeUtils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { waitForValue } from 'utils/sagaHelpers'
 
@@ -22,12 +23,12 @@ const INITIAL_FETCH_LIMIT = 6
  * @param trackId the parent track for which to fetch remixes
  */
 export function* fetchAndProcessRemixes(trackId: ID) {
-  const currentUserId = yield select(getUserId)
+  const currentUserId = yield* select(getUserId)
   const {
     tracks: remixes,
     count
-  }: { tracks: UserTrackMetadata[]; count: number } = yield call(
-    args => apiClient.getRemixes(args),
+  }: { tracks: UserTrackMetadata[]; count: number } = yield* call(
+    [apiClient, 'getRemixes'],
     {
       trackId,
       offset: 0,
@@ -39,7 +40,7 @@ export function* fetchAndProcessRemixes(trackId: ID) {
   if (!remixes) return
 
   if (remixes.length) {
-    yield call(processAndCacheTracks, remixes)
+    yield* call(processAndCacheTracks, remixes)
   }
 
   // Create the update
@@ -52,7 +53,7 @@ export function* fetchAndProcessRemixes(trackId: ID) {
     track_id: r.track_id
   }))
 
-  yield put(
+  yield* put(
     cacheActions.update(Kind.TRACKS, [
       {
         id: trackId,
@@ -73,32 +74,29 @@ export function* fetchAndProcessRemixes(trackId: ID) {
  * @param trackId the track for which to fetch remix parents
  */
 export function* fetchAndProcessRemixParents(trackId: ID) {
-  const currentUserId = yield select(getUserId)
-  const remixParents: UserTrackMetadata[] = yield call(
-    args => apiClient.getRemixing(args),
-    {
-      trackId,
-      limit: 1,
-      offset: 0,
-      currentUserId
-    }
-  )
+  const currentUserId = yield* select(getUserId)
+  const remixParents = (yield* call([apiClient, 'getRemixing'], {
+    trackId,
+    limit: 1,
+    offset: 0,
+    currentUserId
+  })).filter(removeNullable)
 
   if (!remixParents) return
 
   if (remixParents.length) {
-    yield call(processAndCacheTracks, remixParents)
+    yield* call(processAndCacheTracks, remixParents)
   }
 
   // Don't update the original track with parents until it's in the cache
-  yield call(waitForValue, getTrack, { id: trackId })
+  yield* call(waitForValue, getTrack, { id: trackId })
 
   // Create the update
   const remixParentsUpdate = remixParents.map(s => ({
     track_id: s.track_id
   }))
 
-  yield put(
+  yield* put(
     cacheActions.update(Kind.TRACKS, [
       {
         id: trackId,

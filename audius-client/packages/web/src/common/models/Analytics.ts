@@ -476,7 +476,8 @@ export enum FavoriteSource {
   // Favorite triggered by some implicit action, e.g.
   // you had a smart collection and it was favorited so it
   // shows in your left-nav.
-  IMPLICIT = 'implicit'
+  IMPLICIT = 'implicit',
+  NAVIGATOR = 'navigator'
 }
 export enum FollowSource {
   PROFILE_PAGE = 'profile page',

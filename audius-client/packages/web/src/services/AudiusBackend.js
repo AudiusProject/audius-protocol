@@ -1,4 +1,4 @@
-/* globals web3, localStorage, fetch, Image */
+/* globals web3 */
 import { IdentityAPI, DiscoveryAPI } from '@audius/sdk/dist/core'
 import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
@@ -154,6 +154,15 @@ const combineLists = (
 
 const notDeleted = e => !e.is_delete
 
+/**
+ *
+ * @param {number} cid
+ * @param {string[]} creatorNodeGateways
+ * @param {boolean} cache
+ * @param {boolean} asUrl
+ * @param {Nullable<number>} trackId
+ * @returns {Promise<string>}
+ */
 export const fetchCID = async (
   cid,
   creatorNodeGateways = [],

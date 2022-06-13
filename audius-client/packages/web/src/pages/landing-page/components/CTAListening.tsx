@@ -21,12 +21,12 @@ const title = `${messages.title1} ${messages.title2}`
 const title1Items = messages.title1.split(' ')
 const title2Items = messages.title2.split(' ')
 
-type CTAListening = {
+type CTAListeningProps = {
   isMobile: boolean
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const CTAListening = (props: CTAListening) => {
+const CTAListening = (props: CTAListeningProps) => {
   const [hasViewed, setHasViewed] = useState(false)
 
   const containerRef = useRef<HTMLDivElement | null>(null)

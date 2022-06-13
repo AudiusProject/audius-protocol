@@ -1,4 +1,3 @@
-/* globals Blob Worker */
 import importWorkerScript from 'workers/importWorkerScript'
 
 const importWorkScriptCode = importWorkerScript.toString()

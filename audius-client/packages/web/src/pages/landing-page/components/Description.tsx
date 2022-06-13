@@ -165,7 +165,9 @@ const Description = (props: DescriptionProps) => {
           <animated.div
             className={styles.textDescription}
             style={{
+              // @ts-ignore
               opacity: bodyStyles.opacity,
+              // @ts-ignore
               transform: bodyStyles.x.interpolate(
                 (x: number) => `translate3d(0,${x}px,0)`
               )
@@ -242,7 +244,9 @@ const Description = (props: DescriptionProps) => {
           <animated.div
             className={styles.descriptionBody}
             style={{
+              // @ts-ignore
               opacity: bodyStyles.opacity,
+              // @ts-ignore
               transform: bodyStyles.x.interpolate(
                 (x: number) => `translate3d(0,${x}px,0)`
               )

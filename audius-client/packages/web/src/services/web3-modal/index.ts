@@ -2,6 +2,7 @@ import Web3Modal, { IProviderOptions } from 'web3modal'
 
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
+import { getErrorMessage } from 'utils/error'
 const CHAIN_ID = process.env.REACT_APP_ETH_NETWORK_ID
 const BITSKI_CLIENT_ID = process.env.REACT_APP_BITSKI_CLIENT_ID
 const BITSKI_CALLBACK_URL = process.env.REACT_APP_BITSKI_CALLBACK_URL
@@ -126,11 +127,10 @@ export const createSession = async (config: Config): Promise<any> => {
 
     const web3 = new Web3(provider)
     return web3
-  } catch (err) {
-    if ('message' in err && err.message === 'Modal closed by user') {
+  } catch (error) {
+    const errorMessage = getErrorMessage(error)
+    if (errorMessage === 'Modal closed by user') {
       console.log('closed by user')
     }
   }
 }
-
-export default createSession

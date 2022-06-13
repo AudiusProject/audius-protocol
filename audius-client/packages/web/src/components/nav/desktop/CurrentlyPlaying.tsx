@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
 import Color from 'common/models/Color'
 import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
+import { Nullable } from 'common/utils/typeUtils'
 import Draggable from 'components/dragndrop/Draggable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -14,12 +15,12 @@ import styles from './CurrentlyPlaying.module.css'
 type CurrentlyPlayingProps = {
   isOwner: boolean
   isUnlisted: boolean
-  trackId: number
-  trackTitle: string
-  coverArtSizes: CoverArtSizes
-  coverArtColor: Color
-  artworkLink?: string
-  draggableLink: string
+  trackId: Nullable<number>
+  trackTitle: Nullable<string>
+  coverArtSizes: Nullable<CoverArtSizes>
+  coverArtColor: Nullable<Color>
+  artworkLink?: Nullable<string>
+  draggableLink: Nullable<string>
   onClick: () => void
   onShowVisualizer: (e: MouseEvent) => void
 }
@@ -55,7 +56,7 @@ const CurrentlyPlaying = ({
   )
 
   let newTrack = false
-  if (trackId !== previousTrackId.current) {
+  if (trackId && trackId !== previousTrackId.current) {
     newTrack = true
     previousTrackId.current = trackId
   }

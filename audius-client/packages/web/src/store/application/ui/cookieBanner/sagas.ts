@@ -1,11 +1,11 @@
-import { call, put, takeEvery } from 'redux-saga/effects'
+import { call, put, takeEvery } from 'typed-redux-saga/macro'
 
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 
 import { showCookieBanner, DISMISS_COOKIE_BANNER } from './actions'
 
 export function* checkCookieBanner() {
-  const show = yield call(shouldShowCookieBanner)
+  const show = yield* call(shouldShowCookieBanner)
   if (show) {
     yield put(showCookieBanner())
   }

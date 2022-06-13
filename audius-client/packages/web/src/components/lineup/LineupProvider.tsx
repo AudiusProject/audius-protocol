@@ -1,4 +1,3 @@
-/* global Element */
 import React, { PureComponent } from 'react'
 
 import cn from 'classnames'

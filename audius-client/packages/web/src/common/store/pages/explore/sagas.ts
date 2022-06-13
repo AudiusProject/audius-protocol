@@ -1,4 +1,3 @@
-/* globals fetch */
 import { call, put, takeEvery } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'

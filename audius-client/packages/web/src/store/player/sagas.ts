@@ -7,10 +7,9 @@ import {
   spawn,
   takeLatest,
   delay
-} from 'redux-saga/effects'
+} from 'typed-redux-saga/macro'
 
 import Kind from 'common/models/Kind'
-import { Track } from 'common/models/Track'
 import { StringKeys } from 'common/services/remote-config'
 import * as cacheActions from 'common/store/cache/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
@@ -45,7 +44,7 @@ import { encodeHashId } from 'utils/route/hashIds'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
-import { AudioState } from './types'
+import { TAudioStream, AudioState } from './types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -55,15 +54,15 @@ const RECORD_LISTEN_INTERVAL = 1000
 
 function* setAudioStream() {
   if (!NATIVE_MOBILE) {
-    const chan = eventChannel(emitter => {
+    const chan = eventChannel<TAudioStream>(emitter => {
       import('audio/AudioStream').then(AudioStream => {
         emitter(AudioStream.default)
         emitter(END)
       })
       return () => {}
     })
-    const AudioStream = yield take(chan)
-    yield put(setAudioStreamAction({ audio: new AudioStream() }))
+    const AudioStream = yield* take(chan)
+    yield* put(setAudioStreamAction({ audio: new AudioStream() }))
   }
 }
 
@@ -72,7 +71,7 @@ function* setAudioStream() {
 let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
 
 export function* watchPlay() {
-  yield takeLatest(play.type, function* (action: ReturnType<typeof play>) {
+  yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload
 
     if (!FORCE_MP3_STREAM_TRACK_IDS) {
@@ -85,14 +84,17 @@ export function* watchPlay() {
       )
     }
 
-    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
 
     if (trackId) {
       // Load and set end action.
-      const track: Track = yield select(getTrack, { id: trackId })
-      const owner: ReturnType<typeof getUser> = yield select(getUser, {
+      const track = yield* select(getTrack, { id: trackId })
+      if (!track) return
+
+      const owner = yield* select(getUser, {
         id: track.owner_id
       })
+
       const gateways = owner
         ? getCreatorNodeIPFSGateways(owner.creator_node_endpoint)
         : []
@@ -117,14 +119,14 @@ export function* watchPlay() {
           {
             id: encodedTrackId,
             title: track.title,
-            artist: owner.name
+            artist: owner?.name
           },
           forceStreamMp3Url
         )
         return () => {}
       })
-      yield spawn(actionChannelDispatcher, endChannel)
-      yield put(
+      yield* spawn(actionChannelDispatcher, endChannel)
+      yield* put(
         cacheActions.subscribe(Kind.TRACKS, [
           { uid: PLAYER_SUBSCRIBER_NAME, id: trackId }
         ])
@@ -132,16 +134,16 @@ export function* watchPlay() {
     }
     // Play.
     audio.play()
-    yield put(playSucceeded({ uid, trackId }))
+    yield* put(playSucceeded({ uid, trackId }))
   })
 }
 
 export function* watchCollectiblePlay() {
-  yield takeLatest(playCollectible.type, function* (
+  yield* takeLatest(playCollectible.type, function* (
     action: ReturnType<typeof playCollectible>
   ) {
     const { collectible, onEnd } = action.payload
-    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
     const endChannel = eventChannel(emitter => {
       audio.load(
         [],
@@ -167,64 +169,67 @@ export function* watchCollectiblePlay() {
       )
       return () => {}
     })
-    yield spawn(actionChannelDispatcher, endChannel)
+    yield* spawn(actionChannelDispatcher, endChannel)
 
     audio.play()
-    yield put(playCollectibleSucceeded({ collectible }))
+    yield* put(playCollectibleSucceeded({ collectible }))
   })
 }
 
 export function* watchPause() {
-  yield takeLatest(pause.type, function* (action: ReturnType<typeof pause>) {
+  yield* takeLatest(pause.type, function* (action: ReturnType<typeof pause>) {
     const { onlySetState } = action.payload
 
-    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
     if (onlySetState) return
     audio.pause()
   })
 }
 
 export function* watchReset() {
-  yield takeLatest(reset.type, function* (action: ReturnType<typeof reset>) {
+  yield* takeLatest(reset.type, function* (action: ReturnType<typeof reset>) {
     const { shouldAutoplay } = action.payload
 
-    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
+
     audio.seek(0)
     if (!shouldAutoplay) {
       audio.pause()
     } else {
-      const playerUid = yield select(getUid)
-      const playerTrackId = yield select(getTrackId)
-      yield put(
-        play({
-          uid: playerUid,
-          trackId: playerTrackId,
-          onEnd: queueActions.next
-        })
-      )
+      const playerUid = yield* select(getUid)
+      const playerTrackId = yield* select(getTrackId)
+      if (playerUid && playerTrackId) {
+        yield* put(
+          play({
+            uid: playerUid,
+            trackId: playerTrackId,
+            onEnd: queueActions.next
+          })
+        )
+      }
     }
-    yield put(resetSuceeded({ shouldAutoplay }))
+    yield* put(resetSuceeded({ shouldAutoplay }))
   })
 }
 
 export function* watchStop() {
-  yield takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
-    const id = yield select(getTrackId)
-    yield put(
+  yield* takeLatest(stop.type, function* (action: ReturnType<typeof stop>) {
+    const id = yield* select(getTrackId)
+    yield* put(
       cacheActions.unsubscribe(Kind.TRACKS, [
         { uid: PLAYER_SUBSCRIBER_NAME, id }
       ])
     )
-    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
     audio.stop()
   })
 }
 
 export function* watchSeek() {
-  yield takeLatest(seek.type, function* (action: ReturnType<typeof seek>) {
+  yield* takeLatest(seek.type, function* (action: ReturnType<typeof seek>) {
     const { seconds } = action.payload
 
-    const audio: NonNullable<AudioState> = yield call(waitForValue, getAudio)
+    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
     audio.seek(seconds)
   })
 }
@@ -238,43 +243,47 @@ const AudioEvents = Object.freeze({
 })
 
 export function* setAudioListeners() {
-  const audioStream = yield call(waitForValue, getAudio)
-  const chan = yield call(watchAudio, audioStream.audio)
+  const audioStream = yield* call(waitForValue, getAudio)
+  const chan = yield* call(watchAudio, audioStream.audio)
   while (true) {
-    const audioEvent = yield take(chan)
-    const playing = yield select(getPlaying)
+    const audioEvent = yield* take(chan)
+    const playing = yield* select(getPlaying)
     if (audioEvent === AudioEvents.PLAY && !playing) {
-      yield put(play({}))
+      yield* put(play({}))
     } else if (audioEvent === AudioEvents.PAUSE && playing) {
-      yield put(pause({}))
+      yield* put(pause({}))
     }
   }
 }
 
 export function* handleAudioBuffering() {
-  const audioStream = yield call(waitForValue, getAudio)
+  const audioStream = yield* call(waitForValue, getAudio)
   const chan = eventChannel(emitter => {
     audioStream.onBufferingChange = (isBuffering: boolean) => {
       emitter(setBuffering({ buffering: isBuffering }))
     }
     return () => {}
   })
-  yield spawn(actionChannelDispatcher, chan)
+  yield* spawn(actionChannelDispatcher, chan)
 }
 
 export function* handleAudioErrors() {
   // Watch for audio errors and emit an error saga dispatching action
-  const audioStream = yield call(waitForValue, getAudio)
-  const chan = eventChannel(emitter => {
-    audioStream.onError = (error: any, data: string) => {
+  const audioStream = yield* call(waitForValue, getAudio)
+
+  const chan = eventChannel<{ error: string; data: string }>(emitter => {
+    audioStream.onError = (error: string, data: string) => {
       emitter({ error, data })
     }
     return () => {}
   })
+
   while (true) {
-    const { error, data } = yield take(chan)
-    const trackId = yield select(getTrackId)
-    yield put(errorAction({ error, trackId, info: data }))
+    const { error, data } = yield* take(chan)
+    const trackId = yield* select(getTrackId)
+    if (trackId) {
+      yield* put(errorAction({ error, trackId, info: data }))
+    }
   }
 }
 
@@ -310,18 +319,18 @@ function* recordListenWorker() {
   // be enough because the user might have "repeat single" mode turned on.
   let lastSeenPlayCounter = null
   while (true) {
-    const trackId = yield select(getTrackId)
-    const playCounter = yield select(getCounter)
-    const audio = yield call(waitForValue, getAudio)
+    const trackId = yield* select(getTrackId)
+    const playCounter = yield* select(getCounter)
+    const audio = yield* call(waitForValue, getAudio)
     const position = audio.getPosition()
 
     const newPlay = lastSeenPlayCounter !== playCounter
 
     if (newPlay && position > RECORD_LISTEN_SECONDS) {
-      if (trackId) yield put(recordListen(trackId))
+      if (trackId) yield* put(recordListen(trackId))
       lastSeenPlayCounter = playCounter
     }
-    yield delay(RECORD_LISTEN_INTERVAL)
+    yield* delay(RECORD_LISTEN_INTERVAL)
   }
 }
 

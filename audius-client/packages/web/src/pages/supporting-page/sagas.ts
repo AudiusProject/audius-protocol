@@ -1,4 +1,4 @@
-import { put, select } from 'redux-saga/effects'
+import { put, select } from 'typed-redux-saga'
 
 import { ID } from 'common/models/Identifiers'
 import { User, UserMetadata } from 'common/models/User'
@@ -93,14 +93,16 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
 })
 
 function* errorDispatcher(error: Error) {
-  const id = yield select(getId)
-  yield put(getSupportingError(id, error.message))
+  const id = yield* select(getId)
+  if (id) {
+    yield put(getSupportingError(id, error.message))
+  }
 }
 
 function* getSupporting(currentPage: number, pageSize: number) {
   const id: number | null = yield select(getId)
   if (!id) return { userIds: [], hasMore: false }
-  return yield provider({ id, currentPage, pageSize })
+  return yield* provider({ id, currentPage, pageSize })
 }
 
 const userListSagas = UserListSagaFactory.createSagas({

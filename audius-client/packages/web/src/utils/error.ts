@@ -1,4 +1,5 @@
 type ErrorWithMessage = {
+  name: string
   message: string
 }
 
@@ -11,7 +12,7 @@ function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   )
 }
 
-function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
+export function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
   if (isErrorWithMessage(maybeError)) return maybeError
 
   try {

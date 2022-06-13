@@ -133,7 +133,7 @@ const AddToPlaylist = g(
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountWithOwnPlaylists(state, {}),
+    account: getAccountWithOwnPlaylists(state),
     trackId: getTrackId(state),
     trackTitle: getTrackTitle(state)
   }

@@ -1,6 +1,5 @@
 import BN from 'bn.js'
-import { select } from 'redux-saga-test-plan/matchers'
-import { all, call, put, take, takeEvery } from 'redux-saga/effects'
+import { all, call, put, take, takeEvery, select } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { Chain } from 'common/models/Chain'
@@ -29,6 +28,7 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
+import { getErrorMessage } from 'utils/error'
 
 const { getFeatureEnabled } = remoteConfigInstance
 
@@ -39,38 +39,38 @@ const errors = {
 
 /**
  * Transfers tokens to recipientWallet for amount tokens on eth or sol chain
- * @param {object} action Object passed as redux action
- * @param {object} action.payload The payload of the action
- * @param {string} action.payload.recipientWallet The reciepint address either sol or eth
- * @param {StringWei} action.payload.amount The amount in string wei to transfer
- * @param {string} action.playload.chain 'eth' or 'sol'
+ * @param action Object passed as redux action
+ * @param action.payload The payload of the action
+ * @param action.payload.recipientWallet The reciepint address either sol or eth
+ * @param action.payload.amount The amount in string wei to transfer
+ * @param action.playload.chain 'eth' or 'sol'
  */
 function* sendAsync({
   payload: { recipientWallet, amount: weiAudioAmount, chain }
 }: ReturnType<typeof send>) {
-  const account = yield select(getAccountUser)
+  const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
-  const weiBNBalance: BNWei = yield select(getAccountBalance) ??
-    (new BN('0') as BNWei)
+  const accountBalance = yield* select(getAccountBalance)
+  const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
 
-  const waudioWeiAmount: BNWei = yield call(
+  const waudioWeiAmount: BNWei = yield* call(
     walletClient.getCurrentWAudioBalance
   )
   if (
     chain === Chain.Eth &&
     (!weiBNBalance || !weiBNBalance.gte(weiBNAmount))
   ) {
-    yield put(sendFailed({ error: 'Not enough $AUDIO' }))
+    yield* put(sendFailed({ error: 'Not enough $AUDIO' }))
     return
   } else if (chain === Chain.Sol) {
     if (weiBNAmount.gt(weiBNBalance)) {
-      yield put(sendFailed({ error: 'Not enough $AUDIO' }))
+      yield* put(sendFailed({ error: 'Not enough $AUDIO' }))
       return
     }
   }
 
   try {
-    yield put(
+    yield* put(
       make(Name.SEND_AUDIO_REQUEST, {
         from: account?.wallet,
         recipient: recipientWallet
@@ -79,56 +79,58 @@ function* sendAsync({
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
-      yield put(transferEthAudioToSolWAudio())
-      yield call(walletClient.transferTokensFromEthToSol)
+      yield* put(transferEthAudioToSolWAudio())
+      yield* call(walletClient.transferTokensFromEthToSol)
     }
 
     if (chain === Chain.Eth) {
-      yield call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
+      yield* call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
     } else {
       try {
-        yield call(() =>
+        yield* call(() =>
           walletClient.sendWAudioTokens(recipientWallet, weiBNAmount)
         )
       } catch (e) {
-        if ((e as Error)?.message === 'Missing social proof') {
-          yield put(sendFailed({ error: 'Missing social proof' }))
+        const errorMessage = getErrorMessage(e)
+        if (errorMessage === 'Missing social proof') {
+          yield* put(sendFailed({ error: 'Missing social proof' }))
           return
         }
         if (
-          (e as Error)?.message ===
+          errorMessage ===
           'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
         ) {
-          yield put(sendFailed({ error: (e as Error).message }))
+          yield* put(sendFailed({ error: errorMessage }))
           return
         }
       }
     }
 
     // Only decrease store balance if we haven't already changed
-    const newBalance: ReturnType<typeof getAccountBalance> = yield select(
+    const newBalance: ReturnType<typeof getAccountBalance> = yield* select(
       getAccountBalance
     )
     if (newBalance?.eq(weiBNBalance)) {
-      yield put(decreaseBalance({ amount: weiAudioAmount }))
+      yield* put(decreaseBalance({ amount: weiAudioAmount }))
     }
 
-    yield put(sendSucceeded())
-    yield put(
+    yield* put(sendSucceeded())
+    yield* put(
       make(Name.SEND_AUDIO_SUCCESS, {
         from: account?.wallet,
         recipient: recipientWallet
       })
     )
-  } catch (e) {
-    const isRateLimit = e.message === errors.rateLimitError
-    let errorText = e.message
+  } catch (error) {
+    const errorMessage = getErrorMessage(error)
+    const isRateLimit = errorMessage === errors.rateLimitError
+    let errorText = errorMessage
     if (isRateLimit) {
       errorText =
         'If you’ve already sent $AUDIO today, please wait a day before trying again'
     }
-    yield put(sendFailed({ error: errorText }))
-    yield put(
+    yield* put(sendFailed({ error: errorText }))
+    yield* put(
       make(Name.SEND_AUDIO_FAILURE, {
         from: account?.wallet,
         recipient: recipientWallet,
@@ -139,37 +141,39 @@ function* sendAsync({
 }
 
 function* getWalletBalanceAndWallets() {
-  yield all([put(getBalance()), put(fetchAssociatedWallets())])
+  yield* all([put(getBalance()), put(fetchAssociatedWallets())])
 }
 
 function* fetchBalanceAsync() {
-  const account = yield select(getAccountUser)
-  const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> = yield select(
+  const account = yield* select(getAccountUser)
+  if (!account) return
+
+  const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> = yield* select(
     getLocalBalanceDidChange
   )
-  const [currentEthAudioWeiBalance, currentSolAudioWeiBalance]: [
-    BNWei,
-    BNWei
-  ] = yield all([
+
+  const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
     call(() =>
       walletClient.getCurrentBalance(/* bustCache */ localBalanceChange)
     ),
     call(() => walletClient.getCurrentWAudioBalance())
   ])
 
-  const associatedWalletBalance: BNWei = yield call(() =>
+  const associatedWalletBalance: BNWei = yield* call(() =>
     walletClient.getAssociatedWalletBalance(
       account.user_id,
       /* bustCache */ localBalanceChange
     )
   )
+
   const audioWeiBalance = currentEthAudioWeiBalance.add(
     currentSolAudioWeiBalance
   ) as BNWei
+
   const useSolAudio = getFeatureEnabled(FeatureFlags.ENABLE_SPL_AUDIO)
   if (useSolAudio) {
     const totalBalance = audioWeiBalance.add(associatedWalletBalance) as BNWei
-    yield put(
+    yield* put(
       setBalance({
         balance: weiToString(audioWeiBalance),
         totalBalance: weiToString(totalBalance)
@@ -179,7 +183,7 @@ function* fetchBalanceAsync() {
     const totalBalance = currentEthAudioWeiBalance.add(
       associatedWalletBalance
     ) as BNWei
-    yield put(
+    yield* put(
       setBalance({
         balance: weiToString(currentEthAudioWeiBalance),
         totalBalance: weiToString(totalBalance)
@@ -189,17 +193,20 @@ function* fetchBalanceAsync() {
 }
 
 function* watchSend() {
-  yield takeEvery(send.type, sendAsync)
+  yield* takeEvery(send.type, sendAsync)
 }
 
 function* watchGetBalance() {
-  yield takeEvery(getBalance.type, fetchBalanceAsync)
+  yield* takeEvery(getBalance.type, fetchBalanceAsync)
 }
 
 function* watchFetchAccountSucceeded() {
   try {
-    yield all([take(fetchAccountSucceeded.type), take(SETUP_BACKEND_SUCCEEDED)])
-    yield getWalletBalanceAndWallets()
+    yield* all([
+      take(fetchAccountSucceeded.type),
+      take(SETUP_BACKEND_SUCCEEDED)
+    ])
+    yield* getWalletBalanceAndWallets()
   } catch (err) {
     console.error(err)
   }

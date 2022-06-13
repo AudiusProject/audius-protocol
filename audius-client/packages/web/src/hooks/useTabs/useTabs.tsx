@@ -1160,7 +1160,8 @@ const useTabs = ({
       setActiveIndex,
       onChangeComplete,
       setAccentFractionalOffset,
-      initialScrollOffset
+      initialScrollOffset,
+      BodyContainerElement
     ]
   )
 

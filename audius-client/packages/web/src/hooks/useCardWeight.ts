@@ -1,13 +1,23 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, MutableRefObject } from 'react'
 
-import { useSpring } from 'react-spring'
+import { InterpolationChain, useSpring } from 'react-spring'
 
 import useInstanceVar from 'common/hooks/useInstanceVar'
+
+type Transform = {
+  interpolate: InterpolationChain<unknown>
+  getValue: () => unknown
+}
 
 // Calculates how drastically cursor-position changes over length will
 // create skew
 // See https://www.wolframalpha.com/input/?i=plot%5By+%3D+2.5+*+0.996+%5E+x%2C+y+%3D+5+*+0.990+%5E+x%5D+from+-1+to+800
 const calculateSensitivity = (length: number) => 10 * Math.pow(0.994, length)
+
+type UseCardWeightConfig = {
+  sensitivity?: number
+  isDisabled?: boolean
+}
 
 /**
  * `useCardWeight` will listen to the window scroll and output a translate value to be applied to an element.
@@ -17,11 +27,13 @@ const calculateSensitivity = (length: number) => 10 * Math.pow(0.994, length)
 const useCardWeight = ({
   sensitivity,
   isDisabled
-}: {
-  sensitivity?: number
-  isDisabled?: boolean
-}) => {
-  const cardRef = useRef(null)
+}: UseCardWeightConfig): [
+  MutableRefObject<HTMLDivElement | null>,
+  (moveConfig: { clientX: number; clientY: number }) => void,
+  () => void,
+  Transform
+] => {
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const [getComputedSensitivityX, setComputedSensitivityX] = useInstanceVar(
     sensitivity || 0
@@ -58,7 +70,7 @@ const useCardWeight = ({
 
   // @ts-ignore
   const onMove = useCallback(
-    ({ clientX: x, clientY: y }) => {
+    ({ clientX: x, clientY: y }: { clientX: number; clientY: number }) => {
       if (cardRef.current && !isDisabled) {
         const {
           top,

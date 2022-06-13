@@ -58,11 +58,12 @@ import apiClient, {
 } from 'services/audius-api-client/AudiusAPIClient'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
-import connectWeb3Wallet, {
+import {
   loadWalletLink,
   loadBitski,
-  loadWalletConnect
-} from 'services/web3-modal/index'
+  loadWalletConnect,
+  createSession
+} from 'services/web3-modal'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { getErrorMessage } from 'utils/error'
@@ -264,7 +265,7 @@ function* connectWallet() {
     ) as boolean
 
     // @ts-ignore: type web3Instance
-    web3Instance = yield connectWeb3Wallet({
+    web3Instance = yield createSession({
       isBitSkiEnabled,
       isWalletConnectEnabled,
       isWalletLinkEnabled,

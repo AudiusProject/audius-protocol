@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/browser'
 
+import { getErrorMessage } from 'utils/error'
+
 import { Level } from './level'
 
 export type AdditionalInfo = Record<string, unknown>
@@ -59,7 +61,7 @@ export const reportToSentry = async ({
       }
       Sentry.captureException(error)
     })
-  } catch (e) {
-    console.error(`Got error trying to log error: ${e.message}`)
+  } catch (error) {
+    console.error(`Got error trying to log error: ${getErrorMessage(error)}`)
   }
 }
