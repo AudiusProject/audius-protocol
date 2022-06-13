@@ -188,21 +188,10 @@
     "port": 5000,
     "health_check_endpoint": "health_check",
     "up": [
-      "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd libs/; npm run init-local configure-discprov-wallet #",
-      "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; rm -f *_dump",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
-      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "echo 'Waiting 5 seconds...'",
-      "sleep 5"
+      "UP=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
     ],
     "up-web-server": [
-      "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd libs/; npm run init-local configure-discprov-wallet #",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
-      "echo 'Waiting 5 seconds...'",
-      "sleep 5"
+      "UP_WEB_SERVER=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
     ],
     "down": [
       "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
@@ -219,22 +208,7 @@
       "cd service-commands/; node scripts/rewardManagerLocal.js register-discovery-node #"
     ],
     "restart": [
-      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
-      "docker volume prune -f",
-      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
-      "sudo rm -rf solana-programs/cli/target",
-      "sudo rm -rf solana-programs/reward-manager/target",
-      "sudo rm -rf discovery-provider/.venv",
-      "sudo rm -rf discovery-provider/.mypy_cache",
-      "sudo rm -f discovery-provider/*.log",
-      "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd discovery-provider; rm -f *_dump",
-      "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
-      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "echo 'Waiting 5 seconds...'",
-      "sleep 5"
+      "RESTART=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
     ]
   },
   "creator-node": {
@@ -243,18 +217,13 @@
     "port": 4000,
     "health_check_endpoint": "health_check",
     "up": [
-      "cd creator-node; mkdir -p compose/env/tmp/file-storage-#; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
+      "${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
     ],
     "down": [
       "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
-      "cd creator-node; . compose/env/unsetShellEnv.sh",
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
-      "cd libs/; npm run init-local update-cnode-config #",
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
+      "RESTART=true ${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
     ],
     "register": [
       "cd libs/; npm run init-local register-cnode #"
