@@ -10,24 +10,22 @@ describe('test Prometheus metrics', async function () {
   let app, server, libsMock
 
   /** Setup app + global test vars */
-  beforeEach(async () => {
+  beforeEach(async function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(libsMock)
-
     app = appInfo.app
     server = appInfo.server
   })
 
-  afterEach(async () => {
+  afterEach(async function () {
     await server.close()
   })
 
-  it('Checks that GET /prometheus_metrics is healthy, and exposes Audius and Default metrics', async function () {
+  it('Checks that GET /prometheus_metrics is healthy and exposes Default metrics', async function () {
     const resp = await request(app)
       .get('/prometheus_metrics')
       .expect(200)
-    assert.ok(resp.text.includes(AudiusPrefix + MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM))
     assert.ok(resp.text.includes(DefaultPrefix + 'process_cpu_user_seconds_total'))
   })
 })
