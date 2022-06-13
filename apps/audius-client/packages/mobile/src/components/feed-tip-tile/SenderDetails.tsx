@@ -69,7 +69,10 @@ export const SenderDetails = ({ senders, receiver }: SenderDetailsProps) => {
 
   const handlePressTippers = useCallback(() => {
     navigation.push({
-      native: { screen: 'TopSupporters', params: { userId: receiver.user_id } }
+      native: {
+        screen: 'TopSupporters',
+        params: { userId: receiver.user_id, source: 'feed' }
+      }
     })
   }, [navigation, receiver])
 

@@ -53,7 +53,7 @@ export type AppTabScreenParamList = {
   SearchResults: { query: string }
   SupportingUsers: { userId: ID }
   TagSearch: { query: string }
-  TopSupporters: { userId: ID }
+  TopSupporters: { userId: ID; source: 'profile' | 'feed' }
   NotificationUsers: {
     id: string // uuid
     notificationType: NotificationType

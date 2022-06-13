@@ -10,6 +10,8 @@ import {
 
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
+import { getUser } from 'common/store/cache/users/selectors'
+import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { getUserList as favoritesSelector } from 'common/store/user-list/favorites/selectors'
 import { getUserList as followersSelector } from 'common/store/user-list/followers/selectors'
 import { getUserList as followingSelector } from 'common/store/user-list/following/selectors'
@@ -22,7 +24,10 @@ import {
 import { USER_LIST_TAG as NOTIFICATION_TAG } from 'common/store/user-list/notifications/types'
 import { getUserList as repostsSelector } from 'common/store/user-list/reposts/selectors'
 import { getUserList as supportingSelector } from 'common/store/user-list/supporting/selectors'
-import { getUserList as topSupportersSelector } from 'common/store/user-list/top-supporters/selectors'
+import {
+  getUserList as topSupportersSelector,
+  getId as getSupportersId
+} from 'common/store/user-list/top-supporters/selectors'
 import { UserListStoreState } from 'common/store/user-list/types'
 import UserList from 'components/user-list/UserList'
 import { USER_LIST_TAG as FAVORITES_TAG } from 'pages/favorites-page/sagas'
@@ -62,6 +67,11 @@ const UserListModal = ({
   let title: ReactElement | string
   const notificationTitle = useSelector(getPageTitle)
   const scrollParentRef = useRef<HTMLElement>()
+  const profile = useSelector(getProfileUser)
+  const supportersId = useSelector(getSupportersId)
+  const supportersUser = useSelector(state =>
+    getUser(state, { id: supportersId })
+  )
 
   switch (userListType) {
     case UserListType.FAVORITE:
@@ -110,6 +120,12 @@ const UserListModal = ({
       title = (
         <div className={styles.titleContainer}>
           <IconTrophy className={styles.icon} />
+          {!profile && supportersUser && supportersId ? (
+            <div className={styles.titleNameContainer}>
+              <div className={styles.titleName}>{supportersUser.name}</div>
+              <span>&apos;s&nbsp;</span>
+            </div>
+          ) : null}
           <span>{messages.topSupporters}</span>
         </div>
       )
