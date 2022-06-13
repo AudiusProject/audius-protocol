@@ -83,29 +83,44 @@ See below API to record new sample for metric.
 
 Definition inside `prometheus.constants.js`
 ```
-const MetricNames = Object.freeze({
+let MetricNames = {
   ...
-  STORAGE_PATH_SIZE_GAUGE: 'storage_path_size_bytes',
+  SYNC_QUEUE_JOB_COUNTS_GAUGE: 'sync_queue_job_counts',
   ...
-})
+}
 
 const Metrics = Object.freeze({
   ...
-  [MetricNames.STORAGE_PATH_SIZE_GAUGE]: {
+  [MetricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE]: {
     metricType: MetricTypes.GAUGE,
     metricConfig: {
-      name: MetricNames.STORAGE_PATH_SIZE_GAUGE,
-      help: 'Total disk space (free + used) (bytes)'
+      name: MetricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE,
+      help: 'Current job counts for SyncQueue by status',
+      labelNames: ['status']
     }
   },
   ...
 })
 ```
 
-Consumption inside `src/monitors/filesystem.js : getStoragePathSize()`
+Consumption inside `src/components/healthCheck/healthCheckController : syncHealthCheckController()`
 ```
-const storagePathSizeGaugeMetric = prometheusRegistry.getMetric(
-  prometheusRegistry.metricNames.STORAGE_PATH_SIZE_GAUGE
-)
-storagePathSizeGaugeMetric.set(total)
+const syncHealthCheckController = async (req) => {
+  const response = await syncHealthCheck(serviceRegistry)
+
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const syncQueueJobCountsMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE
+  )
+  syncQueueJobCountsMetric.set(
+    { status: 'manualWaiting' },
+    response.manualWaitingCount
+  )
+  syncQueueJobCountsMetric.set(
+    { status: 'recurringWaiting' },
+    response.recurringWaitingCount
+  )
+
+  return successResponse(response)
+}
 ```
