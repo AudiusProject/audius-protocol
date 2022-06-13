@@ -6,11 +6,19 @@ const {
   MetricNames
 } = require('./prometheus.constants')
 
+/**
+ * See `prometheusMonitoring/README.md` for usage details
+ */
+
 module.exports = class PrometheusRegistry {
   constructor() {
+    // Use default global registry to register metrics
     this.registry = PrometheusClient.register
+
+    // Expose metric names from class for access throughout application
     this.metricNames = MetricNames
 
+    // Ensure clean state for registry
     this.registry.clear()
 
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
@@ -23,6 +31,7 @@ module.exports = class PrometheusRegistry {
 
   /** Getters */
 
+  /** Returns current data for all metrics */
   async getAllMetricData() {
     return this.registry.metrics()
   }
@@ -34,7 +43,7 @@ module.exports = class PrometheusRegistry {
 }
 
 /**
- * Creates and registers every custom metric, for use throughout Content Node
+ * Creates and registers every custom metric, for use throughout application
  */
 const createAllCustomMetrics = function (registry) {
   for (const { metricType: MetricType, metricConfig } of Object.values(

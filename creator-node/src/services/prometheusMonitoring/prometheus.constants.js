@@ -1,12 +1,13 @@
 const promClient = require('prom-client')
 
+/**
+ * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
+ */
+
 const METRIC_PREFIX = 'audius_cn_'
 
 /**
- * @notice Counter and Summary metric types are currently disabled, since we should almost never be using them.
- *  - Gauge should always be used over Counter since it can be decreased, with no performance overhead.
- *  - Histogram should always be used over Summary, per docs below
- * https://prometheus.io/docs/tutorials/understanding_metric_types/
+ * @notice Counter and Summary metric types are currently disabled, see README for details.
  */
 const MetricTypes = Object.freeze({
   GAUGE: promClient.Gauge,

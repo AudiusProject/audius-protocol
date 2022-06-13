@@ -1,3 +1,6 @@
+/**
+ * Exposes Prometheus metrics at `GET /prometheus_metrics`
+ */
 module.exports = function (app) {
   app.get('/prometheus_metrics', async (req, res) => {
     const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
