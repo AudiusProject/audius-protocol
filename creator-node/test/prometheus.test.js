@@ -4,6 +4,8 @@ const request = require('supertest')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
+const { AudiusPrefix, DefaultPrefix, MetricNames } = require('../src/services/prometheusMonitoring/prometheus.constants')
+
 describe('test Prometheus metrics', async function () {
   let app, server, libsMock
 
@@ -21,10 +23,11 @@ describe('test Prometheus metrics', async function () {
     await server.close()
   })
 
-  it('checks for a healthy prometheus metrics endpoint', async function () {
+  it('Checks that GET /prometheus_metrics is healthy, and exposes Audius and Default metrics', async function () {
     const resp = await request(app)
       .get('/prometheus_metrics')
       .expect(200)
-    assert.ok(resp.text.includes('audius_cn_process_cpu_user_seconds_total'))
+    assert.ok(resp.text.includes(AudiusPrefix + MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM))
+    assert.ok(resp.text.includes(DefaultPrefix + 'process_cpu_user_seconds_total'))
   })
 })

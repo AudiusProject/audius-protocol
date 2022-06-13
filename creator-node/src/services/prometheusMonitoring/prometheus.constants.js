@@ -5,7 +5,9 @@ const _ = require('lodash')
  * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
  */
 
-const METRIC_PREFIX = 'audius_cn_'
+// We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
+const AudiusPrefix = 'audius_'
+const DefaultPrefix = 'default_'
 
 /**
  * @notice Counter and Summary metric types are currently disabled, see README for details.
@@ -23,7 +25,7 @@ let MetricNames = {
     'route_post_tracks_duration_seconds'
 }
 MetricNames = Object.freeze(
-  _.mapValues(MetricNames, (metricName) => METRIC_PREFIX + metricName)
+  _.mapValues(MetricNames, (metricName) => AudiusPrefix + metricName)
 )
 
 const Metrics = Object.freeze({
@@ -47,7 +49,8 @@ const Metrics = Object.freeze({
   }
 })
 
-module.exports.METRIC_PREFIX = METRIC_PREFIX
+module.exports.AudiusPrefix = AudiusPrefix
+module.exports.DefaultPrefix = DefaultPrefix
 module.exports.MetricTypes = MetricTypes
 module.exports.MetricNames = MetricNames
 module.exports.Metrics = Metrics

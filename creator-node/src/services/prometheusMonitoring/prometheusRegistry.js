@@ -1,7 +1,7 @@
 const PrometheusClient = require('prom-client')
 
 const {
-  METRIC_PREFIX,
+  DefaultPrefix,
   Metrics,
   MetricNames
 } = require('./prometheus.constants')
@@ -23,7 +23,7 @@ module.exports = class PrometheusRegistry {
 
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
     PrometheusClient.collectDefaultMetrics({
-      prefix: METRIC_PREFIX + 'default_'
+      prefix: DefaultPrefix
     })
 
     createAllCustomMetrics(this.registry)
