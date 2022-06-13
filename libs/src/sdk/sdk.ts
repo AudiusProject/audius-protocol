@@ -7,12 +7,13 @@ import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
 import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
+import { TracksApi } from './tracks'
 import {
   Configuration,
   PlaylistsApi,
-  TracksApi,
   UsersApi,
-  TipsApi
+  TipsApi,
+  ResolveApi
 } from './default'
 import {
   PlaylistsApi as PlaylistsApiFull,
@@ -103,10 +104,11 @@ export const sdk = async (config: SdkConfig) => {
     }
   })
 
-  const tracks = new TracksApi(generatedApiClientConfig)
+  const tracks = new TracksApi(generatedApiClientConfig, discoveryNode)
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
+  const resolve = new ResolveApi(generatedApiClientConfig)
 
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfig as any),
@@ -128,6 +130,7 @@ export const sdk = async (config: SdkConfig) => {
     users,
     playlists,
     tips,
+    resolve,
     full
   }
 }

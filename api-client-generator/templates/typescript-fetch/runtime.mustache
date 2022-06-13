@@ -134,7 +134,7 @@ export class Configuration {
         return this.configuration.basePath != null ? this.configuration.basePath : BASE_PATH;
     }
 
-    get fetchApi(): FetchAPI | undefined {
+    get fetchApi(): FetchAPI {
         return this.configuration.fetchApi;
     }
 
@@ -249,13 +249,13 @@ export interface Consume {
 export interface RequestContext {
     fetch: FetchAPI;
     url: string;
-    init: RequestInit;
+    init?: RequestInit;
 }
 
 export interface ResponseContext {
     fetch: FetchAPI;
     url: string;
-    init: RequestInit;
+    init?: RequestInit;
     response: Response;
 }
 

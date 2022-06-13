@@ -83,6 +83,7 @@ export class {{classname}} extends runtime.BaseAPI {
 {{/withInterfaces}}
 
     {{#operation}}
+    {{#returnType}}
     /**
      {{#notes}}
      * {{&notes}}
@@ -91,7 +92,7 @@ export class {{classname}} extends runtime.BaseAPI {
      * {{&summary}}
      {{/summary}}
      */
-    async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit): Promise<{{#returnType}}NonNullable<{{returnType}}["data"]>{{/returnType}}{{^returnType}}void{{/returnType}}> {
+    async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit): Promise<NonNullable<{{returnType}}["data"]>> {
         {{#allParams}}
         {{#required}}
         if (requestParameters.{{paramName}} === null || requestParameters.{{paramName}} === undefined) {
@@ -284,9 +285,10 @@ export class {{classname}} extends runtime.BaseAPI {
             {{#hasFormParams}}
             body: formParams,
             {{/hasFormParams}}
-        }, initOverrides) as Promise<{{#returnType}}NonNullable<{{returnType}}["data"]>{{/returnType}}{{^returnType}}void{{/returnType}}>;
+        }, initOverrides) as Promise<NonNullable<{{returnType}}["data"]>>;
     }
 
+    {{/returnType}}
     {{/operation}}
 }
 {{/operations}}
