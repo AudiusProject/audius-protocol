@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonProps, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 

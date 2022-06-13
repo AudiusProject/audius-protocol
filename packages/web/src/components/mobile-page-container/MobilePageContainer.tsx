@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useContext } from 'react'
+import { ReactNode, useEffect, useContext } from 'react'
 
 import cn from 'classnames'
 import { Helmet } from 'react-helmet'

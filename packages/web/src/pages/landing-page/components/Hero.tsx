@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import cn from 'classnames'
 import { Parallax, withController } from 'react-scroll-parallax'

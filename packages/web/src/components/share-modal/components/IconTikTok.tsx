@@ -1,4 +1,4 @@
-import React, { SVGProps } from 'react'
+import { SVGProps } from 'react'
 
 import { IconTikTok as BaseIconTikTok, IconTikTokInverted } from '@audius/stems'
 

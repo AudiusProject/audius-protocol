@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import { ReactNode, useContext, useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 
@@ -54,7 +54,7 @@ export const RewardsContent = () => {
   )
 }
 
-export const DesktopPage = ({ children }: { children: React.ReactNode }) => {
+export const DesktopPage = ({ children }: { children: ReactNode }) => {
   const dispatch = useDispatch()
   useEffect(() => {
     dispatch(preloadWalletProviders())
@@ -81,7 +81,7 @@ const useMobileNavContext = () => {
   }, [setLeft, setRight])
 }
 
-export const MobilePage = ({ children }: { children: React.ReactNode }) => {
+export const MobilePage = ({ children }: { children: ReactNode }) => {
   useMobileNavContext()
   return (
     <MobilePageContainer

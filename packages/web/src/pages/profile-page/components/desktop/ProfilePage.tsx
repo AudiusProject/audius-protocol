@@ -1,4 +1,4 @@
-import React, { useCallback, memo } from 'react'
+import { useCallback, memo } from 'react'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'

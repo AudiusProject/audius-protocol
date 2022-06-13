@@ -1,4 +1,4 @@
-import React from 'react'
+import { ChangeEvent } from 'react'
 
 import { Collection, SmartCollection, Variant } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
@@ -70,7 +70,7 @@ export type CollectionPageProps = {
   onClickSave?: (record: TrackRecord) => void
   allowReordering: boolean
   getFilteredData: (trackMetadata: CollectionTrack[]) => [TrackRecord[], number]
-  onFilterChange: (evt: React.ChangeEvent<HTMLInputElement>) => void
+  onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
   onHeroTrackEdit: () => void
   onPublish: () => void
   onHeroTrackRepost?: any

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { IconShare, IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'

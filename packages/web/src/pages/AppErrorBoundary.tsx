@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 import { ErrorBoundary, ErrorBoundaryProps } from 'react-error-boundary'
 import { useDispatch } from 'react-redux'

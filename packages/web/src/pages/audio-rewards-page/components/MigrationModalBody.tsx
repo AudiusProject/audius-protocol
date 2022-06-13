@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { ChangeEvent, memo } from 'react'
 
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
@@ -30,7 +30,7 @@ export type HistoryPageProps = {
   onSortTracks: (sorters: any) => void
   goToRoute: (route: string) => void
   onPlay: () => void
-  onFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onFilterChange: (e: ChangeEvent<HTMLInputElement>) => void
   filterText: string
 }
 

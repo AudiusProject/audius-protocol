@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import PropTypes from 'prop-types'
 
@@ -21,4 +21,4 @@ EmptyTab.propTypes = {
   text: PropTypes.string
 }
 
-export default React.memo(EmptyTab)
+export default memo(EmptyTab)

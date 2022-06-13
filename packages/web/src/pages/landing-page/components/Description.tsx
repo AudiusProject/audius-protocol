@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 import cn from 'classnames'
 import { useChain, useSpring, useTrail, animated } from 'react-spring'

@@ -1,10 +1,11 @@
-import React, {
+import {
   MouseEvent,
   memo,
   useMemo,
   useState,
   useEffect,
-  useCallback
+  useCallback,
+  ReactChildren
 } from 'react'
 
 import cn from 'classnames'
@@ -371,7 +372,7 @@ const ConnectedPlaylistTile = memo(
     const disableActions = false
 
     const TileTrackContainer = useCallback(
-      ({ children }: { children: React.ReactChildren }) => (
+      ({ children }: { children: ReactChildren }) => (
         <Draggable
           key={id}
           isDisabled={disableActions}

@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useCallback } from 'react'
+import { MouseEventHandler, useCallback } from 'react'
 
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'

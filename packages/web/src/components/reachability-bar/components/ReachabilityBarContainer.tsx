@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useTransition, animated } from 'react-spring'
 
 import styles from './ReachabilityBarContainer.module.css'

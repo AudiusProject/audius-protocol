@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 
 import cn from 'classnames'
 import Lottie from 'react-lottie'

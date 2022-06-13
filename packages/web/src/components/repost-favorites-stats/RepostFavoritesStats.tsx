@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
@@ -40,14 +40,14 @@ const RepostFavoritesStats = ({
   size = Size.LARGE
 }: RepostFavoritesStatsProps) => {
   const handleOnClickReposts = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       e.stopPropagation()
       onClickReposts()
     },
     [onClickReposts]
   )
   const handleOnClickFavorites = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       e.stopPropagation()
       onClickFavorites()
     },

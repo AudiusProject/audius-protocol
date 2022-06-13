@@ -1,5 +1,3 @@
-import React from 'react'
-
 import Delineator from 'components/delineator/Delineator'
 import More from 'components/more/More'
 

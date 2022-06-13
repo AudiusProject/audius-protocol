@@ -1,4 +1,4 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 import cn from 'classnames'
 
@@ -7,7 +7,7 @@ import { isMobile } from 'utils/clientUtil'
 import styles from './SelectablePill.module.css'
 
 type SelectablePillProps = {
-  content: React.ReactNode
+  content: ReactNode
   isSelected: boolean
   onClick: () => void
   className?: string

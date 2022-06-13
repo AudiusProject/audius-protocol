@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 
 import { CID, ID } from 'common/models/Identifiers'
 import { LineupState } from 'common/models/Lineup'

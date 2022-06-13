@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'

@@ -1,4 +1,4 @@
-import React, { memo, MouseEvent } from 'react'
+import { memo, MouseEvent } from 'react'
 
 import cn from 'classnames'
 

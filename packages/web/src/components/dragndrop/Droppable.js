@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import cn from 'classnames'
 import { debounce } from 'lodash'

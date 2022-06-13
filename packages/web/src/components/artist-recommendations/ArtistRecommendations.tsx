@@ -1,6 +1,7 @@
-import React, {
+import {
   forwardRef,
   MutableRefObject,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo
@@ -36,8 +37,8 @@ export type ArtistRecommendationsProps = {
   ref?: MutableRefObject<HTMLDivElement>
   itemClassName?: string
   className?: string
-  renderHeader: () => React.ReactNode
-  renderSubheader?: () => React.ReactNode
+  renderHeader: () => ReactNode
+  renderSubheader?: () => ReactNode
   artistId: ID
   onClose: () => void
 }
@@ -202,7 +203,7 @@ export const ArtistRecommendations = forwardRef(
             {`${messages.featuring} `}
             {suggestedArtists
               .slice(0, 3)
-              .map<React.ReactNode>((a, i) => (
+              .map<ReactNode>((a, i) => (
                 <ArtistPopoverWrapper
                   key={a.user_id}
                   userId={a.user_id}

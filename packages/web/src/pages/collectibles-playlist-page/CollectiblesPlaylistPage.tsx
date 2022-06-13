@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { isMobile } from 'utils/clientUtil'
 
 import DesktopCollectionPage from '../collection-page/components/desktop/CollectionPage'

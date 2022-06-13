@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo } from 'react'
+import { memo, useCallback, useContext, useEffect, useMemo } from 'react'
 
 import cn from 'classnames'
 import { matchPath } from 'react-router'
@@ -106,7 +106,7 @@ type SearchStatusWrapperProps = {
   children: JSX.Element
 }
 
-const SearchStatusWrapper = React.memo(
+const SearchStatusWrapper = memo(
   ({ status, children }: SearchStatusWrapperProps) => {
     switch (status) {
       case Status.IDLE:

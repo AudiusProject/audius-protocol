@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 

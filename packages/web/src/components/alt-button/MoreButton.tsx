@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 
 import moreMatrix from 'assets/img/iconKebabInactiveMatrix@2x.png'

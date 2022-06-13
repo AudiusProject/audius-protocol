@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  ComponentType
+} from 'react'
 
 import cn from 'classnames'
 import { push } from 'connected-react-router'
@@ -46,8 +53,8 @@ declare global {
 
 type CollectiblesPlaylistPageProviderProps = {
   children:
-    | React.ComponentType<MobileCollectionPageProps>
-    | React.ComponentType<DesktopCollectionPageProps>
+    | ComponentType<MobileCollectionPageProps>
+    | ComponentType<DesktopCollectionPageProps>
 }
 
 const chainLabelMap: Record<Chain, string> = {

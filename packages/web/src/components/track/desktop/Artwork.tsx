@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo } from 'react'
 
 import { PbIconPlay as IconPlay, PbIconPause as IconPause } from '@audius/stems'
 import cn from 'classnames'

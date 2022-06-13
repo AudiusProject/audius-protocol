@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { cloneElement, useRef, useState, useEffect, useCallback } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -71,7 +71,7 @@ const HeaderContainer = ({ header, containerRef }) => {
             : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
         }}
       >
-        {React.cloneElement(header, {
+        {cloneElement(header, {
           isChromeOrSafari,
           scrollBarWidth: scrollBarWidth,
           headerContainerRef,

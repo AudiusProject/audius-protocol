@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Playable } from 'common/models/Playable'
 import { User } from 'common/models/User'
 import { useIsMobile } from 'utils/clientUtil'

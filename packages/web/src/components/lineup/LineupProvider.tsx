@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import { ComponentType, createRef, PureComponent } from 'react'
 
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -102,8 +102,8 @@ const getInitPage = (
 export interface LineupProviderProps {
   'aria-label'?: string
   // Tile components
-  trackTile: React.ComponentType<TrackTileProps> | any
-  playlistTile: React.ComponentType<PlaylistTileProps> | any
+  trackTile: ComponentType<TrackTileProps> | any
+  playlistTile: ComponentType<PlaylistTileProps> | any
 
   // Other props
 
@@ -222,7 +222,7 @@ type CombinedProps = LineupProviderProps &
  * is controlled by injecting tiles conforming to `Track/Playlist/SkeletonProps interfaces.
  */
 class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
-  scrollContainer = React.createRef<HTMLDivElement>()
+  scrollContainer = createRef<HTMLDivElement>()
 
   constructor(props: any) {
     super(props)

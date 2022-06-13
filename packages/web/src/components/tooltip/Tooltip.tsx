@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import AntTooltip from 'antd/lib/tooltip'
 import cn from 'classnames'

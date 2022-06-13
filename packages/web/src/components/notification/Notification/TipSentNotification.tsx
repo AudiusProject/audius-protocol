@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { TipSent } from 'common/store/notifications/types'
 
 import styles from './TipSentNotification.module.css'

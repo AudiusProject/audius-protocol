@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import ReactMarkdown from 'react-markdown'
 import { useDispatch } from 'react-redux'

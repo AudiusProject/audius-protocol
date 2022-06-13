@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 
 import { Button, ButtonType, IconUpload, IconNote } from '@audius/stems'
 import cn from 'classnames'

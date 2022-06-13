@@ -1,5 +1,5 @@
 /** @deprecated - Use SegmentedControl from Stems instead. */
-import React, { useState, useEffect, useRef } from 'react'
+import { createRef, Fragment, useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -8,7 +8,7 @@ import { useSpring, animated } from 'react-spring'
 import styles from './TabSlider.module.css'
 
 const TabSlider = props => {
-  const optionRefs = useRef(props.options.map(_ => React.createRef()))
+  const optionRefs = useRef(props.options.map(_ => createRef()))
   const [selected, setSelected] = useState(props.options[0].key)
 
   const selectedOption = props.selected || selected
@@ -56,7 +56,7 @@ const TabSlider = props => {
       <animated.div className={styles.tabBackground} style={animatedProps} />
       {props.options.map((option, idx) => {
         return (
-          <React.Fragment key={option.key}>
+          <Fragment key={option.key}>
             <div
               ref={optionRefs.current[idx]}
               className={cn(styles.tab, {
@@ -77,7 +77,7 @@ const TabSlider = props => {
                   selectedOption === props.options[idx + 1].key
               })}
             />
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </div>

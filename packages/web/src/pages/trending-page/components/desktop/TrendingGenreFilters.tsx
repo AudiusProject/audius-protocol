@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { getCanonicalName } from 'common/utils/genres'

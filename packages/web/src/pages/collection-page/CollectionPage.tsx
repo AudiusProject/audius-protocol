@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { connect } from 'react-redux'
 
 import { SmartCollection } from 'common/models/Collection'
@@ -20,6 +18,7 @@ type OwnProps = {
 const isMobileClient = isMobile()
 
 type CollectionPageProps = ReturnType<typeof mapStateToProps> & OwnProps
+
 const CollectionPage = ({ type, smartCollection }: CollectionPageProps) => {
   const content = isMobileClient ? MobileCollectionPage : DesktopCollectionPage
 

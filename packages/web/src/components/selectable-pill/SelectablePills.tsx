@@ -1,4 +1,4 @@
-import React from 'react'
+import { ReactNode } from 'react'
 
 import cn from 'classnames'
 
@@ -8,7 +8,7 @@ import SelectablePill from './SelectablePill'
 import styles from './SelectablePill.module.css'
 
 type PillContainerProps = {
-  content: React.ReactNode[]
+  content: ReactNode[]
   selectedIndex: number
   onClickIndex: (index: number) => void
   className?: string

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState, useEffect, MouseEvent } from 'react'
 
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
@@ -30,17 +30,13 @@ const messages = {
 }
 
 type ExtraProps = {
-  goToTrackPage: (e: React.MouseEvent<HTMLElement>) => void
-  goToArtistPage: (e: React.MouseEvent<HTMLElement>) => void
+  goToTrackPage: (e: MouseEvent<HTMLElement>) => void
+  goToArtistPage: (e: MouseEvent<HTMLElement>) => void
   toggleSave: (trackId: ID) => void
   toggleRepost: (trackId: ID) => void
   onShare: (trackId: ID) => void
-  makeGoToRepostsPage: (
-    trackId: ID
-  ) => (e: React.MouseEvent<HTMLElement>) => void
-  makeGoToFavoritesPage: (
-    trackId: ID
-  ) => (e: React.MouseEvent<HTMLElement>) => void
+  makeGoToRepostsPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
+  makeGoToFavoritesPage: (trackId: ID) => (e: MouseEvent<HTMLElement>) => void
   isOwner: boolean
   darkMode: boolean
   isMatrix: boolean

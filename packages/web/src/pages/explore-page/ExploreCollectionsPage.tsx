@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { connect } from 'react-redux'
 
 import { ExploreCollectionsVariant } from 'common/store/pages/explore/types'

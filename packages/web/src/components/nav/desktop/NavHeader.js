@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'

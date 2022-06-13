@@ -1,4 +1,4 @@
-import React from 'react'
+import { PureComponent } from 'react'
 
 import * as Sentry from '@sentry/browser'
 
@@ -6,7 +6,7 @@ export type ErrorWrapperProps = {
   errorMessage?: string
 }
 
-class ErrorWrapper extends React.PureComponent<ErrorWrapperProps> {
+class ErrorWrapper extends PureComponent<ErrorWrapperProps> {
   state = {
     didError: false
   }

@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import { memo } from 'react'
 
 import { User } from 'common/models/User'
 import { formatCount, pluralize } from 'common/utils/formatUtil'

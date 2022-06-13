@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback, ReactNode } from 'react'
 
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -28,6 +28,7 @@ import { useSelector } from 'utils/reducer'
 
 import styles from './Tiles.module.css'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
+
 const messages = {
   noClaim1: 'You earn $AUDIO by using Audius.',
   noClaim2: 'The more you use Audius, the more $AUDIO you earn.',
@@ -44,11 +45,12 @@ export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 
 type TileProps = {
   className?: string
+  children: ReactNode
 }
 
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
-export const Tile: React.FC<TileProps> = ({ className, children }) => {
+export const Tile = ({ className, children }: TileProps) => {
   return (
     <div className={cn([styles.tileContainer, className])}> {children}</div>
   )

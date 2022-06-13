@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 
 import { ID, CID } from 'common/models/Identifiers'

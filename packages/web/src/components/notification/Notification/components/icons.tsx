@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 import { ReactComponent as IconAudius } from 'assets/img/iconAudius.svg'
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'

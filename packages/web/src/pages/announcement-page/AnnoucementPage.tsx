@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import ReactMarkdown from 'react-markdown'

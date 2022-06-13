@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useContext,
   useEffect,
@@ -92,7 +92,7 @@ export const collectibleMessages = {
   done: 'Done'
 }
 
-const CollectiblesPage: React.FC<{
+type CollectiblesPageProps = {
   userId: number | null
   name: string
   isMobile: boolean
@@ -105,17 +105,20 @@ const CollectiblesPage: React.FC<{
   ) => void
   onLoad?: () => void
   onSave?: () => void
-}> = ({
-  userId,
-  name,
-  isMobile,
-  profile,
-  updateProfile,
-  updateProfilePicture,
-  isUserOnTheirProfile,
-  onLoad,
-  onSave
-}) => {
+}
+
+const CollectiblesPage = (props: CollectiblesPageProps) => {
+  const {
+    userId,
+    name,
+    isMobile,
+    profile,
+    updateProfile,
+    updateProfilePicture,
+    isUserOnTheirProfile,
+    onLoad,
+    onSave
+  } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const ethCollectibleList = profile?.collectibleList ?? null

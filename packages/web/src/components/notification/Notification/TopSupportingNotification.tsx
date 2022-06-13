@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
 import { TopSupporting } from 'common/store/notifications/types'
 

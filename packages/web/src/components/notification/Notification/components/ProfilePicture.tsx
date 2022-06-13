@@ -1,9 +1,4 @@
-import React, {
-  MouseEventHandler,
-  useCallback,
-  useEffect,
-  useState
-} from 'react'
+import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
 
 import cn from 'classnames'
 import { push } from 'connected-react-router'

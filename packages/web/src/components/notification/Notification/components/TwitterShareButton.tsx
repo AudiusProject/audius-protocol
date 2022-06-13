@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useCallback } from 'react'
+import { MouseEventHandler, useCallback } from 'react'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
 

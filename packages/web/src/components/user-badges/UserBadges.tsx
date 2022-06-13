@@ -1,4 +1,4 @@
-import React, { cloneElement, ReactElement } from 'react'
+import { cloneElement, ReactElement } from 'react'
 
 import cn from 'classnames'
 
@@ -55,7 +55,7 @@ type UserBadgesProps = {
   overrideTier?: BadgeTier
 }
 
-const UserBadges: React.FC<UserBadgesProps> = ({
+const UserBadges = ({
   userId,
   badgeSize,
   className,
@@ -64,7 +64,7 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   inline = false,
   isVerifiedOverride,
   overrideTier
-}) => {
+}: UserBadgesProps) => {
   let { tier, isVerified } = useSelectTierInfo(userId)
   tier = overrideTier || tier
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng

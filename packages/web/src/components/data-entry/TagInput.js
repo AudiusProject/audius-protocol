@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { createRef, Component } from 'react'
 
 import Tag from 'antd/lib/tag'
 import cn from 'classnames'
@@ -33,7 +33,7 @@ class TagInput extends Component {
     flashExistingTag: null
   }
 
-  newTagInputRef = React.createRef()
+  newTagInputRef = createRef()
 
   componentDidUpdate = () => {
     if (this.state.typingMode && this.newTagInputRef.current) {

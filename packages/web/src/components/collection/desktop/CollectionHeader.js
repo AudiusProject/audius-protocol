@@ -1,4 +1,4 @@
-import React, { PureComponent, useState, useEffect } from 'react'
+import { PureComponent, useState, useEffect } from 'react'
 
 import {
   Button,

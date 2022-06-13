@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 
 import cn from 'classnames'
 import { animated } from 'react-spring'

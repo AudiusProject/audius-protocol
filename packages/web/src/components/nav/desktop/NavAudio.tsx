@@ -1,4 +1,4 @@
-import React, { cloneElement, useCallback, useEffect, useState } from 'react'
+import { cloneElement, useCallback, useEffect, useState } from 'react'
 
 import BN from 'bn.js'
 import cn from 'classnames'

@@ -1,5 +1,3 @@
-import React from 'react'
-
 import styles from './SettingsCard.module.css'
 
 const SettingsCard = (props: SettingsCardProps) => {

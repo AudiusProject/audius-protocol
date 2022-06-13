@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ID } from 'common/models/Identifiers'
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 

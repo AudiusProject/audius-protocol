@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ReactComponent as Logo } from 'assets/img/audiusLogoHorizontal.svg'
 
 import styles from './Header.module.css'

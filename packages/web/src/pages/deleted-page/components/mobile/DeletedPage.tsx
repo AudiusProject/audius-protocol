@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonType, IconUser } from '@audius/stems'
 
 import { ID, PlayableType } from 'common/models/Identifiers'

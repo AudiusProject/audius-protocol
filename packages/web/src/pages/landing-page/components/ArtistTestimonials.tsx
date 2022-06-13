@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 import { Parallax } from 'react-scroll-parallax'
 import { useSpring, useTransition, animated } from 'react-spring'

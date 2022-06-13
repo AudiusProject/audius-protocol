@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Name } from 'common/models/Analytics'
 import FeedFilter from 'common/models/FeedFilter'
 import { feedActions } from 'common/store/pages/feed/lineup/actions'

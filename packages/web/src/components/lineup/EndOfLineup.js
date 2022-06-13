@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import PropTypes from 'prop-types'
 
@@ -32,4 +32,4 @@ EndOfLineup.defaultProps = {
   description: 'Looks like you’ve reached the end of your feed...'
 }
 
-export default React.memo(EndOfLineup)
+export default memo(EndOfLineup)

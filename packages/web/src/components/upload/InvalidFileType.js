@@ -1,5 +1,3 @@
-import React from 'react'
-
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'

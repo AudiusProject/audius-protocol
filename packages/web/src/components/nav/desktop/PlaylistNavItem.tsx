@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -183,13 +183,9 @@ export const PlaylistNavItem = ({
                 [styles.hidden]: !isHovering || dragging
               })}
               icon={<IconKebabHorizontal height={11} width={11} />}
-              onClick={(
-                e:
-                  | React.MouseEvent<HTMLButtonElement, MouseEvent>
-                  | React.MouseEvent<Element, MouseEvent>
-              ) => {
-                e.preventDefault()
-                e.stopPropagation()
+              onClick={event => {
+                event.preventDefault()
+                event.stopPropagation()
                 onClickEdit(id)
               }}
             />

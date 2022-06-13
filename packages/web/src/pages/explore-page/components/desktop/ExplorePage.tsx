@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { Fragment, useCallback } from 'react'
 
 import Lottie from 'react-lottie'
 
@@ -135,7 +135,7 @@ const ExplorePage = ({
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
             i.variant === CollectionVariant.SMART ? i.description : i.subtitle
-          const Icon = i.icon ? i.icon : React.Fragment
+          const Icon = i.icon ? i.icon : Fragment
           return (
             <PerspectiveCard
               key={title}

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 import { IconDiscord } from '@audius/stems'
 import cn from 'classnames'
@@ -69,7 +69,7 @@ const TitleWrapper = ({
   children,
   label
 }: {
-  children: React.ReactNode
+  children: ReactNode
   label: string
 }) => {
   return (
@@ -172,7 +172,7 @@ export const ModalBodyWrapper = ({
   className
 }: {
   className?: string
-  children: React.ReactNode
+  children: ReactNode
 }) => {
   return (
     <div className={cn(styles.modalContainer, { [className!]: !!className })}>

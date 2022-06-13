@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -25,4 +25,4 @@ Badge.defaultProps = {
   textLabel: '#1 All Time'
 }
 
-export default React.memo(Badge)
+export default memo(Badge)

@@ -1,4 +1,4 @@
-import React from 'react'
+import { memo } from 'react'
 
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -65,6 +65,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default React.memo(
-  connect(mapStateToProps, mapDispatchToProps)(CookieBanner)
-)
+export default memo(connect(mapStateToProps, mapDispatchToProps)(CookieBanner))

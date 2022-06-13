@@ -1,4 +1,4 @@
-import React from 'react'
+import { RefObject } from 'react'
 
 import { connect } from 'react-redux'
 
@@ -10,7 +10,7 @@ import TrendingPageContent from './components/desktop/TrendingPageContent'
 import TrendingPageMobileContent from './components/mobile/TrendingPageContent'
 
 interface OwnProps {
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement>
 }
 
 type TrendingPageContentProps = ReturnType<typeof mapStateToProps> & OwnProps

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'

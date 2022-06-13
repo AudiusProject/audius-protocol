@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Reaction, ReactionProps as BaseReactionProps } from './Reaction'
 import explode from './exploding_head.json'
 import fire from './fire.json'

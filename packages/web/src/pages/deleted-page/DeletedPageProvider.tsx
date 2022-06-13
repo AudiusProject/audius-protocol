@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, ComponentType } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -27,8 +27,8 @@ type OwnProps = {
   deletedByArtist: boolean
 
   children:
-    | React.ComponentType<DesktopDeletedPageProps>
-    | React.ComponentType<MobileDeletedPageProps>
+    | ComponentType<DesktopDeletedPageProps>
+    | ComponentType<MobileDeletedPageProps>
 }
 
 type mapStateProps = ReturnType<typeof makeMapStateToProps>

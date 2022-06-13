@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { Button, ButtonProps } from '@audius/stems'
 
 import styles from './LabeledButton.module.css'
