@@ -78,6 +78,7 @@ export type TrackMetadata = {
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
+  is_available: boolean
   field_visibility?: FieldVisibility
   listenCount?: number
   permalink: string
