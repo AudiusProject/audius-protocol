@@ -758,6 +758,12 @@ workflows:
           context:
             - GCP2
           mad-dog-type: test
+
+  # in order to run a job in hold-workflows
+  # 1. go to the CircleCI dashboard
+  # 2. go to your branch of choice
+  # 3. click "Trigger Pipeline"
+  # 4. Add boolean paramter "full_ci" and set to true
   hold-workflows:
     when: << pipeline.parameters.full_ci >>
     jobs:
