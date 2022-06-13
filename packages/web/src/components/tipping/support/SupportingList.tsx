@@ -9,6 +9,7 @@ import { ID } from 'common/models/Identifiers'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
 import { getOptimisticSupporting } from 'common/store/tipping/selectors'
 import { stringWeiToBN } from 'common/utils/wallet'
+import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
 import {
   setUsers,
   setVisibility
@@ -62,11 +63,10 @@ export const SupportingList = () => {
 
   return profile && rankedSupportingList.length > 0 ? (
     <div className={styles.container}>
-      <div className={styles.titleContainer}>
-        <IconTip className={styles.tipIcon} />
-        <span className={styles.titleText}>{messages.supporting}</span>
-        <span className={styles.line} />
-      </div>
+      <ProfilePageNavSectionTitle
+        title={messages.supporting}
+        titleIcon={<IconTip className={styles.tipIcon} />}
+      />
       {rankedSupportingList
         .slice(0, MAX_PROFILE_SUPPORTING_TILES)
         .map((supporting, index) => (
