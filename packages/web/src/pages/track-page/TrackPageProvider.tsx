@@ -429,6 +429,10 @@ class TrackPageProvider extends Component<
       !remixParentTrack.user?.is_deactivated
 
     if ((track?.is_delete || track?._marked_deleted) && user) {
+      // Track has not been blocked and is content-available, meaning the owner
+      // deleted themselves via transaction.
+      const deletedByArtist = !track._blocked && track.is_available
+
       return (
         <DeletedPage
           title={title}
@@ -436,7 +440,7 @@ class TrackPageProvider extends Component<
           canonicalUrl={canonicalUrl}
           playable={{ metadata: track, type: PlayableType.TRACK }}
           user={user}
-          deletedByArtist={!track._blocked}
+          deletedByArtist={deletedByArtist}
         />
       )
     }
