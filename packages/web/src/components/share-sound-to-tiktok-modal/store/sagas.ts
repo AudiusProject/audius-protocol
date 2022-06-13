@@ -1,4 +1,4 @@
-import { takeEvery, put, call, select } from 'redux-saga/effects'
+import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { getTrack } from 'common/store/cache/tracks/selectors'
@@ -23,6 +23,7 @@ import { show as showConfetti } from 'components/music-confetti/store/slice'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { make } from 'store/analytics/actions'
 import { AppState } from 'store/types'
+import { getErrorMessage } from 'utils/error'
 import { encodeHashId } from 'utils/route/hashIds'
 
 const TIKTOK_SHARE_SOUND_ENDPOINT =
@@ -33,11 +34,12 @@ const TIKTOK_SHARE_SOUND_ENDPOINT =
 let trackBlob: Blob | null = null
 
 function* handleRequestOpen(action: ReturnType<typeof requestOpen>) {
-  const track = yield select((state: AppState) =>
+  const track = yield* select((state: AppState) =>
     getTrack(state, { id: action.payload.id })
   )
+  if (!track) return
 
-  yield put(
+  yield* put(
     open({
       track: {
         id: track.track_id,
@@ -46,20 +48,23 @@ function* handleRequestOpen(action: ReturnType<typeof requestOpen>) {
       }
     })
   )
-  yield put(setVisibility({ modal: 'ShareSoundToTikTok', visible: true }))
+  yield* put(setVisibility({ modal: 'ShareSoundToTikTok', visible: true }))
 }
 
-function* handleShare() {
-  yield put(make(Name.TIKTOK_START_SHARE_SOUND, {}))
+async function* handleShare() {
+  yield* put(make(Name.TIKTOK_START_SHARE_SOUND, {}))
 
-  yield put(setStatus({ status: Status.SHARE_STARTED }))
-  const { id } = yield select(getTrackToShare)
+  yield* put(setStatus({ status: Status.SHARE_STARTED }))
+
+  const track = yield* select(getTrackToShare)
+  if (!track) return
+  const { id } = track
 
   try {
     // Fetch the track blob
     const encodedTrackId = encodeHashId(id)
 
-    const response = yield call(
+    const response = yield* call(
       window.fetch,
       apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
     )
@@ -68,26 +73,27 @@ function* handleShare() {
       throw new Error('TikTok Share sound request unsuccessful')
     }
 
-    trackBlob = yield response.blob()
+    trackBlob = await response.blob()
 
     // If already authed with TikTok, start the upload
-    const authenticated = yield select(getIsAuthenticated)
+    const authenticated = yield* select(getIsAuthenticated)
     if (authenticated) {
-      yield put(upload())
+      yield* put(upload())
     }
-  } catch (e) {
-    console.log(e)
-    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e.message }))
-    yield put(setStatus({ status: Status.SHARE_ERROR }))
+  } catch (error) {
+    const errorMessage = getErrorMessage(error)
+    console.log(errorMessage)
+    yield* put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: errorMessage }))
+    yield* put(setStatus({ status: Status.SHARE_ERROR }))
   }
 }
 
 function* handleAuthenticated(action: ReturnType<typeof authenticated>) {
-  yield put(setIsAuthenticated())
+  yield* put(setIsAuthenticated())
 
   // If track blob already downloaded, start the upload
   if (trackBlob) {
-    yield put(upload())
+    yield* put(upload())
   }
 }
 
@@ -96,11 +102,11 @@ function* handleUpload() {
   const formData = new FormData()
   formData.append('sound_file', trackBlob as Blob)
 
-  const openId = yield select(getOpenId)
-  const accessToken = yield select(getAccessToken)
+  const openId = yield* select(getOpenId)
+  const accessToken = yield* select(getAccessToken)
 
   try {
-    const response = yield call(
+    const response = yield* call(
       window.fetch,
       `${TIKTOK_SHARE_SOUND_ENDPOINT}?open_id=${openId}&access_token=${accessToken}`,
       {
@@ -114,32 +120,33 @@ function* handleUpload() {
       throw new Error('TikTok Share sound request unsuccessful')
     }
 
-    yield put(make(Name.TIKTOK_COMPLETE_SHARE_SOUND, {}))
-    yield put(setStatus({ status: Status.SHARE_SUCCESS }))
-    yield put(showConfetti())
-  } catch (e) {
-    console.log(e)
-    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e.message }))
-    yield put(setStatus({ status: Status.SHARE_ERROR }))
+    yield* put(make(Name.TIKTOK_COMPLETE_SHARE_SOUND, {}))
+    yield* put(setStatus({ status: Status.SHARE_SUCCESS }))
+    yield* put(showConfetti())
+  } catch (error) {
+    const errorMessage = getErrorMessage(error)
+    console.log(errorMessage)
+    yield* put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: errorMessage }))
+    yield* put(setStatus({ status: Status.SHARE_ERROR }))
   } finally {
     trackBlob = null
   }
 }
 
 function* watchHandleRequestOpen() {
-  yield takeEvery(requestOpen, handleRequestOpen)
+  yield* takeEvery(requestOpen, handleRequestOpen)
 }
 
 function* watchHandleShare() {
-  yield takeEvery(share, handleShare)
+  yield* takeEvery(share, handleShare)
 }
 
 function* watchHandleAuthenticated() {
-  yield takeEvery(authenticated, handleAuthenticated)
+  yield* takeEvery(authenticated, handleAuthenticated)
 }
 
 function* watchHandleUpload() {
-  yield takeEvery(upload, handleUpload)
+  yield* takeEvery(upload, handleUpload)
 }
 
 export default function sagas() {

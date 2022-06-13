@@ -1,4 +1,4 @@
-import { all, fork, call, put, select, takeEvery } from 'redux-saga/effects'
+import { all, fork, call, put, select, takeEvery } from 'typed-redux-saga/macro'
 
 import Kind from 'common/models/Kind'
 import { getAccountUser } from 'common/store/account/selectors'
@@ -21,9 +21,9 @@ import {
 } from './slice'
 
 export function* watchFetchServices() {
-  yield takeEvery(fetchServices.type, function* () {
-    yield call(waitForBackendSetup)
-    const currentUser = yield call(waitForValue, getAccountUser)
+  yield* takeEvery(fetchServices.type, function* () {
+    yield* call(waitForBackendSetup)
+    const currentUser = yield* call(waitForValue, getAccountUser)
 
     try {
       let primary: string,
@@ -31,19 +31,19 @@ export function* watchFetchServices() {
         services: { [name: string]: Service }
 
       if (currentUser.creator_node_endpoint) {
-        services = yield call(AudiusBackend.getSelectableCreatorNodes)
+        services = yield* call(AudiusBackend.getSelectableCreatorNodes)
         const userEndpoints = currentUser.creator_node_endpoint.split(',')
         primary = userEndpoints[0]
         secondaries = userEndpoints.slice(1)
         // Filter out a secondary that is unhealthy.
         secondaries = secondaries.filter(Boolean).filter(s => services[s])
       } else {
-        const autoselect = yield call(AudiusBackend.autoSelectCreatorNodes)
+        const autoselect = yield* call(AudiusBackend.autoSelectCreatorNodes)
         primary = autoselect.primary
         secondaries = autoselect.secondaries
         services = autoselect.services
 
-        yield call(
+        yield* call(
           AudiusBackend.creatorNodeSelectionCallback,
           primary,
           secondaries,
@@ -57,22 +57,22 @@ export function* watchFetchServices() {
         )
       }
 
-      yield put(fetchServicesSucceeded({ services, primary, secondaries }))
+      yield* put(fetchServicesSucceeded({ services, primary, secondaries }))
       // Check if secondaries are syncing
-      yield all(
+      yield* all(
         secondaries.map(s => {
           return fork(updateSyncing, s)
         })
       )
     } catch (e) {
       console.error(e)
-      yield put(fetchServicesFailed())
+      yield* put(fetchServicesFailed())
     }
   })
 }
 
 const checkIsSyncing = async (service: string) => {
-  return new Promise(resolve => {
+  return new Promise<void>(resolve => {
     const interval = setInterval(async () => {
       const isSyncing = await AudiusBackend.isCreatorNodeSyncing(service)
       if (!isSyncing) {
@@ -84,24 +84,24 @@ const checkIsSyncing = async (service: string) => {
 }
 
 function* updateSyncing(service: string) {
-  yield put(setSyncingAction({ service, isSyncing: true }))
-  yield call(checkIsSyncing, service)
-  yield put(setSyncingAction({ service, isSyncing: false }))
+  yield* put(setSyncingAction({ service, isSyncing: true }))
+  yield* call(checkIsSyncing, service)
+  yield* put(setSyncingAction({ service, isSyncing: false }))
 }
 
 function* setSyncing(service: string) {
-  yield put(setSyncingAction({ service, isSyncing: true }))
+  yield* put(setSyncingAction({ service, isSyncing: true }))
 }
 
 function* watchSetSelected() {
-  yield takeEvery(setSelected.type, function* (
+  yield* takeEvery(setSelected.type, function* (
     action: ReturnType<typeof setSelected>
   ) {
-    const user = yield call(waitForValue, getAccountUser)
+    const user = yield* call(waitForValue, getAccountUser)
 
-    const currentSecondaries = yield select(getSecondaries)
+    const currentSecondaries = yield* select(getSecondaries)
     const { primary, secondaries } = action.payload
-    yield call(
+    yield* call(
       AudiusBackend.creatorNodeSelectionCallback,
       primary,
       secondaries,
@@ -109,37 +109,37 @@ function* watchSetSelected() {
     )
     const newEndpoint = `${primary},${secondaries.join(',')}`
 
-    const [oldPrimary, ...oldSecondaries] = yield select(getSelectedServices)
+    const [oldPrimary, ...oldSecondaries] = yield* select(getSelectedServices)
 
     // Update the endpoint for the user
-    yield put(
+    yield* put(
       setSelectedSucceeded({
         primary,
         secondaries
       })
     )
-    yield put(
+    yield* put(
       cacheActions.update(Kind.USERS, [
         { id: user.user_id, metadata: { creator_node_endpoint: newEndpoint } }
       ])
     )
-    yield all(
+    yield* all(
       secondaries.map(s => {
         if (currentSecondaries.includes(s)) return null
         return fork(setSyncing, s)
       })
     )
 
-    yield call(AudiusBackend.setCreatorNodeEndpoint, primary)
+    yield* call(AudiusBackend.setCreatorNodeEndpoint, primary)
     if (user.is_creator) {
       user.creator_node_endpoint = newEndpoint
-      const success = yield call(
+      const success = yield* call(
         AudiusBackend.updateCreator,
         user,
         user.user_id
       )
       if (!success) {
-        yield put(
+        yield* put(
           setSelectedFailed({
             primary: oldPrimary,
             secondaries: oldSecondaries
@@ -149,7 +149,7 @@ function* watchSetSelected() {
     }
 
     // Any new secondaries need to check if they are syncing
-    yield all(
+    yield* all(
       secondaries.map(s => {
         if (currentSecondaries.includes(s)) return null
         return fork(updateSyncing, s)

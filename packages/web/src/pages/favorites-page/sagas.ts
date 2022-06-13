@@ -1,4 +1,4 @@
-import { select, put } from 'redux-saga/effects'
+import { select, put } from 'typed-redux-saga/macro'
 
 import { Collection } from 'common/models/Collection'
 import { FavoriteType } from 'common/models/Favorite'
@@ -72,20 +72,22 @@ const getTrackFavorites = createUserListProvider<Track>({
 })
 
 function* errorDispatcher(error: Error) {
-  const favoriteType = yield select(getFavoriteType)
-  const id = yield select(getId)
+  const favoriteType = yield* select(getFavoriteType)
+  const id = yield* select(getId)
+  if (!id) return
+
   if (favoriteType === FavoriteType.TRACK) {
-    yield put(trackFavoriteError(id, error.message))
+    yield* put(trackFavoriteError(id, error.message))
   } else {
-    yield put(playlistFavoriteError(id, error.message))
+    yield* put(playlistFavoriteError(id, error.message))
   }
 }
 
 function* getFavorites(currentPage: number, pageSize: number) {
-  const id: number | null = yield select(getId)
+  const id: number | null = yield* select(getId)
   if (!id) return { userIds: [], hasMore: false }
-  const favoriteType = yield select(getFavoriteType)
-  return yield (favoriteType === FavoriteType.TRACK
+  const favoriteType = yield* select(getFavoriteType)
+  return yield* (favoriteType === FavoriteType.TRACK
     ? getTrackFavorites
     : getPlaylistFavorites)({ id, currentPage, pageSize })
 }

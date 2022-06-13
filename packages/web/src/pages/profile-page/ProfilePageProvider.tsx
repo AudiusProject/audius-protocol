@@ -51,6 +51,7 @@ import { getIsDone } from 'store/confirmer/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { getErrorMessage } from 'utils/error'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { getPathname, NOT_FOUND_PAGE, profilePage } from 'utils/route'
@@ -306,11 +307,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       this.setState({
         updatedCoverPhoto: { file, url, source }
       })
-    } catch (err) {
+    } catch (error) {
       this.setState({
         updatedCoverPhoto: {
           ...(this.state.updatedCoverPhoto || {}),
-          error: err.message
+          error: getErrorMessage(error)
         }
       })
     }
@@ -327,14 +328,14 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       this.setState({
         updatedProfilePicture: { file, url, source }
       })
-    } catch (err) {
+    } catch (error) {
       const { updatedProfilePicture } = this.state
       this.setState({
         updatedProfilePicture: {
           ...(updatedProfilePicture && updatedProfilePicture.url
             ? this.state.updatedProfilePicture
             : {}),
-          error: err.message
+          error: getErrorMessage(error)
         }
       })
     }
@@ -944,7 +945,7 @@ function makeMapStateToProps() {
   const getRelatedArtists = makeGetRelatedArtists()
   const mapStateToProps = (state: AppState) => ({
     account: getAccountUser(state),
-    profile: getProfile(state, {}),
+    profile: getProfile(state),
     artistTracks: getArtistTracksMetadatas(state),
     userFeed: getUserFeedMetadatas(state),
     currentQueueItem: getCurrentQueueItem(state),

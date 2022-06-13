@@ -1,4 +1,3 @@
-/* globals Audio, Event, Blob */
 import Hls from 'hls.js'
 
 import { TrackSegment } from 'common/models/Track'

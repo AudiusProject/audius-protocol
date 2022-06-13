@@ -1,5 +1,3 @@
-/* global fetch */
-
 type Location = {
   asn: string
   city: string

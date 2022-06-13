@@ -1,4 +1,3 @@
-/* globals localStorage */
 import { BADGE_LOCAL_STORAGE_KEY } from 'pages/audio-rewards-page/Tiers'
 import AudiusBackend from 'services/AudiusBackend'
 import {

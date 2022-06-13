@@ -48,9 +48,8 @@ const PerspectiveCard = ({
     >
       <animated.div
         className={styles.perspective}
-        style={{
-          transform
-        }}
+        // @ts-ignore -- TODO figure out why react-spring transform type doesn't work here
+        style={{ transform }}
       >
         <div
           className={cn(styles.perspectiveCard, className, {

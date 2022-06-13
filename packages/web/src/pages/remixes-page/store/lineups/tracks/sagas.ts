@@ -1,5 +1,4 @@
-import { select } from 'redux-saga-test-plan/matchers'
-import { call, put } from 'redux-saga/effects'
+import { call, put, select } from 'typed-redux-saga'
 
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -25,16 +24,17 @@ function* getTracks({
   const { trackId } = payload
   if (!trackId) return []
 
-  const currentUserId = yield select(getUserId)
-  const { tracks, count } = yield call(args => apiClient.getRemixes(args), {
+  const currentUserId = yield* select(getUserId)
+  const { tracks, count } = yield* call([apiClient, 'getRemixes'], {
     trackId,
     offset,
     limit,
     currentUserId
   })
 
-  yield put(setCount({ count }))
-  const processedTracks = yield call(processAndCacheTracks, tracks)
+  yield* put(setCount({ count }))
+
+  const processedTracks = yield* call(processAndCacheTracks, tracks)
 
   return processedTracks
 }

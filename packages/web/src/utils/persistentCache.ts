@@ -9,6 +9,8 @@ import { User } from 'common/models/User'
 import { mergeCustomizer } from 'common/store/cache/reducer'
 import { makeUid } from 'common/utils/uid'
 
+import { getErrorMessage } from './error'
+
 const DISABLE_PERSISTENCE_KEY = 'disable-cache-persistence'
 
 const disableCachePersistence =
@@ -92,7 +94,7 @@ export async function add(
   } catch (e) {
     // If it fails, we didn't persist, but that's totally fine because it will just be refetched some other time.
     console.error(
-      `Err [${e.message}] adding persistent object [${JSON.stringify(
+      `Err [${getErrorMessage(e)}] adding persistent object [${JSON.stringify(
         metadata
       )}] with key [${key}]`
     )
@@ -143,7 +145,7 @@ export async function update(
     }
   } catch (e) {
     console.error(
-      `Err [${e.message}] updating persistent object [${JSON.stringify(
+      `Err [${getErrorMessage(e)}] updating persistent object [${JSON.stringify(
         transformed
       )}] with key [${key}]`
     )
@@ -165,7 +167,7 @@ export async function getAllItems() {
   try {
     allKeys = (await keys()) as string[]
   } catch (e) {
-    console.error(`Got error fetching all keys: ${e.message}`)
+    console.error(`Got error fetching all keys: ${getErrorMessage(e)}`)
     return {
       collections: [],
       users: [],

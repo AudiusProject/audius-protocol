@@ -1,16 +1,27 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { MouseEvent, useCallback, useRef, useState } from 'react'
 
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { NavLink, useHistory, withRouter } from 'react-router-dom'
+import {
+  NavLink,
+  RouteComponentProps,
+  useHistory,
+  withRouter
+} from 'react-router-dom'
 import useMeasure from 'react-use-measure'
+import { Dispatch } from 'redux'
 
 import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import { CreatePlaylistSource, Name } from 'common/models/Analytics'
+import {
+  CreatePlaylistSource,
+  FavoriteSource,
+  Name
+} from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
+import { PlaylistLibrary as PlaylistLibraryType } from 'common/models/PlaylistLibrary'
 import Status from 'common/models/Status'
 import { FeatureFlags } from 'common/services/remote-config'
 import {
@@ -64,6 +75,7 @@ import { make, useRecord } from 'store/analytics/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { makeGetCurrent as makeGetCurrentPlayer } from 'store/player/selectors'
 import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
+import { AppState } from 'store/types'
 import {
   DASHBOARD_PAGE,
   EXPLORE_PAGE,
@@ -86,6 +98,15 @@ const messages = {
   newPlaylistOrFolderTooltip: 'New Playlist or Folder',
   newPlaylistTooltip: 'New Playlist'
 }
+
+type OwnProps = {
+  isElectron: boolean
+}
+
+type NavColumnProps = OwnProps &
+  ReturnType<typeof mapStateToProps> &
+  ReturnType<typeof mapDispatchToProps> &
+  RouteComponentProps
 
 const NavColumn = ({
   account,
@@ -116,14 +137,14 @@ const NavColumn = ({
   goToUpload,
   showVisualizer,
   dominantColors
-}) => {
+}: NavColumnProps) => {
   const record = useRecord()
   const { location } = useHistory()
   const { pathname } = location
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
-  const scrollbarRef = useRef(null)
+  const scrollbarRef = useRef<HTMLElement | null>(null)
   const [dragScrollingDirection, setDragScrollingDirection] = useState(
     undefined
   )
@@ -142,15 +163,15 @@ const NavColumn = ({
     FeatureFlags.PLAYLIST_FOLDERS
   )
 
-  const onClickNavProfile = useCallback(() => goToSignIn('nav profile'), [
-    goToSignIn
-  ])
+  const onClickNavProfile = useCallback(() => goToSignIn(), [goToSignIn])
   const onClickNavButton = useCallback(() => goToSignUp('nav button'), [
     goToSignUp
   ])
 
   const goToProfile = useCallback(() => {
-    if (account.handle) goToRoute(profilePage(account.handle))
+    if (account?.handle) {
+      goToRoute(profilePage(account.handle))
+    }
   }, [account, goToRoute])
 
   const onClickToggleNotificationPanel = useCallback(() => {
@@ -164,7 +185,9 @@ const NavColumn = ({
       const tempId = `${Date.now()}`
       createPlaylist(tempId, metadata)
       closeCreatePlaylistModal()
-      goToRoute(playlistPage(account.handle, metadata.playlist_name, tempId))
+      if (account) {
+        goToRoute(playlistPage(account.handle, metadata.playlist_name, tempId))
+      }
     },
     [account, createPlaylist, closeCreatePlaylistModal, goToRoute]
   )
@@ -200,9 +223,9 @@ const NavColumn = ({
   ])
 
   const onClickNavLinkWithAccount = useCallback(
-    (e, id) => {
+    (e?: MouseEvent<HTMLAnchorElement>, id?: number) => {
       if (!account) {
-        e.preventDefault()
+        e?.preventDefault()
         goToSignUp('restricted page')
         showActionRequiresAccount()
       } else if (id) {
@@ -505,49 +528,49 @@ const NavColumn = ({
   )
 }
 
-const makeMapStateToProps = () => {
-  const getCurrentQueueItem = makeGetCurrent()
-  const getCurrentPlayerItem = makeGetCurrentPlayer()
-  const mapStateToProps = state => {
-    const currentQueueItem = getCurrentQueueItem(state)
-    const currentPlayerItem = getCurrentPlayerItem(state)
-    return {
-      currentQueueItem,
-      currentPlayerItem,
-      account: getAccountUser(state),
-      accountStatus: getAccountStatus(state),
-      dragging: getIsDragging(state),
-      notificationCount: getNotificationUnviewedCount(state),
-      notificationPanelIsOpen: getNotificationPanelIsOpen(state),
-      upload: state.upload,
-      library: getPlaylistLibrary(state),
-      showCreatePlaylistModal: getIsOpen(state),
-      hideCreatePlaylistModalFolderTab: getHideFolderTab(state),
-      dominantColors: getDominantColorsByTrack(state, {
-        track: currentQueueItem.track
-      })
-    }
+const getCurrentQueueItem = makeGetCurrent()
+const getCurrentPlayerItem = makeGetCurrentPlayer()
+
+const mapStateToProps = (state: AppState) => {
+  const currentQueueItem = getCurrentQueueItem(state)
+  const currentPlayerItem = getCurrentPlayerItem(state)
+  return {
+    currentQueueItem,
+    currentPlayerItem,
+    account: getAccountUser(state),
+    accountStatus: getAccountStatus(state),
+    dragging: getIsDragging(state),
+    notificationCount: getNotificationUnviewedCount(state),
+    notificationPanelIsOpen: getNotificationPanelIsOpen(state),
+    upload: state.upload,
+    library: getPlaylistLibrary(state),
+    showCreatePlaylistModal: getIsOpen(state),
+    hideCreatePlaylistModalFolderTab: getHideFolderTab(state),
+    dominantColors: getDominantColorsByTrack(state, {
+      track: currentQueueItem.track
+    })
   }
-  return mapStateToProps
 }
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   resetUploadState: () => dispatch(resetUploadState()),
-  createPlaylist: (tempId, metadata) =>
+  createPlaylist: (tempId: string, metadata: Record<string, unknown>) =>
     dispatch(createPlaylist(tempId, metadata, CreatePlaylistSource.NAV)),
-  goToRoute: route => dispatch(pushRoute(route)),
-  saveTrack: trackId => dispatch(saveTrack(trackId)),
-  saveCollection: collectionId => dispatch(saveCollection(collectionId)),
-  addTrackToPlaylist: (trackId, playlistId) =>
+  goToRoute: (route: string) => dispatch(pushRoute(route)),
+  saveTrack: (trackId: number) =>
+    dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),
+  saveCollection: (collectionId: number) =>
+    dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
+  addTrackToPlaylist: (trackId: number, playlistId: number) =>
     dispatch(addTrackToPlaylist(trackId, playlistId)),
   showActionRequiresAccount: () =>
     dispatch(signOnActions.showRequiresAccountModal()),
   toggleNotificationPanel: () => dispatch(toggleNotificationPanel()),
   openCreatePlaylistModal: () => dispatch(createPlaylistModalActions.open()),
   closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
-  updatePlaylistLastViewedAt: playlistId =>
+  updatePlaylistLastViewedAt: (playlistId: number) =>
     dispatch(updatePlaylistLastViewedAt(playlistId)),
-  updatePlaylistLibrary: newLibrary =>
+  updatePlaylistLibrary: (newLibrary: PlaylistLibraryType) =>
     dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary })),
   goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
@@ -556,6 +579,8 @@ const mapDispatchToProps = dispatch => ({
   showVisualizer: () => dispatch(openVisualizer())
 })
 
-export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(NavColumn)
+const ConnectedNavColumn = withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(NavColumn)
 )
+
+export default ConnectedNavColumn

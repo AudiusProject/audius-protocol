@@ -1,5 +1,3 @@
-/* global fetch */
-
 import { OS } from 'common/models/OS'
 
 const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT

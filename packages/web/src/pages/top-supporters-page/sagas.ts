@@ -1,7 +1,7 @@
-import { put, select } from 'redux-saga/effects'
+import { put, select } from 'typed-redux-saga/macro'
 
 import { ID } from 'common/models/Identifiers'
-import { User, UserMetadata } from 'common/models/User'
+import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { setSupportersForUser } from 'common/store/tipping/slice'
 import { SupportersMapForUser } from 'common/store/tipping/types'
@@ -13,6 +13,7 @@ import {
   getUserList,
   getUserIds
 } from 'common/store/user-list/top-supporters/selectors'
+import { removeNullable } from 'common/utils/typeUtils'
 import { createUserListProvider } from 'components/user-list/utils'
 import * as adapter from 'services/audius-api-client/ResponseAdapter'
 import {
@@ -52,7 +53,7 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
     const users = supporters
       .sort((s1, s2) => s1.rank - s2.rank)
       .map(s => adapter.makeUser(s.sender))
-      .filter((user): user is UserMetadata => !!user)
+      .filter(removeNullable)
     return { users, extra: { userId: entityId, supporters } }
   },
   selectCurrentUserIDsInList: getUserIds,
@@ -78,7 +79,7 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
         }
       }
     })
-    yield put(
+    yield* put(
       setSupportersForUser({
         id: userId,
         supportersForUser: supportersMap
@@ -88,14 +89,16 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
 })
 
 function* errorDispatcher(error: Error) {
-  const id = yield select(getId)
-  yield put(getTopSupportersError(id, error.message))
+  const id = yield* select(getId)
+  if (id) {
+    yield* put(getTopSupportersError(id, error.message))
+  }
 }
 
 function* getTopSupporters(currentPage: number, pageSize: number) {
-  const id: number | null = yield select(getId)
+  const id: number | null = yield* select(getId)
   if (!id) return { userIds: [], hasMore: false }
-  return yield provider({ id, currentPage, pageSize })
+  return yield* provider({ id, currentPage, pageSize })
 }
 
 const userListSagas = UserListSagaFactory.createSagas({

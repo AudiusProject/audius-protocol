@@ -1,5 +1,3 @@
-/* global fetch */
-
 /**
  * Resolves requestPromise with a timeout, either resolving with
  * the response from the request or with an error

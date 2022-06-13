@@ -233,7 +233,7 @@ const TrackMenu = (props: TrackMenuProps) => {
 
 function mapStateToProps(state: AppState) {
   return {
-    playlists: getAccountOwnedPlaylists(state, {}),
+    playlists: getAccountOwnedPlaylists(state),
     currentCollectionId: getCollectionId(state)
   }
 }

@@ -74,8 +74,8 @@ const Card = (props: CardProps) => {
     >
       <animated.div
         className={cn(styles.cardContainer, props.containerClass)}
-        // @ts-ignore
         style={{
+          // @ts-ignore
           transform: mouseDown ? '' : transform,
           backgroundBlendMode: 'multiply',
           background: `url(${props.image}) center/cover, ${props.backgroundGradient}`

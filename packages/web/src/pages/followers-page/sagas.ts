@@ -1,4 +1,4 @@
-import { put, select } from 'redux-saga/effects'
+import { put, select } from 'typed-redux-saga/macro'
 
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
@@ -45,14 +45,16 @@ const provider = createUserListProvider<User>({
 })
 
 function* errorDispatcher(error: Error) {
-  const id = yield select(getId)
-  yield put(getFollowersError(id, error.message))
+  const id = yield* select(getId)
+  if (id) {
+    yield* put(getFollowersError(id, error.message))
+  }
 }
 
 function* getFollowers(currentPage: number, pageSize: number) {
-  const id: number | null = yield select(getId)
+  const id: number | null = yield* select(getId)
   if (!id) return { userIds: [], hasMore: false }
-  return yield provider({ id, currentPage, pageSize })
+  return yield* provider({ id, currentPage, pageSize })
 }
 
 const userListSagas = UserListSagaFactory.createSagas({

@@ -1,4 +1,3 @@
-/* global Flow */
 import { useEffect, useState } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'

@@ -28,6 +28,7 @@ export const getUserByHandle = (
   state: CommonState,
   props: { handle: string }
 ) => state.users.handles[props.handle] || null
+
 export const getStatus = (state: CommonState, props: { id: ID }) =>
   state.users.statuses[props.id] || null
 

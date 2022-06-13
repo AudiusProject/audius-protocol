@@ -1,5 +1,3 @@
-/* global fetch */
-
 import { Nullable } from 'common/utils/typeUtils'
 
 const UNSPLASH_PUBLIC = 'https://source.unsplash.com/random'

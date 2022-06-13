@@ -40,6 +40,7 @@ declare global {
   interface HTMLMediaElement {
     webkitAudioDecodedByteCount: number
     mozHasAudio: boolean
+    audioTracks: unknown[]
   }
 }
 

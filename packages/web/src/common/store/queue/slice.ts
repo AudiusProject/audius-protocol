@@ -48,10 +48,10 @@ export const initialState: State = {
 }
 
 type PlayPayload = {
-  uid?: UID
-  trackId?: ID
+  uid?: Nullable<UID>
+  trackId?: Nullable<ID>
   collectible?: Collectible
-  source?: string
+  source?: Nullable<string>
 }
 
 type QueueAutoplayPayload = {

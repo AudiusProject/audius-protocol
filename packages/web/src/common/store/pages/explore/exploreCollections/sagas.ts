@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects'
+import { takeEvery, call, put } from 'typed-redux-saga/macro'
 
 import { Collection } from 'common/models/Collection'
 import Status from 'common/models/Status'
@@ -14,17 +14,17 @@ import { ExploreCollectionsVariant } from '../types'
 import { fetch, fetchSucceeded } from './slice'
 
 function* fetchLetThemDJ() {
-  const collections = yield call(Explore.getTopCollections, 'playlist', true)
+  const collections = yield* call(Explore.getTopCollections, 'playlist', true)
   return collections
 }
 
 function* fetchTopAlbums() {
-  const collections = yield call(Explore.getTopCollections, 'album', false)
+  const collections = yield* call(Explore.getTopCollections, 'album', false)
   return collections
 }
 
 function* fetchMoodPlaylists(moods: string[]) {
-  const collections = yield call(Explore.getTopPlaylistsForMood, moods)
+  const collections = yield* call(Explore.getTopPlaylistsForMood, moods)
   return collections
 }
 
@@ -38,9 +38,9 @@ const fetchMap = {
 }
 
 function* watchFetch() {
-  yield takeEvery(fetch.type, function* (action: ReturnType<typeof fetch>) {
-    yield call(waitForBackendSetup)
-    yield call(
+  yield* takeEvery(fetch.type, function* (action: ReturnType<typeof fetch>) {
+    yield* call(waitForBackendSetup)
+    yield* call(
       waitForValue,
       getAccountStatus,
       {},
@@ -51,15 +51,18 @@ function* watchFetch() {
 
     let collections
     if (variant === ExploreCollectionsVariant.MOOD) {
-      collections = yield call(fetchMap[ExploreCollectionsVariant.MOOD], moods!)
+      collections = yield* call(
+        fetchMap[ExploreCollectionsVariant.MOOD],
+        moods!
+      )
     } else if (variant === ExploreCollectionsVariant.DIRECT_LINK) {
       // no-op
     } else {
-      collections = yield call(fetchMap[variant])
+      collections = yield* call(fetchMap[variant])
     }
     if (!collections) return
 
-    yield call(
+    yield* call(
       processAndCacheCollections,
       collections,
       /* shouldRetrieveTracks= */ false
@@ -67,7 +70,7 @@ function* watchFetch() {
 
     const collectionIds = collections.map((c: Collection) => c.playlist_id)
 
-    yield put(
+    yield* put(
       fetchSucceeded({
         variant,
         collectionIds
