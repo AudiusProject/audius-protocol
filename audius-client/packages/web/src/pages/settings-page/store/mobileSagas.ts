@@ -4,7 +4,10 @@ import { getAccountUser } from 'common/store/account/selectors'
 import * as actions from 'common/store/pages/settings/actions'
 import { initialState } from 'common/store/pages/settings/reducer'
 import { getPushNotificationSettings } from 'common/store/pages/settings/selectors'
-import { PushNotificationSetting } from 'common/store/pages/settings/types'
+import {
+  PushNotifications,
+  PushNotificationSetting
+} from 'common/store/pages/settings/types'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   EnablePushNotificationsMessage,
@@ -18,7 +21,9 @@ function* watchGetPushNotificationSettings() {
   yield* takeEvery(actions.GET_PUSH_NOTIFICATION_SETTINGS, function* () {
     yield* call(waitForBackendSetup)
     try {
-      const settings = yield* call(AudiusBackend.getPushNotificationSettings)
+      const settings = (yield* call(
+        AudiusBackend.getPushNotificationSettings
+      )) as PushNotifications
       const pushNotificationSettings = {
         ...settings,
         [PushNotificationSetting.MobilePush]: !!settings
