@@ -3,7 +3,11 @@ import Color from 'common/models/Color'
 import { CID, ID } from 'common/models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
 import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
-import { SolanaWalletAddress, StringWei } from 'common/models/Wallet'
+import {
+  SolanaWalletAddress,
+  StringWei,
+  WalletAddress
+} from 'common/models/Wallet'
 import { Nullable } from 'common/utils/typeUtils'
 
 import Timestamped from './Timestamped'
@@ -33,6 +37,7 @@ export type UserMetadata = {
   cover_photo_sizes: Nullable<CID>
   profile_picture_sizes: Nullable<CID>
   metadata_multihash: Nullable<CID>
+  erc_wallet: WalletAddress
   spl_wallet: SolanaWalletAddress
   has_collectibles: boolean
   collectibles?: CollectiblesMetadata
