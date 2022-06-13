@@ -135,15 +135,15 @@ const syncHealthCheckController = async (req) => {
   const response = await syncHealthCheck(serviceRegistry)
 
   const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-  const syncQueueJobCountsMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE
+  const syncQueueJobCountsTotalMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE
   )
-  syncQueueJobCountsMetric.set(
-    { status: 'manualWaiting' },
+  syncQueueJobCountsTotalMetric.set(
+    { status: 'manual_waiting' },
     response.manualWaitingCount
   )
-  syncQueueJobCountsMetric.set(
-    { status: 'recurringWaiting' },
+  syncQueueJobCountsTotalMetric.set(
+    { status: 'recurring_waiting' },
     response.recurringWaitingCount
   )
 

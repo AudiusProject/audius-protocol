@@ -6,8 +6,7 @@ const _ = require('lodash')
  */
 
 // We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
-const AudiusPrefix = 'audius_'
-const DefaultPrefix = 'default_'
+const NamespacePrefix = 'audius_cn_'
 
 /**
  * @notice Counter and Summary metric types are currently disabled, see README for details.
@@ -20,19 +19,19 @@ const MetricTypes = Object.freeze({
 })
 
 let MetricNames = {
-  SYNC_QUEUE_JOB_COUNTS_GAUGE: 'sync_queue_job_counts',
+  SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE: 'sync_queue_job_counts_total',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds'
 }
 MetricNames = Object.freeze(
-  _.mapValues(MetricNames, (metricName) => AudiusPrefix + metricName)
+  _.mapValues(MetricNames, (metricName) => NamespacePrefix + metricName)
 )
 
 const Metrics = Object.freeze({
-  [MetricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE]: {
+  [MetricNames.SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE]: {
     metricType: MetricTypes.GAUGE,
     metricConfig: {
-      name: MetricNames.SYNC_QUEUE_JOB_COUNTS_GAUGE,
+      name: MetricNames.SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE,
       help: 'Current job counts for SyncQueue by status',
       labelNames: ['status']
     }
@@ -49,8 +48,7 @@ const Metrics = Object.freeze({
   }
 })
 
-module.exports.AudiusPrefix = AudiusPrefix
-module.exports.DefaultPrefix = DefaultPrefix
+module.exports.NamespacePrefix = NamespacePrefix
 module.exports.MetricTypes = MetricTypes
 module.exports.MetricNames = MetricNames
 module.exports.Metrics = Metrics

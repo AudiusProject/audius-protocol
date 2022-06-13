@@ -4,7 +4,7 @@ const request = require('supertest')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
-const { AudiusPrefix, DefaultPrefix, MetricNames } = require('../src/services/prometheusMonitoring/prometheus.constants')
+const { NamespacePrefix } = require('../src/services/prometheusMonitoring/prometheus.constants')
 
 describe('test Prometheus metrics', async function () {
   let app, server, libsMock
@@ -26,6 +26,6 @@ describe('test Prometheus metrics', async function () {
     const resp = await request(app)
       .get('/prometheus_metrics')
       .expect(200)
-    assert.ok(resp.text.includes(DefaultPrefix + 'process_cpu_user_seconds_total'))
+    assert.ok(resp.text.includes(NamespacePrefix + 'default_' + 'process_cpu_user_seconds_total'))
   })
 })
