@@ -164,10 +164,11 @@ async function createTrackListenTransaction ({
 
   const sourceData = JSON.stringify({ source: source, location: location })
 
+  // max sol tx size is 1232 bytes
   let trackData = new TrackData({
     userId: userId,
     trackId: trackId,
-    source: sourceData, // max sol tx size is 1232 bytes
+    source: config.get('ipdataAPIKey') ? sourceData : sourceData.source, // use api key as feature flag
     timestamp: (await getListenTimestamp(connection)) || Math.round(new Date().getTime() / 1000)
   })
 
