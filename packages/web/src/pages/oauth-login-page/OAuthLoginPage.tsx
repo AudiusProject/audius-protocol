@@ -279,7 +279,6 @@ export const OAuthLoginPage = () => {
     const cNode = gateways[0]
     let profilePicture:
       | { '150x150': string; '480x480': string; '1000x1000': string }
-      | { misc: string }
       | undefined
     if (account.profile_picture_sizes) {
       const base = `${cNode}${account.profile_picture_sizes}/`
@@ -289,7 +288,12 @@ export const OAuthLoginPage = () => {
         '1000x1000': `${base}1000x1000.jpg`
       }
     } else if (account.profile_picture) {
-      profilePicture = { misc: `${cNode}${account.profile_picture}` }
+      const url = `${cNode}${account.profile_picture}`
+      profilePicture = {
+        '150x150': url,
+        '480x480': url,
+        '1000x1000': url
+      }
     }
     const timestamp = Math.round(new Date().getTime() / 1000)
     const response = {
