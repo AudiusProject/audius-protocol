@@ -20,7 +20,7 @@ module.exports = async function (jobName, job, jobProcessor, parentLogger) {
     result = await jobProcessor({ logger: jobLogger, ...jobData })
   } catch (error) {
     jobLogger.error(`Error processing job: ${error}`)
-    result = { error: `${error}` }
+    result = { error: error.message || `${error}` }
   }
 
   return result

@@ -3,10 +3,11 @@ const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
 const { expect } = chai
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
 const BullQueue = require('bull')
+
+const { getApp } = require('./lib/app')
+const { getLibsMock } = require('./lib/libsMock')
 
 const config = require('../src/config')
 const StateMonitoringManager = require('../src/services/stateMachineManager/stateMonitoring')
@@ -14,8 +15,9 @@ const {
   QUEUE_NAMES,
   JOB_NAMES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
-const { getApp } = require('./lib/app')
-const { getLibsMock } = require('./lib/libsMock')
+
+chai.use(require('sinon-chai'))
+chai.use(require('chai-as-promised'))
 
 describe('test StateMonitoringManager initialization, events, and re-enqueuing', function () {
   let server, sandbox

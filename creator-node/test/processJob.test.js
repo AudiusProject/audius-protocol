@@ -1,9 +1,10 @@
 const chai = require('chai')
 const sinon = require('sinon')
 const { expect } = chai
+const proxyquire = require('proxyquire')
+
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
-const proxyquire = require('proxyquire')
 
 describe('test processJob() util function', function () {
   let sandbox
@@ -36,7 +37,7 @@ describe('test processJob() util function', function () {
     const jobName = 'jobName'
     const job = { id: 1, data: {} }
     const errorMsg = 'test error message'
-    const jobProcessor = sinon.stub().rejects(errorMsg)
+    const jobProcessor = sinon.stub().rejects(new Error(errorMsg))
     const parentLogger = {}
 
     // Verify that errors are caught and logged when processing job
