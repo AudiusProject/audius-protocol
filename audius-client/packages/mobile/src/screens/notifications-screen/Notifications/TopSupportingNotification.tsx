@@ -1,20 +1,11 @@
 import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
 import { SupportingRankUp } from 'common/store/notifications/types'
-import { View } from 'react-native'
 
-import IconTip from 'app/assets/images/iconTip.svg'
-import IconTrending from 'app/assets/images/iconTrending.svg'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { useThemeColors } from 'app/utils/theme'
 
-import {
-  NotificationTile,
-  NotificationHeader,
-  NotificationTitle,
-  ProfilePicture,
-  UserNameLink,
-  NotificationText
-} from '../Notification'
+import { NotificationTile } from '../Notification'
+
+import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
 
 const messages = {
   title: 'Top Supporter',
@@ -31,7 +22,6 @@ export const TopSupportingNotification = (
 ) => {
   const { notification } = props
   const { rank } = notification
-  const { neutral } = useThemeColors()
 
   const user = useSelectorWeb(
     state => getNotificationUser(state, notification),
@@ -42,19 +32,11 @@ export const TopSupportingNotification = (
 
   return (
     <NotificationTile notification={notification}>
-      <NotificationHeader icon={IconTip}>
-        <NotificationTitle>
-          #{rank} {messages.title}
-        </NotificationTitle>
-      </NotificationHeader>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <ProfilePicture profile={user} />
-        <UserNameLink user={user} />
-      </View>
-      <NotificationText>
-        <IconTrending fill={neutral} />
-        {messages.supporterChange} #{rank} {messages.supporter}
-      </NotificationText>
+      <SupporterAndSupportingNotificationContent
+        title={`#${rank} ${messages.title}`}
+        body={`${messages.supporterChange} #${rank} ${messages.supporter}`}
+        user={user}
+      />
     </NotificationTile>
   )
 }
