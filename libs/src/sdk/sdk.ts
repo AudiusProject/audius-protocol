@@ -51,7 +51,7 @@ type SdkConfig = {
 /**
  * The Audius SDK
  */
-export const sdk = async (config: SdkConfig) => {
+export const sdk = (config: SdkConfig) => {
   const {
     appName,
     discoveryNodeConfig,
@@ -93,12 +93,13 @@ export const sdk = async (config: SdkConfig) => {
     ...discoveryNodeConfig
   })
 
-  // TODO: potentially don't await this and have a different method (callback/event) to
-  // know when the sdk is initialized
-  await discoveryNode.init()
+  const initializationPromise = discoveryNode.init()
 
   const generatedApiClientConfig = new Configuration({
-    fetchApi: (url: string) => {
+    fetchApi: async (url: string) => {
+      // Ensure discovery node is initialized
+      await initializationPromise
+
       // Append the appName to the query params
       const urlWithAppName =
         url +

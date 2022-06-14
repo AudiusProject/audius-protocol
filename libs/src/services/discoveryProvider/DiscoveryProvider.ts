@@ -89,6 +89,7 @@ export class DiscoveryProvider {
     | undefined
 
   discoveryProviderEndpoint: string | undefined
+  isInitialized = false
 
   constructor({
     whitelist,
@@ -998,7 +999,6 @@ export class DiscoveryProvider {
     throwError = false
   ): Promise<Response | undefined | null> {
     const returnOrThrow = <ErrorType>(e: ErrorType) => {
-      console.log('throwError', throwError)
       if (throwError) {
         throw e
       }
