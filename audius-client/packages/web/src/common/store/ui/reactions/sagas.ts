@@ -2,11 +2,13 @@ import { call, takeEvery, all, put, select } from 'typed-redux-saga/macro'
 
 import { removeNullable } from 'common/utils/typeUtils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { submitReaction } from 'services/audius-backend/Reactions'
 
 import {
   fetchReactionValues,
   getReactionFromRawValue,
   makeGetReactionForSignature,
+  reactionsMap,
   setLocalReactionValues,
   writeReactionValue
 } from './slice'
@@ -40,16 +42,24 @@ function* writeReactionValueAsync({
   payload
 }: ReturnType<typeof writeReactionValue>) {
   const { entityId, reaction } = payload
+  if (!reaction) {
+    return
+  }
+
   // If we're toggling a reaction, set it to null
   const existingReaction = yield* select(makeGetReactionForSignature(entityId))
   const newReactionValue = existingReaction === reaction ? null : reaction
 
-  // TODO: integrate this with libs to write out reaction to identity
   yield put(
     setLocalReactionValues({
       reactions: [{ reaction: newReactionValue, entityId }]
     })
   )
+
+  yield call(submitReaction, {
+    reactedTo: entityId,
+    reactionValue: newReactionValue ? reactionsMap[newReactionValue] : 0
+  })
 }
 
 function* watchFetchReactionValues() {
