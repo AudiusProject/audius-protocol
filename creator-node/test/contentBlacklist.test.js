@@ -731,7 +731,9 @@ describe('test ContentBlacklist', function () {
     // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned because no trackId was passed
     await Promise.all(
       data.track.trackSegments.map((segment) =>
-        request(app).get(`/ipfs/${segment.multihash}`).expect(403)
+        request(app)
+        .get(`/ipfs/${segment.multihash}`)
+        .expect(403)
       )
     )
   })
