@@ -9,7 +9,13 @@ import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
 import { TracksApi } from './tracks'
 import { ResolveApi } from './resolve'
-import { Configuration, PlaylistsApi, UsersApi, TipsApi } from './default'
+import {
+  Configuration,
+  PlaylistsApi,
+  UsersApi,
+  TipsApi,
+  querystring
+} from './default'
 import {
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
@@ -93,8 +99,14 @@ export const sdk = async (config: SdkConfig) => {
 
   const generatedApiClientConfig = new Configuration({
     fetchApi: (url: string) => {
+      // Append the appName to the query params
+      const urlWithAppName =
+        url +
+        (url.includes('?') ? '&' : '?') +
+        querystring({ app_name: appName })
+
       return discoveryNode._makeRequest({
-        endpoint: url
+        endpoint: urlWithAppName
       }) as Promise<Response>
     }
   })
