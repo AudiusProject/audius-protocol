@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 from datetime import datetime
 
 import pytest
@@ -251,21 +252,15 @@ def setup_search(app_module):
         session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict;")
         session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict;")
 
-    try:
-        output = subprocess.run(
-            ["npm", "run", "dev"],
-            env=os.environ,
-            capture_output=True,
-            text=True,
-            cwd="es-indexer",
-            timeout=5,
-        )
-        raise Exception(
-            f"Elasticsearch indexing stopped: {output.stderr}. With env: {os.environ}"
-        )
-    except subprocess.TimeoutExpired as timeout:
-        if "catchup done" not in timeout.output.decode("utf-8"):
-            raise Exception("Elasticsearch failed to index")
+    subprocess.run(
+        ["npm", "run", "catchup:ci"],
+        env=os.environ,
+        capture_output=True,
+        text=True,
+        cwd="es-indexer",
+        timeout=5,
+    )
+    time.sleep(2)
 
 
 def test_get_tracks_external(app_module):
