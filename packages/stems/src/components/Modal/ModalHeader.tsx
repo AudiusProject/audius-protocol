@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import { useContext, forwardRef } from 'react'
 
 import cn from 'classnames'
 
@@ -58,7 +58,7 @@ export const ModalTitle = forwardRef<HTMLDivElement, ModalTitleProps>(
     },
     ref
   ) {
-    const modalContext = React.useContext(ModalContext)
+    const modalContext = useContext(ModalContext)
     const titleId = titleIdProp || modalContext.titleId
     const subtitleId = subtitleIdProp || modalContext.subtitleId
 

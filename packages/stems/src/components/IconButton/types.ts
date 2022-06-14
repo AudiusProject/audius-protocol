@@ -1,4 +1,5 @@
-import React, { HTMLAttributes, ReactNode } from 'react'
+import { HTMLAttributes, ReactNode } from 'react'
+import * as React from 'react'
 
 export type IconButtonProps = HTMLAttributes<HTMLButtonElement> & {
   onClick?: (event: React.MouseEvent) => void

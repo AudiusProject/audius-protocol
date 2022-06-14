@@ -1,4 +1,5 @@
-import React, { HTMLAttributes, ReactNode } from 'react'
+import { HTMLAttributes, ReactNode } from 'react'
+import * as React from 'react'
 
 import { ScrollbarProps } from 'components/Scrollbar'
 

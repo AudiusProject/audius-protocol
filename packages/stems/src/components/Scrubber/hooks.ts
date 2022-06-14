@@ -1,4 +1,5 @@
-import React, { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
+import * as React from 'react'
 
 import { TimeData } from './types'
 
