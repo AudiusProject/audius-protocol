@@ -6,10 +6,20 @@ A run monitoring up
 A run monitoring down
 ```
 
-Ports:
+Access Grafana by visiting:
 
-* Prometheus binds to :9090
-* Grafana binds to :3000
+* http://${IP}:80
+
+Access Prometheus by visiting:
+
+* http://${IP}:9090/targets
+
+#### Notes:
+
+* `https` is not supported.
+* The default credentials are `admin`/`admin`.
+* The password must be changed on first login to something other than `admin`
+  or click on the `Skip` link when prompted to change your password.
 
 ### Deploy Production Changes
 
@@ -20,5 +30,5 @@ cd ~/audius-protocol/monitoring
 git checkout master
 git pull
 
-./deploy.sh prod
+scripts/deploy.sh prod
 ```

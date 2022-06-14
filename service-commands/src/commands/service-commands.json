@@ -319,10 +319,10 @@
   },
   "monitoring": {
     "up": [
-      "cd monitoring; ./deploy.sh; ./grafana/bin/create-data-sources.sh; ./grafana/bin/upload-dashboards.sh"
+      "cd monitoring; scripts/up.sh"
     ],
     "down": [
-      "cd monitoring; docker-compose down; sudo rm -rf ./data"
+      "cd monitoring; scripts/down.sh"
     ]
   }
 }
