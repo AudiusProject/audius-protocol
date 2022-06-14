@@ -12,6 +12,7 @@ from src.api.v1.helpers import (
 from src.api.v1.models.search import search_model
 from src.queries.search_queries import search
 from src.utils.redis_cache import cache
+from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ search_full_response = make_full_response(
 
 @full_ns.route("/full")
 class FullSearch(Resource):
+    @record_metrics
     @full_ns.doc(
         id="Search",
         description="""Get Users/Tracks/Playlists/Albums that best match the search query""",
@@ -62,6 +64,7 @@ search_autocomplete_response = make_full_response(
 
 @full_ns.route("/autocomplete")
 class FullSearchAutocomplete(Resource):
+    @record_metrics
     @full_ns.doc(
         id="Search Autocomplete",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
