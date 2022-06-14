@@ -7,6 +7,10 @@ import {
   TracksApi as GeneratedTracksApi
 } from '../generated/default'
 
+/**
+ * This class extends from the generated TracksApi to
+ * implement the custom logic for the `streamTrack` endpoint
+ */
 export class TracksApi extends GeneratedTracksApi {
   discoveryNode: DiscoveryProvider
 
@@ -15,6 +19,9 @@ export class TracksApi extends GeneratedTracksApi {
     this.discoveryNode = discoveryNode
   }
 
+  /**
+   * Get the track's streamable mp3 file
+   */
   async streamTrack(requestParameters: StreamTrackRequest): Promise<string> {
     if (
       requestParameters.trackId === null ||

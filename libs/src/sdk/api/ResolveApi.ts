@@ -11,11 +11,18 @@ import {
   ResolveRequest
 } from '../generated/default/apis/ResolveApi'
 
+/**
+ * This class extends from the generated ResolveApi to
+ * implement the custom logic for the `resolve` endpoint
+ */
 export class ResolveApi extends GeneratedResolveApi {
   constructor(configuration: Configuration) {
     super(configuration)
   }
 
+  /**
+   * Resolves and redirects a provided Audius app URL to the API resource URL it represents
+   */
   async resolve<T extends Track | Playlist | User>(
     requestParameters: ResolveRequest
   ): Promise<T> {
