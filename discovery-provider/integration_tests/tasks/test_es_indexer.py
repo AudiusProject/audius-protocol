@@ -1,9 +1,7 @@
 import logging
 import os
 import subprocess
-import time
 
-import pytest
 from elasticsearch import Elasticsearch
 from integration_tests.utils import populate_mock_db
 from src.utils.db_session import get_db
@@ -48,12 +46,6 @@ basic_entities = {
 }
 
 
-@pytest.fixture(autouse=True)
-def clean_up_es():
-    esclient.delete_by_query(index="*", query={"match_all": {}})
-    yield
-
-
 def test_es_indexer_catchup(app):
     """
     Tests initial catchup.
@@ -74,6 +66,5 @@ def test_es_indexer_catchup(app):
         timeout=5,
     )
     esclient.indices.refresh(index="*")
-    time.sleep(2)
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
     assert len(search_res) == 6

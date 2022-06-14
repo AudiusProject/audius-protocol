@@ -304,8 +304,17 @@ module.exports = function (app) {
         transcodedTrackUUID
       } = req.body
 
+      const prometheusRegistry =
+        req.app.get('serviceRegistry').prometheusRegistry
+      const routePostTracksDurationSecondsMetric = prometheusRegistry.getMetric(
+        prometheusRegistry.metricNames
+          .ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM
+      )
+      const metricEndTimerFn = routePostTracksDurationSecondsMetric.startTimer()
+
       // Input validation
       if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
+        metricEndTimerFn({ code: 400 })
         return errorResponseBadRequest(
           'Must include blockchainTrackId, blockNumber, and metadataFileUUID.'
         )
@@ -314,6 +323,7 @@ module.exports = function (app) {
       // Error on outdated blocknumber
       const cnodeUser = req.session.cnodeUser
       if (blockNumber < cnodeUser.latestBlockNumber) {
+        metricEndTimerFn({ code: 400 })
         return errorResponseBadRequest(
           `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
         )
@@ -325,6 +335,7 @@ module.exports = function (app) {
         where: { fileUUID: metadataFileUUID, cnodeUserUUID }
       })
       if (!file) {
+        metricEndTimerFn({ code: 400 })
         return errorResponseBadRequest(
           `No file db record found for provided metadataFileUUID ${metadataFileUUID}.`
         )
@@ -339,11 +350,13 @@ module.exports = function (app) {
           !Array.isArray(metadataJSON.track_segments) ||
           !metadataJSON.track_segments.length
         ) {
+          metricEndTimerFn({ code: 500 })
           return errorResponseServerError(
             `Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`
           )
         }
       } catch (e) {
+        metricEndTimerFn({ code: 500 })
         return errorResponseServerError(
           `No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`
         )
@@ -357,6 +370,7 @@ module.exports = function (app) {
           metadataJSON.cover_art_sizes
         )
       } catch (e) {
+        metricEndTimerFn({ code: 500 })
         return errorResponseServerError(e.message)
       }
 
@@ -543,10 +557,12 @@ module.exports = function (app) {
 
         await issueAndWaitForSecondarySyncRequests(req)
 
+        metricEndTimerFn({ code: 200 })
         return successResponse()
       } catch (e) {
         req.logger.error(e.message)
         await transaction.rollback()
+        metricEndTimerFn({ code: 500 })
         return errorResponseServerError(e.message)
       }
     })
