@@ -713,6 +713,10 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image-nightly
       - test-libs:
           name: test-libs
       - docker-build-and-push:
