@@ -17,6 +17,8 @@
 
 Audius is a decentralized, community-owned music-sharing protocol
 
+1 2 3 4
+
 This repository encompasses all of the services, contracts, and client-side libraries that
 comprise the Audius protocol.
 
@@ -28,50 +30,50 @@ For further details on operating an Audius service, getting started with the Tok
 
 These off-chain services are run by community members via the Audius staking system:
 
-| Service                                                        | Description                                                                                       
-| -- | --
-| [`creator-node`](creator-node)                  | Maintains the availability of users' content via the Audius Storage Protocol, including user metadata, images, and audio content. Also known as Content Node.
-| [`discovery-provider`](discovery-provider)      | Indexes and stores the contents of the audius contracts on the Ethereum & Solana blockchains for clients to query via an API. Also known as Discovery Node.
-| [`identity-service`](identity-service)          | Stores encrypted auth ciphertexts and handles oauth artifacts
+| Service                                    | Description                                                                                                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`creator-node`](creator-node)             | Maintains the availability of users' content via the Audius Storage Protocol, including user metadata, images, and audio content. Also known as Content Node. |
+| [`discovery-provider`](discovery-provider) | Indexes and stores the contents of the audius contracts on the Ethereum & Solana blockchains for clients to query via an API. Also known as Discovery Node.   |
+| [`identity-service`](identity-service)     | Stores encrypted auth ciphertexts and handles oauth artifacts                                                                                                 |
 
 ### Smart Contracts & Programs
 
 The independent sets of smart contracts that power the on-chain aspects of the Audius protocol:
 
-| Contracts                                                        | Description                                                                                       
-| -- | --
-| [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/eth-contracts) | The Ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance
-| [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/master/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality
-| [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/contracts)         | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality
+| Contracts                                                                                         | Description                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/eth-contracts)     | The Ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance |
+| [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/master/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                                        |
+| [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/master/contracts)             | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                            |
 
 ### Audius Client Libraries
 
 Client-side libraries to provide a unified interface for interacting with the entire
 Audius protocol:
 
-| Library                                                        | Description                                                                                       
-| -- | --
-| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/master/libs)     | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node
+| Library                                                                     | Description                                                                                                                           |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/master/libs) | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node |
 
 ### Audius Tools & Tests
 
 Packages for developers to run and test Audius
 
-| Library                                                        | Description                                                                                       
-| -- | --
-| [`service-commands`](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands)     | Tooling to run an entire instance of Audius locally with all dependencies
-| [`mad-dog`](https://github.com/AudiusProject/audius-protocol/tree/master/mad-dog)     | A system level test suite and tests for Audius
-
+| Library                                                                                             | Description                                                               |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [`service-commands`](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands) | Tooling to run an entire instance of Audius locally with all dependencies |
+| [`mad-dog`](https://github.com/AudiusProject/audius-protocol/tree/master/mad-dog)                   | A system level test suite and tests for Audius                            |
 
 ## Development
 
 ### Prerequisites
 
-* Install docker & docker-compose [https://docs.docker.com/get-docker](https://docs.docker.com/get-docker)
-* Install rust https://rustup.rs/
-* Install nvm & node (v14.17.5) https://github.com/nvm-sh/nvm
+- Install docker & docker-compose [https://docs.docker.com/get-docker](https://docs.docker.com/get-docker)
+- Install rust https://rustup.rs/
+- Install nvm & node (v14.17.5) https://github.com/nvm-sh/nvm
 
 ### Running the protocol
+
 ```bash
 git clone https://github.com/AudiusProject/audius-protocol.git
 cd audius-protocol
@@ -95,7 +97,6 @@ A run discovery-provider down
 ```
 
 For more details on the `A` command and options, run `A --help` and checkout the service commands [README](https://github.com/AudiusProject/audius-protocol/tree/master/service-commands).
-
 
 ## Contributing
 
