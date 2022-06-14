@@ -19,7 +19,7 @@ module.exports = function (app) {
       optimizelyClient = req.app.get('optimizelyClient')
       detectAbuseOnRelay = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY)
     } catch (error) {
-      req.logger.error(`failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`)
+      req.logger.error(`failed to retrieve optimizely feature flag for detectAbuseOnRelay: ${error}`)
     }
 
     if (body && body.contractRegistryKey && body.contractAddress && body.senderAddress && body.encodedABI) {
