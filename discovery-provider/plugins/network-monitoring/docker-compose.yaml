@@ -67,7 +67,7 @@ services:
       - audius_dev
 
 volumes:
-  postgres_data_network_monitoring_2:
+  postgres_data_network_monitoring_1:
 
 networks:
   audius_dev:

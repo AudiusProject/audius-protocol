@@ -1,3 +1,9 @@
+
+data/
+grafana/bearer.env
+
+# Vendored : https://github.com/github/gitignore/blob/main/Node.gitignore
+
 # Logs
 logs
 *.log
@@ -180,5 +186,3 @@ node_modules/
 override.env
 override.env.bak
 .env*
-data/
-grafana/bearer.env
