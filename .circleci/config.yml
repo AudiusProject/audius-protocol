@@ -345,8 +345,8 @@ jobs:
             export spOwnerWallet='yes'
             export isCIBuild=true
             npm run test:coverage:ci
-      # - coveralls/upload:
-      #     path_to_lcov: ./creator-node/coverage/lcov.info
+      - coveralls/upload:
+          path_to_lcov: ./creator-node/coverage/lcov.info
 
   test-discovery-provider:
     docker:
@@ -686,6 +686,10 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image-nightly
       - test-libs:
           name: test-libs
       - docker-build-and-push:
