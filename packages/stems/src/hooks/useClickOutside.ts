@@ -35,7 +35,10 @@ export const useClickOutside = (
     }
 
     if (isVisible) {
-      document.addEventListener('click', handleClick)
+      // Don't attach the listener until all the current events are finished bubbling
+      setTimeout(() => {
+        document.addEventListener('click', handleClick)
+      }, 0)
     }
     return () => document.removeEventListener('click', handleClick)
   }, [onClick, ignoreClick, isVisible])
