@@ -231,37 +231,6 @@ class BlacklistManager {
     const segmentCIDs = new Set()
     const trackIdToSegments = {}
 
-    // Retrieve CIDs from the track metadata and build mapping of <trackId: segments>
-    for (const track of tracks) {
-      if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
-
-      // If the current track is from the track BL and not user BL, create mapping
-      if (explicitTrackIds.has(track.blockchainId)) {
-        trackIdToSegments[track.blockchainId] = []
-      }
-
-      for (const segment of track.metadataJSON.track_segments) {
-        if (!segment.multihash) continue
-
-        segmentCIDs.add(segment.multihash)
-        if (trackIdToSegments[track.blockchainId]) {
-          trackIdToSegments[track.blockchainId].push(segment.multihash)
-        }
-      }
-    }
-
-    // also retrieves the CID's directly from the files table so we get copy320
-    if (allTrackIds.length > 0) {
-      const files = await models.File.findAll({
-        where: { trackBlockchainId: allTrackIds }
-      })
-      for (const file of files) {
-        if (file.type === 'track' || file.type === 'copy320') {
-          segmentCIDs.add(file.multihash)
-        }
-      }
-    }
-
     return { segmentCIDs: [...segmentCIDs], trackIdToSegments }
   }
 
