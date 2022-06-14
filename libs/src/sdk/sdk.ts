@@ -105,9 +105,14 @@ export const sdk = async (config: SdkConfig) => {
         (url.includes('?') ? '&' : '?') +
         querystring({ app_name: appName })
 
-      return discoveryNode._makeRequest({
-        endpoint: urlWithAppName
-      }) as Promise<Response>
+      return discoveryNode._makeRequest(
+        {
+          endpoint: urlWithAppName
+        },
+        undefined,
+        undefined,
+        true
+      ) as Promise<Response>
     }
   })
 

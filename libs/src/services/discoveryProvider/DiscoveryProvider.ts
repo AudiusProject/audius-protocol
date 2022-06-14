@@ -888,9 +888,9 @@ export class DiscoveryProvider {
       const error = e as AxiosError
       const resp = error.response
       const duration = Date.now() - start
-      const errMsg = error.response?.data ?? error
+      const errData = error.response?.data ?? error
 
-      // Fire monitoring callbaks for request failure case
+      // Fire monitoring callbacks for request failure case
       if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
@@ -908,10 +908,10 @@ export class DiscoveryProvider {
       }
       if (resp && resp.status === 404) {
         // We have 404'd. Throw that error message back out
-        throw new Error('404')
+        throw { ...errData, status: '404' }
       }
 
-      throw errMsg
+      throw errData
     }
     return parsedResponse
   }
@@ -994,8 +994,17 @@ export class DiscoveryProvider {
   async _makeRequest<Response>(
     requestObj: Record<string, unknown>,
     retry = true,
-    attemptedRetries = 0
+    attemptedRetries = 0,
+    throwError = false
   ): Promise<Response | undefined | null> {
+    const returnOrThrow = <ErrorType>(e: ErrorType) => {
+      console.log('throwError', throwError)
+      if (throwError) {
+        throw e
+      }
+      return null
+    }
+
     try {
       const newDiscProvEndpoint =
         await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
@@ -1019,7 +1028,7 @@ export class DiscoveryProvider {
         this.discoveryProviderEndpoint
       )
     } catch (e) {
-      const error = e as Error
+      const error = e as { message: string; status: string }
       const failureStr = 'Failed to make Discovery Provider request, '
       const attemptStr = `attempt #${attemptedRetries}, `
       const errorStr = `error ${JSON.stringify(error.message)}, `
@@ -1029,7 +1038,7 @@ export class DiscoveryProvider {
       console.warn(fullErrString)
 
       if (retry) {
-        if (error.message === '404') {
+        if (error.status === '404') {
           this.request404Count += 1
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
@@ -1037,19 +1046,25 @@ export class DiscoveryProvider {
             return await this._makeRequest(
               requestObj,
               retry,
-              this.selectionRequestRetries + 1
+              this.selectionRequestRetries + 1,
+              throwError
             )
           } else {
             this.request404Count = 0
-            return null
+            return returnOrThrow(e)
           }
         }
 
         // In the case of an unknown error, retry with attempts += 1
-        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        return await this._makeRequest(
+          requestObj,
+          retry,
+          attemptedRetries + 1,
+          throwError
+        )
       }
 
-      return null
+      return returnOrThrow(e)
     }
 
     // Validate health check response
@@ -1061,24 +1076,36 @@ export class DiscoveryProvider {
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
     if (notInRegressedMode && blockDiff) {
+      const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
       if (retry) {
         console.info(
-          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+          `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        return await this._makeRequest(
+          requestObj,
+          retry,
+          attemptedRetries + 1,
+          throwError
+        )
       }
-      return null
+      return returnOrThrow(new Error(errorMessage))
     }
 
     const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
     if (notInRegressedMode && playsSlotDiff) {
+      const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]`
       if (retry) {
         console.info(
-          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+          `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        return await this._makeRequest(
+          requestObj,
+          retry,
+          attemptedRetries + 1,
+          throwError
+        )
       }
-      return null
+      return returnOrThrow(new Error(errorMessage))
     }
 
     // Reset 404 counts
