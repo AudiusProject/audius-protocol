@@ -1,4 +1,5 @@
-import { TipSent } from 'common/store/notifications/types'
+import { useUIAudio } from 'common/hooks/useUIAudio'
+import { TipSend } from 'common/store/notifications/types'
 
 import styles from './TipSentNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -19,12 +20,13 @@ const messages = {
 }
 
 type TipSentNotificationProps = {
-  notification: TipSent
+  notification: TipSend
 }
 
 export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { notification } = props
-  const { user, value, timeLabel, isViewed } = notification
+  const { user, amount, timeLabel, isViewed } = notification
+  const uiAmount = useUIAudio(amount)
 
   return (
     <NotificationTile notification={notification}>
@@ -34,7 +36,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       <NotificationBody className={styles.body}>
         <ProfilePicture className={styles.profilePicture} user={user} />
         <span>
-          {messages.sent} <AudioText value={value} /> {messages.to}{' '}
+          {messages.sent} <AudioText value={uiAmount} /> {messages.to}{' '}
           <UserNameLink user={user} notification={notification} />
         </span>
       </NotificationBody>

@@ -38,6 +38,7 @@ import {
   Achievement
 } from 'common/store/notifications/types'
 import { getIsReachable } from 'common/store/reachability/selectors'
+import { fetchReactionValues } from 'common/store/ui/reactions/slice'
 import { getBalance } from 'common/store/wallet/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
@@ -187,6 +188,7 @@ export function* parseAndProcessNotifications(
   const trackIdsToFetch: ID[] = []
   const collectionIdsToFetch: ID[] = []
   const userIdsToFetch: ID[] = []
+  const reactionSignatureToFetch: string[] = []
 
   notifications.forEach(notification => {
     if (notification.type === NotificationType.UserSubscription) {
@@ -253,6 +255,18 @@ export function* parseAndProcessNotifications(
     if (notification.type === NotificationType.TrendingTrack) {
       trackIdsToFetch.push(notification.entityId)
     }
+    if (
+      notification.type === NotificationType.TipSend ||
+      notification.type === NotificationType.TipReceive ||
+      notification.type === NotificationType.SupporterRankUp ||
+      notification.type === NotificationType.SupportingRankUp ||
+      notification.type === NotificationType.Reaction
+    ) {
+      userIdsToFetch.push(notification.entityId)
+    }
+    if (notification.type === NotificationType.TipReceive) {
+      reactionSignatureToFetch.push(notification.tipTxSignature)
+    }
   })
 
   const [tracks]: Track[][] = yield* all([
@@ -268,7 +282,10 @@ export function* parseAndProcessNotifications(
       userIdsToFetch, // userIds
       undefined, // requiredFields
       false // forceRetrieveFromSource
-    )
+    ),
+    reactionSignatureToFetch.length
+      ? put(fetchReactionValues({ entityIds: reactionSignatureToFetch }))
+      : () => {}
   ])
 
   /**

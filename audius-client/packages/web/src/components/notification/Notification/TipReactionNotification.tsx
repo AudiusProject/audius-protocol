@@ -1,4 +1,6 @@
-import { TipReaction } from 'common/store/notifications/types'
+import { useUIAudio } from 'common/hooks/useUIAudio'
+import { Reaction } from 'common/store/notifications/types'
+import { getReactionFromRawValue } from 'common/store/ui/reactions/slice'
 
 import styles from './TipReactionNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -8,7 +10,7 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { reactions } from './components/Reaction'
+import { reactionMap } from './components/Reaction'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
@@ -19,14 +21,22 @@ const messages = {
 }
 
 type TipReactionNotificationProps = {
-  notification: TipReaction
+  notification: Reaction
 }
 
 export const TipReactionNotification = (
   props: TipReactionNotificationProps
 ) => {
   const { notification } = props
-  const { user, reaction, value, timeLabel, isViewed } = notification
+  const {
+    user,
+    reactionValue,
+    timeLabel,
+    isViewed,
+    reactedToEntity: { amount }
+  } = notification
+
+  const uiAmount = useUIAudio(amount)
 
   const userLinkElement = (
     <UserNameLink
@@ -36,7 +46,9 @@ export const TipReactionNotification = (
     />
   )
 
-  const Reaction = reactions[reaction]
+  const reactionType = getReactionFromRawValue(reactionValue)
+  if (!reactionType) return null
+  const Reaction = reactionMap[reactionType]
 
   return (
     <NotificationTile notification={notification}>
@@ -57,7 +69,7 @@ export const TipReactionNotification = (
         <div className={styles.reactionTextRoot}>
           <div>
             {userLinkElement} {messages.react}
-            <AudioText value={value} />
+            <AudioText value={uiAmount} />
           </div>
         </div>
       </NotificationBody>

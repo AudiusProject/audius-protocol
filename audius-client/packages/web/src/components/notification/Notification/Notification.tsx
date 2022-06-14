@@ -37,6 +37,7 @@ type NotificationProps = {
 
 export const Notification = (props: NotificationProps) => {
   const { notification: notificationProp } = props
+
   const user = useSelector((state: CommonState) =>
     getNotificationUser(state, notificationProp)
   )
@@ -92,19 +93,19 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.TierChange: {
         return <TierChangeNotification notification={notification} />
       }
-      case NotificationType.TipReaction: {
+      case NotificationType.Reaction: {
         return <TipReactionNotification notification={notification} />
       }
-      case NotificationType.TipReceived: {
+      case NotificationType.TipReceive: {
         return <TipReceivedNotification notification={notification} />
       }
-      case NotificationType.TipSent: {
+      case NotificationType.TipSend: {
         return <TipSentNotification notification={notification} />
       }
-      case NotificationType.TopSupporter: {
+      case NotificationType.SupporterRankUp: {
         return <TopSupporterNotification notification={notification} />
       }
-      case NotificationType.TopSupporting: {
+      case NotificationType.SupportingRankUp: {
         return <TopSupportingNotification notification={notification} />
       }
       case NotificationType.TrendingTrack: {
