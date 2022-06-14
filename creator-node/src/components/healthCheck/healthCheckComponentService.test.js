@@ -135,7 +135,9 @@ describe('Test Health Check', function () {
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackUsersPerJob', 2)
+    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
+    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
@@ -170,6 +172,7 @@ describe('Test Health Check', function () {
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
+      audiusContentInfraSetup: '',
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -196,7 +199,9 @@ describe('Test Health Check', function () {
       currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
-      snapbackJobInterval: 1000,
+      snapbackUsersPerJob: 2,
+      stateMonitoringQueueRateLimitInterval: 20_000,
+      stateMonitoringQueueRateLimitJobsPerInterval: 2,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -235,7 +240,9 @@ describe('Test Health Check', function () {
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackUsersPerJob', 2)
+    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
+    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
     config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
@@ -265,6 +272,7 @@ describe('Test Health Check', function () {
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
+      audiusContentInfraSetup: '',
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -291,7 +299,9 @@ describe('Test Health Check', function () {
       currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
-      snapbackJobInterval: 1000,
+      snapbackUsersPerJob: 2,
+      stateMonitoringQueueRateLimitInterval: 20_000,
+      stateMonitoringQueueRateLimitJobsPerInterval: 2,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -351,6 +361,7 @@ describe('Test Health Check', function () {
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
+      audiusContentInfraSetup: '',
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -377,7 +388,9 @@ describe('Test Health Check', function () {
       currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
-      snapbackJobInterval: 1000,
+      snapbackUsersPerJob: 2,
+      stateMonitoringQueueRateLimitInterval: 20_000,
+      stateMonitoringQueueRateLimitJobsPerInterval: 2,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -447,7 +460,9 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackUsersPerJob', 2)
+    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
+    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
@@ -476,7 +491,7 @@ describe('Test Health Check Verbose', function () {
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
       dataProviderUrl: config.get('dataProviderUrl'),
-
+      audiusContentInfraSetup: '',
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',
@@ -503,7 +518,9 @@ describe('Test Health Check Verbose', function () {
       currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
-      snapbackJobInterval: 1000,
+      snapbackUsersPerJob: 2,
+      stateMonitoringQueueRateLimitInterval: 20_000,
+      stateMonitoringQueueRateLimitJobsPerInterval: 2,
       transcodeActive: 4,
       transcodeWaiting: 0,
       transcodeQueueIsAvailable: true,
@@ -542,7 +559,9 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
-    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackUsersPerJob', 2)
+    config.set('stateMonitoringQueueRateLimitInterval', 20_000)
+    config.set('stateMonitoringQueueRateLimitJobsPerInterval', 2)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 

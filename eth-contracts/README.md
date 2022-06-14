@@ -1,7 +1,5 @@
 # Audius Ethereum smart contracts
 
-[![Coverage Status](https://coveralls.io/repos/github/AudiusProject/audius-protocol/badge.svg)](https://coveralls.io/github/AudiusProject/audius-protocol)
-
 Audius has two sets of contracts - the one in this directory, which runs on Ethereum mainnet in
 production, and the one
 [here](https://github.com/AudiusProject/audius-protocol/tree/master/contracts) which runs on POA

@@ -412,7 +412,7 @@ def update_metrics(self):
                 f"index_metrics.py | update_metrics | {self.request.id} | Acquired update_metrics_lock"
             )
             metric = PrometheusMetric(
-                "index_metrics_runtime_seconds",
+                "index_metrics_duration_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
                 ("task_name",),
             )
@@ -455,7 +455,7 @@ def aggregate_metrics(self):
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
             )
             metric = PrometheusMetric(
-                "index_metrics_runtime_seconds",
+                "index_metrics_duration_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
                 ("task_name",),
             )
@@ -499,7 +499,7 @@ def synchronize_metrics(self):
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
             )
             metric = PrometheusMetric(
-                "index_metrics_runtime_seconds",
+                "index_metrics_duration_seconds",
                 "Runtimes for src.task.index_metrics:celery.task()",
                 ("task_name",),
             )

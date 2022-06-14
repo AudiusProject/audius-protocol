@@ -558,6 +558,12 @@ const config = convict({
     env: 'hCaptchaSecret',
     default: ''
   },
+  ipdataAPIKey: {
+    doc: 'API Key for ipdata',
+    format: String,
+    env: 'ipdataAPIKey',
+    default: ''
+  },
   cognitoAPISecret: {
     doc: 'API Secret for Cognito',
     format: String,
@@ -660,6 +666,12 @@ const config = convict({
     default: '60000',
     env: 'solanaConfirmationTimeout'
   },
+  solanaAudiusAnchorDataProgramId: {
+    doc: 'The address of the anchor audius data program',
+    format: String,
+    default: '',
+    env: 'solanaAudiusAnchorDataProgramId'
+  },
   rewardsQuorumSize: {
     doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
     format: Number,
@@ -730,6 +742,12 @@ const config = convict({
     doc: 'The slack url to post messages for errors in wormhole transfers',
     format: String,
     env: 'errorWormholeReporterSlackUrl',
+    default: ''
+  },
+  verifiedUserReporterSlackUrl: {
+    doc: 'The slack url to post messages for new verified users',
+    format: String,
+    env: 'verifiedUserReporterSlackUrl',
     default: ''
   },
   wormholeRPCHosts: {
@@ -820,7 +838,9 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
     solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount,
+
+    solanaAudiusAnchorDataProgramId: solanaContractConfig.anchorProgramId
   })
 }
 

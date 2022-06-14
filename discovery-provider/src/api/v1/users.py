@@ -1,5 +1,8 @@
+import base64
+import json
 import logging
 
+from eth_account.messages import encode_defunct
 from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -10,6 +13,8 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_supporter,
+    extend_supporting,
     extend_track,
     extend_user,
     format_limit,
@@ -22,12 +27,20 @@ from src.api.v1.helpers import (
     pagination_with_current_user_parser,
     search_parser,
     success_response,
+    verify_token_parser,
 )
 from src.api.v1.models.common import favorite
+from src.api.v1.models.support import (
+    supporter_response,
+    supporter_response_full,
+    supporting_response,
+    supporting_response_full,
+)
 from src.api.v1.models.users import (
     associated_wallets,
     challenge_response,
     connected_wallets,
+    decoded_user_token,
     encoded_user_id,
     user_model,
     user_model_full,
@@ -44,6 +57,10 @@ from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_save_tracks import get_save_tracks
 from src.queries.get_saves import get_saves
+from src.queries.get_support_for_user import (
+    get_support_received_by_user,
+    get_support_sent_by_user,
+)
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
@@ -52,9 +69,11 @@ from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
+from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
 from src.queries.search_queries import SearchKind, search
+from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import encode_int_id
@@ -569,9 +588,7 @@ class UserSearchResult(Resource):
             "offset": 0,
         }
         response = search(search_args)
-        users = response["users"]
-        users = list(map(extend_user, users))
-        return success_response(users)
+        return success_response(response)
 
 
 followers_response = make_full_response(
@@ -821,7 +838,22 @@ users_by_content_node_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
 users_by_content_node_route_parser.add_argument(
-    "creator_node_endpoint", required=True, type=str
+    "creator_node_endpoint",
+    required=True,
+    type=str,
+    description="Get users who have this Content Node endpoint as their primary/secondary",
+)
+users_by_content_node_route_parser.add_argument(
+    "prev_user_id",
+    required=False,
+    type=int,
+    description="Minimum user_id to return. Used for pagination as the offset after sorting in ascending order by user_id",
+)
+users_by_content_node_route_parser.add_argument(
+    "max_users",
+    required=False,
+    type=int,
+    description="Maximum number of users to return (SQL LIMIT)",
 )
 users_by_content_node_response = make_full_response(
     "users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set))
@@ -830,26 +862,39 @@ users_by_content_node_response = make_full_response(
 
 @full_ns.route("/content_node/<string:replica_type>", doc=False)
 class UsersByContentNode(Resource):
-    @full_ns.marshal_with(users_by_content_node_response)
-    # @cache(ttl_sec=30)
-    def get(self, replica_type):
-        """New route to call get_users_cnode with replica_type param (only consumed by content node)
-        - Leaving `/users/creator_node` above untouched for backwards-compatibility
-
+    @ns.doc(
+        id="""Get Users By Replica Type for Content Node""",
+        description="""
+        (Only consumed by Content Node) Gets users that have a given Content Node endpoint as
+        their primary, secondary, or either (depending on the replica_type passed).
         Response = array of objects of schema {
             user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID
         }
-        """
+        """,
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.marshal_with(users_by_content_node_response)
+    @cache(ttl_sec=5 * 60)
+    def get(self, replica_type):
         args = users_by_content_node_route_parser.parse_args()
 
+        # Endpoint that a user's primary/secondary/either must be set to for them to be included in the results
         cnode_url = args.get("creator_node_endpoint")
+        # Used for pagination with ">" comparison in SQL query. See https://ivopereira.net/efficient-pagination-dont-use-offset-limit
+        prev_user_id = args.get("prev_user_id")
+        # LIMIT used in SQL query
+        max_users = args.get("max_users")
 
         if replica_type == "primary":
-            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
+            users = get_users_cnode(
+                cnode_url, ReplicaType.PRIMARY, prev_user_id, max_users
+            )
         elif replica_type == "secondary":
-            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
+            users = get_users_cnode(
+                cnode_url, ReplicaType.SECONDARY, prev_user_id, max_users
+            )
         else:
-            users = get_users_cnode(cnode_url, ReplicaType.ALL)
+            users = get_users_cnode(cnode_url, ReplicaType.ALL, prev_user_id, max_users)
 
         return success_response(users)
 
@@ -890,3 +935,247 @@ class GetChallenges(Resource):
             challenges = list(map(extend_challenge_response, challenges))
 
             return success_response(challenges)
+
+
+get_supporters_response = make_response(
+    "get_supporters", ns, fields.List(fields.Nested(supporter_response))
+)
+
+
+@ns.route("/<string:id>/supporters")
+class GetSupporters(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Supporters""",
+        description="""Gets the supporters of the given user""",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(get_supporters_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str):
+        args = pagination_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        args["user_id"] = decoded_id
+        support = get_support_received_by_user(args)
+        support = list(map(extend_supporter, support))
+        return success_response(support)
+
+
+full_get_supporters_response = make_full_response(
+    "full_get_supporters", full_ns, fields.List(fields.Nested(supporter_response_full))
+)
+
+
+@full_ns.route("/<string:id>/supporters")
+class FullGetSupporters(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Supporters""",
+        description="""Gets the supporters of the given user""",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_get_supporters_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str):
+        args = pagination_with_current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        args["user_id"] = decoded_id
+        args["current_user_id"] = current_user_id
+        support = get_support_received_by_user(args)
+        support = list(map(extend_supporter, support))
+        return success_response(support)
+
+
+full_get_supporter_response = make_full_response(
+    "full_get_supporter", full_ns, fields.Nested(supporter_response_full)
+)
+
+
+@full_ns.route("/<string:id>/supporters/<string:supporter_user_id>")
+class FullGetSupporter(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Supporter""",
+        description="""Gets the specified supporter of the given user""",
+        params={"id": "A User ID", "supporter_user_id": "A User ID of a supporter"},
+    )
+    @full_ns.expect(current_user_parser)
+    @full_ns.marshal_with(full_get_supporter_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str, supporter_user_id: str):
+        args = current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        decoded_supporter_user_id = decode_with_abort(supporter_user_id, full_ns)
+        args["user_id"] = decoded_id
+        args["current_user_id"] = current_user_id
+        args["supporter_user_id"] = decoded_supporter_user_id
+        support = get_support_received_by_user(args)
+        support = list(map(extend_supporter, support))
+        if not support:
+            abort_not_found(supporter_user_id, full_ns)
+        return success_response(support[0])
+
+
+get_supporting_response = make_response(
+    "get_supporting", ns, fields.List(fields.Nested(supporting_response))
+)
+
+
+@ns.route("/<string:id>/supporting")
+class GetSupportings(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Supportings""",
+        description="""Gets the users that the given user supports""",
+        params={"id": "A User ID"},
+    )
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(get_supporting_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str):
+        args = pagination_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        args["user_id"] = decoded_id
+        support = get_support_sent_by_user(args)
+        support = list(map(extend_supporting, support))
+        return success_response(support)
+
+
+full_get_supporting_response = make_full_response(
+    "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
+)
+
+
+@full_ns.route("/<string:id>/supporting")
+class FullGetSupportings(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Supportings""",
+        description="""Gets the users that the given user supports""",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_get_supporting_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str):
+        args = pagination_with_current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        args["user_id"] = decoded_id
+        args["current_user_id"] = current_user_id
+        support = get_support_sent_by_user(args)
+        support = list(map(extend_supporting, support))
+        return success_response(support)
+
+
+full_get_supporting_response = make_full_response(
+    "full_get_supporting", full_ns, fields.Nested(supporting_response_full)
+)
+
+
+@full_ns.route("/<string:id>/supporting/<string:supported_user_id>")
+class FullGetSupporting(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Supporting""",
+        description="""Gets the support from the given user to the supported user""",
+        params={
+            "id": "A User ID",
+            "supported_user_id": "A User ID of a supported user",
+        },
+    )
+    @full_ns.expect(current_user_parser)
+    @full_ns.marshal_with(full_get_supporting_response)
+    @cache(ttl_sec=5)
+    def get(self, id: str, supported_user_id: str):
+        args = current_user_parser.parse_args()
+        decoded_id = decode_with_abort(id, full_ns)
+        current_user_id = get_current_user_id(args)
+        decoded_supported_user_id = decode_with_abort(supported_user_id, full_ns)
+        args["user_id"] = decoded_id
+        args["current_user_id"] = current_user_id
+        args["supported_user_id"] = decoded_supported_user_id
+        support = get_support_sent_by_user(args)
+        support = list(map(extend_supporting, support))
+        if not support:
+            abort_not_found(decoded_id, full_ns)
+        return success_response(support[0])
+
+
+verify_token_response = make_response(
+    "verify_token", ns, fields.Nested(decoded_user_token)
+)
+
+
+@ns.route("/verify_token")
+class GetTokenVerification(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Verify ID token""",
+        description="""Verify if the given jwt ID token was signed by the subject (user) in the payload""",
+        responses={
+            200: "Success",
+            400: "Bad input",
+            404: "ID token not valid",
+            500: "Server error",
+        },
+    )
+    @ns.expect(verify_token_parser)
+    @ns.marshal_with(verify_token_response)
+    def get(self):
+        args = verify_token_parser.parse_args()
+        # 1. Break JWT into parts
+        token_parts = args["token"].split(".")
+        if not len(token_parts) == 3:
+            abort_bad_request_param("token", ns)
+
+        # 2. Decode the signature
+        try:
+            signature = base64.urlsafe_b64decode(token_parts[2] + "==")
+        except Exception:
+            ns.abort(400, "The JWT signature could not be decoded.")
+
+        signature = signature.decode()
+        base64_header = token_parts[0]
+        base64_payload = token_parts[1]
+        message = f"{base64_header}.{base64_payload}"
+
+        # 3. Recover message from signature
+        web3 = web3_provider.get_web3()
+
+        wallet = None
+        encoded_message = encode_defunct(text=message)
+        try:
+            wallet = web3.eth.account.recover_message(
+                encoded_message,
+                signature=signature,
+            )
+        except Exception:
+            ns.abort(
+                404, "The JWT signature is invalid - wallet could not be recovered."
+            )
+        if not wallet:
+            ns.abort(
+                404, "The JWT signature is invalid - wallet could not be recovered."
+            )
+
+        # 4. Check that user from payload matches the user from the wallet from the signature
+        try:
+            stringified_payload = base64.urlsafe_b64decode(base64_payload + "==")
+            payload = json.loads(stringified_payload)
+        except Exception:
+            ns.abort(400, "JWT payload could not be decoded.")
+
+        wallet_user_id = get_user_with_wallet(wallet)
+        if not wallet_user_id or wallet_user_id != payload["userId"]:
+            ns.abort(
+                404,
+                "The JWT signature is invalid - the wallet does not match the user.",
+            )
+
+        # 5. Send back the decoded payload
+        return success_response(payload)

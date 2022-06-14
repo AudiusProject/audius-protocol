@@ -669,7 +669,9 @@ def record_metrics(func):
             )
 
         route = route.split("?")[0]
-        if "/v1/full/" in route or "/users/intersection/" in route:
+        if "/v1/full/search/autocomplete" in route:
+            route = "/".join(route.split("/")[:5])
+        elif "/v1/full/" in route or "/users/intersection/" in route:
             route = "/".join(route.split("/")[:4])
         elif "/v1/users/" in route and ("/followers" in route or "/following" in route):
             route = "/".join(route.split("/")[:3] + ["*"] + route.split("/")[-1:])

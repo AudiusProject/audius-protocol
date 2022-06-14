@@ -1,5 +1,5 @@
-const axios = require('axios')
 const AnalyticsProvider = require('../analytics')
+const { SlackReporter } = require('./slackReporter')
 
 const RewardEventNames = {
   REWARDS_CLAIM_SUCCESS: 'Rewards Claim: Success',
@@ -9,33 +9,6 @@ const RewardEventNames = {
   REWARDS_CLAIM_COGNITO: 'Rewards Claim: Cognito',
   REWARDS_CLAIM_OTHER: 'Rewards Claim: Other',
   REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
-}
-
-class SlackReporter {
-  constructor ({
-    slackUrl,
-    childLogger
-  }) {
-    this.slackUrl = slackUrl
-    this.childLogger = childLogger
-  }
-
-  getJsonSlackMessage (obj) {
-    return `\`\`\`
-${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
-\`\`\``
-  }
-
-  async postToSlack ({
-    message
-  }) {
-    try {
-      if (!this.slackUrl) return
-      await axios.post(this.slackUrl, { text: message })
-    } catch (e) {
-      this.childLogger.info(`Error posting to slack in slack reporter ${e.toString()}`)
-    }
-  }
 }
 
 class RewardsReporter {
@@ -183,6 +156,5 @@ class RewardsReporter {
 }
 
 module.exports = {
-  SlackReporter,
   RewardsReporter
 }

@@ -1,7 +1,7 @@
 import bs58 from 'bs58'
 import Web3 from '../web3'
 import axios, { AxiosResponse } from 'axios'
-import Hashids from 'hashids/cjs'
+import Hashids from 'hashids'
 import { MultiProvider } from './multiProvider'
 import { uuid } from './uuid'
 import {
@@ -47,11 +47,11 @@ export class Utils {
     return Web3.utils.keccak256(utf8Str)
   }
 
-  static isBN(number: number) {
+  static isBN(number: number | string) {
     return Web3.utils.isBN(number)
   }
 
-  static toBN(number: number, base: number) {
+  static toBN(number: number, base?: number) {
     return new Web3.utils.BN(number, base)
   }
 

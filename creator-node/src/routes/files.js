@@ -5,7 +5,7 @@ const contentDisposition = require('content-disposition')
 
 const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
-const { uploadTempDiskStorage } = require('../fileManager')
+const { uploadTempDiskStorage, EMPTY_FILE_CID } = require('../fileManager')
 const {
   handleResponse,
   sendResponse,
@@ -38,7 +38,8 @@ const {
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
-const { Utils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 
 const { promisify } = require('util')
 
@@ -133,7 +134,7 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
   try {
     req.logger.info(`[getCID] Decision Tree: ${JSON.stringify(decisionTree)}`)
   } catch (e) {
-    console.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
+    req.logger.error(`[getCID] Decision Tree - Failed to print: ${e.message}`)
   }
 }
 
@@ -229,7 +230,16 @@ const getCID = async (req, res) => {
       decisionTree.push({
         stage: `CID_CONFIRMED_FILE`
       })
-      fileFoundOnFS = true
+
+      if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
+        // Remove file if it is empty and force fetch from CN network
+        await fs.unlink(storagePath)
+        decisionTree.push({
+          stage: `EMPTY_FILE_FOUND_AND_REMOVED_NEW_PATH`
+        })
+      } else {
+        fileFoundOnFS = true
+      }
     } else if (fsStats.isDirectory()) {
       decisionTree.push({
         stage: `CID_CONFIRMED_DIRECTORY`
@@ -302,7 +312,15 @@ const getCID = async (req, res) => {
         decisionTree.push({
           stage: `CID_CONFIRMED_FILE_LEGACY_STORAGE_PATH`
         })
-        fileFoundOnFS = true
+        if (CID !== EMPTY_FILE_CID && fsStats.size === 0) {
+          // Remove file if it is empty and force fetch from CN network
+          await fs.unlink(storagePath)
+          decisionTree.push({
+            stage: `EMPTY_FILE_FOUND_AND_REMOVED_LEGACY_PATH`
+          })
+        } else {
+          fileFoundOnFS = true
+        }
       } else if (fsStats.isDirectory()) {
         decisionTree.push({
           stage: `CID_CONFIRMED_DIRECTORY_LEGACY_STORAGE_PATH`

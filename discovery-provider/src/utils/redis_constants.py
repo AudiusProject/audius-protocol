@@ -36,3 +36,20 @@ latest_sol_user_bank_db_tx_key = "latest_sol_program_tx:user_bank:db"
 
 latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
 latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
+
+# Solana latest slot per indexer
+# Used to get the latest processed slot of each indexing task, using the global slots instead of the per-program slots
+latest_sol_user_bank_slot_key = "latest_sol_slot:user_bank"
+latest_sol_aggregate_tips_slot_key = "latest_sol_slot:aggregate_tips"
+latest_sol_plays_slot_key = "latest_sol_slot:plays"
+latest_sol_listen_count_milestones_slot_key = "latest_sol_slot:listen_count_milestones"
+latest_sol_rewards_manager_slot_key = "latest_sol_slot:rewards_manager"
+
+# Reactions
+LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
+LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
+
+# Track unavailability worker job keys
+UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY = "update_track_is_available:start"
+UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY = "update_track_is_available:finish"
+ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "update_track_is_available:unavailable_tracks_all"

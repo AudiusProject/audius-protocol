@@ -1,5 +1,5 @@
 # Linting and type support
-black==21.12b0
+black==22.3.0
 flake8==4.0.1
 isort==5.10.1
 mypy==0.910
@@ -53,12 +53,12 @@ PyNaCl==1.4.0
 requests==2.25.1
 aiohttp==3.8.1
 six==1.16.0
-solana==0.21.0
+solana==0.23.1
 typing-extensions==3.10.0.0
 urllib3==1.26.3
 websockets==10.1
 # Anchor support
-anchorpy==0.8.0
+anchorpy==0.8.3
 
 # Test
 pytest-mock==3.6.1

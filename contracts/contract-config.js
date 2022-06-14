@@ -7,7 +7,8 @@ module.exports = {
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
     bootstrapSPOwnerWallets: [],
-    userReplicaSetBootstrapAddress: null
+    userReplicaSetBootstrapAddress: null,
+    registryAddress: null
   },
   test_local: {
     verifierAddress: null,

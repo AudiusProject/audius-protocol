@@ -5,5 +5,9 @@ target
 **/*.rs.bk
 node_modules
 adminKeypair.json
+adminAuthorityKeypair.json
 adminStorageKeypair.json
+adminAccountKeypair.json
 userKeypair.json
+dist
+yarn-error.log

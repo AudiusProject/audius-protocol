@@ -3,6 +3,7 @@ const convict = require('convict')
 const fs = require('fs')
 const process = require('process')
 const path = require('path')
+const os = require('os')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -261,7 +262,7 @@ const config = convict({
     doc: 'If we should print logs from sequelize',
     format: Boolean,
     env: 'printSequelizeLogs',
-    default: true
+    default: false
   },
 
   // Transcoding settings
@@ -447,6 +448,18 @@ const config = convict({
 
   /** sync / snapback configs */
 
+  stateMonitoringQueueRateLimitInterval: {
+    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
+    format: 'nat',
+    env: 'stateMonitoringQueueRateLimitInterval',
+    default: 60_000 // 1m
+  },
+  stateMonitoringQueueRateLimitJobsPerInterval: {
+    doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
+    format: 'nat',
+    env: 'stateMonitoringQueueRateLimitJobsPerInterval',
+    default: 0
+  },
   debounceTime: {
     doc: 'sync debounce time in ms',
     format: 'nat',
@@ -495,11 +508,11 @@ const config = convict({
     env: 'snapbackModuloBase',
     default: 48
   },
-  snapbackJobInterval: {
-    doc: 'Interval [ms] that snapbackSM jobs are fired',
+  snapbackUsersPerJob: {
+    doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
-    env: 'snapbackJobInterval',
-    default: 1800000 // 30min
+    env: 'snapbackUsersPerJob',
+    default: 1000
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -617,11 +630,17 @@ const config = convict({
     env: 'reconfigNodeWhitelist',
     default: ''
   },
-  minimumTranscodingSlotsAvailable: {
-    doc: 'The minimum number of slots needed to be available for TranscodingQueue to accept more jobs',
+  maximumTranscodingActiveJobs: {
+    doc: 'The maximum number of active jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
     format: 'nat',
-    env: 'minimumTranscodingSlotsAvailable',
-    default: 1
+    env: 'maximumTranscodingActiveJobs',
+    default: os.cpus().length
+  },
+  maximumTranscodingWaitingJobs: {
+    doc: 'The maximum number of waiting jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
+    format: 'nat',
+    env: 'maximumTranscodingWaitingJobs',
+    default: os.cpus().length
   },
   trustedNotifierID: {
     doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
@@ -640,6 +659,18 @@ const config = convict({
     format: 'nat',
     env: 'maxBatchClockStatusBatchSize',
     default: 5000
+  },
+  audiusContentInfraSetup: {
+    doc: 'How the content node infrastructure stack is running, injected by the infra directly, not to be defined manually',
+    format: String,
+    env: 'audiusContentInfraSetup',
+    default: ''
+  },
+  snapbackMaxLastSuccessfulRunDelayMs: {
+    doc: 'Max time delay since last snapback successful run (milliseconds)',
+    format: 'nat',
+    env: 'snapbackMaxLastSuccessfulRunDelayMs',
+    default: 5 * 60 * 60 * 1000 // 5 hrs
   }
   /**
    * unsupported options at the moment

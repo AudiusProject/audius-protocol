@@ -7,7 +7,7 @@ import {
   trackSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
-import type Web3Manager from '../web3Manager'
+import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 
 const { wait } = Utils
@@ -862,8 +862,7 @@ export class CreatorNode {
 
   /**
    * Create headers and formData for file upload
-   * @param {Object} file the file to upload
-   * @param {boolean} [isTrackUpload] flag to determine if uploading track. If true, add track upload headers
+   * @param file the file to upload
    * @returns headers and formData in an object
    */
   createFormDataAndUploadHeaders(
@@ -1015,7 +1014,7 @@ export class CreatorNode {
     requestUrl?: string,
     requestId: string | null = null
   ) {
-    if ('response' in e && e.response.data && e.response.data.error) {
+    if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
       const errMessage = `Server returned error: [${e.response.status.toString()}] [${

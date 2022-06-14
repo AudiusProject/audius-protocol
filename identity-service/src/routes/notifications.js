@@ -32,7 +32,12 @@ const NotificationType = Object.freeze({
   RemixCosign: 'RemixCosign',
   TrendingTrack: 'TrendingTrack',
   ChallengeReward: 'ChallengeReward',
-  TierChange: 'TierChange'
+  TierChange: 'TierChange',
+  TipReceive: 'TipReceive',
+  TipSend: 'TipSend',
+  Reaction: 'Reaction',
+  SupporterRankUp: 'SupporterRankUp',
+  SupportingRankUp: 'SupportingRankUp'
 })
 
 const ClientNotificationTypes = new Set([
@@ -202,6 +207,50 @@ const formatChallengeReward = (notification) => {
   }
 }
 
+const formatTipSend = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  amount: notification.metadata.amount,
+  entityId: notification.entityId,
+  entityType: Entity.User
+})
+
+const formatTipReceive = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  amount: notification.metadata.amount,
+  reactionValue: notification.metadata.reactionValue,
+  entityId: notification.entityId,
+  tipTxSignature: notification.metadata.tipTxSignature,
+  entityType: Entity.User
+})
+
+const formatSupportingRankUp = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  entityId: notification.metadata.supportedUserId,
+  rank: notification.entityId,
+  entityType: Entity.User
+})
+
+const formatSupporterRankUp = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  entityId: notification.metadata.supportingUserId,
+  rank: notification.entityId,
+  entityType: Entity.User
+})
+
+const formatReaction = (notification) => ({
+  ...getCommonNotificationsFields(notification),
+  type: notification.type,
+  entityId: notification.entityId,
+  reactionType: notification.metadata.reactionType,
+  reactionValue: notification.metadata.reactionValue,
+  reactedToEntity: notification.metadata.reactedToEntity,
+  entityType: Entity.User
+})
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -229,7 +278,12 @@ const notificationResponseMap = {
   [NotificationType.RemixCreate]: formatRemixCreate,
   [NotificationType.RemixCosign]: formatRemixCosign,
   [NotificationType.TrendingTrack]: formatTrendingTrack,
-  [NotificationType.ChallengeReward]: formatChallengeReward
+  [NotificationType.ChallengeReward]: formatChallengeReward,
+  [NotificationType.TipReceive]: formatTipReceive,
+  [NotificationType.TipSend]: formatTipSend,
+  [NotificationType.Reaction]: formatReaction,
+  [NotificationType.SupporterRankUp]: formatSupporterRankUp,
+  [NotificationType.SupportingRankUp]: formatSupportingRankUp
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -320,10 +374,21 @@ module.exports = function (app) {
     }
 
     const filterNotificationTypes = []
-    const filterSolanaNotificationTypes = []
+    let filterSolanaNotificationTypes = []
 
     if (req.query.withRewards !== 'true') {
       filterSolanaNotificationTypes.push(NotificationType.ChallengeReward)
+    }
+
+    if (req.query.withTips !== 'true') {
+      filterSolanaNotificationTypes = [
+        ...filterNotificationTypes,
+        NotificationType.TipReceive,
+        NotificationType.TipSend,
+        NotificationType.Reaction,
+        NotificationType.SupporterRankUp,
+        NotificationType.SupportingRankUp
+      ]
     }
 
     const queryFilter = filterNotificationTypes.length > 0 ? {
@@ -377,7 +442,7 @@ module.exports = function (app) {
         ],
         include: [{
           model: models.SolanaNotificationAction,
-          required: true,
+          required: false,
           as: 'actions'
         }],
         limit

@@ -15,12 +15,13 @@ PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 source $PROTOCOL_DIR/service-commands/scripts/utils.sh
 
 # parse arguments
-while getopts "p:i:d:m:" flag; do
+while getopts "p:i:d:m:s:" flag; do
 	case "$flag" in
 		p) provider=$OPTARG;;
 		i) image=$OPTARG;;
 		d) disk_size=$OPTARG;;
 		m) machine_type=$OPTARG;;
+		s) spot_instance=$OPTARG;;
 	esac
 done
 
@@ -29,6 +30,7 @@ name=${@:$OPTIND:1}
 # Set defaults and validate arguments
 provider=${provider:-$DEFAULT_PROVIDER}
 disk_size=${disk_size:-$DEFAULT_DISK_SIZE}
+spot_instance=${spot_instance:-false}
 
 case "$provider" in
 	azure)
@@ -38,6 +40,7 @@ case "$provider" in
 	gcp)
 		image=${image:-$DEFAULT_GCP_IMAGE}
 		machine_type=${machine_type:-$DEFAULT_GCP_MACHINE_TYPE}
+		disk_type=${disk_type:-$DEFAULT_GCP_DISK_TYPE}
 		;;
 	*)
 		echo "Unknown Provider:" $provider
@@ -76,6 +79,7 @@ echo $(format_bold "OS Image:") $image
 echo $(format_bold "Disk Size:") $disk_size
 echo $(format_bold "Machine Type:") $machine_type
 echo $(format_bold "Name:") $name
+echo $(format_bold "Spot Instance:") $spot_instance
 
 case "$provider" in
 	azure)
@@ -97,11 +101,25 @@ fi
 # Create the instance
 case "$provider" in
 	azure)
-		az vm create --name $name --image $image --os-disk-size-gb $disk_size --size $machine_type --public-ip-sku Basic --ssh-key-values ~/.ssh/audius-azure
+		az vm create \
+			--name $name \
+			--image $image \
+			--os-disk-size-gb $disk_size \
+			--size $machine_type \
+			--public-ip-sku Basic \
+			--ssh-key-values ~/.ssh/audius-azure
 		;;
 	gcp)
-		gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type 2> /dev/null
-	    if [[ "$image" = "$GCP_DEV_IMAGE" ]]; then
+		if [[ "$spot_instance" == true ]]; then
+			spot_flag=--provisioning-model=SPOT
+		fi
+		gcloud compute instances create \
+			$name $(gcp_image_to_flags $image) \
+			--boot-disk-size $disk_size \
+			--boot-disk-type $disk_type \
+			--machine-type $machine_type \
+			$spot_flag
+		if [[ "$image" = "$GCP_DEV_IMAGE" ]]; then
 			gcloud compute instances add-tags $name --tags=fast
 		fi
 		;;

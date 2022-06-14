@@ -36,6 +36,8 @@ from src.queries import (
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
+from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
 from src.utils import helpers
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -220,9 +222,9 @@ def create(test_config=None, mode="app"):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     if shared_config["cors"]["allow_all"]:
-        CORS(app, resources={r"/*": {"origins": "*"}})
+        CORS(app, max_age=86400, resources={r"/*": {"origins": "*"}})
     else:
-        CORS(app)
+        CORS(app, max_age=86400)
     app.iniconfig = ConfigIni()
     configure_flask(test_config, app, mode)
 
@@ -396,6 +398,8 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_spl_token",
             "src.tasks.index_solana_user_data",
             "src.tasks.index_aggregate_tips",
+            "src.tasks.index_reactions",
+            "src.tasks.update_track_is_available",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -520,6 +524,14 @@ def configure_celery(celery, test_config=None):
             "index_aggregate_tips": {
                 "task": "index_aggregate_tips",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_reactions": {
+                "task": "index_reactions",
+                "schedule": timedelta(seconds=5),
+            },
+            "update_track_is_available": {
+                "task": "update_track_is_available",
+                "schedule": timedelta(hours=12),  # run every 12 hours
             }
             # UNCOMMENT BELOW FOR MIGRATION DEV WORK
             # "index_solana_user_data": {
@@ -583,6 +595,9 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("calculate_trending_challenges_lock")
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
+    redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete(INDEX_REACTIONS_LOCK)
+    redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
 
     logger.info("Redis instance initialized!")
 

@@ -3,7 +3,7 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Tuple, TypedDict, Union
+from typing import Dict, Tuple, TypedDict, Union
 
 import base58
 from redis import Redis
@@ -11,11 +11,7 @@ from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
-from src.solana.constants import (
-    FETCH_TX_SIGNATURES_BATCH_SIZE,
-    TX_SIGNATURES_MAX_BATCHES,
-    TX_SIGNATURES_RESIZE_LENGTH,
-)
+from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
@@ -37,6 +33,7 @@ from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
+    latest_sol_plays_slot_key,
 )
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
@@ -71,7 +68,9 @@ pub struct TrackData {
 """
 
 
-def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None], int]:
+def parse_instruction_data(
+    data,
+) -> Tuple[Union[int, None], int, Union[str, None], Union[Dict, None], int]:
     decoded = base58.b58decode(data)[1:]
 
     user_id_length = int.from_bytes(decoded[0:4], "little")
@@ -101,21 +100,36 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
 
     # Source is not expected to be null, but may be
+    # First try to parse source as json
     source = None
+    location = {}
     try:
-        source = str(decoded[source_start:source_end], "utf-8")
-    except ValueError:
-        log = (
-            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
-        )
-        logger.error(
-            log,
-            exc_info=True,
-        )
+        decoded_source = decoded[source_start:source_end]
+        sourceDict = json.loads(decoded_source)
+        source = sourceDict["source"]
+
+        location = sourceDict["location"]
+    except Exception:
+        logger.info(f"index_solana_plays.py | Missing location: {sourceDict}")
+
+    if not source:
+        # Fallback to parse source as normal string
+        try:
+            source = str(decoded_source, "utf-8")
+        except ValueError:
+            log = (
+                "Failed to parse source from {!r}".format(
+                    decoded[source_start:source_end]
+                ),
+            )
+            logger.error(
+                log,
+                exc_info=True,
+            )
 
     timestamp = int.from_bytes(decoded[source_end : source_end + 8], "little")
 
-    return user_id, track_id, source, timestamp
+    return user_id, track_id, source, location, timestamp
 
 
 class PlayInfo(TypedDict):
@@ -124,6 +138,9 @@ class PlayInfo(TypedDict):
     created_at: datetime
     updated_at: datetime
     source: str
+    city: str
+    region: str
+    country: str
     slot: int
     signature: str
 
@@ -175,9 +192,13 @@ def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_si
             ]:
                 if instruction["programIdIndex"] == audius_program_index:
                     slot = tx_info["result"]["slot"]
-                    user_id, track_id, source, timestamp = parse_instruction_data(
-                        instruction["data"]
-                    )
+                    (
+                        user_id,
+                        track_id,
+                        source,
+                        location,
+                        timestamp,
+                    ) = parse_instruction_data(instruction["data"])
                     created_at = datetime.utcfromtimestamp(timestamp)
 
                     logger.info(
@@ -185,13 +206,22 @@ def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_si
                         f"user_id: {user_id} "
                         f"track_id: {track_id} "
                         f"source: {source} "
+                        f"location: {location}"
                         f"created_at: {created_at} "
                         f"slot: {slot} "
                         f"sig: {tx_sig}"
                     )
 
                     # return the data necessary to create a Play and add to challenge bus
-                    return (user_id, track_id, created_at, source, slot, tx_sig)
+                    return (
+                        user_id,
+                        track_id,
+                        created_at,
+                        source,
+                        location,
+                        slot,
+                        tx_sig,
+                    )
 
             return None
 
@@ -353,7 +383,15 @@ def parse_sol_tx_batch(
                 # can be None so check the value exists
                 result = future.result()
                 if result:
-                    user_id, track_id, created_at, source, slot, tx_sig = result
+                    (
+                        user_id,
+                        track_id,
+                        created_at,
+                        source,
+                        location,
+                        slot,
+                        tx_sig,
+                    ) = result
 
                     # Append plays to a list that will be written if all plays are successfully retrieved
                     # from the rpc pool
@@ -363,6 +401,9 @@ def parse_sol_tx_batch(
                         "created_at": created_at,
                         "updated_at": datetime.now(),
                         "source": source,
+                        "city": location.get("city"),
+                        "region": location.get("region"),
+                        "country": location.get("country"),
                         "slot": slot,
                         "signature": tx_sig,
                     }
@@ -401,6 +442,13 @@ def parse_sol_tx_batch(
         # the data is successfully fetched so we can add it to the db session and dispatch
         # events to challenge bus
 
+    # In the case where an entire batch is comprised of errors, wipe the cache to avoid a future find intersection loop
+    # For example, if the transactions between the latest cached value and database tail are entirely errors, no Play record will be inserted.
+    # This means every subsequent run will continue to no-op on error transactions and the cache will never be updated
+    if tx_sig_batch_records and not plays:
+        logger.info("index_solana_plays.py | Clearing redis cache")
+        redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
+
     # Cache the latest play from this batch
     # This reflects the ordering from chain
     for play in plays:
@@ -418,39 +466,40 @@ def parse_sol_tx_batch(
         f"index_solana_plays.py | DB | Saving test to DB, fetched batch tx details in {db_save_start - batch_start_time}"
     )
 
-    with db.scoped_session() as session:
+    if plays:
+        with db.scoped_session() as session:
+            logger.info(
+                f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+            )
+            session_execute_start = time.time()
+            # Save in bulk
+            session.execute(Play.__table__.insert().values(plays))
+            logger.info(
+                f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+            )
+
         logger.info(
-            f"index_solana_plays.py | DB | Acquired session in {time.time() - db_save_start}"
+            f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
         )
-        session_execute_start = time.time()
-        # Save in bulk
-        session.execute(Play.__table__.insert().values(plays))
+
+        track_play_ids = [play["play_item_id"] for play in plays]
+        if track_play_ids:
+            redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
+
+        logger.info("index_solana_plays.py | Dispatching listen events")
+        listen_dispatch_start = time.time()
+        for event in challenge_bus_events:
+            challenge_bus.dispatch(
+                ChallengeEvent.track_listen,
+                event.get("slot"),
+                event.get("user_id"),
+                {"created_at": event.get("created_at")},
+            )
+        listen_dispatch_end = time.time()
+        listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
         logger.info(
-            f"index_solana_plays.py | DB | Session execute completed in {time.time() - session_execute_start}"
+            f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
         )
-
-    logger.info(
-        f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
-    )
-
-    track_play_ids = [play["play_item_id"] for play in plays]
-    if track_play_ids:
-        redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
-
-    logger.info("index_solana_plays.py | Dispatching listen events")
-    listen_dispatch_start = time.time()
-    for event in challenge_bus_events:
-        challenge_bus.dispatch(
-            ChallengeEvent.track_listen,
-            event.get("slot"),
-            event.get("user_id"),
-            {"created_at": event.get("created_at")},
-        )
-    listen_dispatch_end = time.time()
-    listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
-    logger.info(
-        f"index_solana_plays.py | Dispatched listen events in {listen_dispatch_diff}"
-    )
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
@@ -527,6 +576,15 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     # Current batch
     page_count = 0
 
+    # The last transaction processed
+    last_tx = None
+
+    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    try:
+        latest_global_slot = solana_client_manager.get_slot()
+    except:
+        logger.error("index_solana_plays.py | Failed to get block height")
+
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
         logger.info(
@@ -583,18 +641,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                 if transaction_signature_batch:
                     transaction_signatures.append(transaction_signature_batch)
 
-                # Ensure processing does not grow unbounded
-                if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                    logger.info(
-                        f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries"
-                    )
-                    transaction_signatures = transaction_signatures[
-                        -TX_SIGNATURES_RESIZE_LENGTH:
-                    ]
-                    logger.info(
-                        f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries"
-                    )
-
                 # Reset batch state
                 transaction_signature_batch = []
 
@@ -629,6 +675,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
             exc_info=True,
         )
         raise e
+
+    if last_tx and transaction_signatures:
+        redis.set(latest_sol_plays_slot_key, last_tx["slot"])
+    elif latest_global_slot is not None:
+        redis.set(latest_sol_plays_slot_key, latest_global_slot)
 
 
 @celery.task(name="index_solana_plays", bind=True)

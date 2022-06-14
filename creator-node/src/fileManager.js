@@ -6,7 +6,8 @@ const axios = require('axios')
 
 const config = require('./config')
 const Utils = require('./utils')
-const { Utils: LibsUtils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const LibsUtils = libs.Utils
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
@@ -707,5 +708,6 @@ module.exports = {
   checkFileMiddleware,
   getTmpTrackUploadArtifactsPathWithInputUUID,
   getTmpSegmentsPath,
-  copyMultihashToFs
+  copyMultihashToFs,
+  EMPTY_FILE_CID
 }

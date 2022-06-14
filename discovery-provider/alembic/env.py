@@ -1,19 +1,24 @@
 from __future__ import with_statement
-import sys
-import os
-from alembic import context
-from sqlalchemy import engine_from_config, pool
-from logging.config import fileConfig
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
-config = context.config
+import os
+import re
+
+from alembic import context
+from alembic.ddl.base import AddColumn, DropColumn, visit_add_column, visit_drop_column
+from sqlalchemy import engine_from_config, pool
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from src.models import Base
+
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
+config = context.config
+
 
 target_metadata = Base.metadata
 
@@ -70,6 +75,43 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
+
+@compiles(CreateIndex)
+@compiles(CreateTable)
+@compiles(AddColumn)
+def _add_if_not_exists(element, compiler, **kw):
+    """Adds support for IF NOT EXISTS to CREATE TABLE and CREATE INDEX commands"""
+    # Inspired by https://github.com/AudiusProject/audius-protocol/pull/2997
+    if isinstance(element, CreateIndex):
+        output = compiler.visit_create_index(element, **kw)
+    elif isinstance(element, CreateTable):
+        output = compiler.visit_create_table(element, **kw)
+    elif isinstance(element, AddColumn):
+        output = visit_add_column(element, compiler, **kw)
+    return re.sub(
+            "(CREATE|ADD) (TABLE|INDEX|COLUMN)",
+            r"\g<1> \g<2> IF NOT EXISTS",
+            output,
+            re.S,
+        )
+
+
+@compiles(DropIndex)
+@compiles(DropTable)
+@compiles(DropColumn)
+def _add_if_exists(element, compiler, **kw):
+    """Adds support for IF EXISTS to DROP TABLE and DROP INDEX commands"""
+    # Inspired by https://github.com/AudiusProject/audius-protocol/pull/2997
+    if isinstance(element, DropIndex):
+        output = compiler.visit_drop_index(element, **kw)
+    elif isinstance(element, DropTable):
+        output = compiler.visit_drop_table(element, **kw)
+    elif isinstance(element, DropColumn):
+        output = visit_drop_column(element, compiler, **kw)
+    return re.sub(
+        "DROP (TABLE|INDEX|COLUMN)", r"DROP \g<1> IF EXISTS", output, re.S
+    )
 
 
 if context.is_offline_mode():

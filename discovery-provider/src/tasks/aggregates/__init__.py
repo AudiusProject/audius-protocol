@@ -1,8 +1,9 @@
 import logging
 from inspect import currentframe
 from time import time
-from typing import Optional
+from typing import Any, Callable, Optional
 
+from redis import Redis
 from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 from src.models import Block
@@ -20,13 +21,19 @@ def init_task_and_acquire_lock(
     db,
     redis,
     table_name,
-    aggregate_func,
+    aggregate_func: Callable[[Session, Redis], Any],
     timeout=60 * 10,
     blocking_timeout=None,
     lock_name=None,
 ):
+
+    current_frame = currentframe()
     # get name of the caller function
-    task_name = currentframe().f_back.f_code.co_name
+    task_name = (
+        current_frame.f_back.f_code.co_name
+        if current_frame is not None and current_frame.f_back is not None
+        else "unknown"
+    )
 
     # Define lock acquired boolean
     have_lock = False
@@ -43,7 +50,7 @@ def init_task_and_acquire_lock(
             start_time = time()
 
             with db.scoped_session() as session:
-                aggregate_func(session)
+                aggregate_func(session, redis)
 
             logger.info(
                 f"{task_name} | Finished updating \

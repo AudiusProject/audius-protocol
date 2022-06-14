@@ -18,11 +18,13 @@ class Base {
     ethWeb3Manager,
     ethContracts,
     solanaWeb3Manager,
+    anchorAudiusData,
     wormholeClient,
     creatorNode,
     comstock,
     captcha,
-    isServer
+    isServer,
+    logger = console
   ) {
     this.userStateManager = userStateManager
     this.identityService = identityService
@@ -33,11 +35,13 @@ class Base {
     this.ethWeb3Manager = ethWeb3Manager
     this.ethContracts = ethContracts
     this.solanaWeb3Manager = solanaWeb3Manager
+    this.anchorAudiusData = anchorAudiusData
     this.wormholeClient = wormholeClient
     this.creatorNode = creatorNode
     this.comstock = comstock
     this.captcha = captcha
     this.isServer = isServer
+    this.logger = logger
 
     this._serviceMapping = {
       [Services.IDENTITY_SERVICE]: this.identityService,

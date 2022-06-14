@@ -2,6 +2,7 @@ const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
 const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
+const axios = require('axios')
 
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
@@ -332,6 +333,25 @@ module.exports = function (app) {
 
       await redis.incr(trackingRedisKeys.submission)
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, Date.now(), Date.now() + entropy)
+      let location
+      try {
+        let clientIPAddress = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() || req.socket.remoteAddress
+        if (clientIPAddress.startsWith('::ffff:')) {
+          clientIPAddress = clientIPAddress.slice(7)
+        }
+
+        const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get('ipdataAPIKey')}`
+
+        const locationResponse = (await axios.get(url)).data
+        location = {
+          city: locationResponse.city,
+          region: locationResponse.region,
+          country: locationResponse.country_name
+        }
+      } catch (e) {
+        req.logger.info(`TrackListen location fetch failed: ${e}`)
+        location = {}
+      }
 
       try {
         let trackListenTransaction = await createTrackListenTransaction({
@@ -340,6 +360,7 @@ module.exports = function (app) {
           userId: userId.toString(),
           trackId: trackId.toString(),
           source: 'relay',
+          location,
           connection
         })
         let feePayerAccount = getFeePayerKeypair(false)

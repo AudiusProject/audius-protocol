@@ -33,6 +33,10 @@ const router = express.Router()
 const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 const numberOfCPUs = os.cpus().length
 
+const SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
+  'snapbackMaxLastSuccessfulRunDelayMs'
+)
+
 // Helper Functions
 /**
  * Verifies that the request is made by the delegate Owner
@@ -109,13 +113,13 @@ const healthCheckController = async (req) => {
 
   const { stateMachineQueueLatestJobSuccess } = response
   if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
-    const healthyThresholdMs = 5 * config.get('snapbackJobInterval')
-
+    response.snapbackMaxLastSuccessfulRunDelayMs =
+      SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
     const delta =
       Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
-    if (delta > healthyThresholdMs) {
+    if (delta > SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS) {
       return errorResponseServerError(
-        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${healthyThresholdMs}ms`
+        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
       )
     }
   }
@@ -127,8 +131,22 @@ const healthCheckController = async (req) => {
  * Controller for `health_check/sync` route, calls
  * syncHealthCheckController
  */
-const syncHealthCheckController = async () => {
+const syncHealthCheckController = async (req) => {
   const response = await syncHealthCheck(serviceRegistry)
+
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const syncQueueJobsTotalMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE
+  )
+  syncQueueJobsTotalMetric.set(
+    { status: 'manual_waiting' },
+    response.manualWaitingCount
+  )
+  syncQueueJobsTotalMetric.set(
+    { status: 'recurring_waiting' },
+    response.recurringWaitingCount
+  )
+
   return successResponse(response)
 }
 

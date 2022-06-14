@@ -45,6 +45,8 @@ user_model = ns.model(
         "is_deactivated": fields.Boolean(required=True),
         "erc_wallet": fields.String(requred=True),
         "spl_wallet": fields.String(required=True),
+        "supporter_count": fields.Integer(required=True),
+        "supporting_count": fields.Integer(required=True),
     },
 )
 
@@ -112,5 +114,30 @@ challenge_response = ns.model(
         "challenge_type": fields.String(required=True),
         "amount": fields.String(required=True),
         "metadata": fields.Raw(required=True),
+    },
+)
+
+user_token_profile_picture = ns.model(
+    "profilePicture",
+    {
+        "150x150": fields.String(required=False),
+        "480x480": fields.String(required=False),
+        "1000x1000": fields.String(required=False),
+    },
+)
+
+decoded_user_token = ns.model(
+    "decoded_user_token",
+    {
+        "userId": fields.String(required=True),
+        "email": fields.String(required=True),
+        "name": fields.String(required=True),
+        "handle": fields.String(required=True),
+        "verified": fields.Boolean(required=True),
+        "profilePicture": fields.Nested(
+            user_token_profile_picture, allow_null=True, skip_none=True
+        ),
+        "sub": fields.String(required=True),
+        "iat": fields.String(required=True),
     },
 )

@@ -24,6 +24,7 @@ const contentBlacklistRoutes = require('./components/contentBlacklist/contentBla
 const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
 
 const app = express()
+
 // middleware functions will be run in order they are added to the app below
 //  - loggingMiddleware must be first to ensure proper error handling
 app.use(loggingMiddleware)

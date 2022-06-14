@@ -1,0 +1,1171 @@
+// TODO: strictly type each method with the models defined in audius-client
+import axios, { AxiosError, AxiosRequestConfig, Method } from 'axios'
+
+import { Utils } from '../../utils'
+
+import { DEFAULT_UNHEALTHY_BLOCK_DIFF, REQUEST_TIMEOUT_MS } from './constants'
+
+import * as Requests from './requests'
+
+import urlJoin, { PathArg } from 'proper-url-join'
+import {
+  DiscoveryProviderSelection,
+  DiscoveryProviderSelectionConfig
+} from './DiscoveryProviderSelection'
+import type { CurrentUser, UserStateManager } from '../../userStateManager'
+import type { EthContracts } from '../ethContracts'
+import type { Web3Manager } from '../web3Manager'
+
+const MAX_MAKE_REQUEST_RETRY_COUNT = 5
+const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
+
+type RequestParams = {
+  queryParams: Record<string, string>
+  endpoint: string
+  timeout?: number
+  method?: Method
+  urlParams?: PathArg
+  headers?: Record<string, string>
+  data?: Record<string, unknown>
+}
+
+export type DiscoveryProviderConfig = {
+  whitelist?: Set<string>
+  blacklist?: Set<string>
+  userStateManager: UserStateManager
+  ethContracts: EthContracts
+  web3Manager?: Web3Manager
+  reselectTimeout?: number
+  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
+  monitoringCallbacks?: DiscoveryProviderSelectionConfig['monitoringCallbacks']
+  selectionRequestTimeout?: number
+  selectionRequestRetries?: number
+  unhealthySlotDiffPlays?: number
+  unhealthyBlockDiff?: number
+}
+
+export type UserProfile = {
+  userId: number
+  email: string
+  name: string
+  handle: string
+  verified: boolean
+  profilePicture:
+    | { '150x150': string; '480x480': string; '1000x1000': string }
+    | null
+    | undefined
+  sub: number
+  iat: string
+}
+
+/**
+ * Constructs a service class for a discovery node
+ * @param whitelist whether or not to only include specified nodes in selection
+ * @param userStateManager singleton UserStateManager instance
+ * @param ethContracts singleton EthContracts instance
+ * @param web3Manager
+ * @param reselectTimeout timeout to clear locally cached discovery providers
+ * @param selectionCallback invoked when a discovery node is selected
+ * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+ *  @param monitoringCallbacks.request
+ *  @param monitoringCallbacks.healthCheck
+ * @param selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
+ * @param selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
+ * @param unhealthyBlockDiff the number of missed blocks after which we would consider a discovery node unhealthy
+ */
+export class DiscoveryProvider {
+  whitelist: Set<string> | undefined
+  blacklist: Set<string> | undefined
+  userStateManager: UserStateManager
+  ethContracts: EthContracts
+  web3Manager: Web3Manager | undefined
+  unhealthyBlockDiff: number
+  serviceSelector: DiscoveryProviderSelection
+  selectionRequestTimeout: number
+  selectionRequestRetries: number
+  unhealthySlotDiffPlays: number | undefined
+  request404Count: number
+  maxRequestsForTrue404: number
+  monitoringCallbacks:
+    | DiscoveryProviderSelection['monitoringCallbacks']
+    | undefined
+
+  discoveryProviderEndpoint: string | undefined
+
+  constructor({
+    whitelist,
+    blacklist,
+    userStateManager,
+    ethContracts,
+    web3Manager,
+    reselectTimeout,
+    selectionCallback,
+    monitoringCallbacks,
+    selectionRequestTimeout = REQUEST_TIMEOUT_MS,
+    selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
+    unhealthySlotDiffPlays,
+    unhealthyBlockDiff
+  }: DiscoveryProviderConfig) {
+    this.whitelist = whitelist
+    this.blacklist = blacklist
+    this.userStateManager = userStateManager
+    this.ethContracts = ethContracts
+    this.web3Manager = web3Manager
+
+    this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
+    this.serviceSelector = new DiscoveryProviderSelection(
+      {
+        whitelist: this.whitelist,
+        blacklist: this.blacklist,
+        reselectTimeout,
+        selectionCallback,
+        monitoringCallbacks,
+        requestTimeout: selectionRequestTimeout,
+        unhealthySlotDiffPlays: unhealthySlotDiffPlays,
+        unhealthyBlockDiff: this.unhealthyBlockDiff
+      },
+      this.ethContracts
+    )
+    this.selectionRequestTimeout = selectionRequestTimeout
+    this.selectionRequestRetries = selectionRequestRetries
+    this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
+
+    // Keep track of the number of times a request 404s so we know when a true 404 occurs
+    // Due to incident where some discovery nodes may erroneously be missing content #flare-51,
+    // we treat 404s differently than generic 4xx's or other 5xx errors.
+    // In the case of a 404, try a few other nodes
+    this.request404Count = 0
+    this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
+
+    this.monitoringCallbacks = monitoringCallbacks
+  }
+
+  async init() {
+    const endpoint = await this.serviceSelector.select()
+    this.setEndpoint(endpoint)
+
+    if (endpoint && this.web3Manager && this.web3Manager.web3) {
+      // Set current user if it exists
+      const userAccount = await this.getUserAccount(
+        this.web3Manager.getWalletAddress()
+      )
+      if (userAccount) this.userStateManager.setCurrentUser(userAccount)
+    }
+  }
+
+  setEndpoint(endpoint: string) {
+    this.discoveryProviderEndpoint = endpoint
+  }
+
+  setUnhealthyBlockDiff(updatedBlockDiff = DEFAULT_UNHEALTHY_BLOCK_DIFF) {
+    this.unhealthyBlockDiff = updatedBlockDiff
+    this.serviceSelector.setUnhealthyBlockDiff(updatedBlockDiff)
+  }
+
+  setUnhealthySlotDiffPlays(updatedDiff: number) {
+    this.unhealthySlotDiffPlays = updatedDiff
+    this.serviceSelector.setUnhealthySlotDiffPlays(updatedDiff)
+  }
+
+  /**
+   * Get users with all relevant user data
+   * can be filtered by providing an integer array of ids
+   * @param limit
+   * @param offset
+   * @param idsArray
+   * @param walletAddress
+   * @param handle
+   * @param isCreator null returns all users, true returns creators only, false returns users only
+   * @returns {Object} {Array of User metadata Objects}
+   * additional metadata fields on user objects:
+   *  {Integer} track_count - track count for given user
+   *  {Integer} playlist_count - playlist count for given user
+   *  {Integer} album_count - album count for given user
+   *  {Integer} follower_count - follower count for given user
+   *  {Integer} followee_count - followee count for given user
+   *  {Integer} repost_count - repost count for given user
+   *  {Integer} track_blocknumber - blocknumber of latest track for user
+   *  {Boolean} does_current_user_follow - does current user follow given user
+   *  {Array} followee_follows - followees of current user that follow given user
+   * @example
+   * await getUsers()
+   * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
+   */
+  async getUsers(
+    limit = 100,
+    offset = 0,
+    idsArray?: string[],
+    walletAddress?: string,
+    handle?: string,
+    isCreator = null,
+    minBlockNumber?: number
+  ) {
+    const req = Requests.getUsers(
+      limit,
+      offset,
+      idsArray,
+      walletAddress,
+      handle,
+      isCreator,
+      minBlockNumber
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get tracks with all relevant track data
+   * can be filtered by providing an integer array of ids
+   * @param limit
+   * @param offset
+   * @param idsArray
+   * @param targetUserId the owner of the tracks being queried
+   * @param sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param minBlockNumber The min block number
+   * @param filterDeleted If set to true, filters the deleted tracks
+   * @returns {Object} {Array of track metadata Objects}
+   * additional metadata fields on track objects:
+   *  {Integer} repost_count - repost count for given track
+   *  {Integer} save_count - save count for given track
+   *  {Array} followee_reposts - followees of current user that have reposted given track
+   *  {Boolean} has_current_user_reposted - has current user reposted given track
+   *  {Boolean} has_current_user_saved - has current user saved given track
+   * @example
+   * await getTracks()
+   * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
+   */
+  async getTracks(
+    limit = 100,
+    offset = 0,
+    idsArray?: string[],
+    targetUserId?: string,
+    sort?: boolean,
+    minBlockNumber?: number,
+    filterDeleted?: boolean,
+    withUsers?: boolean
+  ) {
+    const req = Requests.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
+
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Gets a particular track by its creator's handle and the track's URL slug
+   * @param handle the handle of the owner of the track
+   * @param slug the URL slug of the track, generally the title urlized
+   * @returns {Object} the requested track's metadata
+   */
+  async getTracksByHandleAndSlug(handle: string, slug: string) {
+    // Note: retries are disabled here because the v1 API response returns a 404 instead
+    // of an empty array, which can cause a retry storm.
+    // TODO: Rewrite this API with something more effective, change makeRequest to
+    // support 404s and not retry & use AudiusAPIClient.
+    return await this._makeRequest(
+      Requests.getTracksByHandleAndSlug(handle, slug),
+      /* retry */ false
+    )
+  }
+
+  /**
+   * @typedef {Object} getTracksIdentifier
+   * @property {string} handle
+   * @property {number} id
+   * @property {string} url_title
+   */
+
+  /**
+   * gets all tracks matching identifiers, including unlisted.
+   *
+   * @param identifiers
+   * @returns {(Array)} track
+   */
+  async getTracksIncludingUnlisted(identifiers: string[], withUsers = false) {
+    const req = Requests.getTracksIncludingUnlisted(identifiers, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Gets random tracks from trending tracks for a given genre.
+   * If genre not given, will return trending tracks across all genres.
+   * Excludes specified track ids.
+   *
+   * @param genre
+   * @param limit
+   * @param exclusionList
+   * @param time
+   * @returns {(Array)} track
+   */
+  async getRandomTracks(
+    genre: string,
+    limit: number,
+    exclusionList: number[],
+    time: string
+  ) {
+    const req = Requests.getRandomTracks(genre, limit, exclusionList, time)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Gets all stems for a given trackId as an array of tracks.
+   * @param trackId
+   * @returns {(Array)} track
+   */
+  async getStemsForTrack(trackId: number) {
+    const req = Requests.getStemsForTrack(trackId)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Gets all the remixes of a given trackId as an array of tracks.
+   * @param trackId
+   * @param limit
+   * @param offset
+   * @returns {(Array)} track
+   */
+  async getRemixesOfTrack(trackId: number, limit?: number, offset?: number) {
+    const req = Requests.getRemixesOfTrack(trackId, limit, offset)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Gets the remix parents of a given trackId as an array of tracks.
+   * @param limit
+   * @param offset
+   * @returns {(Array)} track
+   */
+  async getRemixTrackParents(trackId: number, limit?: number, offset?: number) {
+    const req = Requests.getRemixTrackParents(trackId, limit, offset)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Gets tracks trending on Audius.
+   * @param genre
+   * @param timeFrame one of day, week, month, or year
+   * @param idsArray track ids
+   * @param limit
+   * @param offset
+   */
+  async getTrendingTracks(
+    genre?: string,
+    timeFrame?: string,
+    idsArray?: number[],
+    limit?: number,
+    offset?: number,
+    withUsers = false
+  ) {
+    const req = Requests.getTrendingTracks(
+      genre,
+      timeFrame,
+      idsArray,
+      limit,
+      offset,
+      withUsers
+    )
+    return await this._makeRequest<{
+      listenCounts: Array<{ trackId: number; listens: number }>
+    }>(req)
+  }
+
+  /**
+   * get full playlist objects, including tracks, for passed in array of playlistId
+   * @returns {Array} array of playlist objects
+   * additional metadata fields on playlist objects:
+   *  {Integer} repost_count - repost count for given playlist
+   *  {Integer} save_count - save count for given playlist
+   *  {Boolean} has_current_user_reposted - has current user reposted given playlist
+   *  {Array} followee_reposts - followees of current user that have reposted given playlist
+   *  {Boolean} has_current_user_reposted - has current user reposted given playlist
+   *  {Boolean} has_current_user_saved - has current user saved given playlist
+   */
+  async getPlaylists(
+    limit = 100,
+    offset = 0,
+    idsArray = null,
+    targetUserId = null,
+    withUsers = false
+  ) {
+    const req = Requests.getPlaylists(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      withUsers
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Return social feed for current user
+   * @param filter - filter by "all", "original", or "repost"
+   * @param limit - max # of items to return
+   * @param offset - offset into list to return from (for pagination)
+   * @returns {Object} {Array of track and playlist metadata objects}
+   * additional metadata fields on track and playlist objects:
+   *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
+   *    used for sorting feed
+   *  {Integer} repost_count - repost count of given track/playlist
+   *  {Integer} save_count - save count of given track/playlist
+   *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
+   *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
+   */
+  async getSocialFeed(
+    filter: string,
+    limit = 100,
+    offset = 0,
+    withUsers = false,
+    tracksOnly = false
+  ) {
+    const req = Requests.getSocialFeed(
+      filter,
+      limit,
+      offset,
+      withUsers,
+      tracksOnly
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Return repost feed for requested user
+   * @param userId - requested user id
+   * @param limit - max # of items to return (for pagination)
+   * @param offset - offset into list to return from (for pagination)
+   * @returns {Object} {Array of track and playlist metadata objects}
+   * additional metadata fields on track and playlist objects:
+   *  {String} activity_timestamp - timestamp of requested user's repost for given track or playlist,
+   *    used for sorting feed
+   *  {Integer} repost_count - repost count of given track/playlist
+   *  {Integer} save_count - save count of given track/playlist
+   *  {Boolean} has_current_user_reposted - has current user reposted given track/playlist
+   *  {Array} followee_reposts - followees of current user that have reposted given track/playlist
+   */
+  async getUserRepostFeed(
+    userId: number,
+    limit = 100,
+    offset = 0,
+    withUsers = false
+  ) {
+    const req = Requests.getUserRepostFeed(userId, limit, offset, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get intersection of users that follow followeeUserId and users that are followed by followerUserId
+   * @param followeeUserId user that is followed
+   * @param followerUserId user that follows
+   * @example
+   * getFollowIntersectionUsers(100, 0, 1, 1) - IDs must be valid
+   */
+  async getFollowIntersectionUsers(
+    limit = 100,
+    offset = 0,
+    followeeUserId: number,
+    followerUserId: number
+  ) {
+    const req = Requests.getFollowIntersectionUsers(
+      limit,
+      offset,
+      followeeUserId,
+      followerUserId
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get intersection of users that have reposted repostTrackId and users that are followed by followerUserId
+   * followee = user that is followed; follower = user that follows
+   * @param repostTrackId track that is reposted
+   * @param followerUserId user that reposted track
+   * @example
+   * getTrackRepostIntersectionUsers(100, 0, 1, 1) - IDs must be valid
+   */
+  async getTrackRepostIntersectionUsers(
+    limit = 100,
+    offset = 0,
+    repostTrackId: number,
+    followerUserId: number
+  ) {
+    const req = Requests.getTrackRepostIntersectionUsers(
+      limit,
+      offset,
+      repostTrackId,
+      followerUserId
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get intersection of users that have reposted repostPlaylistId and users that are followed by followerUserId
+   * followee = user that is followed; follower = user that follows
+   * @param repostPlaylistId playlist that is reposted
+   * @param followerUserId user that reposted track
+   * @example
+   * getPlaylistRepostIntersectionUsers(100, 0, 1, 1) - IDs must be valid
+   */
+  async getPlaylistRepostIntersectionUsers(
+    limit = 100,
+    offset = 0,
+    repostPlaylistId: number,
+    followerUserId: number
+  ) {
+    const req = Requests.getPlaylistRepostIntersectionUsers(
+      limit,
+      offset,
+      repostPlaylistId,
+      followerUserId
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get users that follow followeeUserId, sorted by follower count descending
+   * @param followeeUserId user that is followed
+   * @return {Array} array of user objects with standard user metadata
+   */
+  async getFollowersForUser(limit = 100, offset = 0, followeeUserId: number) {
+    const req = Requests.getFollowersForUser(limit, offset, followeeUserId)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get users that are followed by followerUserId, sorted by follower count descending
+   * @param followerUserId user - i am the one who follows
+   * @return {Array} array of user objects with standard user metadata
+   */
+  async getFolloweesForUser(limit = 100, offset = 0, followerUserId: number) {
+    const req = Requests.getFolloweesForUser(limit, offset, followerUserId)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get users that reposted repostTrackId, sorted by follower count descending
+   * @param repostTrackId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getRepostersForTrack(100, 0, 1) - ID must be valid
+   */
+  async getRepostersForTrack(limit = 100, offset = 0, repostTrackId: number) {
+    const req = Requests.getRepostersForTrack(limit, offset, repostTrackId)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get users that reposted repostPlaylistId, sorted by follower count descending
+   * @param repostPlaylistId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getRepostersForPlaylist(100, 0, 1) - ID must be valid
+   */
+  async getRepostersForPlaylist(
+    limit = 100,
+    offset = 0,
+    repostPlaylistId: number
+  ) {
+    const req = Requests.getRepostersForPlaylist(
+      limit,
+      offset,
+      repostPlaylistId
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get users that saved saveTrackId, sorted by follower count descending
+   * @param saveTrackId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getSaversForTrack(100, 0, 1) - ID must be valid
+   */
+  async getSaversForTrack(limit = 100, offset = 0, saveTrackId: number) {
+    const req = Requests.getSaversForTrack(limit, offset, saveTrackId)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get users that saved savePlaylistId, sorted by follower count descending
+   * @param savePlaylistId
+   * @return {Array} array of user objects
+   * additional metadata fields on user objects:
+   *  {Integer} follower_count - follower count of given user
+   * @example
+   * getSaversForPlaylist(100, 0, 1) - ID must be valid
+   */
+  async getSaversForPlaylist(limit = 100, offset = 0, savePlaylistId: number) {
+    const req = Requests.getSaversForPlaylist(limit, offset, savePlaylistId)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * get whether a JWT given by Audius Oauth popup is valid
+   * @param token - JWT
+   * @return {UserProfile | false} profile info of user attached to JWT payload if the JWT is valid, else false
+   */
+  async verifyToken(token: string): Promise<UserProfile | false> {
+    const req = Requests.verifyToken(token)
+    const res = await this._makeRequest<UserProfile | null>(req)
+    if (res == null) {
+      return false
+    } else {
+      return res
+    }
+  }
+
+  /**
+   * Perform a full-text search. Returns tracks, users, playlists, albums
+   *    with optional user-specific results for each
+   *  - user, track, and playlist objects have all same data as returned from standalone endpoints
+   * @param text search query
+   * @param kind 'tracks', 'users', 'playlists', 'albums', 'all'
+   * @param limit max # of items to return per list (for pagination)
+   * @param offset offset into list to return from (for pagination)
+   */
+  async searchFull(text: string, kind: string, limit = 100, offset = 0) {
+    const req = Requests.searchFull(text, kind, limit, offset)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Perform a lighter-weight full-text search. Returns tracks, users, playlists, albums
+   *    with optional user-specific results for each
+   *  - user, track, and playlist objects have core data, and track & playlist objects
+   *    also return user object
+   * @param text search query
+   * @param limit max # of items to return per list (for pagination)
+   * @param offset offset into list to return from (for pagination)
+   */
+  async searchAutocomplete(text: string, limit = 100, offset = 0) {
+    const req = Requests.searchAutocomplete(text, limit, offset)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Perform a tags-only search. Returns tracks with required tag and users
+   * that have used a tag greater than a specified number of times
+   * @param text search query
+   * @param userTagCount min # of times a user must have used a tag to be returned
+   * @param kind 'tracks', 'users', 'playlists', 'albums', 'all'
+   * @param limit max # of items to return per list (for pagination)
+   * @param offset offset into list to return from (for pagination)
+   */
+  async searchTags(
+    text: string,
+    userTagCount = 2,
+    kind = 'all',
+    limit = 100,
+    offset = 0
+  ) {
+    const req = Requests.searchTags(text, userTagCount, kind, limit, offset)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Return saved playlists for current user
+   * NOTE in returned JSON, SaveType string one of track, playlist, album
+   * @param limit - max # of items to return
+   * @param offset - offset into list to return from (for pagination)
+   */
+  async getSavedPlaylists(limit = 100, offset = 0, withUsers = false) {
+    const req = Requests.getSavedPlaylists(limit, offset, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Return saved albums for current user
+   * NOTE in returned JSON, SaveType string one of track, playlist, album
+   * @param limit - max # of items to return
+   * @param offset - offset into list to return from (for pagination)
+   */
+  async getSavedAlbums(limit = 100, offset = 0, withUsers = false) {
+    const req = Requests.getSavedAlbums(limit, offset, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Return saved tracks for current user
+   * NOTE in returned JSON, SaveType string one of track, playlist, album
+   * @param limit - max # of items to return
+   * @param offset - offset into list to return from (for pagination)
+   */
+  async getSavedTracks(limit = 100, offset = 0, withUsers = false) {
+    const req = Requests.getSavedTracks(limit, offset, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Return user collections (saved & uploaded) along w/ users for those collections
+   */
+  async getUserAccount(wallet: string) {
+    const req = Requests.getUserAccount(wallet)
+    return await this._makeRequest<CurrentUser>(req)
+  }
+
+  async getTopPlaylists(
+    type: string,
+    limit: number,
+    mood: string,
+    filter: string,
+    withUsers = false
+  ) {
+    const req = Requests.getTopPlaylists(type, limit, mood, filter, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getTopFolloweeWindowed(
+    type: string,
+    window: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getTopFolloweeWindowed(type, window, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getTopFolloweeSaves(type: string, limit: string, withUsers = false) {
+    const req = Requests.getTopFolloweeSaves(type, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getLatest(type: string) {
+    const req = Requests.getLatest(type)
+    return await this._makeRequest(req)
+  }
+
+  async getTopCreatorsByGenres(
+    genres: string[],
+    limit = 30,
+    offset = 0,
+    withUsers = false
+  ) {
+    const req = Requests.getTopCreatorsByGenres(
+      genres,
+      limit,
+      offset,
+      withUsers
+    )
+    return await this._makeRequest(req)
+  }
+
+  async getURSMContentNodes(ownerWallet: string | null = null) {
+    const req = Requests.getURSMContentNodes(ownerWallet)
+    return await this._makeRequest(req)
+  }
+
+  async getNotifications(
+    minBlockNumber: string,
+    trackIds: string[],
+    timeout: number
+  ) {
+    const req = Requests.getNotifications(minBlockNumber, trackIds, timeout)
+    return await this._makeRequest(req)
+  }
+
+  async getSolanaNotifications(minSlotNumber: number, timeout: number) {
+    const req = Requests.getSolanaNotifications(minSlotNumber, timeout)
+    return await this._makeRequest(req)
+  }
+
+  async getTrackListenMilestones(timeout: number) {
+    const req = Requests.getTrackListenMilestones(timeout)
+    return await this._makeRequest(req)
+  }
+
+  async getChallengeAttestation(
+    challengeId: string,
+    encodedUserId: string,
+    specifier: string,
+    oracleAddress: string,
+    discoveryProviderEndpoint: string
+  ) {
+    const req = Requests.getChallengeAttestation(
+      challengeId,
+      encodedUserId,
+      specifier,
+      oracleAddress
+    )
+    const { data } = await this._performRequestWithMonitoring(
+      req,
+      discoveryProviderEndpoint
+    )
+    return data
+  }
+
+  async getCreateSenderAttestation(
+    senderEthAddress: string,
+    discoveryProviderEndpoint: string
+  ) {
+    const req = Requests.getCreateSenderAttestation(senderEthAddress)
+    const { data } = await this._performRequestWithMonitoring(
+      req,
+      discoveryProviderEndpoint
+    )
+    return data
+  }
+
+  async getUndisbursedChallenges(
+    limit: number | null = null,
+    offset: number | null = null,
+    completedBlockNumber: string | null = null,
+    encodedUserId: number | null = null
+  ) {
+    const req = Requests.getUndisbursedChallenges(
+      limit,
+      offset,
+      completedBlockNumber,
+      encodedUserId
+    )
+    const res = await this._makeRequest<Array<{ amount: string }>>(req)
+    if (!res) return []
+    return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
+  }
+
+  /* ------- INTERNAL FUNCTIONS ------- */
+
+  /**
+   * Performs a single request, defined in the request, via axios, calling any
+   * monitoring callbacks as needed.
+   *
+   * @param {{
+     endpoint: string,
+     urlParams: string,
+     queryParams: object,
+     method: string,
+     headers: object,
+   }} requestObj
+   * @param {string} discoveryProviderEndpoint
+   * @returns
+   * @memberof DiscoveryProvider
+   */
+  async _performRequestWithMonitoring(
+    requestObj: RequestParams,
+    discoveryProviderEndpoint: string
+  ) {
+    const axiosRequest = this._createDiscProvRequest(
+      requestObj,
+      discoveryProviderEndpoint
+    )
+    let response
+    let parsedResponse
+
+    const url = new URL(axiosRequest.url ?? '')
+    const start = Date.now()
+    try {
+      response = await axios(axiosRequest)
+      const duration = Date.now() - start
+      parsedResponse = Utils.parseDataFromResponse(response)
+
+      // Fire monitoring callbacks for request success case
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            signer: response.data.signer,
+            signature: response.data.signature,
+            requestMethod: axiosRequest.method,
+            status: response.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      }
+    } catch (e) {
+      const error = e as AxiosError
+      const resp = error.response
+      const duration = Date.now() - start
+      const errMsg = error.response?.data ?? error
+
+      // Fire monitoring callbaks for request failure case
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            requestMethod: axiosRequest.method,
+            status: resp?.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      }
+      if (resp && resp.status === 404) {
+        // We have 404'd. Throw that error message back out
+        throw new Error('404')
+      }
+
+      throw errMsg
+    }
+    return parsedResponse
+  }
+
+  /**
+   * Gets how many blocks behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of blocks
+   * @param parsedResponse health check response object
+   * @returns a number of blocks if behind or null if not behind
+   */
+  async _getBlocksBehind(parsedResponse: {
+    latest_indexed_block: number
+    latest_chain_block: number
+  }) {
+    try {
+      const {
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = parsedResponse
+
+      const blockDiff = chainBlock - indexedBlock
+      if (blockDiff > this.unhealthyBlockDiff) {
+        return blockDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthyBlockDiff
+    }
+  }
+
+  /**
+   * Gets how many plays slots behind a discovery node is.
+   * If this method throws (missing data in health check response),
+   * return an unhealthy number of slots
+   * @param parsedResponse health check response object
+   * @returns a number of slots if behind or null if not behind
+   */
+  async _getPlaysSlotsBehind(parsedResponse: {
+    latest_indexed_slot_plays: number
+    latest_chain_slot_plays: number
+  }) {
+    if (!this.unhealthySlotDiffPlays) return null
+
+    try {
+      const {
+        latest_indexed_slot_plays: indexedSlotPlays,
+        latest_chain_slot_plays: chainSlotPlays
+      } = parsedResponse
+
+      const slotDiff = chainSlotPlays - indexedSlotPlays
+      if (slotDiff > this.unhealthySlotDiffPlays) {
+        return slotDiff
+      }
+      return null
+    } catch (e) {
+      console.error(e)
+      return this.unhealthySlotDiffPlays
+    }
+  }
+
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   *  headers: object
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param retry whether to retry on failure
+   * @param attemptedRetries number of attempted retries (stops retrying at max)
+   */
+  async _makeRequest<Response>(
+    requestObj: Record<string, unknown>,
+    retry = true,
+    attemptedRetries = 0
+  ): Promise<Response | undefined | null> {
+    try {
+      const newDiscProvEndpoint =
+        await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
+
+      // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
+      if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
+        let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
+        updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
+        console.info(updateDiscProvEndpointMsg)
+        this.discoveryProviderEndpoint = newDiscProvEndpoint
+        attemptedRetries = 0
+      }
+    } catch (e) {
+      console.error(e)
+      return
+    }
+    let parsedResponse
+    try {
+      parsedResponse = await this._performRequestWithMonitoring(
+        requestObj as RequestParams,
+        this.discoveryProviderEndpoint
+      )
+    } catch (e) {
+      const error = e as Error
+      const failureStr = 'Failed to make Discovery Provider request, '
+      const attemptStr = `attempt #${attemptedRetries}, `
+      const errorStr = `error ${JSON.stringify(error.message)}, `
+      const requestStr = `request: ${JSON.stringify(requestObj)}`
+      const fullErrString = `${failureStr}${attemptStr}${errorStr}${requestStr}`
+
+      console.warn(fullErrString)
+
+      if (retry) {
+        if (error.message === '404') {
+          this.request404Count += 1
+          if (this.request404Count < this.maxRequestsForTrue404) {
+            // In the case of a 404, retry with a different discovery node entirely
+            // using selectionRequestRetries + 1 to force reselection
+            return await this._makeRequest(
+              requestObj,
+              retry,
+              this.selectionRequestRetries + 1
+            )
+          } else {
+            this.request404Count = 0
+            return null
+          }
+        }
+
+        // In the case of an unknown error, retry with attempts += 1
+        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+
+      return null
+    }
+
+    // Validate health check response
+
+    // Regressed mode signals we couldn't find a node that wasn't behind by some measure
+    // so we should should pick something
+    const notInRegressedMode =
+      this.ethContracts && !this.ethContracts.isInRegressedMode()
+
+    const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (notInRegressedMode && blockDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+      return null
+    }
+
+    const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
+    if (notInRegressedMode && playsSlotDiff) {
+      if (retry) {
+        console.info(
+          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+        )
+        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+      return null
+    }
+
+    // Reset 404 counts
+    this.request404Count = 0
+
+    // Everything looks good, return the data!
+    return parsedResponse.data
+  }
+
+  /**
+   * Gets the healthy discovery provider endpoint used in creating the axios request later.
+   * If the number of retries is over the max count for retires, clear the cache and reselect
+   * another healthy discovery provider. Else, return the current discovery provider endpoint
+   * @param attemptedRetries the number of attempted requests made to the current disc prov endpoint
+   */
+  async getHealthyDiscoveryProviderEndpoint(attemptedRetries: number) {
+    let endpoint = this.discoveryProviderEndpoint as string
+    if (attemptedRetries > this.selectionRequestRetries) {
+      // Add to unhealthy list if current disc prov endpoint has reached max retry count
+      console.info(`Attempted max retries with endpoint ${endpoint}`)
+      this.serviceSelector.addUnhealthy(endpoint)
+
+      // Clear the cached endpoint and select new endpoint from backups
+      this.serviceSelector.clearCached()
+      endpoint = await this.serviceSelector.select()
+    }
+
+    // If there are no more available backups, throw error
+    if (!endpoint) {
+      throw new Error('All Discovery Providers are unhealthy and unavailable.')
+    }
+
+    return endpoint
+  }
+
+  /**
+   * Creates the discovery provider axios request object with necessary configs
+   * @param requestObj
+   * @param discoveryProviderEndpoint
+   */
+  _createDiscProvRequest(
+    requestObj: RequestParams,
+    discoveryProviderEndpoint: string
+  ) {
+    // Sanitize URL params if needed
+    if (requestObj.queryParams) {
+      Object.entries(requestObj.queryParams).forEach(([k, v]) => {
+        if (v === undefined || v === null) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete requestObj.queryParams[k]
+        }
+      })
+    }
+
+    const requestUrl = urlJoin(
+      discoveryProviderEndpoint,
+      requestObj.endpoint,
+      requestObj.urlParams,
+      { query: requestObj.queryParams }
+    )
+
+    let headers: Record<string, string> = {}
+    if (requestObj.headers) {
+      headers = requestObj.headers
+    }
+    const currentUserId = this.userStateManager.getCurrentUserId()
+    if (currentUserId) {
+      headers['X-User-ID'] = currentUserId
+    }
+
+    const timeout = requestObj.timeout ?? this.selectionRequestTimeout
+    let axiosRequest: AxiosRequestConfig = {
+      url: requestUrl,
+      headers: headers,
+      method: requestObj.method ?? 'get',
+      timeout
+    }
+
+    if (requestObj.method === 'post' && requestObj.data) {
+      axiosRequest = {
+        ...axiosRequest,
+        data: requestObj.data
+      }
+    }
+    return axiosRequest
+  }
+}

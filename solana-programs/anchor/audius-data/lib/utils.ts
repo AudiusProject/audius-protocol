@@ -114,7 +114,10 @@ export const randomCID = () => {
 // the rust program (u16.to_le_bytes())
 // use anchor.BN.toArrayLike instead of .toBuffer for browser compat reasons
 export const convertBNToSpIdSeed = (spId: anchor.BN) => {
-  return Buffer.concat([Buffer.from("sp_id", "utf8"), spId.toArrayLike(Buffer, "le", 2)]);
+  return Buffer.concat([
+    Buffer.from("sp_id", "utf8"),
+    spId.toArrayLike(Buffer, "le", 2),
+  ]);
 };
 
 // used to convert u32 to little endian bytes
@@ -200,9 +203,9 @@ export const hexPrivateKeyToUint8 = (hexPrivateKey: string): Uint8Array => {
 };
 
 type ContentNodeWalletAuthority = {
-  contentNodeAuthority: anchor.web3.Keypair,
-  delegateWallet: string,
-}
+  contentNodeAuthority: anchor.web3.Keypair;
+  delegateWallet: string;
+};
 
 /**
  * Returns object containing

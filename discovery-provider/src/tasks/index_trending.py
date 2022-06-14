@@ -64,6 +64,7 @@ genre_allowlist = {
     "Jungle",
     "Kids",
     "Latin",
+    "Lo-Fi",
     "Metal",
     "Moombahton",
     "Podcasts",
@@ -103,7 +104,7 @@ TRENDING_PARAMS = "trending_params"
 def update_view(session: Session, mat_view_name: str):
     start_time = time.time()
     metric = PrometheusMetric(
-        "update_trending_view_runtime_seconds",
+        "update_trending_view_duration_seconds",
         "Runtimes for src.task.index_trending:update_view()",
         ("mat_view_name",),
     )
@@ -124,7 +125,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     logger.info("index_trending.py | starting indexing")
     update_start = time.time()
     metric = PrometheusMetric(
-        "index_trending_runtime_seconds",
+        "index_trending_duration_seconds",
         "Runtimes for src.task.index_trending:index_trending()",
     )
     with db.scoped_session() as session:

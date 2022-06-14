@@ -1,4 +1,4 @@
-const AudiusLibs = require('@audius/libs')
+const { libs: AudiusLibs } = require('@audius/sdk')
 const { setDefaultWasm } = require('@certusone/wormhole-sdk/lib/cjs/solana/wasm')
 
 const config = require('./config')
@@ -51,7 +51,9 @@ class AudiusLibsWrapper {
     })
 
     let audiusInstance = new AudiusLibs({
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
+      discoveryProviderConfig: {
+        whitelist: discoveryProviderWhitelist
+      },
       ethWeb3Config: AudiusLibs.configEthWeb3(
         config.get('ethTokenAddress'),
         config.get('ethRegistryAddress'),

@@ -300,4 +300,60 @@ describe('Test Send Notifications', function () {
         queueNotif.types.some(t => t === deviceType.Mobile)
     }))
   })
+
+  it('should batch track metadata fetches', async function () {
+    // User 1 creates 500 tracks
+
+    // ======================================= Set subscribers for create notifications =======================================
+    await models.Subscription.bulkCreate([
+      { subscriberId: 3, userId: 1 } // User 3 subscribes to user 1
+    ])
+
+    const tx1 = await models.sequelize.transaction()
+
+    let mockNotifications = []
+    for (let i = 1; i <= 500; i++) {
+      const mockNotification = {
+        'blocknumber': 1,
+        'initiator': 1,
+        'metadata': {
+          'entity_id': i,
+          'entity_owner_id': 1,
+          'entity_type': 'track'
+        },
+        'timestamp': '2020-10-27T15:14:20 Z',
+        'type': 'Create'
+      }
+      mockNotifications.push(mockNotification)
+    }
+    await processNotifications(mockNotifications, tx1)
+    await sendNotifications(mockAudiusLibs, mockNotifications, tx1)
+    await tx1.commit()
+
+    let pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
+
+    assert.deepStrictEqual(pushNotifications.length, 0)
+
+    // Wait 60 seconds to debounce tracks / album notifications
+    await new Promise(resolve => setTimeout(resolve, 5 * 1000))
+    const tx2 = await models.sequelize.transaction()
+    await sendNotifications(mockAudiusLibs, [], tx2)
+    await tx2.commit()
+
+    pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
+    assert.deepStrictEqual(pushNotifications.length, mockNotifications.length)
+
+    for (const notification of pushNotifications) {
+      assert.deepStrictEqual(notification.notificationParams.title, 'New Artist Update')
+      assert.deepStrictEqual(notification.types, ['mobile', 'browser'])
+    }
+
+    const user3Message = 'user 1 released a new track Title, Track id: '
+
+    const user3Notifs = pushNotifications.filter(n => n.userId === 3)
+    assert.deepStrictEqual(user3Notifs.length, mockNotifications.length)
+    for (let i = 1; i <= mockNotifications.length; i++) {
+      assert.deepStrictEqual(user3Notifs.some(n => n.notificationParams.message === user3Message + i), true)
+    }
+  })
 })

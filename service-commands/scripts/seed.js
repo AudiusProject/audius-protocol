@@ -107,6 +107,33 @@ program
     }
   })
 
+program
+  .command('auth-headers')
+  .description('Logs out auth headers that Identity would expect for a user')
+  .option('-a, --user-alias <alias>', 'alias of user to set as active', null)
+  .option('-u, --user-id <number>', 'ID of user to set as active', null)
+  .action(async options => {
+    const { userAlias: alias, userId } = options.opts()
+    const seed = new SeedSession()
+    const headers = await seed.getAuthenticationHeaders({ alias, userId })
+    console.log({headers})
+    process.exit(0)
+  })
+
+program
+  .command('tip-identity')
+  .description('Sends a tip, via identity')
+  .option('-u, --user-id <number>', 'ID of user to set as active', null)
+  .option('-a, --amount <number>', 'Amount of audio to send', null)
+  .option('-r, --recipient-id <number>', 'ID of user to receive tip', null)
+  .action(async options => {
+    const { amount, userId, recipientId } = options.opts()
+    const seed = new SeedSession()
+    await seed.tipAudioIdentity({ amount, userId, recipientId })
+    process.exit(0)
+  })
+
+
 const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
   Object.entries(CLI_TO_COMMAND_MAP).forEach(
     ([cliCommand, { api, description, method, params, onSuccess }]) => {

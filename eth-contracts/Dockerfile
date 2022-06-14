@@ -4,17 +4,17 @@
 # FROM audius-eth-contracts:latest as eth-contracts
 # COPY --from=eth-contracts /usr/src/app/build/contracts/ ./build/contracts/
 
-FROM node:10.16 as builder
+FROM node:16 as builder
 
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM node:10.16-alpine
+FROM node:16-slim
 WORKDIR /usr/src/app
 COPY --from=builder /node_modules ./node_modules
 COPY . .
 
-RUN ./node_modules/.bin/truffle compile
+RUN npx truffle compile
 
 ARG git_sha
 ENV GIT_SHA=$git_sha

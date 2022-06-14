@@ -1,0 +1,25 @@
+{
+  "name": "audius-api-client",
+  "version": "1.0.0",
+  "description": "Generates an API client using the openapi-generator",
+  "main": "index.js",
+  "scripts": {
+    "gen": "npm run gen:prod",
+    "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
+    "gen:dev:default": "node ./gen.js --env dev",
+    "gen:dev:full": "node ./gen.js --env dev --api-flavor full",
+    "gen:stage": "npm run gen:stage:default ; npm run gen:stage:full",
+    "gen:stage:default": "node ./gen.js --env stage",
+    "gen:stage:full": "node ./gen.js --env stage --api-flavor full",
+    "gen:prod": "npm run gen:prod:default ; npm run gen:prod:full",
+    "gen:prod:default": "node ./gen.js",
+    "gen:prod:full": "node ./gen.js --api-flavor full",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.4.26",
+    "commander": "^9.2.0"
+  }
+}

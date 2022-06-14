@@ -2,10 +2,10 @@ const helpers = require('./helpers')
 const assert = require('assert')
 const { convertAudsToWeiBN } = require('../initScripts/helpers/utils')
 const nock = require('nock')
-const {GovernanceClient, Vote} = require('../src/services/ethContracts/governanceClient')
+const { Vote } = require('../src/services/ethContracts/GovernanceClient')
 const time = require('@openzeppelin/test-helpers/src/time')
-const { initializeLibConfig, deregisterSPEndpoint } = require('./helpers')
-const AudiusLibs = require('../src')
+const { initializeLibConfig } = require('./helpers')
+const AudiusLibs = require('../src/libs')
 
 const { audiusInstance: audius0, getRandomLocalhost } = helpers
 
@@ -39,15 +39,20 @@ const setupAccounts = async () => {
 
   // Register endpoints & stake
   const inittedLibs = [audius0, audius1, audius2]
-  const defaultStake = convertAudsToWeiBN(audius0.ethWeb3Manager.getWeb3(), DEFAULT_STAKE)
+  const defaultStake = convertAudsToWeiBN(
+    audius0.ethWeb3Manager.getWeb3(),
+    DEFAULT_STAKE
+  )
   for (const lib of inittedLibs) {
     const testEndpoint = getRandomLocalhost()
-    nock(testEndpoint).get('/health_check').reply(200, {
-      data: {
-        service: testServiceType,
-        version : '0.0.1'
-      }
-    })
+    nock(testEndpoint)
+      .get('/health_check')
+      .reply(200, {
+        data: {
+          service: testServiceType,
+          version: '0.0.1'
+        }
+      })
 
     await lib.ethContracts.ServiceProviderFactoryClient.register(
       testServiceType,
@@ -70,9 +75,9 @@ const cleanupAccounts = async () => {
 const createProposal = () => {
   const targetContractRegistryKey = web3.utils.utf8ToHex('DelegateManager')
 
-  const callValue = web3.utils.toWei("0", 'ether')
+  const callValue = web3.utils.toWei('0', 'ether')
   const functionSignature = 'slash(uint256,address)'
-  const slashAmount = web3.utils.toWei("500", 'ether')
+  const slashAmount = web3.utils.toWei('500', 'ether')
   const targetAddress = accounts[1]
   const callData = [slashAmount, targetAddress]
   const description = PROPOSAL_DESCRIPTION
@@ -97,11 +102,14 @@ const evaluateProposal = async (id, shouldVote = true) => {
   // Vote
   if (shouldVote) {
     const voteYes = Vote.yes
-    await audius0.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
+    await audius0.ethContracts.GovernanceClient.submitVote({
+      proposalId: id,
+      vote: voteYes
+    })
   }
 
   // Advance blocks
-  const currentBlock = (await web3.eth.getBlock("latest")).number
+  const currentBlock = (await web3.eth.getBlock('latest')).number
   const desired = currentBlock + 20
   await time.advanceBlockTo(desired)
 
@@ -109,7 +117,7 @@ const evaluateProposal = async (id, shouldVote = true) => {
   await audius0.ethContracts.GovernanceClient.evaluateProposalOutcome(id)
 }
 
-describe('Governance tests', function() {
+describe('Governance tests', function () {
   this.timeout(5000)
 
   before(async function () {
@@ -118,134 +126,191 @@ describe('Governance tests', function() {
     await audius0.ethContracts.GovernanceClient.setExecutionDelay(10)
   })
 
-  afterEach(async function() {
+  afterEach(async function () {
     // Cleanup outstanding proposals
-    const ids = await audius0.ethContracts.GovernanceClient.getInProgressProposals()
+    const ids =
+      await audius0.ethContracts.GovernanceClient.getInProgressProposals()
     for (let id of ids) {
       await evaluateProposal(id, false)
     }
   })
 
-  after(async function() {
+  after(async function () {
     await cleanupAccounts()
   })
 
-  it('Submits a proposal successfully', async function() {
+  it('Submits a proposal successfully', async function () {
     const id = await submitProposal()
     assert.ok(id >= 0)
   })
 
-  it('Gets submitted proposal by ID', async function() {
+  it('Gets submitted proposal by ID', async function () {
     // Submit the proposal
     const id = await submitProposal()
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
+    const proposal =
+      await audius0.ethContracts.GovernanceClient.getProposalById(id)
 
     // Sanity check proposal
     assert.equal(proposal.proposalId, id)
   })
 
-  it('Votes on proposals', async function() {
+  it('Votes on proposals', async function () {
     const id = await submitProposal()
 
     // Submit a yes vote initially
     const voteYes = Vote.yes
-    await audius0.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
+    await audius0.ethContracts.GovernanceClient.submitVote({
+      proposalId: id,
+      vote: voteYes
+    })
+    const proposal =
+      await audius0.ethContracts.GovernanceClient.getProposalById(id)
     const bnZero = toBN(0)
     assert.ok(proposal.voteMagnitudeNo.eq(bnZero))
     assert.ok(proposal.voteMagnitudeYes.gt(bnZero))
 
     // Update the vote to be 'no'
     const voteNo = Vote.no
-    await audius0.ethContracts.GovernanceClient.updateVote({proposalId: id, vote: voteNo})
-    const proposal2 = await audius0.ethContracts.GovernanceClient.getProposalById(id)
+    await audius0.ethContracts.GovernanceClient.updateVote({
+      proposalId: id,
+      vote: voteNo
+    })
+    const proposal2 =
+      await audius0.ethContracts.GovernanceClient.getProposalById(id)
     assert.ok(proposal2.voteMagnitudeYes.eq(bnZero))
-    assert.ok((proposal2.voteMagnitudeNo.gt(bnZero)))
+    assert.ok(proposal2.voteMagnitudeNo.gt(bnZero))
   })
 
-  it('Queries for votes', async function() {
+  it('Queries for votes', async function () {
     const id = await submitProposal()
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
+    const proposal =
+      await audius0.ethContracts.GovernanceClient.getProposalById(id)
     const queryStartBlock = proposal.submissionBlockNumber
     // Test for vote creation
     const voteYes = Vote.yes
-    await audius0.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
-    const votes = await audius0.ethContracts.GovernanceClient.getVotes({ proposalId: id, queryStartBlock })
+    await audius0.ethContracts.GovernanceClient.submitVote({
+      proposalId: id,
+      vote: voteYes
+    })
+    const votes = await audius0.ethContracts.GovernanceClient.getVotes({
+      proposalId: id,
+      queryStartBlock
+    })
     assert.equal(votes.length, 1)
     assert.equal(votes[0].vote, 2)
 
     // Test for vote update
     const voteNo = Vote.no
-    await audius0.ethContracts.GovernanceClient.updateVote({proposalId: id, vote: voteNo})
-    const updateVotes = await audius0.ethContracts.GovernanceClient.getVoteUpdates({ proposalId: id, queryStartBlock })
+    await audius0.ethContracts.GovernanceClient.updateVote({
+      proposalId: id,
+      vote: voteNo
+    })
+    const updateVotes =
+      await audius0.ethContracts.GovernanceClient.getVoteUpdates({
+        proposalId: id,
+        queryStartBlock
+      })
     assert.equal(updateVotes.length, 1)
     assert.equal(updateVotes[0].vote, 1)
   })
 
-  it('Gets in progress proposals', async function() {
+  it('Gets in progress proposals', async function () {
     const id = await submitProposal()
-    const inProgressIds = await audius0.ethContracts.GovernanceClient.getInProgressProposals()
+    const inProgressIds =
+      await audius0.ethContracts.GovernanceClient.getInProgressProposals()
     assert.equal(inProgressIds.length, 1)
     assert.equal(inProgressIds[0], id)
 
     // evaluate
     await evaluateProposal(id)
-    const inProgressIds2 = await audius0.ethContracts.GovernanceClient.getInProgressProposals()
+    const inProgressIds2 =
+      await audius0.ethContracts.GovernanceClient.getInProgressProposals()
     assert.equal(inProgressIds2.length, 0)
   })
 
-  it('Gets all proposals', async function() {
-    const blockNumber = await audius0.ethWeb3Manager.getWeb3().eth.getBlockNumber()
+  it('Gets all proposals', async function () {
+    const blockNumber = await audius0.ethWeb3Manager
+      .getWeb3()
+      .eth.getBlockNumber()
 
     const id = await submitProposal()
-    const inProgressIds = await audius0.ethContracts.GovernanceClient.getProposals(blockNumber)
+    const inProgressIds =
+      await audius0.ethContracts.GovernanceClient.getProposals(blockNumber)
     assert.equal(inProgressIds.length, 1)
     assert.equal(inProgressIds[0].proposalId, id)
 
     // evaluate
     await evaluateProposal(id)
-    const inProgressIds2 = await audius0.ethContracts.GovernanceClient.getProposals(blockNumber)
+    const inProgressIds2 =
+      await audius0.ethContracts.GovernanceClient.getProposals(blockNumber)
     assert.equal(inProgressIds.length, 1)
     assert.equal(inProgressIds[0].proposalId, id)
   })
 
-  it('Gets a proposal evaluation', async function() {
-    const blockNumber = await audius0.ethWeb3Manager.getWeb3().eth.getBlockNumber()
+  it('Gets a proposal evaluation', async function () {
+    const blockNumber = await audius0.ethWeb3Manager
+      .getWeb3()
+      .eth.getBlockNumber()
 
     const id = await submitProposal()
     await evaluateProposal(id)
-    const evaluation = await audius0.ethContracts.GovernanceClient.getProposalEvaluation(id)
+    const evaluation =
+      await audius0.ethContracts.GovernanceClient.getProposalEvaluation(id)
     assert.equal(evaluation.length, 1)
-    assert.equal(evaluation[0].returnValues._numVotes, "1")
+    assert.equal(evaluation[0].returnValues._numVotes, '1')
   })
 
-  it('Gets a proposal submisson', async function() {
-    const blockNumber = await audius0.ethWeb3Manager.getWeb3().eth.getBlockNumber()
+  it('Gets a proposal submisson', async function () {
+    const blockNumber = await audius0.ethWeb3Manager
+      .getWeb3()
+      .eth.getBlockNumber()
 
     const id = await submitProposal()
-    const submission = await audius0.ethContracts.GovernanceClient.getProposalSubmission(id)
+    const submission =
+      await audius0.ethContracts.GovernanceClient.getProposalSubmission(id)
     assert.equal(submission.description, PROPOSAL_DESCRIPTION)
     assert.equal(submission.name, PROPOSAL_NAME)
   })
 
-  it('Gets votes by address', async function() {
+  it('Gets votes by address', async function () {
     const id = await submitProposal()
-    const proposal = await audius0.ethContracts.GovernanceClient.getProposalById(id)
+    const proposal =
+      await audius0.ethContracts.GovernanceClient.getProposalById(id)
     const queryStartBlock = proposal.submissionBlockNumber
 
     // submit votes
     const voteYes = Vote.yes
     const voteNo = Vote.no
-    await audius1.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
-    await audius2.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteNo})
+    await audius1.ethContracts.GovernanceClient.submitVote({
+      proposalId: id,
+      vote: voteYes
+    })
+    await audius2.ethContracts.GovernanceClient.submitVote({
+      proposalId: id,
+      vote: voteNo
+    })
 
     // update some votes
-    await audius1.ethContracts.GovernanceClient.updateVote({proposalId: id, vote: voteNo})
-    await audius2.ethContracts.GovernanceClient.updateVote({proposalId: id, vote: voteYes})
+    await audius1.ethContracts.GovernanceClient.updateVote({
+      proposalId: id,
+      vote: voteNo
+    })
+    await audius2.ethContracts.GovernanceClient.updateVote({
+      proposalId: id,
+      vote: voteYes
+    })
 
     // get submissions and updates
-    const account1Submissions = await audius0.ethContracts.GovernanceClient.getVoteSubmissionsByAddress({ addresses: [accounts[1]], queryStartBlock })
-    const account2Updates = await audius0.ethContracts.GovernanceClient.getVoteUpdatesByAddress({ addresses: [accounts[2]], queryStartBlock })
+    const account1Submissions =
+      await audius0.ethContracts.GovernanceClient.getVoteSubmissionsByAddress({
+        addresses: [accounts[1]],
+        queryStartBlock
+      })
+    const account2Updates =
+      await audius0.ethContracts.GovernanceClient.getVoteUpdatesByAddress({
+        addresses: [accounts[2]],
+        queryStartBlock
+      })
 
     // assert filters work correctly
     assert.equal(account1Submissions.length, 1)
@@ -254,48 +319,64 @@ describe('Governance tests', function() {
     assert.equal(account2Updates[0].voter, accounts[2])
   })
 
-  it('Gets Quorum Percent', async function() {
-    const percent = await audius0.ethContracts.GovernanceClient.getVotingQuorumPercent()
+  it('Gets Quorum Percent', async function () {
+    const percent =
+      await audius0.ethContracts.GovernanceClient.getVotingQuorumPercent()
     assert.ok(typeof percent === 'number')
   })
 
-  it('Gets voting period', async function() {
+  it('Gets voting period', async function () {
     const period = await audius0.ethContracts.GovernanceClient.getVotingPeriod()
     assert.ok(typeof period === 'number')
   })
 
-  it('Gets execution delay', async function() {
-    const delay = await audius0.ethContracts.GovernanceClient.getExecutionDelay()
+  it('Gets execution delay', async function () {
+    const delay =
+      await audius0.ethContracts.GovernanceClient.getExecutionDelay()
     assert.ok(typeof delay === 'number')
   })
 
-  it('Gets target contract hash', async function() {
+  it('Gets target contract hash', async function () {
     const id = await submitProposal()
-    const hash = await audius0.ethContracts.GovernanceClient.getProposalTargetContractHash(id)
+    const hash =
+      await audius0.ethContracts.GovernanceClient.getProposalTargetContractHash(
+        id
+      )
     assert.ok(typeof hash === 'string')
     assert.ok(hash.length > 0)
   })
 
-  it('Gets vote by proposal and voter', async function() {
+  it('Gets vote by proposal and voter', async function () {
     const id = await submitProposal()
 
     // submit yes votes
     const voteYes = Vote.yes
     const voteNo = Vote.no
-    await audius1.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
-    const result = await audius0.ethContracts.GovernanceClient.getVoteByProposalAndVoter({
+    await audius1.ethContracts.GovernanceClient.submitVote({
       proposalId: id,
-      voterAddress: accounts[1]
+      vote: voteYes
     })
+    const result =
+      await audius0.ethContracts.GovernanceClient.getVoteByProposalAndVoter({
+        proposalId: id,
+        voterAddress: accounts[1]
+      })
     assert.equal(result, 2)
 
     // submit yes vote, update to no vote
-    await audius2.ethContracts.GovernanceClient.submitVote({proposalId: id, vote: voteYes})
-    await audius2.ethContracts.GovernanceClient.updateVote({proposalId: id, vote: voteNo})
-    const result2 = await audius0.ethContracts.GovernanceClient.getVoteByProposalAndVoter({
+    await audius2.ethContracts.GovernanceClient.submitVote({
       proposalId: id,
-      voterAddress: accounts[2]
+      vote: voteYes
     })
+    await audius2.ethContracts.GovernanceClient.updateVote({
+      proposalId: id,
+      vote: voteNo
+    })
+    const result2 =
+      await audius0.ethContracts.GovernanceClient.getVoteByProposalAndVoter({
+        proposalId: id,
+        voterAddress: accounts[2]
+      })
     assert.equal(result2, 1)
   })
 })

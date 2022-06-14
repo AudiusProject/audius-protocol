@@ -43,7 +43,6 @@ from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_user_history import get_user_history
 from src.queries.get_users import get_users
 from src.queries.get_users_account import get_users_account
-from src.queries.get_users_cnode import get_users_cnode
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.utils.redis_metrics import record_metrics
 
@@ -575,21 +574,6 @@ def get_previously_private_playlists_route():
     try:
         playlists = get_previously_private_playlists(to_dict(request.args))
         return api_helpers.success_response(playlists)
-    except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400)
-
-
-# Get the users with a given `creator_node_endpoint` as primary
-# NOTE This route is deprecated in favor of `/users/content_node` in src/api/v1/users.py:UsersByContentNode()
-#       It cannot be removed for backwards-compatibility
-@bp.route("/users/creator_node", methods=("GET",))
-def get_creator_node_users():
-    try:
-        if "creator_node_endpoint" not in request.args:
-            raise exceptions.ArgumentError("Missing creator_node_endpoint")
-        cnode_url = request.args.get("creator_node_endpoint")
-        users = get_users_cnode(cnode_url)
-        return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 

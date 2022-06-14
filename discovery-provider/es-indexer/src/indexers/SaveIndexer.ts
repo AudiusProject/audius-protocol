@@ -5,10 +5,10 @@ import { SaveDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class SaveIndexer extends BaseIndexer<SaveDoc> {
-  tableName = 'saves'
-  idColumn = 'save_id'
-  indexName = indexNames.saves
-  batchSize: number = 20000
+  constructor() {
+    super('saves', 'save_id')
+    this.batchSize = 20000
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.saves,
@@ -16,6 +16,7 @@ export class SaveIndexer extends BaseIndexer<SaveDoc> {
       index: {
         number_of_shards: 1,
         number_of_replicas: 0,
+        refresh_interval: '5s',
       },
     },
     mappings: {

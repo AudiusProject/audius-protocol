@@ -5,7 +5,10 @@ export NODE_VERSION="v14.18.1"
 export PYTHON_VERSION="3.9"
 export NVM_VERSION="v0.35.3"
 export DOCKER_COMPOSE_VERSION="1.27.4"
-export FAST_PROVISIONED=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/tags | grep "fast" >/dev/null; echo $?)
+export FAST_PROVISIONED=$(
+    curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/tags | grep "fast" >/dev/null
+    echo $?
+)
 
 # Helper functions
 function setup_linux_toolchains() {
@@ -13,18 +16,22 @@ function setup_linux_toolchains() {
     sudo apt-get -y upgrade
     sudo apt install -y \
         apt-transport-https \
+        build-essential \
         ca-certificates \
         curl \
-        software-properties-common \
-        build-essential \
-        python-is-python2 \
-        python3-pip \
         git-secrets \
+        glances \
+        iotop \
         jq \
-        wget \
         libpq-dev \
         neovim \
         net-tools \
+        ntp \
+        python-is-python2 \
+        python3-pip \
+        software-properties-common \
+        sysstat \
+        wget \
         zsh
     sudo apt autoremove
 
@@ -58,15 +65,17 @@ function setup_python() {
     sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
     sudo apt install -y "python$PYTHON_VERSION"
     sudo apt install -y "python$PYTHON_VERSION-dev"
-    pip install \
+
+    python$PYTHON_VERSION -m pip install \
         ipython \
         pre-commit==2.16.0 \
+        pip==22.0.4 \
         wheel \
         yq
 
     (
         cd $PROTOCOL_DIR/discovery-provider
-        pip install -r requirements.txt
+        python$PYTHON_VERSION -m pip install -r requirements.txt
     )
 }
 
@@ -102,23 +111,23 @@ function setup_node() {
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
     sudo chmod +x "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
     nvm install $NODE_VERSION
 }
 
 function setup_profile() {
-    echo "nvm use $NODE_VERSION" >> $HOME/.profile
-    echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> $HOME/.profile
-    echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> $HOME/.profile
-    echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >> $HOME/.profile
-    echo 'export TN_DIR=$HOME/trusted-notifier-service' >> $HOME/.profile
+    echo "nvm use $NODE_VERSION" >>$HOME/.profile
+    echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >>$HOME/.profile
+    echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >>$HOME/.profile
+    echo 'export AAO_DIR=$HOME/anti-abuse-oracle' >>$HOME/.profile
+    echo 'export TN_DIR=$HOME/trusted-notifier-service' >>$HOME/.profile
     echo '
 if [ -d ~/.aliases ]; then
   for f in ~/.aliases/*; do
     source $f
   done
-fi' >> $HOME/.profile
+fi' >>$HOME/.profile
 }
 
 function silence_motd() {
@@ -146,11 +155,11 @@ function setup_audius_repos() {
     cd $HOME
     git clone https://github.com/AudiusProject/audius-client.git
     cd audius-client
-    npm link @audius/libs
+    npm link @audius/sdk
 
     # set up repos
     node $PROTOCOL_DIR/service-commands/scripts/setup.js run init-repos up
-    
+
     setup_solana_dev
 }
 
@@ -159,10 +168,16 @@ function install_zsh_tooling() {
     zinit self-update
 }
 
+function install_cloud_monitoring() {
+    curl -sSO https://dl.google.com/cloudagents/add-monitoring-agent-repo.sh
+    sudo bash add-monitoring-agent-repo.sh --also-install
+}
+
 function setup() {
     if [ "$FAST_PROVISIONED" -eq "1" ]; then # run full setup
         setup_linux_toolchains
         install_zsh_tooling
+        install_cloud_monitoring
         setup_ssh_timeouts
         setup_vscode
         setup_python

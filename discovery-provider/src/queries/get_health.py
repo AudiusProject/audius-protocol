@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
+from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models import Block, IPLDBlacklistBlock
@@ -20,9 +21,14 @@ from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
+from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
 from src.utils.redis_constants import (
+    LAST_REACTIONS_INDEX_TIME_KEY,
+    LAST_SEEN_NEW_REACTION_TIME_KEY,
+    UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
+    UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
     latest_block_hash_redis_key,
@@ -51,6 +57,7 @@ default_healthy_block_diff = int(shared_config["discprov"]["healthy_block_diff"]
 default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"]
 )
+infra_setup = shared_config["discprov"]["infra_setup"]
 
 # min system requirement values
 min_number_of_cpus: int = 8  # 8 cpu
@@ -80,8 +87,6 @@ def _get_db_conn_state():
         [
             MONITORS[monitor_names.database_connections],
             MONITORS[monitor_names.database_connection_info],
-            MONITORS[monitor_names.database_index_count],
-            MONITORS[monitor_names.database_index_info],
         ]
     )
 
@@ -168,6 +173,10 @@ class GetHealthArgs(TypedDict):
     # Number of seconds play counts are allowed to drift
     plays_count_max_drift: Optional[int]
 
+    # Reactions max drift
+    reactions_max_indexing_drift: Optional[int]
+    reactions_max_last_reaction_drift: Optional[int]
+
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
     """
@@ -191,10 +200,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         else default_healthy_block_diff
     )
 
-    latest_block_num = None
-    latest_block_hash = None
-    latest_indexed_block_num = None
-    latest_indexed_block_hash = None
+    latest_block_num: Optional[int] = None
+    latest_block_hash: Optional[str] = None
+    latest_indexed_block_num: Optional[int] = None
+    latest_indexed_block_hash: Optional[str] = None
+    last_track_unavailability_job_start_time: Optional[str] = None
+    last_track_unavailability_job_end_time: Optional[str] = None
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -207,23 +218,19 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if latest_indexed_block_num is not None:
             latest_indexed_block_num = int(latest_indexed_block_num)
 
-        latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
-        if latest_indexed_block_hash is not None:
-            latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
-
-    # fetch latest blockchain state from web3 if:
-    # we explicitly don't want to use redis cache or
-    # value from redis cache is None
-    if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
-        # get latest blockchain state from web3
-        latest_block = web3.eth.get_block("latest", True)
-        latest_block_num = latest_block.number
-        latest_block_hash = latest_block.hash.hex()
-
-    play_health_info = get_play_health_info(redis, plays_count_max_drift)
-    rewards_manager_health_info = get_rewards_manager_health_info(redis)
-    user_bank_health_info = get_user_bank_health_info(redis)
-    spl_audio_info = get_spl_audio_info(redis)
+        latest_indexed_block_hash_bytes = redis.get(
+            most_recent_indexed_block_hash_redis_key
+        )
+        if latest_indexed_block_hash_bytes is not None:
+            latest_indexed_block_hash = latest_indexed_block_hash_bytes.decode("utf-8")
+    else:
+        # Get latest blockchain state from web3
+        try:
+            latest_block = web3.eth.get_block("latest", True)
+            latest_block_num = latest_block.number
+            latest_block_hash = latest_block.hash.hex()
+        except Exception as e:
+            logger.error(f"Could not get latest block from chain: {e}")
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -236,6 +243,16 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         db_block_state = _get_db_block_state()
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
+
+    play_health_info = get_play_health_info(redis, plays_count_max_drift)
+    rewards_manager_health_info = get_rewards_manager_health_info(redis)
+    user_bank_health_info = get_user_bank_health_info(redis)
+    spl_audio_info = get_spl_audio_info(redis)
+    reactions_health_info = get_reactions_health_info(
+        redis,
+        args.get("reactions_max_indexing_drift"),
+        args.get("reactions_max_last_reaction_drift"),
+    )
 
     trending_tracks_age_sec = get_elapsed_time_redis(
         redis, trending_tracks_last_completion_redis_key
@@ -266,6 +283,26 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if last_scanned_block_for_balance_refresh
         else None
     )
+
+    try:
+        last_track_unavailability_job_start_time = str(
+            redis.get(UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY).decode()
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not get latest track unavailability job start timestamp: {e}"
+        )
+        last_track_unavailability_job_start_time = None
+
+    try:
+        last_track_unavailability_job_end_time = str(
+            redis.get(UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY).decode()
+        )
+    except Exception as e:
+        logger.error(
+            f"Could not get latest track unavailability job end timestamp: {e}"
+        )
+        last_track_unavailability_job_end_time = None
 
     # Get system information monitor values
     sys_info = monitors.get_monitors(
@@ -299,6 +336,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "num_users_in_lazy_balance_refresh_queue": num_users_in_lazy_balance_refresh_queue,
         "num_users_in_immediate_balance_refresh_queue": num_users_in_immediate_balance_refresh_queue,
         "last_scanned_block_for_balance_refresh": last_scanned_block_for_balance_refresh,
+        "last_track_unavailability_job_start_time": last_track_unavailability_job_start_time,
+        "last_track_unavailability_job_end_time": last_track_unavailability_job_end_time,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
@@ -307,9 +346,16 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "user_bank": user_bank_health_info,
         "openresty_public_key": openresty_public_key,
         "spl_audio_info": spl_audio_info,
+        "reactions": reactions_health_info,
+        "infra_setup": infra_setup,
     }
 
-    block_difference = abs(latest_block_num - latest_indexed_block_num)
+    if latest_block_num is not None and latest_indexed_block_num is not None:
+        block_difference = abs(latest_block_num - latest_indexed_block_num)
+    else:
+        # If we cannot get a reading from chain about what the latest block is,
+        # we set the difference to be an unhealthy amount
+        block_difference = default_healthy_block_diff + 1
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
@@ -329,14 +375,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         health_results["meets_min_requirements"] = True
 
     if verbose:
+        # Elasticsearch health
+        if esclient:
+            health_results["elasticsearch"] = get_elasticsearch_health_info(
+                esclient, latest_indexed_block_num
+            )
+
         # DB connections check
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
-        health_results["country"] = shared_config["serviceLocation"]["serviceCountry"]
-        health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
-        health_results["longitude"] = shared_config["serviceLocation"][
-            "serviceLongitude"
-        ]
+        location = get_location()
+        health_results.update(location)
 
         if db_connections_error:
             return health_results, db_connections_error
@@ -365,10 +414,48 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     is_unhealthy = (
-        unhealthy_blocks or unhealthy_challenges or play_health_info["is_unhealthy"]
+        unhealthy_blocks
+        or unhealthy_challenges
+        or play_health_info["is_unhealthy"]
+        or reactions_health_info["is_unhealthy"]
     )
 
     return health_results, is_unhealthy
+
+
+class LocationResponse(TypedDict):
+    country: str
+    latitude: str
+    longitude: str
+
+
+def get_location() -> LocationResponse:
+    return {
+        "country": shared_config["serviceLocation"]["serviceCountry"],
+        "latitude": shared_config["serviceLocation"]["serviceLatitude"],
+        "longitude": shared_config["serviceLocation"]["serviceLongitude"],
+    }
+
+
+def get_elasticsearch_health_info(
+    esclient: Elasticsearch, latest_indexed_block_num: int
+) -> Dict[str, Dict[str, int]]:
+    elasticsearch_health = {}
+    for index_name in ES_INDEXES:
+        try:
+            resp = esclient.search(
+                index=index_name,
+                aggs={"max_blocknumber": {"max": {"field": "blocknumber"}}},
+                size=0,
+            )
+            blocknumber = int(resp["aggregations"]["max_blocknumber"]["value"])
+            elasticsearch_health[index_name] = {
+                "blocknumber": blocknumber,
+                "db_block_difference": latest_indexed_block_num - blocknumber,
+            }
+        except Exception:
+            pass
+    return elasticsearch_health
 
 
 def health_check_prometheus_exporter():
@@ -489,6 +576,47 @@ def get_user_bank_health_info(
     }
 
 
+def get_reactions_health_info(
+    redis: Redis,
+    max_indexing_drift: Optional[int] = None,
+    max_reaction_drift: Optional[int] = None,
+):
+    now = datetime.now()
+    last_index_time = redis.get(LAST_REACTIONS_INDEX_TIME_KEY)
+    last_index_time = int(last_index_time) if last_index_time else None
+    last_reaction_time = redis.get(LAST_SEEN_NEW_REACTION_TIME_KEY)
+    last_reaction_time = int(last_reaction_time) if last_reaction_time else None
+
+    last_index_time = (
+        datetime.fromtimestamp(last_index_time) if last_index_time else None
+    )
+    last_reaction_time = (
+        datetime.fromtimestamp(last_reaction_time) if last_reaction_time else None
+    )
+
+    indexing_delta = (
+        (now - last_index_time).total_seconds() if last_index_time else None
+    )
+    reaction_delta = (
+        (now - last_reaction_time).total_seconds() if last_reaction_time else None
+    )
+
+    is_unhealthy_indexing = bool(
+        indexing_delta and max_indexing_drift and indexing_delta > max_indexing_drift
+    )
+    is_unhealthy_reaction = bool(
+        reaction_delta and max_reaction_drift and reaction_delta > max_reaction_drift
+    )
+
+    is_unhealthy = is_unhealthy_indexing or is_unhealthy_reaction
+
+    return {
+        "indexing_delta": indexing_delta,
+        "reaction_delta": reaction_delta,
+        "is_unhealthy": is_unhealthy,
+    }
+
+
 def get_spl_audio_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_spl_audio_info")
@@ -556,12 +684,12 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
         latest_block_hash = stored_latest_blockhash.decode("utf-8")
 
     if latest_block_num is None or latest_block_hash is None:
-        latest_block = web3.eth.get_block("latest", True)
-        latest_block_num = latest_block.number
-        latest_block_hash = latest_block.hash.hex()
-
-        # if we had attempted to use redis cache and the values weren't there, set the values now
         try:
+            latest_block = web3.eth.get_block("latest", True)
+            latest_block_num = latest_block.number
+            latest_block_hash = latest_block.hash.hex()
+
+            # if we had attempted to use redis cache and the values weren't there, set the values now
             # ex sets expiration time and nx only sets if key doesn't exist in redis
             redis.set(
                 latest_block_redis_key,

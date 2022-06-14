@@ -1,10 +1,7 @@
-import logging  # pylint: disable=C0302
+import logging
 
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
-    extend_playlist,
-    extend_track,
-    extend_user,
     format_limit,
     format_offset,
     full_search_parser,
@@ -15,33 +12,13 @@ from src.api.v1.helpers import (
 from src.api.v1.models.search import search_model
 from src.queries.search_queries import search
 from src.utils.redis_cache import cache
+from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 
 # Models & namespaces
 
 full_ns = Namespace("search", description="Full search operations")
-
-
-# Helpers
-def extend_search(resp):
-    if "users" in resp:
-        resp["users"] = list(map(extend_user, resp["users"]))
-    if "followed_users" in resp:
-        resp["followed_users"] = list(map(extend_user, resp["followed_users"]))
-    if "tracks" in resp:
-        resp["tracks"] = list(map(extend_track, resp["tracks"]))
-    if "saved_tracks" in resp:
-        resp["saved_tracks"] = list(map(extend_track, resp["saved_tracks"]))
-    if "playlists" in resp:
-        resp["playlists"] = list(map(extend_playlist, resp["playlists"]))
-    if "saved_playlists" in resp:
-        resp["saved_playlists"] = list(map(extend_playlist, resp["saved_playlists"]))
-    if "albums" in resp:
-        resp["albums"] = list(map(extend_playlist, resp["albums"]))
-    if "saved_albums" in resp:
-        resp["saved_albums"] = list(map(extend_playlist, resp["saved_albums"]))
-    return resp
 
 
 search_full_response = make_full_response(
@@ -51,6 +28,7 @@ search_full_response = make_full_response(
 
 @full_ns.route("/full")
 class FullSearch(Resource):
+    @record_metrics
     @full_ns.doc(
         id="Search",
         description="""Get Users/Tracks/Playlists/Albums that best match the search query""",
@@ -76,8 +54,6 @@ class FullSearch(Resource):
             "only_downloadable": False,
         }
         resp = search(search_args)
-        resp = extend_search(resp)
-
         return success_response(resp)
 
 
@@ -88,6 +64,7 @@ search_autocomplete_response = make_full_response(
 
 @full_ns.route("/autocomplete")
 class FullSearchAutocomplete(Resource):
+    @record_metrics
     @full_ns.doc(
         id="Search Autocomplete",
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
@@ -117,6 +94,4 @@ class FullSearchAutocomplete(Resource):
             "only_downloadable": False,
         }
         resp = search(search_args)
-        resp = extend_search(resp)
-
         return success_response(resp)

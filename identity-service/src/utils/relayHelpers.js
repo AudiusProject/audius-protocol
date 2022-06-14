@@ -1,18 +1,24 @@
 const models = require('../models')
 const config = require('../config')
-const { SolanaUtils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const SolanaUtils = libs.SolanaUtils
 
 const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
 const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
 const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
 const solanaMintAddress = config.get('solanaMintAddress')
+const solanaAudiusAnchorDataProgramId = config.get('solanaAudiusAnchorDataProgramId')
 
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
   /* secp */ 'KeccakSecp256k11111111111111111111111111111'
 ])
+
+if (solanaAudiusAnchorDataProgramId) {
+  allowedProgramIds.add(solanaAudiusAnchorDataProgramId)
+}
 
 /**
  * @typedef Instruction
@@ -46,7 +52,7 @@ const rewardManagerBaseAccountIndices = {
  * @see {@link [../../../solana-programs/claimable-tokens/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/2c93f29596a1d6cc8ca4e76ef1f0d2e57f0e09e6/solana-programs/claimable-tokens/program/src/instruction.rs#L21)}
  */
 const claimableTokenAuthorityIndices = {
-  0: -1, // CreateTokenAccount
+  0: 2, // CreateTokenAccount
   1: 4 // Transfer
 }
 

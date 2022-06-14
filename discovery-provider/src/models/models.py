@@ -32,6 +32,33 @@ Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
 
+class RepresentableMixin:
+    """Autogenerate __repr__ for SQLAlchemy models.
+
+    Usage:
+
+    ```
+    class MyNewModel(Base, RepresentableMixin):
+        ...
+    ```
+    """
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        attrs = self.__dict__.items()
+        strings = [f"<{name}("]
+        for i, (k, v) in enumerate(attrs):
+            if k[0] == "_":
+                continue
+            raw = f"{k}={v}"
+            if i != len(attrs) - 1:
+                raw = f"{raw}, "
+            else:
+                raw = f"{raw})>"
+            strings.append(raw)
+        return "".join(strings)
+
+
 # Listen for instrumentation of attributes on the base class
 # to add a listener on that attribute whenever it is set
 @event.listens_for(Base, "attribute_instrument")
@@ -288,6 +315,7 @@ class Track(Base):
     is_unlisted = Column(Boolean, nullable=False)
     field_visibility = Column(postgresql.JSONB, nullable=True)
     stem_of = Column(postgresql.JSONB, nullable=True)
+    is_available = Column(Boolean, default=True, nullable=False)
 
     _routes = relationship(  # type: ignore
         "TrackRoute",
@@ -337,6 +365,7 @@ class Track(Base):
             f"track_id={self.track_id},"
             f"is_current={self.is_current},"
             f"is_delete={self.is_delete},"
+            f"is_unlisted={self.is_unlisted},"
             f"owner_id={self.owner_id},"
             f"route_id={self.route_id},"
             f"title={self.title},"
@@ -363,6 +392,7 @@ class Track(Base):
             f"stem_of={self.stem_of},"
             f"permalink={self.permalink},"
             f"user={self.user}"
+            f"is_available={self.is_available}"
             ")>"
         )
 
@@ -551,6 +581,9 @@ class Play(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=True, index=False)
     source = Column(String, nullable=True, index=False)
+    city = Column(String, nullable=True, index=False)
+    region = Column(String, nullable=True, index=False)
+    country = Column(String, nullable=True, index=False)
     play_item_id = Column(Integer, nullable=False, index=False)
     slot = Column(Integer, nullable=True, index=True)
     signature = Column(String, nullable=True, index=False)
@@ -1076,6 +1109,8 @@ class AggregateUser(Base):
     following_count = Column(Integer, nullable=False)
     repost_count = Column(Integer, nullable=False)
     track_save_count = Column(Integer, nullable=False)
+    supporter_count = Column(Integer, nullable=False, server_default="0")
+    supporting_count = Column(Integer, nullable=False, server_default="0")
 
     Index("aggregate_user_idx", "user_id", unique=True)
 

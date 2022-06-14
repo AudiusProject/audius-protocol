@@ -1,41 +1,39 @@
 import Web3 from '../../web3'
 import type Web3Type from 'web3'
-import {
-  MultiProvider,
-  estimateGas,
-  Providers,
-  ContractMethod,
-  Maybe
-} from '../../utils'
+import { MultiProvider, estimateGas, ContractMethod, Maybe } from '../../utils'
 import { Transaction as EthereumTx } from 'ethereumjs-tx'
 import retry from 'async-retry'
 import type { IdentityService, RelayTransaction } from '../identity'
 import type { Hedgehog } from '@audius/hedgehog'
 import type { AxiosError } from 'axios'
+import type Wallet from 'ethereumjs-wallet'
+import type { TransactionReceipt } from 'web3-core'
 
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, ETH minimum allowed gas price
 const HIGH_GAS_PRICE = 250 * MIN_GAS_PRICE // 250 GWei
 const DEFAULT_GAS_PRICE = 100 * MIN_GAS_PRICE // 100 Gwei is a reasonably average gas price
 const MAX_GAS_LIMIT = 5000000 // We've seen prod tx's take up to 4M. Set to the highest we've observed + a buffer
 
-type Web3Config = {
-  ownerWallet: string
-  providers: Providers
+export type EthWeb3Config = {
+  ownerWallet: Wallet | string
+  providers: string[]
+}
+
+type EthWeb3ManagerConfig = {
+  web3Config: EthWeb3Config
+  identityService: IdentityService
+  hedgehog?: Hedgehog
 }
 
 /** Singleton state-manager for Audius Eth Contracts */
 export class EthWeb3Manager {
-  web3Config: Web3Config
+  web3Config: EthWeb3Config
   web3: Web3Type
   identityService: IdentityService
-  hedgehog: Hedgehog
-  ownerWallet: Maybe<string>
+  hedgehog?: Hedgehog
+  ownerWallet: Maybe<Wallet | string>
 
-  constructor(
-    web3Config: Web3Config,
-    identityService: IdentityService,
-    hedgehog: Hedgehog
-  ) {
+  constructor({ web3Config, identityService, hedgehog }: EthWeb3ManagerConfig) {
     if (!web3Config) throw new Error('web3Config object not passed in')
     if (!web3Config.providers)
       throw new Error('missing web3Config property: providers')
@@ -50,7 +48,8 @@ export class EthWeb3Manager {
 
     if (this.web3Config.ownerWallet) {
       this.ownerWallet = this.web3Config.ownerWallet
-    } else {
+    } else if (this.hedgehog) {
+      // Hedgehog might not exist (in the case of @audius/sdk)
       const storedWallet = this.hedgehog.getWallet()
       if (storedWallet) {
         this.ownerWallet = storedWallet
@@ -64,6 +63,7 @@ export class EthWeb3Manager {
 
   getWalletAddress() {
     if (this.ownerWallet) {
+      // @ts-expect-error TODO extend ethereum-js-wallet to include toLowerCase
       return this.ownerWallet.toLowerCase()
     }
     throw new Error('Owner wallet not set')
@@ -82,16 +82,16 @@ export class EthWeb3Manager {
 
   async sendTransaction(
     contractMethod: ContractMethod,
-    contractAddress = null,
-    privateKey = null,
+    contractAddress: string | null = null,
+    privateKey: string | null = null,
     txRetries = 5,
     txGasLimit: number | null = null
-  ) {
+  ): Promise<TransactionReceipt> {
     const gasLimit =
       txGasLimit ??
       (await estimateGas({
         method: contractMethod,
-        from: this.ownerWallet as string,
+        from: this.ownerWallet,
         gasLimitMaximum: MAX_GAS_LIMIT
       }))
     if (contractAddress && privateKey) {
@@ -147,8 +147,8 @@ export class EthWeb3Manager {
     }
 
     const gasPrice = parseInt(await this.web3.eth.getGasPrice())
-    return contractMethod.send({
-      from: this.ownerWallet as string,
+    return await contractMethod.send({
+      from: this.ownerWallet,
       gas: gasLimit,
       gasPrice: gasPrice
     })
@@ -162,8 +162,8 @@ export class EthWeb3Manager {
   async relayTransaction(
     contractMethod: ContractMethod,
     contractAddress: string,
-    ownerWallet: string,
-    relayerWallet: string,
+    ownerWallet: Wallet | string,
+    relayerWallet?: Wallet | string,
     txRetries = 5,
     txGasLimit: number | null = null
   ): Promise<Maybe<RelayTransaction['resp']>> {
@@ -220,7 +220,7 @@ export class EthWeb3Manager {
   async getRelayMethodParams(
     contractAddress: string,
     contractMethod: ContractMethod,
-    relayerWallet: string
+    relayerWallet: Wallet
   ) {
     const encodedABI = contractMethod.encodeABI()
     const gasLimit = await estimateGas({

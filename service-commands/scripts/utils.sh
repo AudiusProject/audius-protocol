@@ -9,9 +9,11 @@ DEFAULT_GCP_COMPUTE_REGION='us-central1'
 DEFAULT_GCP_COMPUTE_ZONE='us-central1-a'
 DEFAULT_GCP_IMAGE="project=ubuntu-os-cloud,family=ubuntu-2004-lts"
 DEFAULT_GCP_MACHINE_TYPE="n2-custom-12-24576"
+DEFAULT_GCP_DISK_TYPE="pd-ssd"
 DEFAULT_PROVIDER="gcp"
 DEFAULT_USER="ubuntu"
-GCP_DEV_IMAGE="project=audius-infrastructure,image=dev-03-23-22-bake-03-23-2022"
+GCP_DEV_IMAGE="project=ci-audius-infra,image=ci-image-bake-latest"
+
 
 get_ssh_args() {
 	provider=$1
@@ -161,17 +163,6 @@ get_ip_addr() {
 
 format_bold() {
 	printf "$(tput bold)$@$(tput sgr0)"
-}
-
-configure_etc_hosts() {
-	read -p "Configure /etc/hosts? (sudo required) [y/N] " -n 1 -r && echo
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		IP=$(get_ip_addr $provider $name)
-		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
-		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.bashrc
-		sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
-		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
-	fi
 }
 
 set_ssh_serveralive() {

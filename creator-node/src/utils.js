@@ -7,12 +7,14 @@ const stream = require('stream')
 const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
+const { logger: genericLogger } = require('./logging.js')
 
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { Utils: LibsUtils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const LibsUtils = libs.Utils
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
@@ -23,11 +25,15 @@ class Utils {
 
   static async timeout(ms, log = true) {
     if (log) {
-      console.log(`starting timeout of ${ms}`)
+      genericLogger.info(`starting timeout of ${ms}`)
     }
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
+  /**
+   * Generates a random number from [0, max)
+   * @param {number} max the max random number. exclusive
+   */
   static getRandomInt(max) {
     return Math.floor(Math.random() * max)
   }
@@ -97,6 +103,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 }
 
 /**
+ * Fetches a CID from the Content Node network
  *
  * @param {String} filePath location of the file on disk
  * @param {String} cid content hash of the file
@@ -163,19 +170,21 @@ async function findCIDInNetwork(
         if (cid !== expectedCID) {
           await fs.unlink(filePath)
           logger.error(
-            `findCIDInNetwork - File contents and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
+            `findCIDInNetwork - File contents from ${node.endpoint} and hash don't match. CID: ${cid} expectedCID: ${expectedCID}`
           )
+        } else {
+          found = true
+          logger.info(
+            `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
+          )
+          break
         }
-        found = true
-        logger.info(
-          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
-        )
-        break
       }
     } catch (e) {
-      logger.error(`findCIDInNetwork error - ${e.toString()}`)
-      // since this is a function running in the background intended to fix state, don't error
-      // and stop the flow of execution for functions that call it
+      // Do not error and stop the flow of execution for functions that call it
+      logger.error(
+        `findCIDInNetwork fetch error from ${node.endpoint} - ${e.toString()}`
+      )
       continue
     }
   }
@@ -348,43 +357,40 @@ function currentNodeShouldHandleTranscode({
  * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
  * @param {Object} param
  * @param {func} param.asyncFn the fn to asynchronously retry
- * @param {Object} param.asyncFnParams the params to pass into the fn. takes in 1 object
- * @param {string} param.asyncFnTask the task label used to print on retry. used for debugging purposes
- * @param {number} param.factor the exponential factor
- * @param {number} [retries=5] the max number of retries. defaulted to 5
- * @param {number} [minTimeout=1000] minimum time to wait after first retry. defaulted to 1000ms
- * @param {number} [maxTimeout=5000] maximum time to wait after first retry. defaulted to 5000ms
+ * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
+ * @param {number} [param.options.factor=2] the exponential factor
+ * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
+ * @param {number} [param.options.minTimeout=1000] minimum number of ms to wait after first retry. defaulted to 1000ms
+ * @param {number} [param.options.maxTimeout=5000] maximum number of ms between two retries. defaulted to 5000ms
+ * @param {func} [param.options.onRetry] fn that gets called per retry
+ * @param {Object} param.logger
+ * @param {Boolean} param.log enables/disables logging
+ * @param {string?} param.logLabel
  * @returns the fn response if success, or throws an error
  */
 function asyncRetry({
   asyncFn,
-  asyncFnParams,
-  asyncFnTask,
-  retries = 5,
-  factor = 2, // default for async-retry
-  minTimeout = 1000, // default for async-retry
-  maxTimeout = 5000
+  options = {},
+  logger = genericLogger,
+  log = true,
+  logLabel = null
 }) {
-  return retry(
-    async () => {
-      if (asyncFnParams) {
-        return asyncFn(asyncFnParams)
+  options = {
+    retries: 5,
+    factor: 2,
+    minTimeout: 1000,
+    maxTimeout: 5000,
+    onRetry: (err, i) => {
+      if (err && log) {
+        const logPrefix =
+          (logLabel ? `[${logLabel}] ` : '') + `[asyncRetry] [attempt #${i}]`
+        logger.warn(`${logPrefix}: `, err)
       }
-
-      return asyncFn()
     },
-    {
-      retries,
-      factor,
-      minTimeout,
-      maxTimeout,
-      onRetry: (err, i) => {
-        if (err) {
-          console.log(`${asyncFnTask} ${i} retry error: `, err)
-        }
-      }
-    }
-  )
+    ...options
+  }
+
+  return retry(asyncFn, options)
 }
 
 module.exports = Utils
