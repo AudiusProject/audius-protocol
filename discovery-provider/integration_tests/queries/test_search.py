@@ -1,6 +1,5 @@
 import os
 import subprocess
-import time
 from datetime import datetime
 
 import pytest
@@ -260,7 +259,6 @@ def setup_search(app_module):
         cwd="es-indexer",
         timeout=5,
     )
-    time.sleep(2)
 
 
 def test_get_tracks_external(app_module):
