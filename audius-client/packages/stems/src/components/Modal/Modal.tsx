@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  forwardRef
-} from 'react'
+import { useEffect, useState, useCallback, useMemo, forwardRef } from 'react'
 
 import cn from 'classnames'
 import uniqueId from 'lodash/uniqueId'

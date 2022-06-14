@@ -1,10 +1,5 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  CSSProperties
-} from 'react'
+import { useState, useEffect, useCallback, useRef, CSSProperties } from 'react'
+import * as React from 'react'
 
 import cn from 'classnames'
 
