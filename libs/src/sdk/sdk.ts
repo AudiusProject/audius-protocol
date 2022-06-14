@@ -7,15 +7,15 @@ import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
 import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
-import { TracksApi } from './tracks'
-import { ResolveApi } from './resolve'
+import { TracksApi } from './api/TracksApi'
+import { ResolveApi } from './api/ResolveApi'
 import {
   Configuration,
   PlaylistsApi,
   UsersApi,
   TipsApi,
   querystring
-} from './default'
+} from './generated/default'
 import {
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
@@ -23,7 +23,7 @@ import {
   TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull
-} from './full'
+} from './generated/full'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -40,11 +40,29 @@ type Web3Config = {
 }
 
 type SdkConfig = {
+  /**
+   * Your app name
+   */
   appName: string
-  discoveryNodeConfig?: DiscoveryProviderConfig
+  /**
+   * Configuration for the DiscoveryProvider client
+   */
+  discoveryProviderConfig?: DiscoveryProviderConfig
+  /**
+   * Configuration for the Ethereum contracts client
+   */
   ethContractsConfig?: EthContractsConfig
+  /**
+   * Configuration for the Ethereum Web3 client
+   */
   ethWeb3Config?: EthWeb3Config
+  /**
+   * Configuration for the IdentityService client
+   */
   identityServiceConfig?: IdentityService
+  /**
+   * Configuration for Web3
+   */
   web3Config?: Web3Config
 }
 
@@ -52,15 +70,33 @@ type SdkConfig = {
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
+  const { appName } = config
+
+  // Initialize services
+  const { discoveryProvider } = initializeServices(config)
+
+  // Initialize APIs
+  const apis = initializeApis({ appName, discoveryProvider })
+
+  // Initialize OAuth
+  const oauth =
+    typeof window !== 'undefined'
+      ? new Oauth({ discoveryProvider, appName })
+      : undefined
+
+  return {
+    oauth,
+    ...apis
+  }
+}
+
+const initializeServices = (config: SdkConfig) => {
   const {
-    appName,
-    discoveryNodeConfig,
+    discoveryProviderConfig,
     ethContractsConfig,
     ethWeb3Config,
     identityServiceConfig
   } = config
-
-  /** Initialize services */
 
   const userStateManager = new UserStateManager()
 
@@ -87,13 +123,23 @@ export const sdk = (config: SdkConfig) => {
     ...ethContractsConfig
   })
 
-  const discoveryNode = new DiscoveryProvider({
+  const discoveryProvider = new DiscoveryProvider({
     ethContracts,
     userStateManager,
-    ...discoveryNodeConfig
+    ...discoveryProviderConfig
   })
 
-  const initializationPromise = discoveryNode.init()
+  return { discoveryProvider }
+}
+
+const initializeApis = ({
+  appName,
+  discoveryProvider
+}: {
+  appName: string
+  discoveryProvider: DiscoveryProvider
+}) => {
+  const initializationPromise = discoveryProvider.init()
 
   const generatedApiClientConfig = new Configuration({
     fetchApi: async (url: string) => {
@@ -106,18 +152,19 @@ export const sdk = (config: SdkConfig) => {
         (url.includes('?') ? '&' : '?') +
         querystring({ app_name: appName })
 
-      return discoveryNode._makeRequest(
+      return discoveryProvider._makeRequest(
         {
           endpoint: urlWithAppName
         },
         undefined,
         undefined,
+        // Throw errors instead of returning null
         true
       ) as Promise<Response>
     }
   })
 
-  const tracks = new TracksApi(generatedApiClientConfig, discoveryNode)
+  const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
@@ -132,13 +179,7 @@ export const sdk = (config: SdkConfig) => {
     tips: new TipsApiFull(generatedApiClientConfig as any)
   }
 
-  const oauth =
-    typeof window !== 'undefined'
-      ? new Oauth({ discoveryProvider: discoveryNode, appName })
-      : undefined
-
   return {
-    oauth,
     tracks,
     users,
     playlists,

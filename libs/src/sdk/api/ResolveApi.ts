@@ -5,11 +5,11 @@ import {
   RequiredError,
   Track,
   User
-} from './default'
+} from '../generated/default'
 import {
   ResolveApi as GeneratedResolveApi,
   ResolveRequest
-} from './default/apis/ResolveApi'
+} from '../generated/default/apis/ResolveApi'
 
 export class ResolveApi extends GeneratedResolveApi {
   constructor(configuration: Configuration) {
