@@ -33,7 +33,7 @@ const { PublicKey } = require('@solana/web3.js')
 const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
-const Reactions = require('./api/reactions')
+const { Reactions } = require('./api/reactions')
 
 class AudiusLibs {
   /**
