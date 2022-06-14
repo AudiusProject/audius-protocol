@@ -20,6 +20,7 @@ import { TipSent } from './TipSent'
 const messages = {
   sendATip: 'Send Tip',
   confirm: 'Confirm',
+  sending: 'Sending',
   tipSent: 'Tip Sent',
   holdOn: '⚠️ Hold On a Moment'
 }
@@ -50,7 +51,7 @@ const titlesMap: { [key in TippingSendStatus]?: JSX.Element | string } = {
   SENDING: (
     <div className={styles.tipIconTextContainer}>
       <GoldBadgeIconImage />
-      <span className={styles.tipText}>{messages.confirm}</span>
+      <span className={styles.tipText}>{messages.sending}</span>
     </div>
   ),
   CONVERTING: (

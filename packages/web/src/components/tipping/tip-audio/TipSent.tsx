@@ -53,18 +53,18 @@ export const TipSent = () => {
   }, [account, recipient, record, sendAmount, source])
 
   const renderSentAudio = () => (
-    <>
-      <div className={cn(styles.flexCenter, styles.sentSuccessfullyContainer)}>
+    <div className={styles.modalContentHeader}>
+      <div className={cn(styles.flexCenter, styles.modalContentHeaderTitle)}>
         <span className={styles.sentSuccessfullyIcon}>
           <IconCheck />
         </span>
         {messages.sentSuccessfully}
       </div>
-      <div className={cn(styles.flexCenter, styles.sentAudio)}>
+      <div className={cn(styles.flexCenter, styles.modalContentHeaderSubtitle)}>
         <span className={styles.sendAmount}>{sendAmount}</span>
         $AUDIO
       </div>
-    </>
+    </div>
   )
 
   return recipient ? (
