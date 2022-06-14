@@ -19,7 +19,7 @@ const MetricTypes = Object.freeze({
 })
 
 let MetricNames = {
-  SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE: 'sync_queue_job_counts_total',
+  SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds'
 }
@@ -28,10 +28,10 @@ MetricNames = Object.freeze(
 )
 
 const Metrics = Object.freeze({
-  [MetricNames.SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE]: {
+  [MetricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
     metricType: MetricTypes.GAUGE,
     metricConfig: {
-      name: MetricNames.SYNC_QUEUE_JOB_COUNTS_TOTAL_GAUGE,
+      name: MetricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
       help: 'Current job counts for SyncQueue by status',
       labelNames: ['status']
     }
