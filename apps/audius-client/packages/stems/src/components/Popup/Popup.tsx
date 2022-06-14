@@ -1,4 +1,4 @@
-import React, {
+import {
   forwardRef,
   MutableRefObject,
   useCallback,
@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState
 } from 'react'
+import * as React from 'react'
 
 import cn from 'classnames'
 import ReactDOM from 'react-dom'

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { createRef, Fragment, useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
@@ -8,7 +8,7 @@ import { SegmentedControlProps } from './types'
 
 export const SegmentedControl = (props: SegmentedControlProps) => {
   const optionRefs = useRef<Array<React.RefObject<HTMLDivElement>>>(
-    props.options.map(() => React.createRef())
+    props.options.map(() => createRef())
   )
   const [selected, setSelected] = useState(props.options[0].key)
 
@@ -54,7 +54,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
       <animated.div className={styles.tabBackground} style={animatedProps} />
       {props.options.map((option, idx) => {
         return (
-          <React.Fragment key={option.key}>
+          <Fragment key={option.key}>
             <div
               ref={optionRefs.current[idx]}
               className={cn(styles.tab, {
@@ -76,7 +76,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
                   selectedOption === props.options[idx + 1].key
               })}
             />
-          </React.Fragment>
+          </Fragment>
         )
       })}
     </div>
