@@ -1,3 +1,7 @@
+import React, { ComponentType } from 'react'
+
+import { ReactionTypes } from 'common/store/ui/reactions/slice'
+
 import { Reaction, ReactionProps as BaseReactionProps } from './Reaction'
 import explode from './exploding_head.json'
 import fire from './fire.json'
@@ -19,11 +23,11 @@ export const ExplodeReaction = (props: ReactionProps) => (
   <Reaction {...props} animationData={explode} />
 )
 
-export const reactions = {
+export const reactionMap: {
+  [k in ReactionTypes]: ComponentType<ReactionProps>
+} = {
   heart: HeartReaction,
   fire: FireReaction,
   party: PartyReaction,
   explode: ExplodeReaction
 }
-
-export type ReactionTypes = keyof typeof reactions

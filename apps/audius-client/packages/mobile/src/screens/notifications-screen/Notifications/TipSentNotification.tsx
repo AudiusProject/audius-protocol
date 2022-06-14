@@ -1,9 +1,10 @@
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { TipSent } from 'audius-client/src/common/store/notifications/types'
+import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
+import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
+import { TipSend } from 'audius-client/src/common/store/notifications/types'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationHeader,
@@ -22,14 +23,19 @@ const messages = {
 }
 
 type TipSentNotificationProps = {
-  notification: TipSent
+  notification: TipSend
 }
 
 export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { notification } = props
-  const { userId, value } = notification
-  const user = useSelectorWeb(state => getUser(state, { id: userId }))
 
+  const { amount } = notification
+  const uiAmount = useUIAudio(amount)
+
+  const user = useSelectorWeb(
+    state => getNotificationUser(state, notification),
+    isEqual
+  )
   if (!user) return null
 
   return (
@@ -40,7 +46,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <ProfilePicture profile={user} />
         <NotificationText>
-          {messages.sent} <TipText value={value} /> {messages.to}{' '}
+          {messages.sent} <TipText value={uiAmount} /> {messages.to}{' '}
           <UserNameLink user={user} />
         </NotificationText>
       </View>

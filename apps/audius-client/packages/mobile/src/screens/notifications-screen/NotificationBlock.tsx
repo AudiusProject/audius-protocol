@@ -89,11 +89,11 @@ const typeIconMap: Record<
   [NotificationType.ChallengeReward]: () => IconAudius,
   [NotificationType.TierChange]: (notification: TierChange) =>
     tierInfoMap[notification.tier].icon,
-  [NotificationType.TipReaction]: () => IconTrending,
-  [NotificationType.TipReceived]: () => IconTrending,
-  [NotificationType.TipSent]: () => IconTrending,
-  [NotificationType.TopSupporter]: () => IconTrending,
-  [NotificationType.TopSupporting]: () => IconTrending
+  [NotificationType.Reaction]: () => IconTrending,
+  [NotificationType.TipReceive]: () => IconTrending,
+  [NotificationType.TipSend]: () => IconTrending,
+  [NotificationType.SupporterRankUp]: () => IconTrending,
+  [NotificationType.SupportingRankUp]: () => IconTrending
 }
 
 const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
@@ -109,11 +109,11 @@ const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
   [NotificationType.ChallengeReward]: () => "YOU'VE EARNED $AUDIO",
   [NotificationType.TierChange]: (notification: TierChange) =>
     tierInfoMap[notification.tier].title,
-  [NotificationType.TipReaction]: () => '',
-  [NotificationType.TipReceived]: () => '',
-  [NotificationType.TipSent]: () => '',
-  [NotificationType.TopSupporter]: () => '',
-  [NotificationType.TopSupporting]: () => ''
+  [NotificationType.Reaction]: () => '',
+  [NotificationType.TipReceive]: () => '',
+  [NotificationType.TipSend]: () => '',
+  [NotificationType.SupporterRankUp]: () => '',
+  [NotificationType.SupportingRankUp]: () => ''
 }
 
 const useStyles = makeStyles(({ spacing, palette }, { isViewed }) => ({

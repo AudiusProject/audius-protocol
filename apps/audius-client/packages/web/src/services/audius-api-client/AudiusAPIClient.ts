@@ -88,7 +88,8 @@ const FULL_ENDPOINT_MAP = {
   getUserSupporter: (userId: OpaqueID, supporterUserId: OpaqueID) =>
     `/users/${userId}/supporters/${supporterUserId}`,
   getUserSupporting: (userId: OpaqueID, supporterUserId: OpaqueID) =>
-    `/users/${userId}/supporting/${supporterUserId}`
+    `/users/${userId}/supporting/${supporterUserId}`,
+  getReaction: '/reactions'
 }
 
 const ENDPOINT_MAP = {
@@ -364,6 +365,19 @@ type GetUserTrackHistoryArgs = {
   limit?: number
   offset?: number
 }
+
+type GetReactionArgs = {
+  reactedToIds: string[]
+}
+
+type GetReactionResponse = [
+  {
+    reaction_value: string
+    reaction_type: string
+    sender_user_id: string
+    reacted_to: string
+  }
+]
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -1378,6 +1392,33 @@ class AudiusAPIClient {
     return response ? response.data : null
   }
 
+  async getReaction({ reactedToIds }: GetReactionArgs) {
+    const params = {
+      reacted_to_ids: reactedToIds
+    }
+    const response: Nullable<APIResponse<
+      GetReactionResponse
+    >> = await this._getResponse(
+      FULL_ENDPOINT_MAP.getReaction,
+      params,
+      false,
+      PathType.VersionFullPath,
+      {},
+      true
+    ) // Perform without retries, using 'split' approach for multiple query params
+
+    if (!response || !response.data.length) return null
+
+    const adapted = response.data.map(item => ({
+      reactionValue: parseInt(item.reaction_value),
+      reactionType: item.reaction_type,
+      senderUserId: decodeHashId(item.sender_user_id),
+      reactedTo: item.reacted_to
+    }))[0]
+
+    return adapted
+  }
+
   init() {
     if (this.initializationState.state === 'initialized') return
 
@@ -1439,7 +1480,8 @@ class AudiusAPIClient {
     params: QueryParams = {},
     retry = true,
     pathType: PathType = PathType.VersionFullPath,
-    headers?: { [key: string]: string }
+    headers?: { [key: string]: string },
+    splitArrayParams = false
   ): Promise<Nullable<T>> {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
@@ -1467,7 +1509,11 @@ class AudiusAPIClient {
     }
 
     // Initialization type is manual. Make requests with fetch and handle failures.
-    const resource = this._constructUrl(formattedPath, sanitizedParams)
+    const resource = this._constructUrl(
+      formattedPath,
+      sanitizedParams,
+      splitArrayParams
+    )
     try {
       const response = await fetch(resource, { headers })
       if (!response.ok) {
@@ -1496,14 +1542,30 @@ class AudiusAPIClient {
     return encoded
   }
 
-  _constructUrl(path: string, queryParams: QueryParams = {}) {
+  _constructUrl(
+    path: string,
+    queryParams: QueryParams = {},
+    splitArrayParams = false
+  ) {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
     const params = Object.entries(queryParams)
       .filter(p => p[1] !== undefined && p[1] !== null)
       .map(p => {
         if (Array.isArray(p[1])) {
-          return p[1].map(val => `${p[0]}=${encodeURIComponent(val)}`).join('&')
+          if (splitArrayParams) {
+            // If we split, join in the form of
+            // ?key=val1,val2,val3...
+            return `${p[0]}=${[1]
+              .map(val => encodeURIComponent(val))
+              .join(',')}`
+          } else {
+            // Otherwise, join in the form of
+            // ?key=val1&key=val2&key=val3...
+            return p[1]
+              .map(val => `${p[0]}=${encodeURIComponent(val)}`)
+              .join('&')
+          }
         }
         return `${p[0]}=${encodeURIComponent(p[1]!)}`
       })
