@@ -7,9 +7,8 @@ export class Reactions extends Base {
   }
 
   /**
-   * Submit a user's reaction
-   * (represented by a numberic ID denoting one of 'heart' | 'fire' | 'party' | 'explode')
-   * to an entity, e.g. a notification for a received tip.
+   * Submit a user's reaction, represented by a numberic ID,
+   * to an entity e.g. a notification for a received tip.
    */
   async submitReaction({
     reactedTo,
