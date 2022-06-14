@@ -47,6 +47,7 @@ export type TrackDoc = TrackRow & {
   play_count: any // todo: is it a string or number?  pg returns string
   downloadable: boolean
   user: EntityUserDoc
+  duration: number
 }
 
 export type RepostDoc = RepostRow & {
