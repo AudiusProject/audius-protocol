@@ -24,7 +24,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    marginLeft: spacing(1)
   },
   wasTippedBy: {
     marginLeft: spacing(1.5),
