@@ -991,7 +991,7 @@ describe('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  it('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
+  it.skip('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
