@@ -1,4 +1,5 @@
 .tipIconTextContainer {
+  min-height: 24px;
   display: flex;
   align-items: center;
 }
@@ -13,13 +14,23 @@
 }
 
 .modalContentContainer {
-  margin: 24px 0;
   position: relative;
+  height: 100%;
 }
 
 .modalContentContainer > div {
   position: absolute;
-  width: 100%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.container > div {
+  margin-top: 24px;
+  margin-bottom: 24px;
 }
 
 .container {
@@ -36,17 +47,11 @@
   text-align: center;
 }
 
-.receiver {
-  margin-top: 32px;
-  margin-bottom: 24px;
-}
-
 .confirmReceiver {
   margin-top: 0;
 }
 
 .becomeTopSupporter {
-  margin-bottom: 24px;
   padding: 8px 0;
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
@@ -70,14 +75,16 @@
 }
 
 .amountToSend {
-  margin: 0 24px 24px 24px;
+  margin-left: 24px;
+  margin-right: 24px;
 }
 
 .amountAvailableContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 24px 24px 24px;
+  margin-left: 40px;
+  margin-right: 40px;
   color: var(--neutral-light-4);
   font-weight: var(--font-heavy);
 }
@@ -114,10 +121,6 @@
   width: 100%;
 }
 
-.buttonContainer {
-  margin-bottom: 24px;
-}
-
 .buttonText {
   font-size: var(--font-l) !important;
 }
@@ -128,7 +131,7 @@
   align-items: center;
   flex-direction: row;
   flex-shrink: 0;
-  margin-bottom: 4px;
+  padding-bottom: 4px;
   color: var(--neutral);
   transition: all ease-in-out 0.18s;
 }
@@ -225,7 +228,8 @@
 .info {
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
-  margin-bottom: 24px;
+  text-align: center;
+  line-height: 150%;
 }
 
 .empty {
@@ -233,13 +237,13 @@
 }
 
 .goBackContainer {
-  width: 80px;
-  margin: 24px auto;
+  text-align: center;
   cursor: pointer;
 }
 .goBack {
   margin-left: 4px;
   font-weight: var(--font-bold);
+  font-size: var(--font-l);
   color: var(--neutral-light-4);
 }
 .goBackContainer:hover .goBack {
@@ -265,13 +269,18 @@
   stroke: var(--static-white) !important;
 }
 
-.sendingContainer {
-  margin-top: 8px;
-  margin-bottom: 8px;
+.modalContentHeaderTitle {
   color: var(--neutral-light-4);
   font-size: var(--font-s);
   font-weight: var(--font-bold);
   letter-spacing: 0.1em;
+}
+
+.modalContentHeaderSubtitle {
+  font-size: var(--font-3xl);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+  padding: 8px 0;
 }
 
 .sendingIcon {
@@ -287,32 +296,9 @@
   fill: var(--neutral-light-4) !important;
 }
 
-.sendingAudio {
-  font-size: var(--font-3xl);
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-4);
-  margin-bottom: 28px;
-}
-
 .sendAmount {
   margin-right: 4px;
   color: var(--neutral);
-}
-
-.sentAudio {
-  font-size: var(--font-3xl);
-  font-weight: var(--font-heavy);
-  color: var(--neutral-light-4);
-  margin-bottom: 24px;
-}
-
-.sentSuccessfullyContainer {
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
-  color: var(--neutral-light-4);
-  margin-top: 48px;
-  margin-bottom: 8px;
-  letter-spacing: 0.1em;
 }
 
 .sentSuccessfullyIcon {
@@ -334,7 +320,6 @@
 }
 
 .support {
-  margin-bottom: 24px;
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
 }
@@ -360,7 +345,6 @@
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
   color: var(--accent-red);
-  margin-bottom: 24px;
 }
 
 .button:hover {
