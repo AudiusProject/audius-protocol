@@ -12,14 +12,14 @@ import {
     savePrimaryUserResults,
     saveSecondary1UserResults,
     saveSecondary2UserResults,
-} from "./db/queries"
+} from "./queries"
 import {
     // asyncSleep,
     generateSPSignatureParams,
     getExternalRequestParams,
     makeRequest,
     // retryAsyncFunctionOrError
-} from "./utils"
+} from "../utils"
 
 export const indexContent = async (run_id: number) => {
 

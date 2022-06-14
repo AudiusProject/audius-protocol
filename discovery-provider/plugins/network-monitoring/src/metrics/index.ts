@@ -3,12 +3,12 @@ import {
     fullySyncedUsersCountGauge, 
     gateway, 
     primaryUserCountGauge, 
-} from "./prometheus"
+} from "../prometheus"
 import { 
     getPrimaryUserCount, 
     getAllUserCount, 
     getFullySyncedUsersCount 
-} from "./db/queries"
+} from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
 

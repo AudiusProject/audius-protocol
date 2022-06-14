@@ -1,10 +1,7 @@
 
 import { QueryTypes } from "sequelize"
-import { sequelizeConn } from "."
+import { sequelizeConn } from "../db"
 
-// ------------------------------------------
-// QUERIES FOR GENERATING METRICS
-// ------------------------------------------
 /* 
 - he number of CID on each CN that have been replicated at least once
 - The number of CID on each CN that have ***NOT*** been replicated at least once
