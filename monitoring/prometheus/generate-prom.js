@@ -5,8 +5,6 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 const AudiusLibs = require("@audius/libs");
 
-const ENVS = ["stage", "prod"]
-
 
 const yaml = (url, env) => {
   url = url.replace("https://", "");
@@ -31,7 +29,8 @@ const main = async () => {
 
   const stream = fs.createWriteStream('prometheus.yml', { flags: 'a' });
 
-  stream.write(`global:
+  stream.write(`
+global:
   scrape_interval:     30s
   evaluation_interval: 15s
   # scrape_timeout is set to the global default (10s).
@@ -43,28 +42,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
- # monitor docker-compose local setups
-
-  - job_name: 'local-discovery-provider'
-    metrics_path: '/prometheus_metrics'
-    static_configs:
-      - targets: ['host.docker.internal:5000']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'remote-dev'
-          service: 'audius'
-          component: 'discover-provider'
-
-  - job_name: 'load-test-populate'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['host.docker.internal:8000']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'load-test'
-          service: 'audius'
-          component: 'discover-provider'
-          job: 'populate'
+  # monitor data growth
 
   - job_name: 'load-test-census-stage'
     metrics_path: '/metrics'
@@ -88,8 +66,50 @@ scrape_configs:
           service: 'audius'
           component: 'discover-provider'
           job: 'census'
+  `)
 
-  # monitor canary nodes
+  if (process.env.PROM_ENV === "local") {
+    stream.write(`
+  # monitor docker-compose local setups
+
+  - job_name: 'local-discovery-provider'
+    metrics_path: '/prometheus_metrics'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'remote-dev'
+          service: 'audius'
+          component: 'discover-provider'
+
+  - job_name: 'local-creator-node'
+    metrics_path: '/prometheus_metrics'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'remote-dev'
+          service: 'audius'
+          component: 'discover-provider'
+
+  # monitor load tests locally
+
+  - job_name: 'load-test-populate'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'load-test'
+          service: 'audius'
+          component: 'discover-provider'
+          job: 'populate'
+    `)
+  }
+
+  if (process.env.PROM_ENV === "prod") {
+    stream.write(`
+  # monitor canary nodes too
 
   - job_name: 'discoveryprovider4-audius-co'
     scheme: https
@@ -101,7 +121,16 @@ scrape_configs:
           environment: 'prod'
           service: 'audius'
           component: 'discover-provider'
-`)
+    `)
+  }
+
+  if (process.env.PROM_ENV === "prod") {
+    const ENVS = ["stage", "prod"]
+  } else if (process.env.PROM_ENV === "stage") {
+    const ENVS = ["stage"]
+  } else {
+    const ENVS = []
+  }
 
   for (const env of ENVS) {
     dotenv.config({ path: `.env.${env}`, override: true });

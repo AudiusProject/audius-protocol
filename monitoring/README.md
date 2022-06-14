@@ -1,10 +1,9 @@
 ### Launch Prometheus & Grafana Locally
 
 ```bash
-docker-compose build
-docker-compose up -d prometheus grafana
-./grafana/bin/create-data-sources.sh
-./grafana/bin/upload-dashboards.sh
+A run monitoring up
+
+A run monitoring down
 ```
 
 Ports:
@@ -17,7 +16,9 @@ Ports:
 ```bash
 ssh prometheus-grafana-metrics
 cd ~/audius-protocol/monitoring
-git checkout master
 
-./deploy.sh
+git checkout master
+git pull
+
+./deploy.sh prod
 ```

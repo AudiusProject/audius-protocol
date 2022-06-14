@@ -4,6 +4,8 @@ WORKDIR /dist
 
 COPY *.js *.json *.env.* ./
 
+ARG PROM_ENV
+ENV PROM_ENV ${PROM_ENV}
 RUN npm install \
     && npm run generate-prom
 
