@@ -69,6 +69,11 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              exit_ssh() {
+                exit $?
+              }
+              trap exit_ssh EXIT
+
               A run init-repos up;
               A up;
               A down;
@@ -713,45 +718,49 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
-      - test-libs:
-          name: test-libs
-      - docker-build-and-push:
-          name: build-libs
-          repo: libs
+      # - test-libs:
+      #     name: test-libs
+      # - docker-build-and-push:
+      #     name: build-libs
+      #     repo: libs
 
-      - test-contracts:
-          name: test-contracts
+      # - test-contracts:
+      #     name: test-contracts
 
-      - test-eth-contracts:
-          name: test-eth-contracts
+      # - test-eth-contracts:
+      #     name: test-eth-contracts
 
-      - test-creator-node:
-          name: test-creator-node
-      - docker-build-and-push:
-          name: build-creator-node
-          repo: creator-node
+      # - test-creator-node:
+      #     name: test-creator-node
+      # - docker-build-and-push:
+      #     name: build-creator-node
+      #     repo: creator-node
 
-      - test-discovery-provider:
-          name: test-discovery-provider
-      - docker-build-and-push-updated:
-          name: build-discovery-provider
-          repo: discovery-provider
+      # - test-discovery-provider:
+      #     name: test-discovery-provider
+      # - docker-build-and-push-updated:
+      #     name: build-discovery-provider
+      #     repo: discovery-provider
 
-      - test-identity-service:
-          name: test-identity-service
-      - docker-build-and-push:
-          name: build-identity-service
-          repo: identity-service
+      # - test-identity-service:
+      #     name: test-identity-service
+      # - docker-build-and-push:
+      #     name: build-identity-service
+      #     repo: identity-service
 
-      - test-solana-programs:
-          name: test-solana-programs
-      - test-solana-programs-anchor:
-          name: test-solana-programs-anchor
+      # - test-solana-programs:
+      #     name: test-solana-programs
+      # - test-solana-programs-anchor:
+      #     name: test-solana-programs-anchor
 
-      - test-mad-dog-e2e:
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     mad-dog-type: test
+      - bake-gcp-dev-image:
           context:
             - GCP2
-          mad-dog-type: test
+          name: bake-gcp-dev-image-nightly
 
       # Commenting this out since we almost never run this job, and it ruins our nice green check marks.
       # - hold-test-mad-dog-e2e-full:
@@ -796,10 +805,10 @@ workflows:
             - GCP2
           name: test-mad-dog-e2e-nightly
           mad-dog-type: test-nightly
-      - bake-gcp-dev-image:
-          context:
-            - GCP2
-          name: bake-gcp-dev-image-nightly
+      # - bake-gcp-dev-image:
+      #     context:
+      #       - GCP2
+      #     name: bake-gcp-dev-image-nightly
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
