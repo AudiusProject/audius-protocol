@@ -1,5 +1,13 @@
 import BN from 'bn.js'
-import { call, put, select, takeEvery } from 'typed-redux-saga/macro'
+import {
+  call,
+  delay,
+  put,
+  select,
+  takeEvery,
+  fork,
+  cancel
+} from 'typed-redux-saga/macro'
 
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
@@ -202,8 +210,14 @@ function* sendTipAsync() {
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (weiBNAmount.gt(waudioWeiAmount)) {
-      yield put(convert())
+      // Wait for a second before showing the notice that this might take a while
+      const showConvertingMessage = yield* fork(function* () {
+        yield delay(1000)
+        yield put(convert())
+      })
       yield call(walletClient.transferTokensFromEthToSol)
+      // Cancel showing the notice if the conversion was magically super quick
+      yield cancel(showConvertingMessage)
     }
 
     yield call(() =>
