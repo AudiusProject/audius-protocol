@@ -3,7 +3,6 @@ from datetime import datetime
 import redis
 from integration_tests.utils import populate_mock_db
 from src.models import Milestone
-from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
 from src.tasks.index_listen_count_milestones import (
     CURRENT_PLAY_INDEXING,
     TRACK_LISTEN_IDS,
@@ -73,9 +72,6 @@ def test_listen_count_milestone_processing(app):
         }
         populate_mock_db(db, test_entities)
 
-        with db.scoped_session() as session:
-            _update_aggregate_plays(session)
-
         redis_conn.sadd(TRACK_LISTEN_IDS, *track_ids)
 
         index_listen_count_milestones(db, redis_conn)
@@ -126,8 +122,6 @@ def test_listen_count_milestone_processing(app):
             ]  # 5000 + 111 = 5111 new
         }
         populate_mock_db(db, test_entities)
-        with db.scoped_session() as session:
-            _update_aggregate_plays(session)
 
         # Add the same track and process to check that no new milesetones are created
         redis_conn.sadd(TRACK_LISTEN_IDS, *track_ids)

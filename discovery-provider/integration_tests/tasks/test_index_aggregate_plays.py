@@ -4,7 +4,6 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models import AggregatePlays
-from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -50,7 +49,6 @@ def test_index_aggregate_plays_populate(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -115,7 +113,6 @@ def test_index_aggregate_plays_update(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -172,25 +169,8 @@ def test_index_aggregate_plays_same_checkpoint(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
-
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
         )
 
         assert len(results) == 3
-
-
-def test_index_aggregate_plays_no_plays(app):
-    """Tests that aggregate_plays should skip indexing if there are no plays"""
-    # setup
-    with app.app_context():
-        db = get_db()
-
-    # run
-    entities = {"plays": []}
-
-    populate_mock_db(db, entities)
-
-    with db.scoped_session() as session:
-        _update_aggregate_plays(session)
