@@ -1,39 +1,42 @@
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { TopSupporter } from 'common/store/notifications/types'
+import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
+import { SupporterRankUp } from 'common/store/notifications/types'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import IconTrending from 'app/assets/images/iconTrending.svg'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemeColors } from 'app/utils/theme'
 
 import {
   NotificationTile,
   NotificationHeader,
   NotificationTitle,
+  NotificationText,
   ProfilePicture,
-  UserNameLink,
-  NotificationText
+  UserNameLink
 } from '../Notification'
 
 const messages = {
   title: 'Top Supporter',
-  supporterChange: "You're now their",
+  supporterChange: 'Became your',
   supporter: 'Top Supporter'
 }
 
 type TopSupporterNotificationProps = {
-  notification: TopSupporter
+  notification: SupporterRankUp
 }
 
 export const TopSupporterNotification = (
   props: TopSupporterNotificationProps
 ) => {
   const { notification } = props
-  const { userId, rank } = notification
-  const user = useSelectorWeb(state => getUser(state, { id: userId }))
+  const { rank } = notification
   const { neutral } = useThemeColors()
 
+  const user = useSelectorWeb(
+    state => getNotificationUser(state, notification),
+    isEqual
+  )
   if (!user) return null
 
   return (

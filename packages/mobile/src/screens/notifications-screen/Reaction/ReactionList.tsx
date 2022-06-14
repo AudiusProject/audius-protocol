@@ -1,15 +1,17 @@
 import { useCallback, useContext, useRef, useState } from 'react'
 
+import {
+  reactionOrder,
+  ReactionTypes
+} from 'audius-client/src/common/store/ui/reactions/slice'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { View, PanResponderGestureState, PanResponder } from 'react-native'
 
 import { NotificationsDrawerNavigationContext } from '../NotificationsDrawerNavigationContext'
 
-import { reactions, ReactionTypes } from './reactions'
+import { reactionMap } from './reactions'
 
 type PositionEntries = [ReactionTypes, { x: number; width: number }][]
-
-const reactionTypes: ReactionTypes[] = ['heart', 'fire', 'party', 'explode']
 
 type ReactionListProps = {
   selectedReaction: Nullable<ReactionTypes>
@@ -23,7 +25,9 @@ export const ReactionList = (props: ReactionListProps) => {
     NotificationsDrawerNavigationContext
   )
   const [interacting, setInteracting] = useState<ReactionTypes | null>(null)
-  const positions = useRef({
+  const positions = useRef<
+    { [k in ReactionTypes]: { x: number; width: number } }
+  >({
     fire: { x: 0, width: 0 },
     heart: { x: 0, width: 0 },
     party: { x: 0, width: 0 },
@@ -34,11 +38,11 @@ export const ReactionList = (props: ReactionListProps) => {
     (_, gestureState: PanResponderGestureState) => {
       const { x0, moveX } = gestureState
 
-      const positionEntires = Object.entries(
+      const positionEntries = Object.entries(
         positions.current
       ) as PositionEntries
 
-      const currentReaction = positionEntires.find(([, { x, width }]) => {
+      const currentReaction = positionEntries.find(([, { x, width }]) => {
         const currentPosition = moveX || x0
         return currentPosition > x && currentPosition <= x + width
       })
@@ -84,8 +88,8 @@ export const ReactionList = (props: ReactionListProps) => {
         }}
         {...panResponder.current.panHandlers}
       >
-        {reactionTypes.map(reactionType => {
-          const Reaction = reactions[reactionType]
+        {reactionOrder.map(reactionType => {
+          const Reaction = reactionMap[reactionType]
           const status =
             selectedReaction === reactionType
               ? 'selected'

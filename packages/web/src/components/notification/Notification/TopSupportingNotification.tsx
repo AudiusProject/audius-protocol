@@ -1,5 +1,5 @@
 import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
-import { TopSupporting } from 'common/store/notifications/types'
+import { SupportingRankUp } from 'common/store/notifications/types'
 
 import styles from './TopSupportingNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -14,12 +14,12 @@ import { IconTip } from './components/icons'
 
 const messages = {
   title: 'Top Supporter',
-  supporterChange: 'Became your',
+  supporterChange: "You're now their",
   supporter: 'Top Supporter'
 }
 
 type TopSupportingNotificationProps = {
-  notification: TopSupporting
+  notification: SupportingRankUp
 }
 
 export const TopSupportingNotification = (

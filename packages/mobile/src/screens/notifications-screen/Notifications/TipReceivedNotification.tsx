@@ -1,14 +1,21 @@
-import { useState } from 'react'
+import { useCallback } from 'react'
 
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { TipReceived } from 'audius-client/src/common/store/notifications/types'
+import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
+import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
+import { TipReceive } from 'audius-client/src/common/store/notifications/types'
+import {
+  makeGetReactionForSignature,
+  ReactionTypes,
+  writeReactionValue
+} from 'audius-client/src/common/store/ui/reactions/slice'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { Image, View } from 'react-native'
 
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 
 import {
   NotificationTile,
@@ -19,7 +26,7 @@ import {
   TipText,
   UserNameLink
 } from '../Notification'
-import { ReactionList, ReactionTypes } from '../Reaction'
+import { ReactionList } from '../Reaction'
 
 const messages = {
   title: 'You Received a Tip!',
@@ -29,19 +36,38 @@ const messages = {
   reactionSent: 'Reaction Sent!'
 }
 
+const useSetReaction = (tipTxSignature: string) => {
+  const dispatch = useDispatchWeb()
+
+  const setReactionValue = useCallback(
+    (reaction: Nullable<ReactionTypes>) => {
+      dispatch(writeReactionValue({ reaction, entityId: tipTxSignature }))
+    },
+    [tipTxSignature, dispatch]
+  )
+  return setReactionValue
+}
+
 type TipReceivedNotificationProps = {
-  notification: TipReceived
+  notification: TipReceive
 }
 
 export const TipReceivedNotification = (
   props: TipReceivedNotificationProps
 ) => {
   const { notification } = props
-  const { userId, value } = notification
-  const user = useSelectorWeb(state => getUser(state, { id: userId }))
-  const [selectedReaction, setSelectedReaction] = useState<
-    Nullable<ReactionTypes>
-  >(null)
+  const { amount, tipTxSignature } = notification
+  const uiAmount = useUIAudio(amount)
+
+  const user = useSelectorWeb(
+    state => getNotificationUser(state, notification),
+    isEqual
+  )
+
+  const reactionValue = useSelectorWeb(
+    makeGetReactionForSignature(tipTxSignature)
+  )
+  const setReactionValue = useSetReaction(tipTxSignature)
 
   if (!user) return null
 
@@ -55,10 +81,11 @@ export const TipReceivedNotification = (
       >
         <ProfilePicture profile={user} />
         <NotificationText>
-          <UserNameLink user={user} /> {messages.sent} <TipText value={value} />
+          <UserNameLink user={user} /> {messages.sent}{' '}
+          <TipText value={uiAmount} />
         </NotificationText>
       </View>
-      {selectedReaction ? (
+      {reactionValue ? (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Image
             source={Checkmark}
@@ -79,8 +106,8 @@ export const TipReceivedNotification = (
         </Text>
       )}
       <ReactionList
-        selectedReaction={selectedReaction}
-        onChange={setSelectedReaction}
+        selectedReaction={reactionValue || null}
+        onChange={setReactionValue}
       />
     </NotificationTile>
   )

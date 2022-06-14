@@ -1,6 +1,16 @@
 import { ComponentType, useCallback, useState } from 'react'
 
-import { TipReceived } from 'common/store/notifications/types'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { useUIAudio } from 'common/hooks/useUIAudio'
+import { TipReceive } from 'common/store/notifications/types'
+import {
+  makeGetReactionForSignature,
+  reactionOrder,
+  ReactionTypes,
+  writeReactionValue
+} from 'common/store/ui/reactions/slice'
+import { Nullable } from 'common/utils/typeUtils'
 
 import styles from './TipReceivedNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -10,15 +20,15 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { reactions, ReactionTypes, ReactionProps } from './components/Reaction'
+import { ReactionProps, reactionMap } from './components/Reaction'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 
-const reactionTypes = Object.keys(reactions) as ReactionTypes[]
-const reactionList = reactionTypes.map<
-  [ReactionTypes, ComponentType<ReactionProps>]
->(reaction => [reaction, reactions[reaction]])
+const reactionList: [
+  ReactionTypes,
+  ComponentType<ReactionProps>
+][] = reactionOrder.map(r => [r, reactionMap[r]])
 
 const messages = {
   title: 'You Received a Tip!',
@@ -29,18 +39,32 @@ const messages = {
 }
 
 type TipReceivedNotificationProps = {
-  notification: TipReceived
+  notification: TipReceive
+}
+
+const useSetReaction = (tipTxSignature: string) => {
+  const dispatch = useDispatch()
+
+  const setReactionValue = useCallback(
+    (reaction: Nullable<ReactionTypes>) => {
+      dispatch(writeReactionValue({ reaction, entityId: tipTxSignature }))
+    },
+    [tipTxSignature, dispatch]
+  )
+  return setReactionValue
 }
 
 export const TipReceivedNotification = (
   props: TipReceivedNotificationProps
 ) => {
   const [isTileDisabled, setIsTileDisabled] = useState(false)
-  const [activeReaction, setActiveReaction] = useState<ReactionTypes | null>(
-    null
-  )
   const { notification } = props
-  const { user, value, timeLabel, isViewed } = notification
+  const { user, amount, timeLabel, isViewed, tipTxSignature } = notification
+
+  const reactionValue = useSelector(makeGetReactionForSignature(tipTxSignature))
+  const setReaction = useSetReaction(tipTxSignature)
+
+  const uiAmount = useUIAudio(amount)
 
   const handleMouseEnter = useCallback(() => setIsTileDisabled(true), [])
   const handleMouseLeave = useCallback(() => setIsTileDisabled(false), [])
@@ -59,11 +83,11 @@ export const TipReceivedNotification = (
           <ProfilePicture className={styles.profilePicture} user={user} />
           <span>
             <UserNameLink user={user} notification={notification} />{' '}
-            {messages.sent} <AudioText value={value} />
+            {messages.sent} <AudioText value={uiAmount} />
           </span>
         </div>
         <div className={styles.sayThanks}>
-          {activeReaction ? (
+          {reactionValue ? (
             <>
               <i className='emoji small white-heavy-check-mark' />{' '}
               {messages.reactionSent}{' '}
@@ -80,11 +104,11 @@ export const TipReceivedNotification = (
           {reactionList.map(([reactionType, Reaction]) => (
             <Reaction
               key={reactionType}
-              onClick={() => setActiveReaction(reactionType)}
+              onClick={() => setReaction(reactionType)}
               isActive={
-                activeReaction === null
-                  ? undefined
-                  : reactionType === activeReaction
+                reactionValue // treat 0 and null equivalently here
+                  ? reactionType === reactionValue
+                  : undefined
               }
               isResponsive
             />

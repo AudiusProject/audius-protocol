@@ -15,6 +15,7 @@ import signOutSagas from 'common/store/sign-out/sagas'
 import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
 import deletePlaylistConfirmationModalSagas from 'common/store/ui/delete-playlist-confirmation-modal/sagas'
 import overflowMenuSagas from 'common/store/ui/mobile-overflow-menu/sagas'
+import reactionSagas from 'common/store/ui/reactions/sagas'
 import shareModalSagas from 'common/store/ui/share-modal/sagas'
 import toastSagas from 'common/store/ui/toast/sagas'
 import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
@@ -106,6 +107,7 @@ export default function* rootSaga() {
     notificationSagas(),
     passwordResetSagas(),
     profileSagas(),
+    reactionSagas(),
     rewardsPageSagas(),
     savedSagas(),
     searchBarSagas(),

@@ -1,10 +1,12 @@
-import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
-import { TipReaction } from 'audius-client/src/common/store/notifications/types'
+import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
+import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
+import { Reaction } from 'audius-client/src/common/store/notifications/types'
+import { getReactionFromRawValue } from 'audius-client/src/common/store/ui/reactions/slice'
 import { View } from 'react-native'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import UserBadges from 'app/components/user-badges'
-import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import {
@@ -16,7 +18,7 @@ import {
   NotificationText,
   ProfilePicture
 } from '../Notification'
-import { reactions } from '../Reaction'
+import { reactionMap } from '../Reaction'
 
 const messages = {
   reacted: 'reacted',
@@ -45,19 +47,31 @@ const useStyles = makeStyles(() => ({
 }))
 
 type TipReactionNotificationProps = {
-  notification: TipReaction
+  notification: Reaction
 }
 
 export const TipReactionNotification = (
   props: TipReactionNotificationProps
 ) => {
   const { notification } = props
-  const { userId, value, reaction } = notification
-  const user = useSelectorWeb(state => getUser(state, { id: userId }))
+
+  const {
+    reactionValue,
+    reactedToEntity: { amount }
+  } = notification
+
+  const uiAmount = useUIAudio(amount)
   const styles = useStyles()
+
+  const user = useSelectorWeb(
+    state => getNotificationUser(state, notification),
+    isEqual
+  )
   if (!user) return null
 
-  const Reaction = reactions[reaction]
+  const reactionType = getReactionFromRawValue(reactionValue)
+  if (!reactionType) return null
+  const Reaction = reactionMap[reactionType]
 
   return (
     <NotificationTile notification={notification}>
@@ -78,7 +92,7 @@ export const TipReactionNotification = (
           </View>
           <NotificationText>
             {messages.react}
-            <TipText value={value} />
+            <TipText value={uiAmount} />
           </NotificationText>
         </View>
       </View>

@@ -74,6 +74,9 @@ import modalsReducer, { ModalsState } from 'common/store/ui/modals/slice'
 import nowPlayingReducer, {
   NowPlayingState
 } from 'common/store/ui/now-playing/slice'
+import reactionsReducer, {
+  ReactionsState
+} from 'common/store/ui/reactions/slice'
 import shareModalReducer from 'common/store/ui/share-modal/slice'
 import { ShareModalState } from 'common/store/ui/share-modal/types'
 import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
@@ -140,6 +143,7 @@ export const reducers = (ctx: CommonStoreContext) => ({
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
     nowPlaying: nowPlayingReducer,
+    reactions: reactionsReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     toast: toastReducer,
@@ -204,7 +208,6 @@ export const sagas = (ctx: CommonStoreContext) => ({
   cast: castSagas(ctx),
   signOut: signOutSagas,
   recoveryEmail: recoveryEmailSagas
-
   // TODO:
   // pull in the following from web
   // once AudiusBackend and dependencies are migrated
@@ -284,6 +287,7 @@ export type CommonState = {
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState
     nowPlaying: NowPlayingState
+    reactions: ReactionsState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
     shareModal: ShareModalState
     toast: ToastState

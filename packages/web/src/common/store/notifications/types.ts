@@ -5,6 +5,7 @@ import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
+import { StringWei } from 'common/models/Wallet'
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -18,11 +19,11 @@ export enum NotificationType {
   TrendingTrack = 'TrendingTrack',
   ChallengeReward = 'ChallengeReward',
   TierChange = 'TierChange',
-  TipReaction = 'TipReaction',
-  TipReceived = 'TipReceived',
-  TipSent = 'TipSent',
-  TopSupporter = 'TopSupporter',
-  TopSupporting = 'TopSupporting'
+  Reaction = 'Reaction',
+  TipReceive = 'TipReceive',
+  TipSend = 'TipSend',
+  SupporterRankUp = 'SupporterRankUp',
+  SupportingRankUp = 'SupportingRankUp'
 }
 
 export enum Entity {
@@ -174,40 +175,54 @@ export type TierChange = BaseNotification & {
   user: User
 }
 
-export type TipReaction = BaseNotification & {
-  type: NotificationType.TipReaction
-  userId: ID
+// TODO: when we support multiple reaction types, reactedToEntity type
+// should differ in a discrimated union reactionType
+export type Reaction = BaseNotification & {
+  type: NotificationType.Reaction
+  entityId: ID
+  entityType: Entity.User
+  reactionValue: number
+  reactionType: string
+  reactedToEntity: {
+    tx_signature: string
+    amount: StringWei
+    tip_sender_id: ID
+  }
   user: User
-  value: number
-  reaction: 'heart' | 'fire' | 'party' | 'explode'
 }
 
-export type TipReceived = BaseNotification & {
-  type: NotificationType.TipReceived
-  userId: ID
+export type TipReceive = BaseNotification & {
+  type: NotificationType.TipReceive
+  amount: StringWei
+  reactionValue: number
+  entityId: ID
+  entityType: Entity.User
+  tipTxSignature: string
   user: User
-  value: number
 }
 
-export type TipSent = BaseNotification & {
-  type: NotificationType.TipSent
-  userId: ID
+export type TipSend = BaseNotification & {
+  type: NotificationType.TipSend
+  amount: StringWei
+  entityId: ID
+  entityType: Entity.User
   user: User
-  value: number
 }
 
-export type TopSupporter = BaseNotification & {
-  type: NotificationType.TopSupporter
-  userId: ID
-  user: User
+export type SupporterRankUp = BaseNotification & {
+  type: NotificationType.SupporterRankUp
   rank: number
+  entityId: ID
+  entityType: Entity.User
+  user: User
 }
 
-export type TopSupporting = BaseNotification & {
-  type: NotificationType.TopSupporting
-  userId: ID
-  user: User
+export type SupportingRankUp = BaseNotification & {
+  type: NotificationType.SupportingRankUp
   rank: number
+  entityId: ID
+  entityType: Entity.User
+  user: User
 }
 
 export type Notification =
@@ -222,11 +237,11 @@ export type Notification =
   | TrendingTrack
   | ChallengeReward
   | TierChange
-  | TipReaction
-  | TipReceived
-  | TipSent
-  | TopSupporter
-  | TopSupporting
+  | Reaction
+  | TipReceive
+  | TipSend
+  | SupporterRankUp
+  | SupportingRankUp
 
 export default interface NotificationState {
   notifications: {
