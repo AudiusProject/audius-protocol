@@ -1,4 +1,4 @@
-import { DiscoveryProvider } from '../../services/discoveryProvider'
+import type { DiscoveryProvider } from '../../services/discoveryProvider'
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import {

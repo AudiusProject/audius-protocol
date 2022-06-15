@@ -268,7 +268,7 @@ export interface ResponseContext {
     fetch: FetchAPI;
     url: string;
     init?: RequestInit;
-    response: unknwon;
+    response: unknown;
 }
 
 export interface Middleware {
