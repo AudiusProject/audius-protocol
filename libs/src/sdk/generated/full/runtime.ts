@@ -89,7 +89,7 @@ export class BaseAPI {
                     fetch: this.fetchApi,
                     url: fetchParams.url,
                     init: fetchParams.init,
-                    response: response.clone(),
+                    response
                 }) || response;
             }
         }
@@ -123,7 +123,8 @@ export const COLLECTION_FORMATS = {
 };
 
 
-export type FetchAPI = (url: string, init?: RequestInit) => Promise<Response>
+// Returns unknown and is cast to the appropriate type in the corresponding api method
+export type FetchAPI = (url: string, init?: RequestInit) => Promise<unknown>
 
 export interface ConfigurationParameters {
     basePath?: string; // override base path
@@ -267,12 +268,12 @@ export interface ResponseContext {
     fetch: FetchAPI;
     url: string;
     init?: RequestInit;
-    response: Response;
+    response: unknwon;
 }
 
 export interface Middleware {
     pre?(context: RequestContext): Promise<FetchParams | void>;
-    post?(context: ResponseContext): Promise<Response | void>;
+    post?(context: ResponseContext): Promise<unknown | void>;
 }
 
 export interface ApiResponse<T> {

@@ -160,7 +160,7 @@ const initializeApis = ({
         undefined,
         // Throw errors instead of returning null
         true
-      ) as Promise<Response>
+      ) as Promise<unknown>
     }
   })
 
