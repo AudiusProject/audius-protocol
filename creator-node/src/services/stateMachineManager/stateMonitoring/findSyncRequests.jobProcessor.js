@@ -60,11 +60,7 @@ module.exports = function ({
       minFailedSyncRequestsBeforeReconfig,
       replicaSetNodesToUserClockStatusesMap
     )
-    console.log(
-      `duplicate: ${userDuplicateSyncReqs}; reqs: ${userSyncReqsToEnqueue}`
-    )
     if (userSyncReqsToEnqueue?.length) {
-      console.log('userSyncReqsToEnqueue was true')
       syncReqsToEnqueue = syncReqsToEnqueue.concat(userSyncReqsToEnqueue)
     } else if (userDuplicateSyncReqs?.length) {
       duplicateSyncReqs = duplicateSyncReqs.concat(userDuplicateSyncReqs)
