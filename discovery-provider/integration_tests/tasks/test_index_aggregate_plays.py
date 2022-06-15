@@ -81,12 +81,6 @@ def test_index_aggregate_plays_update(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "aggregate_plays": [
-            # Current Plays
-            {"play_item_id": 1, "count": 3},
-            {"play_item_id": 2, "count": 3},
-            {"play_item_id": 3, "count": 3},
-        ],
         "indexing_checkpoints": [
             {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
