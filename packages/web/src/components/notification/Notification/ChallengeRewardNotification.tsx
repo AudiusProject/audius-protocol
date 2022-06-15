@@ -22,7 +22,7 @@ const messages = {
   amountEarned: (amount: number) => `You've earned ${amount} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
-  challengeCompleteText: 'for completing this challenge!',
+  challengeCompleteText: ' for completing this challenge!',
   body: (amount: number) =>
     `You've earned ${amount} $AUDIO for completing this challenge!`,
   twitterShareText:
