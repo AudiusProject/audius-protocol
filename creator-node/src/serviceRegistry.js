@@ -1,3 +1,7 @@
+const { createBullBoard } = require('@bull-board/api')
+const { BullAdapter } = require('@bull-board/api/bullAdapter')
+const { ExpressAdapter } = require('@bull-board/express')
+
 const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
@@ -6,10 +10,6 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
-const { createBullBoard } = require('@bull-board/api')
-const { BullAdapter } = require('@bull-board/api/bullAdapter')
-const { ExpressAdapter } = require('@bull-board/express')
-
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
@@ -19,6 +19,7 @@ const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 const ImageProcessingQueue = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
+const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -45,6 +46,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
+    this.prometheusRegistry = new PrometheusRegistry()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null

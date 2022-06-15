@@ -110,6 +110,16 @@ if [ "$audius_db_run_migrations" != false ]; then
     echo "Finished running migrations"
 fi
 
+
+# start es-indexer
+if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
+    # npm run catchup creates triggers + populate indexes - this blocks server / celery start
+    # npm start gets backgrounded and goes into listen mode
+    (
+        cd es-indexer && npm run catchup && npm start &
+    )
+fi
+
 # start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &

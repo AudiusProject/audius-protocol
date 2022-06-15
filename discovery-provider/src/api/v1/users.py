@@ -1107,7 +1107,7 @@ class FullGetSupporting(Resource):
 
 
 verify_token_response = make_response(
-    "verify_token", ns, fields.List(fields.Nested(decoded_user_token))
+    "verify_token", ns, fields.Nested(decoded_user_token)
 )
 
 

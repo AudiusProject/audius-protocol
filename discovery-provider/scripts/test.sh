@@ -22,6 +22,8 @@ pip3 install -r requirements.txt
 sleep 5
 set +e
 
+cd es-indexer && npm i && cd -
+
 if [ -n "${VERBOSE}" ]; then
   set -x
 fi

@@ -12,6 +12,7 @@ import {
   getBlocknumberCheckpoints,
   waitForHealthyCluster,
 } from './conn'
+import { program } from 'commander'
 
 export const indexer = {
   playlists: new PlaylistIndexer(),
@@ -33,13 +34,22 @@ async function processPending(pending: PendingUpdates) {
 }
 
 async function start() {
+  const cliFlags = program
+    .option('--no-listen', 'exit after catchup is complete')
+    .option('--drop', 'drop and recreate indexes')
+    .parse()
+    .opts()
+
+  logger.info(cliFlags, 'booting')
   const health = await waitForHealthyCluster()
-  logger.info(health, 'booting')
   await ensureSaneCluterSettings()
+  logger.info(`starting: health ${health.status}`)
 
   // create indexes
   const indexers = Object.values(indexer)
-  await Promise.all(indexers.map((ix) => ix.createIndex({ drop: false })))
+  await Promise.all(
+    indexers.map((ix) => ix.createIndex({ drop: cliFlags.drop }))
+  )
 
   // setup postgres trigger + listeners
   await setupTriggers()
@@ -57,6 +67,15 @@ async function start() {
   // cutover aliases
   logger.info('catchup done... cutting over aliases')
   await Promise.all(indexers.map((ix) => ix.cutoverAlias()))
+
+  // drop old indices
+  logger.info('alias cutover done... dropping any old indices')
+  await Promise.all(indexers.map((ix) => ix.cleanupOldIndices()))
+
+  if (!cliFlags.listen) {
+    logger.info('--no-listen: exiting')
+    process.exit(0)
+  }
 
   // process events
   logger.info('processing events')
