@@ -30,7 +30,7 @@ GRAFANA_PASS=xxxxx
 echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
 ```
 
-### Add New Targets
+### Adding New Targets
 
 `./prometheus/generate-prom.js` generates `prometheus.yml` within the
 container at build time.
