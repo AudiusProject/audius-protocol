@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+    environment:
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - action.auto_create_index=false
+      - node.name=cluster1-node1
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "${audius_es_port}:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - audius_dev
+
+volumes:
+  esdata:
+
+networks:
+  audius_dev:
+    external: true
