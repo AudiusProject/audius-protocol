@@ -8,7 +8,7 @@ const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const { restartBlacklistManager } = require('./lib/blacklistManager')
 
-const CID_TO_DELIST = 'QmYkZMB1cdo8k1Lizco4YyiAMfUwCn9yUQaJn7T274uc5z'
+const DUMMY_CID = 'QmYkZMB1cdo8k1Lizco4YyiAMfUwCn9yUQaJn7T274uc5z'
 
 describe('test blacklistManager', () => {
   let server, libsMock
@@ -49,7 +49,7 @@ describe('test blacklistManager', () => {
 
   it('[isServable] if cid is not in blacklist, serve', async () => {
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1),
+      await BlacklistManager.isServable(DUMMY_CID, 1),
       true
     )
   })
@@ -57,90 +57,87 @@ describe('test blacklistManager', () => {
   it('[isServable] if cid is in blacklist and trackId is invalid, do not serve', async () => {
     await BlacklistManager.addToRedis(
       'BM.SET.BLACKLIST.SEGMENTCID' /* REDIS_SET_BLACKLIST_SEGMENTCID_KEY */,
-      [CID_TO_DELIST]
+      [DUMMY_CID]
     )
 
+    assert.deepStrictEqual(await BlacklistManager.isServable(DUMMY_CID), false)
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST),
+      await BlacklistManager.isServable(DUMMY_CID, null),
       false
     )
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, null),
+      await BlacklistManager.isServable(DUMMY_CID, 'abc'),
       false
     )
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 'abc'),
+      await BlacklistManager.isServable(DUMMY_CID, -1),
       false
     )
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, -1),
+      await BlacklistManager.isServable(DUMMY_CID, 0.48),
       false
     )
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 0.48),
+      await BlacklistManager.isServable(DUMMY_CID, 1.48),
       false
     )
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1.48),
+      await BlacklistManager.isServable(DUMMY_CID, []),
       false
     )
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, []),
-      false
-    )
-    assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, [1]),
+      await BlacklistManager.isServable(DUMMY_CID, [1]),
       false
     )
   })
 
   it('[isServable] cid belongs to track from input trackId, and the input trackId is valid + blacklisted, do not serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [
-      CID_TO_DELIST
+      DUMMY_CID
     ])
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.TRACKID', [1])
     await BlacklistManager.addToRedis('BM.MAP.BLACKLIST.SEGMENTCID.TRACKID', {
-      1: [CID_TO_DELIST]
+      1: [DUMMY_CID]
     })
     await BlacklistManager.addToRedis('BM.MAP.TRACKID.SEGMENTCIDS', {
-      1: [CID_TO_DELIST]
+      1: [DUMMY_CID]
     })
 
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1),
+      await BlacklistManager.isServable(DUMMY_CID, 1),
       false
     )
   })
 
   it('[isServable] cid is in blacklist, cid belongs to track from input trackId with redis check, and the input trackId is valid + not blacklisted, allow serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [
-      CID_TO_DELIST
+      DUMMY_CID
     ])
     await BlacklistManager.addToRedis('BM.MAP.TRACKID.SEGMENTCIDS', {
-      1: [CID_TO_DELIST]
+      1: [DUMMY_CID]
     })
 
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1),
+      await BlacklistManager.isServable(DUMMY_CID, 1),
       true
     )
   })
 
   it('[isServable] cid is in blacklist, cid does not belong to track from input trackId with redis check, and input track is invalid, do not serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [
-      CID_TO_DELIST
+      DUMMY_CID
     ])
     await BlacklistManager.addToRedis('BM.SET.INVALID.TRACKIDS', [1234])
 
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1234),
+      await BlacklistManager.isServable(DUMMY_CID, 1234),
       false
     )
   })
 
   it('[isServable] cid is in blacklist, cid does not belong to track from input trackId with redis check, and input track is invalid with db check, do not serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [
-      CID_TO_DELIST
+      DUMMY_CID
     ])
 
     // Mock DB call to return nothing
@@ -151,7 +148,7 @@ describe('test blacklistManager', () => {
       })
 
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1234),
+      await BlacklistManager.isServable(DUMMY_CID, 1234),
       false
     )
     assert.deepStrictEqual(await BlacklistManager.trackIdIsInvalid(1234), 1)
@@ -159,7 +156,7 @@ describe('test blacklistManager', () => {
 
   it('[isServable] cid is in blacklist, cid does not belong to track from input trackId with redis check, and input track is valid with db check, and cid is in track, allow serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [
-      CID_TO_DELIST
+      DUMMY_CID
     ])
 
     // Mock DB call to return proper segment
@@ -169,25 +166,25 @@ describe('test blacklistManager', () => {
         return [
           {
             metadataJSON: {
-              track_segments: [{ duration: 6, multihash: CID_TO_DELIST }]
+              track_segments: [{ duration: 6, multihash: DUMMY_CID }]
             }
           }
         ]
       })
 
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1),
+      await BlacklistManager.isServable(DUMMY_CID, 1),
       true
     )
     assert.deepStrictEqual(
       await BlacklistManager.getAllCIDsFromTrackIdInRedis(1),
-      [CID_TO_DELIST]
+      [DUMMY_CID]
     )
   }).timeout(0)
 
   it('[isServable] cid is in blacklist, cid does not belong to track from input trackId with redis check, and input track is valid with db check, and cid is not in track, do not serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [
-      CID_TO_DELIST
+      DUMMY_CID
     ])
 
     // Mock DB call to return proper segment that is not the same as `CID`
@@ -206,7 +203,7 @@ describe('test blacklistManager', () => {
       })
 
     assert.deepStrictEqual(
-      await BlacklistManager.isServable(CID_TO_DELIST, 1),
+      await BlacklistManager.isServable(DUMMY_CID, 1),
       false
     )
     assert.deepStrictEqual(
