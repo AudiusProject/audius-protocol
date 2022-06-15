@@ -796,15 +796,18 @@ workflows:
             - hold-build-logspout
       - hold-bake-gcp-dev-image:
           type: approval
+          filters:
+            branches:
+              only: /(^dm-bake-gcp-image-hold$)/
       - bake-gcp-dev-image:
           context:
             - GCP2
           name: bake-gcp-dev-image
-          # requires:
-          #   - hold-bake-gcp-dev-image
+          requires:
+            - hold-bake-gcp-dev-image
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^dm-bake-gcp-image-hold$)/
 
   # test master at midnight daily
   test-nightly:
@@ -846,4 +849,4 @@ workflows:
           cron: '0 5 * * *'
           filters:
             branches:
-              only: /(^dm-bake-gcp-image-hold$)/
+              only: /(^master$)/
