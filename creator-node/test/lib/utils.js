@@ -51,6 +51,7 @@ const generateRandomCID = (numRandomDigits = 5, maxRandomNumber = 10000) => {
  * @param {Object} param
  * @param {string} param.keyPattern the redis key pattern that matches keys to remove
  * @param {Object} param.redis the redis instance
+ * @param {Object} param.logger the logger instance
  */
 function deleteKeyPatternInRedis({
   keyPattern,
