@@ -1,5 +1,13 @@
 .emptyContainer {
-  height: 101px;
+  /*
+  The non-empty supportingContainer with the profile picture list has
+  a height of 76px.
+  There are paddings of 8px on the top and bottom.
+  There is also a bottom margin 8px.
+  Finally, there are borders of 1px of the top and bottom.
+  This makes 76+8+8+8+1+1 = 102
+  */
+  height: 102px;
 }
 .supportingContainer {
   margin-bottom: 8px;
