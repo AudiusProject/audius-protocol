@@ -1,5 +1,5 @@
 const config = require('./config.js')
-const { logger } = require('./logging')
+const { logger: genericLogger } = require('./logging')
 const Redis = require('ioredis')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
@@ -7,24 +7,24 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const EXPIRATION = 60 * 60 * 2 // 2 hours in seconds
 class RedisLock {
   static async setLock(key, expiration = EXPIRATION) {
-    logger.info(`SETTING LOCK ${key}`)
+    genericLogger.info(`SETTING LOCK ${key}`)
     // set allows you to set an optional expire param
     return redisClient.set(key, true, 'EX', expiration)
   }
 
   static async getLock(key) {
-    logger.info(`GETTING LOCK ${key}`)
+    genericLogger.info(`GETTING LOCK ${key}`)
     return redisClient.get(key)
   }
 
   static async acquireLock(key, expiration = EXPIRATION) {
-    logger.info(`SETTING LOCK IF NOT EXISTS ${key}`)
+    genericLogger.info(`SETTING LOCK IF NOT EXISTS ${key}`)
     const response = await redisClient.set(key, true, 'NX', 'EX', expiration)
     return !!response
   }
 
   static async removeLock(key) {
-    logger.info(`DELETING LOCK ${key}`)
+    genericLogger.info(`DELETING LOCK ${key}`)
     return redisClient.del(key)
   }
 }
@@ -33,6 +33,41 @@ function getNodeSyncRedisKey(wallet) {
   return `NODESYNC.${wallet}`
 }
 
+/**
+ * Deletes keys of a pattern: https://stackoverflow.com/a/36006360
+ * @param {Object} param
+ * @param {string} param.keyPattern the redis key pattern that matches keys to remove
+ * @param {Object} param.redis the redis instance
+ * @param {Object} param.logger the logger instance
+ */
+function deleteKeyPatternInRedis({
+  keyPattern,
+  redis,
+  logger = genericLogger
+}) {
+  // Create a readable stream (object mode)
+  const stream = redis.scanStream({
+    match: keyPattern
+  })
+  stream.on('data', function (keys) {
+    // `keys` is an array of strings representing key names
+    if (keys.length) {
+      const pipeline = redis.pipeline()
+      keys.forEach(function (key) {
+        pipeline.del(key)
+      })
+      pipeline.exec()
+    }
+  })
+  stream.on('end', function () {
+    logger.info(`Done deleting ${keyPattern} entries`)
+  })
+  stream.on('error', function (e) {
+    logger.error(`Could not delete ${keyPattern} entries: ${e.toString()}`)
+  })
+}
+
 module.exports = redisClient
 module.exports.lock = RedisLock
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey
+module.exports.deleteKeyPatternInRedis = deleteKeyPatternInRedis

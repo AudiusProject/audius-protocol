@@ -1,6 +1,6 @@
 const BlacklistManager = require('../../src/blacklistManager')
 
-const { deleteKeyPatternInRedis } = require('./utils')
+const { deleteKeyPatternInRedis } = require('../../src/redis')
 
 /**
  * Removes all BlacklistManager keys in redis

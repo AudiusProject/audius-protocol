@@ -1,4 +1,3 @@
-const { logger: genericLogger } = require('../../src/logging')
 const Utils = require('../../src/utils')
 
 const stringifiedDateFields = (obj) => {
@@ -46,44 +45,9 @@ const generateRandomCID = (numRandomDigits = 5, maxRandomNumber = 10000) => {
   )
 }
 
-/**
- * Deletes keys of a pattern: https://stackoverflow.com/a/36006360
- * @param {Object} param
- * @param {string} param.keyPattern the redis key pattern that matches keys to remove
- * @param {Object} param.redis the redis instance
- * @param {Object} param.logger the logger instance
- */
-function deleteKeyPatternInRedis({
-  keyPattern,
-  redis,
-  logger = genericLogger
-}) {
-  // Create a readable stream (object mode)
-  const stream = redis.scanStream({
-    match: keyPattern
-  })
-  stream.on('data', function (keys) {
-    // `keys` is an array of strings representing key names
-    if (keys.length) {
-      const pipeline = redis.pipeline()
-      keys.forEach(function (key) {
-        pipeline.del(key)
-      })
-      pipeline.exec()
-    }
-  })
-  stream.on('end', function () {
-    logger.info(`Done deleting ${keyPattern} entries`)
-  })
-  stream.on('error', function (e) {
-    logger.error(`Could not delete ${keyPattern} entries: ${e.toString()}`)
-  })
-}
-
 module.exports = {
   wait,
   stringifiedDateFields,
   functionThatThrowsWithMessage,
-  generateRandomCID,
-  deleteKeyPatternInRedis
+  generateRandomCID
 }
