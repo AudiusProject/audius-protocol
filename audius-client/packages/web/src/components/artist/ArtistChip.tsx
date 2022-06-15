@@ -38,7 +38,7 @@ const ArtistIdentifier = ({
 }: ArtistIdentifierProps) => {
   return showPopover ? (
     <div>
-      <ArtistPopover handle={handle} mouseEnterDelay={0.1} mount={popoverMount}>
+      <ArtistPopover handle={handle} mouseEnterDelay={0.3} mount={popoverMount}>
         <div className={styles.name}>
           <span>{name}</span>
           <UserBadges
@@ -49,7 +49,7 @@ const ArtistIdentifier = ({
           />
         </div>
       </ArtistPopover>
-      <ArtistPopover handle={handle} mouseEnterDelay={0.1} mount={popoverMount}>
+      <ArtistPopover handle={handle} mouseEnterDelay={0.3} mount={popoverMount}>
         <div className={styles.handle}>@{handle}</div>
       </ArtistPopover>
     </div>
@@ -110,7 +110,7 @@ const ArtistChip = ({
       {showPopover ? (
         <ArtistPopover
           handle={handle}
-          mouseEnterDelay={0.1}
+          mouseEnterDelay={0.3}
           mount={popoverMount}
         >
           <DynamicImage
