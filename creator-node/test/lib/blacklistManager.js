@@ -13,13 +13,11 @@ async function restartBlacklistManager(redis) {
   await redis.del(BlacklistManager.getInvalidTrackIdsKey())
 
   deleteKeyPatternInRedis({
-    keyPattern: BlacklistManager.getRedisTrackIdToCIDsKey('*'),
-    redis
+    keyPattern: BlacklistManager.getRedisTrackIdToCIDsKey('*')
   })
 
   deleteKeyPatternInRedis({
-    keyPattern: BlacklistManager.getRedisBlacklistSegmentToTrackIdKey('*'),
-    redis
+    keyPattern: BlacklistManager.getRedisBlacklistSegmentToTrackIdKey('*')
   })
 
   BlacklistManager.initialized = false

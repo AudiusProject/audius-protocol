@@ -37,22 +37,17 @@ function getNodeSyncRedisKey(wallet) {
  * Deletes keys of a pattern: https://stackoverflow.com/a/36006360
  * @param {Object} param
  * @param {string} param.keyPattern the redis key pattern that matches keys to remove
- * @param {Object} param.redis the redis instance
  * @param {Object} param.logger the logger instance
  */
-function deleteKeyPatternInRedis({
-  keyPattern,
-  redis,
-  logger = genericLogger
-}) {
+function deleteKeyPatternInRedis({ keyPattern, logger = genericLogger }) {
   // Create a readable stream (object mode)
-  const stream = redis.scanStream({
+  const stream = redisClient.scanStream({
     match: keyPattern
   })
   stream.on('data', function (keys) {
     // `keys` is an array of strings representing key names
     if (keys.length) {
-      const pipeline = redis.pipeline()
+      const pipeline = redisClient.pipeline()
       keys.forEach(function (key) {
         pipeline.del(key)
       })
