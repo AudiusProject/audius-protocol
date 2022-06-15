@@ -40,7 +40,12 @@ export const useClickOutside = (
         document.addEventListener('click', handleClick)
       }, 0)
     }
-    return () => document.removeEventListener('click', handleClick)
+    return () => {
+      // Don't remove the listener until after the listener has been attached
+      setTimeout(() => {
+        document.removeEventListener('click', handleClick)
+      }, 0)
+    }
   }, [onClick, ignoreClick, isVisible])
 
   return ref
