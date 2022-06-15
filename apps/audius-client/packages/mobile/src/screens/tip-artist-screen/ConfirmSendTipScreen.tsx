@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { getSendStatus } from 'audius-client/src/common/store/tipping/selectors'
 import { confirmSendTip } from 'audius-client/src/common/store/tipping/slice'
 
@@ -37,7 +38,14 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const ConfirmSendTipScreen = () => {
+type ConfirmSendTipScreenProps = NativeStackScreenProps<
+  TipArtistNavigationParamList,
+  'ConfirmTip'
+>
+
+export const ConfirmSendTipScreen = ({
+  navigation: nativeNavigation
+}: ConfirmSendTipScreenProps) => {
   const styles = useStyles()
   const sendStatus = useSelectorWeb(getSendStatus)
   const navigation = useNavigation<TipArtistNavigationParamList>()
@@ -58,6 +66,14 @@ export const ConfirmSendTipScreen = () => {
       navigation.navigate({ native: { screen: 'TipSent' } })
     }
   }, [sendStatus, navigation])
+
+  // Disable navigating back via swipes
+  // if we're in progress
+  useEffect(() => {
+    nativeNavigation.setOptions({
+      gestureEnabled: !inProgress
+    })
+  }, [nativeNavigation, inProgress])
 
   return (
     <TipScreen
