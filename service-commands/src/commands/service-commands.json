@@ -194,7 +194,7 @@
       "UP_WEB_SERVER=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
     ],
     "down": [
-      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.elasticsearch.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "sudo rm -rf solana-programs/claimable-tokens/cli/target",
       "sudo rm -rf solana-programs/cli/target",

@@ -21,6 +21,12 @@ commands:
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
 
+# global parameters
+parameters:
+  full_ci:
+    type: boolean
+    default: false
+
 jobs:
   bake-gcp-dev-image:
     docker:
@@ -69,6 +75,16 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              # fail on error
+              set -e;
+
+              # on error, run this function
+              exit_ssh() {
+                echo $?
+              }
+              trap exit_ssh EXIT
+
+              # commands to prime the VM for the bake
               A run init-repos up;
               A up;
               A down;
@@ -345,8 +361,8 @@ jobs:
             export spOwnerWallet='yes'
             export isCIBuild=true
             npm run test:coverage:ci
-      # - coveralls/upload:
-      #     path_to_lcov: ./creator-node/coverage/lcov.info
+      - coveralls/upload:
+          path_to_lcov: ./creator-node/coverage/lcov.info
 
   test-discovery-provider:
     docker:
@@ -753,26 +769,31 @@ workflows:
             - GCP2
           mad-dog-type: test
 
-      # Commenting this out since we almost never run this job, and it ruins our nice green check marks.
-      # - hold-test-mad-dog-e2e-full:
-      #     type: approval
-      # - test-mad-dog-e2e:
-      #     context:
-      #       - GCP2
-      #     name: test-mad-dog-e2e-full
-      #     mad-dog-type: test-nightly
-      #     requires:
-      #       - hold-test-mad-dog-e2e-full
-
-      # Commenting this out since we almost never need to build this manually, and it ruins our nice green check marks.
-      # - hold-build-logspout:
-      #     type: approval
-      # - docker-build-and-push:
-      #     name: build-logspout
-      #     repo: logspout
-      #     logspout-tag: "true"
-      #     requires:
-      #       - hold-build-logspout
+  # in order to run a job in hold-workflows
+  # 1. go to the CircleCI dashboard
+  # 2. go to your branch of choice
+  # 3. click "Trigger Pipeline"
+  # 4. Add boolean paramter "full_ci" and set to true
+  hold-workflows:
+    when: << pipeline.parameters.full_ci >>
+    jobs:
+      - hold-test-mad-dog-e2e-full:
+          type: approval
+      - test-mad-dog-e2e:
+          context:
+            - GCP2
+          name: test-mad-dog-e2e-full
+          mad-dog-type: test-nightly
+          requires:
+            - hold-test-mad-dog-e2e-full
+      - hold-build-logspout:
+          type: approval
+      - docker-build-and-push:
+          name: build-logspout
+          repo: logspout
+          logspout-tag: "true"
+          requires:
+            - hold-build-logspout
 
   # test master at midnight daily
   test-nightly:

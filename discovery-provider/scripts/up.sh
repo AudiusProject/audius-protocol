@@ -12,11 +12,13 @@ if [[ "$UP" == true || "$RESTART" == true ]]; then
     alias dc="docker-compose \
         -f compose/docker-compose.db.yml \
         -f compose/docker-compose.redis.yml \
+        -f compose/docker-compose.elasticsearch.yml \
         -f compose/docker-compose.backend.yml \
         -f compose/docker-compose.ipfs.yml"
 elif [[ "$UP_WEB_SERVER" == true ]]; then
     alias dc="docker-compose \
         -f compose/docker-compose.redis.yml \
+        -f compose/docker-compose.elasticsearch.yml \
         -f compose/docker-compose.ipfs.yml \
         -f compose/docker-compose.web-server.yml"
 else
@@ -55,26 +57,10 @@ if [[ "$UP" == true || "$RESTART" == true ]]; then
     rm -f *_dump
 fi
 
-(
-    # mv ./node_modules away, temporarily
-    cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
-    mv node_modules /tmp/dn-node_modules
-)
-
-function return_node_modules() {
-    (
-        cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
-        rm -rf node_modules
-        mv /tmp/dn-node_modules node_modules
-    )
-}
-
 # build docker image without node_modules
 . compose/env/tmp/shellEnv${ITERATION}.sh
 # build image and always return ./node_modules
-time dc build --parallel \
-    && return_node_modules \
-    || (return_node_modules && exit 1)
+time dc build --parallel
 
 . compose/env/tmp/shellEnv${ITERATION}.sh
 time dc up -d
