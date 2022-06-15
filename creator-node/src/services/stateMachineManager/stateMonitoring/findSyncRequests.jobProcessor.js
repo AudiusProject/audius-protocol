@@ -45,23 +45,30 @@ module.exports = function ({
   let errors = []
   for (const user of users) {
     const {
-      syncReqsToEnqueues: userSyncReqsToEnqueue,
+      syncReqsToEnqueue: userSyncReqsToEnqueue,
       duplicateSyncReqs: userDuplicateSyncReqs,
       errors: userErrors
     } = _findSyncsForUser(
       user,
       thisContentNodeEndpoint,
       unhealthyPeersSet,
-      userSecondarySyncMetricsMap[user.wallet],
+      userSecondarySyncMetricsMap[user.wallet] || {
+        [user.secondary1]: { successRate: 1, failureCount: 0 },
+        [user.secondary2]: { successRate: 1, failureCount: 0 }
+      },
       minSecondaryUserSyncSuccessPercent,
       minFailedSyncRequestsBeforeReconfig,
       replicaSetNodesToUserClockStatusesMap
     )
-    if (userSyncReqsToEnqueue) {
+    console.log(
+      `duplicate: ${userDuplicateSyncReqs}; reqs: ${userSyncReqsToEnqueue}`
+    )
+    if (userSyncReqsToEnqueue?.length) {
+      console.log('userSyncReqsToEnqueue was true')
       syncReqsToEnqueue = syncReqsToEnqueue.concat(userSyncReqsToEnqueue)
-    } else if (userDuplicateSyncReqs) {
+    } else if (userDuplicateSyncReqs?.length) {
       duplicateSyncReqs = duplicateSyncReqs.concat(userDuplicateSyncReqs)
-    } else if (userErrors) errors = errors.concat(userErrors)
+    } else if (userErrors?.length) errors = errors.concat(userErrors)
   }
 
   return {
