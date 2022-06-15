@@ -28,7 +28,7 @@ const Template: Story<PopupProps> = args => {
         anchorRef={anchorRef}
         isVisible={isVisible}
         checkIfClickInside={(target: EventTarget) => {
-          if (target instanceof Element && anchorRef) {
+          if (target instanceof Element && anchorRef?.current) {
             return anchorRef.current.contains(target)
           }
           return false
@@ -45,7 +45,7 @@ const Template: Story<PopupProps> = args => {
 export const Primary = Template.bind({})
 const primaryProps: Omit<
   PopupProps,
-  'children' | 'anchorRef' | 'isVisible'
+  'children' | 'anchorRef' | 'isVisible' | 'onClose'
 > = {}
 
 Primary.args = primaryProps
@@ -54,7 +54,7 @@ Primary.args = primaryProps
 export const WithHeader = Template.bind({})
 const withHeaderProps: Omit<
   PopupProps,
-  'children' | 'anchorRef' | 'isVisible'
+  'children' | 'anchorRef' | 'isVisible' | 'onClose'
 > = {
   showHeader: true,
   title: 'My Title'

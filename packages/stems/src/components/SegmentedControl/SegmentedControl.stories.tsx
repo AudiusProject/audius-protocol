@@ -36,12 +36,20 @@ let selectedOption = ''
 
 const handleOptionSelect = (key: string) => (selectedOption = key)
 
-// Primary
-export const Primary = Template.bind({})
-const primaryProps: SegmentedControlProps = {
+const baseProps: SegmentedControlProps = {
   options,
   selected: selectedOption,
   onSelectOption: handleOptionSelect
 }
 
-Primary.args = primaryProps
+// Primary
+export const Primary = Template.bind({})
+Primary.args = { ...baseProps }
+
+// Full Width
+export const FullWidth = Template.bind({})
+FullWidth.args = { ...baseProps, fullWidth: true }
+
+// Mobile
+export const Mobile = Template.bind({})
+Mobile.args = { ...baseProps, isMobile: true }
