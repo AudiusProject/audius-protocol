@@ -6,15 +6,15 @@ const dotenv = require('dotenv');
 const AudiusLibs = require("@audius/libs");
 
 
-const yaml = (url, env) => {
+const generatePrometheusYaml = (url, env, scheme = 'https', component = 'discover-provider') => {
   url = url.replace("https://", "");
   url = url.replace("http://", "");
 
-  sanatized_url = url.split(".").join("-")
+  sanitizedUrl = url.split(".").join("-")
 
   return `
-  - job_name: '${sanatized_url}'
-    scheme: https
+  - job_name: '${sanitizedUrl}'
+    scheme: '${scheme}'
     metrics_path: '/prometheus_metrics'
     static_configs:
       - targets: ['${url}']
@@ -22,7 +22,8 @@ const yaml = (url, env) => {
           host: '${url}'
           environment: '${env}'
           service: 'audius'
-          component: 'discover-provider'`
+          component: '${component}'
+`
 }
 
 const main = async () => {
@@ -36,8 +37,8 @@ global:
   # scrape_timeout is set to the global default (10s).
 
 scrape_configs:
-  # monitor itself
 
+  # monitor itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
@@ -70,27 +71,6 @@ scrape_configs:
 
   if (process.env.PROM_ENV === "local") {
     stream.write(`
-  # monitor docker-compose local setups
-
-  - job_name: 'local-discovery-provider'
-    metrics_path: '/prometheus_metrics'
-    static_configs:
-      - targets: ['host.docker.internal:5000']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'remote-dev'
-          service: 'audius'
-          component: 'discover-provider'
-
-  - job_name: 'local-creator-node'
-    metrics_path: '/prometheus_metrics'
-    static_configs:
-      - targets: ['host.docker.internal:3000']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'remote-dev'
-          service: 'audius'
-          component: 'discover-provider'
 
   # monitor load tests locally
 
@@ -104,13 +84,31 @@ scrape_configs:
           service: 'audius'
           component: 'discover-provider'
           job: 'populate'
+
+  # monitor docker-compose local setups
+
+  - job_name: 'local-discovery-provider'
+    metrics_path: '/prometheus_metrics'
+    static_configs:
+      - targets: ['host.docker.internal:5000']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'remote-dev'
+          service: 'audius'
+          component: 'discover-provider'
     `)
+
+    const localCNs = ['host.docker.internal:4000', 'host.docker.internal:4001', 'host.docker.internal:4002', 'host.docker.internal:4003']
+    for (const localCN of localCNs) {
+      const yamlString = generatePrometheusYaml(localCN, process.env.PROM_ENV, 'http', 'content-node')
+      stream.write(yamlString);
+      stream.write("\n")
+    }
   }
 
   if (process.env.PROM_ENV === "prod") {
     stream.write(`
   # monitor canary nodes too
-
   - job_name: 'discoveryprovider4-audius-co'
     scheme: https
     metrics_path: '/prometheus_metrics'
