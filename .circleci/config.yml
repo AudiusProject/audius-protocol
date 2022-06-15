@@ -800,8 +800,8 @@ workflows:
           context:
             - GCP2
           name: bake-gcp-dev-image
-          requires:
-            - hold-bake-gcp-dev-image
+          # requires:
+          #   - hold-bake-gcp-dev-image
           filters:
             branches:
               only: /(^master$)/
