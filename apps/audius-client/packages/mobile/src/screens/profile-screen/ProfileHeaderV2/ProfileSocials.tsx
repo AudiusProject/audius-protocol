@@ -76,7 +76,7 @@ export const ProfileSocials = () => {
       >
         {socialLinks.map(([handle, Link], index) => {
           const link = <Link key={index} showText={socialsCount === 1} />
-          if (handle === null) return null
+          if (handle === null || handle === '') return null
           if (socialsCount === 1) return link
           if (index === socialsCount - 1) return link
           return (

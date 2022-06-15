@@ -79,6 +79,8 @@ export const SocialLink = (props: SocialLinkProps) => {
     )
   }
 
+  if (text === null || text === '') return null
+
   const iconButtonElement = <Icon height={28} width={28} fill={neutral} />
 
   if (showText)

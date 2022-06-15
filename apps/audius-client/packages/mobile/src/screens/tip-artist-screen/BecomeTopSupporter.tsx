@@ -18,7 +18,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(3),
     borderRadius: 4
@@ -48,7 +48,9 @@ export const BecomeTopSupporter = ({
   return (
     <LinearGradient
       style={styles.root}
-      colors={[pageHeaderGradientColor2, pageHeaderGradientColor1]}
+      colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
+      useAngle
+      angle={350}
     >
       <IconTrophy fill={white} width={16} height={16} />
       <Text style={styles.text}>
