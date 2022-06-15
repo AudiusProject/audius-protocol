@@ -3,7 +3,7 @@
 ```bash
 A run monitoring up
 
-A run monitoring down
+# A run monitoring down
 ```
 
 Access Grafana by visiting:
@@ -20,6 +20,15 @@ Access Prometheus by visiting:
 * The default credentials are `admin`/`admin`.
 * The password must be changed on first login to something other than `admin`
   or click on the `Skip` link when prompted to change your password.
+
+If the password is changed, for ease of future development, add the password to your
+`~/.profile`:
+
+```bash
+GRAFANA_PASS=xxxxx
+
+echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
+```
 
 ### Deploy Production Changes
 
