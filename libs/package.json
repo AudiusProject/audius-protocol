@@ -24,7 +24,6 @@
     "lint": "eslint ./src ./types",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm run build",
     "generate-types": "./scripts/generate-types.sh"
   },
   "dependencies": {
