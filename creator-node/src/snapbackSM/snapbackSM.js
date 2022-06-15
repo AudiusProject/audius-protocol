@@ -148,12 +148,22 @@ class SnapbackSM {
 
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    this.stateMachineQueue = this.createBullQueue('state-machine', {
-      // Should be sufficiently larger than expected job runtime
-      lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
-      // We never want to re-process stalled jobs
-      maxStalledCount: 0
-    })
+    this.stateMachineQueue = this.createBullQueue(
+      'state-machine',
+      {
+        // Should be sufficiently larger than expected job runtime
+        lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
+        // We never want to re-process stalled jobs
+        maxStalledCount: 0
+      },
+      // Rate limit to 1 job every 3 minutes locally to prevent log spam during development
+      this.nodeConfig.get('creatorNodeIsDebug')
+        ? {
+            max: 1,
+            duration: 3000 * 60
+          }
+        : null
+    )
 
     // Sync queues handle issuing sync request from primary -> secondary
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
@@ -322,7 +332,7 @@ class SnapbackSM {
   }
 
   // Initialize bull queue instance with provided name and settings
-  createBullQueue(queueName, settings = {}) {
+  createBullQueue(queueName, settings = {}, limiter = null) {
     return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
@@ -333,7 +343,8 @@ class SnapbackSM {
         removeOnComplete: SNAPBACK_QUEUE_HISTORY,
         removeOnFail: SNAPBACK_QUEUE_HISTORY
       },
-      settings
+      settings,
+      limiter
     })
   }
 

@@ -39,11 +39,11 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
   function getProcessJobMock() {
     const loggerStub = {
-      info: sinon.stub(),
-      warn: sinon.stub(),
-      error: sinon.stub()
+      info: sandbox.stub(),
+      warn: sandbox.stub(),
+      error: sandbox.stub()
     }
-    const createChildLogger = sinon.stub().returns(loggerStub)
+    const createChildLogger = sandbox.stub().returns(loggerStub)
     const processJobMock = proxyquire(
       '../src/services/stateMachineManager/processJob.js',
       {

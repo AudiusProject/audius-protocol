@@ -588,7 +588,7 @@ class UserSearchResult(Resource):
             "offset": 0,
         }
         response = search(search_args)
-        return success_response(response)
+        return success_response(response["users"])
 
 
 followers_response = make_full_response(
