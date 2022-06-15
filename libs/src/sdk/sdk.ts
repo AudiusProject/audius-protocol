@@ -152,7 +152,7 @@ const initializeApis = ({
         (url.includes('?') ? '&' : '?') +
         querystring({ app_name: appName })
 
-      return discoveryProvider._makeRequest(
+      return await discoveryProvider._makeRequest(
         {
           endpoint: urlWithAppName
         },
@@ -160,7 +160,7 @@ const initializeApis = ({
         undefined,
         // Throw errors instead of returning null
         true
-      ) as Promise<unknown>
+      )
     }
   })
 

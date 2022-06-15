@@ -1,5 +1,4 @@
 import {
-  Configuration,
   HTTPHeaders,
   Playlist,
   RequiredError,
@@ -16,10 +15,6 @@ import {
  * implement the custom logic for the `resolve` endpoint
  */
 export class ResolveApi extends GeneratedResolveApi {
-  constructor(configuration: Configuration) {
-    super(configuration)
-  }
-
   /**
    * Resolves and redirects a provided Audius app URL to the API resource URL it represents
    */
@@ -36,16 +31,16 @@ export class ResolveApi extends GeneratedResolveApi {
     const queryParameters: any = {}
 
     if (requestParameters.url !== undefined) {
-      queryParameters['url'] = requestParameters.url
+      queryParameters.url = requestParameters.url
     }
 
     const headerParameters: HTTPHeaders = {}
 
-    return this.request({
+    return await this.request({
       path: `/resolve`,
       method: 'GET',
       headers: headerParameters,
       query: queryParameters
-    }) as Promise<T>
+    })
   }
 }

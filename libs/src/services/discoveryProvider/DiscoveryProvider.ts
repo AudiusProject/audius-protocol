@@ -1003,6 +1003,7 @@ export class DiscoveryProvider {
   ): Promise<Response | undefined | null> {
     const returnOrThrow = <ErrorType>(e: ErrorType) => {
       if (throwError) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw e
       }
       return null
