@@ -22,10 +22,6 @@ type SkeletonData = { loading: true }
 const skeletonData: SkeletonData[] = [{ loading: true }, { loading: true }]
 
 const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    marginTop: spacing(1),
-    marginBottom: spacing(4)
-  },
   singleSupporterTile: {
     width: Dimensions.get('window').width - spacing(6)
   }
