@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       cnodeUserUUID: {
         type: DataTypes.UUID,
-        primaryKey: false,
+        primaryKey: true, // composite primary key (cnodeUserUUID, clock)
         allowNull: false
       },
       clock: {
@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true, // composite primary key (cnodeUserUUID, clock)
         allowNull: false
       },
-      playlistId: {
+      blockchainId: {
         type: DataTypes.BIGINT,
-        primaryKey: true, // composite primary key (playlistId, clock)
+        primaryKey: true,
         allowNull: false
       },
       metadataFileUUID: {
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ['playlistId', 'clock']
+          fields: ['blockchainId', 'clock']
         }
       ]
     }
