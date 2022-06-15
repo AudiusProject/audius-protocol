@@ -162,7 +162,7 @@ class SnapbackSM {
             max: 1,
             duration: 3000 * 60
           }
-        : {}
+        : null
     )
 
     // Sync queues handle issuing sync request from primary -> secondary
@@ -332,7 +332,7 @@ class SnapbackSM {
   }
 
   // Initialize bull queue instance with provided name and settings
-  createBullQueue(queueName, settings = {}, limiter = {}) {
+  createBullQueue(queueName, settings = {}, limiter = null) {
     return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
@@ -344,7 +344,7 @@ class SnapbackSM {
         removeOnFail: SNAPBACK_QUEUE_HISTORY
       },
       settings,
-      ...(!_.isEmpty(limiter) && { limiter })
+      limiter
     })
   }
 
