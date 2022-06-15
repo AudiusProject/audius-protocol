@@ -39,7 +39,7 @@ class BlacklistManager {
       })
       this.initialized = true
     } catch (e) {
-      throw new Error(`BLACKLIST ERROR ${e}`)
+      throw new Error(`Could not init BlacklistManager: ${e}`)
     }
   }
 
@@ -211,7 +211,7 @@ class BlacklistManager {
    * @returns {Object[]} array of track model objects from table
    */
   static async getAllCIDsFromTrackIdsInDb(trackIds) {
-    return models.Track.findAll({ where: { blockchainId: trackIds } })
+    return models.Track.findAll({ where: { blockchainId: trackIds } }) // used here.. updates?
   }
 
   /**
