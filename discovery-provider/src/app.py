@@ -375,7 +375,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.aggregates.index_aggregate_plays",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
-            "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
             "src.tasks.index_trending",
             "src.tasks.cache_user_balance",
@@ -433,10 +432,6 @@ def configure_celery(celery, test_config=None):
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
                 "schedule": timedelta(seconds=30),
-            },
-            "vacuum_db": {
-                "task": "vacuum_db",
-                "schedule": timedelta(days=1),
             },
             "update_network_peers": {
                 "task": "update_network_peers",
