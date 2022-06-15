@@ -36,6 +36,7 @@ async function processPending(pending: PendingUpdates) {
 async function start() {
   const cliFlags = program
     .option('--no-listen', 'exit after catchup is complete')
+    .option('--drop', 'drop and recreate indexes')
     .parse()
     .opts()
 
@@ -46,7 +47,9 @@ async function start() {
 
   // create indexes
   const indexers = Object.values(indexer)
-  await Promise.all(indexers.map((ix) => ix.createIndex({ drop: false })))
+  await Promise.all(
+    indexers.map((ix) => ix.createIndex({ drop: cliFlags.drop }))
+  )
 
   // setup postgres trigger + listeners
   await setupTriggers()
