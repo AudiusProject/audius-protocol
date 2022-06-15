@@ -211,7 +211,7 @@ class BlacklistManager {
    * @returns {Object[]} array of track model objects from table
    */
   static async getAllCIDsFromTrackIdsInDb(trackIds) {
-    return models.Track.findAll({ where: { blockchainId: trackIds } }) // used here.. updates?
+    return models.Track.findAll({ where: { blockchainId: trackIds } })
   }
 
   /**
