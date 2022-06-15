@@ -430,7 +430,7 @@ class TrackSearchResult(Resource):
             "only_downloadable": args["only_downloadable"],
         }
         response = search(search_args)
-        return success_response(response)
+        return success_response(response["tracks"])
 
 
 # Trending
