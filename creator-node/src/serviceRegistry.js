@@ -87,10 +87,11 @@ class ServiceRegistry {
    * These services do not need to be awaited and do not require the server.
    */
   async initServicesAsynchronously() {
+    // Initialize BlacklistManager. If error occurs, do not continue with app start up.
     try {
       await this.blacklistManager.init()
     } catch (e) {
-      this.logError(`Could not initialize BlacklistManager: ${e.message}`)
+      this.logError(e.message)
       process.exit(1)
     }
 
