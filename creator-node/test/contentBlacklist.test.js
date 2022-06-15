@@ -35,7 +35,7 @@ const trustedNotifierConfig = {
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe.only('test ContentBlacklist', function () {
+describe('test ContentBlacklist', function () {
   let app, server, libsMock, mockServiceRegistry, userId
 
   beforeEach(async () => {
