@@ -24,10 +24,9 @@ import { TopSupporters } from './TopSupporters'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
-    backgroundColor: palette.neutralLight10,
+    backgroundColor: palette.white,
     paddingTop: spacing(8),
-    paddingHorizontal: spacing(3),
-    paddingBottom: spacing(3)
+    paddingHorizontal: spacing(3)
   },
   profilePicture: {
     position: 'absolute',
@@ -35,7 +34,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     left: 11,
     zIndex: 100
   },
-  divider: { marginHorizontal: -12, marginBottom: 8 }
+  divider: { marginHorizontal: -12, marginBottom: spacing(2) },
+  bottomDivider: { marginHorizontal: -12 }
 }))
 
 type ProfileHeaderV2Props = {
@@ -86,6 +86,7 @@ export const ProfileHeaderV2 = (props: ProfileHeaderV2Props) => {
         )}
         {isOwner ? <UploadTrackButton /> : <TipArtistButton />}
         <TopSupporters />
+        <Divider style={styles.bottomDivider} />
       </View>
     </>
   )

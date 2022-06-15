@@ -94,7 +94,7 @@ export const ProfileSocials = () => {
     socialElement: ReactElement
   ) => {
     if (handle === undefined) return <Skeleton style={styles.icon} />
-    if (handle === null) return null
+    if (handle === null || handle === '') return null
     return socialElement
   }
 

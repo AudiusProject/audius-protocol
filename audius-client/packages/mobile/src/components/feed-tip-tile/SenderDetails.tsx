@@ -43,7 +43,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   tipper: {
     maxWidth: '92%',
-    backgroundColor: 'white',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center'
