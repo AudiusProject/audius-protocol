@@ -24,9 +24,9 @@ const messages = {
   supporter: 'Supporter'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
-    marginTop: spacing(3),
+    marginTop: spacing(2),
     paddingBottom: spacing(1),
     width: 220,
     marginRight: spacing(2)
@@ -46,7 +46,8 @@ const useStyles = makeStyles(({ spacing }) => ({
     height: spacing(8),
     width: spacing(8),
     marginRight: spacing(1),
-    borderWidth: 1
+    borderWidth: 1,
+    borderColor: palette.staticWhite
   },
   rankRoot: {
     flexDirection: 'row',
@@ -56,6 +57,9 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   rankText: {
     textTransform: 'uppercase'
+  },
+  nameText: {
+    color: palette.staticWhite
   }
 }))
 
@@ -117,7 +121,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
           style={styles.supporterInfoRoot}
         >
           <ProfilePicture style={styles.profilePicture} profile={user} />
-          <Text variant='h3' noGutter color='white' numberOfLines={1}>
+          <Text variant='h3' noGutter numberOfLines={1} style={styles.nameText}>
             {name}
           </Text>
           <UserBadges user={user} hideName />
