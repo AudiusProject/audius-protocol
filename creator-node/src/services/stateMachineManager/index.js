@@ -1,17 +1,22 @@
+const _ = require('lodash')
+
 const config = require('../../config')
-const { logger } = require('../../logging')
-const StateMonitoringQueue = require('./stateMonitoring/StateMonitoringQueue')
+const { logger: baseLogger } = require('../../logging')
+const StateMonitoringManager = require('./stateMonitoring')
+const StateReconciliationManager = require('./stateReconciliation')
 const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
 const { RECONFIG_MODES } = require('./stateMachineConstants')
+const QueueInterfacer = require('./QueueInterfacer')
+const makeCompletedJobEnqueueOtherJobs = require('./makeCompletedJobEnqueueOtherJobs')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
  * the queue for reconciling anomalies in the state (syncs and replica set updates).
+ * Use QueueInterfacer for interfacing with the queues.
  */
 class StateMachineManager {
   async init(audiusLibs) {
     this.updateEnabledReconfigModesSet()
-    this.stateMonitoringQueue = new StateMonitoringQueue()
 
     // TODO: Decide on interval to run this on
     try {
@@ -24,14 +29,40 @@ class StateMachineManager {
       this.updateEnabledReconfigModesSet(
         /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
       )
-      logger.error(`updateEndpointToSpIdMap Error: ${e.message}`)
+      baseLogger.error(`updateEndpointToSpIdMap Error: ${e.message}`)
     }
 
-    await this.stateMonitoringQueue.init(audiusLibs)
-  }
+    // Initialize queues
+    const stateMonitoringManager = new StateMonitoringManager()
+    const stateReconciliationManager = new StateReconciliationManager()
+    const stateMonitoringQueue = await stateMonitoringManager.init(
+      audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    )
+    const stateReconciliationQueue = await stateReconciliationManager.init()
 
-  getStateMonitoringQueue() {
-    return this.stateMonitoringQueue.queue
+    // Make jobs enqueue other jobs as necessary upon completion
+    stateMonitoringQueue.on(
+      'global:completed',
+      makeCompletedJobEnqueueOtherJobs(
+        stateMonitoringQueue,
+        stateReconciliationQueue
+      ).bind(this)
+    )
+    stateReconciliationQueue.on(
+      'global:completed',
+      makeCompletedJobEnqueueOtherJobs(
+        stateMonitoringQueue,
+        stateReconciliationQueue
+      ).bind(this)
+    )
+
+    // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
+    QueueInterfacer.init(audiusLibs)
+
+    return {
+      stateMonitoringQueue,
+      stateReconciliationQueue
+    }
   }
 
   /**

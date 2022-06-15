@@ -123,6 +123,7 @@ track_full = ns.clone(
         "is_delete": fields.Boolean,
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
+        "is_available": fields.Boolean,
     },
 )
 

@@ -165,17 +165,6 @@ format_bold() {
 	printf "$(tput bold)$@$(tput sgr0)"
 }
 
-configure_etc_hosts() {
-	read -p "Configure /etc/hosts? (sudo required) [y/N] " -n 1 -r && echo
-	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-		IP=$(get_ip_addr $provider $name)
-		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
-		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.bashrc
-		sudo node $PROTOCOL_DIR/service-commands/scripts/hosts.js remove
-		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
-	fi
-}
-
 set_ssh_serveralive() {
 	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
 		read -p "Configure /etc/ssh/ssh_config.d/60-audius.conf? (sudo required) [y/N] " -n 1 -r && echo

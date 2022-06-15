@@ -50,7 +50,10 @@ export type UserProfile = {
   name: string
   handle: string
   verified: boolean
-  imageURL?: string
+  profilePicture:
+    | { '150x150': string; '480x480': string; '1000x1000': string }
+    | null
+    | undefined
   sub: number
   iat: string
 }
@@ -616,11 +619,11 @@ export class DiscoveryProvider {
    */
   async verifyToken(token: string): Promise<UserProfile | false> {
     const req = Requests.verifyToken(token)
-    const res = await this._makeRequest<UserProfile[]>(req)
-    if (res == null || res[0] == null) {
+    const res = await this._makeRequest<UserProfile | null>(req)
+    if (res == null) {
       return false
     } else {
-      return res[0]
+      return res
     }
   }
 

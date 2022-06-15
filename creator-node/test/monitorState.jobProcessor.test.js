@@ -2,18 +2,24 @@
 const chai = require('chai')
 const sinon = require('sinon')
 const { expect } = chai
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
 
-const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
+
+const config = require('../src/config')
+const {
+  QUEUE_NAMES,
+  JOB_NAMES
+} = require('../src/services/stateMachineManager/stateMachineConstants')
+
+chai.use(require('sinon-chai'))
 
 describe('test monitorState job processor', function () {
   let server,
     sandbox,
+    logger,
     originalContentNodeEndpoint,
     getNodeUsersStub,
     getUnhealthyPeersStub,
@@ -43,7 +49,6 @@ describe('test monitorState job processor', function () {
     getCNodeEndpointToSpIdMapStub = null
   })
 
-  const JOB_ID = 9
   const LAST_PROCESSED_USER_ID = 5
   const NUM_USERS_TO_PROCESS = 4
   const DISCOVERY_NODE_ENDPOINT = 'http://default_dn1.co'
@@ -132,7 +137,6 @@ describe('test monitorState job processor', function () {
   // Return the promise created from running processStateMonitoringJob with the given params
   // and with each step mocked to the given steps (or default mocked steps above)
   function processStateMonitoringJob({
-    jobId = JOB_ID,
     lastProcessedUserId = LAST_PROCESSED_USER_ID,
     discoveryNodeEndpoint = DISCOVERY_NODE_ENDPOINT,
     contentNodeEndpoint = CONTENT_NODE_ENDPOINT,
@@ -142,7 +146,55 @@ describe('test monitorState job processor', function () {
     config.set('creatorNodeEndpoint', contentNodeEndpoint)
     config.set('snapbackUsersPerJob', numUsersToProcess)
     const jobFunc = makeProcessStateMonitoringJob({ ...steps })
-    return jobFunc(jobId, lastProcessedUserId, discoveryNodeEndpoint, 0, 0)
+    logger = {
+      info: sandbox.stub(),
+      warn: sandbox.stub(),
+      error: sandbox.stub()
+    }
+    return jobFunc({ logger, lastProcessedUserId, discoveryNodeEndpoint })
+  }
+
+  function verifyJobResult({
+    jobResult,
+    lastProcessedUserId,
+    users = USERS,
+    unhealthyPeers = UNHEALTHY_PEERS,
+    replicaSetNodesToUserClockStatusesMap = REPLICAS_TO_USER_CLOCK_STATUS_MAP,
+    userSecondarySyncMetricsMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
+  }) {
+    const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.STATE_MONITORING]
+
+    // Verify that there are 3 jobs all being added to the state monitoring queue
+    expect(monitorJobs).to.have.lengthOf(3)
+
+    // Verify jobResult enqueues the correct monitorState job starting at the expected userId
+    expect(monitorJobs).to.deep.include({
+      jobName: JOB_NAMES.MONITOR_STATE,
+      jobData: {
+        lastProcessedUserId,
+        discoveryNodeEndpoint: DISCOVERY_NODE_ENDPOINT
+      }
+    })
+    // Verify jobResult enqueues the correct findSyncRequests job
+    expect(monitorJobs).to.deep.include({
+      jobName: JOB_NAMES.FIND_SYNC_REQUESTS,
+      jobData: {
+        users,
+        unhealthyPeers: Array.from(unhealthyPeers),
+        replicaSetNodesToUserClockStatusesMap,
+        userSecondarySyncMetricsMap
+      }
+    })
+    // Verify jobResult enqueues the correct findReplicaSetUpdates job
+    expect(monitorJobs).to.deep.include({
+      jobName: JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+      jobData: {
+        users,
+        unhealthyPeers: Array.from(unhealthyPeers),
+        replicaSetNodesToUserClockStatusesMap,
+        userSecondarySyncMetricsMap
+      }
+    })
   }
 
   it('should process the correct number of users and resolve successfully', async function () {
@@ -167,19 +219,15 @@ describe('test monitorState job processor', function () {
     })
 
     // Verify that the state monitoring job processed `usersToProcess` users
-    return expect(
-      processStateMonitoringJob({
-        lastProcessedUserId,
-        numUsersToProcess,
-        steps: { users }
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
+    const jobResult = await processStateMonitoringJob({
+      lastProcessedUserId,
+      numUsersToProcess,
+      steps: { users }
+    })
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: lastProcessedUserId + numUsersToProcess - 1,
-      jobFailed: false,
-      users,
-      unhealthyPeers: UNHEALTHY_PEERS,
-      replicaSetNodesToUserClockStatusesMap: REPLICAS_TO_USER_CLOCK_STATUS_MAP,
-      userSecondarySyncMetricsMap: USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
+      users
     })
   })
 
@@ -196,13 +244,10 @@ describe('test monitorState job processor', function () {
       LAST_PROCESSED_USER_ID,
       NUM_USERS_TO_PROCESS
     )
-    expect(jobResult).to.deep.equal({
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: 0,
-      jobFailed: false,
-      users: [],
-      unhealthyPeers: UNHEALTHY_PEERS,
-      replicaSetNodesToUserClockStatusesMap: REPLICAS_TO_USER_CLOCK_STATUS_MAP,
-      userSecondarySyncMetricsMap: USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
+      users: []
     })
   })
 
@@ -227,13 +272,9 @@ describe('test monitorState job processor', function () {
     expect(
       computeUserSecondarySyncSuccessRatesMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
-    expect(jobResult).to.deep.equal({
-      lastProcessedUserId: USER_ID,
-      jobFailed: false,
-      users: USERS,
-      unhealthyPeers: UNHEALTHY_PEERS,
-      replicaSetNodesToUserClockStatusesMap: REPLICAS_TO_USER_CLOCK_STATUS_MAP,
-      userSecondarySyncMetricsMap: USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
+    verifyJobResult({
+      jobResult,
+      lastProcessedUserId: USER_ID
     })
   })
 
@@ -261,12 +302,9 @@ describe('test monitorState job processor', function () {
     expect(
       computeUserSecondarySyncSuccessRatesMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
-    expect(jobResult).to.deep.equal({
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: USER_ID,
-      jobFailed: true,
-      users: USERS,
-      unhealthyPeers: UNHEALTHY_PEERS,
-      replicaSetNodesToUserClockStatusesMap: REPLICAS_TO_USER_CLOCK_STATUS_MAP,
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -293,11 +331,9 @@ describe('test monitorState job processor', function () {
       retrieveClockStatusesForUsersAcrossReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
-    expect(jobResult).to.deep.equal({
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: USER_ID,
-      jobFailed: true,
-      users: USERS,
-      unhealthyPeers: UNHEALTHY_PEERS,
       replicaSetNodesToUserClockStatusesMap: {},
       userSecondarySyncMetricsMap: {}
     })
@@ -324,11 +360,9 @@ describe('test monitorState job processor', function () {
     expect(retrieveClockStatusesForUsersAcrossReplicaSetStub).to.not.have.been
       .called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
-    expect(jobResult).to.deep.equal({
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: USER_ID,
-      jobFailed: true,
-      users: USERS,
-      unhealthyPeers: UNHEALTHY_PEERS,
       replicaSetNodesToUserClockStatusesMap: {},
       userSecondarySyncMetricsMap: {}
     })
@@ -351,10 +385,9 @@ describe('test monitorState job processor', function () {
     expect(retrieveClockStatusesForUsersAcrossReplicaSetStub).to.not.have.been
       .called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
-    expect(jobResult).to.deep.equal({
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: USER_ID,
-      jobFailed: true,
-      users: USERS,
       unhealthyPeers: new Set(),
       replicaSetNodesToUserClockStatusesMap: {},
       userSecondarySyncMetricsMap: {}
@@ -378,9 +411,9 @@ describe('test monitorState job processor', function () {
     expect(retrieveClockStatusesForUsersAcrossReplicaSetStub).to.not.have.been
       .called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
-    expect(jobResult).to.deep.equal({
+    verifyJobResult({
+      jobResult,
       lastProcessedUserId: LAST_PROCESSED_USER_ID,
-      jobFailed: true,
       users: [{ user_id: LAST_PROCESSED_USER_ID }],
       unhealthyPeers: new Set(),
       replicaSetNodesToUserClockStatusesMap: {},

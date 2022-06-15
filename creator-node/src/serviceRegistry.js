@@ -1,3 +1,7 @@
+const { createBullBoard } = require('@bull-board/api')
+const { BullAdapter } = require('@bull-board/api/bullAdapter')
+const { ExpressAdapter } = require('@bull-board/express')
+
 const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
@@ -6,10 +10,6 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
-const { createBullBoard } = require('@bull-board/api')
-const { BullAdapter } = require('@bull-board/api/bullAdapter')
-const { ExpressAdapter } = require('@bull-board/express')
-
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
@@ -19,6 +19,7 @@ const TrustedNotifierManager = require('./services/TrustedNotifierManager')
 const ImageProcessingQueue = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
+const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -45,6 +46,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
     this.sessionExpirationQueue = new SessionExpirationQueue()
+    this.prometheusRegistry = new PrometheusRegistry()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
@@ -94,7 +96,7 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
-  setupBullMonitoring(app) {
+  setupBullMonitoring(app, stateMonitoringQueue, stateReconciliationQueue) {
     logger.info('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
@@ -107,13 +109,12 @@ class ServiceRegistry {
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
-    const stateMonitoringQueue =
-      this.stateMachineManager.getStateMonitoringQueue()
 
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
         new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
+        new BullAdapter(stateReconciliationQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -151,7 +152,8 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
     this.stateMachineManager = new StateMachineManager()
-    await this.stateMachineManager.init(this.libs)
+    const { stateMonitoringQueue, stateReconciliationQueue } =
+      await this.stateMachineManager.init(this.libs)
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -174,7 +176,11 @@ class ServiceRegistry {
     this.logInfo(`All services that require server successfully initialized!`)
 
     try {
-      this.setupBullMonitoring(app)
+      this.setupBullMonitoring(
+        app,
+        stateMonitoringQueue,
+        stateReconciliationQueue
+      )
     } catch (e) {
       logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
     }

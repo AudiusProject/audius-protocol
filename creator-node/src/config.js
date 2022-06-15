@@ -665,6 +665,12 @@ const config = convict({
     format: String,
     env: 'audiusContentInfraSetup',
     default: ''
+  },
+  snapbackMaxLastSuccessfulRunDelayMs: {
+    doc: 'Max time delay since last snapback successful run (milliseconds)',
+    format: 'nat',
+    env: 'snapbackMaxLastSuccessfulRunDelayMs',
+    default: 5 * 60 * 60 * 1000 // 5 hrs
   }
   /**
    * unsupported options at the moment

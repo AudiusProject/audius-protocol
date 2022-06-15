@@ -588,7 +588,7 @@ class UserSearchResult(Resource):
             "offset": 0,
         }
         response = search(search_args)
-        return success_response(response)
+        return success_response(response["users"])
 
 
 followers_response = make_full_response(
@@ -1107,7 +1107,7 @@ class FullGetSupporting(Resource):
 
 
 verify_token_response = make_response(
-    "verify_token", ns, fields.List(fields.Nested(decoded_user_token))
+    "verify_token", ns, fields.Nested(decoded_user_token)
 )
 
 
