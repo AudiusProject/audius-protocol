@@ -6,10 +6,13 @@ const dotenv = require('dotenv');
 const AudiusLibs = require("@audius/libs");
 
 
-const generatePrometheusYaml = (url, env, scheme = 'https', component = 'discover-provider') => {
-  url = url.replace("https://", "");
-  url = url.replace("http://", "");
+const writeFromFile = (stream, filename) => {
+  stream.write(fs.readFileSync("./ymls/" + filename))
+  stream.write("\n")
+}
 
+const generateJobYaml = (url, env, scheme = 'https', component = 'discovery-provider') => {
+  url = url.replace("https://", "").replace("http://", "")
   sanitizedUrl = url.split(".").join("-")
 
   return `
@@ -26,141 +29,73 @@ const generatePrometheusYaml = (url, env, scheme = 'https', component = 'discove
 `
 }
 
+const generateEnv = async (stream, env) => {
+  dotenv.config({ path: `.env.${env}`, override: true });
+
+  const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
+  const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS
+  const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
+  const ETH_PROVIDER_URL = process.env.REACT_APP_ETH_PROVIDER_URL
+
+  const ethWeb3Config = AudiusLibs.configEthWeb3(
+    ETH_TOKEN_ADDRESS,
+    ETH_REGISTRY_ADDRESS,
+    ETH_PROVIDER_URL,
+    ETH_OWNER_WALLET
+  )
+
+  const audiusLibs = new AudiusLibs({
+    ethWeb3Config,
+    isServer: true,
+    enableUserReplicaSetManagerContract: true,
+    preferHigherPatchForPrimary: true,
+    preferHigherPatchForSecondaries: true
+  })
+  await audiusLibs.init()
+  const serviceProviders = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node');
+
+  // write a header to seperate this env from another
+  stream.write(`  ${"#".repeat(env.length)}\n`);
+  stream.write(`  ${env}\n`);
+  stream.write(`  ${"#".repeat(env.length)}\n`);
+
+  for (const sp of serviceProviders) {
+    const spEndpoint = sp.endpoint;
+    const yamlString = generateJobYaml(spEndpoint, env)
+    stream.write(yamlString);
+    stream.write("\n")
+  }
+}
+
 const main = async () => {
 
   const stream = fs.createWriteStream('prometheus.yml', { flags: 'a' });
 
-  stream.write(`
-global:
-  scrape_interval:     30s
-  evaluation_interval: 15s
-  # scrape_timeout is set to the global default (10s).
-
-scrape_configs:
-
-  # monitor itself
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
-
-  # monitor data growth
-
-  - job_name: 'load-test-census-stage'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['host.docker.internal:8001']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'stage'
-          service: 'audius'
-          component: 'discover-provider'
-          job: 'census'
-
-  - job_name: 'load-test-census-prod'
-    metrics_path: '/metrics'
-    scrape_interval: 30m
-    static_configs:
-      - targets: ['host.docker.internal:8002']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'prod'
-          service: 'audius'
-          component: 'discover-provider'
-          job: 'census'
-  `)
-
-  if (process.env.PROM_ENV === "local") {
-    stream.write(`
-
-  # monitor load tests locally
-
-  - job_name: 'load-test-populate'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['host.docker.internal:8000']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'load-test'
-          service: 'audius'
-          component: 'discover-provider'
-          job: 'populate'
-
-  # monitor docker-compose local setups
-
-  - job_name: 'local-discovery-provider'
-    metrics_path: '/prometheus_metrics'
-    static_configs:
-      - targets: ['host.docker.internal:5000']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'remote-dev'
-          service: 'audius'
-          component: 'discover-provider'
-    `)
-
-    const localCNs = ['host.docker.internal:4000', 'host.docker.internal:4001', 'host.docker.internal:4002', 'host.docker.internal:4003']
-    for (const localCN of localCNs) {
-      const yamlString = generatePrometheusYaml(localCN, process.env.PROM_ENV, 'http', 'content-node')
-      stream.write(yamlString);
-      stream.write("\n")
-    }
-  }
+  writeFromFile(stream, "base.yml")
+  writeFromFile(stream, "exporters.yml")
+  writeFromFile(stream, "exporters-audius.yml")
+  writeFromFile(stream, "load-tests.yml")
 
   if (process.env.PROM_ENV === "prod") {
-    stream.write(`
-  # monitor canary nodes too
-  - job_name: 'discoveryprovider4-audius-co'
-    scheme: https
-    metrics_path: '/prometheus_metrics'
-    static_configs:
-      - targets: ['discoveryprovider4.audius.co']
-        labels:
-          host: 'discoveryprovider4.audius.co'
-          environment: 'prod'
-          service: 'audius'
-          component: 'discover-provider'
-    `)
-  }
 
-  if (process.env.PROM_ENV === "prod") {
-    const ENVS = ["stage", "prod"]
+    // include canary node targets
+    writeFromFile(stream, "canaries.yml")
+
+    // our "production" deployment of prometheus-grafana-metrics will monitor
+    // all of our environments
+    await generateEnv(stream, "stage")
+    await generateEnv(stream, "prod")
+
   } else if (process.env.PROM_ENV === "stage") {
-    const ENVS = ["stage"]
+
+    // when developing locally against some exporters, it may prove beneficial to
+    // scrape staging nodes, but never production nodes in an attempt to minimize load
+    await generateEnv(stream, "stage")
+
   } else {
-    const ENVS = []
-  }
 
-  for (const env of ENVS) {
-    dotenv.config({ path: `.env.${env}`, override: true });
-
-    const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
-    const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS
-    const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
-    const ETH_PROVIDER_URL = process.env.REACT_APP_ETH_PROVIDER_URL
-
-    const ethWeb3Config = AudiusLibs.configEthWeb3(
-      ETH_TOKEN_ADDRESS,
-      ETH_REGISTRY_ADDRESS,
-      ETH_PROVIDER_URL,
-      ETH_OWNER_WALLET
-    )
-
-    const audiusLibs = new AudiusLibs({
-      ethWeb3Config,
-      isServer: true,
-      enableUserReplicaSetManagerContract: true,
-      preferHigherPatchForPrimary: true,
-      preferHigherPatchForSecondaries: true
-    })
-    await audiusLibs.init()
-    const serviceProviders = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node');
-
-    for (const sp of serviceProviders) {
-      const spEndpoint = sp.endpoint;
-      const yamlString = yaml(spEndpoint, env)
-      stream.write(yamlString);
-      stream.write("\n")
-    }
+    // monitor local (remote-dev) setups that use docker
+    writeFromFile(stream, "local.yml")
   }
 
   stream.end();

@@ -1,0 +1,29 @@
+  ############################################################
+  # monitor custom exporters produced by audius
+  # (load-test specific exporters should be in load-tests.yml)
+  ############################################################
+
+  # monitor data growth using containers running colocated on prometheus-grafana-metrics
+
+  - job_name: 'census-stage'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8001']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'stage'
+          service: 'audius'
+          component: 'discover-provider'
+          job: 'census'
+
+  - job_name: 'census-prod'
+    metrics_path: '/metrics'
+    scrape_interval: 30m
+    static_configs:
+      - targets: ['host.docker.internal:8002']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'prod'
+          service: 'audius'
+          component: 'discover-provider'
+          job: 'census'
