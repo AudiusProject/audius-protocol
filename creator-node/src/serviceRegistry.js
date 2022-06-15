@@ -95,7 +95,7 @@ class ServiceRegistry {
   }
 
   setupBullMonitoring(app, stateMonitoringQueue, stateReconciliationQueue) {
-    logger.info('Setting up Bull queue monitoring...')
+    this.logInfo('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
     const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
@@ -170,9 +170,6 @@ class ServiceRegistry {
     )
     await this.skippedCIDsRetryQueue.init()
 
-    this.servicesThatRequireServerInitialized = true
-    this.logInfo(`All services that require server successfully initialized!`)
-
     try {
       this.setupBullMonitoring(
         app,
@@ -180,8 +177,13 @@ class ServiceRegistry {
         stateReconciliationQueue
       )
     } catch (e) {
-      logger.error(`Failed to initialize bull monitoring UI: ${e.message || e}`)
+      this.logError(
+        `Failed to initialize bull monitoring UI: ${e.message || e}`
+      )
     }
+
+    this.servicesThatRequireServerInitialized = true
+    this.logInfo(`All services that require server successfully initialized!`)
   }
 
   logInfo(msg) {
