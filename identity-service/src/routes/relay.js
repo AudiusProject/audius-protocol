@@ -62,7 +62,7 @@ module.exports = function (app) {
       }
 
       if (detectAbuseOnRelay) {
-        const reqIP = req.get('X-Forwarded-For')
+        const reqIP = req.get('X-Forwarded-For') || req.ip
         detectAbuse('relay', body.senderAddress, reqIP) // fired & forgotten
       }
 

@@ -44,7 +44,8 @@ const SERVICES = [
   'audius_client',
   'audius-identity-service_identity-service_1',
   'solana',
-  'trusted_notifier_service'
+  'trusted_notifier_service',
+  'anti-abuse-oracle_anti_abuse_oracle_1'
 ]
 
 const exitWithError = () => {
