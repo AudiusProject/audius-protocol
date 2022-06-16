@@ -18,6 +18,10 @@ const SEGMENTCID_TO_TRACKID_EXPIRATION_SECONDS =
 const INVALID_TRACKID_EXPIRATION_SECONDS =
   1 /* hour */ * 60 /* minutes */ * 60 /* seconds */
 
+// (2000 tracks * 60 average number of segments per track (guess) * 46 bytes per segment / 10^9 b in 1 gb ) * 3 (num segments + trackId:segments mapping)
+// = 0.01656 gb memory used per stack call
+const PROCESS_TRACKS_BATCH_SIZE = 2000
+
 const types = models.ContentBlacklist.Types
 
 class BlacklistManager {
@@ -95,39 +99,78 @@ class BlacklistManager {
     // Dedupe trackIds
     const allTrackIdsToBlacklistSet = new Set(allTrackIdsToBlacklist)
 
-    // Retrieves CIDs from deduped trackIds
-    const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
-      await this.getCIDsToBlacklist({
-        allTrackIds: [...allTrackIdsToBlacklistSet],
-        explicitTrackIds: new Set(trackIdsToBlacklist)
-      })
-    let segmentCIDsToBlacklist =
-      segmentsFromTrackIds.concat(segmentsToBlacklist)
-    const segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
-    // Filter out whitelisted CID's from the segments to remove
-    ;[...CID_WHITELIST].forEach((cid) => segmentCIDsToBlacklistSet.delete(cid))
-
-    segmentCIDsToBlacklist = [...segmentCIDsToBlacklistSet]
     try {
       await this.addToRedis(
         REDIS_SET_BLACKLIST_TRACKID_KEY,
         allTrackIdsToBlacklist
       )
       await this.addToRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToBlacklist)
-      await this.addToRedis(
-        REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
-        segmentCIDsToBlacklist
-      )
-
-      // Creates a mapping of CID to blacklisted trackIds in redis. This should not include the trackIds from users.
-      await this.addToRedis(
-        REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY,
-        trackIdToSegments
-      )
     } catch (e) {
       throw new Error(
-        `[fetchCIDsAndAddToRedis] - Failed to add to blacklist: ${e}`
+        `[fetchCIDsAndAddToRedis] - Failed to add track ids or user ids to blacklist: ${e}`
       )
+    }
+
+    // TODO: Need to figure out of this mapping is truly necessary cus this call takes so much
+    // processing time and memory allocation. Batch this call for the time being
+    await BlacklistManager.addCIDsAndCIDToTrackIdMappingToRedis({
+      allTrackIdsToBlacklist: [...allTrackIdsToBlacklistSet],
+      trackIdsToBlacklist,
+      segmentsToBlacklist
+    })
+  }
+
+  /**
+   * Helper method to batch adding CIDs to the blacklist
+   * @param {number[]} allTrackIdsToBlacklist aggregate list of track ids to blacklist from explicit track id blacklist and tracks from blacklisted users
+   * @param {number[]} trackIdsToBlacklist the explicitly blacklisted track ids
+   * @param {string[]} segmentsToBlacklist the explicitly blacklisted cids
+   */
+  static async addCIDsAndCIDToTrackIdMappingToRedis({
+    allTrackIdsToBlacklist,
+    trackIdsToBlacklist,
+    segmentsToBlacklist
+  }) {
+    for (
+      let i = 0;
+      i < PROCESS_TRACKS_BATCH_SIZE;
+      i = i + PROCESS_TRACKS_BATCH_SIZE
+    ) {
+      const tracksSlice = allTrackIdsToBlacklist.slice(
+        i,
+        i + PROCESS_TRACKS_BATCH_SIZE
+      )
+
+      try {
+        const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
+          await this.getCIDsToBlacklist({
+            allTrackIds: tracksSlice,
+            explicitTrackIds: new Set(trackIdsToBlacklist)
+          })
+        let segmentCIDsToBlacklist =
+          segmentsFromTrackIds.concat(segmentsToBlacklist)
+        const segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
+        ;[...CID_WHITELIST].forEach((cid) =>
+          segmentCIDsToBlacklistSet.delete(cid)
+        )
+
+        segmentCIDsToBlacklist = [...segmentCIDsToBlacklistSet]
+
+        await this.addToRedis(
+          REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
+          segmentCIDsToBlacklist
+        )
+
+        // Creates a mapping of CID to blacklisted trackIds in redis. This should not include the trackIds from users.
+        await this.addToRedis(
+          REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY,
+          trackIdToSegments
+        )
+      } catch (e) {
+        throw new Error(
+          `[fetchCIDsAndAddToRedis] - Failed to add CIDs to blacklist: ${e}`
+        )
+      }
     }
   }
 
@@ -214,19 +257,57 @@ class BlacklistManager {
   /**
    * Retrieves all the deduped CIDs from the params and builds a mapping to <trackId: segments> for explicit trackIds (i.e. trackIds from table, not tracks belonging to users).
    * @param {Object} param
-   * @param {number[]} param.allTrackIds all the trackIds to find CIDs for
-   * @param {Set<number>} param.explicitTrackIds explicit trackIds from table. Used to create mapping of <trackId: segments> in redis
+   * @param {number[]} param.allTrackIds all the trackIds to find CIDs for (explictly blacklisted tracks and tracks from blacklisted users)
+   * @param {Set<number>} param.explicitTrackIds explicitly blacklisted track ids from table. Used to create mapping of <trackId: segments> in redis
    * @returns
    * {
    *    segmentCIDs: <string[]> all CIDs that are BL'd
    *    trackIdToSegments: {Object<number, string[]>} trackId : CIDs
    * }
    */
-  static async getCIDsToBlacklist({ allTrackIds, explicitTrackIds }) {
-    const tracks = await this.getAllCIDsFromTrackIdsInDb(allTrackIds)
+  static async getCIDsToBlacklist({
+    allTrackIds: trackIdsFromUsersAndExplicitlyBlacklistedTrackIds,
+    explicitTrackIds: explicitlyBlacklistedTrackIds
+  }) {
+    const tracks = await this.getAllCIDsFromTrackIdsInDb(
+      trackIdsFromUsersAndExplicitlyBlacklistedTrackIds
+    )
 
     const segmentCIDs = new Set()
     const trackIdToSegments = {}
+
+    // Retrieve CIDs from the track metadata and build mapping of <trackId: segments>
+    for (const track of tracks) {
+      if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
+
+      // If the current track is from the track BL and not user BL, create mapping
+      if (explicitlyBlacklistedTrackIds.has(track.blockchainId)) {
+        trackIdToSegments[track.blockchainId] = []
+      }
+
+      for (const segment of track.metadataJSON.track_segments) {
+        if (!segment.multihash) continue
+
+        segmentCIDs.add(segment.multihash)
+        if (trackIdToSegments[track.blockchainId]) {
+          trackIdToSegments[track.blockchainId].push(segment.multihash)
+        }
+      }
+    }
+
+    // also retrieves the CID's directly from the files table so we get copy320
+    if (trackIdsFromUsersAndExplicitlyBlacklistedTrackIds.length > 0) {
+      const files = await models.File.findAll({
+        where: {
+          trackBlockchainId: trackIdsFromUsersAndExplicitlyBlacklistedTrackIds
+        }
+      })
+      for (const file of files) {
+        if (file.type === 'track' || file.type === 'copy320') {
+          segmentCIDs.add(file.multihash)
+        }
+      }
+    }
 
     return { segmentCIDs: [...segmentCIDs], trackIdToSegments }
   }
