@@ -48,6 +48,7 @@ export const SocialsAndSites = () => {
         icon={IconLink}
         showText
         style={styles.site}
+        hyperlink
       />
       <SocialLink
         url={prependProtocol(donation)}

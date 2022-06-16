@@ -4,7 +4,7 @@ import { Supporting } from 'audius-client/src/common/models/Tipping'
 import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
 import { ID } from 'common/models/Identifiers'
-import { getSupportingForUser } from 'common/store/tipping/selectors'
+import { getOptimisticSupportingForUser } from 'common/store/tipping/selectors'
 import { Dimensions, FlatList } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
@@ -31,7 +31,7 @@ export const SupportingList = () => {
   const styles = useStyles()
   const { user_id, supporting_count } = useSelectProfile(['user_id'])
   const supportingForUser = useSelectorWeb(state =>
-    getSupportingForUser(state, user_id)
+    getOptimisticSupportingForUser(state, user_id)
   )
   const supportingIdsSorted = useMemo(() => {
     const ids = (supportingForUser

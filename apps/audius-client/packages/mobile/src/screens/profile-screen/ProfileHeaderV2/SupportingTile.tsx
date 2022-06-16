@@ -59,7 +59,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     textTransform: 'uppercase'
   },
   nameText: {
-    color: palette.staticWhite
+    color: palette.staticWhite,
+    maxWidth: spacing(32)
   }
 }))
 
@@ -121,7 +122,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
           style={styles.supporterInfoRoot}
         >
           <ProfilePicture style={styles.profilePicture} profile={user} />
-          <Text variant='h3' noGutter numberOfLines={1} style={styles.nameText}>
+          <Text style={styles.nameText} variant='h3' noGutter numberOfLines={1}>
             {name}
           </Text>
           <UserBadges user={user} hideName />
