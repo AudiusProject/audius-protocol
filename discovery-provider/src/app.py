@@ -372,7 +372,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_blacklist",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
-            "src.tasks.aggregates.index_aggregate_plays",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
@@ -424,10 +423,6 @@ def configure_celery(celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=300),
-            },
-            "update_aggregate_plays": {
-                "task": "update_aggregate_plays",
-                "schedule": timedelta(seconds=15),
             },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
