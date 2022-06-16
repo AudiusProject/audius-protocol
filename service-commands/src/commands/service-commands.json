@@ -14,6 +14,7 @@
       "sudo rm -rf discovery-provider/.venv",
       "sudo rm -rf discovery-provider/.mypy_cache",
       "sudo rm -f discovery-provider/*.log",
+      "cd monitoring; scripts/down.sh",
       "docker image prune -f --filter 'dangling=true' --filter 'until=360h'"
     ]
   },
@@ -315,6 +316,14 @@
     "up": ["echo 'Process spawned in background using Node.'"],
     "down": [
       "ps x -o '%r %a' | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}' | xargs -r kill -- -9"
+    ]
+  },
+  "monitoring": {
+    "up": [
+      "cd monitoring; scripts/up.sh"
+    ],
+    "down": [
+      "cd monitoring; scripts/down.sh"
     ]
   }
 }

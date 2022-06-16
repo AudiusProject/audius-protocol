@@ -16,6 +16,12 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_USER}:${GRAFANA_PASS}@${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
+# wait for API to be live before creating the bearer token
+until curl -s -f -o /dev/null ${BASE_URL}/api/orgs
+do
+  sleep 1
+done
+
 if [[ -z "${BEARER_TOKEN}" ]]; then
     curl -s \
         -X POST \
