@@ -45,6 +45,11 @@ fi
     node configureLocalDiscProv.js
 )
 
+(
+    cd ${PROTOCOL_DIR}/discovery-provider/es-indexer
+    npm i && npm run build
+)
+
 if [[ "$UP" == true || "$UP_WEB_SERVER" == true ]]; then
     (
         cd ${PROTOCOL_DIR}/libs
