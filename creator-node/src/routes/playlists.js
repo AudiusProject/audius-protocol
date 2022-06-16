@@ -89,7 +89,7 @@ module.exports = function (app) {
   )
 
   /**
-   * Given playlist playlistId, blockNumber, and metadataFileUUID, creates/updates Playlist DB entry
+   * Given playlist blockchainId, blockNumber, and metadataFileUUID, creates/updates Playlist DB entry
    * and associates image file entries with playlist. Ends playlist creation/update process.
    */
   app.post(
@@ -99,11 +99,11 @@ module.exports = function (app) {
     ensureStorageMiddleware,
     syncLockMiddleware,
     handleResponse(async (req, res) => {
-      const { playlistId, blockNumber, metadataFileUUID } = req.body
+      const { blockchainId, blockNumber, metadataFileUUID } = req.body
 
-      if (!playlistId || !blockNumber || !metadataFileUUID) {
+      if (!blockchainId || !blockNumber || !metadataFileUUID) {
         return errorResponseBadRequest(
-          'Must include playlistId, blockNumber, and metadataFileUUID.'
+          'Must include blockchainId, blockNumber, and metadataFileUUID.'
         )
       }
 
@@ -135,13 +135,14 @@ module.exports = function (app) {
         )
       }
 
-      // Get coverArtFileUUID for multihashes in metadata object, if present.
-      let coverArtFileUUID
+      // Get playlistImageFileUUID for multihashes in metadata object, if present.
+      let playlistImageFileUUID
       try {
-        coverArtFileUUID = await validateStateForImageDirCIDAndReturnFileUUID(
-          req,
-          metadataJSON.cover_photo_sizes
-        )
+        playlistImageFileUUID =
+          await validateStateForImageDirCIDAndReturnFileUUID(
+            req,
+            metadataJSON.cover_photo_sizes
+          )
       } catch (e) {
         return errorResponseBadRequest(e.message)
       }
@@ -152,8 +153,8 @@ module.exports = function (app) {
         const createPlaylistQueryObj = {
           metadataFileUUID,
           metadataJSON,
-          playlistId,
-          coverArtFileUUID
+          blockchainId,
+          playlistImageFileUUID
         }
         await DBManager.createNewDataRecord(
           createPlaylistQueryObj,

@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSONB,
         allowNull: false
       },
-      coverArtFileUUID: {
+      playlistImageFileUUID: {
         type: DataTypes.UUID,
         allowNull: true
       }
@@ -54,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'RESTRICT'
     })
     Playlist.belongsTo(models.File, {
-      foreignKey: 'coverArtFileUUID',
+      foreignKey: 'playlistImageFileUUID',
       targetKey: 'fileUUID',
       onDelete: 'RESTRICT'
     })

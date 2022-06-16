@@ -67,12 +67,18 @@ describe('Test Playlists', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W' || !resp.body.data.metadataFileUUID) {
+    if (
+      resp.body.data.metadataMultihash !==
+        'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W' ||
+      !resp.body.data.metadataFileUUID
+    ) {
       throw new Error('invalid return data')
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = DiskManager.computeFilePath(
+      resp.body.data.metadataMultihash
+    )
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -81,11 +87,13 @@ describe('Test Playlists', function () {
     assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
-    const file = await models.File.findOne({ where: {
-      multihash: resp.body.data.metadataMultihash,
-      storagePath: metadataPath,
-      type: 'metadata'
-    } })
+    const file = await models.File.findOne({
+      where: {
+        multihash: resp.body.data.metadataMultihash,
+        storagePath: metadataPath,
+        type: 'metadata'
+      }
+    })
     assert.ok(file)
   })
 
@@ -99,7 +107,9 @@ describe('Test Playlists', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = DiskManager.computeFilePath(
+      resp.body.data.metadataMultihash
+    )
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -108,18 +118,24 @@ describe('Test Playlists', function () {
     assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
-    const file = await models.File.findOne({ where: {
-      multihash: resp.body.data.metadataMultihash,
-      storagePath: metadataPath,
-      type: 'metadata'
-    } })
+    const file = await models.File.findOne({
+      where: {
+        multihash: resp.body.data.metadataMultihash,
+        storagePath: metadataPath,
+        type: 'metadata'
+      }
+    })
     assert.ok(file)
 
     await request(app)
       .post('/playlists')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainId: 1,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -135,7 +151,10 @@ describe('Test Playlists', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
+    if (
+      resp.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    ) {
       throw new Error('invalid return data')
     }
 
@@ -143,7 +162,11 @@ describe('Test Playlists', function () {
       .post('/playlists')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainId: 1,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -159,7 +182,10 @@ describe('Test Playlists', function () {
       .send({ metadata: metadata1 })
       .expect(200)
 
-    if (resp1.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
+    if (
+      resp1.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    ) {
       throw new Error('invalid return data')
     }
 
@@ -174,7 +200,10 @@ describe('Test Playlists', function () {
       .send({ metadata: metadata2 })
       .expect(200)
 
-    if (resp2.body.data.metadataMultihash !== 'QmTiWeEp2PTedHwWbtJNUuZ3deRZgAM5TG2UWrsAN9ik1N') {
+    if (
+      resp2.body.data.metadataMultihash !==
+      'QmTiWeEp2PTedHwWbtJNUuZ3deRZgAM5TG2UWrsAN9ik1N'
+    ) {
       throw new Error('invalid return data')
     }
 
@@ -182,7 +211,11 @@ describe('Test Playlists', function () {
       .post('/playlists')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp2.body.data.metadataFileUUID })
+      .send({
+        blockchainId: 1,
+        blockNumber: 10,
+        metadataFileUUID: resp2.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -198,21 +231,31 @@ describe('Test Playlists', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
+    if (
+      resp.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    ) {
       throw new Error('invalid return data')
     }
 
     // Fast forward to block number 100
-    const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID: session.cnodeUserUUID } })
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { cnodeUserUUID: session.cnodeUserUUID }
+    })
     await cnodeUser.update({ latestBlockNumber: 100 })
 
     await request(app)
       .post('/playlists')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ playlistId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainId: 1,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(400, {
-        error: 'Invalid blockNumber param 10. Must be greater or equal to previously processed blocknumber 100.'
+        error:
+          'Invalid blockNumber param 10. Must be greater or equal to previously processed blocknumber 100.'
       })
   })
 })
