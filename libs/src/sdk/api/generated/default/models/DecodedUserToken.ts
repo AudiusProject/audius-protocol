@@ -14,6 +14,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+    ProfilePicture,
+    ProfilePictureFromJSON,
+    ProfilePictureFromJSONTyped,
+    ProfilePictureToJSON,
+} from './ProfilePicture';
+
 /**
  * 
  * @export
@@ -52,10 +59,10 @@ export interface DecodedUserToken {
     verified: boolean;
     /**
      * 
-     * @type {string}
+     * @type {ProfilePicture}
      * @memberof DecodedUserToken
      */
-    imageUrl?: string;
+    profilePicture?: ProfilePicture;
     /**
      * 
      * @type {string}
@@ -85,7 +92,7 @@ export function DecodedUserTokenFromJSONTyped(json: any, ignoreDiscriminator: bo
         'name': json['name'],
         'handle': json['handle'],
         'verified': json['verified'],
-        'imageUrl': !exists(json, 'imageUrl') ? undefined : json['imageUrl'],
+        'profilePicture': !exists(json, 'profilePicture') ? undefined : ProfilePictureFromJSON(json['profilePicture']),
         'sub': json['sub'],
         'iat': json['iat'],
     };
@@ -105,7 +112,7 @@ export function DecodedUserTokenToJSON(value?: DecodedUserToken | null): any {
         'name': value.name,
         'handle': value.handle,
         'verified': value.verified,
-        'imageUrl': value.imageUrl,
+        'profilePicture': ProfilePictureToJSON(value.profilePicture),
         'sub': value.sub,
         'iat': value.iat,
     };

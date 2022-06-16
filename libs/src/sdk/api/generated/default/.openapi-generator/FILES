@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/PlaylistsApi.ts
 apis/ResolveApi.ts
 apis/TipsApi.ts

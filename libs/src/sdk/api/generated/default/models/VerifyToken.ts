@@ -29,10 +29,10 @@ import {
 export interface VerifyToken {
     /**
      * 
-     * @type {Array<DecodedUserToken>}
+     * @type {DecodedUserToken}
      * @memberof VerifyToken
      */
-    data?: Array<DecodedUserToken>;
+    data?: DecodedUserToken;
 }
 
 export function VerifyTokenFromJSON(json: any): VerifyToken {
@@ -45,7 +45,7 @@ export function VerifyTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(DecodedUserTokenFromJSON)),
+        'data': !exists(json, 'data') ? undefined : DecodedUserTokenFromJSON(json['data']),
     };
 }
 
@@ -58,7 +58,7 @@ export function VerifyTokenToJSON(value?: VerifyToken | null): any {
     }
     return {
         
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(DecodedUserTokenToJSON)),
+        'data': DecodedUserTokenToJSON(value.data),
     };
 }
 

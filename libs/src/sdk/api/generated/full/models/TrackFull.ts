@@ -303,6 +303,12 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     cover_art?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof TrackFull
+     */
+    is_available?: boolean;
 }
 
 export function TrackFullFromJSON(json: any): TrackFull {
@@ -353,6 +359,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'user_id': json['user_id'],
         'is_delete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
         'cover_art': !exists(json, 'cover_art') ? undefined : json['cover_art'],
+        'is_available': !exists(json, 'is_available') ? undefined : json['is_available'],
     };
 }
 
@@ -403,6 +410,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'user_id': value.user_id,
         'is_delete': value.is_delete,
         'cover_art': value.cover_art,
+        'is_available': value.is_available,
     };
 }
 

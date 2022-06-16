@@ -38,6 +38,12 @@ export interface ProfilePicture {
      * @memberof ProfilePicture
      */
     _1000x1000?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ProfilePicture
+     */
+    misc?: string;
 }
 
 export function ProfilePictureFromJSON(json: any): ProfilePicture {
@@ -53,6 +59,7 @@ export function ProfilePictureFromJSONTyped(json: any, ignoreDiscriminator: bool
         '_150x150': !exists(json, '150x150') ? undefined : json['150x150'],
         '_480x480': !exists(json, '480x480') ? undefined : json['480x480'],
         '_1000x1000': !exists(json, '1000x1000') ? undefined : json['1000x1000'],
+        'misc': !exists(json, 'misc') ? undefined : json['misc'],
     };
 }
 
@@ -68,6 +75,7 @@ export function ProfilePictureToJSON(value?: ProfilePicture | null): any {
         '150x150': value._150x150,
         '480x480': value._480x480,
         '1000x1000': value._1000x1000,
+        'misc': value.misc,
     };
 }
 
