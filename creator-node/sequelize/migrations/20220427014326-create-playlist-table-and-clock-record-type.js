@@ -38,10 +38,20 @@ module.exports = {
   }
 }
 
-async function addPlaylistToClockRecordSourceTables(queryInterface) {
+async function addPlaylistToClockRecordSourceTables(
+  queryInterface,
+  transaction
+) {
   // Note that this cannot be run inside a transaction block
+  // TODO: Instead of alter type, rename and create new type in order to preserve atomicity in a single tx. reference explaining why we cannot embed alter type in tx: https://stackoverflow.com/questions/53149484/error-alter-type-add-cannot-run-inside-a-transaction-block
   await queryInterface.sequelize.query(
-    `ALTER TYPE "enum_ClockRecords_sourceTable" ADD VALUE IF NOT EXISTS 'Playlist'`
+    `
+  ALTER TYPE "enum_ClockRecords_sourceTable" RENAME TO "enum_ClockRecords_sourceTable_old";
+  CREATE TYPE "enum_ClockRecords_sourceTable" AS ENUM('AudiusUser', 'Track', 'File', 'Playlist');
+  ALTER TABLE "ClockRecords" ALTER COLUMN "sourceTable" TYPE "enum_ClockRecords_sourceTable" USING "sourceTable"::text::"enum_ClockRecords_sourceTable";
+  DROP TYPE "enum_ClockRecords_sourceTable_old";
+  `,
+    { transaction }
   )
 }
 
