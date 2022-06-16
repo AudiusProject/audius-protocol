@@ -89,6 +89,13 @@ class BlacklistManager {
     userIdsToBlacklist = [],
     segmentsToBlacklist = []
   }) {
+    this.logVicky('Begin checking memory usage')
+    const field = 'heapUsed'
+    const mu = process.memoryUsage()
+    this.logVicky(mu)
+    const gbStart = mu[field] / 1024 / 1024 / 1024
+    this.logVicky(`Start ${Math.round(gbStart * 100) / 100} GB`)
+
     // Get all tracks from users and combine with explicit trackIds to BL
     const tracksFromUsers = await this.getTracksFromUsers(userIdsToBlacklist)
     const allTrackIdsToBlacklist = trackIdsToBlacklist.concat(
@@ -111,6 +118,15 @@ class BlacklistManager {
     ;[...CID_WHITELIST].forEach((cid) => segmentCIDsToBlacklistSet.delete(cid))
 
     segmentCIDsToBlacklist = [...segmentCIDsToBlacklistSet]
+
+    // Check how much memory is now allocated.
+    mu = process.memoryUsage()
+    const mbNow = mu[field] / 1024 / 1024 / 1024
+    //console.log(`Total allocated       ${Math.round(mbNow * 100) / 100} GB`);
+    this.logVicky(
+      `Allocated since start ${Math.round((mbNow - gbStart) * 100) / 100} GB`
+    )
+
     try {
       await this.addToRedis(
         REDIS_SET_BLACKLIST_TRACKID_KEY,
@@ -731,6 +747,9 @@ class BlacklistManager {
   }
 
   // Logger wrapper methods
+  static logVicky(msg) {
+    logger.info(`VICKY | ${msg}`)
+  }
 
   static logDebug(msg) {
     logger.debug(`BlacklistManager DEBUG: ${msg}`)
