@@ -1,14 +1,26 @@
+const crypto = require('crypto')
+
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const txRelay = require('../relay/txRelay')
-const crypto = require('crypto')
 const captchaMiddleware = require('../captchaMiddleware')
+const { detectAbuse } = require('../utils/antiAbuse')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well
   app.post('/relay', captchaMiddleware, handleResponse(async (req, res, next) => {
-    let body = req.body
+    const body = req.body
     const redis = req.app.get('redis')
+
+    let optimizelyClient
+    let detectAbuseOnRelay = false
+    try {
+      optimizelyClient = req.app.get('optimizelyClient')
+      detectAbuseOnRelay = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY)
+    } catch (error) {
+      req.logger.error(`failed to retrieve optimizely feature flag for detectAbuseOnRelay: ${error}`)
+    }
 
     if (body && body.contractRegistryKey && body.contractAddress && body.senderAddress && body.encodedABI) {
       // send tx
@@ -49,7 +61,14 @@ module.exports = function (app) {
         }
       }
 
+      if (detectAbuseOnRelay) {
+        const reqIP = req.get('X-Forwarded-For') || req.ip
+        detectAbuse('relay', body.senderAddress, reqIP) // fired & forgotten
+      }
+
       return successResponse({ receipt: receipt })
-    } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
+    }
+
+    return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
   }))
 }

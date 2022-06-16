@@ -162,12 +162,18 @@ async function createTrackListenTransaction ({
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
 
-  const sourceData = JSON.stringify({ source: source, location: location })
+  let sourceData
+  if (config.get('ipdataAPIKey')) {
+    sourceData = JSON.stringify({ source: source, location: location })
+  } else {
+    sourceData = source
+  }
 
+  // max sol tx size is 1232 bytes
   let trackData = new TrackData({
     userId: userId,
     trackId: trackId,
-    source: sourceData, // max sol tx size is 1232 bytes
+    source: sourceData, // use api key as feature flag
     timestamp: (await getListenTimestamp(connection)) || Math.round(new Date().getTime() / 1000)
   })
 

@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false
     },
+    isAbusive: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
     // this is the last time we have an activity for this user
     // could be updated whenever we relay a tx on behalf of them
     lastSeenDate: {
