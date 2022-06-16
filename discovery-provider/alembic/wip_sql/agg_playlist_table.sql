@@ -1,19 +1,20 @@
 begin;
 
+-- TODO: recreate album_lexeme_dict, playlist_lexeme_dict
 drop materialized view album_lexeme_dict;
 drop materialized view playlist_lexeme_dict;
 drop materialized view aggregate_playlist;
 
-create temporary table aggregate_playlist_test (
+create table aggregate_playlist (
   playlist_id integer primary key,
   is_album boolean,
   repost_count integer default 0,
   save_count integer default 0
 );
 
--- insert into aggregate_playlist_test
 
-insert into aggregate_playlist_test
+
+insert into aggregate_playlist
 select
   playlist_id,
   is_album,
@@ -38,8 +39,9 @@ from
 where
   is_current = true
   and is_delete = false
-on conflict(aggregate_playlist_test_pkey) do update set 
+on conflict(playlist_id) do update set 
   repost_count = excluded.repost_count,
   save_count = excluded.save_count;
+
 
 end;

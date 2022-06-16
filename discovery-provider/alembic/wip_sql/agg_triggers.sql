@@ -158,7 +158,6 @@ declare
   new_val int;
   milestone integer;
 begin
-
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
 
   if new.repost_type = 'track' then
