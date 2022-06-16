@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
-import { getSupportingForUser } from 'audius-client/src/common/store/tipping/selectors'
+import { getOptimisticSupportingForUser } from 'audius-client/src/common/store/tipping/selectors'
 import { SupportingMapForUser } from 'audius-client/src/common/store/tipping/types'
 import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
@@ -49,7 +49,8 @@ export const ViewAllSupportingTile = () => {
     'supporting_count'
   ])
   const supportingForProfile: SupportingMapForUser =
-    useSelectorWeb(state => getSupportingForUser(state, user_id)) || {}
+    useSelectorWeb(state => getOptimisticSupportingForUser(state, user_id)) ||
+    {}
   const rankedSupportingIds = Object.keys(supportingForProfile)
     .sort((k1, k2) => {
       const amount1BN = stringWeiToBN(

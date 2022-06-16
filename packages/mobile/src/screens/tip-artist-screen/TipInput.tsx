@@ -55,6 +55,7 @@ export const TipInput = (props: TipInputProps) => {
       onBlur={() => setIsFocused(false)}
       value={formattedValue}
       onChangeText={handleChangeText}
+      contextMenuHidden
       {...other}
     />
   )

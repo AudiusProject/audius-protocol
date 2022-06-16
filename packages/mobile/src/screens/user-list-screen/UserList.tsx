@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
+import { ID } from 'audius-client/src/common/models/Identifiers'
 import { User } from 'audius-client/src/common/models/User'
 import { FeatureFlags } from 'audius-client/src/common/services/remote-config'
 import { CommonState } from 'audius-client/src/common/store'
@@ -11,6 +12,7 @@ import {
   reset,
   setLoading
 } from 'audius-client/src/common/store/user-list/actions'
+import { makeGetOptimisticUserIdsIfNeeded } from 'audius-client/src/common/store/user-list/selectors'
 import { UserListStoreState } from 'audius-client/src/common/store/user-list/types'
 import { View } from 'react-native'
 import { Selector } from 'react-redux'
@@ -38,6 +40,9 @@ const useStyles = makeStyles(({ spacing }) => ({
   footer: {
     height: spacing(8),
     marginBottom: spacing(4)
+  },
+  list: {
+    height: '100%'
   }
 }))
 
@@ -64,17 +69,22 @@ export const UserList = (props: UserListProps) => {
   const dispatchWeb = useDispatchWeb()
   const [isRefreshing, setIsRefreshing] = useState(true)
   const { hasMore, userIds, loading } = useSelectorWeb(userSelector, isEqual)
+  const getOptimisticUserIds = makeGetOptimisticUserIdsIfNeeded({
+    userIds,
+    tag
+  })
+  const optimisticUserIds: ID[] = useSelectorWeb(getOptimisticUserIds)
   const currentUserId = useSelectorWeb(getUserId)
   const usersMap = useSelectorWeb(
-    state => getUsers(state, { ids: userIds }),
+    state => getUsers(state, { ids: optimisticUserIds }),
     isEqual
   )
   const users: User[] = useMemo(
     () =>
-      userIds
+      optimisticUserIds
         .map(id => usersMap[id])
         .filter(user => user && !user.is_deactivated),
-    [usersMap, userIds]
+    [usersMap, optimisticUserIds]
   )
 
   const { isEnabled: isTippingEnabled } = useFeatureFlag(
@@ -135,6 +145,7 @@ export const UserList = (props: UserListProps) => {
 
   return (
     <FlatList
+      style={styles.list}
       data={data}
       renderItem={({ item }) =>
         isTippingEnabled ? (
