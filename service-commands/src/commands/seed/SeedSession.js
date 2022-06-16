@@ -1,4 +1,4 @@
-const AudiusLibs = require('@audius/libs')
+const { libs: AudiusLibs } = require('@audius/sdk')
 const UserCache = require('./UserCache')
 const LocalStorageWrapper = require('./LocalStorageWrapper')
 const fetch = require('node-fetch')
@@ -91,7 +91,7 @@ class SeedSession {
         profilePictureFile,
         coverPhotoFile,
         hasWallet,
-        host,
+        host
       )
     } catch (error) {
       console.error(error, signUpResponse)
@@ -134,7 +134,7 @@ class SeedSession {
     }
   }
 
-  tipAudioIdentity = async ({ userId = null, recipientId, amount}) => {
+  tipAudioIdentity = async ({ userId = null, recipientId, amount }) => {
     if (!recipientId) {
       console.error(`Needs valid recipient ID!`)
       throw new Error()
@@ -144,13 +144,22 @@ class SeedSession {
     await this.setUser({ userId })
     // const recipientDetails = this.cache.findUser({ userId: recipientId })
     // get the spl wallet
-    const splWallet = await (async() => {
-      const res = await fetch(`http://localhost:5000/v1/users/${this.libs.Utils.encodeHashId(recipientId)}`)
-      const { data: { spl_wallet }} = await res.json()
+    const splWallet = await (async () => {
+      const res = await fetch(
+        `http://localhost:5000/v1/users/${this.libs.Utils.encodeHashId(
+          recipientId
+        )}`
+      )
+      const {
+        data: { spl_wallet }
+      } = await res.json()
       return spl_wallet
     })()
 
-    const res = await this.libs.solanaWeb3Manager.transferWAudio(splWallet, uiAmount)
+    const res = await this.libs.solanaWeb3Manager.transferWAudio(
+      splWallet,
+      uiAmount
+    )
     console.log(res)
   }
 }

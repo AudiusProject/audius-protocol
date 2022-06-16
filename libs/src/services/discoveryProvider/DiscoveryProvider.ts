@@ -29,13 +29,31 @@ type RequestParams = {
   data?: Record<string, unknown>
 }
 
+export type DiscoveryProviderConfig = {
+  whitelist?: Set<string>
+  blacklist?: Set<string>
+  userStateManager: UserStateManager
+  ethContracts: EthContracts
+  web3Manager?: Web3Manager
+  reselectTimeout?: number
+  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
+  monitoringCallbacks?: DiscoveryProviderSelectionConfig['monitoringCallbacks']
+  selectionRequestTimeout?: number
+  selectionRequestRetries?: number
+  unhealthySlotDiffPlays?: number
+  unhealthyBlockDiff?: number
+}
+
 export type UserProfile = {
   userId: number
   email: string
   name: string
   handle: string
   verified: boolean
-  imageURL?: string
+  profilePicture:
+    | { '150x150': string; '480x480': string; '1000x1000': string }
+    | null
+    | undefined
   sub: number
   iat: string
 }
@@ -61,34 +79,35 @@ export class DiscoveryProvider {
   blacklist: Set<string> | undefined
   userStateManager: UserStateManager
   ethContracts: EthContracts
-  web3Manager: Web3Manager
+  web3Manager: Web3Manager | undefined
   unhealthyBlockDiff: number
   serviceSelector: DiscoveryProviderSelection
-
   selectionRequestTimeout: number
   selectionRequestRetries: number
   unhealthySlotDiffPlays: number | undefined
   request404Count: number
   maxRequestsForTrue404: number
-  monitoringCallbacks: DiscoveryProviderSelection['monitoringCallbacks']
-  discoveryProviderEndpoint?: string
+  monitoringCallbacks:
+    | DiscoveryProviderSelection['monitoringCallbacks']
+    | undefined
 
-  constructor(
-    whitelist: Set<string> | undefined,
-    blacklist: Set<string> | undefined,
-    userStateManager: UserStateManager,
-    ethContracts: EthContracts,
-    web3Manager: Web3Manager,
-    reselectTimeout: number | undefined,
-    selectionCallback:
-      | DiscoveryProviderSelectionConfig['selectionCallback']
-      | undefined,
-    monitoringCallbacks: DiscoveryProviderSelectionConfig['monitoringCallbacks'],
-    selectionRequestTimeout?: number,
-    selectionRequestRetries?: number,
-    unhealthySlotDiffPlays?: number,
-    unhealthyBlockDiff?: number
-  ) {
+  discoveryProviderEndpoint: string | undefined
+  isInitialized = false
+
+  constructor({
+    whitelist,
+    blacklist,
+    userStateManager,
+    ethContracts,
+    web3Manager,
+    reselectTimeout,
+    selectionCallback,
+    monitoringCallbacks,
+    selectionRequestTimeout = REQUEST_TIMEOUT_MS,
+    selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
+    unhealthySlotDiffPlays,
+    unhealthyBlockDiff
+  }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
     this.userStateManager = userStateManager
@@ -109,9 +128,8 @@ export class DiscoveryProvider {
       },
       this.ethContracts
     )
-    this.selectionRequestTimeout = selectionRequestTimeout ?? REQUEST_TIMEOUT_MS
-    this.selectionRequestRetries =
-      selectionRequestRetries ?? MAX_MAKE_REQUEST_RETRY_COUNT
+    this.selectionRequestTimeout = selectionRequestTimeout
+    this.selectionRequestRetries = selectionRequestRetries
     this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
 
     // Keep track of the number of times a request 404s so we know when a true 404 occurs
@@ -121,7 +139,7 @@ export class DiscoveryProvider {
     this.request404Count = 0
     this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
-    this.monitoringCallbacks = monitoringCallbacks ?? {}
+    this.monitoringCallbacks = monitoringCallbacks
   }
 
   async init() {
@@ -601,11 +619,11 @@ export class DiscoveryProvider {
    */
   async verifyToken(token: string): Promise<UserProfile | false> {
     const req = Requests.verifyToken(token)
-    const res = await this._makeRequest<UserProfile[]>(req)
-    if (res == null || res[0] == null) {
+    const res = await this._makeRequest<UserProfile | null>(req)
+    if (res == null) {
       return false
     } else {
-      return res[0]
+      return res
     }
   }
 
@@ -853,7 +871,7 @@ export class DiscoveryProvider {
       parsedResponse = Utils.parseDataFromResponse(response)
 
       // Fire monitoring callbacks for request success case
-      if ('request' in this.monitoringCallbacks) {
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
             endpoint: url.origin,
@@ -874,10 +892,10 @@ export class DiscoveryProvider {
       const error = e as AxiosError
       const resp = error.response
       const duration = Date.now() - start
-      const errMsg = error.response?.data ?? error
+      const errData = error.response?.data ?? error
 
-      // Fire monitoring callbaks for request failure case
-      if ('request' in this.monitoringCallbacks) {
+      // Fire monitoring callbacks for request failure case
+      if (this.monitoringCallbacks && 'request' in this.monitoringCallbacks) {
         try {
           this.monitoringCallbacks.request({
             endpoint: url.origin,
@@ -894,10 +912,10 @@ export class DiscoveryProvider {
       }
       if (resp && resp.status === 404) {
         // We have 404'd. Throw that error message back out
-        throw new Error('404')
+        throw { ...errData, status: '404' }
       }
 
-      throw errMsg
+      throw errData
     }
     return parsedResponse
   }
@@ -980,8 +998,17 @@ export class DiscoveryProvider {
   async _makeRequest<Response>(
     requestObj: Record<string, unknown>,
     retry = true,
-    attemptedRetries = 0
+    attemptedRetries = 0,
+    throwError = false
   ): Promise<Response | undefined | null> {
+    const returnOrThrow = <ErrorType>(e: ErrorType) => {
+      if (throwError) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw e
+      }
+      return null
+    }
+
     try {
       const newDiscProvEndpoint =
         await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
@@ -1005,7 +1032,7 @@ export class DiscoveryProvider {
         this.discoveryProviderEndpoint
       )
     } catch (e) {
-      const error = e as Error
+      const error = e as { message: string; status: string }
       const failureStr = 'Failed to make Discovery Provider request, '
       const attemptStr = `attempt #${attemptedRetries}, `
       const errorStr = `error ${JSON.stringify(error.message)}, `
@@ -1015,7 +1042,7 @@ export class DiscoveryProvider {
       console.warn(fullErrString)
 
       if (retry) {
-        if (error.message === '404') {
+        if (error.status === '404') {
           this.request404Count += 1
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
@@ -1023,19 +1050,25 @@ export class DiscoveryProvider {
             return await this._makeRequest(
               requestObj,
               retry,
-              this.selectionRequestRetries + 1
+              this.selectionRequestRetries + 1,
+              throwError
             )
           } else {
             this.request404Count = 0
-            return null
+            return returnOrThrow(e)
           }
         }
 
         // In the case of an unknown error, retry with attempts += 1
-        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        return await this._makeRequest(
+          requestObj,
+          retry,
+          attemptedRetries + 1,
+          throwError
+        )
       }
 
-      return null
+      return returnOrThrow(e)
     }
 
     // Validate health check response
@@ -1047,24 +1080,36 @@ export class DiscoveryProvider {
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
     if (notInRegressedMode && blockDiff) {
+      const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
       if (retry) {
         console.info(
-          `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]. Retrying request at attempt #${attemptedRetries}...`
+          `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        return await this._makeRequest(
+          requestObj,
+          retry,
+          attemptedRetries + 1,
+          throwError
+        )
       }
-      return null
+      return returnOrThrow(new Error(errorMessage))
     }
 
     const playsSlotDiff = await this._getPlaysSlotsBehind(parsedResponse)
     if (notInRegressedMode && playsSlotDiff) {
+      const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]`
       if (retry) {
         console.info(
-          `${this.discoveryProviderEndpoint} is too far behind [slot diff: ${playsSlotDiff}]. Retrying request at attempt #${attemptedRetries}...`
+          `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        return await this._makeRequest(
+          requestObj,
+          retry,
+          attemptedRetries + 1,
+          throwError
+        )
       }
-      return null
+      return returnOrThrow(new Error(errorMessage))
     }
 
     // Reset 404 counts

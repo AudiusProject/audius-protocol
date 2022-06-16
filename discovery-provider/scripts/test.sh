@@ -22,6 +22,8 @@ pip3 install -r requirements.txt
 sleep 5
 set +e
 
+cd es-indexer && npm i && cd -
+
 if [ -n "${VERBOSE}" ]; then
   set -x
 fi
@@ -48,6 +50,7 @@ docker network rm audius_dev
 docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
+  -f compose/docker-compose.elasticsearch.yml \
   -f compose/docker-compose.ipfs.yml \
   --env-file compose/.test.env \
   stop
@@ -55,6 +58,7 @@ docker-compose \
 docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
+  -f compose/docker-compose.elasticsearch.yml \
   -f compose/docker-compose.ipfs.yml \
   --env-file compose/.test.env \
   rm -rf
@@ -64,6 +68,7 @@ docker network create audius_dev
 docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
+  -f compose/docker-compose.elasticsearch.yml \
   -f compose/docker-compose.ipfs.yml \
   --env-file compose/.test.env \
   up -d

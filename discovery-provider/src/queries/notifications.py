@@ -33,6 +33,7 @@ from src.queries.query_helpers import (
     get_save_counts,
 )
 from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
+from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
@@ -41,6 +42,7 @@ from src.utils.redis_constants import (
     latest_sol_listen_count_milestones_slot_key,
     latest_sol_rewards_manager_slot_key,
 )
+from src.utils.spl_audio import to_wei_string
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
@@ -238,6 +240,7 @@ def notifications():
     """
 
     db = get_db_read_replica()
+    web3 = web3_provider.get_web3()
     min_block_number = request.args.get("min_block_number", type=int)
     max_block_number = request.args.get("max_block_number", type=int)
 
@@ -863,6 +866,81 @@ def notifications():
                 publish_playlist_notif[const.notification_metadata] = metadata
                 created_notifications.append(publish_playlist_notif)
 
+        # Playlists that had tracks added to them
+        # Get all playlists that were modified over this range
+        playlist_track_added_query = session.query(Playlist).filter(
+            Playlist.is_current == True,
+            Playlist.is_delete == False,
+            Playlist.is_private == False,
+            Playlist.blocknumber > min_block_number,
+            Playlist.blocknumber <= max_block_number,
+        )
+        playlist_track_added_results = playlist_track_added_query.all()
+        # Loop over all playlist updates and determine if there were tracks added
+        # at the block that the playlist update is at
+        track_added_to_playlist_notifications = []
+        track_ids = []
+        for entry in playlist_track_added_results:
+            # Get the track_ids from entry["playlist_contents"]
+            if not entry.playlist_contents["track_ids"]:
+                # skip empty playlists
+                continue
+            playlist_contents = entry.playlist_contents
+            playlist_blocknumber = entry.blocknumber
+            playlist_block = web3.eth.get_block(playlist_blocknumber)
+            playlist_block_timestamp = playlist_block.timestamp
+
+            for track in playlist_contents["track_ids"]:
+                track_id = track["track"]
+                track_timestamp = track["time"]
+                # We know that this track was added to the playlist at this specific update
+                if track_timestamp == playlist_block_timestamp:
+                    track_ids.append(track_id)
+                    track_added_to_playlist_notification = {
+                        const.notification_type: const.notification_type_track_added_to_playlist,
+                        const.notification_blocknumber: entry.blocknumber,
+                        const.notification_timestamp: entry.created_at,
+                        const.notification_initiator: entry.playlist_owner_id,
+                    }
+                    metadata = {
+                        const.notification_entity_id: track_id,
+                        const.notification_entity_type: "track",
+                    }
+                    track_added_to_playlist_notification[
+                        const.notification_metadata
+                    ] = metadata
+                    track_added_to_playlist_notifications.append(
+                        track_added_to_playlist_notification
+                    )
+
+        tracks = (
+            session.query(Track.owner_id, Track.track_id)
+            .filter(
+                Track.track_id.in_(track_ids),
+                Track.is_unlisted == False,
+                Track.is_delete == False,
+                Track.is_current == True,
+            )
+            .all()
+        )
+        track_owner_map = {}
+        for track in tracks:
+            owner_id, track_id = track
+            track_owner_map[track_id] = owner_id
+
+        # Loop over notifications and populate their metadata
+        for notification in track_added_to_playlist_notifications:
+            track_id = notification[const.notification_metadata][
+                const.notification_entity_id
+            ]
+            track_owner_id = track_owner_map[track_id]
+            if track_owner_id != notification[const.notification_initiator]:
+                # add tracks that don't belong to the playlist owner
+                notification[const.notification_metadata][
+                    const.notification_entity_owner_id
+                ] = track_owner_id
+                created_notifications.append(notification)
+
         notifications_unsorted.extend(created_notifications)
 
         logger.info(f"notifications.py | playlists at {datetime.now() - start_time}")
@@ -1155,13 +1233,15 @@ def solana_notifications():
                     const.solana_notification_metadata: {
                         const.notification_entity_id: user_tip.sender_user_id,
                         const.notification_entity_type: "user",
-                        const.solana_notification_tip_amount: str(user_tip.amount),
+                        const.solana_notification_tip_amount: to_wei_string(
+                            user_tip.amount
+                        ),
                         const.solana_notification_tip_signature: user_tip.signature,
                     },
                 }
             )
 
-        reaction_results: List[Reaction] = (
+        reaction_results: List[Tuple[Reaction, int]] = (
             session.query(Reaction, User.user_id)
             .join(User, User.wallet == Reaction.sender_wallet)
             .filter(
@@ -1172,8 +1252,20 @@ def solana_notifications():
             .all()
         )
 
+        # Get tips associated with a given reaction
+        tip_signatures = [
+            e.reacted_to for (e, _) in reaction_results if e.reaction_type == "tip"
+        ]
+        reaction_tips: List[UserTip] = (
+            session.query(UserTip).filter(UserTip.signature.in_(tip_signatures))
+        ).all()
+        tips_map = {e.signature: e for e in reaction_tips}
+
         reactions = []
         for (reaction, user_id) in reaction_results:
+            tip = tips_map[reaction.reacted_to]
+            if not tip:
+                continue
             reactions.append(
                 {
                     const.solana_notification_type: const.solana_notification_type_reaction,
@@ -1182,7 +1274,13 @@ def solana_notifications():
                     const.solana_notification_metadata: {
                         const.solana_notification_reaction_type: reaction.reaction_type,
                         const.solana_notification_reaction_reaction_value: reaction.reaction_value,
-                        const.solana_notification_reaction_reacted_to: reaction.reacted_to,
+                        const.solana_notification_reaction_reacted_to_entity: {
+                            const.solana_notification_tip_signature: tip.signature,
+                            const.solana_notification_tip_amount: to_wei_string(
+                                tip.amount
+                            ),
+                            const.solana_notification_tip_sender_id: tip.sender_user_id,
+                        },
                     },
                 }
             )

@@ -17,5 +17,3 @@ printf 'START Solium lint'
 npm run solidity-lint
 printf '\nEND Solium lint'
 printline
-
-

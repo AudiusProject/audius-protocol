@@ -1,26 +1,34 @@
 const Web3 = require('../src/web3')
 
-const AudiusLibs = require('../dist/index')
+const { libs: AudiusLibs } = require('../dist/index')
 const dataContractsConfig = require('../data-contracts/config.json')
 const ethContractsConfig = require('../eth-contracts/config.json')
 
 const creatorNodeEndpoint = 'http://localhost:4000'
 const identityServiceEndpoint = 'http://localhost:7000'
-const dataWeb3ProviderEndpoints = ['http://localhost:8545', 'http://localhost:8545']
+const dataWeb3ProviderEndpoints = [
+  'http://localhost:8545',
+  'http://localhost:8545'
+]
 const ethWeb3ProviderEndpoint = 'http://localhost:8546'
 const isServer = true
 const isDebug = true
 
-async function initAudiusLibs (
+async function initAudiusLibs(
   useExternalWeb3,
   ownerWalletOverride = null,
   ethOwnerWalletOverride = null,
   ownerWalletPrivateKey = null
 ) {
   let audiusLibsConfig
-  const ethWallet = ethOwnerWalletOverride === null ? ethContractsConfig.ownerWallet : ethOwnerWalletOverride
+  const ethWallet =
+    ethOwnerWalletOverride === null
+      ? ethContractsConfig.ownerWallet
+      : ethOwnerWalletOverride
   if (useExternalWeb3) {
-    const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoints[0]))
+    const dataWeb3 = new Web3(
+      new Web3.providers.HttpProvider(dataWeb3ProviderEndpoints[0])
+    )
     audiusLibsConfig = {
       // Network id does not need to be checked in the test environment.
       web3Config: AudiusLibs.configExternalWeb3(
@@ -35,7 +43,9 @@ async function initAudiusLibs (
         ethWeb3ProviderEndpoint,
         ethWallet
       ),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
+      discoveryProviderConfig: {
+        whitelist: new Set(['http://docker.for.mac.localhost:5000'])
+      },
       isServer,
       isDebug
     }
@@ -44,15 +54,19 @@ async function initAudiusLibs (
       web3Config: AudiusLibs.configInternalWeb3(
         dataContractsConfig.registryAddress,
         dataWeb3ProviderEndpoints,
-        ownerWalletPrivateKey),
+        ownerWalletPrivateKey
+      ),
       ethWeb3Config: AudiusLibs.configEthWeb3(
         ethContractsConfig.audiusTokenAddress,
         ethContractsConfig.registryAddress,
         ethWeb3ProviderEndpoint,
-        ethContractsConfig.ownerWallet),
+        ethContractsConfig.ownerWallet
+      ),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
-      identityServiceConfig: AudiusLibs.configIdentityService(identityServiceEndpoint),
+      discoveryProviderConfig: {},
+      identityServiceConfig: AudiusLibs.configIdentityService(
+        identityServiceEndpoint
+      ),
       isServer,
       isDebug
     }
@@ -64,7 +78,7 @@ async function initAudiusLibs (
   try {
     await audiusLibs.init()
   } catch (e) {
-    console.error('Couldn\'t init libs', e)
+    console.error("Couldn't init libs", e)
   }
   return audiusLibs
 }

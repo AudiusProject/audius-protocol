@@ -60,29 +60,39 @@ describe('test CNodeHealthManager -- getUnhealthyPeers()', function () {
     ).to.eventually.be.fulfilled.and.deep.equal(new Set(unhealthyNodes))
   })
 
-  for (const performSimpleCheck of [true, false]) {
-    it(`returns all unhealthy nodes when performSimpleCheck=${performSimpleCheck}`, async function () {
-      // Stub functions that getUnhealthyPeers() will call
-      sandbox
-        .stub(CNodeHealthManager, '_computeContentNodePeerSet')
-        .returns(new Set([...healthyNodes, ...unhealthyNodes]))
-      const isNodeHealthyStub = sandbox.stub(
-        CNodeHealthManager,
-        'isNodeHealthy'
-      )
-      isNodeHealthyStub.withArgs(sinon.match.in(healthyNodes)).resolves(true)
-      isNodeHealthyStub.withArgs(sinon.match.in(unhealthyNodes)).resolves(false)
+  it('returns all unhealthy nodes when performSimpleCheck=true', async function () {
+    // Stub functions that getUnhealthyPeers() will call
+    sandbox
+      .stub(CNodeHealthManager, '_computeContentNodePeerSet')
+      .returns(new Set([...healthyNodes, ...unhealthyNodes]))
+    const isNodeHealthyStub = sandbox.stub(CNodeHealthManager, 'isNodeHealthy')
+    isNodeHealthyStub.withArgs(sinon.match.in(healthyNodes)).resolves(true)
+    isNodeHealthyStub.withArgs(sinon.match.in(unhealthyNodes)).resolves(false)
 
-      // Verify that the correct unhealthy peers are returned
-      return expect(
-        CNodeHealthManager.getUnhealthyPeers(
-          users,
-          thisContentNodeEndpoint,
-          performSimpleCheck
-        )
-      ).to.eventually.be.fulfilled.and.deep.equal(new Set(unhealthyNodes))
-    })
-  }
+    // Verify that the correct unhealthy peers are returned
+    return expect(
+      CNodeHealthManager.getUnhealthyPeers(users, thisContentNodeEndpoint, true)
+    ).to.eventually.be.fulfilled.and.deep.equal(new Set(unhealthyNodes))
+  })
+
+  it('returns all unhealthy nodes when performSimpleCheck=false', async function () {
+    // Stub functions that getUnhealthyPeers() will call
+    sandbox
+      .stub(CNodeHealthManager, '_computeContentNodePeerSet')
+      .returns(new Set([...healthyNodes, ...unhealthyNodes]))
+    const isNodeHealthyStub = sandbox.stub(CNodeHealthManager, 'isNodeHealthy')
+    isNodeHealthyStub.withArgs(sinon.match.in(healthyNodes)).resolves(true)
+    isNodeHealthyStub.withArgs(sinon.match.in(unhealthyNodes)).resolves(false)
+
+    // Verify that the correct unhealthy peers are returned
+    return expect(
+      CNodeHealthManager.getUnhealthyPeers(
+        users,
+        thisContentNodeEndpoint,
+        false
+      )
+    ).to.eventually.be.fulfilled.and.deep.equal(new Set(unhealthyNodes))
+  })
 })
 
 describe('test CNodeHealthManager -- isNodeHealthy()', function () {
@@ -116,35 +126,53 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
     expect(logErrorStub).to.not.have.been.called
   })
 
-  for (const performSimpleCheck of [true, false]) {
-    it(`returns false when health check fails with performSimpleCheck=${performSimpleCheck}`, async function () {
-      // Stub functions that isNodeHealthy() will call
-      const node = 'http://some_content_node.co'
-      const error = new Error('test error')
-      const queryVerboseHealthCheckStub = sandbox
-        .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
-        .rejects(error)
-      const determinePeerHealthStub = sandbox.stub(
-        CNodeHealthManager,
-        'determinePeerHealth'
-      )
-      const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
+  it('returns false when health check fails with performSimpleCheck=true', async function () {
+    // Stub functions that isNodeHealthy() will call
+    const node = 'http://some_content_node.co'
+    const error = new Error('test error')
+    const queryVerboseHealthCheckStub = sandbox
+      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .rejects(error)
+    const determinePeerHealthStub = sandbox.stub(
+      CNodeHealthManager,
+      'determinePeerHealth'
+    )
+    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
-      // Verify that only the simple check was performed and returned healthy
-      const isHealthy = await CNodeHealthManager.isNodeHealthy(
-        node,
-        performSimpleCheck
-      )
-      expect(isHealthy).to.be.false
-      expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(
-        node
-      )
-      expect(determinePeerHealthStub).to.not.have.been.called
-      expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
-        `isNodeHealthy() peer=${node} is unhealthy: ${error.toString()}`
-      )
-    })
-  }
+    // Verify that determinePeerHealth is not called because the health
+    // check throwing an error causes the function to return false
+    const isHealthy = await CNodeHealthManager.isNodeHealthy(node, true)
+    expect(isHealthy).to.be.false
+    expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
+    expect(determinePeerHealthStub).to.not.have.been.called
+    expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
+      `isNodeHealthy() peer=${node} is unhealthy: ${error.toString()}`
+    )
+  })
+
+  it('returns false when health check fails with performSimpleCheck=false', async function () {
+    // Stub functions that isNodeHealthy() will call
+    const node = 'http://some_content_node.co'
+    const error = new Error('test error')
+    const queryVerboseHealthCheckStub = sandbox
+      .stub(CNodeHealthManager, 'queryVerboseHealthCheck')
+      .rejects(error)
+    const determinePeerHealthStub = sandbox.stub(
+      CNodeHealthManager,
+      'determinePeerHealth'
+    )
+    const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
+
+    // Verify that determinePeerHealth is not called because the health
+    // check throwing an error causes the function to return false
+    const isHealthy = await CNodeHealthManager.isNodeHealthy(node, false)
+    expect(isHealthy).to.be.false
+    expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)
+    expect(determinePeerHealthStub).to.not.have.been.called
+    expect(logErrorStub).to.have.been.called.calledOnceWithExactly(
+      `isNodeHealthy() peer=${node} is unhealthy: ${error.toString()}`
+    )
+  })
 
   it('returns false when determinePeerHealth throws with performSimpleCheck=false', async function () {
     // Stub functions that isNodeHealthy() will call
@@ -159,7 +187,7 @@ describe('test CNodeHealthManager -- isNodeHealthy()', function () {
       .throws(determinePeerHealthError)
     const logErrorStub = sandbox.stub(CNodeHealthManager, 'logError')
 
-    // Verify that only the simple check was performed and returned healthy
+    // Verify that determinePeerHealth throwing causes the function to return false
     const isHealthy = await CNodeHealthManager.isNodeHealthy(node, false)
     expect(isHealthy).to.be.false
     expect(queryVerboseHealthCheckStub).to.have.been.calledOnceWithExactly(node)

@@ -10,7 +10,8 @@ const redis = require('../redis.js')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
-const { CreatorNode } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const CreatorNode = libs.CreatorNode
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 const {
@@ -147,12 +148,22 @@ class SnapbackSM {
 
     // State machine queue processes all user operations
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    this.stateMachineQueue = this.createBullQueue('state-machine', {
-      // Should be sufficiently larger than expected job runtime
-      lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
-      // We never want to re-process stalled jobs
-      maxStalledCount: 0
-    })
+    this.stateMachineQueue = this.createBullQueue(
+      'state-machine',
+      {
+        // Should be sufficiently larger than expected job runtime
+        lockDuration: MAX_SNAPBACK_JOB_RUNTIME_MS,
+        // We never want to re-process stalled jobs
+        maxStalledCount: 0
+      },
+      // Rate limit to 1 job every 3 minutes locally to prevent log spam during development
+      this.nodeConfig.get('creatorNodeIsDebug')
+        ? {
+            max: 1,
+            duration: 3000 * 60
+          }
+        : null
+    )
 
     // Sync queues handle issuing sync request from primary -> secondary
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
@@ -202,14 +213,8 @@ class SnapbackSM {
       this.logError(`recurringSyncQueue Job Stalled - ID ${jobId}`)
     })
 
-    // PeerSetManager instance to determine the peer set and its health state
-    this.peerSetManager = new PeerSetManager({
-      discoveryProviderEndpoint:
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      creatorNodeEndpoint: this.endpoint
-    })
-
     this.updateEnabledReconfigModesSet()
+    this.inittedJobProcessors = false
   }
 
   /**
@@ -223,6 +228,13 @@ class SnapbackSM {
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
 
+    // PeerSetManager instance to determine the peer set and its health state
+    this.peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint:
+        this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      creatorNodeEndpoint: this.endpoint
+    })
+
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
 
@@ -230,59 +242,62 @@ class SnapbackSM {
      * Initialize all queue processors
      */
 
-    // Initialize stateMachineQueue job processor (aka consumer)
-    this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
-      this.log('StateMachineQueue: Consuming new job...')
-      const { id: jobId } = job
+    if (!this.inittedJobProcessors) {
+      // Initialize stateMachineQueue job processor (aka consumer)
+      this.stateMachineQueue.process(1 /** concurrency */, async (job) => {
+        this.log('StateMachineQueue: Consuming new job...')
+        const { id: jobId } = job
 
-      try {
-        this.log(
-          `StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(
-            job
-          )}`
-        )
-      } catch (e) {
-        this.logError(
-          `StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`
-        )
-      }
-
-      try {
-        await redis.set('stateMachineQueueLatestJobStart', Date.now())
-        await this.processStateMachineOperation(jobId)
-        await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
-      } catch (e) {
-        this.logError(
-          `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`
-        )
-      }
-
-      return {}
-    })
-
-    // Initialize manualSyncQueue job processor
-    this.manualSyncQueue.process(
-      this.MaxManualRequestSyncJobConcurrency,
-      async (job) => {
         try {
-          await this.processSyncOperation(job, SyncType.Manual)
+          this.log(
+            `StateMachineQueue: New job details: jobId=${jobId}, job=${JSON.stringify(
+              job
+            )}`
+          )
         } catch (e) {
-          this.logError(`ManualSyncQueue processing error: ${e}`)
+          this.logError(
+            `StateMachineQueue: Failed to log details for jobId=${jobId}: ${e}`
+          )
         }
-      }
-    )
 
-    // Initialize recurringSyncQueue job processor
-    this.recurringSyncQueue.process(
-      this.MaxRecurringRequestSyncJobConcurrency,
-      async (job) => {
         try {
-          await this.processSyncOperation(job, SyncType.Recurring)
+          await redis.set('stateMachineQueueLatestJobStart', Date.now())
+          await this.processStateMachineOperation(jobId)
+          await redis.set('stateMachineQueueLatestJobSuccess', Date.now())
         } catch (e) {
-          this.logError(`RecurringSyncQueue processing error ${e}`)
+          this.logError(
+            `StateMachineQueue: Processing error on jobId ${jobId}: ${e}`
+          )
         }
-      }
-    )
+
+        return {}
+      })
+
+      // Initialize manualSyncQueue job processor
+      this.manualSyncQueue.process(
+        this.MaxManualRequestSyncJobConcurrency,
+        async (job) => {
+          try {
+            await this.processSyncOperation(job, SyncType.Manual)
+          } catch (e) {
+            this.logError(`ManualSyncQueue processing error: ${e}`)
+          }
+        }
+      )
+
+      // Initialize recurringSyncQueue job processor
+      this.recurringSyncQueue.process(
+        this.MaxRecurringRequestSyncJobConcurrency,
+        async (job) => {
+          try {
+            await this.processSyncOperation(job, SyncType.Recurring)
+          } catch (e) {
+            this.logError(`RecurringSyncQueue processing error ${e}`)
+          }
+        }
+      )
+      this.inittedJobProcessors = true
+    }
 
     // Start at a random userId to avoid biased processing of early users
     const latestUserId = await this.getLatestUserId()
@@ -317,7 +332,7 @@ class SnapbackSM {
   }
 
   // Initialize bull queue instance with provided name and settings
-  createBullQueue(queueName, settings = {}) {
+  createBullQueue(queueName, settings = {}, limiter = null) {
     return new Bull(queueName, {
       redis: {
         port: this.nodeConfig.get('redisPort'),
@@ -328,7 +343,8 @@ class SnapbackSM {
         removeOnComplete: SNAPBACK_QUEUE_HISTORY,
         removeOnFail: SNAPBACK_QUEUE_HISTORY
       },
-      settings
+      settings,
+      limiter
     })
   }
 

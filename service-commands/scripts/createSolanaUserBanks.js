@@ -1,8 +1,8 @@
 const {
   createUserBankFrom
-} = require('@audius/libs/src/services/solanaWeb3Manager/userBank')
-const SolanaUtils = require('@audius/libs/src/services/solanaWeb3Manager/utils')
-const IdentityService = require('@audius/libs/src/services/identity')
+} = require('@audius/sdk/src/services/solanaWeb3Manager/userBank')
+const SolanaUtils = require('@audius/sdk/src/services/solanaWeb3Manager/utils')
+const IdentityService = require('@audius/sdk/src/services/identity')
 const axios = require('axios')
 const solanaWeb3 = require('@solana/web3.js')
 const { PublicKey, Keypair } = solanaWeb3
@@ -142,9 +142,13 @@ async function setupConfig(config) {
           )[0].toString()
         : null)
   )
-  const feePayerKeys = (solanaConfig.SOLANA_FEE_PAYER_SECRET_KEYS || []).map(key => Keypair.fromSecretKey(key).publicKey)
+  const feePayerKeys = (solanaConfig.SOLANA_FEE_PAYER_SECRET_KEYS || []).map(
+    key => Keypair.fromSecretKey(key).publicKey
+  )
   const feePayerKey = newPublicKeyNullable(
-    feePayerKeys && feePayerKeys.length ? newPublicKeyNullable(feePayerKeys[0]) : null
+    feePayerKeys && feePayerKeys.length
+      ? newPublicKeyNullable(feePayerKeys[0])
+      : null
   )
   const solanaTokenProgramKey = newPublicKeyNullable(
     solanaConfig.SOLANA_TOKEN_ADDRESS
@@ -191,7 +195,11 @@ function getConfigForEnv(env) {
       SOLANA_REWARDS_MANAGER_PROGRAM_ID: solanaConfig.rewardsManagerAddress,
       SOLANA_REWARDS_MANAGER_PROGRAM_PDA: solanaConfig.rewardsManagerAccount,
       SOLANA_REWARDS_MANAGER_TOKEN_PDA: solanaConfig.rewardsManagerTokenAccount,
-      SOLANA_FEE_PAYER_SECRET_KEYS: solanaConfig.feePayerWallets ? solanaConfig.feePayerWallets.map(wallet => Uint8Array.from(wallet.privateKey)) : undefined
+      SOLANA_FEE_PAYER_SECRET_KEYS: solanaConfig.feePayerWallets
+        ? solanaConfig.feePayerWallets.map(wallet =>
+            Uint8Array.from(wallet.privateKey)
+          )
+        : undefined
     },
     identityServiceConfig: { url: config.get('identity_service') },
     discoveryProviderConfig: {

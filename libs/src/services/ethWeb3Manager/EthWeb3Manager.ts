@@ -6,7 +6,6 @@ import retry from 'async-retry'
 import type { IdentityService, RelayTransaction } from '../identity'
 import type { Hedgehog } from '@audius/hedgehog'
 import type { AxiosError } from 'axios'
-import type { Web3Config } from '../web3Manager'
 import type Wallet from 'ethereumjs-wallet'
 import type { TransactionReceipt } from 'web3-core'
 
@@ -15,19 +14,26 @@ const HIGH_GAS_PRICE = 250 * MIN_GAS_PRICE // 250 GWei
 const DEFAULT_GAS_PRICE = 100 * MIN_GAS_PRICE // 100 Gwei is a reasonably average gas price
 const MAX_GAS_LIMIT = 5000000 // We've seen prod tx's take up to 4M. Set to the highest we've observed + a buffer
 
+export type EthWeb3Config = {
+  ownerWallet: Wallet | string
+  providers: string[]
+}
+
+type EthWeb3ManagerConfig = {
+  web3Config: EthWeb3Config
+  identityService: IdentityService
+  hedgehog?: Hedgehog
+}
+
 /** Singleton state-manager for Audius Eth Contracts */
 export class EthWeb3Manager {
-  web3Config: Web3Config
+  web3Config: EthWeb3Config
   web3: Web3Type
   identityService: IdentityService
-  hedgehog: Hedgehog
-  ownerWallet: Maybe<Wallet>
+  hedgehog?: Hedgehog
+  ownerWallet: Maybe<Wallet | string>
 
-  constructor(
-    web3Config: Web3Config,
-    identityService: IdentityService,
-    hedgehog: Hedgehog
-  ) {
+  constructor({ web3Config, identityService, hedgehog }: EthWeb3ManagerConfig) {
     if (!web3Config) throw new Error('web3Config object not passed in')
     if (!web3Config.providers)
       throw new Error('missing web3Config property: providers')
@@ -42,7 +48,8 @@ export class EthWeb3Manager {
 
     if (this.web3Config.ownerWallet) {
       this.ownerWallet = this.web3Config.ownerWallet
-    } else {
+    } else if (this.hedgehog) {
+      // Hedgehog might not exist (in the case of @audius/sdk)
       const storedWallet = this.hedgehog.getWallet()
       if (storedWallet) {
         this.ownerWallet = storedWallet

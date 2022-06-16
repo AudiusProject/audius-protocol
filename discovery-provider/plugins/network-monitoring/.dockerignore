@@ -1,0 +1,6 @@
+grafana/
+prometheus/
+node_modules/
+data/
+assets/
+build/

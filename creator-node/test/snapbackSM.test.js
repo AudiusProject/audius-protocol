@@ -471,6 +471,9 @@ describe('test SnapbackSM -- issueUpdateReplicaSetOp', function () {
       }
     )
     const snapback = new mockSnapback(nodeConfig, getLibsMock())
+    snapback.getLatestUserId = async () => { return 0 }
+    snapback.inittedJobProcessors = true
+    await snapback.init()
     
     const newReplicaSet = {
       newPrimary: constants.primaryEndpoint,
@@ -540,6 +543,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
 
   it('if the self node is the secondary and a primary spId is different from what is on chain, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.getLatestUserId = async () => { return 0 }
+    snapback.inittedJobProcessors = true
+    await snapback.init()
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -586,6 +592,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
 
   it('if the self node is the primary and a secondary spId is different from what is on chain, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -632,6 +641,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
 
   it('if the self node (primary) is the same as the SP with a different spId, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -680,6 +692,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
 
   it('if the self node (secondary) is the same as the SP with a different spId, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -725,6 +740,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
 
   it('if any replica set node is not in the map, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
 
     // Mock the deregistered node to not have any spId
     snapback.peerSetManager.endpointToSPIdMap = {
@@ -769,6 +787,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
 
   it('if the self node (primary) and 1 secondary are healthy but not the other secondary, issue reconfig for the unhealthy secondary', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
 
     snapback.peerSetManager.endpointToSPIdMap = {
       'http://some_healthy_primary.co': 1,
@@ -819,6 +840,9 @@ describe('test SnapbackSM -- aggregateReconfigAndPotentialSyncOps', function () 
     nodeConfig.set('minimumFailedSyncRequestsBeforeReconfig', 5)
     nodeConfig.set('minimumSecondaryUserSyncSuccessPercent', 25)
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
 
     snapback.peerSetManager.endpointToSPIdMap = {
       'http://some_healthy_primary.co': 1,
@@ -1411,6 +1435,9 @@ describe('test SnapbackSM -- processStateMachineOperation', function () {
       }
     )
     const snapback = new mockSnapback(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
     snapback.endpoint = 'http://healthyCn1.co'
     snapback.retrieveClockStatusesForUsersAcrossReplicaSet = retrieveClockStatusesForUsersAcrossReplicaSetStub
     snapback.computeUserSecondarySyncSuccessRatesMap = computeUserSecondarySyncSuccessRatesMapStub
@@ -1470,6 +1497,9 @@ describe('test SnapbackSM -- additionalSyncIsRequired', function () {
     )
 
     const snapback = new mockSnapback(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
     snapback._retrieveClockValueForUserFromReplica = retrieveClockValueForUserFromReplicaStub
     retrieveClockValueForUserFromReplicaStub.resolves(finalSecondaryClockValue)
     retrieveClockValueForUserFromReplicaStub.onCall(0).resolves(initialSecondaryClockValue)
@@ -1516,6 +1546,9 @@ describe('test SnapbackSM -- additionalSyncIsRequired', function () {
     )
 
     const snapback = new mockSnapback(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
     snapback._retrieveClockValueForUserFromReplica = retrieveClockValueForUserFromReplicaStub
     retrieveClockValueForUserFromReplicaStub.resolves(finalSecondaryClockValue)
 
@@ -1632,6 +1665,9 @@ describe('test SnapbackSM -- computeUserSecondarySyncSuccessRatesMap', function 
     }
 
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+    snapback.inittedJobProcessors = true
+    snapback.getLatestUserId = async () => { return 0 }
+    await snapback.init()
     const userSecondarySyncMetricsMap = await snapback.computeUserSecondarySyncSuccessRatesMap(nodeUsers)
 
     expect(userSecondarySyncMetricsMap).to.deep.equal(expectedUserSecondarySyncMetricsMap)
