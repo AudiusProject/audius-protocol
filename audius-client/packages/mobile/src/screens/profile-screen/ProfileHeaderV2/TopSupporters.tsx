@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { ID } from 'audius-client/src/common/models/Identifiers'
 import { getUsers } from 'audius-client/src/common/store/cache/users/selectors'
-import { getSupportersForUser } from 'audius-client/src/common/store/tipping/selectors'
+import { getOptimisticSupportersForUser } from 'audius-client/src/common/store/tipping/selectors'
 import { SupportersMapForUser } from 'audius-client/src/common/store/tipping/types'
 import { Text, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -70,7 +70,8 @@ export const TopSupporters = () => {
     'supporter_count'
   ])
   const supportersForProfile: SupportersMapForUser =
-    useSelectorWeb(state => getSupportersForUser(state, user_id)) || {}
+    useSelectorWeb(state => getOptimisticSupportersForUser(state, user_id)) ||
+    {}
   const rankedSupporterIds = Object.keys(supportersForProfile)
     .sort((k1, k2) => {
       return (

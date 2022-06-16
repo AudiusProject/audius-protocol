@@ -1,5 +1,5 @@
 import { User } from 'audius-client/src/common/models/User'
-import { getSupporters } from 'audius-client/src/common/store/tipping/selectors'
+import { getOptimisticSupporters } from 'audius-client/src/common/store/tipping/selectors'
 import { getId as getSupportersId } from 'audius-client/src/common/store/user-list/top-supporters/selectors'
 import { View } from 'react-native'
 
@@ -36,7 +36,7 @@ type SupporterInfoProps = {
 export const SupporterInfo = (props: SupporterInfoProps) => {
   const styles = useStyles()
   const { secondary, neutralLight4 } = useThemeColors()
-  const supportersMap = useSelectorWeb(getSupporters)
+  const supportersMap = useSelectorWeb(getOptimisticSupporters)
   const supportersId = useSelectorWeb(getSupportersId)
   const supportersForUser = supportersId
     ? supportersMap[supportersId] ?? null
