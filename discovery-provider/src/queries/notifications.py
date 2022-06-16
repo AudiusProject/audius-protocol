@@ -12,6 +12,7 @@ from src.models import (
     ChallengeDisbursement,
     Follow,
     Milestone,
+    MilestoneName,
     Playlist,
     Remix,
     Repost,
@@ -32,14 +33,13 @@ from src.queries.query_helpers import (
     get_repost_counts,
     get_save_counts,
 )
-from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import (
     latest_sol_aggregate_tips_slot_key,
-    latest_sol_listen_count_milestones_slot_key,
+    latest_sol_plays_slot_key,
     latest_sol_rewards_manager_slot_key,
 )
 from src.utils.spl_audio import to_wei_string
@@ -1073,7 +1073,7 @@ def notifications():
 
 
 def get_max_slot(redis: Redis):
-    listen_milestone_slot = redis.get(latest_sol_listen_count_milestones_slot_key)
+    listen_milestone_slot = redis.get(latest_sol_plays_slot_key)
     if listen_milestone_slot:
         listen_milestone_slot = int(listen_milestone_slot)
 
@@ -1168,7 +1168,7 @@ def solana_notifications():
         track_listen_milestone: List[Tuple(Milestone, int)] = (
             session.query(Milestone, Track.owner_id)
             .filter(
-                Milestone.name == LISTEN_COUNT_MILESTONE,
+                Milestone.name == MilestoneName.LISTEN_COUNT,
                 Milestone.slot >= min_slot_number,
                 Milestone.slot <= max_slot_number,
             )

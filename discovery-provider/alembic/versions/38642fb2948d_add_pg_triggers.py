@@ -49,26 +49,50 @@ def upgrade():
             SET
                 count = aggregate_plays.count + EXCLUDED.count;
         
-            -- Create the update plays trigger
+            -- Create listen count milestone checker
+            create or replace function is_listen_milestone (integer)
+                returns integer
+                as $$
+            declare
+                arr integer[] := array[10,25,50,100,250,500,1000,5000,10000,20000,50000,100000,1000000];
+                idx integer;
+            begin
+                idx := array_position(arr, $1);
+                return arr[idx];
+            end;
+            $$
+            language plpgsql;
 
+            -- Create the update plays trigger
             create or replace function handle_play() returns trigger as $$
+            declare
+                new_listen_count int;
+                milestone int;
             begin
 
-            insert into aggregate_plays (play_item_id, count) values (new.play_item_id, 0) on conflict do nothing;
+                insert into aggregate_plays (play_item_id, count) values (new.play_item_id, 0) on conflict do nothing;
 
-            update aggregate_plays
-            set count = count + 1 
-            where play_item_id = new.play_item_id;
+                update aggregate_plays
+                set count = count + 1 
+                where play_item_id = new.play_item_id
+                returning count into new_listen_count;
 
-            return null;
+                milestone := is_listen_milestone(new_listen_count);
+                if milestone is not null then
+                    insert into milestones
+                        (id, name, threshold, slot, timestamp)
+                    values
+                        (new.play_item_id, 'LISTEN_COUNT', milestone, new.slot, new.created_at)
+                    on conflict do nothing;
+                end if;
+                return null;
             end; 
             $$ language plpgsql;
 
             drop trigger if exists trg_plays on plays;
             create trigger trg_plays
-            after insert on plays
-            for each row execute procedure handle_play();
-                commit;
+                after insert on plays
+                for each row execute procedure handle_play();
         commit;
     """
     )

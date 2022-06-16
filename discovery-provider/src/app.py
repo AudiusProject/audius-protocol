@@ -392,7 +392,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
-            "src.tasks.index_listen_count_milestones",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
@@ -497,10 +496,6 @@ def configure_celery(celery, test_config=None):
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(seconds=60),
-            },
-            "index_listen_count_milestones": {
-                "task": "index_listen_count_milestones",
-                "schedule": timedelta(seconds=5),
             },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
