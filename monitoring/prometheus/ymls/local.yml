@@ -1,3 +1,24 @@
+  ###########
+  # local.yml
+  ###########
+
+  #############################################
+  # monitor custom exporters produced by audius
+  #############################################
+
+  # monitor data growth using containers running colocated on prometheus-grafana-metrics
+
+  - job_name: 'census-local'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8001']
+        labels:
+          host: 'host.docker.internal'
+          environment: 'remote-dev'
+          service: 'audius'
+          component: 'monitoring'
+          job: 'census'
+
   ###################################################
   # monitor local (remote-dev) setups that use docker
   ###################################################

@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 const AudiusLibs = require("@audius/libs");
 
 
-const writeFromFile = (stream, filename) => {
+const readFromFileAndWriteToStream = (stream, filename) => {
   stream.write(fs.readFileSync("./ymls/" + filename))
   stream.write("\n")
 }
@@ -54,10 +54,14 @@ const generateEnv = async (stream, env) => {
   await audiusLibs.init()
   const serviceProviders = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node');
 
-  // write a header to seperate this env from another
-  stream.write(`  ${"#".repeat(env.length)}\n`);
-  stream.write(`  ${env}\n`);
-  stream.write(`  ${"#".repeat(env.length)}\n`);
+  // copy from environment-specific stubs
+  readFromFileAndWriteToStream(stream, `${env}.yml`)
+
+  // write a header to seperate this section from the stub above
+  const heading = `${env} (auto-generated)`
+  stream.write(`  ${"#".repeat(heading.length)}\n`);
+  stream.write(`  ${heading}\n`);
+  stream.write(`  ${"#".repeat(heading.length)}\n`);
 
   for (const sp of serviceProviders) {
     const spEndpoint = sp.endpoint;
@@ -71,31 +75,23 @@ const main = async () => {
 
   const stream = fs.createWriteStream('prometheus.yml', { flags: 'a' });
 
-  writeFromFile(stream, "base.yml")
-  writeFromFile(stream, "exporters.yml")
-  writeFromFile(stream, "exporters-audius.yml")
-  writeFromFile(stream, "load-tests.yml")
+  readFromFileAndWriteToStream(stream, "base.yml")
 
   if (process.env.PROM_ENV === "prod") {
-
-    // include canary node targets
-    writeFromFile(stream, "canaries.yml")
-
     // our "production" deployment of prometheus-grafana-metrics will monitor
     // all of our environments
+
     await generateEnv(stream, "stage")
     await generateEnv(stream, "prod")
 
   } else if (process.env.PROM_ENV === "stage") {
-
     // when developing locally against some exporters, it may prove beneficial to
     // scrape staging nodes, but never production nodes in an attempt to minimize load
+
     await generateEnv(stream, "stage")
 
   } else {
-
-    // monitor local (remote-dev) setups that use docker
-    writeFromFile(stream, "local.yml")
+    readFromFileAndWriteToStream(stream, "local.yml")
   }
 
   stream.end();
