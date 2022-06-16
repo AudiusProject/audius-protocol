@@ -464,10 +464,6 @@ def configure_celery(celery, test_config=None):
                 "task": "update_aggregate_track",
                 "schedule": timedelta(seconds=30),
             },
-            "update_aggregate_playlist": {
-                "task": "update_aggregate_playlist",
-                "schedule": timedelta(seconds=30),
-            },
             "index_user_bank": {
                 "task": "index_user_bank",
                 "schedule": timedelta(seconds=5),
