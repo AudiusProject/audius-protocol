@@ -32,7 +32,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
 
 ### Adding New Targets
 
-`./prometheus/generate-prom.js` generates `prometheus.yml` within the
+`./prometheus/generateProm.js` generates `prometheus.yml` within the
 container at build time.
 
 For local development, start by modifying
@@ -42,7 +42,7 @@ To add new static targets for production, use the stubs within
 `./prometheus/ymls/`.
 
 To add new dynamically generated targets, modification of
-`./prometheus/generate-prom.js:generateEnv()` may be required.
+`./prometheus/generateProm.js::generateEnv()` may be required.
 
 ### Deploy Production Changes
 
