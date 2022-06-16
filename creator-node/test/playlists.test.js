@@ -1,4 +1,5 @@
 const request = require('supertest')
+const path = require('path')
 const assert = require('assert')
 const fs = require('fs')
 
@@ -97,8 +98,6 @@ describe('Test Playlists', function () {
     assert.ok(file)
   })
 
-  // TODO TEST CASE - Add image files to playlist metadata and mock flow + confirm behavior (missing image dirCID for example)
-
   it('successfully completes Audius playlist creation (POST /playlists/metadata -> POST /playlists)', async function () {
     const metadata = { test: 'field1' }
     const resp = await request(app)
@@ -137,6 +136,74 @@ describe('Test Playlists', function () {
         blockchainId: 1,
         blockNumber: 10,
         metadataFileUUID: resp.body.data.metadataFileUUID
+      })
+      .expect(200)
+  })
+
+  it('successfully completes Audius playlist creation with imageDirCID', async function () {
+    const testPicture = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
+    const file = fs.readFileSync(testPicture)
+    // Upload test cover image
+    const resp = await request(app)
+      .post('/image_upload')
+      .attach('file', file, { filename: 'abel.jpg' })
+      .field('square', true)
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+
+    const imageDirCID = resp.body.data.dirCID
+    const playlistImagePath = DiskManager.computeFilePath(imageDirCID)
+    assert.ok(fs.existsSync(playlistImagePath))
+    const fileRecord = await models.File.findOne({
+      where: {
+        multihash: imageDirCID,
+        storagePath: playlistImagePath,
+        type: 'dir'
+      }
+    })
+    assert.ok(fileRecord)
+    const metadata = {
+      test: 'field1',
+      playlist_image_sizes_multihash: imageDirCID
+    }
+
+    // Upload playlist metadata with valid image dirCID
+    const resp2 = await request(app)
+      .post('/playlists/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    // check that the metadata file was written to storagePath under its multihash
+    const metadataPath = DiskManager.computeFilePath(
+      resp2.body.data.metadataMultihash
+    )
+    assert.ok(fs.existsSync(metadataPath))
+
+    // check that the metadata file contents match the metadata specified
+    let metadataFileData = fs.readFileSync(metadataPath, 'utf-8')
+    metadataFileData = sortKeys(JSON.parse(metadataFileData))
+    assert.deepStrictEqual(metadataFileData, metadata)
+    const metadataFileRecord = await models.File.findOne({
+      where: {
+        multihash: resp2.body.data.metadataMultihash,
+        storagePath: metadataPath,
+        type: 'metadata'
+      }
+    })
+    assert.ok(metadataFileRecord)
+
+    // Associate playlist object with blockchain ID
+    await request(app)
+      .post('/playlists')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({
+        blockchainId: 1,
+        blockNumber: 10,
+        metadataFileUUID: resp2.body.data.metadataFileUUID
       })
       .expect(200)
   })
