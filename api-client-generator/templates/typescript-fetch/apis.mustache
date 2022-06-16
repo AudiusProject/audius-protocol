@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 {{>licenseInfo}}
@@ -20,6 +21,9 @@ import {
 {{#allParams.0}}
 export interface {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request {
 {{#allParams}}
+    /**
+     * {{description}}
+     */
     {{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}};
 {{/allParams}}
 }
@@ -83,6 +87,7 @@ export class {{classname}} extends runtime.BaseAPI {
 {{/withInterfaces}}
 
     {{#operation}}
+    {{#returnType}}
     /**
      {{#notes}}
      * {{&notes}}
@@ -91,7 +96,7 @@ export class {{classname}} extends runtime.BaseAPI {
      * {{&summary}}
      {{/summary}}
      */
-    async {{nickname}}Raw({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit): Promise<runtime.ApiResponse<{{{returnType}}}{{^returnType}}void{{/returnType}}>> {
+    async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit): Promise<NonNullable<{{returnType}}["data"]>> {
         {{#allParams}}
         {{#required}}
         if (requestParameters.{{paramName}} === null || requestParameters.{{paramName}} === undefined) {
@@ -251,7 +256,7 @@ export class {{classname}} extends runtime.BaseAPI {
         {{/isArray}}
         {{/formParams}}
         {{/hasFormParams}}
-        const response = await this.request({
+        return this.request({
             path: `{{{path}}}`{{#pathParams}}.replace(`{${"{{baseName}}"}}`, encodeURIComponent(String(requestParameters.{{paramName}}))){{/pathParams}},
             method: '{{httpMethod}}',
             headers: headerParameters,
@@ -284,75 +289,10 @@ export class {{classname}} extends runtime.BaseAPI {
             {{#hasFormParams}}
             body: formParams,
             {{/hasFormParams}}
-        }, initOverrides);
-
-        {{#returnType}}
-        {{#isResponseFile}}
-        return new runtime.BlobApiResponse(response);
-        {{/isResponseFile}}
-        {{^isResponseFile}}
-        {{#returnTypeIsPrimitive}}
-        {{#isMap}}
-        return new runtime.JSONApiResponse<any>(response);
-        {{/isMap}}
-        {{#isArray}}
-        return new runtime.JSONApiResponse<any>(response);
-        {{/isArray}}
-        {{#returnSimpleType}}
-        return new runtime.TextApiResponse(response) as any;
-        {{/returnSimpleType}}
-        {{/returnTypeIsPrimitive}}
-        {{^returnTypeIsPrimitive}}
-        {{#isArray}}
-        return new runtime.JSONApiResponse(response{{^withoutRuntimeChecks}}, (jsonValue) => {{#uniqueItems}}new Set({{/uniqueItems}}jsonValue.map({{returnBaseType}}FromJSON){{/withoutRuntimeChecks}}){{#uniqueItems}}){{/uniqueItems}};
-        {{/isArray}}
-        {{^isArray}}
-        {{#isMap}}
-        return new runtime.JSONApiResponse(response{{^withoutRuntimeChecks}}, (jsonValue) => runtime.mapValues(jsonValue, {{returnBaseType}}FromJSON){{/withoutRuntimeChecks}});
-        {{/isMap}}
-        {{^isMap}}
-        return new runtime.JSONApiResponse(response{{^withoutRuntimeChecks}}, (jsonValue) => {{returnBaseType}}FromJSON(jsonValue){{/withoutRuntimeChecks}});
-        {{/isMap}}
-        {{/isArray}}
-        {{/returnTypeIsPrimitive}}
-        {{/isResponseFile}}
-        {{/returnType}}
-        {{^returnType}}
-        return new runtime.VoidApiResponse(response);
-        {{/returnType}}
+        }, initOverrides) as Promise<NonNullable<{{returnType}}["data"]>>;
     }
 
-    /**
-     {{#notes}}
-     * {{&notes}}
-     {{/notes}}
-     {{#summary}}
-     * {{&summary}}
-     {{/summary}}
-     */
-    {{^useSingleRequestParameter}}
-    async {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-    {{/useSingleRequestParameter}}
-    {{#useSingleRequestParameter}}
-    async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}requestParameters, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}requestParameters, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-    {{/useSingleRequestParameter}}
-
+    {{/returnType}}
     {{/operation}}
 }
 {{/operations}}

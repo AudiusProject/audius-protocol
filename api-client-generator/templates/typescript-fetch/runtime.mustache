@@ -13,7 +13,7 @@ export class BaseAPI {
 
     private middleware: Middleware[];
 
-    constructor(protected configuration = new Configuration()) {
+    constructor(protected configuration: Configuration) {
         this.middleware = configuration.middleware;
     }
 
@@ -33,13 +33,9 @@ export class BaseAPI {
         return this.withMiddleware<T>(...middlewares);
     }
 
-    protected async request(context: RequestOpts, initOverrides?: RequestInit): Promise<Response> {
+    protected async request(context: RequestOpts, initOverrides?: RequestInit) {
         const { url, init } = this.createFetchParams(context, initOverrides);
-        const response = await this.fetchApi(url, init);
-        if (response.status >= 200 && response.status < 300) {
-            return response;
-        }
-        throw response;
+        return this.fetchApi(url, init) as any;
     }
 
     private createFetchParams(context: RequestOpts, initOverrides?: RequestInit) {
@@ -65,7 +61,7 @@ export class BaseAPI {
         return { url, init };
     }
 
-    private fetchApi = async (url: string, init: RequestInit) => {
+    private fetchApi = async (url: string, init?: RequestInit) => {
         let fetchParams = { url, init };
         for (const middleware of this.middleware) {
             if (middleware.pre) {
@@ -75,14 +71,14 @@ export class BaseAPI {
                 }) || fetchParams;
             }
         }
-        let response = await (this.configuration.fetchApi || fetch)(fetchParams.url, fetchParams.init);
+        let response = await this.configuration.fetchApi(fetchParams.url, fetchParams.init);
         for (const middleware of this.middleware) {
             if (middleware.post) {
                 response = await middleware.post({
                     fetch: this.fetchApi,
                     url: fetchParams.url,
                     init: fetchParams.init,
-                    response: response.clone(),
+                    response
                 }) || response;
             }
         }
@@ -102,7 +98,7 @@ export class BaseAPI {
 };
 
 export class RequiredError extends Error {
-    name: "RequiredError" = "RequiredError";
+    override name: "RequiredError" = "RequiredError";
     constructor(public field: string, msg?: string) {
         super(msg);
     }
@@ -115,11 +111,13 @@ export const COLLECTION_FORMATS = {
     pipes: "|",
 };
 
-export type FetchAPI = {{#typescriptThreePlus}}WindowOrWorkerGlobalScope{{/typescriptThreePlus}}{{^typescriptThreePlus}}GlobalFetch{{/typescriptThreePlus}}['fetch'];
+
+// Returns unknown and is cast to the appropriate type in the corresponding api method
+export type FetchAPI = (url: string, init?: RequestInit) => Promise<unknown>
 
 export interface ConfigurationParameters {
     basePath?: string; // override base path
-    fetchApi?: FetchAPI; // override for fetch implementation
+    fetchApi: FetchAPI; // fetch implementation
     middleware?: Middleware[]; // middleware to apply before/after fetch requests
     queryParamsStringify?: (params: HTTPQuery) => string; // stringify function for query strings
     username?: string; // parameter for basic security
@@ -131,13 +129,13 @@ export interface ConfigurationParameters {
 }
 
 export class Configuration {
-    constructor(private configuration: ConfigurationParameters = {}) {}
+    constructor(private configuration: ConfigurationParameters) {}
 
     get basePath(): string {
         return this.configuration.basePath != null ? this.configuration.basePath : BASE_PATH;
     }
 
-    get fetchApi(): FetchAPI | undefined {
+    get fetchApi(): FetchAPI {
         return this.configuration.fetchApi;
     }
 
@@ -252,19 +250,19 @@ export interface Consume {
 export interface RequestContext {
     fetch: FetchAPI;
     url: string;
-    init: RequestInit;
+    init?: RequestInit;
 }
 
 export interface ResponseContext {
     fetch: FetchAPI;
     url: string;
-    init: RequestInit;
-    response: Response;
+    init?: RequestInit;
+    response: unknown;
 }
 
 export interface Middleware {
     pre?(context: RequestContext): Promise<FetchParams | void>;
-    post?(context: ResponseContext): Promise<Response | void>;
+    post?(context: ResponseContext): Promise<unknown | void>;
 }
 
 export interface ApiResponse<T> {
