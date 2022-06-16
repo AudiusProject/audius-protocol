@@ -141,7 +141,7 @@ module.exports = function (app) {
         playlistImageFileUUID =
           await validateStateForImageDirCIDAndReturnFileUUID(
             req,
-            metadataJSON.cover_photo_sizes
+            metadataJSON.playlist_image_sizes_multihash
           )
       } catch (e) {
         return errorResponseBadRequest(e.message)
