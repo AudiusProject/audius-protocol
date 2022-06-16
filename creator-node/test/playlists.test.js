@@ -97,6 +97,8 @@ describe('Test Playlists', function () {
     assert.ok(file)
   })
 
+  // TODO TEST CASE - Add image files to playlist metadata and mock flow + confirm behavior (missing image dirCID for example)
+
   it('successfully completes Audius playlist creation (POST /playlists/metadata -> POST /playlists)', async function () {
     const metadata = { test: 'field1' }
     const resp = await request(app)
