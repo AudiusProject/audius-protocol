@@ -1,3 +1,12 @@
+alter table aggregate_user alter column track_count set default 0;
+alter table aggregate_user alter column playlist_count set default 0;
+alter table aggregate_user alter column album_count set default 0;
+alter table aggregate_user alter column follower_count set default 0;
+alter table aggregate_user alter column following_count set default 0;
+alter table aggregate_user alter column repost_count set default 0;
+alter table aggregate_user alter column track_save_count set default 0;
+
+
 WITH aggregate_user_latest_blocknumber AS (
   select last_checkpoint as blocknumber from indexing_checkpoints where tablename = 'aggregate_user'
 ),

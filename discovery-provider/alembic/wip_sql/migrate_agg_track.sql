@@ -1,3 +1,8 @@
+
+alter table aggregate_track alter column repost_count set default 0;
+alter table aggregate_track alter column save_count set default 0;
+
+
 WITH 
 aggregate_track_latest_blocknumber AS (
   select last_checkpoint as blocknumber from indexing_checkpoints where tablename = 'aggregate_track'

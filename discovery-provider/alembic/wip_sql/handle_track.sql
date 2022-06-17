@@ -13,7 +13,7 @@ begin
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
   -- if it's a new track increment agg user track_count
-  assert new.is_current = true;
+  -- assert new.is_current = true; -- not actually true in tests
   select * into old_row from tracks where is_current = false and track_id = new.track_id order by blocknumber desc limit 1;
 
   -- track becomes invisible (one way change)

@@ -1,9 +1,14 @@
 -- TODO: recreate album_lexeme_dict, playlist_lexeme_dict
 
-drop table if exists aggregate_playlist cascade;
-drop materialized view if exists aggregate_playlist cascade;
+-- nice:
+-- https://www.postgresql.org/docs/current/sql-do.html
+do $$ begin
+  drop materialized view if exists aggregate_playlist cascade;
+exception
+  when others then null;
+end $$;
 
-create table aggregate_playlist (
+create table if not exists aggregate_playlist (
   playlist_id integer primary key,
   is_album boolean,
   repost_count integer default 0,
