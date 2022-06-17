@@ -348,6 +348,7 @@ class NotificationProcessor {
       await processNotifications(notifications, tx)
       logger.info(`notifications main indexAll job - processNotifications complete in ${Date.now() - time}ms`)
       time = Date.now()
+      logger.info(`processNotifications | notifications ${JSON.stringify(notifications)}`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx, optimizelyClient)

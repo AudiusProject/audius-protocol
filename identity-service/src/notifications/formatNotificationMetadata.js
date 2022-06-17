@@ -254,7 +254,7 @@ const NewSubscriptionUpdateTitle = 'New Artist Update'
 const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
-const TrackAddedToPlaylistTitle = 'Your track was added to a playlist! 💿'
+const TrackAddedToPlaylistTitle = 'Your track got on a playlist! 💿'
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -369,7 +369,7 @@ const pushNotificationMessagesMap = {
       : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   },
   [notificationTypes.TrackAddedToPlaylist] (notification) {
-    return `${notification.playlistOwner.name} added your track track ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
+    return `${notification.playlistOwner.name} added ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   }
 
 }

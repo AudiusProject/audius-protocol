@@ -6,6 +6,8 @@ const {
 } = require('../formatNotificationMetadata')
 const { publish, publishSolanaNotification } = require('../notificationQueue')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../../featureFlag')
+const { logger } = require('../../logging')
+
 
 // Maps a notification type to it's base notification
 const getPublishNotifBaseType = (notification) => {
@@ -40,6 +42,8 @@ const getPublishNotifBaseType = (notification) => {
       return notificationTypes.Milestone
     case notificationTypes.TierChange:
       return notificationTypes.TierChange
+    case notificationTypes.TrackAddedToPlaylist:
+      return notificationTypes.TrackAddedToPlaylist
   }
 }
 
@@ -59,7 +63,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
   else if (baseType === notificationTypes.Milestone) return notif.initiator
   else if (baseType === notificationTypes.TierChange) return notif.initiator
-  else if (baseType === notificationTypes.TrackAddedToPlaylist) return notif.metadata.track_owner_id
+  else if (baseType === notificationTypes.TrackAddedToPlaylist) return notif.metadata.trackOwnerId
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -69,7 +73,8 @@ const alwaysSendNotifications = [
   notificationTypes.Create.track,
   notificationTypes.Create.playlist,
   notificationTypes.Create.album,
-  notificationTypes.ChallengeReward
+  notificationTypes.ChallengeReward,
+  notificationTypes.TrackAddedToPlaylist
 ]
 
 const mapNotificationBaseTypeToSettings = {
@@ -123,16 +128,25 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
  * @param {*} tx Transction for DB queries
  */
 const publishNotifications = async (notifications, metadata, userNotificationSettings, tx, optimizelyClient) => {
+  logger.info(`publishNotifications | notifications ${JSON.stringify(notifications)}`)
+
   for (const notification of notifications) {
+
     const mapNotification = notificationResponseMap[notification.type]
+
     const populatedNotification = {
       ...notification,
       ...(mapNotification(notification, metadata))
     }
+    logger.info(`publishNotifications | populatedNotification ${JSON.stringify(populatedNotification)}`)
+
     const publishNotifType = getPublishNotifBaseType(notification)
+    logger.info(`publishNotifications | publishNotifType ${publishNotifType}`) // should be TrackAddedToPLaylist
+
     const msg = pushNotificationMessagesMap[publishNotifType](populatedNotification)
     const title = notificationResponseTitleMap[notification.type](populatedNotification)
     const userId = getPublishUserId(notification, publishNotifType)
+    logger.info(`publishNotifications | userId ${userId}`)
     const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
 
     // Don't publish events for deactivated users

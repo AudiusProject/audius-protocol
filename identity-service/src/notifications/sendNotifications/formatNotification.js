@@ -50,6 +50,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
   // Loop through notifications to get the userIds and the formatted notification
   const userIds = new Set()
   const formattedNotifications = []
+  logger.info(`formatNotifications | notifications ${JSON.stringify(notifications)}`)
 
   for (let notif of notifications) {
     // blocknumber parsed for all notification types
@@ -222,20 +223,26 @@ async function formatNotifications (notifications, notificationSettings, tx) {
 
     // Handle the 'track added to playlist' notification type
     if (notif.type === notificationTypes.TrackAddedToPlaylist) {
-      let notificationTarget = notif.metadata.track_owner_id
-      const shouldNotify = shouldNotifyUser(notificationTarget, 'trackAddedToPlaylist', notificationSettings)
-
-      if (shouldNotify.mobile || shouldNotify.browser) {
-        const formattedTrackAddedToPlaylistNotification = {
-          ...notif,
-          actions: [{
-            blocknumber
-          }],
-          trackId: notif.metadata.track_id
-        }
-        formattedNotifications.push(formattedTrackAddedToPlaylistNotification)
-        userIds.add(notificationTarget)
+      logger.info(`formatNotifications | TrackAddedToPlaylist notif ${JSON.stringify(notif)}`)
+      const formattedTrackAddedToPlaylistNotification = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityTypes.Track,
+          actionTrackId: notif.metadata.track_id,
+          blocknumber
+        }],
+        metadata: {
+          trackOwnerId: notif.metadata.track_owner_id,
+          playlistOwnerId: notif.initiator,
+          playlistId: notif.metadata.playlist_id
+        },
+        entityId: notif.metadata.track_id,
+        type: notificationTypes.TrackAddedToPlaylist
       }
+      formattedNotifications.push(formattedTrackAddedToPlaylistNotification)
+      logger.info(`formatNotifications | TrackAddedToPlaylist formattedTrackAddedToPlaylistNotification ${JSON.stringify(formattedTrackAddedToPlaylistNotification)}`)
+
+      userIds.add(notif.metadata.track_owner_id)
     }
   }
   const [formattedCreateNotifications, users] = await _processSubscriberPushNotifications()

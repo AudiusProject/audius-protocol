@@ -58,6 +58,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       }],
       limit
     })
+    logger.info(`fetchNotificationMetdata | ${userId} notifications ${JSON.stringify(notifications)}`)
 
     const { rows: solanaNotifications } = await models.SolanaNotification.findAndCountAll({
       where: {
