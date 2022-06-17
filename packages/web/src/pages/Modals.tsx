@@ -8,6 +8,7 @@ import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
 import EditTrackModal from 'components/edit-track/EditTrackModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
+import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import PasswordResetModal from 'components/password-reset/PasswordResetModal'
 import ServiceSelectionModal from 'components/service-selection/ServiceSelectionModal'
@@ -58,6 +59,7 @@ const Modals = () => {
           <EditPlaylistModal />
           <EditFolderModal />
           <AddToPlaylistModal />
+          <FeatureFlagOverrideModal />
           <ConnectedUserListModal />
           <AppCTAModal />
           <TierExplainerModal />
