@@ -21,6 +21,16 @@ debian | ubuntu)
 
     # Add user to docker group
     sudo usermod -aG docker $USER
+
+    cat <<EOF | sudo tee /etc/docker/daemon.json >/dev/null
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "50m",
+    "max-file": "3"
+  }
+}
+EOF
     ;;
 *)
     if ! command -v docker &>/dev/null; then
@@ -52,7 +62,12 @@ else
     export PROTOCOL_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 fi
 
+pip3 install -r $PROTOCOL_DIR/dev/requirements.txt
+
 mkdir -p "$HOME/.local/bin"
 
 ln -sf "$PROTOCOL_DIR/dev/audius-compose" "$HOME/.local/bin/audius-compose"
 ln -sf "$PROTOCOL_DIR/dev/audius-cloud" "$HOME/.local/bin/audius-cloud"
+
+echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.bashrc
+echo "export PATH=$HOME/.local/bin:$PATH" >>~/.bashrc
