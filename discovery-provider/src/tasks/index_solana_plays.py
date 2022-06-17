@@ -675,6 +675,9 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
             exc_info=True,
         )
         raise e
+        
+    logger.info(f"index_solana_plays.py | last_tx slot {last_tx['slot']}")
+    logger.info(f"index_solana_plays.py | transaction_signatures {len(transaction_signatures)}")
 
     if last_tx and transaction_signatures:
         redis.set(latest_sol_plays_slot_key, last_tx["slot"])
