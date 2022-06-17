@@ -18,32 +18,32 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     echo 'http://dl-cdn.alpinelinux.org/alpine/v3.14/community' >> /etc/apk/repositories && \
     apk update && \
     apk add \
-    alpine-sdk=1.0-r1 \
-    bash=5.1.16-r0 \
-    curl \
-    docker \
-    libffi-dev=3.4.2-r1 \
-    libpq=11.12-r0 \
-    libseccomp-dev \
-    linux-headers=5.10.41-r0 \
-    nodejs \
-    npm \
-    postgresql-client=11.12-r0 \
-    postgresql-contrib=11.12-r0 \
-    postgresql-dev=11.12-r0 \
-    postgresql-libs=11.12-r0 \
-    postgresql=11.12-r0 \
-    py3-pip=20.3.4-r1 \
-    py3-wheel=0.36.2-r2 \
-    python3-dev=3.9.7-r4 \
-    python3=3.9.7-r4 \
-    redis=6.2.7-r0 \
-    rsyslog \
-    sudo=1.9.8_p2-r1 && \
+        alpine-sdk=1.0-r1 \
+        bash=5.1.16-r0 \
+        curl \
+        docker \
+        libffi-dev=3.4.2-r1 \
+        libpq=11.12-r0 \
+        libseccomp-dev \
+        linux-headers=5.10.41-r0 \
+        nodejs \
+        npm \
+        postgresql-client=11.12-r0 \
+        postgresql-contrib=11.12-r0 \
+        postgresql-dev=11.12-r0 \
+        postgresql-libs=11.12-r0 \
+        postgresql=11.12-r0 \
+        py3-pip=20.3.4-r1 \
+        py3-wheel=0.36.2-r2 \
+        python3-dev=3.9.7-r4 \
+        python3=3.9.7-r4 \
+        redis=6.2.7-r0 \
+        rsyslog \
+        sudo=1.9.8_p2-r1 && \
     apk add --virtual .build-deps \
-    gcc \
-    musl-dev \
-    postgresql-dev=11.12-r0
+        gcc \
+        musl-dev \
+        postgresql-dev=11.12-r0
 
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
     apk add wget && \
