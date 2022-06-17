@@ -16,7 +16,7 @@ export interface ContractMethod {
   }
   encodeABI: () => string
   send: <Tx>(config: {
-    from: Wallet | undefined
+    from: Wallet | string | undefined
     gas: number
     gasPrice?: number
   }) => Tx

@@ -5,8 +5,10 @@ const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const SyncQueue = require('../../src/services/sync/syncQueue')
 const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
+const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
+const BlacklistManager = require('../../src/blacklistManager')
 
-async function getApp (libsClient, blacklistManager, setMockFn = null, spId = null) {
+async function getApp (libsClient, blacklistManager = new BlacklistManager(), setMockFn = null, spId = null) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
   // as all files that consume it
@@ -24,10 +26,11 @@ async function getApp (libsClient, blacklistManager, setMockFn = null, spId = nu
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     asyncProcessingQueue: new AsyncProcessingQueueMock(),
-    nodeConfig
+    nodeConfig,
+    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
+    prometheusRegistry: new PrometheusRegistry()
   }
-  mockServiceRegistry.syncQueue = new SyncQueue(nodeConfig, redisClient, mockServiceRegistry)
-  mockServiceRegistry.trustedNotifierManager = new TrustedNotifierManager(nodeConfig, libsClient)
 
   // Update the import to be the mocked ServiceRegistry instance
   require.cache[require.resolve('../../src/serviceRegistry')] = {

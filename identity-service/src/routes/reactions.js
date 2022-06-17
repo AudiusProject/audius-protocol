@@ -41,7 +41,7 @@ module.exports = function (app) {
     const senderWallet = req.user.walletAddress
     const { reactedTo, reactionValue } = req.body
 
-    if (!(senderWallet && reactedTo && reactionValue)) return errorResponseBadRequest(`Missing argument: ${JSON.stringify({ senderWallet, reactedTo, reactionValue })}`)
+    if (!senderWallet || !reactedTo || reactionValue === undefined) return errorResponseBadRequest(`Missing argument: ${JSON.stringify({ senderWallet, reactedTo, reactionValue })}`)
 
     const parsedReaction = parseInt(reactionValue)
     if (!parsedReaction) return errorResponseBadRequest('Invalid reaction type')

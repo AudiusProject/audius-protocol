@@ -21,6 +21,12 @@ commands:
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
 
+# global parameters
+parameters:
+  full_ci:
+    type: boolean
+    default: false
+
 jobs:
   bake-gcp-dev-image:
     docker:
@@ -69,8 +75,19 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              # fail on error
+              set -e;
+
+              # on error, run this function
+              exit_ssh() {
+                echo $?
+              }
+              trap exit_ssh EXIT
+
+              # commands to prime the VM for the bake
               A run init-repos up;
               A up;
+              A run monitoring up;
               A down;
               exit;
             EOF
@@ -140,9 +157,13 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
-              cd /home/ubuntu/audius-protocol/mad-dog;
+              cd /home/ubuntu/audius-protocol;
               git pull;
               git checkout $CIRCLE_BRANCH;
+              cd ./service-commands;
+              npm i
+              cd ../mad-dog;
+              A run init-repos up;
               A up;
               npm run start << parameters.mad-dog-type >> verbose;
               exit;
@@ -569,6 +590,7 @@ jobs:
       #     paths:
       #       - solana-programs/track_listen_count/target
       #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+
   test-solana-programs-anchor:
     resource_class: large # 4vcpu/8gb
     machine:
@@ -637,6 +659,9 @@ jobs:
     parameters:
       repo:
         type: string
+      logspout-tag:
+        type: string
+        default: ""
     steps:
       - checkout
       - setup_remote_docker:
@@ -645,10 +670,11 @@ jobs:
           name: Get tag or latest
           command: |
             # order of precendence for IMAGE tag is:
-            # 1. CIRCLE_TAG if defined,
-            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
-            # 3. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+            # 1. $(head -n1 logging/logspout/Dockerfile) if << parameters.logspout-tag >> defined,
+            # 2. CIRCLE_TAG if defined,
+            # 3. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+            # 4. 'latest', which is the default
+            echo "export IMAGE_TAG=`[ << parameters.logspout-tag >> ] && echo $(head -n1 logspout/Dockerfile | cut -f 2 -d ':') || [ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
       - run:
           name: Docker login
           command: |
@@ -657,7 +683,8 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM .
+            audius_loggly_token_b64=$(echo ${audius_loggly_token} | base64)
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags --build-arg BUILD_NUM=$CIRCLE_BUILD_NUM --build-arg audius_loggly_token=$audius_loggly_token_b64 .
             docker image prune --filter label=prune=true --filter label=build=$CIRCLE_BUILD_NUM --force
       - run:
           name: Docker push << parameters.repo >>
@@ -742,6 +769,15 @@ workflows:
           context:
             - GCP2
           mad-dog-type: test
+
+  # in order to run a job in hold-workflows
+  # 1. go to the CircleCI dashboard
+  # 2. go to your branch of choice
+  # 3. click "Trigger Pipeline"
+  # 4. Add boolean paramter "full_ci" and set to true
+  hold-workflows:
+    when: << pipeline.parameters.full_ci >>
+    jobs:
       - hold-test-mad-dog-e2e-full:
           type: approval
       - test-mad-dog-e2e:
@@ -751,6 +787,28 @@ workflows:
           mad-dog-type: test-nightly
           requires:
             - hold-test-mad-dog-e2e-full
+      - hold-build-logspout:
+          type: approval
+      - docker-build-and-push:
+          name: build-logspout
+          repo: logspout
+          logspout-tag: "true"
+          requires:
+            - hold-build-logspout
+      - hold-bake-gcp-dev-image:
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image
+          requires:
+            - hold-bake-gcp-dev-image
+          filters:
+            branches:
+              only: /(^master$)/
 
   # test master at midnight daily
   test-nightly:

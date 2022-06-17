@@ -55,15 +55,25 @@ type AttestationResult = {
   reason?: string
 }
 
+type Reaction = {
+  reactedTo: string
+  reactionValue: number
+}
+
 // Only probabilistically capture 50% of relay captchas
 const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
 
+type IdentityServiceConfig = {
+  identityServiceEndpoint: string
+  captcha?: Captcha
+}
+
 export class IdentityService {
   identityServiceEndpoint: string
-  captcha: Captcha
+  captcha: Captcha | undefined
   web3Manager: Web3Manager | null
 
-  constructor(identityServiceEndpoint: string, captcha: Captcha) {
+  constructor({ identityServiceEndpoint, captcha }: IdentityServiceConfig) {
     this.identityServiceEndpoint = identityServiceEndpoint
     this.captcha = captcha
     this.web3Manager = null
@@ -494,6 +504,20 @@ export class IdentityService {
       url: '/rewards/attestation_result',
       method: 'post',
       data
+    })
+  }
+
+  /**
+   * Post a reaction to identity.
+   */
+  async submitReaction(data: Reaction) {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: '/reactions',
+      method: 'post',
+      data,
+      headers
     })
   }
 

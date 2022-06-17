@@ -22,6 +22,7 @@ export const SocialFeatureFactory = artifacts.require('./contract/SocialFeatureF
 export const PlaylistFactory = artifacts.require('./contract/PlaylistFactory')
 export const UserLibraryFactory = artifacts.require('./contract/UserLibraryFactory')
 export const UserReplicaSetManager = artifacts.require('./contract/UserReplicaSetManager')
+export const AudiusData = artifacts.require('./contract/AudiusData')
 
 // Proxy contracts
 export const AdminUpgradeabilityProxy = artifacts.require('./contracts/AdminUpgradeabilityProxy')

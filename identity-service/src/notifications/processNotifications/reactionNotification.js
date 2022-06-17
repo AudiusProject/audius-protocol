@@ -3,36 +3,20 @@ const { notificationTypes } = require('../constants')
 
 async function processReactionNotifications (notifications, tx) {
   for (const notification of notifications) {
-    const { slot, initiator: reactorId, metadata: { reaction_value: reactionValue, reacted_to: reactedTo, reaction_type: reactionType } } = notification
+    const { slot, initiator: reactorId, metadata: { reaction_value: reactionValue, reacted_to_entity: reactedToEntity, reaction_type: reactionType } } = notification
 
-    // TODO: Remove this self join [PAY-234]
-    // First find the originating tip receive notif
-    const receiveTipNotification = await models.SolanaNotification.findOne({
-      where: {
-        type: notificationTypes.TipReceive,
-        metadata: {
-          [models.Sequelize.Op.contains]: {
-            'tipTxSignature': reactedTo
-          }
-        }
-      }
-    })
+    // TODO: unhardcode assumptions about the userId receiving the notification, when
+    // we have additional reaction types.
 
-    if (!receiveTipNotification) {
-      console.error(`Received reaction to ${reactedTo} from ${reactorId}, but not corresponding tip notification`)
-      return notifications
-    }
-
-    // Save out reaction value on receive tip, and create new reaction notif
     await models.SolanaNotification.findOrCreate({
       where: {
         slot,
         type: notificationTypes.Reaction,
-        userId: receiveTipNotification.entityId, // The user receiving the reaction is the user who sent the tip, here the entityId
+        userId: reactedToEntity.tip_sender_id, // The user receiving the reaction is the user who sent the tip
         entityId: reactorId, // The user who sent the reaction
         metadata: {
           reactionType,
-          reactedTo,
+          reactedToEntity,
           reactionValue
         }
       },

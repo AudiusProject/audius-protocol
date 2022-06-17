@@ -12,7 +12,8 @@ const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
 const DiskManager = require('../src/diskManager')
-const { Utils } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const Utils = libs.Utils
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -702,14 +703,16 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
-          '@audius/libs': {
-            Utils: {
-              fileHasher: {
-                generateNonImageCid: sinon.stub().returns(
-                  new Promise((resolve) => {
-                    return resolve(mockCid)
-                  })
-                )
+          '@audius/sdk': {
+            libs: {
+              Utils: {
+                fileHasher: {
+                  generateNonImageCid: sinon.stub().returns(
+                    new Promise((resolve) => {
+                      return resolve(mockCid)
+                    })
+                  )
+                }
               }
             },
             '@global': true

@@ -5,10 +5,10 @@ import { RepostDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 
 export class RepostIndexer extends BaseIndexer<RepostDoc> {
-  tableName = 'reposts'
-  idColumn = 'repost_id'
-  indexName = indexNames.reposts
-  batchSize: number = 20000
+  constructor() {
+    super('reposts', 'repost_id')
+    this.batchSize = 20000
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.reposts,

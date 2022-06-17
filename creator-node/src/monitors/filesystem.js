@@ -1,5 +1,6 @@
 const si = require('systeminformation')
 const disk = require('diskusage')
+
 const DiskManager = require('../diskManager')
 
 const getStoragePathSize = async () => {
@@ -11,7 +12,8 @@ const getStoragePathSize = async () => {
 const getStoragePathUsed = async () => {
   const storagePath = DiskManager.getConfigStoragePath()
   const { available, total } = await disk.check(storagePath)
-  return total - available
+  const used = total - available
+  return used
 }
 
 // We first check '/var/k8s' in case the service operator has elected to

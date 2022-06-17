@@ -1,7 +1,8 @@
 const { logger } = require('../logging')
 const { REMOTE_VARS, getRemoteVar } = require('../remoteConfig')
 const models = require('../models')
-const { RewardsAttester } = require('@audius/libs')
+const { libs } = require('@audius/sdk')
+const RewardsAttester = libs.RewardsAttester
 const { RewardsReporter } = require('./rewardsReporter')
 const config = require('../config.js')
 

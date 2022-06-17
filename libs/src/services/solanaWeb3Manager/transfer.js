@@ -86,7 +86,7 @@ async function getAccountNonce ({
     mintKey,
     claimableTokenProgramKey
   })
-  const accInfo = await connection.getAccountInfoAndContext(transferNonceAccount)
+  const accInfo = await connection.getAccountInfoAndContext(transferNonceAccount, 'confirmed')
   if (accInfo.value) {
     const nonceAccount = borsh.deserialize(NonceAccountSchema, NonceAccount, accInfo.value.data)
     nonce = nonceAccount.nonce
