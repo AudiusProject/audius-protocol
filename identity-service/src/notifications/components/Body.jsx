@@ -99,7 +99,7 @@ const snippetMap = {
   [NotificationType.ChallengeReward] (notification) {
     return `You've earned $AUDIO for completing challenges`
   },
-  [NotificationType.TrackAddedToPlaylist] (notification) {
+  [NotificationType.AddTrackToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to ${notification.playlist.playlist_name}`
   }
 }

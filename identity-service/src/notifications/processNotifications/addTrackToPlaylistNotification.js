@@ -10,7 +10,7 @@ const {
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processTrackAddedToPlaylistNotification (notifications, tx) {
+async function processAddTrackToPlaylistNotification (notifications, tx) {
   const validNotifications = []
 
   for (const notification of notifications) {
@@ -25,7 +25,7 @@ async function processTrackAddedToPlaylistNotification (notifications, tx) {
 
     const [addTrackToPlaylistNotification] = await models.Notification.findOrCreate({
       where: {
-        type: notificationTypes.TrackAddedToPlaylist,
+        type: notificationTypes.AddTrackToPlaylist,
         userId: trackOwnerId,
         entityId: trackId,
         metadata: {
@@ -55,4 +55,4 @@ async function processTrackAddedToPlaylistNotification (notifications, tx) {
   return validNotifications
 }
 
-module.exports = processTrackAddedToPlaylistNotification
+module.exports = processAddTrackToPlaylistNotification

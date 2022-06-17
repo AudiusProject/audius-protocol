@@ -23,7 +23,7 @@ export const NotificationType = Object.freeze({
   RemixCosign: 'RemixCosign',
   TrendingTrack: 'TrendingTrack',
   ChallengeReward: 'ChallengeReward',
-  TrackAddedToPlaylist: 'TrackAddedToPlaylist'
+  AddTrackToPlaylist: 'AddTrackToPlaylist'
 })
 
 const challengeRewardsConfig = {
@@ -246,7 +246,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.TrackAddedToPlaylist] (notification) {
+  [NotificationType.AddTrackToPlaylist] (notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={notification.playlistOwner.name} />

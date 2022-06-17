@@ -16,7 +16,7 @@ function getUserIdsToNotify (notifications) {
         return userIds.concat(notification.metadata.entity_owner_id)
       case notificationTypes.RemixCreate:
         return userIds.concat(notification.metadata.remix_parent_track_user_id)
-      case notificationTypes.TrackAddedToPlaylist:
+      case notificationTypes.AddTrackToPlaylist:
         return userIds.concat(notification.metadata.track_owner_id)
       case notificationTypes.ChallengeReward:
       case notificationTypes.MilestoneListen:

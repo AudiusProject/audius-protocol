@@ -145,9 +145,9 @@ function formatChallengeReward (notification) {
   }
 }
 
-function formatTrackAddedToPlaylist (notification, metadata) {
+function formatAddTrackToPlaylist (notification, metadata) {
   return {
-    type: NotificationType.TrackAddedToPlaylist,
+    type: NotificationType.AddTrackToPlaylist,
     track: metadata.tracks[notification.entityId],
     playlist: metadata.collections[notification.metadata.playlistId],
     playlistOwner: metadata.users[notification.metadata.playlistOwnerId]
@@ -223,8 +223,8 @@ const notificationResponseMap = {
   [NotificationType.MilestoneFavorite]: formatMilestone('favorite'),
   [NotificationType.MilestoneListen]: formatMilestone('listen'),
   [NotificationType.MilestoneFollow]: formatMilestone('follow'),
-  [NotificationType.TrackAddedToPlaylist]: (notification, metadata) => {
-    return formatTrackAddedToPlaylist(notification, metadata)
+  [NotificationType.AddTrackToPlaylist]: (notification, metadata) => {
+    return formatAddTrackToPlaylist(notification, metadata)
   }
 
 }
@@ -238,7 +238,7 @@ const NewSubscriptionUpdateTitle = 'New Artist Update'
 const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
-const TrackAddedToPlaylistTitle = 'Your track got on a playlist! 💿'
+const AddTrackToPlaylistTitle = 'Your track got on a playlist! 💿'
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -292,7 +292,7 @@ const notificationResponseTitleMap = {
   [NotificationType.RemixCreate]: () => RemixCreateTitle,
   [NotificationType.RemixCosign]: () => RemixCosignTitle,
   [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title,
-  [NotificationType.TrackAddedToPlaylist]: () => TrackAddedToPlaylistTitle
+  [NotificationType.AddTrackToPlaylist]: () => AddTrackToPlaylistTitle
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -352,7 +352,7 @@ const pushNotificationMessagesMap = {
       ? `You’ve received ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   },
-  [notificationTypes.TrackAddedToPlaylist] (notification) {
+  [notificationTypes.AddTrackToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   }
 }

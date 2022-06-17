@@ -899,7 +899,7 @@ def notifications():
                 ):
                     track_ids.append(track_id)
                     track_added_to_playlist_notification = {
-                        const.notification_type: const.notification_type_track_added_to_playlist,
+                        const.notification_type: const.notification_type_add_track_to_playlist,
                         const.notification_blocknumber: entry.blocknumber,
                         const.notification_timestamp: entry.created_at,
                         const.notification_initiator: entry.playlist_owner_id,
