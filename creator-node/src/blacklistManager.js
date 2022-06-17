@@ -133,7 +133,7 @@ class BlacklistManager {
   }) {
     for (
       let i = 0;
-      i < PROCESS_TRACKS_BATCH_SIZE;
+      i < allTrackIdsToBlacklist.length;
       i = i + PROCESS_TRACKS_BATCH_SIZE
     ) {
       const tracksSlice = allTrackIdsToBlacklist.slice(
