@@ -20,7 +20,7 @@ const INVALID_TRACKID_EXPIRATION_SECONDS =
 
 // (2000 tracks * 60 average number of segments per track (guess) * 46 bytes per segment / 10^9 b in 1 gb ) * 3 (num segments + trackId:segments mapping)
 // = 0.01656 gb memory used per stack call
-const PROCESS_TRACKS_BATCH_SIZE = 500
+const PROCESS_TRACKS_BATCH_SIZE = 1000
 
 const types = models.ContentBlacklist.Types
 
@@ -47,6 +47,9 @@ class BlacklistManager {
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
+
+    this.logVicky('GOOD BYE')
+    process.exit(1)
   }
 
   /** Return list of trackIds, userIds, and CIDs to be blacklisted. */
