@@ -1,9 +1,7 @@
-begin;
-
 -- TODO: recreate album_lexeme_dict, playlist_lexeme_dict
-drop materialized view album_lexeme_dict;
-drop materialized view playlist_lexeme_dict;
-drop materialized view aggregate_playlist;
+
+drop table if exists aggregate_playlist cascade;
+drop materialized view if exists aggregate_playlist cascade;
 
 create table aggregate_playlist (
   playlist_id integer primary key,
@@ -42,6 +40,3 @@ where
 on conflict(playlist_id) do update set 
   repost_count = excluded.repost_count,
   save_count = excluded.save_count;
-
-
-end;
