@@ -12,5 +12,5 @@ ENV API_ID ${API_ID}
 ENV API_KEY ${API_KEY}
 
 COPY start.sh /start.sh
-ENTRYPOINT ["/usr/bin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
 CMD ["/start.sh"]

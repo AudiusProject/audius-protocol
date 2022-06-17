@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -ex
+
 ELASTIC_ENDPOINT=$(echo ${ELASTIC_ENDPOINT} | base64 -d)
 ELASTIC_CLOUD_ID=$(echo ${ELASTIC_CLOUD_ID} | base64 -d)
 API_ID=$(echo ${API_ID} | base64 -d)

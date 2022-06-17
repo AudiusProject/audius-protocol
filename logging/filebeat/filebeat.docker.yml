@@ -1,77 +1,130 @@
-filebeat.inputs:
-- type: container
-  paths:
-    - "/var/lib/docker/containers/*/*.log"
-  json.message_key: message
-  processors:
-    - copy_fields:
-        fields:
-          - from: "json.log.level"
-            to: "audius.level"
-        ignore_missing: true
-        fail_on_error: true
-    - copy_fields:
-        fields:
-          - from: "json.level"
-            to: "audius.level"
-        ignore_missing: true
-        fail_on_error: true
-    - copy_fields:
-        fields:
-          - from: "json.msg"
-            to: "audius.message"
-        ignore_missing: true
-        fail_on_error: true
-    - copy_fields:
-        fields:
-          - from: "json.message"
-            to: "audius.message"
-        ignore_missing: true
-        fail_on_error: true
-    - copy_fields:
-        fields:
-          - from: "message"
-            to: "audius.message"
-        ignore_missing: true
-        fail_on_error: true
-    - copy_fields:
-        fields:
-          - from: "timestamp"
-            to: "audius.timestamp"
-        ignore_missing: true
-        fail_on_error: true
-    - copy_fields:
-        fields:
-          - from: "@timestamp"
-            to: "audius.timestamp"
-        ignore_missing: true
-        fail_on_error: true
+# filebeat.inputs:
+# - type: container
+#   paths:
+#     - "/var/lib/docker/containers/*/*.log"
+#   json.message_key: msg
+#   multiline.pattern: '^{'
+#   multiline.negate: true
+#   multiline.match:  after
+#   processors:
+#     - drop_fields:
+#         fields: ["service"]
+#   #   - add_cloud_metadata: ~
+#   #   - add_docker_metadata: ~
+#   #   - add_host_metadata: ~
+#   #   - add_locale:
+#   #       format: offset
+#   #   - add_host_metadata:
+#   #       netinfo.enabled: true
 
-processors:
-  - drop_fields:
-      fields: ["host", "service"]
-  - add_docker_metadata:
-      host: "unix:///var/run/docker.sock"
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: msg
+          condition.or:
+            - contains:
+                docker.container.image: "dn1_web-server"
+            - contains:
+                docker.container.image: "beat"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+          condition.and:
+            - not.contains:
+                docker.container.image: "dn1_web-server"
+            - not.contains:
+                docker.container.image: "beat"
+        # - config:
+        #     - type: container
+        #       paths:
+        #         - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+        #   condition:
+        #     contains:
+        #       docker.container.image: "beat"
+
+
+  #   - copy_fields:
+  #       fields:
+  #         - from: "json.log.level"
+  #           to: "audius.level"
+  #       ignore_missing: true
+  #       fail_on_error: true
+  #   - copy_fields:
+  #       fields:
+  #         - from: "json.level"
+  #           to: "audius.level"
+  #       ignore_missing: true
+  #       fail_on_error: true
+  #   - copy_fields:
+  #       fields:
+  #         - from: "json.msg"
+  #           to: "audius.message"
+  #       ignore_missing: true
+  #       fail_on_error: true
+  #   - copy_fields:
+  #       fields:
+  #         - from: "json.message"
+  #           to: "audius.message"
+  #       ignore_missing: true
+  #       fail_on_error: true
+  #   - copy_fields:
+  #       fields:
+  #         - from: "message"
+  #           to: "audius.message"
+  #       ignore_missing: true
+  #       fail_on_error: true
+  #   - copy_fields:
+  #       fields:
+  #         - from: "timestamp"
+  #           to: "audius.timestamp"
+  #       ignore_missing: true
+  #       fail_on_error: true
+  #   - copy_fields:
+  #       fields:
+  #         - from: "@timestamp"
+  #           to: "audius.timestamp"
+  #       ignore_missing: true
+  #       fail_on_error: true
 
 output.elasticsearch:
   hosts: "${ELASTIC_ENDPOINT}"
   api_key: "${API_ID}:${API_KEY}"
   indices:
-    # - index: "filebeat-6-system-%{[agent.version]}-%{+yyyy.MM.dd}"
-    #   when.or:
-    #     - equals:
-    #         container.name: filebeat
-    #     - equals:
-    #         container.name: metricbeat
-    - index: "filebeat-6-app-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-${FILEBEAT_INDEX}-beats-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.or:
+        - equals:
+            container.name: filebeat
+        - equals:
+            container.name: metricbeat
+    - index: "filebeat-${FILEBEAT_INDEX}-app-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - equals:
             container.name: dn1_web-server_1
         - equals:
             container.name: cn1_creator-node_1
-    # - index: "filebeat-6-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-${FILEBEAT_INDEX}-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
 cloud.id: "${ELASTIC_CLOUD_ID}"
 logging.json: true
+logging.to_files: false
 logging.metrics.enabled: false
+logging.to_syslog: false
 setup.ilm.check_exists: false
+output.file:
+  enabled: false
+monitoring:
+  enabled: false
+
+output.console:
+  enabled: false
+  codec.json:
+    pretty: true
+    escape_html: false  
+
+logging.metrics.enabled: false

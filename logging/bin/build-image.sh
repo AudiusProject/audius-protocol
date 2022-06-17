@@ -2,6 +2,10 @@
 
 set -e
 
+FILEBEAT_INDEX=$(cat filebeat.index)
+((FILEBEAT_INDEX++))
+echo ${FILEBEAT_INDEX} > filebeat.index
+
 API_CREDS=$(./bin/create-sp-es-api-keys.sh)
 API_ID=$(echo ${API_CREDS} | jq -j .id | base64)
 API_KEY=$(echo ${API_CREDS} | jq -j .api_key | base64)
@@ -15,6 +19,7 @@ docker build \
         --build-arg ELASTIC_CLOUD_ID=${ELASTIC_CLOUD_ID} \
         --build-arg API_ID=${API_ID} \
         --build-arg API_KEY=${API_KEY} \
+        --build-arg FILEBEAT_INDEX=${FILEBEAT_INDEX} \
         filebeat
 
 METRICBEAT_VERSION=$(head -n1 metricbeat/Dockerfile | cut -f 2 -d ':')

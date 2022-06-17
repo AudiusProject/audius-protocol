@@ -1,14 +1,18 @@
 FROM docker.elastic.co/beats/filebeat:8.2.0
 
+USER root
+RUN apt-get update \
+    && apt-get install -y gettext-base
+
 ARG ELASTIC_ENDPOINT
 ARG ELASTIC_CLOUD_ID
 ARG API_ID
 ARG API_KEY
 ARG git_sha
 
-USER root
-RUN apt-get update \
-    && apt-get install -y gettext-base
+ARG FILEBEAT_INDEX
+ENV FILEBEAT_INDEX ${FILEBEAT_INDEX}
+
 COPY filebeat.docker.yml /tmp/filebeat.yml
 RUN ELASTIC_ENDPOINT=$(echo ${ELASTIC_ENDPOINT} | base64 -d) \
     ELASTIC_CLOUD_ID=$(echo ${ELASTIC_CLOUD_ID} | base64 -d) \

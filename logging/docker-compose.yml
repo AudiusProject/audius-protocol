@@ -2,7 +2,7 @@ services:
   filebeat:
     image: audius/filebeat:8.2.0
     container_name: filebeat
-    hostname: "{{.Node.Hostname}}-filebeat"
+    # hostname: "${HOSTNAME}"
     user: root
     restart: always
     volumes:
@@ -14,7 +14,7 @@ services:
   metricbeat:
     image: audius/metricbeat:8.2.0
     container_name: metricbeat
-    hostname: "{{.Node.Hostname}}-metricbeat"
+    # hostname: "${HOSTNAME}"
     user: root
     restart: always
     volumes:

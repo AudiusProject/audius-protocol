@@ -2,5 +2,6 @@
 
 cd ${PROTOCOL_DIR}/logging
 
-docker-compose build
+docker-compose pull
+# export HOSTNAME=$(hostname)
 docker-compose up -d

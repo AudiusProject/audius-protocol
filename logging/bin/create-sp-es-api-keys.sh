@@ -39,6 +39,7 @@ function create_role() {
                 "indices": [{
                     "names": ["filebeat-*"],
                     "privileges": [
+                        "auto_configure",
                         "create_doc",
                         "create_index",
                         "view_index_metadata"
@@ -76,6 +77,7 @@ function get_api_key() {
                         "index": [{
                             "names": ["filebeat-*"],
                             "privileges": [
+                                "auto_configure",
                                 "create_doc",
                                 "create_index",
                                 "view_index_metadata"
@@ -102,6 +104,7 @@ function confirm_privileges() {
                     {
                         "names": ["filebeat-*"],
                         "privileges": [
+                            "auto_configure",
                             "create_doc",
                             "create_index",
                             "view_index_metadata"
