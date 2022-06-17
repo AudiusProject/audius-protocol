@@ -80,10 +80,10 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
         achievement === Achievement.Listens ? 'plays' : achievement
 
       return (
-        <span>
+        <>
           {messages.your} {entityType} <EntityLink entity={entity} />{' '}
           {messages.reached} {formatCount(value)} {achievementText}
-        </span>
+        </>
       )
     }
   }

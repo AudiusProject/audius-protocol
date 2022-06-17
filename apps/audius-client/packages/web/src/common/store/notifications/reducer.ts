@@ -14,7 +14,7 @@ const initialState: NotificationState = {
   modalIsOpen: false,
   lastTimeStamp: undefined,
   hasMore: true,
-  status: undefined,
+  status: Status.LOADING,
   userList: {
     userIds: [],
     status: undefined,
