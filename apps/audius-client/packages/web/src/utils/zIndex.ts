@@ -29,7 +29,9 @@ export enum zIndex {
   // cognito flow modal
   COGNITO_FLOW_MODAL = 10001,
 
-  ARTIST_POPOVER_POPUP = 20000
+  ARTIST_POPOVER_POPUP = 20000,
+
+  FEATURE_FLAG_OVERRIDE_MODAL = 30000
 }
 
 export default zIndex
