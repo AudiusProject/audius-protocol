@@ -25,7 +25,7 @@ echo "----------- Waiting for $SOLANA_HOST ------------"
 
 # the address below does not matter
 failed=0
-while ! solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU >/dev/null 2>&1 && (($failed <= 30)); do
+while ! solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU >/dev/null 2>&1; do
     failed=$(($failed + 1))
     echo "Retrying...$failed"
     sleep 1

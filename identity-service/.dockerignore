@@ -2,3 +2,4 @@ node_modules
 npm-debug.log
 local-config.json
 file_storage
+local-storage

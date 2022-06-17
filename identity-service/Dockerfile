@@ -16,8 +16,7 @@ COPY . .
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
-COPY scripts/wait /usr/bin/wait
-RUN chmod +x /usr/bin/wait
+RUN cp scripts/wait /usr/bin/wait && chmod +x /usr/bin/wait
 
 EXPOSE 7000
 
