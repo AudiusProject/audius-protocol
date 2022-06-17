@@ -30,6 +30,9 @@ import { NotificationsDrawerNavigationContext } from './NotificationsDrawerNavig
 const NOTIFICATION_PAGE_SIZE = 10
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
+  container: {
+    paddingBottom: spacing(30)
+  },
   list: {
     paddingTop: spacing(1)
   },
@@ -87,6 +90,7 @@ export const NotificationList = () => {
 
   return (
     <FlatList
+      contentContainerStyle={styles.container}
       style={styles.list}
       refreshing={isRefreshing}
       onRefresh={handleRefresh}
