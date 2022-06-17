@@ -1,6 +1,5 @@
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
-const { logger } = require('../../logging')
 const { fetchNotificationMetadata } = require('../fetchNotificationMetadata')
 const formatNotifications = require('./formatNotification')
 const publishNotifications = require('./publishNotifications')
@@ -63,21 +62,16 @@ const getUserNotificationSettings = async (userIdsToNotify, tx) => {
  */
 async function sendNotifications (audiusLibs, notifications, tx, optimizelyClient) {
   // Parse the notification to grab the user ids that we want to notify
-  logger.info(`sendNotifications | notifications ${JSON.stringify(notifications)}`)
-
   const userIdsToNotify = getUserIdsToNotify(notifications)
-  logger.info(`sendNotifications | userIdsToNotify ${JSON.stringify(userIdsToNotify)}`)
+
   // Using the userIds to notify, check the DB for their notification settings
   const userNotificationSettings = await getUserNotificationSettings(userIdsToNotify, tx)
-  logger.info(`sendNotifications | userNotificationSettings ${JSON.stringify(userNotificationSettings)}`)
 
   // Format the notifications, so that the extra information needed to build the notification is in a standard format
   const { notifications: formattedNotifications, users } = await formatNotifications(notifications, userNotificationSettings, tx)
-  logger.info(`sendNotifications | formattedNotifications ${JSON.stringify(formattedNotifications)}`)
 
   // Get the metadata for the notifications - users/tracks/playlists from DP that are in the notification
   const metadata = await fetchNotificationMetadata(audiusLibs, users, formattedNotifications)
-  logger.info(`sendNotifications | metadata ${JSON.stringify(metadata)}`)
 
   // using the metadata, populate the notifications, and push them to the publish queue
   await publishNotifications(formattedNotifications, metadata, userNotificationSettings, tx, optimizelyClient)

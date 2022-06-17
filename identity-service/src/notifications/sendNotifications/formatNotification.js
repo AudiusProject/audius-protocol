@@ -50,7 +50,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
   // Loop through notifications to get the userIds and the formatted notification
   const userIds = new Set()
   const formattedNotifications = []
-  logger.info(`formatNotifications | notifications ${JSON.stringify(notifications)}`)
 
   for (let notif of notifications) {
     // blocknumber parsed for all notification types
@@ -223,7 +222,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
 
     // Handle the 'track added to playlist' notification type
     if (notif.type === notificationTypes.TrackAddedToPlaylist) {
-      logger.info(`formatNotifications | TrackAddedToPlaylist notif ${JSON.stringify(notif)}`)
       const formattedTrackAddedToPlaylistNotification = {
         ...notif,
         actions: [{
@@ -240,8 +238,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         type: notificationTypes.TrackAddedToPlaylist
       }
       formattedNotifications.push(formattedTrackAddedToPlaylistNotification)
-      logger.info(`formatNotifications | TrackAddedToPlaylist formattedTrackAddedToPlaylistNotification ${JSON.stringify(formattedTrackAddedToPlaylistNotification)}`)
-
       userIds.add(notif.metadata.track_owner_id)
     }
   }

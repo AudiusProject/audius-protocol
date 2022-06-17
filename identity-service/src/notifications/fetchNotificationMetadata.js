@@ -58,7 +58,6 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       }],
       limit
     })
-    logger.info(`fetchNotificationMetdata | ${userId} notifications ${JSON.stringify(notifications)}`)
 
     const { rows: solanaNotifications } = await models.SolanaNotification.findAndCountAll({
       where: {
@@ -139,8 +138,6 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     })
 
     if (userNotifications.length === 0) {
-      logger.info(`fetchNotificationMetdata | ${userId} return no userNotifications`)
-
       return [{}, 0]
     }
 
@@ -149,17 +146,11 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const fethNotificationsTime = Date.now()
     const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
-    logger.info({ job: 'fetchNotificationMetdata', durationn: fetchDataDuration }, `fetchNotificationMetdata | ${userId} get metadata ${fetchDataDuration} sec`)
-    logger.info(`fetchNotificationMetdata | ${userId} finalUserNotifications ${JSON.stringify(finalUserNotifications)}`)
-    logger.info(`fetchNotificationMetdata | ${userId} metadata ${JSON.stringify(metadata)}`)
+    logger.info({ job: 'fetchNotificationMetdata', durationn: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
-    logger.info(`fetchNotificationMetdata | ${userId} notificationsEmailProps ${JSON.stringify(notificationsEmailProps)}`)
-    logger.info(`fetchNotificationMetdata | ${userId} notificationCount ${notificationCount}`)
-    logger.info(`fetchNotificationMetdata | ${userId} unreadAnnouncementCount ${unreadAnnouncementCount}`)
-
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
-    logger.error(`fetchNotificationMetdata | ${userId} ${err}`)
+    logger.error(err)
   }
 }
 
@@ -244,7 +235,6 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         break
       }
       case NotificationType.TrackAddedToPlaylist: {
-        logger.info(`fetchNotificationMetadata | TrackAddedToPlaylist notification ${notification}`)
         trackIdsToFetch.push(notification.entityId)
         userIdsToFetch.push(notification.metadata.playlistOwnerId)
         collectionIdsToFetch.push(notification.metadata.playlistId)

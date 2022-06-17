@@ -1,5 +1,4 @@
 const { deviceType } = require('./constants')
-const { logger } = require('../logging')
 const { drainMessageObject: sendAwsSns } = require('../awsSNS')
 const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
 const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
@@ -14,9 +13,6 @@ const pushNotificationQueue = {
 }
 
 async function publish (message, userId, tx, playSound = true, title = null, types) {
-  logger.info(`publishNotifications | publish | userId ${userId}`)
-  logger.info(`publishNotifications | publish | message ${message}`)
-
   await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER, playSound, title, types)
 }
 
@@ -78,8 +74,6 @@ async function drainPublishedMessages (logger) {
 
   let numProcessedNotifs = 0
   for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
-    logger.info(`bufferObj ${JSON.stringify(bufferObj)}`)
-
     if (bufferObj.types.includes(deviceType.Mobile)) {
       const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
       numProcessedNotifs += numSentNotifs

@@ -1,7 +1,6 @@
 const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
-const { logger } = require('../logging')
 const { actionEntityTypes, notificationTypes } = require('./constants')
 
 const getRankSuffix = (num) => {
@@ -147,27 +146,12 @@ function formatChallengeReward (notification) {
 }
 
 function formatTrackAddedToPlaylist (notification, metadata) {
-  logger.info(`formatTrackAddedToPlaylist | notification ${JSON.stringify(notification)}`)
-
-  logger.info(`formatTrackAddedToPlaylist | notification.metadata ${JSON.stringify(notification.metadata)}`)
-  
-  logger.info(`formatTrackAddedToPlaylist | metadata ${JSON.stringify(metadata)}`)
-  
-  logger.info(`formatTrackAddedToPlaylist | notification.metadata.playlistId ${JSON.stringify(notification.metadata.playlistId)}`)
-
-  
-  logger.info(`formatTrackAddedToPlaylist | playlist ${JSON.stringify(metadata.collections[notification.metadata.playlistId])}`)
-
-
-  const res = {
+  return {
     type: NotificationType.TrackAddedToPlaylist,
     track: metadata.tracks[notification.entityId],
     playlist: metadata.collections[notification.metadata.playlistId],
     playlistOwner: metadata.users[notification.metadata.playlistOwnerId]
   }
-  logger.info(`formatTrackAddedToPlaylist | res ${JSON.stringify(res)}`)
-
-  return res
 }
 
 const notificationResponseMap = {
@@ -371,7 +355,6 @@ const pushNotificationMessagesMap = {
   [notificationTypes.TrackAddedToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   }
-
 }
 
 module.exports = {

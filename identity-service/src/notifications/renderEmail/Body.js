@@ -129,7 +129,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
 }), _defineProperty(_snippetMap, _Notification.NotificationType.ChallengeReward, function (notification) {
   return "You've earned $AUDIO for completing challenges";
 }), _defineProperty(_snippetMap, _Notification.NotificationType.TrackAddedToPlaylist, function (notification) {
-  return "".concat(notification.playlistOwner.name, " added your track ").concat(notification.track.title, " to their playlist ").concat(notification.playlist.playlist_name);
+  return "".concat(notification.playlistOwner.name, " added ").concat(notification.track.title, " to ").concat(notification.playlist.playlist_name);
 }), _snippetMap);
 
 var mapNotification = function mapNotification(notification) {
