@@ -131,6 +131,7 @@ fi' >>$HOME/.profile
 }
 
 function setup_elastic_agent() {
+    # sends metrics to Elastic Search instance to dogfood sidecars meant for production
     $PROTOCOL_DIR/logging/install-elastic-agent.sh
 }
 
