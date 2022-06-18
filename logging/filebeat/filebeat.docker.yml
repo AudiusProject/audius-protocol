@@ -80,6 +80,7 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: message
+              json.add_error_key: true
               multiline.pattern: '^{'
               multiline.negate: true
               multiline.match: after
