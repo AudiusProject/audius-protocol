@@ -79,10 +79,11 @@ filebeat.autodiscover:
             - type: container
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: message
               processors:
                 - rename:
                     fields:
-                      - from: "message"
+                      - from: "json.msg"
                         to: "audius.message"
                     ignore_missing: true
                     fail_on_error: true
@@ -95,28 +96,6 @@ filebeat.autodiscover:
           condition.or:
             - contains:
                 docker.container.image: "audius-identity-service_identity-service"
-        # would work, but IS is doing something funny?
-        # - config:
-        #     - type: container
-        #       paths:
-        #         - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
-        #       json.message_key: message
-        #       # processors:
-        #       #   - rename:
-        #       #       fields:
-        #       #         - from: "json.msg"
-        #       #           to: "audius.message"
-        #       #       ignore_missing: true
-        #       #       fail_on_error: true
-        #       #   - copy_fields:
-        #       #       fields:
-        #       #         - from: "container.name"
-        #       #           to: "audius.container"
-        #       #       ignore_missing: true
-        #       #       fail_on_error: true
-        #   condition.or:
-        #     - contains:
-        #         docker.container.image: "audius-identity-service_identity-service"
         - config:
             - type: container
               paths:
