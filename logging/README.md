@@ -1,4 +1,18 @@
-# ELK Logging for Remote Dev
+# ELK Logging for Developer Environments
+
+This allows us to use centralized logging with advanced search and UI features to debug
+issues seen within developer environments.
+
+## Start Logging Sidecars
+
+```bash
+scp prometheus-grafana-metrics:~/audius-protocol/logging/.env ~/audius-protocol/logging/.env
+A run logging up
+```
+
+Visit [Kibana](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/discover#/view/34f13000-eed1-11ec-8016-d75b5a9924cc).
+
+If this is your first time, view this [tutorial](https://www.elastic.co/guide/en/kibana/8.2/document-explorer.html).
 
 ## Useful Links
 
@@ -6,11 +20,3 @@
 * [Fleet](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/fleet/agents)
 * [Docker Logs](https://bit.ly/3wqEWYS)
 * [Docker Metrics](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/kibana#/dashboard/docker-AV4REOpp5NkDleZmzKkE)
-
-How to use: https://www.elastic.co/guide/en/kibana/8.2/document-explorer.html
-
-## Start Container Sidecars
-
-```bash
-./start.sh
-```

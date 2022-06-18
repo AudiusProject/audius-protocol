@@ -1,22 +1,3 @@
-# filebeat.inputs:
-# - type: container
-#   paths:
-#     - "/var/lib/docker/containers/*/*.log"
-#   json.message_key: msg
-#   multiline.pattern: '^{'
-#   multiline.negate: true
-#   multiline.match:  after
-#   processors:
-#     - drop_fields:
-#         fields: ["service"]
-#   #   - add_cloud_metadata: ~
-#   #   - add_docker_metadata: ~
-#   #   - add_host_metadata: ~
-#   #   - add_locale:
-#   #       format: offset
-#   #   - add_host_metadata:
-#   #       netinfo.enabled: true
-
 filebeat.autodiscover:
   providers:
     - type: docker
@@ -26,7 +7,15 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
+              # when included, the entire index is empty
+              # multiline.pattern: '^{'
+              # multiline.negate: true
+              # multiline.match: after
               processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
                 - rename:
                     fields:
                       - from: "json.msg"
@@ -41,6 +30,8 @@ filebeat.autodiscover:
                         to: "audius.pathname"
                       - from: "json.service"
                         to: "audius.service"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
                     ignore_missing: true
                     fail_on_error: true
                 - copy_fields:
@@ -57,13 +48,22 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
+              multiline.pattern: '^{'
+              multiline.negate: true
+              multiline.match: after
               processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
                 - rename:
                     fields:
                       - from: "json.msg"
                         to: "audius.message"
                       - from: "json.logLevel"
                         to: "audius.level"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
                     ignore_missing: true
                     fail_on_error: true
                 - copy_fields:
@@ -80,11 +80,20 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: message
+              multiline.pattern: '^{'
+              multiline.negate: true
+              multiline.match: after
               processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
                 - rename:
                     fields:
                       - from: "json.msg"
                         to: "audius.message"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
                     ignore_missing: true
                     fail_on_error: true
                 - copy_fields:
@@ -101,13 +110,22 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
+              multiline.pattern: '^{'
+              multiline.negate: true
+              multiline.match: after
               processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
                 - rename:
                     fields:
                       - from: "json.message"
                         to: "audius.message"
                       - from: "json.log.level"
                         to: "audius.level"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
                     ignore_missing: true
                     fail_on_error: true
                 - copy_fields:
@@ -124,10 +142,16 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
                 - rename:
                     fields:
                       - from: "message"
                         to: "audius.message"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
                     ignore_missing: true
                     fail_on_error: true
                 - copy_fields:
@@ -156,7 +180,7 @@ filebeat.autodiscover:
                 docker.container.image: "dn1_web-server"
             - not.contains:
                 docker.container.image: "creator-node"
-            - not.contains:
+            - not.equals:
                 docker.container.image: "audius-identity-service_identity-service"
             - not.contains:
                 docker.container.image: "beat"
@@ -168,8 +192,6 @@ filebeat.autodiscover:
                 docker.container.image: "solana-programs"
             - not.contains:
                 docker.container.image: "ganache"
-
-
 
 output.elasticsearch:
   hosts: "${ELASTIC_ENDPOINT}"
