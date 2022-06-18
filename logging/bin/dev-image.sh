@@ -4,11 +4,10 @@
 
 set -e
 
-# the only way to consume a change, currently, is to bake and push an image
-./bin/build-image.sh push
+./bin/build-image.sh
 
-A run logging down
-A run logging up
+docker-compose down
+docker-compose up -d
 
 # create indexes using the new index version
 ./bin/create-data-view.sh

@@ -19,3 +19,15 @@ If this is your first time, view this [tutorial](https://www.elastic.co/guide/en
 * [Elastic Deployment](https://cloud.elastic.co/deployments/814a17235d004d12bb315e8d466e32e3)
 * [Fleet](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/fleet/agents)
 * [Docker Metrics](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/kibana#/dashboard/docker-AV4REOpp5NkDleZmzKkE)
+
+## Test Modifications
+
+```bash
+./bin/dev-image.sh
+```
+
+## Build and Deploy to Docker Hub
+
+```bash
+./bin/build-image.sh push
+```
