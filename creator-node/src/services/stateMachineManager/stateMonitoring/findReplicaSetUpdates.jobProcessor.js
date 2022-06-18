@@ -87,16 +87,30 @@ module.exports = async function ({
 
     // Combine each promise's updateReplicaSetOps into a job
     for (const updateReplicaSetOp of updateReplicaSetOps) {
+      const { wallet } = updateReplicaSetOp
+      // Make a replicaSetNodesToUserClockStatusesMap that only has entries for the user
+      const replicaSetNodesToUserClockStatusesMapFiltered = {}
+      for (const node of Object.keys(replicaSetNodesToUserClockStatusesMap)) {
+        const userClockStatusesMap = replicaSetNodesToUserClockStatusesMap[node]
+        replicaSetNodesToUserClockStatusesMapFiltered[node] =
+          [wallet] in userClockStatusesMap
+            ? {
+                [wallet]: userClockStatusesMap[wallet]
+              }
+            : {}
+      }
+
       updateReplicaSetJobs.push({
         jobName: JOB_NAMES.UPDATE_REPLICA_SET,
         jobData: {
-          wallet: updateReplicaSetOp.wallet,
+          wallet,
           userId: updateReplicaSetOp.user_id,
           primary: updateReplicaSetOp.primary,
           secondary1: updateReplicaSetOp.secondary1,
           secondary2: updateReplicaSetOp.secondary2,
           unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
-          replicaSetNodesToUserClockStatusesMap
+          replicaSetNodesToUserClockStatusesMap:
+            replicaSetNodesToUserClockStatusesMapFiltered
         }
       })
     }

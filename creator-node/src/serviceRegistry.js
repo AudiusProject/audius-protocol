@@ -110,11 +110,22 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
+    // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
+    const stateMonitoringAdapter = new BullAdapter(stateMonitoringQueue, {
+      readOnlyMode: true
+    })
+    const stateReconciliationAdapter = new BullAdapter(
+      stateReconciliationQueue,
+      { readOnlyMode: true }
+    )
+    stateMonitoringAdapter.setFormatter('name', this.truncate)
+    stateReconciliationAdapter.setFormatter('name', this.truncate)
+
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
-        new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
-        new BullAdapter(stateReconciliationQueue, { readOnlyMode: true }),
+        stateMonitoringAdapter,
+        stateReconciliationAdapter,
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -131,6 +142,45 @@ class ServiceRegistry {
 
     serverAdapter.setBasePath('/health/bull')
     app.use('/health/bull', serverAdapter.getRouter())
+  }
+
+  // Truncates large JSON data in Bull Board
+  // Taken from https://github.com/felixmosh/bull-board/pull/414#issuecomment-1134874761
+  truncateBull(dataToTruncate, curDepth = 0) {
+    if (
+      typeof dataToTruncate === 'object' &&
+      !Array.isArray(dataToTruncate) &&
+      dataToTruncate !== null &&
+      dataToTruncate !== undefined
+    ) {
+      if (curDepth < 4) {
+        const newDepth = curDepth + 1
+        const json = Object.assign({}, dataToTruncate)
+        Object.entries(dataToTruncate).forEach(([key, value]) => {
+          switch (typeof value) {
+            case 'string':
+              json[key] = value.length > 10000 ? '[String-Truncated]' : value
+              break
+            case 'object':
+              if (Array.isArray(value)) {
+                json[key] =
+                  JSON.stringify(value).length > 10000
+                    ? '[Array-Truncated]'
+                    : value
+              } else {
+                json[key] = this.truncate(value, newDepth)
+              }
+              break
+            default:
+              json[key] = value
+              break
+          }
+        })
+        return json
+      }
+      return '[Object-Truncated]'
+    }
+    return dataToTruncate
   }
 
   /**

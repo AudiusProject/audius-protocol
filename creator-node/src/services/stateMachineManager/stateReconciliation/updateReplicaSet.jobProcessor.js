@@ -41,18 +41,6 @@ module.exports = async function (
   replicaSetNodesToUserClockStatusesMap,
   enabledReconfigModes
 ) {
-  _validateJobData(
-    logger,
-    primary,
-    secondary1,
-    secondary2,
-    wallet,
-    unhealthyReplicas,
-    healthyNodes,
-    replicaSetNodesToUserClockStatusesMap,
-    enabledReconfigModes
-  )
-
   /**
    * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
    * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
@@ -73,6 +61,18 @@ module.exports = async function (
     throw new Error(
       'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
     )
+
+  _validateJobData(
+    logger,
+    primary,
+    secondary1,
+    secondary2,
+    wallet,
+    unhealthyReplicas,
+    healthyNodes,
+    replicaSetNodesToUserClockStatusesMap,
+    enabledReconfigModes
+  )
 
   let errorMsg = ''
   let issuedReconfig = false
