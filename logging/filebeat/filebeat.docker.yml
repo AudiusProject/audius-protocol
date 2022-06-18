@@ -170,6 +170,11 @@ filebeat.autodiscover:
             - type: container
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
           condition.and:
             - not.contains:
                 docker.container.image: "dn1_web-server"
