@@ -14,9 +14,8 @@ Visit [Kibana](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/discover
 
 If this is your first time, view this [tutorial](https://www.elastic.co/guide/en/kibana/8.2/document-explorer.html).
 
-## Useful Links
+## Other Useful Links
 
 * [Elastic Deployment](https://cloud.elastic.co/deployments/814a17235d004d12bb315e8d466e32e3)
 * [Fleet](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/fleet/agents)
-* [Docker Logs](https://bit.ly/3wqEWYS)
 * [Docker Metrics](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/kibana#/dashboard/docker-AV4REOpp5NkDleZmzKkE)

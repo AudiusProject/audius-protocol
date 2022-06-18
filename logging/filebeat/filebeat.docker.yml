@@ -1,3 +1,4 @@
+# https://www.elastic.co/guide/en/beats/filebeat/current/configuration-autodiscover.html
 filebeat.autodiscover:
   providers:
     - type: docker
@@ -197,7 +198,7 @@ output.elasticsearch:
   hosts: "${ELASTIC_ENDPOINT}"
   api_key: "${API_ID}:${API_KEY}"
   indices:
-    - index: "filebeat-${FILEBEAT_INDEX}-app-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-app-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - regexp:
             container.name: dn._web-server_.
@@ -205,19 +206,19 @@ output.elasticsearch:
             container.name: cn._creator-node_.
         - regexp:
             container.name: audius-identity-service_identity-service_.
-    - index: "filebeat-${FILEBEAT_INDEX}-db-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-db-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - regexp:
             container.name: .*redis.*
         - regexp:
             container.name: .*discovery-provider-db.*
-    - index: "filebeat-${FILEBEAT_INDEX}-beats-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-beats-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
         - equals:
             container.name: filebeat
         - equals:
             container.name: metricbeat
-    - index: "filebeat-${FILEBEAT_INDEX}-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
 cloud.id: "${ELASTIC_CLOUD_ID}"
 logging.json: true

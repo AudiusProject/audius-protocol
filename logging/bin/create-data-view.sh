@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# create indexes within Elastic Search that is exposed via Kibana
+
 # https://www.elastic.co/guide/en/kibana/current/saved-objects-api-bulk-create.html
 # https://${KIBANA_ENDPOINT}/app/management/kibana/dataViews
 
@@ -6,7 +9,7 @@ set -e
 
 . .env
 BASIC_AUTH_HEADER=$(echo -n "${ELASTIC_USER}:${ELASTIC_PASS}" | base64)
-FILEBEAT_INDEX=$(cat current.index)
+CURRENT_INDEX_VERSION=$(cat current_index_version)
 
 function create_index() {
     RESPONSE=$(curl -s -X POST "${KIBANA_ENDPOINT}/api/saved_objects/_bulk_create" \
@@ -16,33 +19,33 @@ function create_index() {
         -d '[
                 {
                     "type": "index-pattern",
-                    "id": "filebeat-'"${FILEBEAT_INDEX}"'-app",
+                    "id": "filebeat-'"${CURRENT_INDEX_VERSION}"'-app",
                     "attributes": {
-                        "title": "filebeat-'"${FILEBEAT_INDEX}"'-app-*",
+                        "title": "filebeat-'"${CURRENT_INDEX_VERSION}"'-app-*",
                         "timeFieldName": "@timestamp"
                     }
                 },
                 {
                     "type": "index-pattern",
-                    "id": "filebeat-'"${FILEBEAT_INDEX}"'-db",
+                    "id": "filebeat-'"${CURRENT_INDEX_VERSION}"'-db",
                     "attributes": {
-                        "title": "filebeat-'"${FILEBEAT_INDEX}"'-db-*",
+                        "title": "filebeat-'"${CURRENT_INDEX_VERSION}"'-db-*",
                         "timeFieldName": "@timestamp"
                     }
                 },
                 {
                     "type": "index-pattern",
-                    "id": "filebeat-'"${FILEBEAT_INDEX}"'-beats",
+                    "id": "filebeat-'"${CURRENT_INDEX_VERSION}"'-beats",
                     "attributes": {
-                        "title": "filebeat-'"${FILEBEAT_INDEX}"'-beats-*",
+                        "title": "filebeat-'"${CURRENT_INDEX_VERSION}"'-beats-*",
                         "timeFieldName": "@timestamp"
                     }
                 },
                     {
                     "type": "index-pattern",
-                    "id": "filebeat-'"${FILEBEAT_INDEX}"'-misc",
+                    "id": "filebeat-'"${CURRENT_INDEX_VERSION}"'-misc",
                     "attributes": {
-                        "title": "filebeat-'"${FILEBEAT_INDEX}"'-misc-*",
+                        "title": "filebeat-'"${CURRENT_INDEX_VERSION}"'-misc-*",
                         "timeFieldName": "@timestamp"
                     }
                 }
