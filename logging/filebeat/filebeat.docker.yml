@@ -75,27 +75,27 @@ filebeat.autodiscover:
           condition.or:
             - contains:
                 docker.container.image: "creator-node"
-        - config:
-            - type: container
-              paths:
-                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
-              json.message_key: msg
-              processors:
-                - rename:
-                    fields:
-                      - from: "json.msg"
-                        to: "audius.message"
-                    ignore_missing: true
-                    fail_on_error: true
-                - copy_fields:
-                    fields:
-                      - from: "container.name"
-                        to: "audius.container"
-                    ignore_missing: true
-                    fail_on_error: true
-          condition.or:
-            - contains:
-                docker.container.image: "audius-identity-service_identity-service"
+        # - config:
+        #     - type: container
+        #       paths:
+        #         - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+        #       json.message_key: msg
+        #       processors:
+        #         - rename:
+        #             fields:
+        #               - from: "json.msg"
+        #                 to: "audius.message"
+        #             ignore_missing: true
+        #             fail_on_error: true
+        #         - copy_fields:
+        #             fields:
+        #               - from: "container.name"
+        #                 to: "audius.container"
+        #             ignore_missing: true
+        #             fail_on_error: true
+        #   condition.or:
+        #     - contains:
+        #         docker.container.image: "audius-identity-service_identity-service"
         - config:
             - type: container
               paths:
@@ -142,7 +142,11 @@ filebeat.autodiscover:
             - contains:
                 docker.container.image: "redis"
             - contains:
-                docker.container.image: "discovery-provider-db"
+                docker.container.image: "postgres"
+            - contains:
+                docker.container.image: "solana-programs"
+            - contains:
+                docker.container.image: "ganache"
         - config:
             - type: container
               paths:
@@ -159,7 +163,11 @@ filebeat.autodiscover:
             - not.contains:
                 docker.container.image: "redis"
             - not.contains:
-                docker.container.image: "discovery-provider-db"
+                docker.container.image: "postgres"
+            - not.contains:
+                docker.container.image: "solana-programs"
+            - not.contains:
+                docker.container.image: "ganache"
 
 
 
