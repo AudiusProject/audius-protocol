@@ -551,6 +551,11 @@ def create_and_raise_indexing_error(err, redis):
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
+    shared_config = update_task.shared_config
+
+    indexing_transaction_index_sort_order_start_block = shared_config["discprov"][
+        "indexing_transaction_index_sort_order_start_block"
+    ]
 
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
@@ -611,10 +616,18 @@ def index_blocks(self, db, blocks_list):
                     Parse transaction receipts
                     """
                     parse_tx_receipts_start_time = time.time()
-                    # Sort transactions by hash
-                    sorted_txs = sorted(
-                        block.transactions, key=lambda entry: entry["hash"]
-                    )
+
+                    # Sort transactions by transactionIndex after we have hit
+                    # indexing_transaction_index_sort_order_start_block.
+                    if block.number > indexing_transaction_index_sort_order_start_block:
+                        sorted_txs = sorted(
+                            block.transactions,
+                            key=lambda entry: entry["transactionIndex"],
+                        )
+                    else:
+                        sorted_txs = sorted(
+                            block.transactions, key=lambda entry: entry["hash"]
+                        )
 
                     # Parse tx events in each block
                     for tx in sorted_txs:
