@@ -26,20 +26,109 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
+              processors:
+                - rename:
+                    fields:
+                      - from: "json.msg"
+                        to: "audius.message"
+                      - from: "json.level"
+                        to: "audius.level"
+                      - from: "json.funcName"
+                        to: "audius.func"
+                      - from: "json.lineno"
+                        to: "audius.lineno"
+                      - from: "json.pathname"
+                        to: "audius.pathname"
+                      - from: "json.service"
+                        to: "audius.service"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
           condition.or:
             - contains:
                 docker.container.image: "dn1_web-server"
-            - contains:
-                docker.container.image: "beat"
         - config:
             - type: container
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
-          condition.and:
-            - not.contains:
-                docker.container.image: "dn1_web-server"
-            - not.contains:
-                docker.container.image: "beat"
+              json.message_key: msg
+              processors:
+                - rename:
+                    fields:
+                      - from: "json.msg"
+                        to: "audius.message"
+                      - from: "json.logLevel"
+                        to: "audius.level"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "creator-node"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: msg
+              processors:
+                - rename:
+                    fields:
+                      - from: "json.message"
+                        to: "audius.message"
+                      - from: "json.log.level"
+                        to: "audius.level"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "filebeat"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              processors:
+                - rename:
+                    fields:
+                      - from: "message"
+                        to: "audius.message"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "metricbeat"
+        # - config:
+        #     - type: container
+        #       paths:
+        #         - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+        #   condition.and:
+        #     - not.contains:
+        #         docker.container.image: "creator-node"
+        #     - not.contains:
+        #         docker.container.image: "dn1_web-server"
+        #     - not.contains:
+        #         docker.container.image: "beat"
         # - config:
         #     - type: container
         #       paths:
@@ -104,10 +193,16 @@ output.elasticsearch:
             container.name: metricbeat
     - index: "filebeat-${FILEBEAT_INDEX}-app-%{[agent.version]}-%{+yyyy.MM.dd}"
       when.or:
-        - equals:
-            container.name: dn1_web-server_1
-        - equals:
-            container.name: cn1_creator-node_1
+        - regexp:
+            container.name: dn.*_web-server.*
+        # - contains:
+        #     container.name: creator-node
+        - regexp:
+            container.name: cn.*_creator-node_.
+        # - regexp:
+        #     container.image.name: cn.*_creator-node
+        # - regexp:
+        #     container.name: .*creator-node.*
     - index: "filebeat-${FILEBEAT_INDEX}-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
 cloud.id: "${ELASTIC_CLOUD_ID}"
