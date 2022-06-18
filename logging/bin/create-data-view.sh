@@ -24,6 +24,14 @@ function create_index() {
                 },
                 {
                     "type": "index-pattern",
+                    "id": "filebeat-'"${FILEBEAT_INDEX}"'-db",
+                    "attributes": {
+                        "title": "filebeat-'"${FILEBEAT_INDEX}"'-db-*",
+                        "timeFieldName": "@timestamp"
+                    }
+                },
+                {
+                    "type": "index-pattern",
                     "id": "filebeat-'"${FILEBEAT_INDEX}"'-beats",
                     "attributes": {
                         "title": "filebeat-'"${FILEBEAT_INDEX}"'-beats-*",
