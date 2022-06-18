@@ -7,7 +7,7 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
-              # when included, the entire index is empty
+              # should ideally work, but breaks and is not needed atm.
               # multiline.pattern: '^{'
               # multiline.negate: true
               # multiline.match: after
@@ -48,9 +48,6 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
-              multiline.pattern: '^{'
-              multiline.negate: true
-              multiline.match: after
               processors:
                 - add_cloud_metadata: ~
                 - add_docker_metadata: ~
@@ -81,9 +78,6 @@ filebeat.autodiscover:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: message
               json.add_error_key: true
-              multiline.pattern: '^{'
-              multiline.negate: true
-              multiline.match: after
               processors:
                 - add_cloud_metadata: ~
                 - add_docker_metadata: ~
@@ -111,9 +105,6 @@ filebeat.autodiscover:
               paths:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: msg
-              multiline.pattern: '^{'
-              multiline.negate: true
-              multiline.match: after
               processors:
                 - add_cloud_metadata: ~
                 - add_docker_metadata: ~
