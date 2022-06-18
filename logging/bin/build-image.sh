@@ -2,9 +2,9 @@
 
 set -e
 
-FILEBEAT_INDEX=$(cat filebeat.index)
+FILEBEAT_INDEX=$(cat current.index)
 ((FILEBEAT_INDEX++))
-echo ${FILEBEAT_INDEX} > filebeat.index
+echo ${FILEBEAT_INDEX} > current.index
 
 API_CREDS=$(./bin/create-sp-es-api-keys.sh)
 API_ID=$(echo ${API_CREDS} | jq -j .id | base64)

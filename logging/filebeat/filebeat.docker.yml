@@ -234,6 +234,6 @@ output.console:
   enabled: false
   codec.json:
     pretty: true
-    escape_html: false  
+    escape_html: false
 
 logging.metrics.enabled: false
