@@ -194,6 +194,7 @@ filebeat.autodiscover:
             - not.contains:
                 docker.container.image: "ganache"
 
+cloud.id: "${ELASTIC_CLOUD_ID}"
 output.elasticsearch:
   hosts: "${ELASTIC_ENDPOINT}"
   api_key: "${API_ID}:${API_KEY}"
@@ -218,23 +219,23 @@ output.elasticsearch:
             container.name: filebeat
         - equals:
             container.name: metricbeat
+    # catch all for all other containers, until promoted
     - index: "filebeat-${CURRENT_INDEX_VERSION}-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
 
-cloud.id: "${ELASTIC_CLOUD_ID}"
-logging.json: true
-logging.to_files: false
-logging.metrics.enabled: false
-logging.to_syslog: false
+# lessens the amount of permissions needed
 setup.ilm.check_exists: false
-output.file:
-  enabled: false
+
+# enable cleaner filebeat logs
+logging.json: true
+logging.metrics.enabled: false
+logging.to_files: false
+logging.to_syslog: false
 monitoring:
   enabled: false
-
 output.console:
   enabled: false
   codec.json:
     pretty: true
     escape_html: false
-
-logging.metrics.enabled: false
+output.file:
+  enabled: false

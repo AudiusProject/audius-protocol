@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# create a Service Provider Elastic Search API key
+# create an Elastic Search API key for Service Provider
 
 # https://www.elastic.co/guide/en/beats/filebeat/8.2/beats-api-keys.html
 # https://www.elastic.co/guide/en/beats/filebeat/8.2/privileges-to-publish-events.html
