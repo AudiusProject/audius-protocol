@@ -6,7 +6,6 @@ issues seen within developer environments.
 ## Start Logging Sidecars
 
 ```bash
-scp prometheus-grafana-metrics:~/audius-protocol/logging/.env ~/audius-protocol/logging/.env
 A run logging up
 ```
 
@@ -23,11 +22,17 @@ If this is your first time, view this [tutorial](https://www.elastic.co/guide/en
 ## Test Modifications
 
 ```bash
+# copy contents to ~/audius-protocol/logging/.env
+ssh prometheus-grafana-metrics "cat ~/audius-protocol/logging/.env"
+
 ./bin/dev-image.sh
 ```
 
 ## Build and Deploy to Docker Hub
 
 ```bash
+# copy contents to ~/audius-protocol/logging/.env
+ssh prometheus-grafana-metrics "cat ~/audius-protocol/logging/.env"
+
 ./bin/build-image.sh push
 ```
