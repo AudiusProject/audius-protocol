@@ -34,11 +34,11 @@ class BlacklistManager {
         userIdsToBlacklist,
         segmentsToBlacklist
       })
+      this.initialized = true
       logInfoWithDuration(
         { logger, startTime: start },
         'Time taken in ms for blacklistManager init'
       )
-      this.initialized = true
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
