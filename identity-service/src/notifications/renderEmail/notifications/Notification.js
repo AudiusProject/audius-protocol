@@ -45,7 +45,8 @@ var NotificationType = Object.freeze({
   RemixCreate: 'RemixCreate',
   RemixCosign: 'RemixCosign',
   TrendingTrack: 'TrendingTrack',
-  ChallengeReward: 'ChallengeReward'
+  ChallengeReward: 'ChallengeReward',
+  AddTrackToPlaylist: 'AddTrackToPlaylist'
 });
 exports.NotificationType = NotificationType;
 var challengeRewardsConfig = {
@@ -292,6 +293,20 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
     text: title
   })))), /*#__PURE__*/_react["default"].createElement(BodyText, {
     text: bodyText
+  }));
+}), _defineProperty(_notificationMap, NotificationType.AddTrackToPlaylist, function (notification) {
+  return /*#__PURE__*/_react["default"].createElement("span", {
+    className: 'notificationText'
+  }, /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: notification.playlistOwner.name
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " added your track "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: notification.track.title
+  }), /*#__PURE__*/_react["default"].createElement(BodyText, {
+    text: " to their playlist "
+  }), /*#__PURE__*/_react["default"].createElement(HighlightText, {
+    text: notification.playlist.playlist_name
   }));
 }), _notificationMap);
 

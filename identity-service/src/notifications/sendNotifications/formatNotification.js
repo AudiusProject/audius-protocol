@@ -219,6 +219,27 @@ async function formatNotifications (notifications, notificationSettings, tx) {
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(notif, tx)
     }
+
+    // Handle the 'track added to playlist' notification type
+    if (notif.type === notificationTypes.AddTrackToPlaylist) {
+      const formattedAddTrackToPlaylistNotification = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityTypes.Track,
+          actionTrackId: notif.metadata.track_id,
+          blocknumber
+        }],
+        metadata: {
+          trackOwnerId: notif.metadata.track_owner_id,
+          playlistOwnerId: notif.initiator,
+          playlistId: notif.metadata.playlist_id
+        },
+        entityId: notif.metadata.track_id,
+        type: notificationTypes.AddTrackToPlaylist
+      }
+      formattedNotifications.push(formattedAddTrackToPlaylistNotification)
+      userIds.add(notif.metadata.track_owner_id)
+    }
   }
   const [formattedCreateNotifications, users] = await _processSubscriberPushNotifications()
   formattedNotifications.push(...formattedCreateNotifications)

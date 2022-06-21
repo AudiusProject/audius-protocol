@@ -42,6 +42,8 @@ const getPublishNotifBaseType = (notification) => {
       return notificationTypes.Milestone
     case notificationTypes.TierChange:
       return notificationTypes.TierChange
+    case notificationTypes.AddTrackToPlaylist:
+      return notificationTypes.AddTrackToPlaylist
   }
 }
 
@@ -61,6 +63,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
   else if (baseType === notificationTypes.Milestone) return notif.initiator
   else if (baseType === notificationTypes.TierChange) return notif.initiator
+  else if (baseType === notificationTypes.AddTrackToPlaylist) return notif.metadata.trackOwnerId
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -70,7 +73,8 @@ const alwaysSendNotifications = [
   notificationTypes.Create.track,
   notificationTypes.Create.playlist,
   notificationTypes.Create.album,
-  notificationTypes.ChallengeReward
+  notificationTypes.ChallengeReward,
+  notificationTypes.AddTrackToPlaylist
 ]
 
 const mapNotificationBaseTypeToSettings = {
