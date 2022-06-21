@@ -1,4 +1,4 @@
-const { logger, logInfoWithDuration, getStartTime } = require('./logging')
+const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
@@ -31,7 +31,6 @@ class BlacklistManager {
     try {
       this.log('Initializing BlacklistManager...')
 
-      const start = getStartTime()
       const { trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist } =
         await this.getDataToBlacklist()
       await this.fetchCIDsAndAddToRedis({
@@ -40,11 +39,6 @@ class BlacklistManager {
         segmentsToBlacklist
       })
       this.initialized = true
-
-      logInfoWithDuration(
-        { logger, startTime: start },
-        'Time taken in ms for BlacklistManager init'
-      )
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
