@@ -47,7 +47,6 @@ def test_populate_playlist_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_playlist")
         playlist_ids = [1, 2, 3, 4]
         playlists = [
             {"playlist_id": 1, "playlist_contents": {"track_ids": []}},

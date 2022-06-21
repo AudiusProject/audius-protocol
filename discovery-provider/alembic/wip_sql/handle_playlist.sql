@@ -2,11 +2,10 @@ create or replace function handle_playlist() returns trigger as $$
 declare
   old_row playlists%rowtype;
   delta int := 0;
-  new_val int;
 begin
   raise info 'handle playlist_id: %', new.playlist_id;
 
-  insert into aggregate_playlist (playlist_id) values (new.playlist_id) on conflict do nothing;
+  insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
   -- for extra safety ensure agg_user
   -- this should just happen in handle_user
@@ -24,11 +23,15 @@ begin
   end if;
 
   if delta != 0 then
-    raise notice 'delta: % for playlist_id: % for user_id: %', delta, new.playlist_id, new.playlist_owner_id;
-    update aggregate_user 
-    set playlist_count = playlist_count + delta
-    where user_id = new.playlist_owner_id
-    returning playlist_count into new_val;
+    if new.is_album then
+      update aggregate_user 
+      set album_count = album_count + delta
+      where user_id = new.playlist_owner_id;
+    else
+      update aggregate_user 
+      set playlist_count = playlist_count + delta
+      where user_id = new.playlist_owner_id;
+    end if;
   end if;
 
 

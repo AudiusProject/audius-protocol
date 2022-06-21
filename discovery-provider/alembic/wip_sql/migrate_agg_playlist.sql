@@ -1,5 +1,3 @@
--- TODO: recreate album_lexeme_dict, playlist_lexeme_dict
-
 -- nice:
 -- https://www.postgresql.org/docs/current/sql-do.html
 do $$ begin
@@ -14,8 +12,6 @@ create table if not exists aggregate_playlist (
   repost_count integer default 0,
   save_count integer default 0
 );
-
-
 
 insert into aggregate_playlist
 select
@@ -45,3 +41,6 @@ where
 on conflict(playlist_id) do update set 
   repost_count = excluded.repost_count,
   save_count = excluded.save_count;
+
+
+

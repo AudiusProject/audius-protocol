@@ -1,6 +1,5 @@
 from integration_tests.utils import populate_mock_db
 from src.queries.get_user_signals import _get_user_signals
-from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.utils.db_session import get_db
 
 
@@ -87,8 +86,6 @@ def test_get_user_signals(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_user(session)
-
         user_signals = _get_user_signals(session, "user1")
         assert user_signals["num_followers"] == 3
         assert user_signals["num_following"] == 1
