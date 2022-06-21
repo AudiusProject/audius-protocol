@@ -1,0 +1,13 @@
+FROM node:16
+
+RUN apt-get update && apt-get -y install -qq --force-yes cron
+
+WORKDIR /network-monitoring 
+
+# Install app dependencies from package.json. If modules are not included in the package.json file enter a RUN command. E.g. RUN npm install <module-name>
+COPY package.json /network-monitoring/
+RUN npm install
+
+COPY . .
+
+CMD ["npm", "run", "staging"]
