@@ -3,7 +3,10 @@ FROM node:14 as generator
 WORKDIR /dist
 
 COPY *.js *.json *.env.* ./
+COPY ymls ymls
 
+ARG PROM_ENV
+ENV PROM_ENV ${PROM_ENV}
 RUN npm install \
     && npm run generate-prom
 

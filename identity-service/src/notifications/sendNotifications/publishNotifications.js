@@ -1,4 +1,5 @@
 const { deviceType, notificationTypes } = require('../constants')
+const models = require('../../models')
 const {
   notificationResponseMap,
   notificationResponseTitleMap,
@@ -6,6 +7,7 @@ const {
 } = require('../formatNotificationMetadata')
 const { publish, publishSolanaNotification } = require('../notificationQueue')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../../featureFlag')
+const { logger } = require('../../logging')
 
 // Maps a notification type to it's base notification
 const getPublishNotifBaseType = (notification) => {
@@ -122,6 +124,16 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
  * @param {*} tx Transction for DB queries
  */
 const publishNotifications = async (notifications, metadata, userNotificationSettings, tx, optimizelyClient) => {
+  const initiators = models.User.findAll({
+    where: {
+      blockchainUserId: notifications.map(notif => notif.initiator)
+    }
+  })
+  const initiatorMap = initiators.reduce((acc, initiator) => {
+    acc[initiator.blockchainUserId] = initiator
+    return acc
+  }, {})
+
   for (const notification of notifications) {
     const mapNotification = notificationResponseMap[notification.type]
     const populatedNotification = {
@@ -133,11 +145,19 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     const title = notificationResponseTitleMap[notification.type](populatedNotification)
     const userId = getPublishUserId(notification, publishNotifType)
     const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
+    const initiatorUserId = notification.initiator
 
     // Don't publish events for deactivated users
-    if (metadata.users[userId] && metadata.users[userId].is_deactivated) {
+    const isReceiverDeactivated = metadata.users[userId] && metadata.users[userId].is_deactivated
+    const isInitiatorAbusive = initiatorMap[initiatorUserId] && initiatorMap[initiatorUserId].isAbusive
+    if (isReceiverDeactivated) {
       continue
     }
+    if (isInitiatorAbusive) {
+      logger.info(`isInitiatorAbusive true would skip notif`)
+      // continue // skip notif from abusive initiator
+    }
+
     const shouldFilter = shouldFilterOutNotification(notification.type, optimizelyClient)
     if (shouldFilter) {
       continue

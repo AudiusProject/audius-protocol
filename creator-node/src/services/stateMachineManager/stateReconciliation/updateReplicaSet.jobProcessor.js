@@ -26,7 +26,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {number} param.primary the current primary endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
- * @param {Set<string>} param.unhealthyReplicasSet the endpoints of the user's replica set that are currently unhealthy
+ * @param {string[]} param.unhealthyReplicas the endpoints of the user's replica set that are currently unhealthy
  * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
@@ -37,7 +37,7 @@ module.exports = async function (
   primary,
   secondary1,
   secondary2,
-  unhealthyReplicasSet,
+  unhealthyReplicas,
   replicaSetNodesToUserClockStatusesMap,
   enabledReconfigModes
 ) {
@@ -47,7 +47,7 @@ module.exports = async function (
     secondary1,
     secondary2,
     wallet,
-    unhealthyReplicasSet,
+    unhealthyReplicas,
     healthyNodes,
     replicaSetNodesToUserClockStatusesMap,
     enabledReconfigModes
@@ -84,7 +84,7 @@ module.exports = async function (
       primary,
       secondary1,
       secondary2,
-      unhealthyReplicasSet,
+      unhealthyReplicasSet: new Set(unhealthyReplicas || []),
       healthyNodes,
       replicaSetNodesToUserClockStatusesMap,
       enabledReconfigModes

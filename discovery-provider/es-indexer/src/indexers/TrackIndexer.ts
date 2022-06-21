@@ -11,10 +11,10 @@ import {
 } from './sharedIndexSettings'
 
 export class TrackIndexer extends BaseIndexer<TrackDoc> {
-  tableName = 'tracks'
-  idColumn = 'track_id'
-  indexName = indexNames.tracks
-  batchSize = 500
+  constructor() {
+    super('tracks', 'track_id')
+    this.batchSize = 500
+  }
 
   mapping: IndicesCreateRequest = {
     index: indexNames.tracks,
@@ -192,6 +192,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.duration = Math.ceil(
       row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
     )
+    row.length = row.duration
 
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]
