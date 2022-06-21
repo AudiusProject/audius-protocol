@@ -8,7 +8,6 @@ import { profilePage } from 'audius-client/src/utils/route'
 import { ImageBackground, StyleProp, View, ViewStyle } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import IconTip from 'app/assets/images/iconTip.svg'
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { Text, Tile } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
@@ -20,47 +19,60 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
-const messages = {
-  supporter: 'Supporter'
-}
-
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     marginTop: spacing(2),
     paddingBottom: spacing(1),
-    width: 220,
-    marginRight: spacing(2)
-  },
-  supporterInfo: {
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    marginHorizontal: spacing(1),
+    borderRadius: 8,
     overflow: 'hidden'
   },
-  supporterInfoRoot: {
+  backgroundImage: {
+    borderRadius: 8,
+    overflow: 'hidden'
+  },
+  gradient: {
+    width: 220,
+    height: 88,
+    justifyContent: 'space-between',
+    padding: spacing(2)
+  },
+  supportingInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing(4),
-    paddingHorizontal: spacing(2)
+    alignSelf: 'flex-start',
+    margin: spacing(1)
   },
   profilePicture: {
     height: spacing(8),
     width: spacing(8),
-    marginRight: spacing(1),
+    marginEnd: spacing(1),
     borderWidth: 1,
     borderColor: palette.staticWhite
   },
-  rankRoot: {
+  rank: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing(2),
-    paddingHorizontal: spacing(4)
+    alignSelf: 'flex-end',
+    paddingVertical: spacing(0.5),
+    paddingHorizontal: spacing(1.125),
+    borderWidth: 1,
+    borderColor: palette.staticNeutralLight8,
+    borderRadius: spacing(4),
+    backgroundColor: palette.staticWhite
+  },
+  rankNumberSymbol: {
+    marginStart: spacing(1),
+    marginEnd: spacing(0.5)
   },
   rankText: {
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    marginTop: spacing(-1),
+    marginBottom: spacing(-1)
   },
   nameText: {
     color: palette.staticWhite,
-    maxWidth: spacing(32)
+    flexShrink: 1
   }
 }))
 
@@ -73,7 +85,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
   const { supporting, style } = props
   const styles = useStyles()
   const navigation = useNavigation()
-  const { secondary, neutralLight4 } = useThemeColors()
+  const { secondary } = useThemeColors()
   const user = useSelectorWeb(state => {
     return getUser(state, { id: supporting.receiver_id })
   })
@@ -97,48 +109,58 @@ export const SupportingTile = (props: SupportingTileProps) => {
   }, [navigation, handle])
 
   const iconProps = {
-    height: spacing(3),
-    width: spacing(3),
-    marginRight: 6
+    height: spacing(3.75),
+    width: spacing(3.75)
   }
-
-  const supporterIcon = isTopRank ? (
-    <IconTrophy fill={secondary} {...iconProps} />
-  ) : (
-    <IconTip fill={neutralLight4} {...iconProps} />
-  )
 
   return user ? (
     <Tile style={[styles.root, style]} onPress={handlePress}>
       <ImageBackground
-        style={styles.supporterInfo}
+        style={styles.backgroundImage}
         source={{ uri: coverPhoto }}
       >
         <LinearGradient
-          colors={['#0000004D', '#0000001A']}
+          colors={['#0000001A', '#0000004D']}
           useAngle
-          angle={45}
+          angle={180}
           angleCenter={{ x: 0.5, y: 0.5 }}
-          style={styles.supporterInfoRoot}
+          style={styles.gradient}
         >
-          <ProfilePicture style={styles.profilePicture} profile={user} />
-          <Text style={styles.nameText} variant='h3' noGutter numberOfLines={1}>
-            {name}
-          </Text>
-          <UserBadges user={user} hideName />
+          {isTopRank ? (
+            <View style={styles.rank}>
+              <IconTrophy fill={secondary} {...iconProps} />
+              <Text
+                style={styles.rankNumberSymbol}
+                variant='label'
+                color='secondary'
+                fontSize='small'
+              >
+                #
+              </Text>
+              <Text
+                style={styles.rankText}
+                variant='label'
+                color='secondary'
+                fontSize='large'
+              >
+                {supporting.rank}
+              </Text>
+            </View>
+          ) : null}
+          <View style={styles.supportingInfo}>
+            <ProfilePicture style={styles.profilePicture} profile={user} />
+            <Text
+              style={styles.nameText}
+              variant='h3'
+              noGutter
+              numberOfLines={1}
+            >
+              {name}
+            </Text>
+            <UserBadges user={user} hideName />
+          </View>
         </LinearGradient>
       </ImageBackground>
-      <View style={styles.rankRoot}>
-        {supporterIcon}
-        <Text
-          style={styles.rankText}
-          variant='label'
-          color={isTopRank ? 'secondary' : 'neutral'}
-        >
-          {isTopRank ? `#${supporting.rank} ` : null}
-          {messages.supporter}
-        </Text>
-      </View>
     </Tile>
   ) : null
 }
