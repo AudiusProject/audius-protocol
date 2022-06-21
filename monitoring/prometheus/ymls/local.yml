@@ -95,4 +95,4 @@
           host: 'host.docker.internal'
           environment: 'remote-dev'
           service: 'audius'
-          component: 'discovery-provider'
+          component: 'network-monitoring'
