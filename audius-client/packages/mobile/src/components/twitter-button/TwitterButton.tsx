@@ -55,6 +55,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   const user = useSelectorWeb(state =>
     getUser(state, { handle: 'handle' in other ? other.handle : undefined })
   )
+  const userName = user?.name
   const twitterHandle = user ? user.twitter_handle : null
 
   const handlePress = useCallback(() => {
@@ -75,7 +76,8 @@ export const TwitterButton = (props: TwitterButtonProps) => {
 
   useEffect(() => {
     if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
-      const twitterData = other.shareData(twitterHandle)
+      const handle = twitterHandle ? `@${twitterHandle}` : userName
+      const twitterData = other.shareData(handle)
       if (twitterData) {
         const { shareText, analytics } = twitterData
         openLink(getTwitterLink(url, shareText))
@@ -83,7 +85,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
         setShareTwitterStatus('idle')
       }
     }
-  }, [other, shareTwitterStatus, twitterHandle, openLink, url])
+  }, [other, shareTwitterStatus, twitterHandle, userName, openLink, url])
 
   return (
     <Button
