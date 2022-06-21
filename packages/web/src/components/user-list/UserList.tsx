@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -58,16 +58,29 @@ const ConnectedUserList = (props: ConnectedUserListProps) => {
 
   const { loadMore, reset } = props
 
-  useEffect(() => {
-    // Load initially
-    loadMore()
-  }, [loadMore])
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    return () => {
+    if (!hasLoaded) {
+      /**
+       * Reset on initial load in case the list modal for the
+       * given tag was already open before for another user.
+       * If we do no reset on initial load (or on exiting the modal),
+       * then the list modal will be confused and may not refresh
+       * for the current user, or it may refresh but not have the
+       * correct total count which messes up the logic for loading
+       * more users as we scroll down the modal.
+       * The reason why we reset on initial load rather than on
+       * exiting the modal is because it's possible that one modal
+       * opens another (e.g. clicking artist hover tile supporting section),
+       * and resetting on modal exit in that case may reset the data for the
+       * incoming modal after it loads and end up showing an empty modal.
+       */
       reset()
+      loadMore()
+      setHasLoaded(true)
     }
-  }, [reset])
+  }, [reset, hasLoaded, loadMore])
 
   return (
     <UserList
