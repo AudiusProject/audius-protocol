@@ -38,7 +38,10 @@ class BlacklistManager {
         userIdsToBlacklist,
         segmentsToBlacklist
       })
+
       this.initialized = true
+
+      this.log('Initialized BlacklistManager')
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
