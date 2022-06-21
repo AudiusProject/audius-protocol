@@ -8,11 +8,16 @@ import {
   Achievement,
   Milestone
 } from 'audius-client/src/common/store/notifications/types'
-import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
+import {
+  fullProfilePage,
+  NOTIFICATION_PAGE
+} from 'audius-client/src/utils/route'
 import { isEqual } from 'lodash'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { EventNames } from 'app/types/analytics'
+import { make } from 'app/utils/analytics'
 import { formatCount } from 'app/utils/format'
 import { getUserRoute } from 'app/utils/routes'
 
@@ -21,7 +26,8 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTile,
-  NotificationTitle
+  NotificationTitle,
+  NotificationTwitterButton
 } from '../Notification'
 import { getEntityRoute, getEntityScreen } from '../Notification/utils'
 import { useDrawerNavigation } from '../useDrawerNavigation'
@@ -32,7 +38,45 @@ const messages = {
   your: 'Your',
   reached: 'has reached over',
   followerAchievementText: (followersCount: number) =>
-    `I just hit over ${followersCount} followers on @AudiusProject #Audius!`
+    `I just hit over ${followersCount} followers on @AudiusProject #Audius!`,
+  achievementText: (
+    type: string,
+    name: string,
+    value: number,
+    achievement: string
+  ) => {
+    const achievementText =
+      achievement === Achievement.Listens ? 'plays' : achievement
+    return `My ${type} ${name} has more than ${value} ${achievementText} on @AudiusProject #Audius
+Check it out!`
+  }
+}
+
+const getTwitterShareData = (notification: Milestone) => {
+  const { achievement, user, value } = notification
+  switch (achievement) {
+    case Achievement.Followers: {
+      const link = fullProfilePage(user.handle)
+      const text = messages.followerAchievementText(value)
+      return { text, link }
+    }
+    case Achievement.Favorites:
+    case Achievement.Listens:
+    case Achievement.Reposts: {
+      const { entity, entityType } = notification
+      const link = getEntityRoute(entity, true)
+      const text = messages.achievementText(
+        entityType,
+        'title' in entity ? entity.title : entity.playlist_name,
+        value,
+        achievement
+      )
+      return { text, link }
+    }
+    default: {
+      return { text: '', link: '' }
+    }
+  }
 }
 
 type MilestoneNotificationProps = {
@@ -88,12 +132,23 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     }
   }
 
+  const { link, text } = getTwitterShareData(notification)
+
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconTrophy}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>{renderBody()}</NotificationText>
+      <NotificationTwitterButton
+        type='static'
+        url={link}
+        shareText={text}
+        analytics={make({
+          eventName: EventNames.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE,
+          milestone: text
+        })}
+      />
     </NotificationTile>
   )
 }

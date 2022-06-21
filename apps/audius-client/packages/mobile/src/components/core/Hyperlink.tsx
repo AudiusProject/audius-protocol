@@ -6,7 +6,7 @@ import Autolink from 'react-native-autolink'
 
 import { makeStyles, StylesProp } from 'app/styles'
 
-import { useOnPressLink } from './Link'
+import { useOnOpenLink } from './Link'
 
 const useStyles = makeStyles(({ palette, typography }) => ({
   root: {
@@ -82,7 +82,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
     }
   }, [linkRefs, linkContainerRef])
 
-  const handlePress = useOnPressLink(source)
+  const handlePress = useOnOpenLink(source)
 
   const renderLink = useCallback(
     (text, match, index) => (

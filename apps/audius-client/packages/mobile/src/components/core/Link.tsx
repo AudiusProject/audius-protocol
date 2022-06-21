@@ -15,7 +15,7 @@ const messages = {
   error: 'Unable to open this URL'
 }
 
-export const useOnPressLink = (
+export const useOnOpenLink = (
   source?: 'profile page' | 'track page' | 'collection page'
 ) => {
   const { toast } = useContext(ToastContext)
@@ -48,7 +48,7 @@ export const useOnPressLink = (
 }
 
 export const useLink = (url: string) => {
-  const onPressLink = useOnPressLink()
+  const onPressLink = useOnOpenLink()
 
   const handlePress = useCallback(() => {
     return onPressLink(url)

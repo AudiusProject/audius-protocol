@@ -11,6 +11,8 @@ import {
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import { useSelectorWeb, isEqual } from 'app/hooks/useSelectorWeb'
+import { EventNames } from 'app/types/analytics'
+import { make } from 'app/utils/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 
 import {
@@ -19,13 +21,16 @@ import {
   NotificationTile,
   NotificationTitle,
   EntityLink,
-  UserNameLink
+  UserNameLink,
+  NotificationTwitterButton
 } from '../Notification'
 import { useDrawerNavigation } from '../useDrawerNavigation'
 
 const messages = {
   title: 'New Remix of Your Track',
-  by: 'by'
+  by: 'by',
+  shareTwitterText: (trackTitle: string, handle: string) =>
+    `New remix of ${trackTitle} by ${handle} on @AudiusProject #Audius`
 }
 
 type RemixCreateNotificationProps = {
@@ -39,6 +44,7 @@ export const RemixCreateNotification = (
   const { childTrackId, parentTrackId } = notification
   const navigation = useDrawerNavigation()
   const user = useSelectorWeb(state => getNotificationUser(state, notification))
+  const userName = user?.name
   const tracks = useSelectorWeb(
     state => getNotificationEntities(state, notification),
     isEqual
@@ -53,6 +59,7 @@ export const RemixCreateNotification = (
     (track): track is TrackEntity =>
       'track_id' in track && track.track_id === parentTrackId
   )
+  const parentTrackTitle = parentTrack?.title
 
   const handlePress = useCallback(() => {
     if (childTrack) {
@@ -68,7 +75,25 @@ export const RemixCreateNotification = (
     }
   }, [childTrack, navigation])
 
+  const handleTwitterShareData = useCallback(
+    (twitterHandle: string | undefined) => {
+      const handle = twitterHandle ? `@${twitterHandle}` : userName
+      if (parentTrackTitle && handle) {
+        const shareText = messages.shareTwitterText(parentTrackTitle, handle)
+        const analytics = make({
+          eventName: EventNames.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
+          text: shareText
+        })
+        return { shareText, analytics }
+      }
+      return null
+    },
+    [userName, parentTrackTitle]
+  )
+
   if (!user || !childTrack || !parentTrack) return null
+
+  const twitterUrl = getTrackRoute(parentTrack, true)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -81,6 +106,12 @@ export const RemixCreateNotification = (
         <EntityLink entity={childTrack} /> {messages.by}{' '}
         <UserNameLink user={user} />
       </NotificationText>
+      <NotificationTwitterButton
+        type='dynamic'
+        url={twitterUrl}
+        handle={user.handle}
+        shareData={handleTwitterShareData}
+      />
     </NotificationTile>
   )
 }

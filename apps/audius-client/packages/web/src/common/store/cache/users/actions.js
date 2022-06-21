@@ -3,6 +3,7 @@ export const REMOVE_BY_HANDLE = 'CACHE/USERS/REMOVE_BY_HANDLE'
 
 export const FETCH_PROFILE_PICTURE = 'CACHE/USERS/FETCH_PROFILE_PICTURE'
 export const FETCH_COVER_PHOTO = 'CACHE/USERS/FETCH_COVER_PHOTO'
+export const FETCH_USER_SOCIALS = 'CACHE/USERS/FETCH_USER_SOCIALS'
 
 /**
  * @param {array} statuses {handle, status, id} id is optional
@@ -26,4 +27,8 @@ export function fetchProfilePicture(userId, size) {
 
 export function fetchCoverPhoto(userId, size) {
   return { type: FETCH_COVER_PHOTO, userId, size }
+}
+
+export function fetchUserSocials(handle) {
+  return { type: FETCH_USER_SOCIALS, handle }
 }

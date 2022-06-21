@@ -71,6 +71,7 @@ export const TipSentScreen = () => {
       <ReceiverDetails />
       <DescriptionText>{messages.description}</DescriptionText>
       <TwitterButton
+        type='static'
         size='large'
         fullWidth
         styles={{ root: styles.twitter }}

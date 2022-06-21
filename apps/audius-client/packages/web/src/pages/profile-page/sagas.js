@@ -9,9 +9,9 @@ import * as cacheActions from 'common/store/cache/actions'
 import {
   fetchUsers,
   fetchUserByHandle,
-  fetchUserCollections
+  fetchUserCollections,
+  fetchUserSocials
 } from 'common/store/cache/users/sagas'
-import { getUser } from 'common/store/cache/users/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as profileActions from 'common/store/pages/profile/actions'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
@@ -45,7 +45,6 @@ import {
 } from 'utils/constants'
 import { dataURLtoFile } from 'utils/fileUtils'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import { waitForValue } from 'utils/sagaHelpers'
 
 const {
   getRemoteVar,
@@ -220,7 +219,7 @@ function* fetchProfileAsync(action) {
     )
 
     // Fetch user socials and collections after fetching the user itself
-    yield fork(fetchUserSocials, action.handle)
+    yield fork(fetchUserSocials, action)
     yield fork(fetchUserCollections, user.user_id)
 
     yield fork(fetchSupportersAndSupporting, user.user_id)
@@ -266,26 +265,6 @@ function* fetchProfileAsync(action) {
     if (!isReachable) return
     throw err
   }
-}
-
-function* fetchUserSocials(handle) {
-  const user = yield call(waitForValue, getUser, { handle })
-  const socials = yield call(AudiusBackend.getCreatorSocialHandle, user.handle)
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          twitter_handle: socials.twitterHandle || null,
-          instagram_handle: socials.instagramHandle || null,
-          tiktok_handle: socials.tikTokHandle || null,
-          website: socials.website || null,
-          donation: socials.donation || null,
-          _artist_pick: socials.pinnedTrackId || null
-        }
-      }
-    ])
-  )
 }
 
 function* watchFetchFollowUsers(action) {

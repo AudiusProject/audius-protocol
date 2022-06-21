@@ -40,7 +40,7 @@ Check it out!`
   }
 }
 
-const getAchievementText = async (notification: Milestone) => {
+const getAchievementText = (notification: Milestone) => {
   const { achievement, user, value } = notification
   switch (achievement) {
     case Achievement.Followers: {
@@ -51,7 +51,6 @@ const getAchievementText = async (notification: Milestone) => {
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      // @ts-ignore new version of typescript will catch this
       const { entity, entityType } = notification
       const link = getEntityLink(entity, true)
       const text = messages.achievementText(
@@ -99,7 +98,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   }
 
   const handleShare = useCallback(async () => {
-    const { link, text } = await getAchievementText(notification)
+    const { link, text } = getAchievementText(notification)
     openTwitterLink(link, text)
     record(
       make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
