@@ -7,6 +7,23 @@ import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
 import { IdentityService } from '../services/identity'
 import { UserStateManager } from '../userStateManager'
 import { Oauth } from './oauth'
+import { TracksApi } from './api/TracksApi'
+import { ResolveApi } from './api/ResolveApi'
+import {
+  Configuration,
+  PlaylistsApi,
+  UsersApi,
+  TipsApi,
+  querystring
+} from './api/generated/default'
+import {
+  PlaylistsApi as PlaylistsApiFull,
+  ReactionsApi as ReactionsApiFull,
+  SearchApi as SearchApiFull,
+  TracksApi as TracksApiFull,
+  UsersApi as UsersApiFull,
+  TipsApi as TipsApiFull
+} from './api/generated/full'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
@@ -23,27 +40,63 @@ type Web3Config = {
 }
 
 type SdkConfig = {
+  /**
+   * Your app name
+   */
   appName: string
-  discoveryNodeConfig?: DiscoveryProviderConfig
+  /**
+   * Configuration for the DiscoveryProvider client
+   */
+  discoveryProviderConfig?: DiscoveryProviderConfig
+  /**
+   * Configuration for the Ethereum contracts client
+   */
   ethContractsConfig?: EthContractsConfig
+  /**
+   * Configuration for the Ethereum Web3 client
+   */
   ethWeb3Config?: EthWeb3Config
+  /**
+   * Configuration for the IdentityService client
+   */
   identityServiceConfig?: IdentityService
+  /**
+   * Configuration for Web3
+   */
   web3Config?: Web3Config
 }
 
 /**
  * The Audius SDK
  */
-export const sdk = async (config: SdkConfig) => {
+export const sdk = (config: SdkConfig) => {
+  const { appName } = config
+
+  // Initialize services
+  const { discoveryProvider } = initializeServices(config)
+
+  // Initialize APIs
+  const apis = initializeApis({ appName, discoveryProvider })
+
+  // Initialize OAuth
+  const oauth =
+    typeof window !== 'undefined'
+      ? new Oauth({ discoveryProvider, appName })
+      : undefined
+
+  return {
+    oauth,
+    ...apis
+  }
+}
+
+const initializeServices = (config: SdkConfig) => {
   const {
-    appName,
-    discoveryNodeConfig,
+    discoveryProviderConfig,
     ethContractsConfig,
     ethWeb3Config,
     identityServiceConfig
   } = config
-
-  /** Initialize services */
 
   const userStateManager = new UserStateManager()
 
@@ -70,24 +123,69 @@ export const sdk = async (config: SdkConfig) => {
     ...ethContractsConfig
   })
 
-  const discoveryNode = new DiscoveryProvider({
+  const discoveryProvider = new DiscoveryProvider({
     ethContracts,
     userStateManager,
-    ...discoveryNodeConfig
+    ...discoveryProviderConfig
   })
 
-  // TODO: potentially don't await this and have a different method (callback/event) to
-  // know when the sdk is initialized
-  await discoveryNode.init()
+  return { discoveryProvider }
+}
 
-  const oauth =
-    typeof window !== 'undefined'
-      ? new Oauth({ discoveryProvider: discoveryNode, appName })
-      : undefined
+const initializeApis = ({
+  appName,
+  discoveryProvider
+}: {
+  appName: string
+  discoveryProvider: DiscoveryProvider
+}) => {
+  const initializationPromise = discoveryProvider.init()
+
+  const generatedApiClientConfig = new Configuration({
+    fetchApi: async (url: string) => {
+      // Ensure discovery node is initialized
+      await initializationPromise
+
+      // Append the appName to the query params
+      const urlWithAppName =
+        url +
+        (url.includes('?') ? '&' : '?') +
+        querystring({ app_name: appName })
+
+      return await discoveryProvider._makeRequest(
+        {
+          endpoint: urlWithAppName
+        },
+        undefined,
+        undefined,
+        // Throw errors instead of returning null
+        true
+      )
+    }
+  })
+
+  const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
+  const users = new UsersApi(generatedApiClientConfig)
+  const playlists = new PlaylistsApi(generatedApiClientConfig)
+  const tips = new TipsApi(generatedApiClientConfig)
+  const resolve = new ResolveApi(generatedApiClientConfig)
+
+  const full = {
+    tracks: new TracksApiFull(generatedApiClientConfig as any),
+    users: new UsersApiFull(generatedApiClientConfig as any),
+    search: new SearchApiFull(generatedApiClientConfig as any),
+    playlists: new PlaylistsApiFull(generatedApiClientConfig as any),
+    reactions: new ReactionsApiFull(generatedApiClientConfig as any),
+    tips: new TipsApiFull(generatedApiClientConfig as any)
+  }
 
   return {
-    oauth,
-    discoveryNode
+    tracks,
+    users,
+    playlists,
+    tips,
+    resolve,
+    full
   }
 }
 

@@ -48,6 +48,7 @@ const browserInternal = [
   'ethereumjs-wallet',
   'graceful-fs',
   'node-localstorage',
+  'abi-decoder',
   'web3'
 ]
 
