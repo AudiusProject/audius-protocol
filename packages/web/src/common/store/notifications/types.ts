@@ -171,6 +171,7 @@ export type ChallengeReward = BaseNotification & {
 
 export type TierChange = BaseNotification & {
   type: NotificationType.TierChange
+  userId: ID
   tier: BadgeTier
   user: User
 }
