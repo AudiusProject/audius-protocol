@@ -36,7 +36,7 @@ class BlacklistManager {
       })
       this.initialized = true
     } catch (e) {
-      throw new Error(`Could not init BlacklistManager: ${e}`)
+      throw new Error(`Could not init BlacklistManager: ${e.message}`)
     }
   }
 

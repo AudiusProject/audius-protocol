@@ -8,7 +8,7 @@ const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
-const { logger } = require('./logging')
+const { logger, getStartTime, logInfoWithDuration } = require('./logging')
 const utils = require('./utils')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -87,6 +87,8 @@ class ServiceRegistry {
    * These services do not need to be awaited and do not require the server.
    */
   async initServicesAsynchronously() {
+    const start = getStartTime()
+
     // Initialize BlacklistManager. If error occurs, do not continue with app start up.
     try {
       await this.blacklistManager.init()
@@ -96,7 +98,11 @@ class ServiceRegistry {
     }
 
     this.asynchronousServicesInitialized = true
-    this.logInfo('Initialized asynchronous services')
+
+    logInfoWithDuration(
+      { logger, startTime: start },
+      'ServiceRegistry || Initialized asynchronous services'
+    )
   }
 
   /**
@@ -159,6 +165,8 @@ class ServiceRegistry {
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
   async initServicesThatRequireServer(app) {
+    const start = getStartTime()
+
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -200,7 +208,11 @@ class ServiceRegistry {
     }
 
     this.servicesThatRequireServerInitialized = true
-    this.logInfo(`All services that require server successfully initialized!`)
+
+    logInfoWithDuration(
+      { logger, startTime: start },
+      'ServiceRegistry || Initialized services that require server'
+    )
   }
 
   logInfo(msg) {
