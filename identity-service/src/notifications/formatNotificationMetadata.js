@@ -280,11 +280,8 @@ const NewSubscriptionUpdateTitle = 'New Artist Update'
 const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
-<<<<<<< HEAD
 const AddTrackToPlaylistTitle = 'Your track got on a playlist! 💿'
-=======
 const TipReceiveTitle = 'You Received a Tip!'
->>>>>>> 50c42c59a... Notif flow
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -341,15 +338,12 @@ const notificationResponseTitleMap = {
   [NotificationType.RemixCreate]: () => RemixCreateTitle,
   [NotificationType.RemixCosign]: () => RemixCosignTitle,
   [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title,
-<<<<<<< HEAD
-  [NotificationType.AddTrackToPlaylist]: () => AddTrackToPlaylistTitle
-=======
+  [NotificationType.AddTrackToPlaylist]: () => AddTrackToPlaylistTitle,
   [NotificationType.Reaction]: makeReactionTitle,
   [NotificationType.TipReceive]: () => TipReceiveTitle,
   [NotificationType.SupporterRankUp]: makeSupportingOrSupporterTitle,
   [NotificationType.SupportingRankUp]: makeSupportingOrSupporterTitle
 
->>>>>>> 50c42c59a... Notif flow
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -409,10 +403,9 @@ const pushNotificationMessagesMap = {
       ? `You’ve received ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   },
-<<<<<<< HEAD
   [notificationTypes.AddTrackToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
-=======
+  },
   [notificationTypes.Reaction] (notification) {
     return `${capitalize(notification.reactingUser.name)} reacted to your tip of ${notification.amount} $AUDIO`
   },
@@ -424,7 +417,6 @@ const pushNotificationMessagesMap = {
   },
   [notificationTypes.TipReceive] (notification) {
     return `${capitalize(notification.sendingUser.name)} sent you a tip of ${notification.amount} $AUDIO`
->>>>>>> 50c42c59a... Notif flow
   }
 
 }
