@@ -66,19 +66,17 @@ if [[ "$openRestyCacheCIDEnabled" == "true" ]]; then
 fi
 
 if [[ "$devMode" == "true" ]]; then
-    if [ "$link_libs" = true ]
-    then
+    if [ "$link_libs" = true ]; then
         cd ../audius-libs
         npm link
         cd ../app
         npm link @audius/sdk
-        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
     else
-        npx nodemon  --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
     fi
 else
     node build/src/index.js | tee >(logger)
-    docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
 
 wait

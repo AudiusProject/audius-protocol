@@ -54,9 +54,13 @@ module.exports = async function ({
           user,
           thisContentNodeEndpoint,
           unhealthyPeersSet,
-          userSecondarySyncMetricsMap[user.wallet],
+          userSecondarySyncMetricsMap[user.wallet] || {
+            [user.secondary1]: { successRate: 1, failureCount: 0 },
+            [user.secondary2]: { successRate: 1, failureCount: 0 }
+          },
           minSecondaryUserSyncSuccessPercent,
-          minFailedSyncRequestsBeforeReconfig
+          minFailedSyncRequestsBeforeReconfig,
+          logger
         )
       )
     )
@@ -91,7 +95,7 @@ module.exports = async function ({
           primary: updateReplicaSetOp.primary,
           secondary1: updateReplicaSetOp.secondary1,
           secondary2: updateReplicaSetOp.secondary2,
-          unhealthyReplicasSet: updateReplicaSetOp.unhealthyReplicas,
+          unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
           replicaSetNodesToUserClockStatusesMap
         }
       })

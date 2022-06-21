@@ -1,4 +1,5 @@
 const axios = require('axios')
+const _ = require('lodash')
 
 const config = require('../../../config')
 const models = require('../../../models')
@@ -38,8 +39,25 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
     'method' in syncRequestParameters &&
     'data' in syncRequestParameters
   if (!isValidSyncJobData) {
-    logger.error(`Invalid sync data found`, syncRequestParameters)
-    return
+    const errorMsg = `Invalid sync data found: ${syncRequestParameters}`
+    logger.error(errorMsg)
+    return {
+      error: {
+        message: errorMsg
+      }
+    }
+  }
+  if (
+    !(syncRequestParameters.data.wallet instanceof Array) ||
+    !syncRequestParameters.data.wallet?.length
+  ) {
+    const errorMsg = `Invalid sync data wallets (expected non-empty array): ${syncRequestParameters.data.wallet}`
+    logger.error(errorMsg)
+    return {
+      error: {
+        message: errorMsg
+      }
+    }
   }
 
   const userWallet = syncRequestParameters.data.wallet[0]
@@ -66,10 +84,13 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
     secondaryUserSyncFailureCountForToday >
     secondaryUserSyncDailyFailureCountThreshold
   ) {
-    logger.error(
-      `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
-    )
-    return
+    const errorMsg = `${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${secondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`
+    logger.error(errorMsg)
+    return {
+      error: {
+        message: errorMsg
+      }
+    }
   }
 
   // primaryClockValue is used in additionalSyncIsRequired() call below
@@ -108,7 +129,7 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
       primaryEndpoint: thisContentNodeEndpoint,
       syncType
     })
-    if (duplicateSyncReq) {
+    if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
       error = {
         message:
           'Additional sync request was required but not able to be enqueued due to a duplicate',
@@ -124,13 +145,11 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
   )
   return {
     error,
-    jobsToEnqueue: additionalSyncReq
-      ? {
-          jobsToEnqueue: {
-            [QUEUE_NAMES.STATE_RECONCILIATION]: [additionalSyncReq]
-          }
+    jobsToEnqueue: _.isEmpty(additionalSyncReq)
+      ? {}
+      : {
+          [QUEUE_NAMES.STATE_RECONCILIATION]: [additionalSyncReq]
         }
-      : {}
   }
 }
 
@@ -216,7 +235,7 @@ const _additionalSyncIsRequired = async (
         secondaryUrl,
         userWallet
       )
-      logger.debug(`${logMsgString} secondaryClock ${secondaryClockValue}`)
+      logger.info(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
       // Record starting and current clock values for secondary to determine future action
       if (initialSecondaryClock === null) {
@@ -255,7 +274,7 @@ const _additionalSyncIsRequired = async (
       syncType
     )
     additionalSyncIsRequired = false
-    logger.debug(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
+    logger.info(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
 
     // Secondary completed sync but is still behind primary since it was behind by more than max export range
     // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
