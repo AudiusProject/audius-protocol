@@ -139,7 +139,7 @@ const UserListModal = ({
       title = (
         <div className={styles.titleContainer}>
           <IconFollowing className={styles.icon} />
-          <span>{messages.supporting}</span>
+          <span>{messages.mutuals}</span>
         </div>
       )
       break
