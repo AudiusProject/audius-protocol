@@ -185,7 +185,7 @@ class PlaylistSearchResult(Resource):
             "offset": 0,
         }
         response = search(search_args)
-        return success_response(response)
+        return success_response(response["playlists"])
 
 
 top_parser = pagination_parser.copy()

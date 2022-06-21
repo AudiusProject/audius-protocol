@@ -1,6 +1,12 @@
+import enum
+
 from sqlalchemy import Column, DateTime, Integer, PrimaryKeyConstraint, String
 
 from .models import Base
+
+
+class MilestoneName(str, enum.Enum):
+    LISTEN_COUNT = "LISTEN_COUNT"
 
 
 class Milestone(Base):
