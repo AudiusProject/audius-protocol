@@ -110,11 +110,36 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
+    // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
+    const stateMonitoringAdapter = new BullAdapter(stateMonitoringQueue, {
+      readOnlyMode: true
+    })
+    const stateReconciliationAdapter = new BullAdapter(
+      stateReconciliationQueue,
+      { readOnlyMode: true }
+    )
+
+    // These queues have very large inputs and outputs, so we truncate job
+    // data and results that are nested >=5 levels or contain strings >=10,000 characters
+    stateMonitoringAdapter.setFormatter('data', this.truncateBull.bind(this))
+    stateMonitoringAdapter.setFormatter(
+      'returnValue',
+      this.truncateBull.bind(this)
+    )
+    stateReconciliationAdapter.setFormatter(
+      'data',
+      this.truncateBull.bind(this)
+    )
+    stateReconciliationAdapter.setFormatter(
+      'returnValue',
+      this.truncateBull.bind(this)
+    )
+
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
-        new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
-        new BullAdapter(stateReconciliationQueue, { readOnlyMode: true }),
+        stateMonitoringAdapter,
+        stateReconciliationAdapter,
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -126,11 +151,51 @@ class ServiceRegistry {
         new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),
         new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true })
       ],
-      serverAdapter: serverAdapter
+      serverAdapter
     })
 
     serverAdapter.setBasePath('/health/bull')
     app.use('/health/bull', serverAdapter.getRouter())
+  }
+
+  // Truncates large JSON data in Bull Board after 5 levels of nesting or 10,0000 characters.
+  // Replaces truncated data with [Array-Truncated], [Object-Truncated], or [String-Truncated].
+  // Taken from https://github.com/felixmosh/bull-board/pull/414#issuecomment-1134874761
+  truncateBull(dataToTruncate, curDepth = 0) {
+    if (
+      typeof dataToTruncate === 'object' &&
+      !Array.isArray(dataToTruncate) &&
+      dataToTruncate !== null &&
+      dataToTruncate !== undefined
+    ) {
+      if (curDepth < 5) {
+        const newDepth = curDepth + 1
+        const json = Object.assign({}, dataToTruncate)
+        Object.entries(dataToTruncate).forEach(([key, value]) => {
+          switch (typeof value) {
+            case 'string':
+              json[key] = value.length > 10000 ? '[String-Truncated]' : value
+              break
+            case 'object':
+              if (Array.isArray(value)) {
+                json[key] =
+                  JSON.stringify(value).length > 10000
+                    ? '[Array-Truncated]'
+                    : value
+              } else {
+                json[key] = this.truncateBull(value, newDepth)
+              }
+              break
+            default:
+              json[key] = value
+              break
+          }
+        })
+        return json
+      }
+      return '[Object-Truncated]'
+    }
+    return dataToTruncate
   }
 
   /**
