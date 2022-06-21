@@ -28,8 +28,9 @@ class BlacklistManager {
 
   static async init() {
     try {
-      const start = getStartTime()
       this.log('Initializing BlacklistManager...')
+
+      const start = getStartTime()
       const { trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist } =
         await this.getDataToBlacklist()
       await this.fetchCIDsAndAddToRedis({
@@ -38,12 +39,11 @@ class BlacklistManager {
         segmentsToBlacklist
       })
       this.initialized = true
+
       logInfoWithDuration(
         { logger, startTime: start },
         'Time taken in ms for BlacklistManager init'
       )
-      this.log('GOOD BYEEE')
-      process.exit(1)
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
