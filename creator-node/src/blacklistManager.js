@@ -42,8 +42,6 @@ class BlacklistManager {
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
-
-    this.logVicky('GOOD BYE')
   }
 
   /** Return list of trackIds, userIds, and CIDs to be blacklisted. */
