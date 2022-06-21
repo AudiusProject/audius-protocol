@@ -148,7 +148,7 @@ class BlacklistManager {
               new Error(
                 `[addAggregateCIDsToRedis] - Could not add tracks slice ${i} to ${
                   i + PROCESS_TRACKS_BATCH_SIZE
-                } of after ${PROCESS_TRACKS_MAX_NUM_ATTEMPTS} attempts`
+                } after ${PROCESS_TRACKS_MAX_NUM_ATTEMPTS} attempts`
               )
             )
             return
