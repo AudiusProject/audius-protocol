@@ -31,9 +31,9 @@ begin
     where user_id = new.owner_id
     returning track_count into new_val;
 
-    if delta = 1 and new_val = 3 then
-      raise notice 'could create rewards row for: user track_count = 3';
-    end if;
+    -- if delta = 1 and new_val = 3 then
+    --   raise notice 'could create rewards row for: user track_count = 3';
+    -- end if;
   end if;
 
   return null;

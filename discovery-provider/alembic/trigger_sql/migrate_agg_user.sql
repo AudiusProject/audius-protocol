@@ -48,25 +48,7 @@ changed_users AS (
     FROM
         playlists p
     WHERE
-        p.is_album IS FALSE
-        AND p.is_current IS TRUE
-        AND p.blocknumber > (
-            SELECT
-                blocknumber
-            FROM
-                aggregate_user_latest_blocknumber
-        )
-    GROUP BY
-        p.playlist_owner_id
-    UNION
-    ALL
-    SELECT
-        p.playlist_owner_id AS owner_id
-    FROM
-        playlists p
-    WHERE
-        p.is_album IS TRUE
-        AND p.is_current IS TRUE
+        p.is_current IS TRUE
         AND p.blocknumber > (
             SELECT
                 blocknumber

@@ -27,7 +27,6 @@ new_track AS (
         WHERE
             r.is_current IS TRUE
             AND r.repost_type = 'track'
-            AND r.is_delete IS FALSE
             AND r.blocknumber > (select blocknumber from aggregate_track_latest_blocknumber)
         GROUP BY
             r.repost_item_id
@@ -41,7 +40,6 @@ new_track AS (
         WHERE
             s.is_current IS TRUE
             AND s.save_type = 'track'
-            AND s.is_delete IS FALSE
             AND s.blocknumber > (select blocknumber from aggregate_track_latest_blocknumber)
         GROUP BY
             s.save_item_id

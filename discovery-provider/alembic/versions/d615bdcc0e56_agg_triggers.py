@@ -18,7 +18,7 @@ depends_on = None
 
 
 def load_sql(name):
-    path = Path(__file__).parent.joinpath(f"../wip_sql/{name}")
+    path = Path(__file__).parent.joinpath(f"../trigger_sql/{name}")
     with open(path) as f:
         return f.read()
 

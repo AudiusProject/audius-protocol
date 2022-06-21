@@ -3,7 +3,6 @@ declare
   old_row playlists%rowtype;
   delta int := 0;
 begin
-  raise info 'handle playlist_id: %', new.playlist_id;
 
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
