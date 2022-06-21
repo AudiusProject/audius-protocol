@@ -43,7 +43,7 @@ class BlacklistManager {
 
       this.log('Initialized BlacklistManager')
     } catch (e) {
-      throw new Error(`BLACKLIST ERROR ${e}`)
+      throw new Error(`Could not init BlacklistManager: ${e.message}`)
     }
   }
 

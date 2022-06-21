@@ -1,6 +1,6 @@
 from .aggregate_interval_play import AggregateIntervalPlay
 from .aggregate_user_tips import AggregateUserTips
-from .milestone import Milestone
+from .milestone import Milestone, MilestoneName
 from .models import (
     AggregateDailyAppNameMetrics,
     AggregateDailyTotalUsersMetrics,
@@ -102,6 +102,7 @@ __all__ = [
     "IndexingCheckpoints",
     "ListenStreakChallenge",
     "Milestone",
+    "MilestoneName",
     "Play",
     "PlaysArchive",
     "Playlist",

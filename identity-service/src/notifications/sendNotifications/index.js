@@ -1,7 +1,7 @@
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
 const { fetchNotificationMetadata } = require('../fetchNotificationMetadata')
-const formatNotification = require('./formatNotification')
+const formatNotifications = require('./formatNotification')
 const publishNotifications = require('./publishNotifications')
 
 function getUserIdsToNotify (notifications) {
@@ -16,6 +16,8 @@ function getUserIdsToNotify (notifications) {
         return userIds.concat(notification.metadata.entity_owner_id)
       case notificationTypes.RemixCreate:
         return userIds.concat(notification.metadata.remix_parent_track_user_id)
+      case notificationTypes.AddTrackToPlaylist:
+        return userIds.concat(notification.metadata.track_owner_id)
       case notificationTypes.ChallengeReward:
       case notificationTypes.MilestoneListen:
       case notificationTypes.TierChange:
@@ -66,7 +68,7 @@ async function sendNotifications (audiusLibs, notifications, tx, optimizelyClien
   const userNotificationSettings = await getUserNotificationSettings(userIdsToNotify, tx)
 
   // Format the notifications, so that the extra information needed to build the notification is in a standard format
-  const { notifications: formattedNotifications, users } = await formatNotification(notifications, userNotificationSettings, tx)
+  const { notifications: formattedNotifications, users } = await formatNotifications(notifications, userNotificationSettings, tx)
 
   // Get the metadata for the notifications - users/tracks/playlists from DP that are in the notification
   const metadata = await fetchNotificationMetadata(audiusLibs, users, formattedNotifications)
@@ -79,5 +81,5 @@ module.exports = sendNotifications
 
 module.exports.getUserIdsToNotify = getUserIdsToNotify
 module.exports.getUserNotificationSettings = getUserNotificationSettings
-module.exports.formatNotification = formatNotification
+module.exports.formatNotifications = formatNotifications
 module.exports.fetchNotificationMetadata = fetchNotificationMetadata

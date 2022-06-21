@@ -1,11 +1,11 @@
 import type { DiscoveryProvider } from '../../services/discoveryProvider'
-import { BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { BASE_PATH, RequiredError } from './generated/default/runtime'
 
 import {
   Configuration,
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi
-} from '../generated/default'
+} from './generated/default'
 
 /**
  * This class extends from the generated TracksApi to

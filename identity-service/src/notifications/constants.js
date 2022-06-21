@@ -34,7 +34,8 @@ const notificationTypes = Object.freeze({
   TipSend: 'TipSend',
   Reaction: 'Reaction',
   SupporterRankUp: 'SupporterRankUp',
-  SupportingRankUp: 'SupportingRankUp'
+  SupportingRankUp: 'SupportingRankUp',
+  AddTrackToPlaylist: 'AddTrackToPlaylist'
 })
 
 const actionEntityTypes = Object.freeze({

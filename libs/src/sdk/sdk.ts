@@ -15,7 +15,7 @@ import {
   UsersApi,
   TipsApi,
   querystring
-} from './generated/default'
+} from './api/generated/default'
 import {
   PlaylistsApi as PlaylistsApiFull,
   ReactionsApi as ReactionsApiFull,
@@ -23,7 +23,7 @@ import {
   TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull
-} from './generated/full'
+} from './api/generated/full'
 
 import {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,

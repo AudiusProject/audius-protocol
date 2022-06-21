@@ -618,10 +618,10 @@ const config = convict({
     env: 'skippedCIDRetryQueueMaxAgeHr',
     default: 8760 // 1 year in hrs
   },
-  openRestyCacheCIDEnabled: {
-    doc: 'Flag to enable or disable OpenResty',
+  contentCacheLayerEnabled: {
+    doc: 'Flag to enable or disable the nginx cache layer that caches content served by /ipfs/<cid> and /content/<cid>',
     format: 'BooleanCustom',
-    env: 'openRestyCacheCIDEnabled',
+    env: 'contentCacheLayerEnabled',
     default: false
   },
   reconfigNodeWhitelist: {

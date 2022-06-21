@@ -12,6 +12,7 @@ from src.models import (
     ChallengeDisbursement,
     Follow,
     Milestone,
+    MilestoneName,
     Playlist,
     Remix,
     Repost,
@@ -32,14 +33,13 @@ from src.queries.query_helpers import (
     get_repost_counts,
     get_save_counts,
 )
-from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import (
     latest_sol_aggregate_tips_slot_key,
-    latest_sol_listen_count_milestones_slot_key,
+    latest_sol_plays_slot_key,
     latest_sol_rewards_manager_slot_key,
 )
 from src.utils.spl_audio import to_wei_string
@@ -886,25 +886,27 @@ def notifications():
                 # skip empty playlists
                 continue
             playlist_contents = entry.playlist_contents
-            playlist_blocknumber = entry.blocknumber
-            playlist_block = web3.eth.get_block(playlist_blocknumber)
-            playlist_block_timestamp = playlist_block.timestamp
+            min_block = web3.eth.get_block(min_block_number)
+            max_block = web3.eth.get_block(max_block_number)
 
             for track in playlist_contents["track_ids"]:
                 track_id = track["track"]
                 track_timestamp = track["time"]
                 # We know that this track was added to the playlist at this specific update
-                if track_timestamp == playlist_block_timestamp:
+                if (
+                    min_block.timestamp < track_timestamp
+                    and track_timestamp <= max_block.timestamp
+                ):
                     track_ids.append(track_id)
                     track_added_to_playlist_notification = {
-                        const.notification_type: const.notification_type_track_added_to_playlist,
+                        const.notification_type: const.notification_type_add_track_to_playlist,
                         const.notification_blocknumber: entry.blocknumber,
                         const.notification_timestamp: entry.created_at,
                         const.notification_initiator: entry.playlist_owner_id,
                     }
                     metadata = {
-                        const.notification_entity_id: track_id,
-                        const.notification_entity_type: "track",
+                        const.playlist_id: entry.playlist_id,
+                        const.track_id: track_id,
                     }
                     track_added_to_playlist_notification[
                         const.notification_metadata
@@ -930,14 +932,12 @@ def notifications():
 
         # Loop over notifications and populate their metadata
         for notification in track_added_to_playlist_notifications:
-            track_id = notification[const.notification_metadata][
-                const.notification_entity_id
-            ]
+            track_id = notification[const.notification_metadata][const.track_id]
             track_owner_id = track_owner_map[track_id]
             if track_owner_id != notification[const.notification_initiator]:
                 # add tracks that don't belong to the playlist owner
                 notification[const.notification_metadata][
-                    const.notification_entity_owner_id
+                    const.track_owner_id
                 ] = track_owner_id
                 created_notifications.append(notification)
 
@@ -1073,7 +1073,7 @@ def notifications():
 
 
 def get_max_slot(redis: Redis):
-    listen_milestone_slot = redis.get(latest_sol_listen_count_milestones_slot_key)
+    listen_milestone_slot = redis.get(latest_sol_plays_slot_key)
     if listen_milestone_slot:
         listen_milestone_slot = int(listen_milestone_slot)
 
@@ -1168,7 +1168,7 @@ def solana_notifications():
         track_listen_milestone: List[Tuple(Milestone, int)] = (
             session.query(Milestone, Track.owner_id)
             .filter(
-                Milestone.name == LISTEN_COUNT_MILESTONE,
+                Milestone.name == MilestoneName.LISTEN_COUNT,
                 Milestone.slot >= min_slot_number,
                 Milestone.slot <= max_slot_number,
             )

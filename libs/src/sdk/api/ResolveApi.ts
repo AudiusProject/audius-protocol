@@ -4,11 +4,11 @@ import {
   RequiredError,
   Track,
   User
-} from '../generated/default'
+} from './generated/default'
 import {
   ResolveApi as GeneratedResolveApi,
   ResolveRequest
-} from '../generated/default/apis/ResolveApi'
+} from './generated/default/apis/ResolveApi'
 
 /**
  * This class extends from the generated ResolveApi to

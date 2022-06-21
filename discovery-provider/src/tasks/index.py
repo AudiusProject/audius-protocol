@@ -36,6 +36,7 @@ from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
+from src.tasks.sort_block_transactions import sort_block_transactions
 from src.tasks.tracks import track_event_types_lookup, track_state_update
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
@@ -551,6 +552,12 @@ def create_and_raise_indexing_error(err, redis):
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
+    shared_config = update_task.shared_config
+
+    indexing_transaction_index_sort_order_start_block = (
+        shared_config["discprov"]["indexing_transaction_index_sort_order_start_block"]
+        or 0
+    )
 
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
@@ -611,9 +618,9 @@ def index_blocks(self, db, blocks_list):
                     Parse transaction receipts
                     """
                     parse_tx_receipts_start_time = time.time()
-                    # Sort transactions by hash
-                    sorted_txs = sorted(
-                        block.transactions, key=lambda entry: entry["hash"]
+
+                    sorted_txs = sort_block_transactions(
+                        block, indexing_transaction_index_sort_order_start_block
                     )
 
                     # Parse tx events in each block

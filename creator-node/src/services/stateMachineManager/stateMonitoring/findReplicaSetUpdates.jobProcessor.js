@@ -54,9 +54,13 @@ module.exports = async function ({
           user,
           thisContentNodeEndpoint,
           unhealthyPeersSet,
-          userSecondarySyncMetricsMap[user.wallet],
+          userSecondarySyncMetricsMap[user.wallet] || {
+            [user.secondary1]: { successRate: 1, failureCount: 0 },
+            [user.secondary2]: { successRate: 1, failureCount: 0 }
+          },
           minSecondaryUserSyncSuccessPercent,
-          minFailedSyncRequestsBeforeReconfig
+          minFailedSyncRequestsBeforeReconfig,
+          logger
         )
       )
     )
@@ -83,16 +87,22 @@ module.exports = async function ({
 
     // Combine each promise's updateReplicaSetOps into a job
     for (const updateReplicaSetOp of updateReplicaSetOps) {
+      const { wallet } = updateReplicaSetOp
+
       updateReplicaSetJobs.push({
         jobName: JOB_NAMES.UPDATE_REPLICA_SET,
         jobData: {
-          wallet: updateReplicaSetOp.wallet,
+          wallet,
           userId: updateReplicaSetOp.user_id,
           primary: updateReplicaSetOp.primary,
           secondary1: updateReplicaSetOp.secondary1,
           secondary2: updateReplicaSetOp.secondary2,
-          unhealthyReplicasSet: updateReplicaSetOp.unhealthyReplicas,
-          replicaSetNodesToUserClockStatusesMap
+          unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
+          replicaSetNodesToUserClockStatusesMap:
+            _transformAndFilterNodeToClockValuesMapping(
+              replicaSetNodesToUserClockStatusesMap,
+              wallet
+            )
         }
       })
     }
@@ -290,4 +300,23 @@ const _findReplicaSetUpdatesForUser = async (
   }
 
   return requiredUpdateReplicaSetOps
+}
+
+/**
+ * Transforms data type from ((K1,V1) => (K2,V2)) to (K1,V1[K2]), where K1 is the node endpoint,
+ * V1 is the mapping, and K2 is the wallet to filter by. Default to clock value of -1 whenever the given
+ * wallet isn't present in a node's mapping.
+ * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {string} wallet the wallet to filter clock values for (other wallets will be exlucded from the output)
+ * @returns mapping of node endpoint (string) to clock value (number) on that node for the given wallet
+ */
+const _transformAndFilterNodeToClockValuesMapping = (
+  replicaSetNodesToUserClockStatusesMap,
+  wallet
+) => {
+  return Object.fromEntries(
+    Object.entries(replicaSetNodesToUserClockStatusesMap).map(
+      ([node, clockValueMapping]) => [node, clockValueMapping[wallet] || -1]
+    )
+  )
 }
