@@ -44,7 +44,6 @@ class BlacklistManager {
     }
 
     this.logVicky('GOOD BYE')
-    // process.exit(1)
   }
 
   /** Return list of trackIds, userIds, and CIDs to be blacklisted. */
@@ -118,8 +117,6 @@ class BlacklistManager {
       )
     }
 
-    // TODO: Need to figure out of this mapping is truly necessary cus this call takes so much
-    // processing time and memory allocation. Batch this call for the time being
     await BlacklistManager.addAggregateCIDsToRedis([
       ...allTrackIdsToBlacklistSet
     ])
@@ -130,9 +127,6 @@ class BlacklistManager {
    * @param {number[]} allTrackIdsToBlacklist aggregate list of track ids to blacklist from explicit track id blacklist and tracks from blacklisted users
    */
   static async addAggregateCIDsToRedis(allTrackIdsToBlacklist) {
-    const { mu, gbStart } = this.beginMemoryCheck()
-
-    let maxStackSize = -1000
     for (
       let i = 0;
       i < allTrackIdsToBlacklist.length;
@@ -142,27 +136,15 @@ class BlacklistManager {
         i,
         i + PROCESS_TRACKS_BATCH_SIZE
       )
-      this.logVicky(`SLICE size? ${tracksSlice.length}`)
 
       try {
         const segmentsFromTrackIdsToBlacklist = await this.getCIDsToBlacklist(
           tracksSlice
         )
-        this.checkMemoryAtPointInTime(
-          gbStart,
-          `getting segments ${segmentsFromTrackIdsToBlacklist.length}`,
-          maxStackSize
-        )
 
         await this.addToRedis(
           REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
           segmentsFromTrackIdsToBlacklist
-        )
-
-        maxStackSize = this.checkMemoryAtPointInTime(
-          gbStart,
-          `done with batch ${i} to ${i + PROCESS_TRACKS_BATCH_SIZE}`,
-          maxStackSize
         )
       } catch (e) {
         console.log(e)
@@ -171,8 +153,6 @@ class BlacklistManager {
         )
       }
     }
-
-    this.logVicky(`The biggest batch size: ${maxStackSize}`)
   }
 
   /**
@@ -665,41 +645,6 @@ class BlacklistManager {
 
   static logError(msg) {
     logger.error(`BlacklistManager ERROR: ${msg}`)
-  }
-
-  // VICKYS TEST FUNCTIONS
-  static logVicky(msg) {
-    logger.info(`VICKY | ${msg}`)
-  }
-
-  static beginMemoryCheck() {
-    this.logVicky('Begin checking memory usage')
-    const field = 'heapUsed'
-    const mu = process.memoryUsage()
-    // this.logVicky(mu)
-    const gbStart = mu[field] / 1024 / 1024 / 1024
-    this.logVicky(`Start ${Math.round(gbStart * 100) / 100} GB`)
-
-    return { mu, gbStart }
-  }
-
-  static checkMemoryAtPointInTime(gbStart, logMsg, maxStackSize) {
-    const field = 'heapUsed'
-    const mu = process.memoryUsage()
-    const mbNow = mu[field] / 1024 / 1024 / 1024
-
-    const currentStackSize = Math.round((mbNow - gbStart) * 100) / 100
-
-    this.logVicky(
-      `max stack size ${maxStackSize} current stack size ${currentStackSize}`
-    )
-    if (maxStackSize < currentStackSize) {
-      maxStackSize = currentStackSize
-    }
-
-    this.logVicky(`${logMsg} ${currentStackSize} GB`)
-
-    return maxStackSize
   }
 }
 
