@@ -2,6 +2,7 @@ const { logger, logInfoWithDuration, getStartTime } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
+const Utils = require('./utils')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
@@ -17,6 +18,7 @@ const INVALID_TRACKID_EXPIRATION_SECONDS =
   1 /* hour */ * 60 /* minutes */ * 60 /* seconds */
 
 const PROCESS_TRACKS_BATCH_SIZE = 200
+const PROCESS_TRACKS_MAX_NUM_ATTEMPTS = 5
 
 const types = models.ContentBlacklist.Types
 class BlacklistManager {
@@ -27,6 +29,7 @@ class BlacklistManager {
   static async init() {
     try {
       const start = getStartTime()
+      this.log('Initializing BlacklistManager...')
       const { trackIdsToBlacklist, userIdsToBlacklist, segmentsToBlacklist } =
         await this.getDataToBlacklist()
       await this.fetchCIDsAndAddToRedis({
@@ -37,8 +40,10 @@ class BlacklistManager {
       this.initialized = true
       logInfoWithDuration(
         { logger, startTime: start },
-        'Time taken in ms for blacklistManager init'
+        'Time taken in ms for BlacklistManager init'
       )
+      this.log('GOOD BYEEE')
+      process.exit(1)
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
@@ -135,21 +140,32 @@ class BlacklistManager {
         i + PROCESS_TRACKS_BATCH_SIZE
       )
 
-      try {
-        const segmentsFromTrackIdsToBlacklist = await this.getCIDsToBlacklist(
-          tracksSlice
-        )
+      await Utils.asyncRetry({
+        asyncFn: async function (bail, num) {
+          if (num === PROCESS_TRACKS_MAX_NUM_ATTEMPTS) {
+            bail(
+              new Error(
+                `[addAggregateCIDsToRedis] - Could not add tracks slice ${i} to ${
+                  i + PROCESS_TRACKS_BATCH_SIZE
+                } of after ${PROCESS_TRACKS_MAX_NUM_ATTEMPTS} attempts`
+              )
+            )
+            return
+          }
 
-        await this.addToRedis(
-          REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
-          segmentsFromTrackIdsToBlacklist
-        )
-      } catch (e) {
-        console.log(e)
-        throw new Error(
-          `[addCIDsAndCIDToTrackIdMappingToRedis] - Failed to add CIDs to blacklist: ${e}`
-        )
-      }
+          const segmentsFromTrackIdsToBlacklist =
+            await BlacklistManager.getCIDsToBlacklist(tracksSlice)
+
+          await BlacklistManager.addToRedis(
+            REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
+            segmentsFromTrackIdsToBlacklist
+          )
+        },
+        options: {
+          retries: PROCESS_TRACKS_MAX_NUM_ATTEMPTS
+        },
+        logLabel: 'BlacklistManager [addAggregateCIDsToRedis]'
+      })
     }
   }
 
@@ -379,14 +395,12 @@ class BlacklistManager {
         `About to call _addToRedisChunkHelper for ${redisKey} with data of length ${data.length}`
       )
       for (let i = 0; i < data.length; i += redisAddMaxItemsSize) {
-        const resp = await redis.sadd(
-          redisKey,
-          data.slice(i, i + redisAddMaxItemsSize)
-        )
-        this.logVicky(`successful add ${resp}`)
+        await redis.sadd(redisKey, data.slice(i, i + redisAddMaxItemsSize))
       }
     } catch (e) {
-      logger.error(`Unable to call _addToRedisChunkHelper for ${redisKey}`)
+      logger.error(
+        `Unable to call _addToRedisChunkHelper for ${redisKey}: ${e.message}`
+      )
     }
   }
 
