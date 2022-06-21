@@ -36,7 +36,7 @@ class BlacklistManager {
       })
       logInfoWithDuration(
         { logger, startTime: start },
-        'duration blacklist init'
+        'Time taken in ms for blacklistManager init'
       )
       this.initialized = true
     } catch (e) {
