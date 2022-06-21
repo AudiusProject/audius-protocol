@@ -20,7 +20,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'utils/constants'
 
-import styles from './Support.module.css'
+import styles from './SupportingList.module.css'
 import { SupportingTile } from './SupportingTile'
 
 const messages = {
