@@ -370,12 +370,37 @@ function* watchFetchCoverPhoto() {
   })
 }
 
+export function* fetchUserSocials({ handle }) {
+  const user = yield call(waitForValue, getUser, { handle })
+  const socials = yield call(AudiusBackend.getCreatorSocialHandle, user.handle)
+  yield put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: user.user_id,
+        metadata: {
+          twitter_handle: socials.twitterHandle || null,
+          instagram_handle: socials.instagramHandle || null,
+          tiktok_handle: socials.tikTokHandle || null,
+          website: socials.website || null,
+          donation: socials.donation || null,
+          _artist_pick: socials.pinnedTrackId || null
+        }
+      }
+    ])
+  )
+}
+
+function* watchFetchUserSocials() {
+  yield takeEvery(userActions.FETCH_USER_SOCIALS, fetchUserSocials)
+}
+
 const sagas = () => {
   return [
     watchAdd,
     watchFetchProfilePicture,
     watchFetchCoverPhoto,
-    watchSyncLocalStorageUser
+    watchSyncLocalStorageUser,
+    watchFetchUserSocials
   ]
 }
 

@@ -11,7 +11,8 @@ import {
   TextStyle,
   View,
   LayoutChangeEvent,
-  GestureResponderEvent
+  GestureResponderEvent,
+  StyleSheet
 } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
@@ -112,7 +113,7 @@ const useStyles = makeStyles(
       medium: {
         button: {
           height: spacing(10),
-          paddingHorizontal: spacing(10)
+          paddingHorizontal: spacing(6)
         },
         text: {
           fontSize: 14
@@ -196,6 +197,7 @@ export type ButtonProps = RNButtonProps &
     fullWidth?: boolean
     noText?: boolean
     size?: 'small' | 'medium' | 'large'
+    style?: ViewStyle
     styles?: StylesProp<{
       root: ViewStyle
       button: ViewStyle
@@ -302,17 +304,18 @@ export const Button = (props: ButtonProps) => {
     [rootHeightRef]
   )
 
+  const iconStyles = StyleSheet.flatten([styles.icon, stylesProp?.icon])
+
   const icon = Icon ? (
     <Icon
       style={[
         iconPosition === 'left' ? styles.iconLeft : styles.iconRight,
-        styles.icon,
-        stylesProp?.icon,
+        iconStyles,
         noText && { marginLeft: 0, marginRight: 0 }
       ]}
-      height={styles.icon.height}
-      width={styles.icon.width}
-      fill={styles.icon.color}
+      height={iconStyles.height}
+      width={iconStyles.width}
+      fill={iconStyles.color}
       {...IconProps}
     />
   ) : null
