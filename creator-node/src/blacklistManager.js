@@ -44,7 +44,7 @@ class BlacklistManager {
     }
 
     this.logVicky('GOOD BYE')
-    process.exit(1)
+    // process.exit(1)
   }
 
   /** Return list of trackIds, userIds, and CIDs to be blacklisted. */
