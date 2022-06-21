@@ -2,7 +2,6 @@ const contractConfig = require('../contract-config.js')
 const abi = require('ethereumjs-abi')
 const AudiusData = artifacts.require('AudiusData')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
-// const lib = require('../test/_lib/lib.js')
 
 // Generate encoded arguments for proxy initialization
 const encodeCall = (name, args, values) => {
