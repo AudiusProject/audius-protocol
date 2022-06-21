@@ -8,8 +8,6 @@ const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 const REDIS_SET_BLACKLIST_TRACKID_KEY = 'BM.SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'BM.SET.BLACKLIST.USERID'
 const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'BM.SET.BLACKLIST.SEGMENTCID'
-const REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY =
-  'BM.MAP.BLACKLIST.SEGMENTCID.TRACKID'
 const REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY = 'BM.MAP.TRACKID.SEGMENTCIDS'
 const REDIS_SET_INVALID_TRACKIDS_KEY = 'BM.SET.INVALID.TRACKIDS'
 
@@ -18,12 +16,9 @@ const SEGMENTCID_TO_TRACKID_EXPIRATION_SECONDS =
 const INVALID_TRACKID_EXPIRATION_SECONDS =
   1 /* hour */ * 60 /* minutes */ * 60 /* seconds */
 
-// (2000 tracks * 60 average number of segments per track (guess) * 46 bytes per segment / 10^9 b in 1 gb ) * 3 (num segments + trackId:segments mapping)
-// = 0.01656 gb memory used per stack call
-const PROCESS_TRACKS_BATCH_SIZE = 1000
+const PROCESS_TRACKS_BATCH_SIZE = 200
 
 const types = models.ContentBlacklist.Types
-
 class BlacklistManager {
   constructor() {
     this.initialized = false
@@ -113,41 +108,31 @@ class BlacklistManager {
         allTrackIdsToBlacklist
       )
       await this.addToRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToBlacklist)
+      await this.addToRedis(
+        REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
+        segmentsToBlacklist
+      )
     } catch (e) {
       throw new Error(
-        `[fetchCIDsAndAddToRedis] - Failed to add track ids or user ids to blacklist: ${e}`
+        `[fetchCIDsAndAddToRedis] - Failed to add track ids, user ids, or explicitly blacklisted segments to blacklist: ${e.message}`
       )
     }
 
     // TODO: Need to figure out of this mapping is truly necessary cus this call takes so much
     // processing time and memory allocation. Batch this call for the time being
-    await BlacklistManager.addCIDsAndCIDToTrackIdMappingToRedis({
-      allTrackIdsToBlacklist: [...allTrackIdsToBlacklistSet],
-      trackIdsToBlacklist,
-      segmentsToBlacklist
-    })
+    await BlacklistManager.addAggregateCIDsToRedis([
+      ...allTrackIdsToBlacklistSet
+    ])
   }
 
   /**
    * Helper method to batch adding CIDs to the blacklist
    * @param {number[]} allTrackIdsToBlacklist aggregate list of track ids to blacklist from explicit track id blacklist and tracks from blacklisted users
-   * @param {number[]} trackIdsToBlacklist the explicitly blacklisted track ids
-   * @param {string[]} segmentsToBlacklist the explicitly blacklisted cids
    */
-  static async addCIDsAndCIDToTrackIdMappingToRedis({
-    allTrackIdsToBlacklist,
-    trackIdsToBlacklist,
-    segmentsToBlacklist
-  }) {
-    this.logVicky('Begin checking memory usage')
-    const field = 'heapUsed'
-    let mu = process.memoryUsage()
-    this.logVicky(mu)
-    const gbStart = mu[field] / 1024 / 1024 / 1024
-    this.logVicky(`Start ${Math.round(gbStart * 100) / 100} GB`)
-    this.logVicky(`ALL size? ${allTrackIdsToBlacklist.length}`)
+  static async addAggregateCIDsToRedis(allTrackIdsToBlacklist) {
+    const { mu, gbStart } = this.beginMemoryCheck()
 
-    let maxBatchSize = -1000
+    let maxStackSize = -1000
     for (
       let i = 0;
       i < allTrackIdsToBlacklist.length;
@@ -160,58 +145,34 @@ class BlacklistManager {
       this.logVicky(`SLICE size? ${tracksSlice.length}`)
 
       try {
-        const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
-          await this.getCIDsToBlacklist({
-            allTrackIds: tracksSlice,
-            explicitTrackIds: new Set(trackIdsToBlacklist)
-          })
-        let segmentCIDsToBlacklist =
-          segmentsFromTrackIds.concat(segmentsToBlacklist)
-        const segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
-        ;[...CID_WHITELIST].forEach((cid) =>
-          segmentCIDsToBlacklistSet.delete(cid)
+        const segmentsFromTrackIdsToBlacklist = await this.getCIDsToBlacklist(
+          tracksSlice
         )
-
-        segmentCIDsToBlacklist = [...segmentCIDsToBlacklistSet]
-
-        // Check how much memory is now allocated.
-        mu = process.memoryUsage()
-        const mbNow = mu[field] / 1024 / 1024 / 1024
-        //console.log(`Total allocated       ${Math.round(mbNow * 100) / 100} GB`);
-
-        if (Math.round((mbNow - gbStart) * 100) / 100 > maxBatchSize) {
-          maxBatchSize = Math.round((mbNow - gbStart) * 100) / 100
-        }
-
-        this.logVicky(
-          `batch ${i} to ${i + PROCESS_TRACKS_BATCH_SIZE} ${
-            Math.round((mbNow - gbStart) * 100) / 100
-          } GB`
+        this.checkMemoryAtPointInTime(
+          gbStart,
+          `getting segments ${segmentsFromTrackIdsToBlacklist.length}`,
+          maxStackSize
         )
 
         await this.addToRedis(
           REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
-          segmentCIDsToBlacklist
+          segmentsFromTrackIdsToBlacklist
         )
 
-        // Creates a mapping of CID to blacklisted trackIds in redis. This should not include the trackIds from users.
-        await this.addToRedis(
-          REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY,
-          trackIdToSegments
+        maxStackSize = this.checkMemoryAtPointInTime(
+          gbStart,
+          `done with batch ${i} to ${i + PROCESS_TRACKS_BATCH_SIZE}`,
+          maxStackSize
         )
       } catch (e) {
+        console.log(e)
         throw new Error(
           `[addCIDsAndCIDToTrackIdMappingToRedis] - Failed to add CIDs to blacklist: ${e}`
         )
       }
-      this.logVicky(
-        `iter ${i} : ${i < PROCESS_TRACKS_BATCH_SIZE} : ${
-          i + PROCESS_TRACKS_BATCH_SIZE
-        } ? `
-      )
     }
 
-    this.logVicky(`The biggest batch size: ${maxBatchSize}`)
+    this.logVicky(`The biggest batch size: ${maxStackSize}`)
   }
 
   /**
@@ -233,11 +194,9 @@ class BlacklistManager {
     const allTrackIdsToBlacklistSet = new Set(allTrackIdsToBlacklist)
 
     // Retrieves CIDs from deduped trackIds
-    const { segmentCIDs: segmentsFromTrackIds, trackIdToSegments } =
-      await this.getCIDsToBlacklist({
-        allTrackIds: [...allTrackIdsToBlacklistSet],
-        explicitTrackIds: new Set(trackIdsToRemove)
-      })
+    const segmentsFromTrackIds = await this.getCIDsToBlacklist([
+      ...allTrackIdsToBlacklistSet
+    ])
 
     let segmentCIDsToRemove = segmentsFromTrackIds.concat(segmentsToRemove)
     const segmentCIDsToRemoveSet = new Set(segmentCIDsToRemove)
@@ -255,10 +214,6 @@ class BlacklistManager {
       await this.removeFromRedis(
         REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
         segmentCIDsToRemove
-      )
-      await this.removeFromRedis(
-        REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY,
-        trackIdToSegments
       )
     } catch (e) {
       throw new Error(`Failed to remove from blacklist: ${e}`)
@@ -296,60 +251,44 @@ class BlacklistManager {
 
   /**
    * Retrieves all the deduped CIDs from the params and builds a mapping to <trackId: segments> for explicit trackIds (i.e. trackIds from table, not tracks belonging to users).
-   * @param {Object} param
-   * @param {number[]} param.allTrackIds all the trackIds to find CIDs for (explictly blacklisted tracks and tracks from blacklisted users)
-   * @param {Set<number>} param.explicitTrackIds explicitly blacklisted track ids from table. Used to create mapping of <trackId: segments> in redis
-   * @returns
-   * {
-   *    segmentCIDs: <string[]> all CIDs that are BL'd
-   *    trackIdToSegments: {Object<number, string[]>} trackId : CIDs
-   * }
+   * @param {number[]} allTrackIds all the trackIds to find CIDs for (explictly blacklisted tracks and tracks from blacklisted users)
+   * @returns {string[]} all CIDs that are blacklisted from input track ids
    */
-  static async getCIDsToBlacklist({
-    allTrackIds: trackIdsFromUsersAndExplicitlyBlacklistedTrackIds,
-    explicitTrackIds: explicitlyBlacklistedTrackIds
-  }) {
-    const tracks = await this.getAllCIDsFromTrackIdsInDb(
-      trackIdsFromUsersAndExplicitlyBlacklistedTrackIds
-    )
+  static async getCIDsToBlacklist(inputTrackIds) {
+    const tracks = await this.getAllCIDsFromTrackIdsInDb(inputTrackIds)
 
     const segmentCIDs = new Set()
-    const trackIdToSegments = {}
 
     // Retrieve CIDs from the track metadata and build mapping of <trackId: segments>
     for (const track of tracks) {
       if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
 
-      // If the current track is from the track BL and not user BL, create mapping
-      if (explicitlyBlacklistedTrackIds.has(track.blockchainId)) {
-        trackIdToSegments[track.blockchainId] = []
-      }
-
       for (const segment of track.metadataJSON.track_segments) {
-        if (!segment.multihash) continue
+        if (!segment.multihash || CID_WHITELIST.has(segment.multihash)) continue
 
         segmentCIDs.add(segment.multihash)
-        if (trackIdToSegments[track.blockchainId]) {
-          trackIdToSegments[track.blockchainId].push(segment.multihash)
-        }
       }
     }
 
     // also retrieves the CID's directly from the files table so we get copy320
-    if (trackIdsFromUsersAndExplicitlyBlacklistedTrackIds.length > 0) {
+    if (inputTrackIds.length > 0) {
       const files = await models.File.findAll({
         where: {
-          trackBlockchainId: trackIdsFromUsersAndExplicitlyBlacklistedTrackIds
+          trackBlockchainId: inputTrackIds
         }
       })
       for (const file of files) {
-        if (file.type === 'track' || file.type === 'copy320') {
+        if (
+          file.type === 'track' ||
+          file.type === 'copy320' ||
+          !CID_WHITELIST.has(file.multihash)
+        ) {
           segmentCIDs.add(file.multihash)
         }
       }
     }
 
-    return { segmentCIDs: [...segmentCIDs], trackIdToSegments }
+    return [...segmentCIDs]
   }
 
   static async add({ values, type }) {
@@ -504,28 +443,6 @@ class BlacklistManager {
         }
         break
       }
-      case REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY: {
-        // Add "MAP.BLACKLIST.SEGMENTCID.TRACKID:::<cid>" to set of trackIds to redis
-        const errors = []
-        for (let [trackId, cids] of Object.entries(data)) {
-          trackId = parseInt(trackId)
-          for (const cid of cids) {
-            const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
-            try {
-              await this._addToRedisChunkHelper(redisCIDKey, [trackId])
-            } catch (e) {
-              errors.push(
-                `Unable to add ${redisCIDKey}:${trackId}: ${e.toString()}`
-              )
-            }
-          }
-        }
-
-        if (errors.length > 0) {
-          throw new Error(errors.toString())
-        }
-        break
-      }
       case REDIS_SET_INVALID_TRACKIDS_KEY:
       case REDIS_SET_BLACKLIST_SEGMENTCID_KEY:
       case REDIS_SET_BLACKLIST_TRACKID_KEY:
@@ -550,27 +467,6 @@ class BlacklistManager {
    */
   static async removeFromRedis(redisKey, data) {
     switch (redisKey) {
-      case REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY: {
-        const errors = []
-        for (let [trackId, cids] of Object.entries(data)) {
-          trackId = parseInt(trackId)
-          for (const cid of cids) {
-            const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
-            try {
-              await redis.srem(redisCIDKey, trackId)
-            } catch (e) {
-              errors.push(
-                `Unable to remove ${redisCIDKey}:${trackId}: ${e.toString()}`
-              )
-            }
-          }
-        }
-
-        if (errors.length > 0) {
-          throw new Error(errors.toString())
-        }
-        break
-      }
       case REDIS_SET_BLACKLIST_SEGMENTCID_KEY:
       case REDIS_SET_BLACKLIST_TRACKID_KEY:
       case REDIS_SET_BLACKLIST_USERID_KEY:
@@ -613,14 +509,6 @@ class BlacklistManager {
         return false
 
       trackId = parseInt(trackId)
-
-      // If the CID belongs to an explicitly blacklisted track and the input trackId is found in this mapping,
-      // do not serve
-      const foundCIDFromExplicitBlacklistedTrack =
-        await this.CIDIsInExplicitlyBlacklistedTrack(trackId, cid)
-      if (foundCIDFromExplicitBlacklistedTrack) return false
-
-      // If reached here, explicitly blacklisted track CID mapping to input trackId is not found.
 
       // Check to see if CID belongs to input trackId from redis.
       let cidsOfInputTrackId = await this.getAllCIDsFromTrackIdInRedis(trackId)
@@ -698,10 +586,6 @@ class BlacklistManager {
     return REDIS_SET_BLACKLIST_SEGMENTCID_KEY
   }
 
-  static getRedisBlacklistSegmentToTrackIdKey(cid) {
-    return `${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY}:::${cid}`
-  }
-
   static getRedisTrackIdToCIDsKey(trackId) {
     return `${REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY}:::${trackId}`
   }
@@ -723,12 +607,6 @@ class BlacklistManager {
   // Checks if the input CID is blacklisted from USER, TRACK, or SEGMENT type
   static async CIDIsInBlacklist(cid) {
     return redis.sismember(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, cid)
-  }
-
-  // Check if the input CID is blacklisted from TRACK type
-  static async CIDIsInExplicitlyBlacklistedTrack(trackId, cid) {
-    const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
-    return redis.sismember(redisCIDKey, trackId)
   }
 
   // Check if the input CID belongs to the track with the input trackId in redis.
@@ -762,17 +640,6 @@ class BlacklistManager {
   }
 
   /**
-   * Retrieves all the blacklisted trackIds associated with the cid. This mapping is created by
-   * fetching the segments from explicitly blacklisted tracks.
-   * @param {string} cid the observed cid
-   * @returns {string[]} the trackIds associated with the cid
-   */
-  static async getBlacklistedTrackIdsFromCID(cid) {
-    const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
-    return redis.smembers(redisCIDKey)
-  }
-
-  /**
    * Retrieve all the relevant CIDs from the input trackId in redis.
    * @param {number} trackId
    * @returns {string[]} cids associated with trackId
@@ -800,8 +667,39 @@ class BlacklistManager {
     logger.error(`BlacklistManager ERROR: ${msg}`)
   }
 
+  // VICKYS TEST FUNCTIONS
   static logVicky(msg) {
     logger.info(`VICKY | ${msg}`)
+  }
+
+  static beginMemoryCheck() {
+    this.logVicky('Begin checking memory usage')
+    const field = 'heapUsed'
+    const mu = process.memoryUsage()
+    // this.logVicky(mu)
+    const gbStart = mu[field] / 1024 / 1024 / 1024
+    this.logVicky(`Start ${Math.round(gbStart * 100) / 100} GB`)
+
+    return { mu, gbStart }
+  }
+
+  static checkMemoryAtPointInTime(gbStart, logMsg, maxStackSize) {
+    const field = 'heapUsed'
+    const mu = process.memoryUsage()
+    const mbNow = mu[field] / 1024 / 1024 / 1024
+
+    const currentStackSize = Math.round((mbNow - gbStart) * 100) / 100
+
+    this.logVicky(
+      `max stack size ${maxStackSize} current stack size ${currentStackSize}`
+    )
+    if (maxStackSize < currentStackSize) {
+      maxStackSize = currentStackSize
+    }
+
+    this.logVicky(`${logMsg} ${currentStackSize} GB`)
+
+    return maxStackSize
   }
 }
 
