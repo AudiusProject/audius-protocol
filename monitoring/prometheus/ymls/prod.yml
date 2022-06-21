@@ -49,6 +49,6 @@
       - targets: ['discoveryprovider2.audius.co:9091']
         labels:
           host: 'discoveryprovider2.audius.co'
-          environment: 'stage'
+          environment: 'prod'
           service: 'audius'
           component: 'network-monitoriong'
