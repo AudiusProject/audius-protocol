@@ -2,3 +2,5 @@ venv
 logs
 *.swp
 node_modules
+es-indexer/build
+
