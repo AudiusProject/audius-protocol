@@ -140,6 +140,11 @@ export enum Name {
   NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE = 'Notifications: Clicked Milestone Twitter Share',
   NOTIFICATIONS_CLICK_REMIX_CREATE_TWITTER_SHARE = 'Notifications: Clicked Remix Create Twitter Share',
   NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE = 'Notifications: Clicked Remix Co-Sign Twitter Share',
+  NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE = 'Notifications: Clicked Tip Reaction Twitter Share',
+  NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE = 'Notifications: Clicked Tip Received Twitter Share',
+  NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE = 'Notifications: Clicked Tip Sent Twitter Share',
+  NOTIFICATIONS_CLICK_SUPPORTER_RANK_UP_TWITTER_SHARE = 'Notifications: Clicked Supporter Rank Up Twitter Share',
+  NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE = 'Notifications: Clicked Supporting Rank Up Twitter Share',
   NOTIFICATIONS_TOGGLE_SETTINGS = 'Notifications: Toggle Setting',
   BROWSER_NOTIFICATION_SETTINGS = 'Browser Push Notification',
 
@@ -733,6 +738,26 @@ type NotificationsClickRemixCosign = {
   eventName: Name.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE
   text: string
 }
+type NotificationsClickTipReaction = {
+  eventName: Name.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE
+  text: string
+}
+type NotificationsClickTipReceived = {
+  eventName: Name.NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE
+  text: string
+}
+type NotificationsClickTipSent = {
+  eventName: Name.NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE
+  text: string
+}
+type NotificationsClickSupporterRankUp = {
+  eventName: Name.NOTIFICATIONS_CLICK_SUPPORTER_RANK_UP_TWITTER_SHARE
+  text: string
+}
+type NotificationsClickSupportingRankUp = {
+  eventName: Name.NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE
+  text: string
+}
 type NotificationsToggleSettings = {
   eventName: Name.NOTIFICATIONS_TOGGLE_SETTINGS
   settings: string
@@ -1295,6 +1320,11 @@ export type AllTrackingEvents =
   | NotificationsClickMilestone
   | NotificationsClickRemixCreate
   | NotificationsClickRemixCosign
+  | NotificationsClickTipReaction
+  | NotificationsClickTipReceived
+  | NotificationsClickTipSent
+  | NotificationsClickSupporterRankUp
+  | NotificationsClickSupportingRankUp
   | NotificationsToggleSettings
   | ProfilePageTabClick
   | ProfilePageSort

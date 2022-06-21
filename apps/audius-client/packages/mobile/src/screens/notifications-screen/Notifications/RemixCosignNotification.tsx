@@ -44,7 +44,6 @@ export const RemixCosignNotification = (
   const navigation = useDrawerNavigation()
   const { childTrackId, parentTrackUserId } = notification
   const user = useSelectorWeb(state => getNotificationUser(state, notification))
-  const userName = user?.name
   const tracks = useSelectorWeb(
     state => getNotificationEntities(state, notification),
     isEqual
@@ -71,8 +70,7 @@ export const RemixCosignNotification = (
   }, [childTrack, navigation])
 
   const handleTwitterShareData = useCallback(
-    (twitterHandle: string | undefined) => {
-      const handle = twitterHandle ? `@${twitterHandle}` : userName
+    (handle: string | undefined) => {
       if (parentTrackTitle && handle) {
         const shareText = messages.shareTwitterText(parentTrackTitle, handle)
         const analytics = make({
@@ -83,7 +81,7 @@ export const RemixCosignNotification = (
       }
       return null
     },
-    [userName, parentTrackTitle]
+    [parentTrackTitle]
   )
 
   if (!user || !childTrack || !parentTrack) return null
