@@ -9,6 +9,7 @@ import { Dimensions, FlatList } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 import { useSelectProfile } from '../selectors'
 
@@ -86,6 +87,12 @@ export const SupportingList = () => {
 
   return (
     <FlatList<Supporting | SkeletonData | ViewAllData>
+      style={{
+        marginHorizontal: spacing(-3)
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: spacing(2)
+      }}
       horizontal
       showsHorizontalScrollIndicator={false}
       data={supportingListData}

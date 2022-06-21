@@ -20,15 +20,15 @@ const MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS = 5
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    marginTop: spacing(3),
-    paddingBottom: spacing(1),
-    marginRight: spacing(2)
+    marginTop: spacing(2),
+    marginHorizontal: spacing(1)
   },
   content: {
-    paddingTop: spacing(4),
     paddingHorizontal: spacing(5),
-    paddingBottom: spacing(2),
-    alignItems: 'center'
+    paddingVertical: spacing(2),
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 88
   },
   profilePictureList: {
     marginBottom: spacing(3),

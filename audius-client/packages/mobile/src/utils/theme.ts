@@ -77,6 +77,7 @@ export const defaultTheme = {
   shadow: '#E3E3E3',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
   pageHeaderGradientColor1: '#5B23E1',
   pageHeaderGradientColor2: '#A22FEB',
@@ -126,6 +127,7 @@ export const darkTheme = {
   shadow: '#35364F',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
   pageHeaderGradientColor1: '#7652CC',
   pageHeaderGradientColor2: '#B05CE6',
@@ -218,6 +220,7 @@ export type ThemeColors = {
   shadow: string
   staticTwitterBlue: string
   staticWhite: string
+  staticNeutralLight8: string
   staticAccentGreenLight1: string
   pageHeaderGradientColor1: string
   pageHeaderGradientColor2: string
