@@ -26,6 +26,7 @@ import {
   stringWeiToBN,
   weiToAudio
 } from 'common/utils/wallet'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { MIN_TRANSFERRABLE_WEI } from 'services/wallet-client/WalletClient'
 
@@ -34,7 +35,7 @@ import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 import styles from './SendInputBody.module.css'
 
-const { getRemoteVar, getFeatureEnabled } = remoteConfigInstance
+const { getRemoteVar } = remoteConfigInstance
 
 const messages = {
   warningTitle: 'PROCEED WITH CAUTION',

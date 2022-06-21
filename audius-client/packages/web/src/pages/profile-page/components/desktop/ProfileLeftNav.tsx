@@ -19,15 +19,13 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTags } from 'pages/profile-page/components/desktop/ProfileTags'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { make, useRecord } from 'store/analytics/actions'
 import { UPLOAD_PAGE } from 'utils/route'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
 import styles from './ProfilePage.module.css'
-
-const { getFeatureEnabled } = remoteConfigInstance
 
 const messages = {
   aboutYou: 'About You',

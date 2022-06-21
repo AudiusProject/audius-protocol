@@ -30,7 +30,7 @@ import { Nullable } from 'common/utils/typeUtils'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import { AUDIUS_DISCORD_LINK } from 'utils/route'
@@ -47,8 +47,6 @@ import SendInputConfirmation from './components/SendInputConfirmation'
 import SendInputSuccess from './components/SendInputSuccess'
 import SendingModalBody from './components/SendingModalBody'
 import ModalDrawer from './components/modals/ModalDrawer'
-
-const { getFeatureEnabled } = remoteConfigInstance
 
 const messages = {
   receive: 'Receive $AUDIO',

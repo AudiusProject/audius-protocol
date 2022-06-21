@@ -67,6 +67,7 @@ import {
   UserTipRequest
 } from 'services/audius-backend/Tipping'
 import { UpdateTipsStorageMessage } from 'services/native-mobile-interface/tipping'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
@@ -82,7 +83,7 @@ import { updateTipsStorage } from './storageUtils'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
-const { getFeatureEnabled, waitForRemoteConfig } = remoteConfigInstance
+const { waitForRemoteConfig } = remoteConfigInstance
 
 function* overrideSupportingForUser({
   amountBN,

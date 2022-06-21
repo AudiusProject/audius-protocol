@@ -17,7 +17,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { ProfilePicture } from 'components/notification/Notification/components/ProfilePicture'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { useRecord, make } from 'store/analytics/actions'
 import {
   setUsers,
@@ -35,8 +35,6 @@ import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
 
 import styles from './FeedTipTile.module.css'
-
-const { getFeatureEnabled } = remoteConfigInstance
 
 const messages = {
   wasTippedBy: 'Was Tipped By',
