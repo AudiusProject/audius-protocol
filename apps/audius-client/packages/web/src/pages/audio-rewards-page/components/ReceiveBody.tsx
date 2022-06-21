@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { SolanaWalletAddress, WalletAddress } from 'common/models/Wallet'
 import { FeatureFlags } from 'common/services/remote-config'
 import { useLocalStorage } from 'hooks/useLocalStorage'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { ModalBodyWrapper } from '../WalletModal'
 
@@ -16,7 +16,6 @@ type ReceiveBodyProps = {
   solWallet: SolanaWalletAddress
 }
 
-const { getFeatureEnabled } = remoteConfigInstance
 const messages = {
   warning: 'PROCEED WITH CAUTION',
   warning2: 'If $AUDIO is sent to the wrong address it will be lost.',
