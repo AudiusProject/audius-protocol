@@ -5,7 +5,6 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import { SquareSizes, WidthSizes } from 'common/models/ImageSizes'
@@ -19,11 +18,7 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 
-import styles from './Support.module.css'
-
-const messages = {
-  supporter: 'SUPPORTER'
-}
+import styles from './SupportingTile.module.css'
 
 type SupportingCardProps = {
   supporting: Supporting
@@ -55,43 +50,33 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   }, [dispatch, handle])
 
   return receiver ? (
-    <div className={styles.tileContainer} onClick={handleClick}>
-      <div
-        className={styles.tileBackground}
-        style={{
-          backgroundImage: `url(${coverPhoto}), linear-gradient(
+    <div
+      className={cn(styles.tileContainer, styles.tileBackground)}
+      style={{
+        backgroundImage: `url(${coverPhoto}), linear-gradient(
           180deg,
-          rgba(0, 0, 0, 0.0001) 50.54%,
-          rgba(0, 0, 0, 0.05) 57.88%,
-          rgba(0, 0, 0, 0.2) 100%
+          rgba(0, 0, 0, 0.1) 50%,
+          rgba(0, 0, 0, 0.3) 100%
         )`
-        }}
-      >
-        <div className={styles.profilePictureContainer}>
-          <img className={styles.profilePicture} src={profileImage} />
-          <div className={styles.nameAndBadge}>
-            <span className={styles.name}>{receiver.name}</span>
-            <UserBadges
-              className={styles.badge}
-              userId={receiver.user_id}
-              badgeSize={12}
-            />
-          </div>
-        </div>
-      </div>
+      }}
+      onClick={handleClick}
+    >
       {isTopRank ? (
         <div className={cn(styles.tileHeader, styles.topFive)}>
           <IconTrophy className={styles.trophyIcon} />
-          <span>
-            #{rank} {messages.supporter}
-          </span>
+          <span className={styles.rankNumberSymbol}>#</span>
+          <span>{rank}</span>
         </div>
-      ) : (
-        <div className={styles.tileHeader}>
-          <IconTip className={styles.tipIcon} />
-          <span>{messages.supporter}</span>
-        </div>
-      )}
+      ) : null}
+      <div className={styles.profilePictureContainer}>
+        <img className={styles.profilePicture} src={profileImage} />
+        <span className={styles.name}>{receiver.name}</span>
+        <UserBadges
+          className={styles.badge}
+          userId={receiver.user_id}
+          badgeSize={12}
+        />
+      </div>
     </div>
   ) : null
 }

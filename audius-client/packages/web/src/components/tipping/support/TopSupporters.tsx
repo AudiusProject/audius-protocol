@@ -21,7 +21,7 @@ import {
 import { AppState } from 'store/types'
 import { MAX_PROFILE_TOP_SUPPORTERS } from 'utils/constants'
 
-import styles from './Support.module.css'
+import styles from './TopSupporters.module.css'
 
 const messages = {
   topSupporters: 'Top Supporters'
