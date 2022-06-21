@@ -28,6 +28,7 @@ import UpdateAppBanner from 'components/banner/UpdateAppBanner'
 import Web3ErrorBanner from 'components/banner/Web3ErrorBanner'
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
+import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components/header/desktop/Header'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
@@ -934,6 +935,7 @@ class App extends Component {
         {!isMobileClient && <DiscoveryNodeSelection />}
         {!isMobileClient && <Visualizer />}
         {!isMobileClient && <PinnedTrackConfirmation />}
+        {!isMobileClient && <DevModeMananger />}
 
         {/* Mobile-only */}
         {isMobileClient && <ConnectedReachabilityBar />}
