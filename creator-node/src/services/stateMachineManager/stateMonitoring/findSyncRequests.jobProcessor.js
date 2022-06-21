@@ -201,9 +201,9 @@ const _findSyncsForUser = (
           primaryEndpoint: thisContentNodeEndpoint,
           syncType: SyncType.Recurring
         })
-        if (syncReqToEnqueue && !_.isEmpty(syncReqToEnqueue)) {
+        if (!_.isEmpty(syncReqToEnqueue)) {
           syncReqsToEnqueue.push(syncReqToEnqueue)
-        } else if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
+        } else if (!_.isEmpty(duplicateSyncReq)) {
           duplicateSyncReqs.push(duplicateSyncReq)
         }
       } catch (e) {

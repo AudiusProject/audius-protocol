@@ -144,7 +144,7 @@ module.exports = async function (
  * @param {string} param.wallet current user's wallet address
  * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
  * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
- * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  * @returns {Object}
  * {
@@ -179,7 +179,6 @@ const determineNewReplicaSet = async ({
 
   if (unhealthyReplicasSet.size === 1) {
     return determineNewReplicaSetWhenOneNodeIsUnhealthy(
-      wallet,
       primary,
       secondary1,
       secondary2,
@@ -272,17 +271,15 @@ const _validateJobData = (
 
 /**
  * Determines new replica set when one node in the current replica set is unhealthy.
- * @param {*} wallet wallet address of user whose replica set contains 1 unhealthy node to be replaced
  * @param {*} primary user's current primary endpoint
  * @param {*} secondary1 user's current first secondary endpoint
  * @param {*} secondary2 user's current second secondary endpoint
  * @param {*} unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
- * @param {*} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {*} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
  * @param {*} newReplicaNode endpoint of node that will replace the unhealthy node
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy node
  */
 const determineNewReplicaSetWhenOneNodeIsUnhealthy = (
-  wallet,
   primary,
   secondary1,
   secondary2,
@@ -295,8 +292,8 @@ const determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
   if (unhealthyReplicasSet.has(primary)) {
     const [newPrimary, currentHealthySecondary] =
-      replicaSetNodesToUserClockStatusesMap[secondary1][wallet] >=
-      replicaSetNodesToUserClockStatusesMap[secondary2][wallet]
+      replicaSetNodesToUserClockStatusesMap[secondary1] >=
+      replicaSetNodesToUserClockStatusesMap[secondary2]
         ? [secondary1, secondary2]
         : [secondary2, secondary1]
     return {

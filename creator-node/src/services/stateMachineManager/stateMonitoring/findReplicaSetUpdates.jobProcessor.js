@@ -88,17 +88,6 @@ module.exports = async function ({
     // Combine each promise's updateReplicaSetOps into a job
     for (const updateReplicaSetOp of updateReplicaSetOps) {
       const { wallet } = updateReplicaSetOp
-      // Make a replicaSetNodesToUserClockStatusesMap that only has entries for the user
-      const replicaSetNodesToUserClockStatusesMapFiltered = {}
-      for (const node of Object.keys(replicaSetNodesToUserClockStatusesMap)) {
-        const userClockStatusesMap = replicaSetNodesToUserClockStatusesMap[node]
-        replicaSetNodesToUserClockStatusesMapFiltered[node] =
-          [wallet] in userClockStatusesMap
-            ? {
-                [wallet]: userClockStatusesMap[wallet]
-              }
-            : {}
-      }
 
       updateReplicaSetJobs.push({
         jobName: JOB_NAMES.UPDATE_REPLICA_SET,
@@ -110,7 +99,10 @@ module.exports = async function ({
           secondary2: updateReplicaSetOp.secondary2,
           unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
           replicaSetNodesToUserClockStatusesMap:
-            replicaSetNodesToUserClockStatusesMapFiltered
+            _transformAndFilterNodeToClockValuesMapping(
+              replicaSetNodesToUserClockStatusesMap,
+              wallet
+            )
         }
       })
     }
@@ -308,4 +300,23 @@ const _findReplicaSetUpdatesForUser = async (
   }
 
   return requiredUpdateReplicaSetOps
+}
+
+/**
+ * Transforms data type from ((K1,V1) => (K2,V2)) to (K1,V1[K2]), where K1 is the node endpoint,
+ * V1 is the mapping, and K2 is the wallet to filter by. Default to clock value of -1 whenever the given
+ * wallet isn't present in a node's mapping.
+ * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {string} wallet the wallet to filter clock values for (other wallets will be exlucded from the output)
+ * @returns mapping of node endpoint (string) to clock value (number) on that node for the given wallet
+ */
+const _transformAndFilterNodeToClockValuesMapping = (
+  replicaSetNodesToUserClockStatusesMap,
+  wallet
+) => {
+  return Object.fromEntries(
+    Object.entries(replicaSetNodesToUserClockStatusesMap).map(
+      ([node, clockValueMapping]) => [node, clockValueMapping[wallet] || -1]
+    )
+  )
 }

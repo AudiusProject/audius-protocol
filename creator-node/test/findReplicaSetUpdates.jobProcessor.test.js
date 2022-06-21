@@ -87,15 +87,9 @@ describe('test findReplicaSetUpdates job processor', function () {
   }
 
   const CLOCK_STATUSES_MAP_FILTERED_TO_WALLET = {
-    [primary]: {
-      [wallet]: 10
-    },
-    [secondary1]: {
-      [wallet]: 10
-    },
-    [secondary2]: {
-      [wallet]: 10
-    }
+    [primary]: 10,
+    [secondary1]: 10,
+    [secondary2]: 10
   }
 
   function getJobProcessorStub(
