@@ -381,9 +381,6 @@ def configure_celery(celery, test_config=None):
             "src.monitors.monitoring_queue",
             "src.tasks.cache_trending_playlists",
             "src.tasks.index_solana_plays",
-            "src.tasks.index_aggregate_views",
-            "src.tasks.index_aggregate_user",
-            "src.tasks.aggregates.index_aggregate_track",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
@@ -455,18 +452,6 @@ def configure_celery(celery, test_config=None):
             "index_solana_plays": {
                 "task": "index_solana_plays",
                 "schedule": timedelta(seconds=5),
-            },
-            "update_aggregate_user": {
-                "task": "update_aggregate_user",
-                "schedule": timedelta(seconds=30),
-            },
-            "update_aggregate_track": {
-                "task": "update_aggregate_track",
-                "schedule": timedelta(seconds=30),
-            },
-            "update_aggregate_playlist": {
-                "task": "update_aggregate_playlist",
-                "schedule": timedelta(seconds=30),
             },
             "index_user_bank": {
                 "task": "index_user_bank",
