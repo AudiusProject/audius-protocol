@@ -240,6 +240,25 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         collectionIdsToFetch.push(notification.metadata.playlistId)
         break
       }
+      case NotificationType.Reaction: {
+        userIdsToFetch.push(notification.initiator)
+        break
+      }
+      case NotificationType.SupporterRankUp: {
+        // Tip sender needed for SupporterRankUp
+        userIdsToFetch.push(notification.metadata.entity_id)
+        break
+      }
+      case NotificationType.SupportingRankUp: {
+        // Tip recipient needed for SupportingRankUp
+        userIdsToFetch.push(notification.initiator)
+        break
+      }
+      case NotificationType.TipReceive: {
+        // Fetch the sender of the tip
+        userIdsToFetch.push(notification.metadata.entity_id)
+        break
+      }
     }
   }
 

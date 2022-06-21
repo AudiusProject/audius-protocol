@@ -22,6 +22,19 @@ function getUserIdsToNotify (notifications) {
       case notificationTypes.MilestoneListen:
       case notificationTypes.TierChange:
         return userIds.concat(notification.initiator)
+      case notificationTypes.Tip:
+        // For the case of a tip, need to add both senderId and receiverId
+        const receiverId = notification.initiator
+        const senderId = notification.metadata.entity_id
+        return userIds.concat([receiverId, senderId])
+      case notificationTypes.Reaction:
+        // For reactions, add the tip_sender_id in the reacted_to_entity
+        return userIds.concat(notification.metadata.reacted_to_entity.tip_sender_id)
+      case notificationTypes.SupporterRankUp:
+        // For SupporterRankUp, need to send notifs to both supporting and supported users
+        const supportingId = notification.metadata.entity_id
+        const supportedId = notification.initiator
+        return userIds.concat([supportingId, supportedId])
       default:
         return userIds
     }
