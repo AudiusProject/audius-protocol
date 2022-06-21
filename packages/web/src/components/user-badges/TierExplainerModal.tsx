@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { useProfileTier } from 'common/hooks/wallet'
 import { Tier } from 'pages/audio-rewards-page/Tiers'
-import { DASHBOARD_PAGE } from 'utils/route'
+import { AUDIO_PAGE } from 'utils/route'
 
 import styles from './TierExplainerModal.module.css'
 
@@ -31,7 +31,7 @@ const TierExplainerModal = () => {
 
   const onClickLearnMore = useCallback(() => {
     handleDismiss()
-    dispatch(pushRoute(DASHBOARD_PAGE))
+    dispatch(pushRoute(AUDIO_PAGE))
   }, [dispatch, handleDismiss])
 
   return (
