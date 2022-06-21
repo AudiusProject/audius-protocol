@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useUIAudio } from 'audius-client/src/common/hooks/useUIAudio'
 import { getNotificationUser } from 'audius-client/src/common/store/notifications/selectors'
 import { Reaction } from 'audius-client/src/common/store/notifications/types'
@@ -8,6 +10,8 @@ import IconTip from 'app/assets/images/iconTip.svg'
 import UserBadges from 'app/components/user-badges'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
+import { EventNames } from 'app/types/analytics'
+import { make } from 'app/utils/analytics'
 
 import {
   NotificationHeader,
@@ -16,7 +20,8 @@ import {
   UserNameLink,
   TipText,
   NotificationText,
-  ProfilePicture
+  ProfilePicture,
+  NotificationTwitterButton
 } from '../Notification'
 import { reactionMap } from '../Reaction'
 
@@ -67,6 +72,18 @@ export const TipReactionNotification = (
     state => getNotificationUser(state, notification),
     isEqual
   )
+
+  const handleTwitterShare = useCallback((handle: string | undefined) => {
+    const shareText = `I got a thanks from ${handle} for tipping them $AUDIO on @audiusproject! #Audius #AUDIOTip`
+    return {
+      shareText,
+      analytics: make({
+        eventName: EventNames.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
+        text: shareText
+      })
+    }
+  }, [])
+
   if (!user) return null
 
   const reactionType = getReactionFromRawValue(reactionValue)
@@ -82,7 +99,7 @@ export const TipReactionNotification = (
       </NotificationHeader>
       <View style={styles.body}>
         <View>
-          <Reaction />
+          <Reaction autoPlay={false} />
           <ProfilePicture profile={user} style={styles.profilePicture} />
         </View>
         <View style={styles.content}>
@@ -96,6 +113,11 @@ export const TipReactionNotification = (
           </NotificationText>
         </View>
       </View>
+      <NotificationTwitterButton
+        type='dynamic'
+        shareData={handleTwitterShare}
+        handle={user.handle}
+      />
     </NotificationTile>
   )
 }

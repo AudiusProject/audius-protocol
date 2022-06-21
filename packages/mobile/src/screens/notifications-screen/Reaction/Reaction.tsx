@@ -12,6 +12,7 @@ import { NotificationsDrawerNavigationContext } from '../NotificationsDrawerNavi
 export type ReactionStatus = 'interacting' | 'idle' | 'selected' | 'unselected'
 
 export type ReactionProps = ViewProps & {
+  autoPlay?: boolean
   source: AnimatedLottieViewProps['source']
   style?: StyleProp<ViewStyle>
   status?: ReactionStatus
@@ -20,6 +21,7 @@ export type ReactionProps = ViewProps & {
 
 export const Reaction = (props: ReactionProps) => {
   const {
+    autoPlay = true,
     source,
     style,
     status: statusProp = 'idle',
@@ -42,10 +44,10 @@ export const Reaction = (props: ReactionProps) => {
   useEffect(() => {
     if (status === 'unselected') {
       animationRef.current?.pause()
-    } else {
+    } else if (autoPlay) {
       animationRef.current?.play()
     }
-  }, [status])
+  }, [status, autoPlay])
 
   useEffect(() => {
     if (ref.current && isOpen) {
@@ -118,7 +120,7 @@ export const Reaction = (props: ReactionProps) => {
         ref={animation => {
           animationRef.current = animation
         }}
-        autoPlay
+        autoPlay={autoPlay}
         loop
         source={source}
       />

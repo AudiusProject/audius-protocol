@@ -16,6 +16,8 @@ import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { isEqual, useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { EventNames } from 'app/types/analytics'
+import { make } from 'app/utils/analytics'
 
 import {
   NotificationTile,
@@ -24,7 +26,8 @@ import {
   NotificationTitle,
   ProfilePicture,
   TipText,
-  UserNameLink
+  UserNameLink,
+  NotificationTwitterButton
 } from '../Notification'
 import { ReactionList } from '../Reaction'
 
@@ -67,7 +70,22 @@ export const TipReceivedNotification = (
   const reactionValue = useSelectorWeb(
     makeGetReactionForSignature(tipTxSignature)
   )
+
   const setReactionValue = useSetReaction(tipTxSignature)
+
+  const handleTwitterShare = useCallback(
+    (senderHandle: string | undefined) => {
+      const shareText = `Thanks ${senderHandle} for the ${uiAmount} $AUDIO tip on @AudiusProject! #Audius #AUDIOTip`
+      return {
+        shareText,
+        analytics: make({
+          eventName: EventNames.NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE,
+          text: shareText
+        })
+      }
+    },
+    [uiAmount]
+  )
 
   if (!user) return null
 
@@ -108,6 +126,11 @@ export const TipReceivedNotification = (
       <ReactionList
         selectedReaction={reactionValue || null}
         onChange={setReactionValue}
+      />
+      <NotificationTwitterButton
+        type='dynamic'
+        handle={user.handle}
+        shareData={handleTwitterShare}
       />
     </NotificationTile>
   )
