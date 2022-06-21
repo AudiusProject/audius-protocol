@@ -31,6 +31,7 @@ import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import SolanaClient from 'services/solana-client/SolanaClient'
 import { waitForBackendSetup } from 'store/backend/sagas'
@@ -48,7 +49,6 @@ import { waitForValue } from 'utils/sagaHelpers'
 
 const {
   getRemoteVar,
-  getFeatureEnabled,
   waitForRemoteConfig,
   waitForUserRemoteConfig
 } = remoteConfigInstance

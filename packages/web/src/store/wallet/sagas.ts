@@ -24,13 +24,11 @@ import {
   decreaseBalance
 } from 'common/store/wallet/slice'
 import { stringWeiToBN, weiToString } from 'common/utils/wallet'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
 import { getErrorMessage } from 'utils/error'
-
-const { getFeatureEnabled } = remoteConfigInstance
 
 // TODO: handle errors
 const errors = {

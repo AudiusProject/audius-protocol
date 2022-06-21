@@ -42,6 +42,7 @@ import { fetchReactionValues } from 'common/store/ui/reactions/slice'
 import { getBalance } from 'common/store/wallet/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
@@ -129,9 +130,7 @@ export function* fetchNotifications(
     const timeOffset = lastNotification
       ? lastNotification.timestamp
       : moment().toISOString()
-    const withTips = remoteConfigInstance.getFeatureEnabled(
-      FeatureFlags.TIPPING_ENABLED
-    )
+    const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
     const notificationsResponse: NotificationsResponse = yield* call(
       AudiusBackend.getNotifications,
       {
@@ -490,9 +489,7 @@ export function* getNotifications(isFirstFetch: boolean) {
       )
       if (!hasAccount) return
       const timeOffset = moment().toISOString()
-      const withTips = remoteConfigInstance.getFeatureEnabled(
-        FeatureFlags.TIPPING_ENABLED
-      )
+      const withTips = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
 
       const notificationsResponse:
         | NotificationsResponse

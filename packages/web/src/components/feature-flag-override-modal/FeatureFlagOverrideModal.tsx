@@ -14,6 +14,7 @@ import {
 } from 'common/hooks/useFeatureFlag'
 import { useModalState } from 'common/hooks/useModalState'
 import { FeatureFlags } from 'common/services/remote-config'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useDevModeHotkey } from 'hooks/useHotkey'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import zIndex from 'utils/zIndex'
@@ -38,6 +39,7 @@ const setOverrideSetting = (flag: string, val: OverrideSetting) => {
 
 export const FeatureFlagOverrideModal = () => {
   const hotkeyToggle = useDevModeHotkey(70 /* f */)
+  const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
   const [hotkeyLoaded, setHotkeyLoaded] = useState(false)
   const [isOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
@@ -57,6 +59,7 @@ export const FeatureFlagOverrideModal = () => {
         }),
         {}
       )
+      setRemoteInstanceLoaded(true)
     }
 
     remoteConfigInstance.waitForUserRemoteConfig().then(updateDefaultSettings)
@@ -84,32 +87,36 @@ export const FeatureFlagOverrideModal = () => {
         <ModalTitle title={messages.title} />
       </ModalHeader>
       <ModalContent>
-        <div className={styles.optionContainer}>
-          {flags.map(flag => (
-            <div key={flag} className={styles.option}>
-              <span>{flag}: </span>
-              <SegmentedControl
-                options={[
-                  {
-                    key: 'default',
-                    text: `Default (${
-                      defaultSettings.current[flag] ? 'Enabled' : 'Disabled'
-                    })`
-                  },
-                  { key: 'enabled', text: 'Enabled' },
-                  { key: 'disabled', text: 'Disabled' }
-                ]}
-                selected={overrideSettings[flag] ?? 'default'}
-                onSelectOption={(key: string) => {
-                  const val: OverrideSetting =
-                    key === 'default' ? null : (key as OverrideSetting)
-                  setOverrideSettings(prev => ({ ...prev, [flag]: val }))
-                  setOverrideSetting(flag as FeatureFlags, val)
-                }}
-              />
-            </div>
-          ))}
-        </div>
+        {remoteInstanceLoaded ? (
+          <div className={styles.optionContainer}>
+            {flags.map(flag => (
+              <div key={flag} className={styles.option}>
+                <span>{flag}: </span>
+                <SegmentedControl
+                  options={[
+                    {
+                      key: 'default',
+                      text: `Default (${
+                        defaultSettings.current[flag] ? 'Enabled' : 'Disabled'
+                      })`
+                    },
+                    { key: 'enabled', text: 'Enabled' },
+                    { key: 'disabled', text: 'Disabled' }
+                  ]}
+                  selected={overrideSettings[flag] ?? 'default'}
+                  onSelectOption={(key: string) => {
+                    const val: OverrideSetting =
+                      key === 'default' ? null : (key as OverrideSetting)
+                    setOverrideSettings(prev => ({ ...prev, [flag]: val }))
+                    setOverrideSetting(flag as FeatureFlags, val)
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <LoadingSpinner />
+        )}
       </ModalContent>
     </Modal>
   )

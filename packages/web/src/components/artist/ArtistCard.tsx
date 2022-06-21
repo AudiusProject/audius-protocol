@@ -9,12 +9,11 @@ import { setNotificationSubscription } from 'common/store/pages/profile/actions'
 import { followUser, unfollowUser } from 'common/store/social/users/actions'
 import FollowButton from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import styles from './ArtistCard.module.css'
 import { ArtistCardCover } from './ArtistCardCover'
 import { ArtistSupporting } from './ArtistSupporting'
-const { getFeatureEnabled } = remoteConfigInstance
 
 type ArtistCardProps = {
   artist: User

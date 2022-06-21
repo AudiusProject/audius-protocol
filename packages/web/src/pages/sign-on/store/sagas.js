@@ -32,6 +32,7 @@ import { getIGUserUrl } from 'components/instagram-auth/InstagramAuth'
 import AudiusBackend from 'services/AudiusBackend'
 import { getCityAndRegion } from 'services/Location'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { fetchAccountAsync, reCacheAccount } from 'store/account/sagas'
 import { identify, make } from 'store/analytics/actions'
@@ -54,7 +55,7 @@ import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
 
-const { getFeatureEnabled, waitForRemoteConfig } = remoteConfigInstance
+const { waitForRemoteConfig } = remoteConfigInstance
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'

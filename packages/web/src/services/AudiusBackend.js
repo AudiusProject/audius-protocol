@@ -30,6 +30,7 @@ import CIDCache from 'common/store/cache/CIDCache'
 import { uuid } from 'common/utils/uid'
 import * as schemas from 'schemas'
 import { ClientRewardsReporter } from 'services/audius-backend/Rewards'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
 import { track } from 'store/analytics/providers/amplitude'
@@ -495,10 +496,10 @@ class AudiusBackend {
           ? undefined
           : { siteKey: RECAPTCHA_SITE_KEY },
         isServer: false,
-        preferHigherPatchForPrimary: remoteConfigInstance.getFeatureEnabled(
+        preferHigherPatchForPrimary: getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
         ),
-        preferHigherPatchForSecondaries: remoteConfigInstance.getFeatureEnabled(
+        preferHigherPatchForSecondaries: getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         )
       })
@@ -951,9 +952,7 @@ class AudiusBackend {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
         unauthenticatedUuid,
-        remoteConfigInstance.getFeatureEnabled(
-          FeatureFlags.SOLANA_LISTEN_ENABLED
-        )
+        getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
       )
       return listen
     } catch (err) {
@@ -2373,12 +2372,7 @@ class AudiusBackend {
    * @param {playlistId} playlistId playlist id or folder id
    */
   static async updatePlaylistLastViewedAt(playlistId) {
-    if (
-      !remoteConfigInstance.getFeatureEnabled(
-        FeatureFlags.PLAYLIST_UPDATES_ENABLED
-      )
-    )
-      return
+    if (!getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)) return
 
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
