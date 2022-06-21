@@ -567,6 +567,9 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     # The last transaction processed
     last_tx = None
 
+    # The latest play slot to be processed
+    latest_play_slot = None
+
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
         latest_global_slot = solana_client_manager.get_slot()
@@ -619,6 +622,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                         # Otherwise, ensure this transaction is still processed
                         transaction_signature_batch.append(tx_sig)
                 # Restart processing at the end of this transaction signature batch
+
+                # get latest play slot from the first fetch
+                if transaction_signature_batch and not latest_play_slot:
+                    latest_play_slot = transactions_array[0]["slot"]
+
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
 
@@ -647,9 +655,16 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         ):
             parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
 
-    if last_tx and transaction_signatures:
-        redis.set(latest_sol_plays_slot_key, last_tx["slot"])
+    if latest_play_slot:
+        logger.info(
+            f"index_solana_plays.py | Setting latest plays slot {latest_play_slot}"
+        )
+        redis.set(latest_sol_plays_slot_key, latest_play_slot)
+
     elif latest_global_slot is not None:
+        logger.info(
+            f"index_solana_plays.py | Setting latest plays slot as the latest global slot {latest_global_slot}"
+        )
         redis.set(latest_sol_plays_slot_key, latest_global_slot)
 
 
