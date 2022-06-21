@@ -89,4 +89,4 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
-    connection.execute("drop trigger if exists trg_plays on plays;")
+    connection.execute("drop trigger if exists on_play on plays;")
