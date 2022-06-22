@@ -98,6 +98,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
     sizes: _cover_photo_sizes ?? null,
     size: WidthSizes.SIZE_640
   })
+  const isDefaultImage = coverPhoto && /imageCoverPhotoBlank/.test(coverPhoto)
 
   const handlePress = useCallback(() => {
     if (handle) {
@@ -117,7 +118,9 @@ export const SupportingTile = (props: SupportingTileProps) => {
     <Tile style={[styles.root, style]} onPress={handlePress}>
       <ImageBackground
         style={styles.backgroundImage}
-        source={{ uri: coverPhoto }}
+        source={{
+          uri: isDefaultImage ? `https://audius.co/${coverPhoto}` : coverPhoto
+        }}
       >
         <LinearGradient
           colors={['#0000001A', '#0000004D']}
