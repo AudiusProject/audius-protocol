@@ -179,9 +179,21 @@ class ServiceRegistry {
     app.use('/health/bull', serverAdapter.getRouter())
   }
 
-  // Truncates large JSON data in Bull Board after 5 levels of nesting or 10,0000 characters.
-  // Replaces truncated data with [Array-Truncated], [Object-Truncated], or [String-Truncated].
-  // Taken from https://github.com/felixmosh/bull-board/pull/414#issuecomment-1134874761
+  /**
+   * Truncates large JSON data in Bull Board after any of the following is exceeded:
+   * - 5 levels of nesting
+   * - 10,000 characters (strings only)
+   * - 100 elements (arrays) or 100 keys (objects)
+   *
+   * Adapted from https://github.com/felixmosh/bull-board/pull/414#issuecomment-1134874761
+   *
+   * @param {Object} dataToTruncate the data that will be truncated as needed
+   * @param {number} [curDepth] the current depth of the object (this function is called recursively)
+   * @returns dataToTruncate with the following replacements when the above thresholds are exceeded:
+   * - [Truncated string of length <length>]
+   * - [Truncated array with <length> elements],
+   * - [Truncated object with <length> keys]
+   */
   truncateBull(dataToTruncate, curDepth = 0) {
     if (
       typeof dataToTruncate === 'object' &&
@@ -195,16 +207,23 @@ class ServiceRegistry {
         Object.entries(dataToTruncate).forEach(([key, value]) => {
           switch (typeof value) {
             case 'string':
-              json[key] = value.length > 10000 ? '[String-Truncated]' : value
+              json[key] =
+                value.length > 10_000
+                  ? `[Truncated string of length ${value.length}]`
+                  : value
               break
             case 'object':
               if (Array.isArray(value)) {
                 json[key] =
-                  JSON.stringify(value).length > 10000
-                    ? '[Array-Truncated]'
+                  value.length > 100
+                    ? `[Truncated array with ${value.length} elements]`
                     : value
               } else {
-                json[key] = this.truncateBull(value, newDepth)
+                const length = Object.keys(value).length
+                json[key] =
+                  length > 100
+                    ? `[Truncated object with ${length} keys]`
+                    : this.truncateBull(value, newDepth)
               }
               break
             default:
@@ -214,7 +233,9 @@ class ServiceRegistry {
         })
         return json
       }
-      return '[Object-Truncated]'
+      return `[Truncated object with ${
+        Object.keys(dataToTruncate).length
+      } keys]`
     }
     return dataToTruncate
   }
