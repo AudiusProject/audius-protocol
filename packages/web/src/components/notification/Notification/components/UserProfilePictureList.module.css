@@ -58,7 +58,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: var(--white);
+  color: var(--static-white);
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
