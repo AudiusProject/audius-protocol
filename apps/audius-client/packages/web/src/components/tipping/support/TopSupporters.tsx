@@ -77,7 +77,7 @@ export const TopSupporters = () => {
         users={rankedSupporters}
         totalUserCount={profile.supporter_count}
         limit={MAX_PROFILE_TOP_SUPPORTERS}
-        stopPropagation
+        disableProfileClick
       />
     </div>
   )
