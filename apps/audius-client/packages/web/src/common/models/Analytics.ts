@@ -250,11 +250,11 @@ export enum Name {
   REWARDS_CLAIM_FINISH_COGNITO_FLOW = 'Rewards Claim: Finish Cognito Flow',
 
   // Tipping
-  TIP_AUDIO_REQUEST = 'TIP_AUDIO_REQUEST',
-  TIP_AUDIO_SUCCESS = 'TIP_AUDIO_SUCCESS',
-  TIP_AUDIO_FAILURE = 'TIP_AUDIO_FAILURE',
-  TIP_AUDIO_TWITTER_SHARE = 'TIP_AUDIO_TWITTER_SHARE',
-  TIP_FEED_TILE_DISMISS = 'TIP_FEED_TILE_DISMISS',
+  TIP_AUDIO_REQUEST = 'Tip Audio: Request',
+  TIP_AUDIO_SUCCESS = 'Tip Audio: Success',
+  TIP_AUDIO_FAILURE = 'Tip Audio: Failure',
+  TIP_AUDIO_TWITTER_SHARE = 'Tip Audio: Twitter Share',
+  TIP_FEED_TILE_DISMISS = 'Tip Feed Tile: Dismiss',
 
   // Social Proof
   SOCIAL_PROOF_OPEN = 'Social Proof: Open',
