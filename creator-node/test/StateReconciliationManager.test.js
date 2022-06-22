@@ -143,12 +143,12 @@ describe('test StateReconciliationManager initialization, events, and job proces
   it('processes updateReplicaSet jobs with expected data and returns the expected results', async function () {
     // Mock StateReconciliationManager to have updateReplicaSet job processor return dummy data and mocked processJob util
     const expectedResult = { test: 'test' }
-    const issueSyncReqStub = sandbox.stub().resolves(expectedResult)
+    const updateReplicaSetStub = sandbox.stub().resolves(expectedResult)
     const { processJobMock, loggerStub } = getProcessJobMock()
     const MockStateReconciliationManager = proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/index.js',
       {
-        './updateReplicaSet.jobProcessor': issueSyncReqStub,
+        './updateReplicaSet.jobProcessor': updateReplicaSetStub,
         '../processJob': processJobMock
       }
     )
@@ -178,7 +178,7 @@ describe('test StateReconciliationManager initialization, events, and job proces
     await expect(
       new MockStateReconciliationManager().processUpdateReplicaSetJob(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
-    expect(issueSyncReqStub).to.have.been.calledOnceWithExactly({
+    expect(updateReplicaSetStub).to.have.been.calledOnceWithExactly({
       logger: loggerStub,
       wallet,
       userId,

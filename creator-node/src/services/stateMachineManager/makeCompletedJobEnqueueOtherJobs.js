@@ -1,5 +1,5 @@
 const { logger: baseLogger, createChildLogger } = require('../../logging')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
+const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
 
 /**
  * Higher order function that creates a function that can be used as a Bull Queue onComplete callback to take
@@ -24,6 +24,8 @@ const { QUEUE_NAMES } = require('./stateMachineConstants')
  *     ]
  *   }
  * }
+ * @dev MUST be bound to a class containing an `enabledReconfigModes` property.
+ *      See usage in index.js (in same directory) for example of how it's bound to StateMachineManager.
  *
  * @param {BullQueue} monitoringQueue the queue that handles state monitoring jobs
  * @param {BullQueue} reconciliationQueue the queue that handles state reconciliation jobs
@@ -84,6 +86,14 @@ module.exports = function makeCompletedJobEnqueueOtherJobs(
     try {
       const reconciliationBulkAddResult = await reconciliationQueue.addBulk(
         reconciliationJobs.map((job) => {
+          // Inject enabledReconfigModes into update-replica-set jobs.
+          // It gets `this` from being bound to index.js in the same directory
+          if (job.jobName === JOB_NAMES.UPDATE_REPLICA_SET) {
+            job.jobData = {
+              ...job.jobData,
+              enabledReconfigModes: Array.from(this.enabledReconfigModesSet)
+            }
+          }
           return { name: job.jobName, data: job.jobData }
         })
       )
