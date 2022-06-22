@@ -37,7 +37,7 @@ const useStyles = makeStyles(
       width: imageDimensions.width,
       marginLeft: spacing(2) - imageDimensions.width,
       textAlign: 'center',
-      color: palette.white,
+      color: palette.staticWhite,
       fontSize: typography.fontSize.small,
       fontFamily: typography.fontByWeight.bold
     }
