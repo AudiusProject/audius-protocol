@@ -213,7 +213,6 @@ export const setupEnv = () => {
         dotenv.config({ path: '.env.local' })
     }
 
-    // FIXME: Pull in env vars more robustly
     const db = {
         name: process.env['DB_NAME'] || '',
         host: process.env['DB_HOST'] || '',
