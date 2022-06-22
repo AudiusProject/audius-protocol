@@ -19,6 +19,8 @@ axios.defaults.timeout = 300_000 // 5min
 axios.defaults.httpAgent = new http.Agent({ timeout: 60000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized: false })
 
+let envInitialized = false
+
 
 export const getExternalRequestParams = (): {
     deregisteredCN: string[],
@@ -199,19 +201,24 @@ export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
-export const setupEnv = () => {
-    const nodeEnv = process.env['NODE_ENV']
+export const getEnv = () => {
 
-    if (nodeEnv === "production") {
-        console.log('[+] running in production (.env.prod)')
-        dotenv.config({ path: '.env.prod' })
-    } else if (nodeEnv === "staging") {
-        console.log('[+] running in staging (.env.stage)')
-        dotenv.config({ path: '.env.stage' })
-    } else {
-        console.log('[+] running locally (.env.local)')
-        dotenv.config({ path: '.env.local' })
+    if (!envInitialized) {
+        const nodeEnv = process.env['NODE_ENV']
+
+        if (nodeEnv === "production") {
+            console.log('[+] running in production (.env.prod)')
+            dotenv.config({ path: '.env.prod' })
+        } else if (nodeEnv === "staging") {
+            console.log('[+] running in staging (.env.stage)')
+            dotenv.config({ path: '.env.stage' })
+        } else {
+            console.log('[+] running locally (.env.local)')
+            dotenv.config({ path: '.env.local' })
+
+        }
     }
+
 
     const db = {
         name: process.env['DB_NAME'] || '',
@@ -222,5 +229,13 @@ export const setupEnv = () => {
         sql_logger: (process.env['SQL_LOGGING'] || '') in ['T', 't', 'True', 'true', '1']
     }
 
-    return { db }
+    const fdb = {
+        name: process.env['FDB_NAME'] || '',
+        host: process.env['FDB_HOST'] || '',
+        port: process.env['FDB_PORT'] || '',
+        username: process.env['FDB_USERNAME'] || '',
+        password: process.env['FDB_PASSWORD'] || '',
+    }
+
+    return { db, fdb }
 }
