@@ -5,7 +5,7 @@ import { stringWeiToBN } from 'audius-client/src/common/utils/wallet'
 import { MAX_PROFILE_SUPPORTING_TILES } from 'audius-client/src/utils/constants'
 import { ID } from 'common/models/Identifiers'
 import { getOptimisticSupportingForUser } from 'common/store/tipping/selectors'
-import { Dimensions, FlatList } from 'react-native'
+import { FlatList } from 'react-native'
 
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
@@ -22,9 +22,9 @@ type ViewAllData = { viewAll: true; supporting: Supporting[] }
 type SkeletonData = { loading: true }
 const skeletonData: SkeletonData[] = [{ loading: true }, { loading: true }]
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(() => ({
   singleSupporterTile: {
-    width: Dimensions.get('window').width - spacing(6)
+    marginHorizontal: 0
   }
 }))
 

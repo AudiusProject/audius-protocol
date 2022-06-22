@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     overflow: 'hidden'
   },
   gradient: {
-    width: 220,
+    minWidth: 220,
     height: 88,
     justifyContent: 'space-between',
     padding: spacing(2)
