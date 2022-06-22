@@ -260,7 +260,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         type: notificationTypes.TipReceive
       }
       formattedNotifications.push(formattedTipNotification)
-      // Need info about the tip sender
     }
   }
   const [formattedCreateNotifications, users] = await _processSubscriberPushNotifications()

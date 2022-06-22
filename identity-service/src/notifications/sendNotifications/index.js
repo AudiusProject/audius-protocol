@@ -23,11 +23,13 @@ function getUserIdsToNotify (notifications) {
       case notificationTypes.TierChange:
         return userIds.concat(notification.initiator)
       case notificationTypes.Tip:
-        // For the case of a tip, need to add both senderId and receiverId
         const receiverId = notification.initiator
-        const senderId = notification.metadata.entity_id
-        return userIds.concat([receiverId, senderId])
+        return userIds.concat(receiverId)
       case notificationTypes.Reaction:
+        // Specifically handle tip reactions
+        if (notification.metadata.reaction_type !== 'tip') {
+          return userIds
+        }
         // For reactions, add the tip_sender_id in the reacted_to_entity
         return userIds.concat(notification.metadata.reacted_to_entity.tip_sender_id)
       case notificationTypes.SupporterRankUp:
