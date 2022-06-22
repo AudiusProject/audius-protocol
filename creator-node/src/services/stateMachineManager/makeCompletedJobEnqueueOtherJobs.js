@@ -86,12 +86,18 @@ module.exports = function makeCompletedJobEnqueueOtherJobs(
     try {
       const reconciliationBulkAddResult = await reconciliationQueue.addBulk(
         reconciliationJobs.map((job) => {
-          // Inject enabledReconfigModes into update-replica-set jobs.
-          // It gets `this` from being bound to index.js in the same directory
+          // Inject enabledReconfigModesSet into update-replica-set jobs as an array.
+          // It gets `this` from being bound to ./index.js
           if (job.jobName === JOB_NAMES.UPDATE_REPLICA_SET) {
-            job.jobData = {
-              ...job.jobData,
-              enabledReconfigModes: Array.from(this.enabledReconfigModesSet)
+            if (this?.hasOwnProperty('enabledReconfigModesSet')) {
+              job.jobData = {
+                ...job.jobData,
+                enabledReconfigModes: Array.from(this.enabledReconfigModesSet)
+              }
+            } else {
+              logger.error(
+                'Function was supposed to be bound to StateMachineManager to access enabledReconfigModesSet! Update replica set jobs will not be able to process!'
+              )
             }
           }
           return { name: job.jobName, data: job.jobData }

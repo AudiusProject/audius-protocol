@@ -64,7 +64,7 @@ describe('test updateReplicaSet job processor', function () {
   }
 
   function getJobProcessorStub({
-    audiusLibsStub,
+    healthyNodes,
     getNewOrExistingSyncReqStub,
     retrieveClockValueForUserFromReplicaStub,
     maxSelectNewReplicaSetAttempts = 100,
@@ -73,6 +73,20 @@ describe('test updateReplicaSet job processor', function () {
     const getCNodeEndpointToSpIdMapStub = sandbox
       .stub()
       .returns(cNodeEndpointToSpIdMap)
+    const updateReplicaSetStub = sandbox.stub().resolves()
+    const autoSelectCreatorNodesStub = sandbox
+      .stub()
+      .resolves({ services: healthyNodes })
+    const audiusLibsStub = {
+      ServiceProvider: {
+        autoSelectCreatorNodes: autoSelectCreatorNodesStub
+      },
+      contracts: {
+        UserReplicaSetManagerClient: {
+          updateReplicaSet: updateReplicaSetStub
+        }
+      }
+    }
     return proxyquire(
       '../src/services/stateMachineManager/stateReconciliation/updateReplicaSet.jobProcessor.js',
       {
@@ -112,20 +126,6 @@ describe('test updateReplicaSet job processor', function () {
       [secondary2]: '',
       [fourthHealthyNode]: ''
     }
-    const autoSelectCreatorNodesStub = sandbox
-      .stub()
-      .resolves({ services: healthyNodes })
-    const updateReplicaSetStub = sandbox.stub().resolves()
-    const audiusLibsStub = {
-      ServiceProvider: {
-        autoSelectCreatorNodes: autoSelectCreatorNodesStub
-      },
-      contracts: {
-        UserReplicaSetManagerClient: {
-          updateReplicaSet: updateReplicaSetStub
-        }
-      }
-    }
 
     // Mark secondary1 as unhealthy and fourthHealthyNode as not having any user state
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
@@ -138,7 +138,7 @@ describe('test updateReplicaSet job processor', function () {
     }
 
     const updateReplicaSetJobProcessor = getJobProcessorStub({
-      audiusLibsStub,
+      healthyNodes,
       getNewOrExistingSyncReqStub,
       retrieveClockValueForUserFromReplicaStub
     })
@@ -198,20 +198,6 @@ describe('test updateReplicaSet job processor', function () {
       [secondary2]: '',
       [fourthHealthyNode]: ''
     }
-    const autoSelectCreatorNodesStub = sandbox
-      .stub()
-      .resolves({ services: healthyNodes })
-    const updateReplicaSetStub = sandbox.stub().resolves()
-    const audiusLibsStub = {
-      ServiceProvider: {
-        autoSelectCreatorNodes: autoSelectCreatorNodesStub
-      },
-      contracts: {
-        UserReplicaSetManagerClient: {
-          updateReplicaSet: updateReplicaSetStub
-        }
-      }
-    }
 
     // Mark secondary1 as unhealthy and fourthHealthyNode as not having any user state
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
@@ -224,7 +210,7 @@ describe('test updateReplicaSet job processor', function () {
     }
 
     const updateReplicaSetJobProcessor = getJobProcessorStub({
-      audiusLibsStub,
+      healthyNodes,
       getNewOrExistingSyncReqStub,
       retrieveClockValueForUserFromReplicaStub
     })
@@ -269,20 +255,6 @@ describe('test updateReplicaSet job processor', function () {
       [secondary2]: '',
       [fourthHealthyNode]: ''
     }
-    const autoSelectCreatorNodesStub = sandbox
-      .stub()
-      .resolves({ services: healthyNodes })
-    const updateReplicaSetStub = sandbox.stub().resolves()
-    const audiusLibsStub = {
-      ServiceProvider: {
-        autoSelectCreatorNodes: autoSelectCreatorNodesStub
-      },
-      contracts: {
-        UserReplicaSetManagerClient: {
-          updateReplicaSet: updateReplicaSetStub
-        }
-      }
-    }
 
     // Mark all nodes in the replica set as unhealthy and fourthHealthyNode as not having any user state
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
@@ -295,7 +267,7 @@ describe('test updateReplicaSet job processor', function () {
     }
 
     const updateReplicaSetJobProcessor = getJobProcessorStub({
-      audiusLibsStub,
+      healthyNodes,
       getNewOrExistingSyncReqStub,
       retrieveClockValueForUserFromReplicaStub
     })

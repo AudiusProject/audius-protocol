@@ -529,7 +529,7 @@ const _issueUpdateReplicaSetOp = async (
       )
     }
 
-    // Enqueue a sync for new primary to new secondaries. If there is no diff, then this is a no-op.
+    // Enqueue a sync from new primary to new secondary1. If there is no diff, then this is a no-op.
     const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
       getNewOrExistingSyncReq({
         userWallet: wallet,
@@ -537,7 +537,15 @@ const _issueUpdateReplicaSetOp = async (
         secondaryEndpoint: newSecondary1,
         syncType: SyncType.Recurring
       })
+    if (!_.isEmpty(duplicateSyncReq)) {
+      logger.warn(
+        `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary1: ${duplicateSyncReq}`
+      )
+    } else if (!_.isEmpty(syncToEnqueueToSecondary1)) {
+      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary1)
+    }
 
+    // Enqueue a sync from new primary to new secondary2. If there is no diff, then this is a no-op.
     const {
       duplicateSyncReq: duplicateSyncReq2,
       syncReqToEnqueue: syncToEnqueueToSecondary2
@@ -547,17 +555,8 @@ const _issueUpdateReplicaSetOp = async (
       secondaryEndpoint: newSecondary2,
       syncType: SyncType.Recurring
     })
-
-    if (!_.isEmpty(duplicateSyncReq)) {
-      logger.info(
-        `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary1: ${duplicateSyncReq}`
-      )
-    } else if (!_.isEmpty(syncToEnqueueToSecondary1)) {
-      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary1)
-    }
-
     if (!_.isEmpty(duplicateSyncReq2)) {
-      logger.info(
+      logger.warn(
         `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary2: ${duplicateSyncReq2}`
       )
     } else if (!_.isEmpty(syncToEnqueueToSecondary2)) {
