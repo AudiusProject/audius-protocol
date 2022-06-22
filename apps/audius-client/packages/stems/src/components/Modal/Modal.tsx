@@ -1,4 +1,11 @@
-import { useEffect, useState, useCallback, useMemo, forwardRef } from 'react'
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  forwardRef,
+  MouseEventHandler
+} from 'react'
 
 import cn from 'classnames'
 import uniqueId from 'lodash/uniqueId'
@@ -275,6 +282,10 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   }, [setHeight])
 
   const bodyOffset = getOffset(anchor, verticalAnchorOffset)
+
+  const handleModalContentClicked: MouseEventHandler = e => {
+    e.stopPropagation()
+  }
   return (
     <>
       {modalRoot &&
@@ -301,6 +312,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                       role='dialog'
                       aria-labelledby={titleId}
                       aria-describedby={subtitleId}
+                      onClick={handleModalContentClicked}
                     >
                       <>
                         {/** Begin @deprecated section (moved to ModalHeader and ModalTitle sub-components)  */}
