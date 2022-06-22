@@ -32,8 +32,19 @@ export const TipInput = (props: TipInputProps) => {
 
   const handleChangeText = useCallback(
     (newValue: string) => {
-      const unformattedValue = newValue.replace(/,/g, '')
-      onChangeText?.(unformattedValue)
+      // Allow whole numbers only
+      const unformattedValue = newValue.replace(/[^0-9]+/g, '')
+      const numericWhole = parseInt(unformattedValue, 10)
+      /**
+       * If not a number, e.g. we attempt to parse an empty string,
+       * then set the text to an empty string.
+       * Otherwise, set it as the string version of the whole number.
+       */
+      if (isNaN(numericWhole)) {
+        onChangeText?.('')
+      } else {
+        onChangeText?.(numericWhole.toString())
+      }
     },
     [onChangeText]
   )
