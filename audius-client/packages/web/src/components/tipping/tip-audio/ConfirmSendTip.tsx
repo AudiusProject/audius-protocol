@@ -7,11 +7,7 @@ import { Transition, animated } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import {
-  getSendAmount,
-  getSendStatus,
-  getSendUser
-} from 'common/store/tipping/selectors'
+import { getSendTipData } from 'common/store/tipping/selectors'
 import { confirmSendTip, beginTip } from 'common/store/tipping/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
@@ -59,9 +55,12 @@ const ConvertingInfo = ({ isVisible }: { isVisible: boolean }) => (
 
 export const ConfirmSendTip = () => {
   const dispatch = useDispatch()
-  const sendStatus = useSelector(getSendStatus)
-  const sendAmount = useSelector(getSendAmount)
-  const receiver = useSelector(getSendUser)
+  const {
+    user: receiver,
+    status: sendStatus,
+    amount: sendAmount,
+    source
+  } = useSelector(getSendTipData)
   const [isDisabled, setIsDisabled] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [isSending, setIsSending] = useState(false)
@@ -78,9 +77,9 @@ export const ConfirmSendTip = () => {
 
   const handleGoBackClick = useCallback(() => {
     if (!isDisabled) {
-      dispatch(beginTip({ user: receiver, source: 'profile' }))
+      dispatch(beginTip({ user: receiver, source }))
     }
-  }, [isDisabled, dispatch, receiver])
+  }, [isDisabled, dispatch, receiver, source])
 
   // Make the states stick so that the transitions look nice
   useEffect(() => {
