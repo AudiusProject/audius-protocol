@@ -25,6 +25,7 @@ type UserListProps = {
   onFollow: (userId: ID) => void
   onUnfollow: (userId: ID) => void
   getScrollParent?: () => HTMLElement | null
+  onNavigateAway?: () => void
 }
 
 const UserList = (props: UserListProps) => {
@@ -51,6 +52,7 @@ const UserList = (props: UserListProps) => {
               onClickArtistName={() => {
                 props.onClickArtistName(user.handle)
               }}
+              onNavigateAway={props.onNavigateAway}
               showPopover={!props.isMobile}
               tag={props.tag}
               className={styles.artistChipContainer}

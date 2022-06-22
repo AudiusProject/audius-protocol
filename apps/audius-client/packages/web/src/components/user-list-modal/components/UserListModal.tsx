@@ -174,6 +174,7 @@ const UserListModal = ({
           tag={tag}
           getScrollParent={() => scrollParentRef.current || null}
           beforeClickArtistName={onClose}
+          onNavigateAway={onClose}
         />
       </Scrollbar>
     </Modal>
