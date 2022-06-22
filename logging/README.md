@@ -13,8 +13,10 @@ Visit [Kibana](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/discover
 When not using the direct link and within the
 `Analytics -> Discover` view, click `Open` to load the `Audius.v2` dashboard.
 
-Filter the logs by using a filter on `audius.hostname`. Additionally, the most common
-filters will be under `audius.*` and `json.*`.
+Filter the logs by using a filter on `audius.hostname`. This can be done by finding
+`audius.hostname` under the `Available fields` section within the left sidebar.
+The value of the filter will match GCP's instance's `Name` field.
+Additionally, the most common filters will be under `audius.*` and `json.*`.
 
 Each bump of the logging container will cause a new
 `filebeat-${VERSION}-(app|beats|db|misc)` data view based on the newly versioned indices.
