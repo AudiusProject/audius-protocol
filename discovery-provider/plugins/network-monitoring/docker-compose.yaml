@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: audius_network_monitoring
     volumes:
-      - postgres_data_network_monitoring_2:/var/lib/postgresql/data/
+      - postgres_data_network_monitoring_1:/var/lib/postgresql/data/
     ports:
       - '${audius_nm_db_port}:5432'
     networks:
@@ -59,7 +59,9 @@ services:
       - audius_dev
 
   network-monitoring:
-    build: '.'
+    build: 
+      context: '.'
+      # dockerfile: Dockerfile.test
     depends_on:
       - network-monitoring-db
       - network-monitoring-push-gateway

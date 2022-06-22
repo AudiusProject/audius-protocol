@@ -1,6 +1,8 @@
 
 import Web3 from 'web3';
 const web3 = new Web3()
+const dotenv = require('dotenv')
+
 
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
@@ -195,4 +197,30 @@ export const retryAsyncFunctionOrError = async <T>(maxTries: number, func: () =>
 
 export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+export const setupEnv = () => {
+    const nodeEnv = process.env['NODE_ENV']
+
+    if (nodeEnv === "production") {
+        console.log('[+] running in production (.env.prod)')
+        dotenv.config({ path: '.env.prod' })
+    } else if (nodeEnv === "staging") {
+        console.log('[+] running in staging (.env.stage)')
+        dotenv.config({ path: '.env.stage' })
+    } else {
+        console.log('[+] running locally (.env.local)')
+        dotenv.config({ path: '.env.local' })
+    }
+
+    const db = {
+        name: process.env['DB_NAME'] || '',
+        host: process.env['DB_HOST'] || '',
+        port: parseInt(process.env['DB_PORT'] || ''),
+        username: process.env['DB_USERNAME'] || '',
+        password: process.env['DB_PASSWORD'] || '',
+        sql_logger: (process.env['SQL_LOGGING'] || '') in ['T', 't', 'True', 'true', '1']
+    }
+
+    return { db }
 }
