@@ -28,17 +28,24 @@ type ArtistIdentifierProps = {
   handle: string
   showPopover: boolean
   popoverMount?: MountPlacement
+  onNavigateAway?: () => void
 } & ComponentPropsWithoutRef<'div'>
 const ArtistIdentifier = ({
   userId,
   name,
   handle,
   showPopover,
-  popoverMount
+  popoverMount,
+  onNavigateAway
 }: ArtistIdentifierProps) => {
   return showPopover ? (
     <div>
-      <ArtistPopover handle={handle} mouseEnterDelay={0.3} mount={popoverMount}>
+      <ArtistPopover
+        handle={handle}
+        mouseEnterDelay={0.3}
+        mount={popoverMount}
+        onNavigateAway={onNavigateAway}
+      >
         <div className={styles.name}>
           <span>{name}</span>
           <UserBadges
@@ -49,7 +56,12 @@ const ArtistIdentifier = ({
           />
         </div>
       </ArtistPopover>
-      <ArtistPopover handle={handle} mouseEnterDelay={0.3} mount={popoverMount}>
+      <ArtistPopover
+        handle={handle}
+        mouseEnterDelay={0.3}
+        mount={popoverMount}
+        onNavigateAway={onNavigateAway}
+      >
         <div className={styles.handle}>@{handle}</div>
       </ArtistPopover>
     </div>
@@ -76,6 +88,7 @@ type ArtistChipProps = {
   tag?: string
   className?: string
   popoverMount?: MountPlacement
+  onNavigateAway?: () => void
 }
 const ArtistChip = ({
   user,
@@ -83,7 +96,8 @@ const ArtistChip = ({
   showPopover = true,
   tag,
   className = '',
-  popoverMount = MountPlacement.PAGE
+  popoverMount = MountPlacement.PAGE,
+  onNavigateAway
 }: ArtistChipProps) => {
   const {
     user_id: userId,
@@ -112,6 +126,7 @@ const ArtistChip = ({
           handle={handle}
           mouseEnterDelay={0.3}
           mount={popoverMount}
+          onNavigateAway={onNavigateAway}
         >
           <DynamicImage
             wrapperClassName={styles.profilePictureWrapper}
@@ -139,6 +154,7 @@ const ArtistChip = ({
             handle={handle}
             showPopover
             popoverMount={popoverMount}
+            onNavigateAway={onNavigateAway}
           />
         </div>
         <ArtistChipFollowers

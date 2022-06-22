@@ -35,6 +35,7 @@ type ConnectedUserListOwnProps = {
   afterUnfollow?: () => void
   beforeClickArtistName?: () => void
   getScrollParent?: () => HTMLElement | null
+  onNavigateAway?: () => void
 }
 
 type ConnectedUserListProps = ConnectedUserListOwnProps &
@@ -96,6 +97,7 @@ const ConnectedUserList = (props: ConnectedUserListProps) => {
       isMobile={props.isMobile}
       getScrollParent={props.getScrollParent}
       tag={props.tag}
+      onNavigateAway={props.onNavigateAway}
     />
   )
 }
