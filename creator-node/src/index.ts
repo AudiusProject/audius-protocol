@@ -48,9 +48,9 @@ const connectToDBAndRunMigrations = async () => {
  * @returns the port number to configure the Content Node app
  */
 const getPort = () => {
-  const contentCacheLayerEnabled = config.get('contentCacheLayerEnabled')
+  const openRestyCacheCIDEnabled = config.get('openRestyCacheCIDEnabled')
 
-  if (contentCacheLayerEnabled) {
+  if (openRestyCacheCIDEnabled) {
     return 3000
   }
 
