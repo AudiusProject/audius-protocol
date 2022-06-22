@@ -13,9 +13,9 @@ module.exports = {
   predeploy: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     blacklisterAddress: null,
-    bootstrapSPIds: [],
-    bootstrapSPDelegateWallets: [],
-    bootstrapSPOwnerWallets: [],
+    bootstrapSPIds: process.env.bootstrapSPIds ? process.env.bootstrapSPIds.split(",") : [],
+    bootstrapSPDelegateWallets: process.env.bootstrapSPDelegateWallets ? process.env.bootstrapSPDelegateWallets.split(",") : [],
+    bootstrapSPOwnerWallets: process.env.bootstrapSPOwnerWallets ? process.env.bootstrapSPOwnerWallets.split(",") : [],
     userReplicaSetBootstrapAddress: null
   },
   test_local: {

@@ -7,6 +7,10 @@ services:
     build:
       context: contracts
       dockerfile: Dockerfile.dev
+      args:
+        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
+        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
+        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
     ports:
@@ -243,9 +247,10 @@ services:
 
   discovery-provider:
     build: discovery-provider
-    command: sh -c ". /tmp/startup/startup.sh && scripts/start.sh"
+    command: sh -c ". /tmp/dev/startup/startup.sh && scripts/start.sh"
     ports:
       - "5000-5010:5000"
+    env_file: .env # used by the startup script
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
@@ -271,7 +276,7 @@ services:
       - ./discovery-provider:/audius-discovery-provider
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
-      - ./dev/startup:/tmp/startup
+      - ./dev:/tmp/dev
     depends_on:
       poa-ganache:
         condition: service_healthy
@@ -281,15 +286,15 @@ services:
         condition: service_healthy
     deploy:
       mode: replicated
-      replicas: 2
 
   # creator-node
 
   creator-node:
     build: creator-node
-    command: sh -c ". /tmp/startup/startup.sh && scripts/start.sh"
+    command: sh -c ". /tmp/dev/startup/startup.sh && scripts/start.sh"
     ports:
       - "4000-4010:4000"
+    env_file: .env # used by the startup script
     environment:
       logLevel: "debug"
       devMode: "true"
@@ -315,7 +320,7 @@ services:
     volumes:
       - ./creator-node/src:/usr/src/app/src
       - audius-libs:/usr/src/audius-libs
-      - ./dev/startup:/tmp/startup
+      - ./dev:/tmp/dev
     depends_on:
       poa-ganache:
         condition: service_healthy
@@ -327,7 +332,6 @@ services:
         condition: service_started
     deploy:
       mode: replicated
-      replicas: 2
 
 volumes:
   poa-contracts-abis:

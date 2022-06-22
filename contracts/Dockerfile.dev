@@ -9,6 +9,10 @@ WORKDIR /usr/src/app
 COPY --from=builder /node_modules ./node_modules
 COPY . .
 
+ARG bootstrapSPIds
+ARG bootstrapSPDelegateWallets
+ARG bootstrapSPOwnerWallets
+
 RUN ./scripts/setup-predeployed-ganache.sh /usr/db
 
 CMD ["npx", "ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50"]
