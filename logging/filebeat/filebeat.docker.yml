@@ -81,6 +81,7 @@ filebeat.autodiscover:
                 - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
               json.message_key: message
               json.add_error_key: true
+              json.ignore_decoding_error: true
               processors:
                 - add_cloud_metadata: ~
                 - add_docker_metadata: ~
