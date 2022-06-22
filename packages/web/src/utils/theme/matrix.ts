@@ -33,10 +33,10 @@ const theme = {
   '--white': '#1F211F',
   '--darkmode-static-white': 'var(--white)',
 
+  '--page-header-gradient-color-1': '#4FF069',
+  '--page-header-gradient-color-2': '#09BD51',
   '--page-header-gradient':
-    'linear-gradient(323.08deg, #4FF069 36.13%, #09BD51 133.51%)',
-  '--page-header-gradient-color-1': 'var(--neutral-light-10)',
-  '--page-header-gradient-color-2': 'var(--neutral-light-10)',
+    'linear-gradient(323.08deg, var(--page-header-gradient-color-1) 36.13%, var(--page-header-gradient-color-2) 133.51%)',
 
   '--tile-shadow-1': 'rgba(0, 0, 0, 0.1)',
   '--tile-shadow-2': '#000000',
