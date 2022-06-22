@@ -60,7 +60,7 @@ const generateEnv = async (stream, env) => {
   // write a header to seperate this section from the stub above
   const heading = `${env} (auto-generated)`
   stream.write(`  ${"#".repeat(heading.length)}\n`);
-  stream.write(`  ${heading}\n`);
+  stream.write(`  # ${heading}\n`);
   stream.write(`  ${"#".repeat(heading.length)}\n`);
 
   for (const sp of serviceProviders) {
