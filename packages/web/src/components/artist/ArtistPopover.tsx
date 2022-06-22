@@ -37,6 +37,7 @@ type ArtistPopoverProps = {
   children: ReactNode
   mouseEnterDelay?: number
   component?: 'div' | 'span'
+  onNavigateAway?: () => void
 }
 
 export const ArtistPopover = ({
@@ -45,7 +46,8 @@ export const ArtistPopover = ({
   placement = Placement.RightBottom,
   mount = MountPlacement.PAGE,
   mouseEnterDelay = 0.5,
-  component: Component = 'div'
+  component: Component = 'div',
+  onNavigateAway
 }: ArtistPopoverProps) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const creator = useSelector((state: CommonState) =>
@@ -79,6 +81,7 @@ export const ArtistPopover = ({
         artist={creator}
         onNavigateAway={() => {
           setIsPopupVisible(false)
+          onNavigateAway?.()
         }}
       />
     ) : null
