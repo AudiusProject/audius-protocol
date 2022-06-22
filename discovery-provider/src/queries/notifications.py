@@ -1146,7 +1146,7 @@ def solana_notifications():
         challenge_disbursement_results = (
             session.query(ChallengeDisbursement)
             .filter(
-                ChallengeDisbursement.slot >= min_slot_number,
+                ChallengeDisbursement.slot > min_slot_number,
                 ChallengeDisbursement.slot <= max_slot_number,
             )
             .all()
@@ -1169,7 +1169,7 @@ def solana_notifications():
             session.query(Milestone, Track.owner_id)
             .filter(
                 Milestone.name == MilestoneName.LISTEN_COUNT,
-                Milestone.slot >= min_slot_number,
+                Milestone.slot > min_slot_number,
                 Milestone.slot <= max_slot_number,
             )
             .join(Track, Track.track_id == Milestone.id and Track.is_current == True)
@@ -1195,7 +1195,7 @@ def solana_notifications():
         supporter_rank_ups_result = (
             session.query(SupporterRankUp)
             .filter(
-                SupporterRankUp.slot >= min_slot_number,
+                SupporterRankUp.slot > min_slot_number,
                 SupporterRankUp.slot <= max_slot_number,
             )
             .all()
@@ -1218,7 +1218,7 @@ def solana_notifications():
         user_tips_result: List[UserTip] = (
             session.query(UserTip)
             .filter(
-                UserTip.slot >= min_slot_number,
+                UserTip.slot > min_slot_number,
                 UserTip.slot <= max_slot_number,
             )
             .all()
@@ -1245,7 +1245,7 @@ def solana_notifications():
             session.query(Reaction, User.user_id)
             .join(User, User.wallet == Reaction.sender_wallet)
             .filter(
-                Reaction.slot >= min_slot_number,
+                Reaction.slot > min_slot_number,
                 Reaction.slot <= max_slot_number,
                 User.is_current == True,
             )
