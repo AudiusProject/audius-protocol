@@ -619,7 +619,7 @@ const config = convict({
     default: 8760 // 1 year in hrs
   },
   contentCacheLayerEnabled: {
-    doc: 'Flag to enable or disable the nginx cache layer that caches content served by /ipfs/<cid> and /content/<cid>',
+    doc: 'Flag to enable or disable the nginx cache layer that caches content',
     format: 'BooleanCustom',
     env: 'contentCacheLayerEnabled',
     default: false
