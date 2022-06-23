@@ -182,9 +182,9 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
         return match
 
     if do_tracks:
-        mdsl.extend([{"index": ES_TRACKS}, tag_match("tags")])
+        mdsl.extend([{"index": ES_TRACKS}, tag_match("tag_list")])
         if current_user_id:
-            dsl = tag_match("tags")
+            dsl = tag_match("tag_list")
             dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
             mdsl.extend([{"index": ES_TRACKS}, dsl])
 
