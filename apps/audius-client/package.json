@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "init": "npm run install-deps && npm run install-hooks",
-    "install-deps": "npx lerna exec -- npm i",
+    "install-deps": "npm i && npx lerna exec -- npm i",
     "install-hooks": "npx @escape.tech/mookme init --only-hook --skip-types-selection"
   },
   "devDependencies": {
