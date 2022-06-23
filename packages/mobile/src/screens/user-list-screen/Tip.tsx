@@ -10,7 +10,8 @@ import { useThemeColors } from 'app/utils/theme'
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginVertical: spacing(1)
   },
   amount: {
     marginLeft: spacing(1.5),
@@ -33,7 +34,7 @@ export const Tip = (props: TipProps) => {
 
   return (
     <View style={styles.root}>
-      <IconTip fill={neutralLight4} height={14} width={14} />
+      <IconTip fill={neutralLight4} height={15} width={15} />
       <Text style={styles.amount} color='neutralLight4' weight='bold'>
         {formatWei(stringWeiToBN(amount))}
       </Text>
