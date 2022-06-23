@@ -90,19 +90,27 @@ describe('Test Milestone Notifications', function () {
     assert.deepStrictEqual(user1Notifs.length, 3)
 
     const user2Notifs = await models.Notification.findAll({
-      where: { userId: 2 }
+      where: { userId: 2 },
+      include: [{
+        model: models.NotificationAction,
+        as: 'actions'
+      }]
     })
 
-    assert.ok(user1Notifs.find(n => (n.type === 'MilestoneFavorite' && n.entityId === 12 && n.actions[0].actionEntityType === 'Track')))
-    assert.ok(user1Notifs.find(n => (n.type === 'MilestoneRepost' && n.entityId === 3 && n.actions[0].actionEntityType === 'Album')))
-    assert.ok(user1Notifs.find(n => (n.type === 'MilestoneFollow' && n.entityId === 25)))
+    assert.ok(user2Notifs.find(n => (n.type === 'MilestoneFavorite' && n.entityId === 12 && n.actions[0].actionEntityType === 'Playlist')))
+    assert.ok(user2Notifs.find(n => (n.type === 'MilestoneRepost' && n.entityId === 3 && n.actions[0].actionEntityType === 'Track')))
+    assert.ok(user2Notifs.find(n => (n.type === 'MilestoneFollow' && n.entityId === 25)))
     assert.deepStrictEqual(user2Notifs.length, 3)
 
     const user3Notifs = await models.Notification.findAll({
-      where: { userId: 3 }
+      where: { userId: 3 },
+      include: [{
+        model: models.NotificationAction,
+        as: 'actions'
+      }]
     })
-    assert.ok(user1Notifs.find(n => (n.type === 'MilestoneFavorite' && n.entityId === 6 && n.actions[0].actionEntityType === 'Track')))
-    assert.ok(user1Notifs.find(n => (n.type === 'MilestoneRepost' && n.entityId === 2 && n.actions[0].actionEntityType === 'Album')))
+    assert.ok(user3Notifs.find(n => (n.type === 'MilestoneFavorite' && n.entityId === 6 && n.actions[0].actionEntityType === 'Album')))
+    assert.ok(user3Notifs.find(n => (n.type === 'MilestoneRepost' && n.entityId === 2 && n.actions[0].actionEntityType === 'Playlist')))
     assert.deepStrictEqual(user3Notifs.length, 2)
   })
 })
