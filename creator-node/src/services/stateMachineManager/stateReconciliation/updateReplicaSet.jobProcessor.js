@@ -27,7 +27,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {number} param.secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
  * @param {string[]} param.unhealthyReplicas the endpoints of the user's replica set that are currently unhealthy
- * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of user's node endpoint strings to clock value of node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
 module.exports = async function ({
@@ -104,7 +104,7 @@ module.exports = async function ({
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
     )
-    errorMsg = `${e}`
+    errorMsg = e.toString()
   }
 
   return {

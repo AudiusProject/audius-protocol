@@ -83,7 +83,8 @@ describe('test findReplicaSetUpdates job processor', function () {
     },
     [secondary2]: {
       [wallet]: 10
-    }
+    },
+    unusedNode: {}
   }
 
   const CLOCK_STATUSES_MAP_FILTERED_TO_WALLET = {

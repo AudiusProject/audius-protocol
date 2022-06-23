@@ -217,7 +217,7 @@ class ServiceRegistry {
                 json[key] =
                   value.length > 100
                     ? `[Truncated array with ${value.length} elements]`
-                    : value
+                    : this.truncateBull(value, newDepth)
               } else {
                 const length = Object.keys(value).length
                 json[key] =

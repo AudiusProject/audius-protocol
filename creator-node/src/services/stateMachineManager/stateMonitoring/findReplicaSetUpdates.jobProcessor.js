@@ -304,10 +304,9 @@ const _findReplicaSetUpdatesForUser = async (
 
 /**
  * Transforms data type from ((K1,V1) => (K2,V2)) to (K1,V1[K2]), where K1 is the node endpoint,
- * V1 is the mapping, and K2 is the wallet to filter by. Default to clock value of -1 whenever the given
- * wallet isn't present in a node's mapping.
+ * V1 is the mapping, and K2 is the wallet to filter by. Also filters out nodes that don't have a value for the wallet.
  * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
- * @param {string} wallet the wallet to filter clock values for (other wallets will be exlucded from the output)
+ * @param {string} wallet the wallet to filter clock values for (other wallets will be excluded from the output)
  * @returns mapping of node endpoint (string) to clock value (number) on that node for the given wallet
  */
 const _transformAndFilterNodeToClockValuesMapping = (
@@ -315,8 +314,12 @@ const _transformAndFilterNodeToClockValuesMapping = (
   wallet
 ) => {
   return Object.fromEntries(
-    Object.entries(replicaSetNodesToUserClockStatusesMap).map(
-      ([node, clockValueMapping]) => [node, clockValueMapping[wallet] || -1]
-    )
+    Object.entries(replicaSetNodesToUserClockStatusesMap)
+      .map(([node, clockValueMapping]) => [
+        node,
+        clockValueMapping[wallet] || -1
+      ])
+      // Only include nodes that have clock values -- this means only the nodes in the user's replica set
+      .filter(([, clockValue]) => clockValue !== -1)
   )
 }
