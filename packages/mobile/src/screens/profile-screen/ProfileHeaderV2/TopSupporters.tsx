@@ -26,7 +26,8 @@ const MAX_PROFILE_SUPPORTERS_VIEW_ALL_USERS = 6
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
-    padding: spacing(4),
+    marginVertical: spacing(2),
+    padding: spacing(2),
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -54,7 +55,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.bold
   },
   viewTopSupportersButtonText: {
-    marginRight: spacing(1),
     color: palette.secondary,
     fontSize: typography.fontSize.small,
     fontFamily: typography.fontByWeight.bold
@@ -96,7 +96,7 @@ export const TopSupporters = () => {
   }, [navigation, user_id])
 
   return rankedSupporters.length > 0 ? (
-    <View style={styles.root}>
+    <TouchableOpacity style={styles.root} onPress={handlePress}>
       <ProfilePictureList
         users={rankedSupporters}
         totalUserCount={supporter_count}
@@ -111,13 +111,11 @@ export const TopSupporters = () => {
         <Text style={styles.viewTopSupportersText}>
           {messages.topSupporters}
         </Text>
-        <TouchableOpacity style={styles.alignRowCenter} onPress={handlePress}>
-          <Text style={styles.viewTopSupportersButtonText}>
-            {messages.buttonTitle}
-          </Text>
-          <IconCaretRight fill={secondary} width={14} height={14} />
-        </TouchableOpacity>
+        <Text style={styles.viewTopSupportersButtonText}>
+          {messages.buttonTitle}
+        </Text>
+        <IconCaretRight fill={secondary} width={14} height={14} />
       </View>
-    </View>
+    </TouchableOpacity>
   ) : null
 }
