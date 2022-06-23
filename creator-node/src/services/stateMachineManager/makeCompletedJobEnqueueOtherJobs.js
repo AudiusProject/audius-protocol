@@ -70,6 +70,9 @@ module.exports = function makeCompletedJobEnqueueOtherJobs(
     try {
       const monitoringBulkAddResult = await monitoringQueue.addBulk(
         monitoringJobs.map((job) => {
+          if (!job?.jobName || !job?.jobData) {
+            logger.error(`Job ${JSON.stringify(job)} is missing name or data!`)
+          }
           return { name: job.jobName, data: job.jobData }
         })
       )
@@ -86,6 +89,9 @@ module.exports = function makeCompletedJobEnqueueOtherJobs(
     try {
       const reconciliationBulkAddResult = await reconciliationQueue.addBulk(
         reconciliationJobs.map((job) => {
+          if (!job?.jobName || !job?.jobData) {
+            logger.error(`Job ${JSON.stringify(job)} is missing name or data!`)
+          }
           // Inject enabledReconfigModesSet into update-replica-set jobs as an array.
           // It gets `this` from being bound to ./index.js
           if (job.jobName === JOB_NAMES.UPDATE_REPLICA_SET) {
