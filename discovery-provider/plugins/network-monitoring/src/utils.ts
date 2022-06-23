@@ -217,6 +217,8 @@ export const getEnv = () => {
             dotenv.config({ path: '.env.local' })
 
         }
+
+        envInitialized = true
     }
 
 
