@@ -187,6 +187,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Get the User\'s ERC and SPL connected wallets
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getConnectedWallets(requestParameters: GetConnectedWalletsRequest, initOverrides?: RequestInit): Promise<NonNullable<ConnectedWalletsResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -207,6 +216,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a user\'s favorite tracks
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getFavorites(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<FavoritesResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -227,6 +245,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the given user\'s reposts
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getReposts(requestParameters: GetRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<Reposts["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -259,6 +286,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the supporters of the given user
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getSupporters(requestParameters: GetSupportersRequest, initOverrides?: RequestInit): Promise<NonNullable<GetSupporters["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -287,6 +323,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the users that the given user supports
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getSupportings(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit): Promise<NonNullable<GetSupporting["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -316,6 +361,15 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the most used track tags by a user.
      * Fetch most used tags in a user\'s tracks
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTopTrackTags(requestParameters: GetTopTrackTagsRequest, initOverrides?: RequestInit): Promise<NonNullable<TagsResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -344,6 +398,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the tracks created by a user using their user ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTracksByUser(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit): Promise<NonNullable<TracksResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -380,6 +443,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a single user by their user ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit): Promise<NonNullable<UserResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -400,6 +472,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a User ID from an associated wallet address
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUserIDFromWallet(requestParameters: GetUserIDFromWalletRequest, initOverrides?: RequestInit): Promise<NonNullable<UserAssociatedWalletResponse["data"]>> {
         if (requestParameters.associatedWallet === null || requestParameters.associatedWallet === undefined) {
@@ -424,6 +505,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Search for users that match the given query
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async searchUsers(requestParameters: SearchUsersRequest, initOverrides?: RequestInit): Promise<NonNullable<UserSearch["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
@@ -448,6 +538,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Verify if the given jwt ID token was signed by the subject (user) in the payload
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async verifyIDToken(requestParameters: VerifyIDTokenRequest, initOverrides?: RequestInit): Promise<NonNullable<VerifyToken["data"]>> {
         if (requestParameters.token === null || requestParameters.token === undefined) {

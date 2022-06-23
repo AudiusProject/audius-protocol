@@ -125,6 +125,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Get a playlist by ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getPlaylist(requestParameters: GetPlaylistRequest, initOverrides?: RequestInit): Promise<NonNullable<FullPlaylistResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
@@ -149,6 +158,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Returns trending playlists for a time period
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>> {
         const queryParameters: any = {};
@@ -181,6 +199,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Returns trending playlists for a time period based on the given trending version
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingPlaylistsWithVersion(requestParameters: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTrendingPlaylistsResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
@@ -217,6 +244,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Get users that favorited a playlist
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUsersFromPlaylistFavorites(requestParameters: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<FollowingResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
@@ -249,6 +285,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Get users that reposted a playlist
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUsersFromPlaylistReposts(requestParameters: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<FollowingResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {

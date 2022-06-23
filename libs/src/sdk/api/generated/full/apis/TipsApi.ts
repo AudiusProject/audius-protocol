@@ -71,6 +71,15 @@ export class TipsApi extends runtime.BaseAPI {
 
     /**
      * Gets the most recent tips on the network
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTips(requestParameters: GetTipsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<GetTipsResponse["data"]>> {
         const queryParameters: any = {};

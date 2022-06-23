@@ -360,6 +360,15 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a user\'s favorite tracks
      * Fetch favorited tracks for a user
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getFavorites(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<FavoritesResponseFull["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -392,6 +401,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * All users that follow the provided user
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getFollowers(requestParameters: GetFollowersRequest, initOverrides?: RequestInit): Promise<NonNullable<FollowersResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -424,6 +442,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * All users that the provided user follows
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getFollowings(requestParameters: GetFollowingsRequest, initOverrides?: RequestInit): Promise<NonNullable<FollowingResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -456,6 +483,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a list of users that might be of interest to followers of this user.
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getRelatedUsers(requestParameters: GetRelatedUsersRequest, initOverrides?: RequestInit): Promise<NonNullable<RelatedArtistResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -484,6 +520,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the given user\'s reposts
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getReposts(requestParameters: GetRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<FullReposts["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -516,6 +561,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the user\'s reposts by the user handle
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getRepostsByHandle(requestParameters: GetRepostsByHandleRequest, initOverrides?: RequestInit): Promise<NonNullable<FullReposts["data"]>> {
         if (requestParameters.handle === null || requestParameters.handle === undefined) {
@@ -548,6 +602,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the specified supporter of the given user
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getSupporter(requestParameters: GetSupporterRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporter["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -576,6 +639,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the supporters of the given user
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getSupporters(requestParameters: GetSupportersRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporters["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -608,6 +680,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the support from the given user to the supported user
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getSupporting(requestParameters: GetSupportingRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporting["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -636,6 +717,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the users that the given user supports
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getSupportings(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporting["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -668,6 +758,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Get the Top Users having at least one track by follower count
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTopUsers(requestParameters: GetTopUsersRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TopUsersResponse["data"]>> {
         const queryParameters: any = {};
@@ -696,6 +795,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Get the Top Users for a Given Genre
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TopGenreUsersResponse["data"]>> {
         const queryParameters: any = {};
@@ -724,6 +832,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the tracks created by a user using their user ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTracksByUser(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracks["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -760,6 +877,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets the tracks created by a user using the user\'s handle
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTracksByUserHandle(requestParameters: GetTracksByUserHandleRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracks["data"]>> {
         if (requestParameters.handle === null || requestParameters.handle === undefined) {
@@ -796,6 +922,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a single user by their user ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit): Promise<NonNullable<FullUserResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
@@ -820,6 +955,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Gets a single user by their handle
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUserByHandle(requestParameters: GetUserByHandleRequest, initOverrides?: RequestInit): Promise<NonNullable<FullUserResponse["data"]>> {
         if (requestParameters.handle === null || requestParameters.handle === undefined) {
@@ -844,6 +988,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * Get the tracks the user recently listened to.
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUsersTrackHistory(requestParameters: GetUsersTrackHistoryRequest, initOverrides?: RequestInit): Promise<NonNullable<HistoryResponseFull["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {

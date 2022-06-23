@@ -65,6 +65,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Get a playlist by ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getPlaylist(requestParameters: GetPlaylistRequest, initOverrides?: RequestInit): Promise<NonNullable<PlaylistResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
@@ -85,6 +94,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Fetch tracks within a playlist.
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest, initOverrides?: RequestInit): Promise<NonNullable<PlaylistTracksResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
@@ -105,6 +123,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Gets trending playlists for a time period
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TrendingPlaylistsResponse["data"]>> {
         const queryParameters: any = {};
@@ -125,6 +152,15 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * Search for a playlist
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async searchPlaylists(requestParameters: SearchPlaylistsRequest, initOverrides?: RequestInit): Promise<NonNullable<PlaylistSearchResult["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {

@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     SearchModel,
     SearchModelFromJSON,
@@ -81,46 +80,5 @@ export interface SearchFullResponse {
      * @memberof SearchFullResponse
      */
     data?: SearchModel;
-}
-
-export function SearchFullResponseFromJSON(json: any): SearchFullResponse {
-    return SearchFullResponseFromJSONTyped(json, false);
-}
-
-export function SearchFullResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): SearchFullResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'latest_chain_block': json['latest_chain_block'],
-        'latest_indexed_block': json['latest_indexed_block'],
-        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
-        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
-        'signature': json['signature'],
-        'timestamp': json['timestamp'],
-        'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : SearchModelFromJSON(json['data']),
-    };
-}
-
-export function SearchFullResponseToJSON(value?: SearchFullResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'latest_chain_block': value.latest_chain_block,
-        'latest_indexed_block': value.latest_indexed_block,
-        'latest_chain_slot_plays': value.latest_chain_slot_plays,
-        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
-        'signature': value.signature,
-        'timestamp': value.timestamp,
-        'version': VersionMetadataToJSON(value.version),
-        'data': SearchModelToJSON(value.data),
-    };
 }
 

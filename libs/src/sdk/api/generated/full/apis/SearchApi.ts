@@ -77,6 +77,15 @@ export class SearchApi extends runtime.BaseAPI {
 
     /**
      * Get Users/Tracks/Playlists/Albums that best match the search query
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async search(requestParameters: SearchRequest, initOverrides?: RequestInit): Promise<NonNullable<SearchFullResponse["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
@@ -118,6 +127,15 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async searchAutocomplete(requestParameters: SearchAutocompleteRequest, initOverrides?: RequestInit): Promise<NonNullable<SearchAutocompleteResponse["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {

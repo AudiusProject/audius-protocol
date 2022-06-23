@@ -96,7 +96,6 @@ export class SolanaAudiusData {
    * Encodes and derives the user account, bump seed, and base authority
    */
   async getUserIdSeed(userId: BN) {
-    // @ts-expect-error
     const userIdSeed = userId.toArrayLike(Uint8Array, 'le', 4)
     const {
       baseAuthorityAccount,

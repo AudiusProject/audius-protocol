@@ -10,10 +10,6 @@ import {
   ResolveRequest
 } from './generated/default/apis/ResolveApi'
 
-/**
- * This class extends from the generated ResolveApi to
- * implement the custom logic for the `resolve` endpoint
- */
 export class ResolveApi extends GeneratedResolveApi {
   /**
    * Resolves and redirects a provided Audius app URL to the API resource URL it represents

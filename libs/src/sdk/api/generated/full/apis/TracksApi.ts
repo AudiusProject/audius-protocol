@@ -379,6 +379,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the tracks found on the \"Best New Releases\" smart playlist
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async bestNewReleases(initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -395,6 +404,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets a list of tracks using their IDs or permalinks
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTrackResponse["data"]>> {
         const queryParameters: any = {};
@@ -423,6 +441,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the tracks found on the \"Most Loved\" smart playlist
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getMostLovedTracks(requestParameters: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -451,6 +478,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Get recommended tracks
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getRecommendedTracks(requestParameters: GetRecommendedTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -487,6 +523,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Get recommended tracks using the given trending strategy version
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getRecommendedTracksWithVersion(requestParameters: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
@@ -527,6 +572,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets a list of tracks that have stems available for remixing
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getRemixableTracks(requestParameters: GetRemixableTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTrackResponse["data"]>> {
         const queryParameters: any = {};
@@ -555,6 +609,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrack(requestParameters: GetTrackRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTrackResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
@@ -591,6 +654,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets all the tracks that the given track remixes
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrackRemixParents(requestParameters: GetTrackRemixParentsRequest, initOverrides?: RequestInit): Promise<NonNullable<RemixingResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
@@ -623,6 +695,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Get all tracks that remix the given track
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrackRemixes(requestParameters: GetTrackRemixesRequest, initOverrides?: RequestInit): Promise<NonNullable<RemixesResponseFull["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
@@ -655,6 +736,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Get the remixable stems of a track
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrackStems(requestParameters: GetTrackStemsRequest, initOverrides?: RequestInit): Promise<NonNullable<StemsResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
@@ -675,6 +765,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the track IDs of the top trending tracks on Audius
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingTrackIDs(requestParameters: GetTrendingTrackIDsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TrendingIdsResponse["data"]>> {
         const queryParameters: any = {};
@@ -695,6 +794,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -731,6 +839,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingTracksIDsWithVersion(requestParameters: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<TrendingIdsResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
@@ -755,6 +872,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingTracksWithVersion(requestParameters: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
@@ -795,6 +921,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the tracks found on the \"Under the Radar\" smart playlist
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUnderTheRadarTracks(requestParameters: GetUnderTheRadarTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -835,6 +970,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the top 100 trending underground tracks on Audius
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUndergroundTrendingTracks(requestParameters: GetUndergroundTrendingTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -863,6 +1007,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
@@ -895,6 +1048,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Get users that favorited a track
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUsersFromFavorites(requestParameters: GetUsersFromFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackFavoritesResponseFull["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
@@ -927,6 +1089,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Get the users that reposted a track
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getUsersFromReposts(requestParameters: GetUsersFromRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackRepostsResponseFull["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {

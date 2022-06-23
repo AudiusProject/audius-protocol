@@ -6,5 +6,6 @@
     "resolveJsonModule": true,
     "typeRoots": ["./types", "./node_modules/@types"],
     "exactOptionalPropertyTypes": false
-  }
+  },
+  "exclude": ["**/*+(test).ts"]
 }

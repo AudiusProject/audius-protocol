@@ -81,6 +81,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets a list of tracks using their IDs or permalinks
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -105,6 +114,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets a track by ID
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrack(requestParameters: GetTrackRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
@@ -125,6 +143,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TracksResponse["data"]>> {
         const queryParameters: any = {};
@@ -149,6 +176,15 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * Search for a track or tracks
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async searchTracks(requestParameters: SearchTracksRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackSearch["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {

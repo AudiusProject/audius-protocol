@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     User,
     UserFromJSON,
@@ -51,38 +50,5 @@ export interface Tip {
      * @memberof Tip
      */
     created_at: string;
-}
-
-export function TipFromJSON(json: any): Tip {
-    return TipFromJSONTyped(json, false);
-}
-
-export function TipFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tip {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'amount': json['amount'],
-        'sender': !exists(json, 'sender') ? undefined : UserFromJSON(json['sender']),
-        'receiver': !exists(json, 'receiver') ? undefined : UserFromJSON(json['receiver']),
-        'created_at': json['created_at'],
-    };
-}
-
-export function TipToJSON(value?: Tip | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'amount': value.amount,
-        'sender': UserToJSON(value.sender),
-        'receiver': UserToJSON(value.receiver),
-        'created_at': value.created_at,
-    };
 }
 

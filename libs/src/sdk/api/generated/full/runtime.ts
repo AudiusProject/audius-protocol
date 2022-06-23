@@ -13,37 +13,59 @@
  */
 
 
+/**
+ * @internal
+ */
 export const BASE_PATH = "/v1/full".replace(/\/+$/, "");
 
+/**
+ * @internal
+ */
 const isBlob = (value: any) => typeof Blob !== 'undefined' && value instanceof Blob;
 
 /**
+ * @internal
  * This is the base class for all generated API classes.
  */
 export class BaseAPI {
 
     private middleware: Middleware[];
 
+    /**
+    * @internal
+    */
     constructor(protected configuration: Configuration) {
         this.middleware = configuration.middleware;
     }
 
+    /**
+    * @internal
+    */
     withMiddleware<T extends BaseAPI>(this: T, ...middlewares: Middleware[]) {
         const next = this.clone<T>();
         next.middleware = next.middleware.concat(...middlewares);
         return next;
     }
 
+    /**
+    * @internal
+    */
     withPreMiddleware<T extends BaseAPI>(this: T, ...preMiddlewares: Array<Middleware['pre']>) {
         const middlewares = preMiddlewares.map((pre) => ({ pre }));
         return this.withMiddleware<T>(...middlewares);
     }
 
+    /**
+    * @internal
+    */
     withPostMiddleware<T extends BaseAPI>(this: T, ...postMiddlewares: Array<Middleware['post']>) {
         const middlewares = postMiddlewares.map((post) => ({ post }));
         return this.withMiddleware<T>(...middlewares);
     }
 
+    /**
+    * @internal
+    */
     protected async request(context: RequestOpts, initOverrides?: RequestInit) {
         const { url, init } = this.createFetchParams(context, initOverrides);
         return this.fetchApi(url, init) as any;
@@ -108,6 +130,9 @@ export class BaseAPI {
     }
 };
 
+/**
+ * @internal
+ */
 export class RequiredError extends Error {
     override name: "RequiredError" = "RequiredError";
     constructor(public field: string, msg?: string) {
@@ -115,6 +140,9 @@ export class RequiredError extends Error {
     }
 }
 
+/**
+ * @internal
+ */
 export const COLLECTION_FORMATS = {
     csv: ",",
     ssv: " ",
@@ -191,18 +219,42 @@ export class Configuration {
     }
 }
 
+/**
+ * @internal
+ */
 export type Json = any;
+/**
+ * @internal
+ */
 export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
+/**
+ * @internal
+ */
 export type HTTPHeaders = { [key: string]: string };
+/**
+ * @internal
+ */
 export type HTTPQuery = { [key: string]: string | number | null | boolean | Array<string | number | null | boolean> | HTTPQuery };
+/**
+ * @internal
+ */
 export type HTTPBody = Json | FormData | URLSearchParams;
+/**
+ * @internal
+ */
 export type ModelPropertyNaming = 'camelCase' | 'snake_case' | 'PascalCase' | 'original';
 
+/**
+ * @internal
+ */
 export interface FetchParams {
     url: string;
     init: RequestInit;
 }
 
+/**
+ * @internal
+ */
 export interface RequestOpts {
     path: string;
     method: HTTPMethod;
@@ -211,11 +263,17 @@ export interface RequestOpts {
     body?: HTTPBody;
 }
 
+/**
+ * @internal
+ */
 export function exists(json: any, key: string) {
     const value = json[key];
     return value !== null && value !== undefined;
 }
 
+/**
+ * @internal
+ */
 export function querystring(params: HTTPQuery, prefix: string = ''): string {
     return Object.keys(params)
         .map((key) => {
@@ -238,6 +296,9 @@ export function querystring(params: HTTPQuery, prefix: string = ''): string {
         .join('&');
 }
 
+/**
+ * @internal
+ */
 export function mapValues(data: any, fn: (item: any) => any) {
   return Object.keys(data).reduce(
     (acc, key) => ({ ...acc, [key]: fn(data[key]) }),
@@ -245,6 +306,9 @@ export function mapValues(data: any, fn: (item: any) => any) {
   );
 }
 
+/**
+ * @internal
+ */
 export function canConsumeForm(consumes: Consume[]): boolean {
     for (const consume of consumes) {
         if ('multipart/form-data' === consume.contentType) {
@@ -254,16 +318,25 @@ export function canConsumeForm(consumes: Consume[]): boolean {
     return false;
 }
 
+/**
+ * @internal
+ */
 export interface Consume {
     contentType: string
 }
 
+/**
+ * @internal
+ */
 export interface RequestContext {
     fetch: FetchAPI;
     url: string;
     init?: RequestInit;
 }
 
+/**
+ * @internal
+ */
 export interface ResponseContext {
     fetch: FetchAPI;
     url: string;
@@ -271,48 +344,10 @@ export interface ResponseContext {
     response: unknown;
 }
 
+/**
+ * @internal
+ */
 export interface Middleware {
     pre?(context: RequestContext): Promise<FetchParams | void>;
     post?(context: ResponseContext): Promise<unknown | void>;
-}
-
-export interface ApiResponse<T> {
-    raw: Response;
-    value(): Promise<T>;
-}
-
-export interface ResponseTransformer<T> {
-    (json: any): T;
-}
-
-export class JSONApiResponse<T> {
-    constructor(public raw: Response, private transformer: ResponseTransformer<T> = (jsonValue: any) => jsonValue) {}
-
-    async value(): Promise<T> {
-        return this.transformer(await this.raw.json());
-    }
-}
-
-export class VoidApiResponse {
-    constructor(public raw: Response) {}
-
-    async value(): Promise<void> {
-        return undefined;
-    }
-}
-
-export class BlobApiResponse {
-    constructor(public raw: Response) {}
-
-    async value(): Promise<Blob> {
-        return await this.raw.blob();
-    };
-}
-
-export class TextApiResponse {
-    constructor(public raw: Response) {}
-
-    async value(): Promise<string> {
-        return await this.raw.text();
-    };
 }

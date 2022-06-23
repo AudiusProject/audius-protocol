@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     TrackId,
     TrackIdFromJSON,
@@ -45,36 +44,5 @@ export interface TrendingTimesIds {
      * @memberof TrendingTimesIds
      */
     year?: Array<TrackId>;
-}
-
-export function TrendingTimesIdsFromJSON(json: any): TrendingTimesIds {
-    return TrendingTimesIdsFromJSONTyped(json, false);
-}
-
-export function TrendingTimesIdsFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrendingTimesIds {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'week': !exists(json, 'week') ? undefined : ((json['week'] as Array<any>).map(TrackIdFromJSON)),
-        'month': !exists(json, 'month') ? undefined : ((json['month'] as Array<any>).map(TrackIdFromJSON)),
-        'year': !exists(json, 'year') ? undefined : ((json['year'] as Array<any>).map(TrackIdFromJSON)),
-    };
-}
-
-export function TrendingTimesIdsToJSON(value?: TrendingTimesIds | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'week': value.week === undefined ? undefined : ((value.week as Array<any>).map(TrackIdToJSON)),
-        'month': value.month === undefined ? undefined : ((value.month as Array<any>).map(TrackIdToJSON)),
-        'year': value.year === undefined ? undefined : ((value.year as Array<any>).map(TrackIdToJSON)),
-    };
 }
 

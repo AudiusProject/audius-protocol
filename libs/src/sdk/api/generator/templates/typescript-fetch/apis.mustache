@@ -95,6 +95,15 @@ export class {{classname}} extends runtime.BaseAPI {
      {{#summary}}
      * {{&summary}}
      {{/summary}}
+     *
+     * Example:
+     *
+     * ```typescript
+     * const track = await audiusSdk.tracks.getTrack({
+     *   trackId: "D7KyD",
+     * });
+     * ```
+     * @throws Error
      */
     async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit): Promise<NonNullable<{{returnType}}["data"]>> {
         {{#allParams}}
