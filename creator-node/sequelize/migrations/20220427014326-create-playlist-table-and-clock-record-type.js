@@ -78,15 +78,11 @@ async function addCompositeUniqueConstraints(queryInterface, transaction) {
 }
 
 async function removeCompositeUniqueConstraints(queryInterface, transaction) {
-  try {
-    await queryInterface.removeConstraint(
-      tableName,
-      'Playlist_unique_(blockchainId,clock)',
-      { transaction }
-    )
-  } catch (e) {
-    console.log(e)
-  }
+  await queryInterface.removeConstraint(
+    tableName,
+    'Playlist_unique_(blockchainId,clock)',
+    { transaction }
+  )
 }
 
 async function createPlaylistTable(queryInterface, Sequelize, transaction) {
