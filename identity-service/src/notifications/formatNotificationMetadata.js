@@ -2,6 +2,8 @@ const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
 const { actionEntityTypes, notificationTypes } = require('./constants')
+const { formatWei, capitalize } = require('./processNotifications/utils')
+const BN = require('bn.js')
 
 const getRankSuffix = (num) => {
   if (num === 1) return 'st'
@@ -154,6 +156,50 @@ function formatAddTrackToPlaylist (notification, metadata) {
   }
 }
 
+function formatReaction (notification, metadata) {
+  const userId = notification.initiator
+  const user = metadata.users[userId]
+  return {
+    type: NotificationType.Reaction,
+    reactingUser: user,
+    amount: formatWei(new BN(notification.metadata.reacted_to_entity.amount))
+  }
+}
+
+function formatTipReceive (notification, metadata) {
+  const userId = notification.metadata.entity_id
+  const user = metadata.users[userId]
+  return {
+    type: NotificationType.TipReceive,
+    sendingUser: user,
+    amount: formatWei(new BN(notification.metadata.amount))
+  }
+}
+
+function formatSupporterRankUp (notification, metadata) {
+  // Sending user
+  const userId = notification.metadata.entity_id
+  const user = metadata.users[userId]
+  return {
+    type: NotificationType.SupporterRankUp,
+    rank: notification.metadata.rank,
+    sendingUser: user
+  }
+}
+
+function formatSupportingRankUp (notification, metadata) {
+  // Receiving user
+  const userId = notification.initiator
+  const user = metadata.users[userId]
+  return {
+    type: NotificationType.SupportingRankUp,
+    rank: notification.metadata.rank,
+    receivingUser: user
+  }
+}
+
+// Copied directly from AudiusClient
+
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
   [NotificationType.FavoriteTrack]: (notification, metadata) => {
@@ -206,18 +252,14 @@ const notificationResponseMap = {
     })
     return formatUserSubscription(notification, metadata, { type: Entity.Playlist, count: 1, name: collection.playlist_name }, users)
   },
-  [NotificationType.RemixCreate]: (notification, metadata) => {
-    return formatRemixCreate(notification, metadata)
-  },
-  [NotificationType.RemixCosign]: (notification, metadata) => {
-    return formatRemixCosign(notification, metadata)
-  },
-  [NotificationType.TrendingTrack]: (notification, metadata) => {
-    return formatTrendingTrack(notification, metadata)
-  },
-  [NotificationType.ChallengeReward]: (notification, metadata) => {
-    return formatChallengeReward(notification, metadata)
-  },
+  [NotificationType.RemixCreate]: formatRemixCreate,
+  [NotificationType.RemixCosign]: formatRemixCosign,
+  [NotificationType.TrendingTrack]: formatTrendingTrack,
+  [NotificationType.ChallengeReward]: formatChallengeReward,
+  [NotificationType.Reaction]: formatReaction,
+  [NotificationType.TipReceive]: formatTipReceive,
+  [NotificationType.SupporterRankUp]: formatSupporterRankUp,
+  [NotificationType.SupportingRankUp]: formatSupportingRankUp,
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone('repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('favorite'),
@@ -239,6 +281,7 @@ const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 const AddTrackToPlaylistTitle = 'Your track got on a playlist! 💿'
+const TipReceiveTitle = 'You Received a Tip!'
 
 const challengeInfoMap = {
   'profile-completion': {
@@ -275,6 +318,9 @@ const challengeInfoMap = {
   }
 }
 
+const makeReactionTitle = (notification) => `${capitalize(notification.reactingUser.name)} reacted`
+const makeSupportingOrSupporterTitle = (notification) => `#${notification.rank} Top Supporter`
+
 const notificationResponseTitleMap = {
   [NotificationType.Follow]: () => NewFollowerTitle,
   [NotificationType.FavoriteTrack]: () => NewFavoriteTitle,
@@ -292,7 +338,12 @@ const notificationResponseTitleMap = {
   [NotificationType.RemixCreate]: () => RemixCreateTitle,
   [NotificationType.RemixCosign]: () => RemixCosignTitle,
   [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title,
-  [NotificationType.AddTrackToPlaylist]: () => AddTrackToPlaylistTitle
+  [NotificationType.AddTrackToPlaylist]: () => AddTrackToPlaylistTitle,
+  [NotificationType.Reaction]: makeReactionTitle,
+  [NotificationType.TipReceive]: () => TipReceiveTitle,
+  [NotificationType.SupporterRankUp]: makeSupportingOrSupporterTitle,
+  [NotificationType.SupportingRankUp]: makeSupportingOrSupporterTitle
+
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -354,7 +405,20 @@ const pushNotificationMessagesMap = {
   },
   [notificationTypes.AddTrackToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
+  },
+  [notificationTypes.Reaction] (notification) {
+    return `${capitalize(notification.reactingUser.name)} reacted to your tip of ${notification.amount} $AUDIO`
+  },
+  [notificationTypes.SupporterRankUp] (notification) {
+    return `${capitalize(notification.sendingUser.name)} became your #${notification.rank} Top Supporter!`
+  },
+  [notificationTypes.SupportingRankUp] (notification) {
+    return `You're now ${notification.receivingUser.name}'s #${notification.rank} Top Supporter!`
+  },
+  [notificationTypes.TipReceive] (notification) {
+    return `${capitalize(notification.sendingUser.name)} sent you a tip of ${notification.amount} $AUDIO`
   }
+
 }
 
 module.exports = {

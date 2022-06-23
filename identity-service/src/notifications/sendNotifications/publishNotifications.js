@@ -44,12 +44,24 @@ const getPublishNotifBaseType = (notification) => {
       return notificationTypes.TierChange
     case notificationTypes.AddTrackToPlaylist:
       return notificationTypes.AddTrackToPlaylist
+    case notificationTypes.Reaction:
+      return notificationTypes.Reaction
+    case notificationTypes.TipReceive:
+      return notificationTypes.TipReceive
+    case notificationTypes.SupporterRankUp:
+      return notificationTypes.SupporterRankUp
+    case notificationTypes.SupportingRankUp:
+      return notificationTypes.SupportingRankUp
   }
 }
 
 const solanaNotificationBaseTypes = [
   notificationTypes.ChallengeReward,
-  notificationTypes.MilestoneListen
+  notificationTypes.MilestoneListen,
+  notificationTypes.TipReceive,
+  notificationTypes.Reaction,
+  notificationTypes.SupporterRankUp,
+  notificationTypes.SupportingRankUp
 ]
 
 // Gets the userId that a notification should be sent to based off the notification's base type
@@ -64,6 +76,10 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.Milestone) return notif.initiator
   else if (baseType === notificationTypes.TierChange) return notif.initiator
   else if (baseType === notificationTypes.AddTrackToPlaylist) return notif.metadata.trackOwnerId
+  else if (baseType === notificationTypes.Reaction) return notif.metadata.reacted_to_entity.tip_sender_id
+  else if (baseType === notificationTypes.SupporterRankUp) return notif.initiator
+  else if (baseType === notificationTypes.SupportingRankUp) return notif.metadata.entity_id
+  else if (baseType === notificationTypes.TipReceive) return notif.initiator
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -74,7 +90,11 @@ const alwaysSendNotifications = [
   notificationTypes.Create.playlist,
   notificationTypes.Create.album,
   notificationTypes.ChallengeReward,
-  notificationTypes.AddTrackToPlaylist
+  notificationTypes.AddTrackToPlaylist,
+  notificationTypes.Reaction,
+  notificationTypes.TipReceive,
+  notificationTypes.SupporterRankUp,
+  notificationTypes.SupportingRankUp
 ]
 
 const mapNotificationBaseTypeToSettings = {
@@ -115,6 +135,9 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
   }
   if (notificationType === notificationTypes.ChallengeReward) {
     return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED)
+  }
+  if ([notificationTypes.TipReceive, notificationTypes.Reaction, notificationTypes.SupporterRankUp, notificationTypes.SupportingRankUp].includes(notificationType)) {
+    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.TIPPING_ENABLED)
   }
   return false
 }
