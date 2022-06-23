@@ -17,7 +17,6 @@ const INVALID_TRACKID_EXPIRATION_SECONDS =
   1 /* hour */ * 60 /* minutes */ * 60 /* seconds */
 
 const PROCESS_TRACKS_BATCH_SIZE = 200
-const PROCESS_TRACKS_MAX_NUM_ATTEMPTS = 5
 
 const types = models.ContentBlacklist.Types
 
