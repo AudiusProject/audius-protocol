@@ -6,6 +6,7 @@ import {
 } from 'audius-client/src/common/store/notifications/selectors'
 import {
   Achievement,
+  EntityType,
   Milestone
 } from 'audius-client/src/common/store/notifications/types'
 import {
@@ -52,7 +53,7 @@ Check it out!`
   }
 }
 
-const getTwitterShareData = (notification: Milestone) => {
+const getTwitterShareData = (notification: Milestone, entity: EntityType) => {
   const { achievement, user, value } = notification
   switch (achievement) {
     case Achievement.Followers: {
@@ -63,7 +64,7 @@ const getTwitterShareData = (notification: Milestone) => {
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      const { entity, entityType } = notification
+      const { entityType } = notification
       const link = getEntityRoute(entity, true)
       const text = messages.achievementText(
         entityType,
@@ -132,7 +133,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     }
   }
 
-  const { link, text } = getTwitterShareData(notification)
+  const { link, text } = getTwitterShareData(notification, entity)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
