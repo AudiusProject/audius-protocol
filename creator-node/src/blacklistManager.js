@@ -2,7 +2,6 @@ const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
 const config = require('./config')
-const Utils = require('./utils')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
@@ -124,46 +123,44 @@ class BlacklistManager {
   }
 
   /**
-   * Helper method to batch adding CIDs to the blacklist
+   * Helper method to batch adding CIDs from tracks and users to the blacklist
    * @param {number[]} allTrackIdsToBlacklist aggregate list of track ids to blacklist from explicit track id blacklist and tracks from blacklisted users
    */
   static async addAggregateCIDsToRedis(allTrackIdsToBlacklist) {
+    let i
     for (
-      let i = 0;
+      i = 0;
       i < allTrackIdsToBlacklist.length;
       i = i + PROCESS_TRACKS_BATCH_SIZE
     ) {
-      const tracksSlice = allTrackIdsToBlacklist.slice(
-        i,
-        i + PROCESS_TRACKS_BATCH_SIZE
-      )
+      try {
+        const tracksSlice = allTrackIdsToBlacklist.slice(
+          i,
+          i + PROCESS_TRACKS_BATCH_SIZE
+        )
 
-      await Utils.asyncRetry({
-        asyncFn: async function (bail, num) {
-          if (num === PROCESS_TRACKS_MAX_NUM_ATTEMPTS) {
-            bail(
-              new Error(
-                `[addAggregateCIDsToRedis] - Could not add tracks slice ${i} to ${
-                  i + PROCESS_TRACKS_BATCH_SIZE
-                } after ${PROCESS_TRACKS_MAX_NUM_ATTEMPTS} attempts`
-              )
-            )
-            return
-          }
+        this.logDebug(
+          `[addAggregateCIDsToRedis] - tracks slice size: ${tracksSlice.length}`
+        )
 
-          const segmentsFromTrackIdsToBlacklist =
-            await BlacklistManager.getCIDsToBlacklist(tracksSlice)
+        const segmentsFromTrackIdsToBlacklist =
+          await BlacklistManager.getCIDsToBlacklist(tracksSlice)
 
-          await BlacklistManager.addToRedis(
-            REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
-            segmentsFromTrackIdsToBlacklist
-          )
-        },
-        options: {
-          retries: PROCESS_TRACKS_MAX_NUM_ATTEMPTS
-        },
-        logLabel: 'BlacklistManager [addAggregateCIDsToRedis]'
-      })
+        this.logDebug(
+          `[addAggregateCIDsToRedis] - number of segments: ${segmentsFromTrackIdsToBlacklist.length}`
+        )
+
+        await BlacklistManager.addToRedis(
+          REDIS_SET_BLACKLIST_SEGMENTCID_KEY,
+          segmentsFromTrackIdsToBlacklist
+        )
+      } catch (e) {
+        throw new Error(
+          `[addAggregateCIDsToRedis] - Could not add tracks slice ${i} to ${
+            i + PROCESS_TRACKS_BATCH_SIZE
+          }: ${e.message}`
+        )
+      }
     }
   }
 
