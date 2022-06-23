@@ -24,7 +24,9 @@ import { UserNameLink } from '../Notification/UserNameLink'
 const messages = {
   title: 'Your Tip Was Sent!',
   sent: 'You successfully sent a tip of',
-  to: 'to'
+  to: 'to',
+  twitterShare: (senderHandle: string, uiAmount: number) =>
+    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @AudiusProject #Audius #AUDIOTip`
 }
 
 type TipSentNotificationProps = {
@@ -43,8 +45,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   )
 
   const handleTwitterShare = useCallback(
-    (senderHandle: string | undefined) => {
-      const shareText = `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @AudiusProject #Audius #AUDIOTip`
+    (senderHandle: string) => {
+      const shareText = messages.twitterShare(senderHandle, uiAmount)
       return {
         shareText,
         analytics: make({

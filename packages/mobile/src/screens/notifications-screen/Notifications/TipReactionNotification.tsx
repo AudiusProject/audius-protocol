@@ -27,7 +27,9 @@ import { reactionMap } from '../Reaction'
 
 const messages = {
   reacted: 'reacted',
-  react: 'reacted to your tip of '
+  react: 'reacted to your tip of ',
+  twitterShare: (handle: string) =>
+    `I got a thanks from ${handle} for tipping them $AUDIO on @audiusproject! #Audius #AUDIOTip`
 }
 
 const useStyles = makeStyles(() => ({
@@ -73,8 +75,8 @@ export const TipReactionNotification = (
     isEqual
   )
 
-  const handleTwitterShare = useCallback((handle: string | undefined) => {
-    const shareText = `I got a thanks from ${handle} for tipping them $AUDIO on @audiusproject! #Audius #AUDIOTip`
+  const handleTwitterShare = useCallback((handle: string) => {
+    const shareText = messages.twitterShare(handle)
     return {
       shareText,
       analytics: make({

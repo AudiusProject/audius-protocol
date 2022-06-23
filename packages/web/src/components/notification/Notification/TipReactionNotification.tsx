@@ -1,6 +1,10 @@
+import { useCallback } from 'react'
+
 import { useUIAudio } from 'common/hooks/useUIAudio'
+import { Name } from 'common/models/Analytics'
 import { Reaction } from 'common/store/notifications/types'
 import { getReactionFromRawValue } from 'common/store/ui/reactions/slice'
+import { make } from 'store/analytics/actions'
 
 import styles from './TipReactionNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -17,7 +21,9 @@ import { IconTip } from './components/icons'
 
 const messages = {
   reacted: 'reacted',
-  react: 'reacted to your tip of '
+  react: 'reacted to your tip of ',
+  twitterShare: (handle: string) =>
+    `I got a thanks from ${handle} for tipping them $AUDIO on @audiusproject! #Audius #AUDIOTip`
 }
 
 type TipReactionNotificationProps = {
@@ -37,6 +43,15 @@ export const TipReactionNotification = (
   } = notification
 
   const uiAmount = useUIAudio(amount)
+
+  const handleShare = useCallback((twitterHandle: string) => {
+    const shareText = messages.twitterShare(twitterHandle)
+    const analytics = make(
+      Name.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
+      { text: shareText }
+    )
+    return { shareText, analytics }
+  }, [])
 
   const userLinkElement = (
     <UserNameLink
@@ -73,7 +88,11 @@ export const TipReactionNotification = (
           </div>
         </div>
       </NotificationBody>
-      <TwitterShareButton />
+      <TwitterShareButton
+        type='dynamic'
+        handle={user.handle}
+        shareData={handleShare}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

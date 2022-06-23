@@ -1,10 +1,7 @@
-import { useCallback } from 'react'
-
 import { TierChange } from 'common/store/notifications/types'
 import { BadgeTierInfo, badgeTiers } from 'common/store/wallet/utils'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { fullProfilePage } from 'utils/route'
-import { openTwitterLink } from 'utils/tweet'
 
 import styles from './TierChangeNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -48,12 +45,8 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
 
   const { humanReadableAmount } = tierInfo
 
-  const handleShare = useCallback(() => {
-    const link = fullProfilePage(user.handle)
-    const { label, icon } = tierInfoMap[tier]
-    const text = messages.twitterShareText(label, icon)
-    openTwitterLink(link, text)
-  }, [tier, user])
+  const { label, icon } = tierInfoMap[tier]
+  const shareText = messages.twitterShareText(label, icon)
 
   return (
     <NotificationTile notification={notification}>
@@ -66,7 +59,11 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         {messages.reached} {tier} {messages.having} {humanReadableAmount}{' '}
         {messages.audio} {messages.accessInfo}
       </NotificationBody>
-      <TwitterShareButton onClick={handleShare} />
+      <TwitterShareButton
+        type='static'
+        url={fullProfilePage(user.handle)}
+        shareText={shareText}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

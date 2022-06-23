@@ -14,7 +14,9 @@ import { SupporterAndSupportingNotificationContent } from './SupporterAndSupport
 const messages = {
   title: 'Top Supporter',
   supporterChange: 'Became your',
-  supporter: 'Top Supporter'
+  supporter: 'Top Supporter',
+  twitterShare: (handle: string, rank: number) =>
+    `${handle} just became my #${rank} Top Supporter on @AudiusProject #Audius $AUDIO #AUDIOTip`
 }
 
 type TopSupporterNotificationProps = {
@@ -33,8 +35,8 @@ export const TopSupporterNotification = (
   )
 
   const handleTwitterShare = useCallback(
-    (handle: string | undefined) => {
-      const shareText = `${handle} just became my #${rank} Top Supporter on @AudiusProject #Audius $AUDIO #AUDIOTip`
+    (handle: string) => {
+      const shareText = messages.twitterShare(handle, rank)
       return {
         shareText,
         analytics: make({

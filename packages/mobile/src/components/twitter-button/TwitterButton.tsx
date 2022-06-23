@@ -22,7 +22,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-export type ShareStatus = 'idle' | 'loading' | 'success'
+type ShareStatus = 'idle' | 'loading' | 'success'
 
 type StaticTwitterProps = {
   type: 'static'

@@ -5,8 +5,7 @@ import { useDispatch } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
 import { RemixCosign, TrackEntity } from 'common/store/notifications/types'
-import { make, useRecord } from 'store/analytics/actions'
-import { openTwitterLink } from 'utils/tweet'
+import { make } from 'store/analytics/actions'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -18,7 +17,7 @@ import { TrackContent } from './components/TrackContent'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
-import { getTwitterHandleByUserHandle, getEntityLink } from './utils'
+import { getEntityLink } from './utils'
 
 const messages = {
   title: 'Remix Co-sign',
@@ -45,7 +44,6 @@ export const RemixCosignNotification = (
     parentTrackUserId
   } = notification
   const dispatch = useDispatch()
-  const record = useRecord()
 
   const childTrack = entities.find(
     track => track.track_id === childTrackId
@@ -59,20 +57,19 @@ export const RemixCosignNotification = (
     dispatch(push(getEntityLink(childTrack)))
   }, [childTrack, dispatch])
 
-  const handleTwitterShare = useCallback(async () => {
-    let twitterHandle = await getTwitterHandleByUserHandle(user.handle)
-    if (!twitterHandle) twitterHandle = user.name
-    else twitterHandle = `@${twitterHandle}`
-
-    const shareText = messages.shareTwitterText(parentTrack, twitterHandle)
-
-    openTwitterLink(getEntityLink(childTrack, true), shareText)
-    record(
-      make(Name.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE, {
-        text: shareText
-      })
-    )
-  }, [user, parentTrack, childTrack, record])
+  const handleTwitterShare = useCallback(
+    (handle: string) => {
+      const shareText = messages.shareTwitterText(parentTrack, handle)
+      const analytics = make(
+        Name.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
+        {
+          text: shareText
+        }
+      )
+      return { shareText, analytics }
+    },
+    [parentTrack]
+  )
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -87,7 +84,12 @@ export const RemixCosignNotification = (
       <div>
         <TrackContent track={childTrack} />
       </div>
-      <TwitterShareButton onClick={handleTwitterShare} />
+      <TwitterShareButton
+        type='dynamic'
+        handle={user.handle}
+        shareData={handleTwitterShare}
+        url={getEntityLink(childTrack, true)}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
