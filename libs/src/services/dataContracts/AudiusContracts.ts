@@ -9,6 +9,7 @@ import { PlaylistFactoryClient } from './PlaylistFactoryClient'
 import { UserLibraryFactoryClient } from './UserLibraryFactoryClient'
 import { IPLDBlacklistFactoryClient } from './IPLDBlacklistFactoryClient'
 import { UserReplicaSetManagerClient } from './UserReplicaSetManagerClient'
+import { AudiusDataClient } from './AudiusDataClient'
 import type { Web3Manager } from '../web3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
 
@@ -32,6 +33,10 @@ const IPLDBlacklistFactoryABI = Utils.importDataContractABI(
 const UserReplicaSetManagerABI = Utils.importDataContractABI(
   'UserReplicaSetManager.json'
 ).abi
+const AudiusDataABI = Utils.importDataContractABI(
+  'AudiusData.json'
+).abi
+console.log(AudiusDataABI)
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -54,6 +59,7 @@ export class AudiusContracts {
   PlaylistFactoryClient: PlaylistFactoryClient
   UserLibraryFactoryClient: UserLibraryFactoryClient
   IPLDBlacklistFactoryClient: IPLDBlacklistFactoryClient
+  AudiusDataClient: AudiusDataClient
   contractClients: ContractClient[]
   UserReplicaSetManagerClient: UserReplicaSetManagerClient | undefined | null
   contracts: Record<string, string> | undefined
@@ -126,17 +132,28 @@ export class AudiusContracts {
       this.logger
     )
 
+    this.AudiusDataClient = new AudiusDataClient(
+      this.web3Manager,
+      AudiusDataABI,
+      "AudiusData",
+      this.getRegistryAddressForContract,
+      this.logger,
+      "0xDDb64fE46a91D46ee29420539FC25FD07c5FEa3E" // TODO: Config var
+    )
+
     this.contractClients = [
       this.UserFactoryClient,
       this.TrackFactoryClient,
       this.SocialFeatureFactoryClient,
       this.PlaylistFactoryClient,
       this.UserLibraryFactoryClient,
-      this.IPLDBlacklistFactoryClient
+      this.IPLDBlacklistFactoryClient,
+      this.AudiusDataClient
     ]
   }
 
   async init() {
+    console.log('Initializing..2.')
     if (this.isServer) {
       await Promise.all(
         this.contractClients.map(async (client) => await client.init())
