@@ -35,7 +35,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     zIndex: 100
   },
   divider: { marginHorizontal: -12, marginBottom: spacing(2) },
-  bottomDivider: { marginHorizontal: -12 }
+  bottomDivider: { marginTop: spacing(2), marginHorizontal: -12 }
 }))
 
 type ProfileHeaderV2Props = {
