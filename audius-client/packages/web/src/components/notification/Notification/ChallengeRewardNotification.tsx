@@ -8,7 +8,6 @@ import { ChallengeReward } from 'common/store/notifications/types'
 import { challengeRewardsConfig } from 'pages/audio-rewards-page/config'
 import { make, useRecord } from 'store/analytics/actions'
 import { AUDIO_PAGE } from 'utils/route'
-import { openTwitterLink } from 'utils/tweet'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -45,10 +44,6 @@ export const ChallengeRewardNotification = (
     challengeId
   ]
 
-  const handleShare = useCallback(() => {
-    openTwitterLink(null, messages.twitterShareText)
-  }, [])
-
   const handleClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))
     record(
@@ -67,7 +62,7 @@ export const ChallengeRewardNotification = (
           ? messages.referredText
           : messages.challengeCompleteText}
       </NotificationBody>
-      <TwitterShareButton onClick={handleShare} />
+      <TwitterShareButton type='static' shareText={messages.twitterShareText} />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

@@ -5,8 +5,7 @@ import { useDispatch } from 'react-redux'
 
 import { Name } from 'common/models/Analytics'
 import { TrendingTrack } from 'common/store/notifications/types'
-import { make, useRecord } from 'store/analytics/actions'
-import { openTwitterLink } from 'utils/tweet'
+import { make } from 'store/analytics/actions'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -40,19 +39,8 @@ export const TrendingTrackNotification = (
   const { entity, entityType, rank, timeLabel, isViewed } = notification
   const rankSuffix = getRankSuffix(rank)
   const dispatch = useDispatch()
-  const record = useRecord()
 
-  const handleShare = useCallback(() => {
-    const { entity, rank } = notification
-    const link = getEntityLink(entity, true)
-    const text = messages.twitterShareText(entity.title, rank)
-    openTwitterLink(link, text)
-    record(
-      make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
-        milestone: text
-      })
-    )
-  }, [notification, record])
+  const shareText = messages.twitterShareText(entity.title, rank)
 
   const handleClick = useCallback(() => {
     dispatch(push(getEntityLink(entity)))
@@ -68,7 +56,14 @@ export const TrendingTrackNotification = (
         {messages.is} {rank}
         {rankSuffix} {messages.trending}
       </NotificationBody>
-      <TwitterShareButton onClick={handleShare} />
+      <TwitterShareButton
+        type='static'
+        url={getEntityLink(entity, true)}
+        shareText={shareText}
+        analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
+          milestone: shareText
+        })}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
