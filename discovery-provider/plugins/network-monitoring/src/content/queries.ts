@@ -195,6 +195,8 @@ export const saveCIDResults = async (
 
     console.log(`[${run_id}:${spid}] saving batch [size:${cidBatch.length}]`)
 
+    const t = await sequelizeConn.transaction()
+
     try {
         await Promise.all(
             cidBatch.map(async (item, i) => {
@@ -221,6 +223,7 @@ export const saveCIDResults = async (
                 `, {
                             replacements: { run_id, cid, user_id, spid },
                             logging: false,
+                            transaction: t,
                         })
                     }
                 } catch (e) {
@@ -231,8 +234,11 @@ export const saveCIDResults = async (
         )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveBatch] error saving batch - ${(e as Error).message}`)
+        await t.rollback()
         return
     }
+
+    await t.commit()
 }
 
 export const getUserCounts = async (run_id: number, spid: number): Promise<[number, number, number]> => {
@@ -355,6 +361,8 @@ export const savePrimaryUserResults = async (
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<void> => {
+    const t = await sequelizeConn.transaction()
+
     try {
         await Promise.all(
             results.map(async ({ walletPublicKey, clock }) => {
@@ -366,7 +374,8 @@ export const savePrimaryUserResults = async (
                         AND run_id = :run_id;
                 `, {
                         type: QueryTypes.UPDATE,
-                        replacements: { run_id, walletPublicKey, clock }
+                        replacements: { run_id, walletPublicKey, clock },
+                        transaction: t,
                     })
                 } catch (e) {
                     console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
@@ -376,8 +385,11 @@ export const savePrimaryUserResults = async (
         )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        await t.rollback()
         return
     }
+
+    await t.commit()
 
     return
 }
@@ -387,6 +399,9 @@ export const saveSecondary1UserResults = async (
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<void> => {
+
+    const t = await sequelizeConn.transaction()
+
     try {
         await Promise.all(
             results.map(async ({ walletPublicKey, clock }) => {
@@ -397,14 +412,18 @@ export const saveSecondary1UserResults = async (
                     AND run_id = :run_id;
                 `, {
                     type: QueryTypes.UPDATE,
-                    replacements: { run_id, walletPublicKey, clock }
+                    replacements: { run_id, walletPublicKey, clock },
+                    transaction: t,
                 })
             })
         )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        await t.rollback()
         return
     }
+
+    await t.commit()
 
     return
 }
@@ -414,6 +433,9 @@ export const saveSecondary2UserResults = async (
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<void> => {
+
+    const t = await sequelizeConn.transaction()
+
     try {
         await Promise.all(
             results.map(async ({ walletPublicKey, clock }) => {
@@ -424,14 +446,18 @@ export const saveSecondary2UserResults = async (
                     AND run_id = :run_id;
                 `, {
                     type: QueryTypes.UPDATE,
-                    replacements: { run_id, walletPublicKey, clock }
+                    replacements: { run_id, walletPublicKey, clock },
+                    transaction: t,
                 })
             })
         )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        await t.rollback()
         return
     }
+
+    await t.commit()
 
     return
 }
