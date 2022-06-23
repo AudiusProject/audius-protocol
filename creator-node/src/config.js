@@ -671,6 +671,12 @@ const config = convict({
     format: 'nat',
     env: 'snapbackMaxLastSuccessfulRunDelayMs',
     default: 5 * 60 * 60 * 1000 // 5 hrs
+  },
+  disableSnapback: {
+    doc: 'True to not run any snapback queues (old state machine and old syncs)',
+    format: Boolean,
+    env: 'disableSnapback',
+    default: false
   }
   /**
    * unsupported options at the moment
