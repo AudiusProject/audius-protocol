@@ -1,7 +1,14 @@
 import { ReactElement, useRef } from 'react'
 
-import { Modal, IconTrophy, IconFollowing, Scrollbar } from '@audius/stems'
+import {
+  Modal,
+  IconTrophy,
+  IconFollowing,
+  Scrollbar,
+  IconUser
+} from '@audius/stems'
 
+import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { getUser } from 'common/store/cache/users/selectors'
 import { getProfileUser } from 'common/store/pages/profile/selectors'
@@ -82,7 +89,7 @@ const UserListModal = ({
       selector = followersSelector
       title = (
         <div className={styles.titleContainer}>
-          {/* <IconUser className={styles.icon} /> */}
+          <IconUser className={styles.icon} />
           <span>{messages.followers}</span>
         </div>
       )
@@ -92,7 +99,7 @@ const UserListModal = ({
       selector = followingSelector
       title = (
         <div className={styles.titleContainer}>
-          {/* <IconUser className={styles.icon} /> */}
+          <IconUser className={styles.icon} />
           <span>{messages.following}</span>
         </div>
       )
@@ -102,7 +109,7 @@ const UserListModal = ({
       selector = notificationSelector
       title = (
         <div className={styles.titleContainer}>
-          {/* <IconUser className={styles.icon} /> */}
+          <IconUser className={styles.icon} />
           <span>{notificationTitle}</span>
         </div>
       )
@@ -128,7 +135,7 @@ const UserListModal = ({
       selector = supportingSelector
       title = (
         <div className={styles.titleContainer}>
-          {/* <IconTip className={styles.icon} /> */}
+          <IconTip className={styles.icon} />
           <span>{messages.supporting}</span>
         </div>
       )
