@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from src.models import Milestone, MilestoneName
