@@ -213,7 +213,6 @@ class MilestoneInfo(TypedDict):
 def get_milestone_info(
     session: Session, min_block_number, max_block_number
 ) -> MilestoneInfo:
-    # Query count for any user w/new followers
     milestones_in_block = session.query(
         Milestone.name, Milestone.id, Milestone.threshold
     ).filter(
