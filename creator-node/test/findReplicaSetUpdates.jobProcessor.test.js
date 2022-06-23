@@ -74,26 +74,23 @@ describe('test findReplicaSetUpdates job processor', function () {
 
   const DEFAULT_CLOCK_STATUSES_MAP = {
     [primary]: {
-      [wallet]: 10
+      [wallet]: 10,
+      randomWallet: 10
     },
     [secondary1]: {
-      [wallet]: 10
+      [wallet]: 10,
+      anotherWallet: 100
     },
     [secondary2]: {
       [wallet]: 10
-    }
+    },
+    unusedNode: {}
   }
 
-  const CLOCK_STATUSES_MAP_WHERE_SECONDARY1_IS_BEHIND = {
-    [primary]: {
-      [wallet]: 10
-    },
-    [secondary1]: {
-      [wallet]: 9
-    },
-    [secondary2]: {
-      [wallet]: 10
-    }
+  const CLOCK_STATUSES_MAP_FILTERED_TO_WALLET = {
+    [primary]: 10,
+    [secondary1]: 10,
+    [secondary2]: 10
   }
 
   function getJobProcessorStub(
@@ -118,7 +115,6 @@ describe('test findReplicaSetUpdates job processor', function () {
     cNodeEndpointToSpIdMap = DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
     userSecondarySyncMetricsMap = {},
     unhealthyPeers = [],
-    replicaSetNodesToUserClockStatusesMap = DEFAULT_CLOCK_STATUSES_MAP,
     isPrimaryHealthyInExtraHealthCheck = true
   }) {
     const getCNodeEndpointToSpIdMapStub = sandbox
@@ -138,7 +134,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       logger,
       users,
       unhealthyPeers,
-      replicaSetNodesToUserClockStatusesMap,
+      replicaSetNodesToUserClockStatusesMap: DEFAULT_CLOCK_STATUSES_MAP,
       userSecondarySyncMetricsMap
     })
   }
@@ -163,8 +159,7 @@ describe('test findReplicaSetUpdates job processor', function () {
                   secondary2,
                   unhealthyReplicas: expectedUnhealthyReplicas,
                   replicaSetNodesToUserClockStatusesMap:
-                    jobProcessorArgs?.replicaSetNodesToUserClockStatusesMap ||
-                    DEFAULT_CLOCK_STATUSES_MAP
+                    CLOCK_STATUSES_MAP_FILTERED_TO_WALLET
                 }
               }
             ]

@@ -1,7 +1,7 @@
 const models = require('../../models')
 const { notificationTypes } = require('../constants')
 const { fetchNotificationMetadata } = require('../fetchNotificationMetadata')
-const formatNotification = require('./formatNotification')
+const formatNotifications = require('./formatNotification')
 const publishNotifications = require('./publishNotifications')
 
 function getUserIdsToNotify (notifications) {
@@ -16,10 +16,27 @@ function getUserIdsToNotify (notifications) {
         return userIds.concat(notification.metadata.entity_owner_id)
       case notificationTypes.RemixCreate:
         return userIds.concat(notification.metadata.remix_parent_track_user_id)
+      case notificationTypes.AddTrackToPlaylist:
+        return userIds.concat(notification.metadata.track_owner_id)
       case notificationTypes.ChallengeReward:
       case notificationTypes.MilestoneListen:
       case notificationTypes.TierChange:
         return userIds.concat(notification.initiator)
+      case notificationTypes.Tip:
+        const receiverId = notification.initiator
+        return userIds.concat(receiverId)
+      case notificationTypes.Reaction:
+        // Specifically handle tip reactions
+        if (notification.metadata.reaction_type !== 'tip') {
+          return userIds
+        }
+        // For reactions, add the tip_sender_id in the reacted_to_entity
+        return userIds.concat(notification.metadata.reacted_to_entity.tip_sender_id)
+      case notificationTypes.SupporterRankUp:
+        // For SupporterRankUp, need to send notifs to both supporting and supported users
+        const supportingId = notification.metadata.entity_id
+        const supportedId = notification.initiator
+        return userIds.concat([supportingId, supportedId])
       default:
         return userIds
     }
@@ -66,7 +83,7 @@ async function sendNotifications (audiusLibs, notifications, tx, optimizelyClien
   const userNotificationSettings = await getUserNotificationSettings(userIdsToNotify, tx)
 
   // Format the notifications, so that the extra information needed to build the notification is in a standard format
-  const { notifications: formattedNotifications, users } = await formatNotification(notifications, userNotificationSettings, tx)
+  const { notifications: formattedNotifications, users } = await formatNotifications(notifications, userNotificationSettings, tx)
 
   // Get the metadata for the notifications - users/tracks/playlists from DP that are in the notification
   const metadata = await fetchNotificationMetadata(audiusLibs, users, formattedNotifications)
@@ -79,5 +96,5 @@ module.exports = sendNotifications
 
 module.exports.getUserIdsToNotify = getUserIdsToNotify
 module.exports.getUserNotificationSettings = getUserNotificationSettings
-module.exports.formatNotification = formatNotification
+module.exports.formatNotifications = formatNotifications
 module.exports.fetchNotificationMetadata = fetchNotificationMetadata

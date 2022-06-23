@@ -4,7 +4,6 @@ from integration_tests.utils import populate_mock_db
 from src.queries import response_name_constants
 from src.queries.get_top_users import _get_top_users
 from src.queries.query_helpers import populate_user_metadata
-from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -70,8 +69,6 @@ def test_populate_user_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_user(session)
-
         user_ids = [1, 2, 3, 4, 5]
         users = [
             {"user_id": 1, "wallet": "0x111", "is_verified": False},

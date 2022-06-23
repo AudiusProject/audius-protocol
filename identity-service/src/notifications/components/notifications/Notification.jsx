@@ -22,7 +22,8 @@ export const NotificationType = Object.freeze({
   RemixCreate: 'RemixCreate',
   RemixCosign: 'RemixCosign',
   TrendingTrack: 'TrendingTrack',
-  ChallengeReward: 'ChallengeReward'
+  ChallengeReward: 'ChallengeReward',
+  AddTrackToPlaylist: 'AddTrackToPlaylist'
 })
 
 const challengeRewardsConfig = {
@@ -244,7 +245,18 @@ const notificationMap = {
         <BodyText text={bodyText} />
       </span>
     )
-  }
+  },
+  [NotificationType.AddTrackToPlaylist] (notification) {
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={notification.playlistOwner.name} />
+        <BodyText text={` added your track `} />
+        <HighlightText text={notification.track.title} />
+        <BodyText text={` to their playlist `} />
+        <HighlightText text={notification.playlist.playlist_name} />
+      </span>
+    )
+  },
 }
 
 const getMessage = (notification) => {

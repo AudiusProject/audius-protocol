@@ -47,8 +47,7 @@ const getFavoriteType = (type) => {
 let subscriberPushNotifications = []
 
 async function formatNotifications (notifications, notificationSettings, tx) {
-  // Loop through notifications to get the userIds and the formatted notification
-  const userIds = new Set()
+  // Loop through notifications to get the formatted notification
   const formattedNotifications = []
 
   for (let notif of notifications) {
@@ -69,7 +68,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
           }]
         }
         formattedNotifications.push(formattedFollow)
-        userIds.add(notificationTarget)
       }
     }
 
@@ -91,7 +89,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
           type: getRepostType(notif.metadata.entity_type)
         }
         formattedNotifications.push(formattedRepost)
-        userIds.add(notificationTarget)
       }
     }
 
@@ -112,7 +109,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
           type: getFavoriteType(notif.metadata.entity_type)
         }
         formattedNotifications.push(formattedFavorite)
-        userIds.add(notificationTarget)
       }
     }
 
@@ -140,7 +136,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
           type: notificationTypes.RemixCreate
         }
         formattedNotifications.push(formattedRemixCreate)
-        userIds.add(notificationTarget)
       }
     }
 
@@ -161,7 +156,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         type: notificationTypes.RemixCosign
       }
       formattedNotifications.push(formattedRemixCosign)
-      userIds.add(formattedRemixCosign.initiator)
     }
 
     // Handle 'challenge reward' notification type
@@ -177,7 +171,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         type: notificationTypes.ChallengeReward
       }
       formattedNotifications.push(formattedRewardNotification)
-      userIds.add(formattedRewardNotification.initiator)
     }
 
     // Handle 'listen milestone' notification type
@@ -195,7 +188,6 @@ async function formatNotifications (notifications, notificationSettings, tx) {
           }]
         }
         formattedNotifications.push(formattedListenMilstoneNotification)
-        userIds.add(formattedListenMilstoneNotification.initiator)
       }
     }
 
@@ -212,17 +204,66 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         type: notificationTypes.TierChange
       }
       formattedNotifications.push(formattedTierChangeNotification)
-      userIds.add(formattedTierChangeNotification.initiator)
     }
 
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(notif, tx)
     }
+
+    // Handle the 'track added to playlist' notification type
+    if (notif.type === notificationTypes.AddTrackToPlaylist) {
+      const formattedAddTrackToPlaylistNotification = {
+        ...notif,
+        actions: [{
+          actionEntityType: actionEntityTypes.Track,
+          actionTrackId: notif.metadata.track_id,
+          blocknumber
+        }],
+        metadata: {
+          trackOwnerId: notif.metadata.track_owner_id,
+          playlistOwnerId: notif.initiator,
+          playlistId: notif.metadata.playlist_id
+        },
+        entityId: notif.metadata.track_id,
+        type: notificationTypes.AddTrackToPlaylist
+      }
+      formattedNotifications.push(formattedAddTrackToPlaylistNotification)
+    }
+
+    if (notif.type === notificationTypes.Reaction) {
+      const formattedReactionNotification = {
+        ...notif
+      }
+      formattedNotifications.push(formattedReactionNotification)
+    }
+
+    if (notif.type === notificationTypes.SupporterRankUp) {
+      // Need to create two notifs
+      const supportingRankUp = {
+        ...notif,
+        type: notificationTypes.SupportingRankUp
+      }
+      const supporterRankUp = {
+        ...notif,
+        type: notificationTypes.SupporterRankUp
+      }
+
+      formattedNotifications.push(supportingRankUp)
+      formattedNotifications.push(supporterRankUp)
+    }
+
+    if (notif.type === notificationTypes.Tip) {
+      // For tip, need sender userId, and amount
+      const formattedTipNotification = {
+        ...notif,
+        type: notificationTypes.TipReceive
+      }
+      formattedNotifications.push(formattedTipNotification)
+    }
   }
   const [formattedCreateNotifications, users] = await _processSubscriberPushNotifications()
   formattedNotifications.push(...formattedCreateNotifications)
-  users.forEach(userIds.add, userIds)
   return { notifications: formattedNotifications, users: [...users] }
 }
 
