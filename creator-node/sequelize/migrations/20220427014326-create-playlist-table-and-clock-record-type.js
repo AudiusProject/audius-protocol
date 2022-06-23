@@ -27,7 +27,7 @@ module.exports = {
     This is in the case that there are existing values in the ClockRecords table pointing to the playlist enum that would have to be either
     modified (removes context) or dropped (adds gaps to ClockRecord history)
   */
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface) => {
     const transaction = await queryInterface.sequelize.transaction()
     await removeCompositeUniqueConstraints(queryInterface, transaction)
     await dropPlaylistTable(queryInterface, transaction)
@@ -38,6 +38,20 @@ module.exports = {
 /*
 Unorthodox approach to modify enum in a transaction - reference notes here on why this is necessary https://www.postgresql.org/docs/11/sql-altertype.html.
 It is not possible to use the ALTER TYPE on enum type within a transaction in postgres 11.1 (current version).
+
+The name of the enum type (generated in sequelize) was determined with the following query:
+
+audius_creator_node=# SELECT pg_type.typname AS enum_type, pg_enum.enumlabel AS enum_label FROM pg_type JOIN pg_enum ON pg_enum.enumtypid = pg_type.oid;
+           enum_type           | enum_label
+-------------------------------+------------
+ enum_ContentBlacklists_type   | TRACK
+ enum_ContentBlacklists_type   | USER
+ enum_ContentBlacklists_type   | CID
+ enum_ClockRecords_sourceTable | AudiusUser
+ enum_ClockRecords_sourceTable | Track
+ enum_ClockRecords_sourceTable | File
+ enum_ClockRecords_sourceTable | Playlist
+(7 rows)
 */
 async function addPlaylistToClockRecordSourceTables(
   queryInterface,
