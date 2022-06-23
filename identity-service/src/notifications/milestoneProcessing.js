@@ -184,14 +184,6 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     // entityId=Entity reaching milestone, one of track/collection
     // actionEntityType=Entity achieving milestone, can be track/collection
     // actionEntityId=Milestone achieved
-    logger.error('making it')
-    logger.error({
-      userId: userId,
-      type: milestoneType,
-      entityId: entityId,
-      blocknumber,
-      timestamp
-    })
     const createMilestoneTx = await models.Notification.create({
       userId: userId,
       type: milestoneType,
@@ -200,7 +192,6 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       timestamp
     }, { transaction: tx })
     const notificationId = createMilestoneTx.id
-    logger.error({ createMilestoneTx })
     await models.NotificationAction.findOrCreate({
       where: {
         notificationId,
@@ -269,7 +260,6 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
     }
 
     const metadata = await fetchNotificationMetadata(audiusLibs, [milestoneValue], [notifStub])
-    logger.error({ metadata })
     const mapNotification = notificationResponseMap[milestoneType]
     try {
       let msgGenNotif = {
@@ -283,10 +273,6 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       let types = []
       if (notifyMobile) types.push(deviceType.Mobile)
       if (notifyBrowserPush) types.push(deviceType.Browser)
-      logger.error('publish')
-      logger.error('publish')
-      logger.error('publish')
-      logger.error('publish')
       await publish(msg, userId, tx, true, title, types)
     } catch (e) {
       // Log on error instead of failing
