@@ -34,15 +34,17 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   infoRoot: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: spacing(2)
   },
   photo: {
-    height: 72,
-    width: 72
+    height: 74,
+    width: 74,
+    borderColor: palette.neutralLight8,
+    borderWidth: 1
   },
   userInfo: {
-    marginLeft: spacing(1),
+    marginLeft: spacing(2),
     flex: 1
   },
   userStats: {
@@ -118,7 +120,7 @@ export const UserListItem = (props: UserListItemProps) => {
                 <IconUser height={15} width={15} fill={styles.userIcon.color} />
                 <Text variant='body' color='neutralLight4'>
                   {' '}
-                  <Text color='inherit' weight='bold'>
+                  <Text color='inherit' weight='bold' fontSize='small'>
                     {formatCount(follower_count)}{' '}
                   </Text>
                   {messages.followers(follower_count)}

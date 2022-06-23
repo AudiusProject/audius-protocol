@@ -55,8 +55,8 @@ export const SupporterInfo = (props: SupporterInfoProps) => {
       <View style={styles.rankContainer}>
         <RankIcon
           fill={isTopRank ? secondary : neutralLight4}
-          height={12}
-          width={12}
+          height={15}
+          width={15}
         />
         <Text
           style={styles.rankText}
