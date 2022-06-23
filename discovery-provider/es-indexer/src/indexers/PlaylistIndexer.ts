@@ -1,6 +1,7 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
 import { keyBy, merge } from 'lodash'
 import { dialPg } from '../conn'
+import { splitTags } from '../helpers/splitTags'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { PlaylistDoc } from '../types/docs'
@@ -77,7 +78,10 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           properties: {
             mood: { type: 'keyword' },
             genre: { type: 'keyword' },
-            tags: { type: 'keyword' },
+            tags: {
+              type: 'keyword',
+              normalizer: 'lower_asciifolding',
+            },
             play_count: { type: 'integer' },
             repost_count: { type: 'integer' },
             save_count: { type: 'integer' },
@@ -215,7 +219,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         and track_id in (${idList})`
     const allTracks = await pg.query(q)
     for (let t of allTracks.rows) {
-      t.tags = t.tags?.split(',').filter(Boolean)
+      t.tags = splitTags(t.tags)
     }
     return keyBy(allTracks.rows, 'track_id')
   }

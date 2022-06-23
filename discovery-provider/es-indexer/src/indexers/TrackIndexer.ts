@@ -1,5 +1,6 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
 import { merge } from 'lodash'
+import { splitTags } from '../helpers/splitTags'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { TrackDoc } from '../types/docs'
@@ -58,9 +59,9 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
           },
         },
         length: { type: 'integer' },
-        tags: {
-          type: 'text',
-          analyzer: 'comma_analyzer',
+        tag_list: {
+          type: 'keyword',
+          normalizer: 'lower_asciifolding',
         },
         genre: { type: 'keyword' },
         mood: { type: 'keyword' },
@@ -186,7 +187,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.suggest = [row.title, row.user.handle, row.user.name]
       .filter((x) => x)
       .join(' ')
-    row.tags = row.tags
+    row.tag_list = splitTags(row.tags)
     row.repost_count = row.reposted_by.length
     row.favorite_count = row.saved_by.length
     row.duration = Math.ceil(
