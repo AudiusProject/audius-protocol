@@ -22,22 +22,23 @@ module.exports = {
     await transaction.commit()
   },
 
+  /*
+    In the down migration we remove compose unique constraint and playlist table but do not remove the altered enum.
+    This is in the case that there are existing values in the ClockRecords table pointing to the playlist enum that would have to be either
+    modified (removes context) or dropped (adds gaps to ClockRecord history)
+  */
   down: async (queryInterface, Sequelize) => {
-    try {
-      const transaction = await queryInterface.sequelize.transaction()
-      await removeCompositeUniqueConstraints(queryInterface, transaction)
-      await removePlaylistFromClockRecordSourceTables(
-        queryInterface,
-        transaction
-      )
-      await dropPlaylistTable(queryInterface, transaction)
-      await transaction.commit()
-    } catch (e) {
-      console.log(e)
-    }
+    const transaction = await queryInterface.sequelize.transaction()
+    await removeCompositeUniqueConstraints(queryInterface, transaction)
+    await dropPlaylistTable(queryInterface, transaction)
+    await transaction.commit()
   }
 }
 
+/*
+Unorthodox approach to modify enum in a transaction - reference notes here on why this is necessary https://www.postgresql.org/docs/11/sql-altertype.html.
+It is not possible to use the ALTER TYPE on enum type within a transaction in postgres 11.1 (current version).
+*/
 async function addPlaylistToClockRecordSourceTables(
   queryInterface,
   transaction
@@ -46,21 +47,6 @@ async function addPlaylistToClockRecordSourceTables(
     `
   ALTER TYPE "enum_ClockRecords_sourceTable" RENAME TO "enum_ClockRecords_sourceTable_old";
   CREATE TYPE "enum_ClockRecords_sourceTable" AS ENUM('AudiusUser', 'Track', 'File', 'Playlist');
-  ALTER TABLE "ClockRecords" ALTER COLUMN "sourceTable" TYPE "enum_ClockRecords_sourceTable" USING "sourceTable"::text::"enum_ClockRecords_sourceTable";
-  DROP TYPE "enum_ClockRecords_sourceTable_old";
-  `,
-    { transaction }
-  )
-}
-
-async function removePlaylistFromClockRecordSourceTables(
-  queryInterface,
-  transaction
-) {
-  await queryInterface.sequelize.query(
-    `
-  ALTER TYPE "enum_ClockRecords_sourceTable" RENAME TO "enum_ClockRecords_sourceTable_old";
-  CREATE TYPE "enum_ClockRecords_sourceTable" AS ENUM('AudiusUser', 'Track', 'File');
   ALTER TABLE "ClockRecords" ALTER COLUMN "sourceTable" TYPE "enum_ClockRecords_sourceTable" USING "sourceTable"::text::"enum_ClockRecords_sourceTable";
   DROP TYPE "enum_ClockRecords_sourceTable_old";
   `,
