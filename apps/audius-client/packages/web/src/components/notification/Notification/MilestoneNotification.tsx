@@ -6,9 +6,8 @@ import { useDispatch } from 'react-redux'
 import { Name } from 'common/models/Analytics'
 import { Achievement, Milestone } from 'common/store/notifications/types'
 import { formatCount } from 'common/utils/formatUtil'
-import { make, useRecord } from 'store/analytics/actions'
+import { make } from 'store/analytics/actions'
 import { fullProfilePage, profilePage } from 'utils/route'
-import { openTwitterLink } from 'utils/tweet'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -75,7 +74,6 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const { timeLabel, isViewed, user } = notification
   const dispatch = useDispatch()
-  const record = useRecord()
 
   const renderBody = () => {
     if (notification.achievement === Achievement.Followers) {
@@ -97,15 +95,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     }
   }
 
-  const handleShare = useCallback(async () => {
-    const { link, text } = getAchievementText(notification)
-    openTwitterLink(link, text)
-    record(
-      make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
-        milestone: text
-      })
-    )
-  }, [notification, record])
+  const { link, text } = getAchievementText(notification)
 
   const handleClick = useCallback(() => {
     if (notification.achievement === Achievement.Followers) {
@@ -122,7 +112,14 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>{renderBody()}</NotificationBody>
-      <TwitterShareButton onClick={handleShare} />
+      <TwitterShareButton
+        type='static'
+        url={link}
+        shareText={text}
+        analytics={make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
+          milestone: text
+        })}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

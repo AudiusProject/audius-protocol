@@ -1,5 +1,9 @@
+import { useCallback } from 'react'
+
 import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
+import { Name } from 'common/models/Analytics'
 import { SupportingRankUp } from 'common/store/notifications/types'
+import { make } from 'store/analytics/actions'
 
 import styles from './TopSupportingNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -15,7 +19,9 @@ import { IconTip } from './components/icons'
 const messages = {
   title: 'Top Supporter',
   supporterChange: "You're now their",
-  supporter: 'Top Supporter'
+  supporter: 'Top Supporter',
+  twitterShare: (handle: string, rank: number) =>
+    `I'm now ${handle}'s #${rank} Top Supporter on @AudiusProject #Audius $AUDIO  #AUDIOTip`
 }
 
 type TopSupportingNotificationProps = {
@@ -27,6 +33,21 @@ export const TopSupportingNotification = (
 ) => {
   const { notification } = props
   const { user, rank, timeLabel, isViewed } = notification
+
+  const handleTwitterShare = useCallback(
+    (handle: string) => {
+      const shareText = messages.twitterShare(handle, rank)
+      const analytics = make(
+        Name.NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE,
+        {
+          text: shareText
+        }
+      )
+
+      return { shareText, analytics }
+    },
+    [rank]
+  )
 
   return (
     <NotificationTile notification={notification}>
@@ -49,7 +70,11 @@ export const TopSupportingNotification = (
           {messages.supporterChange} #{rank} {messages.supporter}
         </span>
       </NotificationBody>
-      <TwitterShareButton />
+      <TwitterShareButton
+        type='dynamic'
+        handle={user.handle}
+        shareData={handleTwitterShare}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

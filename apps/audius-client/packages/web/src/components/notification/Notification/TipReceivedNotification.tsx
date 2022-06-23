@@ -3,6 +3,7 @@ import { ComponentType, useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useUIAudio } from 'common/hooks/useUIAudio'
+import { Name } from 'common/models/Analytics'
 import { TipReceive } from 'common/store/notifications/types'
 import {
   makeGetReactionForSignature,
@@ -11,6 +12,7 @@ import {
   writeReactionValue
 } from 'common/store/ui/reactions/slice'
 import { Nullable } from 'common/utils/typeUtils'
+import { make } from 'store/analytics/actions'
 
 import styles from './TipReceivedNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -35,7 +37,9 @@ const messages = {
   sent: 'sent you a tip of',
   audio: '$AUDIO',
   sayThanks: 'Say Thanks With a Reaction',
-  reactionSent: 'Reaction Sent!'
+  reactionSent: 'Reaction Sent!',
+  twitterShare: (senderHandle: string, amount: number) =>
+    `Thanks ${senderHandle} for the ${amount} $AUDIO tip on @AudiusProject! #Audius #AUDIOTip`
 }
 
 type TipReceivedNotificationProps = {
@@ -65,6 +69,19 @@ export const TipReceivedNotification = (
   const setReaction = useSetReaction(tipTxSignature)
 
   const uiAmount = useUIAudio(amount)
+
+  const handleShare = useCallback(
+    (senderHandle: string) => {
+      const shareText = messages.twitterShare(senderHandle, uiAmount)
+      const analytics = make(
+        Name.NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE,
+        { text: shareText }
+      )
+
+      return { shareText, analytics }
+    },
+    [uiAmount]
+  )
 
   const handleMouseEnter = useCallback(() => setIsTileDisabled(true), [])
   const handleMouseLeave = useCallback(() => setIsTileDisabled(false), [])
@@ -115,7 +132,11 @@ export const TipReceivedNotification = (
           ))}
         </div>
       </NotificationBody>
-      <TwitterShareButton />
+      <TwitterShareButton
+        type='dynamic'
+        handle={user.handle}
+        shareData={handleShare}
+      />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )
