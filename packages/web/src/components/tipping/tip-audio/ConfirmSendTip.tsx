@@ -26,6 +26,12 @@ const messages = {
   holdOn: 'Don’t close this window or refresh the page.'
 }
 
+const ErrorMessage = () => (
+  <div className={cn(styles.flexCenter, styles.error)}>
+    {messages.somethingWrong}
+  </div>
+)
+
 const ConfirmInfo = () => (
   <div className={cn(styles.flexCenter, styles.info)}>
     {messages.areYouSure}
@@ -44,7 +50,6 @@ const ConvertingInfo = ({ isVisible }: { isVisible: boolean }) => (
       item ? (
         <animated.div style={style} className={styles.info}>
           <p>{messages.maintenance}</p>
-          <p>{JSON.stringify(item)}</p>
           <br />
           <p>{messages.fewMinutes}</p>
           <p>{messages.holdOn}</p>
@@ -67,8 +72,8 @@ export const ConfirmSendTip = () => {
   const [isConverting, setIsConverting] = useState(false)
 
   useEffect(() => {
-    setIsDisabled(isSending)
-  }, [isSending])
+    setIsDisabled(isSending || isConverting)
+  }, [isSending, isConverting])
 
   const handleConfirmSendClick = useCallback(() => {
     setHasError(false)
@@ -89,10 +94,14 @@ export const ConfirmSendTip = () => {
       setIsConverting(false)
     } else if (sendStatus === 'SENDING') {
       setIsSending(true)
+      setIsConverting(false)
+      setHasError(false)
     } else if (sendStatus === 'CONVERTING') {
       setIsConverting(true)
+      setIsSending(false)
+      setHasError(false)
     }
-  }, [sendStatus, setHasError])
+  }, [sendStatus, setHasError, setIsSending, setIsConverting])
 
   const renderSendingAudio = () => (
     <div className={styles.modalContentHeader}>
@@ -109,26 +118,30 @@ export const ConfirmSendTip = () => {
     </div>
   )
 
-  const renderError = () => (
-    <div className={cn(styles.flexCenter, styles.error)}>
-      {messages.somethingWrong}
-    </div>
-  )
-
   return receiver ? (
     <div className={styles.container}>
       {renderSendingAudio()}
       <TipProfilePicture user={receiver} />
-      <ConvertingInfo isVisible={isConverting} />
-      {hasError ? renderError() : null}
-      {!isSending ? <ConfirmInfo /> : null}
+      {/*
+      Even though the isVisible prop is being passed in, we
+      only render the converting message if is converting.
+      This will make it so that when we are converting, the
+      message will be animated/faded in, but when conversion
+      is done (whether successful or failed), we hide the
+      message without fading out. This is so that the UI
+      does not show both the large conversion message and the
+      error message at the same time.
+      */}
+      {isConverting ? <ConvertingInfo isVisible={isConverting} /> : null}
+      {hasError ? <ErrorMessage /> : null}
+      {!hasError && !isSending && !isConverting ? <ConfirmInfo /> : null}
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
         <Button
           type={ButtonType.PRIMARY}
           text={
             hasError
               ? messages.confirmAndTryAgain
-              : !isSending
+              : !isSending && !isConverting
               ? messages.confirmTip
               : ''
           }
@@ -148,9 +161,7 @@ export const ConfirmSendTip = () => {
       </div>
       {!isSending && !isConverting ? (
         <div
-          className={cn(styles.flexCenter, styles.goBackContainer, {
-            [styles.disabled]: isDisabled
-          })}
+          className={cn(styles.flexCenter, styles.goBackContainer)}
           onClick={handleGoBackClick}
         >
           <IconCaretLeft />

@@ -60,7 +60,7 @@ export const TipInput = (props: TipInputProps) => {
         input: styles.input
       }}
       placeholder={messages.placeholder}
-      keyboardType='numeric'
+      keyboardType='number-pad'
       Icon={() => <AudioText weight='bold' fontSize='xl' />}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
