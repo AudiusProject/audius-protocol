@@ -30,6 +30,29 @@ GRAFANA_PASS=xxxxx
 echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
 ```
 
+## Table of Contents
+
+- [Launch Prometheus & Grafana Locally](#launch-prometheus-grafana-locally)
+  - [Getting Started](#getting-started)
+    - [Notes:](#notes)
+  - [Prometheus](#prometheus)
+    - [Adding New Targets](#adding-new-targets)
+    - [Release Auto-Generated Targets to Production](#release-auto-generated-targets-to-production)
+  - [Grafana](#grafana)
+    - [Adding New Dashboards](#adding-new-dashboards)
+    - [Adding New Panels](#adding-new-panels)
+      - [Common Patterns for Gauges](#common-patterns-for-gauges)
+      - [Common Patterns for Histograms](#common-patterns-for-histograms)
+    - [Configuring Panels](#configuring-panels)
+    - [Saving Dashboards](#saving-dashboards)
+      - [Saving Locally Developed Dashboards](#saving-locally-developed-dashboards)
+      - [Saving Production Dashboards](#saving-production-dashboards)
+        - [Saving Production Dashboards Within `prometheus-grafana-metrics`](#saving-production-dashboards-within-prometheus-grafana-metrics)
+        - [Saving Production Dashboards Locally](#saving-production-dashboards-locally)
+    - [Releasing Dashboards to Production](#releasing-dashboards-to-production)
+  - [Notes](#notes)
+    - [SSH Access to `prometheus-grafana-metrics`](#ssh-access-to-prometheus-grafana-metrics)
+
 ## Prometheus
 
 Prometheus acts as our timeseries database that Grafana primarily displays metrics from. Prometheus Targets are a list of client-side Exporters that are scraped on a routine basis.
