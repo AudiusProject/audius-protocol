@@ -55,12 +55,12 @@ export class BaseAPI {
     /**
     * @internal
     */
-    protected async request(context: RequestOpts, initOverrides?: RequestInit) {
-        const { url, init } = this.createFetchParams(context, initOverrides);
+    protected async request(context: RequestOpts) {
+        const { url, init } = this.createFetchParams(context);
         return this.fetchApi(url, init) as any;
     }
 
-    private createFetchParams(context: RequestOpts, initOverrides?: RequestInit) {
+    private createFetchParams(context: RequestOpts) {
         let url = this.configuration.basePath + context.path;
         if (context.query !== undefined && Object.keys(context.query).length !== 0) {
             // only add the querystring to the URL if there are query parameters.
@@ -77,8 +77,7 @@ export class BaseAPI {
             method: context.method,
             headers: headers,
             body,
-            credentials: this.configuration.credentials,
-            ...initOverrides
+            credentials: this.configuration.credentials
         };
         return { url, init };
     }

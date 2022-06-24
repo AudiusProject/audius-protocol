@@ -12,7 +12,7 @@ import {
 
 export class ResolveApi extends GeneratedResolveApi {
   /**
-   * Resolves and redirects a provided Audius app URL to the API resource URL it represents
+   * Resolves a provided Audius app URL to the API resource it represents
    */
   async resolve<T extends Track | Playlist | User>(
     requestParameters: ResolveRequest

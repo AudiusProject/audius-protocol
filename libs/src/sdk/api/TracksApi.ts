@@ -17,15 +17,6 @@ export class TracksApi extends GeneratedTracksApi {
 
   /**
    * Get the url of the track's streamable mp3 file
-   *
-   * Example:
-   * ```typescript
-   * const url = await audiusSdk.tracks.streamTrack({
-   *   trackId: "PjdWN",
-   * });
-   * const audio = new Audio(url);
-   * audio.play();
-   * ```
    */
   async streamTrack(requestParameters: StreamTrackRequest): Promise<string> {
     if (

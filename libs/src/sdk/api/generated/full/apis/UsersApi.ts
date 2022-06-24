@@ -360,17 +360,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a user\'s favorite tracks
      * Fetch favorited tracks for a user
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getFavorites(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<FavoritesResponseFull["data"]>> {
+    async getFavorites(requestParameters: GetFavoritesRequest): Promise<NonNullable<FavoritesResponseFull["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFavorites.');
         }
@@ -396,22 +387,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FavoritesResponseFull["data"]>>;
+        }) as Promise<NonNullable<FavoritesResponseFull["data"]>>;
     }
 
     /**
      * All users that follow the provided user
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getFollowers(requestParameters: GetFollowersRequest, initOverrides?: RequestInit): Promise<NonNullable<FollowersResponse["data"]>> {
+    async getFollowers(requestParameters: GetFollowersRequest): Promise<NonNullable<FollowersResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowers.');
         }
@@ -437,22 +419,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FollowersResponse["data"]>>;
+        }) as Promise<NonNullable<FollowersResponse["data"]>>;
     }
 
     /**
      * All users that the provided user follows
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getFollowings(requestParameters: GetFollowingsRequest, initOverrides?: RequestInit): Promise<NonNullable<FollowingResponse["data"]>> {
+    async getFollowings(requestParameters: GetFollowingsRequest): Promise<NonNullable<FollowingResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowings.');
         }
@@ -478,22 +451,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FollowingResponse["data"]>>;
+        }) as Promise<NonNullable<FollowingResponse["data"]>>;
     }
 
     /**
      * Gets a list of users that might be of interest to followers of this user.
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getRelatedUsers(requestParameters: GetRelatedUsersRequest, initOverrides?: RequestInit): Promise<NonNullable<RelatedArtistResponse["data"]>> {
+    async getRelatedUsers(requestParameters: GetRelatedUsersRequest): Promise<NonNullable<RelatedArtistResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getRelatedUsers.');
         }
@@ -515,22 +479,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<RelatedArtistResponse["data"]>>;
+        }) as Promise<NonNullable<RelatedArtistResponse["data"]>>;
     }
 
     /**
      * Gets the given user\'s reposts
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getReposts(requestParameters: GetRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<FullReposts["data"]>> {
+    async getReposts(requestParameters: GetRepostsRequest): Promise<NonNullable<FullReposts["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getReposts.');
         }
@@ -556,22 +511,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullReposts["data"]>>;
+        }) as Promise<NonNullable<FullReposts["data"]>>;
     }
 
     /**
      * Gets the user\'s reposts by the user handle
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getRepostsByHandle(requestParameters: GetRepostsByHandleRequest, initOverrides?: RequestInit): Promise<NonNullable<FullReposts["data"]>> {
+    async getRepostsByHandle(requestParameters: GetRepostsByHandleRequest): Promise<NonNullable<FullReposts["data"]>> {
         if (requestParameters.handle === null || requestParameters.handle === undefined) {
             throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getRepostsByHandle.');
         }
@@ -597,22 +543,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullReposts["data"]>>;
+        }) as Promise<NonNullable<FullReposts["data"]>>;
     }
 
     /**
      * Gets the specified supporter of the given user
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getSupporter(requestParameters: GetSupporterRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporter["data"]>> {
+    async getSupporter(requestParameters: GetSupporterRequest): Promise<NonNullable<FullGetSupporter["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporter.');
         }
@@ -634,22 +571,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullGetSupporter["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporter["data"]>>;
     }
 
     /**
      * Gets the supporters of the given user
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getSupporters(requestParameters: GetSupportersRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporters["data"]>> {
+    async getSupporters(requestParameters: GetSupportersRequest): Promise<NonNullable<FullGetSupporters["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporters.');
         }
@@ -675,22 +603,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullGetSupporters["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporters["data"]>>;
     }
 
     /**
      * Gets the support from the given user to the supported user
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getSupporting(requestParameters: GetSupportingRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporting["data"]>> {
+    async getSupporting(requestParameters: GetSupportingRequest): Promise<NonNullable<FullGetSupporting["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporting.');
         }
@@ -712,22 +631,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullGetSupporting["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporting["data"]>>;
     }
 
     /**
      * Gets the users that the given user supports
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getSupportings(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit): Promise<NonNullable<FullGetSupporting["data"]>> {
+    async getSupportings(requestParameters: GetSupportingsRequest): Promise<NonNullable<FullGetSupporting["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupportings.');
         }
@@ -753,22 +663,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullGetSupporting["data"]>>;
+        }) as Promise<NonNullable<FullGetSupporting["data"]>>;
     }
 
     /**
      * Get the Top Users having at least one track by follower count
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getTopUsers(requestParameters: GetTopUsersRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TopUsersResponse["data"]>> {
+    async getTopUsers(requestParameters: GetTopUsersRequest = {}): Promise<NonNullable<TopUsersResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -790,22 +691,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TopUsersResponse["data"]>>;
+        }) as Promise<NonNullable<TopUsersResponse["data"]>>;
     }
 
     /**
      * Get the Top Users for a Given Genre
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TopGenreUsersResponse["data"]>> {
+    async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}): Promise<NonNullable<TopGenreUsersResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -827,22 +719,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TopGenreUsersResponse["data"]>>;
+        }) as Promise<NonNullable<TopGenreUsersResponse["data"]>>;
     }
 
     /**
      * Gets the tracks created by a user using their user ID
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getTracksByUser(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracks["data"]>> {
+    async getTracksByUser(requestParameters: GetTracksByUserRequest): Promise<NonNullable<FullTracks["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getTracksByUser.');
         }
@@ -872,22 +755,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracks["data"]>>;
+        }) as Promise<NonNullable<FullTracks["data"]>>;
     }
 
     /**
      * Gets the tracks created by a user using the user\'s handle
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getTracksByUserHandle(requestParameters: GetTracksByUserHandleRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracks["data"]>> {
+    async getTracksByUserHandle(requestParameters: GetTracksByUserHandleRequest): Promise<NonNullable<FullTracks["data"]>> {
         if (requestParameters.handle === null || requestParameters.handle === undefined) {
             throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getTracksByUserHandle.');
         }
@@ -917,22 +791,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracks["data"]>>;
+        }) as Promise<NonNullable<FullTracks["data"]>>;
     }
 
     /**
      * Gets a single user by their user ID
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit): Promise<NonNullable<FullUserResponse["data"]>> {
+    async getUser(requestParameters: GetUserRequest): Promise<NonNullable<FullUserResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUser.');
         }
@@ -950,22 +815,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullUserResponse["data"]>>;
+        }) as Promise<NonNullable<FullUserResponse["data"]>>;
     }
 
     /**
      * Gets a single user by their handle
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getUserByHandle(requestParameters: GetUserByHandleRequest, initOverrides?: RequestInit): Promise<NonNullable<FullUserResponse["data"]>> {
+    async getUserByHandle(requestParameters: GetUserByHandleRequest): Promise<NonNullable<FullUserResponse["data"]>> {
         if (requestParameters.handle === null || requestParameters.handle === undefined) {
             throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getUserByHandle.');
         }
@@ -983,22 +839,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullUserResponse["data"]>>;
+        }) as Promise<NonNullable<FullUserResponse["data"]>>;
     }
 
     /**
      * Get the tracks the user recently listened to.
-     *
-     * Example:
-     *
-     * ```typescript
-     * const track = await audiusSdk.tracks.getTrack({
-     *   trackId: "D7KyD",
-     * });
-     * ```
-     * @throws Error
      */
-    async getUsersTrackHistory(requestParameters: GetUsersTrackHistoryRequest, initOverrides?: RequestInit): Promise<NonNullable<HistoryResponseFull["data"]>> {
+    async getUsersTrackHistory(requestParameters: GetUsersTrackHistoryRequest): Promise<NonNullable<HistoryResponseFull["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUsersTrackHistory.');
         }
@@ -1024,7 +871,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<HistoryResponseFull["data"]>>;
+        }) as Promise<NonNullable<HistoryResponseFull["data"]>>;
     }
 
 }
