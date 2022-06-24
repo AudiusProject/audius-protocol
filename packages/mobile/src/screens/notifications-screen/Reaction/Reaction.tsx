@@ -17,6 +17,7 @@ export type ReactionProps = ViewProps & {
   style?: StyleProp<ViewStyle>
   status?: ReactionStatus
   onMeasure?: (values: { x: number; width: number }) => void
+  isVisible: boolean
 }
 
 export const Reaction = (props: ReactionProps) => {
@@ -26,6 +27,7 @@ export const Reaction = (props: ReactionProps) => {
     style,
     status: statusProp = 'idle',
     onMeasure,
+    isVisible,
     ...other
   } = props
   const [status, setStatus] = useState(statusProp)
@@ -42,12 +44,13 @@ export const Reaction = (props: ReactionProps) => {
   }, [statusProp])
 
   useEffect(() => {
-    if (status === 'unselected') {
+    if (status === 'unselected' || !isVisible) {
+      // Pause if off screen or unselected
       animationRef.current?.pause()
-    } else if (autoPlay) {
+    } else if (isVisible && autoPlay) {
       animationRef.current?.play()
     }
-  }, [status, autoPlay])
+  }, [status, autoPlay, isVisible])
 
   useEffect(() => {
     if (ref.current && isOpen) {
@@ -120,7 +123,7 @@ export const Reaction = (props: ReactionProps) => {
         ref={animation => {
           animationRef.current = animation
         }}
-        autoPlay={autoPlay}
+        autoPlay={isVisible && autoPlay}
         loop
         source={source}
       />
