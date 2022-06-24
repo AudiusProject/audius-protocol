@@ -21,48 +21,6 @@ axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized
 
 let envInitialized = false
 
-
-export const getExternalRequestParams = (): {
-    deregisteredCN: string[],
-    signatureSpID?: number,
-    signatureSPDelegatePrivateKey?: string
-} => {
-    const devModeEnv: string = process.env['DEV_MODE'] || 'false'
-    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
-    const secretsFile: string = process.env['SECRETS_FILE'] || ''
-
-    // console.log(`devModeEnv: ${devModeEnv} \n deregisteredContentNodesEnv: ${deregisteredContentNodesEnv} \n secretsFile: ${secretsFile}`)
-
-    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
-    const devMode: boolean = devModeEnv in ['TRUE', 'True', 'true', '1', 't', 'T']
-
-    // Ensure global `signatureSpID` and `signatureSPDelegatePrivateKey` fields are set, if not in DEV_MODE
-    if (devMode) {
-        return {
-            deregisteredCN,
-        }
-    }
-
-
-    if (!fs.existsSync(secretsFile)) {
-        throw new Error('Missing required secrets file')
-    }
-    const secrets = JSON.parse(fs.readFileSync(secretsFile).toString())
-
-    const signatureSpID: number = secrets.signatureSpID
-    const signatureSPDelegatePrivateKey: string = secrets.signatureSPDelegatePrivateKey
-
-    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
-        throw new Error('Missing required signature configs')
-    }
-
-    return {
-        deregisteredCN,
-        signatureSpID,
-        signatureSPDelegatePrivateKey,
-    }
-}
-
 export const makeRequest = async (
     request: {
         baseURL: string,
@@ -222,6 +180,12 @@ export const getEnv = () => {
     }
 
 
+    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
+    const signatureSpID = process.env['SIGNATURE_SPID']
+    const signatureSPDelegatePrivateKey = process.env['SIGNATURE_SP_DELEGATE_PRIV_KEY']
+
+    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
+
     const db = {
         name: process.env['DB_NAME'] || '',
         host: process.env['DB_HOST'] || '',
@@ -239,5 +203,5 @@ export const getEnv = () => {
         password: process.env['FDB_PASSWORD'] || '',
     }
 
-    return { db, fdb }
+    return { db, fdb, deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey }
 }

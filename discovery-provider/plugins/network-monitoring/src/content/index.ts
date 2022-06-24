@@ -15,8 +15,8 @@ import {
 } from "./queries"
 import {
     // asyncSleep,
+    getEnv,
     generateSPSignatureParams,
-    getExternalRequestParams,
     makeRequest,
     // retryAsyncFunctionOrError
 } from "../utils"
@@ -104,7 +104,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     const saveQueue: Promise<void>[] = []
     const batchSize = 500
 
-    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getExternalRequestParams()
+    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
     const [primaryCount, secondary1Count, secondary2Count] = await getUserCounts(run_id, spid)
 
@@ -166,7 +166,7 @@ export const checkCID = async (
     const saveQueue: Promise<void>[] = []
     const batchSize = 500
 
-    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getExternalRequestParams()
+    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
     await Promise.all([
         (async () => {
