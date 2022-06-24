@@ -218,7 +218,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
-      'issue_sync_request_monitoring_duration_seconds'
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabel', {
       reason_for_additional_sync: 'none'
@@ -328,7 +328,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
-      'issue_sync_request_monitoring_duration_seconds'
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabel', {
       reason_for_additional_sync: 'secondary_progressed_too_slow'
@@ -410,7 +410,7 @@ describe('test issueSyncRequest job processor', function () {
     expect(result.metricsToRecord).to.have.lengthOf(1)
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricName',
-      'issue_sync_request_monitoring_duration_seconds'
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabel', {
       reason_for_additional_sync: 'secondary_failed_to_progress'
