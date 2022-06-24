@@ -353,8 +353,10 @@ export const Button = (props: ButtonProps) => {
           {...other}
         >
           {iconPosition !== 'left' ? null : icon}
-          {noText ? null : (
+          {noText ? null : typeof title === 'string' ? (
             <Text style={[styles.text, stylesProp?.text]}>{title}</Text>
+          ) : (
+            title
           )}
           {iconPosition !== 'right' ? null : icon}
         </PressableComponent>
