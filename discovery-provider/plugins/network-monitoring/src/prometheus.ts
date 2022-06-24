@@ -18,8 +18,20 @@ export const primaryUserCountGauge = new client.Gauge({
 })
 
 export const fullySyncedUsersCountGauge = new client.Gauge({
-    name: 'network_monitoring_full_synced_user_count',
+    name: 'network_monitoring_fully_synced_user_count',
     help: 'the number of users whose content nodes replicas are all in sync',
+    labelNames: ['run_id']
+})
+
+export const partiallySyncedUsersCountGauge = new client.Gauge({
+    name: 'network_monitoring_partially_synced_user_count',
+    help: 'the number of users whose primary is in sync with only one secondary',
+    labelNames: ['run_id']
+})
+
+export const unsyncedUsersCountGauge = new client.Gauge({
+    name: 'network_monitoring_unsynced_user_count',
+    help: 'the number of users whose primary is out of sync with both secondaries',
     labelNames: ['run_id']
 })
 
@@ -38,6 +50,12 @@ export const indexingDiscoveryDurationGauge = new client.Gauge({
 export const indexingContentDurationGauge = new client.Gauge({
     name: 'network_monitoring_indexing_content_duration',
     help: 'the amount of time it takes to index the content node network',
+    labelNames: ['run_id'],
+})
+
+export const generatingMetricsDurationGauge = new client.Gauge({
+    name: 'network_monitoring_generating_metrics_duration',
+    help: 'the amount of time it takes to generate metrics from the DB',
     labelNames: ['run_id'],
 })
 

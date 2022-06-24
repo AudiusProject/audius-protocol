@@ -2,17 +2,25 @@ import {
     allUserCountGauge, 
     fullySyncedUsersCountGauge, 
     gateway, 
-    primaryUserCountGauge, 
+    generatingMetricsDurationGauge, 
+    partiallySyncedUsersCountGauge, 
+    primaryUserCountGauge,
+    unsyncedUsersCountGauge, 
 } from "../prometheus"
+import { exportDuration } from "../utils"
 import { 
     getPrimaryUserCount, 
     getAllUserCount, 
-    getFullySyncedUsersCount 
+    getFullySyncedUsersCount, 
+    getPartiallySyncedUsersCount,
+    getUnsyncedUsersCount
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
 
     console.log(`[${run_id}] generating metrics`)
+
+    const t0 = process.hrtime()
 
     /* 
     - he number of CID on each CN that have been replicated at least once
@@ -40,6 +48,10 @@ export const generateMetrics = async (run_id: number) => {
 
     const fullySyncedUsersCount = await getFullySyncedUsersCount(run_id)
 
+    const partiallySyncedUserCount = await getPartiallySyncedUsersCount(run_id)
+
+    const unsyncedUsersCount = await getUnsyncedUsersCount(run_id)
+
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)
     })
@@ -48,6 +60,8 @@ export const generateMetrics = async (run_id: number) => {
     })
 
     fullySyncedUsersCountGauge.set({ run_id }, fullySyncedUsersCount)
+    partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
+    unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
 
     try {
         // Finish by publishing metrics to prometheus push gateway
@@ -57,6 +71,9 @@ export const generateMetrics = async (run_id: number) => {
         console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
 
-    console.log(`[${run_id}] finish generating metrics`);
+    const tDelta = process.hrtime() - t0
+    await exportDuration(tDelta, run_id, generatingMetricsDurationGauge)
+
+    console.log(`[${run_id}] finish generating metrics (${tDelta})`);
 }
 
