@@ -10,11 +10,11 @@ A run monitoring up
 
 Access Grafana by visiting:
 
-* http://${IP}:80
+* http://localhost:80
 
 Access Prometheus by visiting:
 
-* http://${IP}:9090/targets
+* http://localhost:9090/targets
 
 ### Notes:
 
@@ -48,7 +48,7 @@ To add new dynamically generated targets, modification of `./prometheus/generate
 
 ### Release Auto-Generated Targets to Production
 
-Deploy production changes by ssh'ing into our monitoring box, checking out the new code, and using `deploy.sh` to generate and consume the production version of `prometheus.yml` which includes targets all staging and production exporters.
+Deploy production changes by ssh'ing into our monitoring box, checking out the new code, and using `deploy.sh` to generate and consume the production version of `prometheus.yml` which targets all staging and production exporters.
 
 ```bash
 ssh-add ~/.ssh/id_ed25519.github
@@ -61,7 +61,7 @@ git pull
 scripts/deploy.sh prod
 ```
 
-This job is also set to run nightly via a `cronjob`:
+This job is also set to run nightly via a `cronjob` to auto-generate our list of node operators:
 
 ```
 0 0 * * * cd ~/audius-protocol/monitoring && scripts/deploy.sh prod
@@ -92,7 +92,7 @@ Plenty of complexity can be added when writing `PromQL`, but most times the foll
 
 However, before writing out PromQL from scratch, it may be easier to find a panel similar to the new panel that will be created, then:
 
-* Click a panel title to open the panel menu
+* Click on the panel title to open the panel menu
 * Hover over `More...`
 * Click `Duplicate`
 
