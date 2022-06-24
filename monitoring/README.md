@@ -20,8 +20,7 @@ Access Prometheus by visiting:
 
 * `https` is not supported.
 * The default credentials are `admin`/`admin`.
-* The password must be changed on first login to something other than `admin`
-  or click on the `Skip` link when prompted to change your password.
+* The password must be changed on first login to something other than `admin` or click on the `Skip` link when prompted to change your password.
 
 If the password is changed, for ease of future development, add the password to your `~/.profile`:
 
@@ -32,6 +31,10 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
 ```
 
 ## Prometheus
+
+Prometheus acts as our timeseries database that Grafana primarily displays metrics from. Prometheus Targets are a list of client-side Exporters that are scraped on a routine basis.
+
+In order to ingest new Exporters into Prometheus, we must set Prometheus Targets.
 
 ### Adding New Targets
 
@@ -65,6 +68,8 @@ This job is also set to run nightly via a `cronjob`:
 ```
 
 ## Grafana
+
+Grafana is the main UI for our metrics. Grafana primarily relies on Prometheus as its metrics backend.
 
 ### Adding New Dashboards
 
@@ -130,6 +135,9 @@ The remaining part of the query, `max by (route) (...)`, uses an [Aggregation Op
 In this specific query, `max by (route)` will display the longest latency across a single `$host`, or all `$host` values if the Dashboard Variable is set to `All`. We use `max` here since it's more important to know that a `route` is being non-performant, regardless of `$host`, since it may be indicative of early warning stress/latency that may soon be appearing on all hosts.
 
 ### Configuring Panels
+
+TODO
+
 ### Saving Dashboards
 
 Modifications to production dashboards are internally tracked by Grafana in case a quick restoration is required:
