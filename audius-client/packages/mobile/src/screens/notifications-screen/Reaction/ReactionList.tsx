@@ -16,10 +16,11 @@ type PositionEntries = [ReactionTypes, { x: number; width: number }][]
 type ReactionListProps = {
   selectedReaction: Nullable<ReactionTypes>
   onChange: (reaction: Nullable<ReactionTypes>) => void
+  isVisible: boolean
 }
 
 export const ReactionList = (props: ReactionListProps) => {
-  const { selectedReaction, onChange } = props
+  const { selectedReaction, onChange, isVisible } = props
   const interactingRef = useRef<ReactionTypes | null>(null)
   const { setGesturesDisabled } = useContext(
     NotificationsDrawerNavigationContext
@@ -108,6 +109,7 @@ export const ReactionList = (props: ReactionListProps) => {
                   [reactionType]: { x, width }
                 }
               }}
+              isVisible={isVisible}
             />
           )
         })}
