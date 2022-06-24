@@ -11,3 +11,8 @@
 ### How will this change be monitored?
 
 *For features that are critical or could fail silently please describe the monitoring/alerting being added.*
+
+### Feature Flags ###
+
+*Are all new features properly feature flagged? Describe added feature flags.*
+
