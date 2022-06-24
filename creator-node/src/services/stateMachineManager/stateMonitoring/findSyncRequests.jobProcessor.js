@@ -30,11 +30,11 @@ const minFailedSyncRequestsBeforeReconfig = config.get(
  * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} param.userSecondarySyncMetricsMap mapping of each secondary to the success metrics the nodeUser has had syncing to it
  */
 module.exports = async function ({
-  logger,
   users,
   unhealthyPeers,
   replicaToUserInfoMap,
-  userSecondarySyncMetricsMap
+  userSecondarySyncMetricsMap,
+  logger
 }) {
   _validateJobData(
     logger,
@@ -218,8 +218,7 @@ const _findSyncsForUser = async (
         secondaryFilesHash
       })
     } catch(e) {
-      // TODO error
-      // errors.push
+      errors.push(`Error computing sync mode for user ${wallet} and secondary ${secondary} - ${e.message}`)
       continue
     }
 
@@ -240,6 +239,7 @@ const _findSyncsForUser = async (
         errors.push(
           `Error getting new or existing sync request for user ${wallet} and secondary ${secondary} - ${e.message}`
         )
+        continue
       }
     } else if (syncMode === SYNC_MODES.PrimaryShouldSync) {
       /**
@@ -248,7 +248,7 @@ const _findSyncsForUser = async (
        * 2. issue sync to secondary with forceResync = true
        */
       logger.info(
-        `[issueSyncRequestsToSecondaries] [PrimaryShouldSync = true] [SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
+        `[findSyncRequests][_findSyncsForUser][PrimaryShouldSync = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
       )
     }
   }
