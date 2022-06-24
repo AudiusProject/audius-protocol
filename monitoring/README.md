@@ -44,6 +44,25 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
       - [Common Patterns for Gauges](#common-patterns-for-gauges)
       - [Common Patterns for Histograms](#common-patterns-for-histograms)
     - [Configuring Panels](#configuring-panels)
+      - [Query -> Code](#query-code)
+        - [Metric Browser](#metric-browser)
+        - [Legend](#legend)
+      - [Visualizations](#visualizations)
+      - [Panel Options](#panel-options)
+        - [Title](#title)
+        - [Description](#description)
+        - [Repeat Options](#repeat-options)
+      - [Tooltip](#tooltip)
+        - [Tooltip Mode](#tooltip-mode)
+        - [Values sort order](#values-sort-order)
+      - [Legend](#legend)
+        - [Legend Mode](#legend-mode)
+        - [Legend Placement](#legend-placement)
+        - [Legend Values](#legend-values)
+      - [Graph Styles](#graph-styles)
+      - [Axis](#axis)
+      - [Standard Options](#standard-options)
+      - [Thresholds](#thresholds)
     - [Saving Dashboards](#saving-dashboards)
       - [Saving Locally Developed Dashboards](#saving-locally-developed-dashboards)
       - [Saving Production Dashboards](#saving-production-dashboards)
@@ -159,7 +178,136 @@ In this specific query, `max by (route)` will display the longest latency across
 
 ### Configuring Panels
 
-TODO
+Once a new panel is created, panel settings can help ensure the purpose of the panel is effectively communicated. These settings include:
+
+#### Query -> Code
+
+##### Metric Browser
+
+Ensure you filter your metrics by `{environment=~"$env", host=~"$host"}` so they can make use of Dashboard Variables.
+
+##### Legend
+
+By default, your legends may look something like this:
+
+> `{__name__="primary_user_count", component="network-monitoring", endpoint="https://creatornode5.staging.audius.co", environment="stage", exported_job="network-monitoring", host="discoveryprovider2.staging.audius.co", instance="35.202.199.159:9091", job="stage-network-monitoring", run_id="9", service="audius"}`
+
+In this specific case, we want the legend to be the creator node's hostname, so set the Legend to:
+
+```
+{{endpoint}}
+```
+
+While not ideal in this case, we can also combine fields or include our own text:
+
+```
+{{endpoint}}, run: {{run_id}}
+```
+
+#### Visualizations
+
+Grafana offers plenty of different [visualizations](https://grafana.com/docs/grafana/latest/visualizations/) like:
+
+* Time series
+* Bar chart
+* Stat
+* Pie Chart
+* Heatmap
+* Text
+
+We will primarily cover `Time series` panels specifically, but the same fundamentals apply to other visualization types.
+
+When unsure which panel to use, the `Visualizations` dropdown (top-right) offers `Suggestions` based on the data being presented.
+
+#### Panel Options
+
+##### Title
+
+Use a succinct title.
+
+##### Description
+
+Descriptions use Markdown text which is displayed as little `i` tooltips on the top-left corner of each panel where a description has been written. The ideal format is:
+
+```
+One sentence explaning the chart with a bit more context.
+
+A paragraph or two going into detail about the panel.
+
+#### Alerts
+
+##### > 10
+
+This means something is breaking in this manner.
+
+Corrective actions that can be taken go here.
+
+##### > 5
+
+This means we might see stress here and there. Keep an eye for this or that.
+
+Which other panels should be taken into consideration.
+
+##### < 1
+
+Expected during normal operations.
+```
+
+##### Repeat Options
+
+In some cases, you may want to see an individual panel per `$host`. By using repeat options, we can create one panel definition and have N number of panels auto-generate based on the list of Dashboard Variables.
+
+#### Tooltip
+
+##### Tooltip Mode
+
+`Single` and `All` are great options in most cases. However, if there are too many values, `All` can become overwhelming. Try both to see what works best for your panel.
+
+When combined with `Last *` within `Legend` -> `Legend Value`, any benefits from `All` will be available without a potentially hard-to-read tooltip.
+
+##### Values sort order
+
+Always use `Ascending` or `Descending` based on what ordering would be ideal in a high-pressure situation (like an outage).
+
+#### Legend
+
+##### Legend Mode
+
+`Table` is always recommended. `Hidden` can be ideal for Overview dashboards that are not meant for investigations.
+
+##### Legend Placement
+
+`Bottom` is the standard for most of our panels.
+
+##### Legend Values
+
+`Mean`, `Max`, and `Last *` are ideal, in that order, for most cases.
+
+We want to be able to see the average value for any given metric, but want `Max` values as those serve as early warning indicators of what a metric's highest value was within the time window selected by Grafana.
+
+`Last *` helps alleviate the need for having Tooltip Mode set to `All` while also filtering out recent null values.
+
+#### Graph Styles
+
+Plenty of options exists like `Line Style` (`Solid`, `Dash`, `Dots`) as well as how to `Connect Null Values`. The rest of the stylization-focused options should remain at their defaults to help standardize our visual experience.
+
+#### Axis
+
+Always add a `Label` value to help users decipher what the metric value's unit is.
+
+Setting `Soft min` and `Soft max` is useful when displaying metrics that may occasionally have outliers that should be quick to spot.
+
+`Scale` can also be set to `Linear` or `Logarithmic` depending on the data.
+
+#### Standard Options
+
+`Unit` is perhaps the most important to set. Always ensure this is set.
+
+The `Color Scheme` should remain set to `Classic Palette` to help standardize our visual experience, but sometimes `Green -> Red` or `Red -> Green` palettes are ideal.
+
+#### Thresholds
+
+Thresholds are best used when Alerts are defined within Panel `Description`. These thresholds should set `Show Thresholds` as `As Lines` so that it's easily visible when limits are being researched. Each line should follow the `Yellow -> Orange -> Red` palette to indicate Early Warning, Low-Urgency Alert, and High-Urgency Alert thresholds have been reached.
 
 ### Saving Dashboards
 
