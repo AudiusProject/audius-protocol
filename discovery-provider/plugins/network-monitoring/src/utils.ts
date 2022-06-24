@@ -180,8 +180,8 @@ export const getEnv = () => {
 
 
     const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
-    const signatureSpID = process.env['SIGNATURE_SPID']
-    const signatureSPDelegatePrivateKey = process.env['SIGNATURE_SP_DELEGATE_PRIV_KEY']
+    const signatureSpID = parseInt(process.env['SIGNATURE_SPID'] || '0')
+    const signatureSPDelegatePrivateKey = process.env['SIGNATURE_SP_DELEGATE_PRIV_KEY'] || ''
 
     const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
 
