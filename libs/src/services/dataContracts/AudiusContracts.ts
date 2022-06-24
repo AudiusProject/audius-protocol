@@ -153,7 +153,6 @@ export class AudiusContracts {
   }
 
   async init() {
-    console.log('Initializing..2.')
     if (this.isServer) {
       await Promise.all(
         this.contractClients.map(async (client) => await client.init())

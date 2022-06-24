@@ -15,12 +15,8 @@ export class AudiusDataClient extends ContractClient {
         const nonce = signatureSchemas.getNonce()
         const chainId = await this.getEthNetId()
         const contractAddress = await this.getAddress()
-        console.log(`contract ${contractAddress} - nonce=${nonce} chainId=${chainId}`)
-        console.log(`- manageEntity ${userId}, ${entityType}, ${entityId}, ${action}, ${metadata}`)
         const signatureData = signatureSchemas.generators.getManageEntityData(chainId, contractAddress, userId, entityType, entityId, action, metadata, nonce)
-        console.log(`- manageEntity ${JSON.stringify(signatureData)}`)
         const sig = await this.web3Manager.signTypedData(signatureData)
-        console.log(`- manageEntity ${sig}`)
         const method = await this.getMethod(
             'manageEntity',
             userId,
