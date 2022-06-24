@@ -1,5 +1,3 @@
-const _ = require('lodash')
-
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
 
@@ -92,12 +90,10 @@ module.exports = function (
     // Record metrics
     ;(metricsToRecord || []).forEach((metricInfo) => {
       try {
-        const { metricName, metricType, metricValue, metricLabel } = metricInfo
+        const { metricName, metricType, metricValue, metricLabels } = metricInfo
         const metric = prometheusRegistry.getMetric(metricName)
         if (metricType === 'HISTOGRAM') {
-          _.isEmpty(metricLabel)
-            ? metric.observe(metricValue)
-            : metric.observe(metricLabel, metricValue)
+          metric.observe(metricLabels, metricValue)
         } else if (metricType === 'GAUGE') {
           metric.set(metricValue)
         } else {
