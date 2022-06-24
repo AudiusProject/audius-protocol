@@ -16,7 +16,7 @@ Access Prometheus by visiting:
 
 * http://localhost:9090/targets
 
-### Notes:
+### Notes
 
 * `https` is not supported.
 * The default credentials are `admin`/`admin`.
@@ -34,7 +34,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
 
 - [Launch Prometheus & Grafana Locally](#launch-prometheus-grafana-locally)
   - [Getting Started](#getting-started)
-    - [Notes:](#notes)
+    - [Notes](#notes)
   - [Prometheus](#prometheus)
     - [Adding New Targets](#adding-new-targets)
     - [Release Auto-Generated Targets to Production](#release-auto-generated-targets-to-production)
