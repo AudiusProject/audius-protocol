@@ -9,7 +9,7 @@ const proxyquire = require('proxyquire')
 
 const config = require('../src/config')
 
-describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
+describe('test retrieveUserInfoFromReplicaSet()', function () {
   beforeEach(function () {
     nock.disableNetConnect()
   })
@@ -19,26 +19,26 @@ describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
     nock.enableNetConnect()
   })
 
-  it('returns expected clock values and updates unhealthyPeers', async function () {
+  it('returns expected user info and updates unhealthyPeers', async function () {
     const healthyCn1 = 'http://healthyCn1.co'
     const healthyCn2 = 'http://healthyCn2.co'
     const unhealthyCn = 'http://unhealthyCn.co'
-    const replicasToWalletsMap = {
+    const replicaToWalletMap = {
       [healthyCn1]: ['wallet1', 'wallet2', 'wallet3', 'wallet4', 'wallet5'],
       [healthyCn2]: ['wallet1', 'wallet2'],
       [unhealthyCn]: ['wallet1', 'wallet2']
     }
-    const expectedReplicaToClockValueMap = {
+    const expectedReplicaToUserInfoMap = {
       [healthyCn1]: {
-        wallet1: 1,
-        wallet2: 2,
-        wallet3: 3,
-        wallet4: 4,
-        wallet5: 5
+        wallet1: { clock: 1, filesHash: '0x1'},
+        wallet2: { clock: 2, filesHash: '0x2'},
+        wallet3: { clock: 3, filesHash: '0x3'},
+        wallet4: { clock: 4, filesHash: '0x4'},
+        wallet5: { clock: 5, filesHash: '0x5'}
       },
       [healthyCn2]: {
-        wallet1: 10,
-        wallet2: 20
+        wallet1: { clock: 1, filesHash: '0x1'},
+        wallet2: { clock: 2, filesHash: '0x2'}
       },
       [unhealthyCn]: {}
     }
@@ -46,27 +46,16 @@ describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
     // Mock the axios requests for healthy Content Nodes to return clock values
     nock(healthyCn1)
       .post('/users/batch_clock_status')
-      .query(true) // Match any query because we don't care about signature, timestamp, and spID
+      .query(queryObj => 'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true')
       .times(3) // 3 times because there are 5 wallets and the batch size is 2 wallets per request
       .reply(200, function (uri, requestBody) {
         const { walletPublicKeys } = requestBody
-        console.log(`cn1 walletPublicKeys: ${walletPublicKeys}`)
-        console.log(
-          `returning ${JSON.stringify(
-            walletPublicKeys.map((wallet) => {
-              return {
-                wallet,
-                clock: expectedReplicaToClockValueMap[healthyCn1][wallet]
-              }
-            })
-          )}`
-        )
         return {
           data: {
             users: walletPublicKeys.map((wallet) => {
               return {
                 walletPublicKey: wallet,
-                clock: expectedReplicaToClockValueMap[healthyCn1][wallet]
+                ...expectedReplicaToUserInfoMap[healthyCn1][wallet]
               }
             })
           }
@@ -74,7 +63,7 @@ describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
       })
     nock(healthyCn2)
       .post('/users/batch_clock_status')
-      .query(true) // Match any query because we don't care about signature, timestamp, and spID
+      .query(queryObj => 'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true')
       .reply(200, function (uri, requestBody) {
         const { walletPublicKeys } = requestBody
         return {
@@ -82,7 +71,7 @@ describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
             users: walletPublicKeys.map((wallet) => {
               return {
                 walletPublicKey: wallet,
-                clock: expectedReplicaToClockValueMap[healthyCn2][wallet]
+                ...expectedReplicaToUserInfoMap[healthyCn2][wallet]
               }
             })
           }
@@ -92,13 +81,13 @@ describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
     // Mock the axios request to the unhealthy Content Node to return an error
     nock(unhealthyCn)
       .post('/users/batch_clock_status')
-      .query(true) // Match any because we don't care about signature, timestamp, and spID
+      .query(queryObj => 'returnFilesHash' in queryObj && queryObj.returnFilesHash === 'true')
       .times(2) // It retries the failure once
       .reply(500)
 
-    // Mock retrieveClockStatusesForUsersAcrossReplicaSet to have our desired config and constants
+    // Mock retrieveUserInfoFromReplicaSet to have our desired config and constants
     config.set('maxBatchClockStatusBatchSize', 2)
-    const { retrieveClockStatusesForUsersAcrossReplicaSet } = proxyquire(
+    const { retrieveUserInfoFromReplicaSet } = proxyquire(
       '../src/services/stateMachineManager/stateMachineUtils.js',
       {
         '../../config': config,
@@ -109,16 +98,16 @@ describe('test retrieveClockStatusesForUsersAcrossReplicaSet()', function () {
       }
     )
 
-    const { replicasToUserClockStatusMap, unhealthyPeers } =
-      await retrieveClockStatusesForUsersAcrossReplicaSet(replicasToWalletsMap)
+    const { replicaToUserInfoMap, unhealthyPeers } =
+      await retrieveUserInfoFromReplicaSet(replicaToWalletMap)
 
     // Verify that all mocked endpoints were been hit the expected number of times
     expect(nock.isDone()).to.be.true
 
     // Verify that each wallet had the expected clock value and the unhealthy node was marked as unhealthy
-    expect(Object.keys(replicasToUserClockStatusMap)).to.have.lengthOf(3)
-    expect(replicasToUserClockStatusMap).to.deep.equal(
-      expectedReplicaToClockValueMap
+    expect(Object.keys(replicaToUserInfoMap)).to.have.lengthOf(3)
+    expect(replicaToUserInfoMap).to.deep.equal(
+      expectedReplicaToUserInfoMap
     )
     expect(unhealthyPeers).to.have.property('size', 1)
     expect(unhealthyPeers).to.include('http://unhealthyCn.co')

@@ -1,17 +1,23 @@
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
+const retry = require('async-retry')
 
 const config = require('../../../config')
 const Utils = require('../../../utils')
-const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const { logger } = require('../../../logging')
+
+const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const SecondarySyncHealthTracker = require('../../../snapbackSM/secondarySyncHealthTracker')
+const DBManager = require('../../../dbManager')
+
 const {
   AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE,
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
-  GET_NODE_USERS_DEFAULT_PAGE_SIZE
+  GET_NODE_USERS_DEFAULT_PAGE_SIZE,
+  SYNC_MODES,
+  FETCH_FILES_HASH_NUM_RETRIES
 } = require('../stateMachineConstants')
 
 const MIN_FAILED_SYNC_REQUESTS_BEFORE_RECONFIG = config.get(
@@ -391,10 +397,102 @@ const _aggregateOps = async (
   return { requiredUpdateReplicaSetOps, potentialSyncRequests }
 }
 
+/**
+ * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
+ * @notice Is used when both replicas are running version >= 0.3.51
+ * @param {Object} param
+ * @param {string} param.wallet user wallet
+ * @param {number} param.primaryClock clock value on user's primary
+ * @param {number} param.secondaryClock clock value on user's secondary
+ * @param {string} param.primaryFilesHash filesHash on user's primary
+ * @param {string} param.secondaryFilesHash filesHash on user's secondary
+ * @returns {SYNC_MODES} syncMode one of None, SecondaryShouldSync, PrimaryShouldSync
+ */
+const computeSyncModeForUserAndReplica = async ({
+  wallet,
+  primaryClock,
+  secondaryClock,
+  primaryFilesHash,
+  secondaryFilesHash
+}) => {
+  if (
+    !Number.isInteger(primaryClock) ||
+    !Number.isInteger(secondaryClock) ||
+    // `null` is a valid filesHash value; `undefined` is not
+    primaryFilesHash === undefined ||
+    secondaryFilesHash === undefined
+  ) {
+    throw new Error(
+      '[computeSyncModeForUserAndReplica] Error: Missing or invalid params'
+    )
+  }
+
+  if (
+    primaryClock === secondaryClock &&
+    primaryFilesHash === secondaryFilesHash
+  ) {
+    /**
+     * Nodes have identical data -> no sync needed
+     */
+    return SYNC_MODES.None
+  } else if (
+    primaryClock === secondaryClock &&
+    primaryFilesHash !== secondaryFilesHash
+  ) {
+    /**
+     * If clocks are same but filesHashes are not, this means secondary and primary states for user
+     *    have diverged. To fix this issue, primary should sync content from secondary and
+     *    subsequently force secondary to resync state from primary.
+     */
+    return SYNC_MODES.PrimaryShouldSync
+  } else if (primaryClock < secondaryClock) {
+    /**
+     * Secondary has more data than primary -> primary must sync from secondary
+     */
+    return SYNC_MODES.PrimaryShouldSync
+  } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
+    /**
+     * secondaryFilesHash will be null if secondary has no files for user -> secondary must sync from primary
+     */
+    return SYNC_MODES.SecondaryShouldSync
+  } else if (primaryClock > secondaryClock && secondaryFilesHash !== null) {
+    /**
+     * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
+     */
+
+    let primaryFilesHashForRange
+    try {
+      // Throws error if failure after all retries
+      primaryFilesHashForRange = await retry(
+        async () =>
+          DBManager.fetchFilesHashFromDB({
+            lookupKey: { lookupWallet: wallet },
+            clockMin: 0,
+            clockMax: secondaryClock + 1
+          }),
+        { retries: FETCH_FILES_HASH_NUM_RETRIES }
+      )
+    } catch (e) {
+      const errorMsg = `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
+    }
+
+    if (primaryFilesHashForRange === secondaryFilesHash) {
+      return SYNC_MODES.SecondaryShouldSync
+    } else {
+      return SYNC_MODES.PrimaryShouldSync
+    }
+  } else {
+    return SYNC_MODES.None
+  }
+}
+
 module.exports = {
   getLatestUserIdFromDiscovery,
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap,
-  aggregateReconfigAndPotentialSyncOps
+  aggregateReconfigAndPotentialSyncOps,
+  computeSyncModeForUserAndReplica
 }

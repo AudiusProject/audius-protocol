@@ -5,9 +5,7 @@ const {
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap
 } = require('./stateMonitoringUtils')
-const {
-  retrieveClockStatusesForUsersAcrossReplicaSet
-} = require('../stateMachineUtils')
+const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
 const { QUEUE_NAMES, JOB_NAMES } = require('../stateMachineConstants')
 
 // Number of users to process each time processStateMonitoringJob is called
@@ -42,7 +40,7 @@ module.exports = async function ({
 
   let users = []
   let unhealthyPeers = new Set()
-  let replicaSetNodesToUserClockStatusesMap = {}
+  let replicaToUserInfoMap = {}
   let userSecondarySyncMetricsMap = {}
   try {
     try {
@@ -104,36 +102,33 @@ module.exports = async function ({
       }
     )
 
-    // Retrieve clock statuses for all users and their current replica sets
+    // Retrieve user info for all users and their current replica sets
     try {
-      // Set mapping of replica endpoint to (mapping of wallet to clock value)
-      const clockStatusResp =
-        await retrieveClockStatusesForUsersAcrossReplicaSet(
-          replicaSetNodesToUserWalletsMap
-        )
-      replicaSetNodesToUserClockStatusesMap =
-        clockStatusResp.replicasToUserClockStatusMap
+      const retrieveUserInfoResp = await retrieveUserInfoFromReplicaSet(
+        replicaSetNodesToUserWalletsMap
+      )
+      replicaToUserInfoMap = retrieveUserInfoResp.replicaToUserInfoMap
 
       // Mark peers as unhealthy if they were healthy before but failed to return a clock value
       unhealthyPeers = new Set([
         ...unhealthyPeers,
-        ...clockStatusResp.unhealthyPeers
+        ...retrieveUserInfoResp.unhealthyPeers
       ])
 
       _addToDecisionTree(
         decisionTree,
-        'retrieveClockStatusesForUsersAcrossReplicaSet Success',
+        'retrieveUserInfoFromReplicaSet Success',
         logger
       )
     } catch (e) {
       _addToDecisionTree(
         decisionTree,
-        'retrieveClockStatusesForUsersAcrossReplicaSet Error',
+        'retrieveUserInfoFromReplicaSet Error',
         logger,
         { error: e.message }
       )
       throw new Error(
-        'processStateMonitoringJob retrieveClockStatusesForUsersAcrossReplicaSet Error'
+        'processStateMonitoringJob retrieveUserInfoFromReplicaSet Error'
       )
     }
 
@@ -185,7 +180,7 @@ module.exports = async function ({
           jobData: {
             users,
             unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-            replicaSetNodesToUserClockStatusesMap,
+            replicaToUserInfoMap,
             userSecondarySyncMetricsMap
           }
         },
@@ -194,7 +189,7 @@ module.exports = async function ({
           jobData: {
             users,
             unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
-            replicaSetNodesToUserClockStatusesMap,
+            replicaToUserInfoMap,
             userSecondarySyncMetricsMap
           }
         },
