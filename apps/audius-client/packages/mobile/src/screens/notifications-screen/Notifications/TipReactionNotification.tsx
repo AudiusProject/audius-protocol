@@ -55,12 +55,13 @@ const useStyles = makeStyles(() => ({
 
 type TipReactionNotificationProps = {
   notification: Reaction
+  isVisible: boolean
 }
 
 export const TipReactionNotification = (
   props: TipReactionNotificationProps
 ) => {
-  const { notification } = props
+  const { notification, isVisible } = props
 
   const {
     reactionValue,
@@ -101,7 +102,7 @@ export const TipReactionNotification = (
       </NotificationHeader>
       <View style={styles.body}>
         <View>
-          <Reaction autoPlay={false} />
+          <Reaction autoPlay={true} isVisible={isVisible} />
           <ProfilePicture profile={user} style={styles.profilePicture} />
         </View>
         <View style={styles.content}>

@@ -58,12 +58,13 @@ const useSetReaction = (tipTxSignature: string) => {
 
 type TipReceivedNotificationProps = {
   notification: TipReceive
+  isVisible: boolean
 }
 
 export const TipReceivedNotification = (
   props: TipReceivedNotificationProps
 ) => {
-  const { notification } = props
+  const { notification, isVisible } = props
   const { amount, tipTxSignature } = notification
   const uiAmount = useUIAudio(amount)
 
@@ -131,6 +132,7 @@ export const TipReceivedNotification = (
       <ReactionList
         selectedReaction={reactionValue || null}
         onChange={setReactionValue}
+        isVisible={isVisible}
       />
       <NotificationTwitterButton
         type='dynamic'
