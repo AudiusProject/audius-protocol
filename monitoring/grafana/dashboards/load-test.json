@@ -1822,7 +1822,7 @@
         "type": "row"
       },
       {
-        "description": "",
+        "description": "Shows how long the longest running task (across all nodes) has been running.\n\nCurrently, metrics will not reset a stat back to 0 upon completion, so you'll see horizontal lines indicating it hasn't run since the last metric was updated.\n\nDips to 0 mean the task has started again.\n\nDips to non-0 mean that while the current task has completed, the same task was running in parallel on another node, and the metric is showing the new currently running longest task.",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -1902,7 +1902,7 @@
               "type": "prometheus"
             },
             "exemplar": true,
-            "expr": "audius_dn_celery_running_tasks{environment=~\"$env\", host=~\"$host\"}",
+            "expr": "max by (task_name) (audius_dn_celery_running_tasks{environment=~\"$env\", host=~\"$host\"})",
             "interval": "",
             "legendFormat": "{{task_name}}",
             "refId": "A"
@@ -1913,7 +1913,7 @@
       }
     ],
     "refresh": "30m",
-    "schemaVersion": 35,
+    "schemaVersion": 36,
     "style": "dark",
     "tags": [],
     "templating": {
