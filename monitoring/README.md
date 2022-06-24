@@ -1,4 +1,4 @@
-# Launch Prometheus & Grafana Locally
+# Prometheus & Grafana
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
 
 ## Table of Contents
 
-- [Launch Prometheus & Grafana Locally](#launch-prometheus-grafana-locally)
+- [Prometheus & Grafana](#prometheus-grafana)
   - [Getting Started](#getting-started)
     - [Notes](#notes)
   - [Prometheus](#prometheus)
