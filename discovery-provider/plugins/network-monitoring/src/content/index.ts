@@ -18,13 +18,16 @@ import {
     getEnv,
     generateSPSignatureParams,
     makeRequest,
+    exportDuration,
     // retryAsyncFunctionOrError
 } from "../utils"
-import { missedUsersCountGauge, gateway } from "../prometheus"
+import { missedUsersCountGauge, gateway, indexingContentDurationGauge } from "../prometheus"
 
 export const indexContent = async (run_id: number) => {
 
     console.log(`[${run_id}] indexing content node`)
+
+    const t0 = process.hrtime()
 
     // get every content node and cid size
     // const content_nodes: {
@@ -91,7 +94,10 @@ export const indexContent = async (run_id: number) => {
         })
     )
 
-    console.log(`[${run_id}] finished indexing content nodes`)
+    const tDelta = process.hrtime() - t0
+    await exportDuration(tDelta, run_id, indexingContentDurationGauge)
+
+    console.log(`[${run_id}] finished indexing content nodes (${tDelta})`)
 }
 
 

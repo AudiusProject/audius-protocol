@@ -34,3 +34,10 @@ export const indexingDiscoveryDurationGauge = new client.Gauge({
     help: 'the amount of time it takes to index the discovery database',
     labelNames: ['run_id'],
 })
+
+export const indexingContentDurationGauge = new client.Gauge({
+    name: 'network_monitoring_indexing_content_duration',
+    help: 'the amount of time it takes to index the content node network',
+    labelNames: ['run_id'],
+})
+
