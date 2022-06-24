@@ -185,6 +185,10 @@ export const getEnv = () => {
 
     const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
 
+    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
+        throw new Error('Missing required signature configs')
+    }
+
     const db = {
         name: process.env['DB_NAME'] || '',
         host: process.env['DB_HOST'] || '',
