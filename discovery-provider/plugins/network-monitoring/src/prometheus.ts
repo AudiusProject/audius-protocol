@@ -23,3 +23,9 @@ export const fullySyncedUsersCountGauge = new client.Gauge({
     labelNames: ['run_id']
 })
 
+export const missedUsersCountGauge = new client.Gauge({
+    name: 'network_monitoring_missed_users_count',
+    help: 'the number of users that got skipped while indexing content nodes',
+    labelNames: ['endpoint', 'run_id']
+})
+
