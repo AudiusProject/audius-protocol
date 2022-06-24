@@ -6,7 +6,17 @@ export const NotificationText = (props: NotificationTextProps) => {
   const { children, style, ...other } = props
 
   return (
-    <Text fontSize='large' style={[{ lineHeight: 27 }, style]} {...other}>
+    <Text
+      fontSize='large'
+      style={[
+        {
+          lineHeight: 27,
+          flex: 1
+        },
+        style
+      ]}
+      {...other}
+    >
       {children}
     </Text>
   )

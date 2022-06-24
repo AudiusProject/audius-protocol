@@ -19,6 +19,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginTop: spacing(4)
   },
   sendTipButtonTitleContainer: {
+    paddingTop: spacing(0.5),
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',

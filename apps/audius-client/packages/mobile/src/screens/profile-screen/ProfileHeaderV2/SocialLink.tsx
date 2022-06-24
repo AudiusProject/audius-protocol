@@ -1,3 +1,5 @@
+import { useCallback, useState } from 'react'
+
 import { StyleProp, View, ViewStyle } from 'react-native'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
@@ -46,6 +48,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   hyperlinkLink: {
     fontSize: typography.fontSize.medium
+  },
+  active: {
+    color: palette.primary
   }
 }))
 
@@ -60,7 +65,16 @@ export type SocialLinkProps = LinkProps &
 export const SocialLink = (props: SocialLinkProps) => {
   const { text, showText, url, icon: Icon, hyperlink, style, ...other } = props
   const styles = useStyles()
-  const { neutral } = useThemeColors()
+  const { primary, neutral } = useThemeColors()
+  const [isActive, setIsActive] = useState(false)
+
+  const handlePressIn = useCallback(() => {
+    setIsActive(true)
+  }, [])
+
+  const handlePressOut = useCallback(() => {
+    setIsActive(false)
+  }, [])
 
   // undefined equates to "LOADING" from backend
   if (text === undefined) {
@@ -81,23 +95,38 @@ export const SocialLink = (props: SocialLinkProps) => {
 
   if (text === null || text === '') return null
 
-  const iconButtonElement = <Icon height={28} width={28} fill={neutral} />
+  const iconButtonElement = (
+    <Icon height={28} width={28} fill={isActive ? primary : neutral} />
+  )
 
   if (showText)
     return (
-      <Link url={url} style={[styles.withText, style]} {...other}>
+      <Link
+        url={url}
+        style={[styles.withText, style]}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        {...other}
+      >
         {iconButtonElement}
         {hyperlink ? (
           <Hyperlink
             source='profile page'
             text={squashNewLines(text)}
             styles={{
-              root: [styles.text, styles.hyperlinkText],
+              root: [
+                styles.text,
+                styles.hyperlinkText,
+                isActive && styles.active
+              ],
               link: styles.hyperlinkLink
             }}
           />
         ) : (
-          <Text numberOfLines={1} style={styles.text}>
+          <Text
+            numberOfLines={1}
+            style={[styles.text, isActive && styles.active]}
+          >
             {text}
           </Text>
         )}
@@ -105,7 +134,12 @@ export const SocialLink = (props: SocialLinkProps) => {
     )
 
   return (
-    <Link url={url} style={style}>
+    <Link
+      url={url}
+      style={style}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
       {iconButtonElement}
     </Link>
   )
