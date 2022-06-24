@@ -59,3 +59,8 @@ export const generatingMetricsDurationGauge = new client.Gauge({
     labelNames: ['run_id'],
 })
 
+export const totalJobDurationGauge = new client.Gauge({
+    name: 'network_monitoring_total_job_duration',
+    help: 'the amount of time it takes for an entire network monitoring job to complete',
+    labelNames: ['run_id'],
+})

@@ -212,9 +212,11 @@ export const getEnv = () => {
     return { db, fdb, deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey }
 }
 
-export const exportDuration = async (tDelta: number, run_id: number, exporter: Gauge) => {
+export const exportDuration = async (tDelta: number[], run_id: number, exporter: Gauge) => {
 
-    exporter.set({ run_id }, tDelta)
+    const duration = Math.round(tDelta[0] * 1e3 + tDelta[1] * 1e-6)
+
+    exporter.set({ run_id }, duration)
 
     try {
         console.log(`[${run_id}] pushing duration to gateway`);

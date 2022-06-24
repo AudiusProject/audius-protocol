@@ -12,6 +12,7 @@ import { sequelizeConn } from "../db"
 - The number of users with their data syncs across 0, 1, 2, or 3 CNs
 */
 
+
 export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
     const cidsListResp = await sequelizeConn.query(`
@@ -197,3 +198,4 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
 
     return usersCount
 }
+

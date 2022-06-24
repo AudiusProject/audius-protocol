@@ -94,12 +94,11 @@ export const indexContent = async (run_id: number) => {
         })
     )
 
-    const tDelta = process.hrtime() - t0
+    const tDelta = process.hrtime(t0)
     await exportDuration(tDelta, run_id, indexingContentDurationGauge)
 
     console.log(`[${run_id}] finished indexing content nodes (${tDelta})`)
 }
-
 
 // for batch in batches
 //      get clock value
@@ -183,7 +182,7 @@ export const checkCID = async (
 ) => {
     console.log(`[${run_id}:${spid}] check cids`)
 
-    const saveQueue: Promise<void>[] = []
+    // const saveQueue: Promise<void>[] = []
     const batchSize = 500
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
@@ -206,7 +205,8 @@ export const checkCID = async (
                     false
                 )
 
-                saveQueue.push(saveCIDResults(run_id, spid, batch, results))
+                await saveCIDResults(run_id, spid, batch, results)
+                // saveQueue.push(saveCIDResults(run_id, spid, batch, results))
 
                 // Give the DB and IO a break
                 // await asyncSleep(6000)
@@ -228,7 +228,8 @@ export const checkCID = async (
                     true
                 )
 
-                saveQueue.push(saveCIDResults(run_id, spid, batch, results))
+                await saveCIDResults(run_id, spid, batch, results)
+                // saveQueue.push(saveCIDResults(run_id, spid, batch, results))
 
                 // Give the DB and IO a break
                 // await asyncSleep(3000)
@@ -237,7 +238,7 @@ export const checkCID = async (
     ])
 
     console.log(`[${run_id}:${spid}] finish saving cid content node data to db`)
-    await Promise.all(saveQueue);
+    // await Promise.all(saveQueue);
 }
 
 const checkIfCIDsExistOnCN = async (

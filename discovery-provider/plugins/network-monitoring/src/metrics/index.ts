@@ -71,7 +71,7 @@ export const generateMetrics = async (run_id: number) => {
         console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
 
-    const tDelta = process.hrtime() - t0
+    const tDelta = process.hrtime(t0)
     await exportDuration(tDelta, run_id, generatingMetricsDurationGauge)
 
     console.log(`[${run_id}] finish generating metrics (${tDelta})`);
