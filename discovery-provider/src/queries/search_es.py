@@ -216,6 +216,13 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
             response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
 
     finalize_response(response, limit, current_user_id)
+
+    # attempt to match legacy tag search response
+    # which doesn't have the encoded track.user_id field
+    for k in ["tracks", "saved_tracks"]:
+        for track in response[k]:
+            del track["user_id"]
+
     return response
 
 
