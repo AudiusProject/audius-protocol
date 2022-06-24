@@ -241,7 +241,7 @@
   cursor: pointer;
 }
 .goBack {
-  margin-left: 4px;
+  margin-left: 8px;
   font-weight: var(--font-bold);
   font-size: var(--font-l);
   color: var(--neutral-light-4);
@@ -255,9 +255,6 @@
 
 .disabled {
   cursor: unset;
-}
-.confirmButton.disabled {
-  width: 186px;
 }
 
 .loadingSpinner {
@@ -347,10 +344,13 @@
   color: var(--accent-red);
 }
 
+.confirmButton {
+  width: 252px;
+}
 .button:hover {
   background: var(--primary-light-1) !important;
 }
-.button:active {
+.button:not(.disabled):active {
   background: var(--primary-dark-1) !important;
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }

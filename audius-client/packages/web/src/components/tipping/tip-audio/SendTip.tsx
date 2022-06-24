@@ -147,7 +147,7 @@ export const SendTip = () => {
     </div>
   )
 
-  return (
+  return receiver ? (
     <div className={styles.container}>
       <TipProfilePicture user={receiver} />
       {!hasInsufficientBalance && isFirstSupporter
@@ -186,5 +186,5 @@ export const SendTip = () => {
         </div>
       )}
     </div>
-  )
+  ) : null
 }
