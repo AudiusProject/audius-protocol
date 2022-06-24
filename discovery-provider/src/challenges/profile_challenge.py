@@ -8,14 +8,12 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event import ChallengeEvent
-from src.models import (
-    Follow,
-    ProfileCompletionChallenge,
-    Repost,
-    Save,
-    User,
-    UserChallenge,
-)
+from src.models.rewards.profile_completion_challenge import ProfileCompletionChallenge
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost
+from src.models.social.save import Save
+from src.models.users.user import User
 
 REPOST_THRESHOLD = 1
 FOLLOW_THRESHOLD = 5

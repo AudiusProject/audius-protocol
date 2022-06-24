@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Any, Dict, List, TypedDict
 
 from sqlalchemy.orm.session import Session
-from src.models.models import Track, User
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.solana.anchor_parser import ParsedTxInstr
 from src.solana.solana_transaction_types import TransactionInfoResult
 from src.utils import helpers

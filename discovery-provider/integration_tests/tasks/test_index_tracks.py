@@ -8,14 +8,14 @@ from integration_tests.challenges.index_helpers import (
     UpdateTask,
 )
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from src.models import (
-    Block,
+from src.models.indexing.block import Block
+from src.models.indexing.skipped_transaction import (
     SkippedTransaction,
     SkippedTransactionLevel,
-    Track,
-    TrackRoute,
-    User,
 )
+from src.models.tracks.track import Track
+from src.models.tracks.track_route import TrackRoute
+from src.models.users.user import User
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import (
     lookup_track_record,

@@ -3,7 +3,7 @@ from typing import Dict, Optional
 
 from redis import Redis
 from sqlalchemy import desc
-from src.models import RewardManagerTransaction
+from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.queries.get_sol_user_bank import get_sol_tx_health_info
 from src.tasks.index_rewards_manager import cache_latest_sol_rewards_manager_db_tx
 from src.utils import helpers

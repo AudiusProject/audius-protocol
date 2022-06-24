@@ -2,7 +2,8 @@ from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import desc
-from src.models import ChallengeDisbursement, RewardManagerTransaction
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.index_rewards_manager import (
     fetch_and_parse_sol_rewards_transfer_instruction,

@@ -3,7 +3,13 @@ import subprocess
 from datetime import datetime
 
 import pytest
-from src.models import Block, Follow, Playlist, Save, SaveType, Track, User, UserBalance
+from src.models.indexing.block import Block
+from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.save import Save, SaveType
+from src.models.tracks.track import Track
+from src.models.users.user import User
+from src.models.users.user_balance import UserBalance
 from src.queries.search_es import search_es_full
 from src.queries.search_queries import (
     playlist_search_query,

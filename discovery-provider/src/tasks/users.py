@@ -12,7 +12,9 @@ from sqlalchemy.orm.session import Session, make_transient
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
-from src.models import AssociatedWallet, User, UserEvents
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
+from src.models.users.user_events import UserEvents
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld

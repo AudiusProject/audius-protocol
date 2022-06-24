@@ -8,26 +8,21 @@ from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src import api_helpers
-from src.models import (
-    AggregateUser,
-    Block,
-    ChallengeDisbursement,
-    Follow,
-    Milestone,
-    MilestoneName,
-    Playlist,
-    Remix,
-    Repost,
-    RepostType,
-    Save,
-    SaveType,
-    SupporterRankUp,
-    Track,
-    User,
-    UserBalanceChange,
-    UserTip,
-)
-from src.models.reaction import Reaction
+from src.models.indexing.block import Block
+from src.models.notifications.milestone import Milestone, MilestoneName
+from src.models.playlists.playlist import Playlist
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.social.follow import Follow
+from src.models.social.reaction import Reaction
+from src.models.social.repost import Repost, RepostType
+from src.models.social.save import Save, SaveType
+from src.models.tracks.remix import Remix
+from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.supporter_rank_up import SupporterRankUp
+from src.models.users.user import User
+from src.models.users.user_balance_change import UserBalanceChange
+from src.models.users.user_tip import UserTip
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.utils import web3_provider

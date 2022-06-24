@@ -4,16 +4,18 @@ from functools import reduce
 
 from sqlalchemy import desc, func
 from src import exceptions
-from src.models import (
+from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,
-    AggregateDailyUniqueUsersMetrics,
-    AppMetricsAllTime,
-    AppMetricsTrailingMonth,
-    AppMetricsTrailingWeek,
-    RouteMetricsAllTime,
-    RouteMetricsTrailingMonth,
-    RouteMetricsTrailingWeek,
 )
+from src.models.metrics.aggregate_daily_unique_users_metrics import (
+    AggregateDailyUniqueUsersMetrics,
+)
+from src.models.metrics.app_metrics_all_time import AppMetricsAllTime
+from src.models.metrics.app_metrics_trailing_month import AppMetricsTrailingMonth
+from src.models.metrics.app_metrics_trailing_week import AppMetricsTrailingWeek
+from src.models.metrics.route_metrics_all_time import RouteMetricsAllTime
+from src.models.metrics.route_metrics_trailing_month import RouteMetricsTrailingMonth
+from src.models.metrics.route_metrics_trailing_week import RouteMetricsTrailingWeek
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

@@ -11,8 +11,9 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import Challenge, ChallengeType, UserChallenge
-from src.models.models import Block
+from src.models.indexing.block import Block
+from src.models.rewards.challenge import Challenge, ChallengeType
+from src.models.rewards.user_challenge import UserChallenge
 from src.queries.get_challenges import get_challenges
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
