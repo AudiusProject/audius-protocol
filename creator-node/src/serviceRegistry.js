@@ -181,7 +181,7 @@ class ServiceRegistry {
 
   /**
    * Truncates large JSON data in Bull Board after any of the following is exceeded:
-   * - 5 levels of nesting
+   * - 7 levels of nesting
    * - 10,000 characters (strings only)
    * - 100 elements (arrays) or 100 keys (objects)
    *
@@ -197,12 +197,21 @@ class ServiceRegistry {
   truncateBull(dataToTruncate, curDepth = 0) {
     if (
       typeof dataToTruncate === 'object' &&
-      !Array.isArray(dataToTruncate) &&
       dataToTruncate !== null &&
       dataToTruncate !== undefined
     ) {
-      if (curDepth < 5) {
+      if (curDepth < 7) {
         const newDepth = curDepth + 1
+        if (Array.isArray(dataToTruncate)) {
+          if (dataToTruncate.length > 100) {
+            return `[Truncated array with ${dataToTruncate.length} elements]`
+          }
+          const truncatedArr = []
+          dataToTruncate.forEach((element) => {
+            truncatedArr.push(this.truncateBull(element, newDepth))
+          })
+          return truncatedArr
+        }
         const json = Object.assign({}, dataToTruncate)
         Object.entries(dataToTruncate).forEach(([key, value]) => {
           switch (typeof value) {
@@ -233,9 +242,9 @@ class ServiceRegistry {
         })
         return json
       }
-      return `[Truncated object with ${
-        Object.keys(dataToTruncate).length
-      } keys]`
+      return Array.isArray(dataToTruncate)
+        ? `[Truncated array with ${dataToTruncate.length} elements]`
+        : `[Truncated object with ${Object.keys(dataToTruncate).length} keys]`
     }
     return dataToTruncate
   }
@@ -262,7 +271,7 @@ class ServiceRegistry {
     await this._initSnapbackSM()
     this.stateMachineManager = new StateMachineManager()
     const { stateMonitoringQueue, stateReconciliationQueue } =
-      await this.stateMachineManager.init(this.libs)
+      await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround

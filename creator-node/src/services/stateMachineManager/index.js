@@ -7,7 +7,7 @@ const StateReconciliationManager = require('./stateReconciliation')
 const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
 const { RECONFIG_MODES } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
-const makeCompletedJobEnqueueOtherJobs = require('./makeCompletedJobEnqueueOtherJobs')
+const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -15,7 +15,7 @@ const makeCompletedJobEnqueueOtherJobs = require('./makeCompletedJobEnqueueOther
  * Use QueueInterfacer for interfacing with the queues.
  */
 class StateMachineManager {
-  async init(audiusLibs) {
+  async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
     // TODO: Decide on interval to run this on
@@ -40,19 +40,21 @@ class StateMachineManager {
     )
     const stateReconciliationQueue = await stateReconciliationManager.init()
 
-    // Make jobs enqueue other jobs as necessary upon completion
+    // Upon completion, make jobs record metrics and enqueue other jobs as necessary
     stateMonitoringQueue.on(
       'global:completed',
-      makeCompletedJobEnqueueOtherJobs(
+      makeOnCompleteCallback(
         stateMonitoringQueue,
-        stateReconciliationQueue
+        stateReconciliationQueue,
+        prometheusRegistry
       ).bind(this)
     )
     stateReconciliationQueue.on(
       'global:completed',
-      makeCompletedJobEnqueueOtherJobs(
+      makeOnCompleteCallback(
         stateMonitoringQueue,
-        stateReconciliationQueue
+        stateReconciliationQueue,
+        prometheusRegistry
       ).bind(this)
     )
 
