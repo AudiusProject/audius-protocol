@@ -6,7 +6,6 @@ const dotenv = require('dotenv')
 
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
-import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 import retry from 'async-retry';
