@@ -137,8 +137,8 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         signatureSPDelegatePrivateKey,
                     )
 
-                    // add user to save queue
                     missedUsers += await saveBatch(run_id, spid, results)
+                    // add user to save queue
                     // saveQueue.push(saveBatch(run_id, spid, results))
                 } catch (e) {
                     console.log(`[checkUsers:${spid}] error - ${(e as Error).message}`)
