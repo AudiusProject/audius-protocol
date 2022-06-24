@@ -29,3 +29,8 @@ export const missedUsersCountGauge = new client.Gauge({
     labelNames: ['endpoint', 'run_id']
 })
 
+export const indexingDiscoveryDurationGauge = new client.Gauge({
+    name: 'network_monitoring_indexing_discovery_duration',
+    help: 'the amount of time it takes to index the discovery database',
+    labelNames: ['run_id'],
+})
