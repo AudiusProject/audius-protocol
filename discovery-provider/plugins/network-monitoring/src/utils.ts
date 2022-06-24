@@ -1,6 +1,8 @@
 
 import Web3 from 'web3';
 const web3 = new Web3()
+const dotenv = require('dotenv')
+
 
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
@@ -16,6 +18,8 @@ const unhealthyNodes: Record<string, number> = {}
 axios.defaults.timeout = 300_000 // 5min
 axios.defaults.httpAgent = new http.Agent({ timeout: 60000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized: false })
+
+let envInitialized = false
 
 
 export const getExternalRequestParams = (): {
@@ -195,4 +199,45 @@ export const retryAsyncFunctionOrError = async <T>(maxTries: number, func: () =>
 
 export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+export const getEnv = () => {
+
+    if (!envInitialized) {
+        const nodeEnv = process.env['NODE_ENV']
+
+        if (nodeEnv === "production") {
+            console.log('[+] running in production (.env.prod)')
+            dotenv.config({ path: '.env.prod' })
+        } else if (nodeEnv === "staging") {
+            console.log('[+] running in staging (.env.stage)')
+            dotenv.config({ path: '.env.stage' })
+        } else {
+            console.log('[+] running locally (.env.local)')
+            dotenv.config({ path: '.env.local' })
+
+        }
+
+        envInitialized = true
+    }
+
+
+    const db = {
+        name: process.env['DB_NAME'] || '',
+        host: process.env['DB_HOST'] || '',
+        port: parseInt(process.env['DB_PORT'] || ''),
+        username: process.env['DB_USERNAME'] || '',
+        password: process.env['DB_PASSWORD'] || '',
+        sql_logger: (process.env['SQL_LOGGING'] || '') in ['T', 't', 'True', 'true', '1']
+    }
+
+    const fdb = {
+        name: process.env['FDB_NAME'] || '',
+        host: process.env['FDB_HOST'] || '',
+        port: process.env['FDB_PORT'] || '',
+        username: process.env['FDB_USERNAME'] || '',
+        password: process.env['FDB_PASSWORD'] || '',
+    }
+
+    return { db, fdb }
 }

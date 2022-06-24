@@ -4,4 +4,4 @@ export CREATOR_NODE_DB_HOST_PORT=4432
 export CREATOR_NODE_REDIS_HOST_PORT=4379
 export CREATOR_NODE_DEBUGGER_PORT=9230
 export SP_OWNER_WALLET_INDEX=1
-export openRestyCacheCIDEnabled=false
+export contentCacheLayerEnabled=true
