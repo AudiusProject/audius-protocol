@@ -153,7 +153,9 @@ Once locally stored, they can be committed to our repo for a future production r
 
 #### Saving Production Dashboards
 
-When saving production dashboards, this can be done locally by setting the appropriate envars required by `./grafana/bin/save-dashboards.sh`, but everything works out of the box if you ssh into the `prometheus-grafana-metrics` box directly:
+##### Saving Production Dashboards Within `prometheus-grafana-metrics`
+
+When saving production dashboards, everything works out of the box if you ssh into the `prometheus-grafana-metrics` box directly:
 
 ```bash
 ssh-add ~/.ssh/id_ed25519.github
@@ -166,6 +168,23 @@ cd ~/audius-protocol/monitoring
 # open a PR to track changes to our production dashboards
 # git checkout -b grafana-$(date "+%F-%H-%M-%S")
 # git add grafana/dashboards/
+
+# return to the master branch prior to logging out
+# git checkout master
+```
+
+##### Saving Production Dashboards Locally
+
+Saving production dashboards locally can also be done by:
+
+* Copying `grafana/bearer.env` from `prometheus-grafana-metrics`
+* Copying the `$GRAFANA_PASS` from LastPass
+
+```bash
+BEARER_PATH=grafana/bearer.prod.env \
+GRAFANA_API_URL=grafana.audius.co \
+GRAFANA_PASS=xxx \
+./grafana/bin/save-dashboards.sh
 ```
 
 ### Releasing Dashboards to Production
