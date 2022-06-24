@@ -178,7 +178,9 @@ In this specific query, `max by (route)` will display the longest latency across
 
 ### Configuring Panels
 
-Once a new panel is created, panel settings can help ensure the purpose of the panel is effectively communicated. These settings include:
+Once a new panel is created, panel settings can help ensure the purpose of the panel is effectively communicated.
+
+Always consider what actionable information is required instead of focusing on graphing the collected information directly. For example, while we might be collecting "Primary User Counts by Content Node" it may make more sense to display "Primary Users Count Unbalance by Content Node" to easily spot which nodes have a less than ideal number of Primary Users.
 
 #### Query -> Code
 
@@ -273,7 +275,7 @@ Always use `Ascending` or `Descending` based on what ordering would be ideal in 
 
 ##### Legend Mode
 
-`Table` is always recommended. `Hidden` can be ideal for Overview dashboards that are not meant for investigations.
+`Table` is always recommended. `Hidden` can be ideal for Overview dashboards that are not meant for investigations or on panels where there is little need to hide/unhide certain series.
 
 ##### Legend Placement
 
