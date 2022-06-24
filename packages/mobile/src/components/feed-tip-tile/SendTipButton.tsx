@@ -25,21 +25,16 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center'
   },
   sendTipButtonTitle: {
-    marginTop: spacing(1),
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontByWeight.bold,
     color: palette.neutralLight4
   },
   buttonReceiverName: {
-    marginTop: spacing(1),
     maxWidth: '68%',
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontByWeight.bold,
     color: palette.neutralLight4,
     textTransform: 'uppercase'
-  },
-  buttonBadge: {
-    marginTop: spacing(0.5)
   },
   textWhite: {
     color: palette.white
@@ -94,12 +89,7 @@ export const SendTipButton = ({ receiver }: SendTipButtonProps) => {
             >
               {receiver.name}
             </Text>
-            <UserBadges
-              user={receiver}
-              badgeSize={12}
-              style={styles.buttonBadge}
-              hideName
-            />
+            <UserBadges user={receiver} badgeSize={12} hideName />
           </View>
         }
         onPress={handlePress}
