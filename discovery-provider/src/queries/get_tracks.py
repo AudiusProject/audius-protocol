@@ -52,12 +52,24 @@ def _get_tracks(session, args):
         # Add the query conditions for each route
         filter_cond = []
         for route in routes:
-            filter_cond.append(
+            filter_cond_options = [
                 and_(
                     TrackRoute.slug == route["slug"],
                     TrackRoute.owner_id == route["owner_id"],
                 )
-            )
+            ]
+
+            slug_tail = route["slug"].split("-")[-1]
+            if slug_tail.isnumeric():
+                filter_cond_options.append(
+                    and_(
+                        TrackRoute.track_id == int(slug_tail),
+                        TrackRoute.owner_id == route["owner_id"],
+                    )
+                )
+
+            filter_cond.append(or_(*filter_cond_options))
+
         base_query = base_query.filter(or_(*filter_cond))
     else:
         # Only return unlisted tracks if either
