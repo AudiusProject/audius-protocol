@@ -110,8 +110,8 @@ module.exports = {
   // Sync mode for a (primary, secondary) pair for a user
   SYNC_MODES: Object.freeze({
     None: 'NONE',
-    SecondaryShouldSync: 'SECONDARY_SHOULD_SYNC',
-    PrimaryShouldSync: 'PRIMARY_SHOULD_SYNC'
+    SyncSecondaryFromPrimary: 'SYNC_SECONDARY_FROM_PRIMARY',
+    SyncPrimaryFromSecondary: 'SYNC_PRIMARY_FROM_SECONDARY'
   }),
 
   FETCH_FILES_HASH_NUM_RETRIES: 3

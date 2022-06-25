@@ -406,7 +406,7 @@ const _aggregateOps = async (
  * @param {number} param.secondaryClock clock value on user's secondary
  * @param {string} param.primaryFilesHash filesHash on user's primary
  * @param {string} param.secondaryFilesHash filesHash on user's secondary
- * @returns {SYNC_MODES} syncMode one of None, SecondaryShouldSync, PrimaryShouldSync
+ * @returns {SYNC_MODES} syncMode one of None, SyncSecondaryFromPrimary, SyncPrimaryFromSecondary
  */
 const computeSyncModeForUserAndReplica = async ({
   wallet,
@@ -444,17 +444,17 @@ const computeSyncModeForUserAndReplica = async ({
      *    have diverged. To fix this issue, primary should sync content from secondary and
      *    subsequently force secondary to resync state from primary.
      */
-    return SYNC_MODES.PrimaryShouldSync
+    return SYNC_MODES.SyncPrimaryFromSecondary
   } else if (primaryClock < secondaryClock) {
     /**
      * Secondary has more data than primary -> primary must sync from secondary
      */
-    return SYNC_MODES.PrimaryShouldSync
+    return SYNC_MODES.SyncPrimaryFromSecondary
   } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
     /**
      * secondaryFilesHash will be null if secondary has no files for user -> secondary must sync from primary
      */
-    return SYNC_MODES.SecondaryShouldSync
+    return SYNC_MODES.SyncSecondaryFromPrimary
   } else if (primaryClock > secondaryClock && secondaryFilesHash !== null) {
     /**
      * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
@@ -479,9 +479,9 @@ const computeSyncModeForUserAndReplica = async ({
     }
 
     if (primaryFilesHashForRange === secondaryFilesHash) {
-      return SYNC_MODES.SecondaryShouldSync
+      return SYNC_MODES.SyncSecondaryFromPrimary
     } else {
-      return SYNC_MODES.PrimaryShouldSync
+      return SYNC_MODES.SyncPrimaryFromSecondary
     }
   } else {
     return SYNC_MODES.None

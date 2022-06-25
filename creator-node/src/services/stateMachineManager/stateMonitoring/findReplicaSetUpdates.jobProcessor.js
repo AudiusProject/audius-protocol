@@ -98,11 +98,10 @@ module.exports = async function ({
           secondary1: updateReplicaSetOp.secondary1,
           secondary2: updateReplicaSetOp.secondary2,
           unhealthyReplicas: Array.from(updateReplicaSetOp.unhealthyReplicas),
-          replicaToUserInfoMap:
-            _transformAndFilterReplicaToUserInfoMap(
-              replicaToUserInfoMap,
-              wallet
-            )
+          replicaToUserInfoMap: _transformAndFilterReplicaToUserInfoMap(
+            replicaToUserInfoMap,
+            wallet
+          )
         }
       })
     }
@@ -318,7 +317,7 @@ const _transformAndFilterReplicaToUserInfoMap = (
         node,
         {
           ...userInfoMap[wallet],
-          clock: userInfoMap[wallet][clock] || -1 // default clock to -1 where not present
+          clock: userInfoMap[wallet]?.clock || -1 // default clock to -1 where not present
         }
       ])
       // Only include nodes that have clock values -- this means only the nodes in the user's replica set

@@ -217,12 +217,14 @@ const _findSyncsForUser = async (
         primaryFilesHash,
         secondaryFilesHash
       })
-    } catch(e) {
-      errors.push(`Error computing sync mode for user ${wallet} and secondary ${secondary} - ${e.message}`)
+    } catch (e) {
+      errors.push(
+        `Error computing sync mode for user ${wallet} and secondary ${secondary} - ${e.message}`
+      )
       continue
     }
 
-    if (syncMode === SYNC_MODES.SecondaryShouldSync) {
+    if (syncMode === SYNC_MODES.SyncSecondaryFromPrimary) {
       try {
         const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
           userWallet: wallet,
@@ -241,14 +243,14 @@ const _findSyncsForUser = async (
         )
         continue
       }
-    } else if (syncMode === SYNC_MODES.PrimaryShouldSync) {
+    } else if (syncMode === SYNC_MODES.SyncPrimaryFromSecondary) {
       /**
        * TODO - currently just logs as placeholder
        * 1. await syncFromSecondary()
        * 2. issue sync to secondary with forceResync = true
        */
       logger.info(
-        `[findSyncRequests][_findSyncsForUser][PrimaryShouldSync = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
+        `[findSyncRequests][_findSyncsForUser][SyncPrimaryFromSecondary = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
       )
     }
   }

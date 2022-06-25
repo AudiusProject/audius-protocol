@@ -4,7 +4,6 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const {
-  MetricTypes,
   MetricNames,
   MetricLabels
 } = require('../../services/prometheusMonitoring/prometheus.constants')

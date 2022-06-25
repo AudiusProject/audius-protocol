@@ -168,7 +168,7 @@ describe('test findSyncRequests job processor', function () {
 
     const getCNodeEndpointToSpIdMap = getCNodeEndpointToSpIdMapStub(cNodeEndpointToSpIdMap)
 
-    const expectedSyncMode = SYNC_MODES.SecondaryShouldSync
+    const expectedSyncMode = SYNC_MODES.SyncSecondaryFromPrimary
 
     const computeSyncModeForUserAndReplica = getComputeSyncModeForUserAndReplicaStub({
       expectedSyncMode,
