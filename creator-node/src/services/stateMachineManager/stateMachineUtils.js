@@ -3,6 +3,11 @@ const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 
+const {
+  MetricTypes,
+  MetricNames,
+  MetricLabels
+} = require('../../services/prometheusMonitoring/prometheus.constants')
 const config = require('../../config')
 const { logger } = require('../../logging')
 const { generateTimestampAndSignature } = require('../../apiSigning')
@@ -126,7 +131,43 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   return clockValue
 }
 
+/**
+ * Returns an object that can be returned from any state machine job to record a histogram metric being observed.
+ * Example: to call histogram.observe('response_time', { code: '200' }, 1000), you would call this function with:
+ * makeHistogramToRecord('response_time', 1000, { code: '200' })
+ * @param {string} metricName the name of the metric from prometheus.constants
+ * @param {number} metricValue the value to observe
+ * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ */
+const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
+  if (!Object.values(MetricNames).includes(metricName)) {
+    throw new Error(`Invalid metricName: ${metricName}`)
+  }
+  if (typeof metricValue !== 'number') {
+    throw new Error(`Invalid non-numerical metricValue: ${metricValue}`)
+  }
+  const labelNames = Object.keys(MetricLabels[metricName])
+  for (const [labelName, labelValue] of Object.entries(metricLabels)) {
+    if (!labelNames?.includes(labelName)) {
+      throw new Error(`Metric label has invliad name: ${labelName}`)
+    }
+    const labelValues = MetricLabels[metricName][labelName]
+    if (!labelValues?.includes(labelValue)) {
+      throw new Error(`Metric label has invalid value: ${labelValue}`)
+    }
+  }
+
+  const metric = {
+    metricName,
+    metricType: 'HISTOGRAM',
+    metricValue,
+    metricLabels
+  }
+  return metric
+}
+
 module.exports = {
   retrieveClockStatusesForUsersAcrossReplicaSet,
-  retrieveClockValueForUserFromReplica
+  retrieveClockValueForUserFromReplica,
+  makeHistogramToRecord
 }

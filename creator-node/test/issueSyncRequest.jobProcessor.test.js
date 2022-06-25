@@ -208,16 +208,26 @@ describe('test issueSyncRequest job processor', function () {
     nock(baseURL).post('/sync', data).reply(200)
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
-    await expect(
-      issueSyncRequestJobProcessor({
-        logger,
-        syncType,
-        syncRequestParameters
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      error: {},
-      jobsToEnqueue: {}
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncRequestParameters
     })
+    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {})
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      reason_for_additional_sync: 'none'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
 
@@ -245,16 +255,13 @@ describe('test issueSyncRequest job processor', function () {
     const expectedErrorMessage = `(${syncType}) User ${wallet} | Secondary: ${baseURL} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${failureThreshold}). Will not issue further syncRequests today.`
 
     // Verify job outputs the correct results: error and no sync issued (nock will error if a network req was made)
-    await expect(
-      issueSyncRequestJobProcessor({
-        logger,
-        syncType,
-        syncRequestParameters
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      error: {
-        message: expectedErrorMessage
-      }
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncRequestParameters
+    })
+    expect(result).to.have.deep.property('error', {
+      message: expectedErrorMessage
     })
     expect(logger.error).to.have.been.calledOnceWithExactly(
       expectedErrorMessage
@@ -309,18 +316,28 @@ describe('test issueSyncRequest job processor', function () {
     nock(baseURL).post('/sync', data).reply(200)
 
     // Verify job outputs the correct results: an additional sync
-    await expect(
-      issueSyncRequestJobProcessor({
-        logger,
-        syncType,
-        syncRequestParameters
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      error: {},
-      jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
-      }
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncRequestParameters
     })
+    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {
+      [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+    })
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      reason_for_additional_sync: 'secondary_progressed_too_slow'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,
       secondaryEndpoint: baseURL,
@@ -381,18 +398,28 @@ describe('test issueSyncRequest job processor', function () {
     nock(baseURL).post('/sync', data).reply(200)
 
     // Verify job outputs the correct results: an additional sync
-    await expect(
-      issueSyncRequestJobProcessor({
-        logger,
-        syncType,
-        syncRequestParameters
-      })
-    ).to.eventually.be.fulfilled.and.deep.equal({
-      error: {},
-      jobsToEnqueue: {
-        [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
-      }
+    const result = await issueSyncRequestJobProcessor({
+      logger,
+      syncType,
+      syncRequestParameters
     })
+    expect(result).to.have.deep.property('error', {})
+    expect(result).to.have.deep.property('jobsToEnqueue', {
+      [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
+    })
+    expect(result.metricsToRecord).to.have.lengthOf(1)
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricName',
+      'audius_cn_issue_sync_request_monitoring_duration_seconds'
+    )
+    expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      reason_for_additional_sync: 'secondary_failed_to_progress'
+    })
+    expect(result.metricsToRecord[0]).to.have.deep.property(
+      'metricType',
+      'HISTOGRAM'
+    )
+    expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,
       secondaryEndpoint: baseURL,
