@@ -1,6 +1,5 @@
 
-import { indexingDiscoveryDurationGauge } from "../prometheus"
-import { exportDuration } from "../utils"
+import { indexingDiscoveryDurationGauge, exportDuration } from "../prometheus"
 import { 
     createNewRun, 
     importCids, 
@@ -30,7 +29,7 @@ export const indexDiscovery = async (): Promise<number> => {
     const tDelta = process.hrtime(t0)
     await exportDuration(tDelta, run_id, indexingDiscoveryDurationGauge)
 
-    console.log(`[${run_id}] finished indexing discovery database (${tDelta})`)
+    console.log(`[${run_id}] finished indexing discovery database (${tDelta[0]!})`)
 
     return run_id
 }

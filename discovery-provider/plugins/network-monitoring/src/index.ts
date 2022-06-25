@@ -6,8 +6,7 @@ import {
 import { indexDiscovery } from './discovery'
 import { indexContent } from './content'
 import { generateMetrics } from './metrics'
-import { exportDuration } from './utils'
-import { totalJobDurationGauge } from './prometheus'
+import { totalJobDurationGauge, exportDuration } from './prometheus'
 
 const main = async () => {
 
@@ -23,7 +22,7 @@ const main = async () => {
 
     await closeDBConnection()
 
-    const tDelta = process.hrtime(t0)[0]
+    const tDelta = process.hrtime(t0)
     await exportDuration(tDelta, run_id, totalJobDurationGauge)
 
     process.exit(0)

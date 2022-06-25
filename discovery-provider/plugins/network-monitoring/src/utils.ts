@@ -1,7 +1,4 @@
 
-import type { Gauge } from 'prom-client'
-import { gateway } from './prometheus';
-
 import Web3 from 'web3';
 const web3 = new Web3()
 const dotenv = require('dotenv')
@@ -209,19 +206,9 @@ export const getEnv = () => {
         password: process.env['FDB_PASSWORD'] || '',
     }
 
-    return { db, fdb, deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey }
+
+    const pushGatewayUrl = process.env['PUSH_GATEWAY_URL'] || 'http://localhost:9091'
+
+    return { db, fdb, deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey, pushGatewayUrl }
 }
 
-export const exportDuration = async (tDelta: number[], run_id: number, exporter: Gauge) => {
-
-    const duration = Math.round(tDelta[0] * 1e3 + tDelta[1] * 1e-6)
-
-    exporter.set({ run_id }, duration)
-
-    try {
-        console.log(`[${run_id}] pushing duration to gateway`);
-        await gateway.pushAdd({ jobName: 'network-monitoring' })
-    } catch (e) {
-        console.log(`[exportDuration] error pushing metrics to pushgateway - ${(e as Error).message}`)
-    }
-}

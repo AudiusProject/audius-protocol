@@ -6,8 +6,8 @@ import {
     partiallySyncedUsersCountGauge, 
     primaryUserCountGauge,
     unsyncedUsersCountGauge, 
+    exportDuration,
 } from "../prometheus"
-import { exportDuration } from "../utils"
 import { 
     getPrimaryUserCount, 
     getAllUserCount, 

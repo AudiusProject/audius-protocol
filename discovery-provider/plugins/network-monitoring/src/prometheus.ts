@@ -1,9 +1,12 @@
 
+import type { Gauge } from 'prom-client'
+
 import client from 'prom-client';
+import { getEnv } from './utils';
 
-const PUSH_GATEWAY_URL = process.env['PUSH_GATEWAY_URL'] || 'https://localhost:9091'
+const { pushGatewayUrl } = getEnv()
 
-export const gateway = new client.Pushgateway(PUSH_GATEWAY_URL)
+export const gateway = new client.Pushgateway(pushGatewayUrl)
 
 export const allUserCountGauge = new client.Gauge({
     name: 'network_monitoring_all_user_count',
@@ -64,3 +67,17 @@ export const totalJobDurationGauge = new client.Gauge({
     help: 'the amount of time it takes for an entire network monitoring job to complete',
     labelNames: ['run_id'],
 })
+
+export const exportDuration = async (tDelta: number[], run_id: number, exporter: Gauge<string>) => {
+
+    const duration = Math.round(tDelta[0]! * 1e3 + tDelta[1]! * 1e-6)
+
+    exporter.set({ run_id }, duration)
+
+    try {
+        console.log(`[${run_id}] pushing duration to gateway`);
+        await gateway.pushAdd({ jobName: 'network-monitoring' })
+    } catch (e) {
+        console.log(`[exportDuration] error pushing metrics to pushgateway - ${(e as Error).message}`)
+    }
+}
