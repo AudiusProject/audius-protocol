@@ -341,6 +341,9 @@ class NotificationProcessor {
     // Use a single transaction
     const tx = await models.sequelize.transaction()
     try {
+      // Populate owners, used to index in milestone generation
+      const listenCountWithOwners = []
+
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
       logger.info(`notifications main indexAll job - processNotifications complete in ${Date.now() - time}ms`)
@@ -351,7 +354,7 @@ class NotificationProcessor {
       logger.info(`notifications main indexAll job - sendNotifications complete in ${Date.now() - time}ms`)
       time = Date.now()
 
-      await indexMilestones(milestones, owners, metadata, audiusLibs, tx)
+      await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
       logger.info(`notifications main indexAll job - indexMilestones complete in ${Date.now() - time}ms`)
       time = Date.now()
 
