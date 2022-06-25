@@ -228,8 +228,8 @@ const _findSyncsForUser = async (
       try {
         const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
           userWallet: wallet,
-          secondaryEndpoint: secondary,
           primaryEndpoint: thisContentNodeEndpoint,
+          secondaryEndpoint: secondary,
           syncType: SyncType.Recurring
         })
         if (!_.isEmpty(syncReqToEnqueue)) {
