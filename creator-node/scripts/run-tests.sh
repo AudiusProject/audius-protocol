@@ -124,7 +124,7 @@ export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 
 # tests
-# run_unit_tests
+run_unit_tests
 run_integration_tests
 
 rm -r $storagePath
