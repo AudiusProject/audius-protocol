@@ -84,6 +84,15 @@ describe('test findSyncRequests job processor', function () {
     )
   }
 
+  /**
+   * Creates and returns a stub that fakes a function call given expected input and output conditions
+   * The stub throws an error if called with unexpected inputs
+   * @param {String} functionName 
+   * @param {Object[]} expectedConditionsArr - array containing all possible expected conditions for stub
+   * @param {Object[]} expectedConditionsArr[].input - expected stubbed function input params
+   * @param {Object[]} expectedConditionsArr[].output - expected stubbed function output for above input params
+   * @returns stub
+   */
   function getConditionalStub(functionName, expectedConditionsArr) {
     const expectedConditions = {}
     expectedConditionsArr.map(
@@ -96,6 +105,7 @@ describe('test findSyncRequests job processor', function () {
       if (!(JSON.stringify(args) in expectedConditions)) {
         throw new Error(`${functionName} was not expected to be called with the given args: ${JSON.stringify(args)}`)
       }
+
       return expectedConditions[JSON.stringify(args)]
     })
 
@@ -109,7 +119,7 @@ describe('test findSyncRequests job processor', function () {
     return stub
   }
 
-  it.only('Correctly returns sync from primary to secondary1 when secondary1 clock < primary clock', async function () {
+  it('Correctly returns sync from primary to secondary1 when secondary1 clock < primary clock', async function () {
     /**
      * Define all input variables
      */
@@ -221,7 +231,7 @@ describe('test findSyncRequests job processor', function () {
       .and.to.have.been.calledWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[1].input)
   })
 
-  it.only("doesn't enqueue duplicate syncs", async function () {
+  it("doesn't enqueue duplicate syncs", async function () {
     /**
      * Define all input variables
      */
@@ -328,7 +338,7 @@ describe('test findSyncRequests job processor', function () {
       .and.to.have.been.calledWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[1].input)
   })
 
-  it.only("doesn't sync to unhealthy secondaries", async function () {
+  it("doesn't sync to unhealthy secondaries", async function () {
     /**
      * Define all input variables
      */
@@ -415,198 +425,288 @@ describe('test findSyncRequests job processor', function () {
     expect(computeSyncModeForUserAndReplicaStub).to.have.been.calledOnceWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[0].input)
   })
 
-  /**
-   * TODO SID 6/25 - fix below tests, same as above
-   */
-
   it("doesn't sync if spId is mismatched in cNodeEndpointToSpId mapping", async function () {
-    // Set variables that satisfy conditions for user1 to be synced from primary1 to secondary1 (except spId matching)
+    /**
+     * Define input variables that satisfy conditions for user1 to be synced from primary1 to secondary1 (except spId matching)
+     */
+
     // Make secondary1's spId in mapping NOT match the spId in the `users` variable
     const cNodeEndpointToSpIdMap = {
       [primary]: primarySpID,
       [secondary1]: secondary1SpID + 100,
       [secondary2]: secondary2SpID
     }
+
     const unhealthyPeers = []
-    // Clock value of secondary1 being less than primary means we would sync from primary to secondary1 if spId matched
-    const replicaSetNodesToUserClockStatusesMap = {
+
+    // Since secondary1.wallet.clock < primary.wallet.clock, we would sync from primary to secondary1 if spID matched
+    const replicaToUserInfoMap = {
       [primary]: {
-        [wallet]: 10
+        [wallet]: {clock: 10, filesHash: '0xabc'}
       },
       [secondary1]: {
-        [wallet]: 9
+        [wallet]: {clock: 9, filesHash: '0xnotabc'}
       },
       [secondary2]: {
-        [wallet]: 10
+        [wallet]: {clock: 10, filesHash: '0xabc'}
       }
     }
+
     const userSecondarySyncMetricsMap = {}
+
     // This node must be the primary in order to sync
     config.set('creatorNodeEndpoint', primary)
+
+    /**
+     * Create all stubs for jobProcessor
+     */
+
     // Stub finding syncs never being called because it should short-circuit first when seeing secondary1 spId mismatches
-    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
-      throw new Error('getNewOrExistingSyncReq was not expected to be called')
-    })
-    const getCNodeEndpointToSpIdMapStub = sandbox
-      .stub()
-      .returns(cNodeEndpointToSpIdMap)
-    const logger = {
-      info: sandbox.stub(),
-      warn: sandbox.stub(),
-      error: sandbox.stub()
-    }
+    const getNewOrExistingSyncReqExpectedConditionsArr = []
+    const getNewOrExistingSyncReqStub = getConditionalStub(
+      'getNewOrExistingSyncReq',
+      getNewOrExistingSyncReqExpectedConditionsArr
+    )
+
+    const getCNodeEndpointToSpIdMapStub = getGetCNodeEndpointToSpIdMapStub(cNodeEndpointToSpIdMap)
+    
+    // stub computeSyncModeForUserAndReplica() only being called with primary-secondary2 pair, since primary-secondary1 processing would short circuit before this call
+    const computeSyncModeForUserAndReplicaExpectedConditionsArr = [
+      {
+        input: {
+          wallet,
+          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
+          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
+          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+        },
+        output: SYNC_MODES.None
+      }
+    ]
+    const computeSyncModeForUserAndReplicaStub = getConditionalStub('computeSyncModeForUserAndReplica', computeSyncModeForUserAndReplicaExpectedConditionsArr)
 
     const findSyncRequestsJobProcessor = getJobProcessorStub(
       getNewOrExistingSyncReqStub,
-      getCNodeEndpointToSpIdMapStub
+      getCNodeEndpointToSpIdMapStub,
+      computeSyncModeForUserAndReplicaStub
     )
 
-    // Verify job outputs the correct results: no syncs because secondary1 would normally sync but its spId mismatches
-    expect(
-      await findSyncRequestsJobProcessor({
-        logger,
-        users,
-        unhealthyPeers,
-        replicaSetNodesToUserClockStatusesMap,
-        userSecondarySyncMetricsMap
-      })
-    ).to.deep.equal({
+    /**
+     * Verify job outputs the correct results: no syncs because secondary1 would normally sync but its spId mismatches, and secondary2 is already synced
+     */
+
+    const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [],
       jobsToEnqueue: {}
+    }
+    const actualOutput = await findSyncRequestsJobProcessor({
+      users,
+      unhealthyPeers,
+      replicaToUserInfoMap,
+      userSecondarySyncMetricsMap,
+      logger
     })
+    expect(actualOutput).to.deep.equal(expectedOutput)
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
+    expect(computeSyncModeForUserAndReplicaStub).to.have.been.calledOnceWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[0].input)
   })
 
   it("doesn't sync if success rate is too low", async function () {
-    // Set variables that satisfy conditions for user1 to be synced from primary1 to secondary1 (except success rate)
+    /**
+     * Define input variables that satisfy conditions for user1 to be synced from primary1 to secondary1 (except success rate)
+     */
+
     // spIds in mapping must match those in the `users` variable
     const cNodeEndpointToSpIdMap = {
       [primary]: primarySpID,
       [secondary1]: secondary1SpID,
       [secondary2]: secondary2SpID
     }
+
     const unhealthyPeers = []
-    // Clock value of secondary1 being less than primary means we would sync from primary to secondary1 if success rate were higher
-    const replicaSetNodesToUserClockStatusesMap = {
+
+    // Since secondary1.wallet.clock < primary.wallet.clock, we would sync from primary to secondary1 if sync success rate were higher
+    const replicaToUserInfoMap = {
       [primary]: {
-        [wallet]: 10
+        [wallet]: {clock: 10, filesHash: '0xabc'}
       },
       [secondary1]: {
-        [wallet]: 9
+        [wallet]: {clock: 9, filesHash: '0xnotabc'}
       },
       [secondary2]: {
-        [wallet]: 10
+        [wallet]: {clock: 10, filesHash: '0xabc'}
       }
     }
-    // Make success rate lower than threshold
+
+    // Make sync success rate lower than threshold for secondary1
     const userSecondarySyncMetricsMap = {
       [wallet]: {
         [secondary1]: { successRate: 0, failureCount: 100 },
         [secondary2]: { successRate: 1, failureCount: 0 }
       }
     }
+
     // This node must be the primary in order to sync
     config.set('creatorNodeEndpoint', primary)
-    // Stub  finding syncs never being called because it should short-circuit first when seeing low secondary1 success rate
-    const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
-      throw new Error('getNewOrExistingSyncReq was not expected to be called')
-    })
-    const getCNodeEndpointToSpIdMapStub = sandbox
-      .stub()
-      .returns(cNodeEndpointToSpIdMap)
-    const logger = {
-      info: sandbox.stub(),
-      warn: sandbox.stub(),
-      error: sandbox.stub()
-    }
+
+    /**
+     * Create all stubs for jobProcessor
+     */
+
+    // Stub getNewOrExistingSyncReq() never being called because it should short-circuit first when seeing low secondary1 success rate
+    const getNewOrExistingSyncReqExpectedConditionsArr = []
+    const getNewOrExistingSyncReqStub = getConditionalStub(
+      'getNewOrExistingSyncReq',
+      getNewOrExistingSyncReqExpectedConditionsArr
+    )
+
+    const getCNodeEndpointToSpIdMapStub = getGetCNodeEndpointToSpIdMapStub(cNodeEndpointToSpIdMap)
+
+    // stub computeSyncModeForUserAndReplica() only being called with primary-secondary2 pair, since primary-secondary1 processing would short circuit before this call
+    const computeSyncModeForUserAndReplicaExpectedConditionsArr = [
+      {
+        input: {
+          wallet,
+          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
+          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
+          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+        },
+        output: SYNC_MODES.None
+      }
+    ]
+    const computeSyncModeForUserAndReplicaStub = getConditionalStub('computeSyncModeForUserAndReplica', computeSyncModeForUserAndReplicaExpectedConditionsArr)
 
     const findSyncRequestsJobProcessor = getJobProcessorStub(
       getNewOrExistingSyncReqStub,
-      getCNodeEndpointToSpIdMapStub
+      getCNodeEndpointToSpIdMapStub,
+      computeSyncModeForUserAndReplicaStub
     )
 
-    // Verify job outputs the correct results: no syncs because secondary1 would normally sync but its success rate is low
-    expect(
-      await findSyncRequestsJobProcessor({
-        logger,
-        users,
-        unhealthyPeers,
-        replicaSetNodesToUserClockStatusesMap,
-        userSecondarySyncMetricsMap
-      })
-    ).to.deep.equal({
+    /**
+     * Verify job outputs the correct results: no syncs because secondary1 would normally sync but its success rate is low
+     */
+     const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [],
       jobsToEnqueue: {}
+    }
+    const actualOutput = await findSyncRequestsJobProcessor({
+      users,
+      unhealthyPeers,
+      replicaToUserInfoMap,
+      userSecondarySyncMetricsMap,
+      logger
     })
+    expect(actualOutput).to.deep.equal(expectedOutput)
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
+    expect(computeSyncModeForUserAndReplicaStub).to.have.been.calledOnceWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[0].input)
   })
 
   it('catches errors from finding syncs', async function () {
-    // Set variables that satisfy conditions for user1 to be synced from primary1 to secondary1
+    /**
+     * Define input variables that satisfy conditions for user1 to be synced from primary1 to secondary1
+     */
+
     // spIds in mapping must match those in the `users` variable
     const cNodeEndpointToSpIdMap = {
       [primary]: primarySpID,
       [secondary1]: secondary1SpID,
       [secondary2]: secondary2SpID
     }
+
     const unhealthyPeers = []
-    // Clock value of secondary1 being less than primary means we'll sync from primary to secondary1
-    const replicaSetNodesToUserClockStatusesMap = {
+
+    // Since secondary1.wallet.clock < primary.wallet.clock, we will sync from primary to secondary1
+    const replicaToUserInfoMap = {
       [primary]: {
-        [wallet]: 10
+        [wallet]: {clock: 10, filesHash: '0xabc'}
       },
       [secondary1]: {
-        [wallet]: 9
+        [wallet]: {clock: 9, filesHash: '0xnotabc'}
       },
       [secondary2]: {
-        [wallet]: 10
+        [wallet]: {clock: 10, filesHash: '0xabc'}
       }
     }
+
     const userSecondarySyncMetricsMap = {}
+
     // This node must be the primary in order to sync
     config.set('creatorNodeEndpoint', primary)
+
+    /**
+     * Create all stubs for jobProcessor
+     */
+  
     // Stub error when trying to find a new sync to enqueue from primary1 to secondary1
     const expectedErrorMsg = 'expectedErrorMsg'
+    const getNewOrExistingSyncReqExpectedInput = {
+      userWallet: wallet,
+      primaryEndpoint: primary,
+      secondaryEndpoint: secondary1,
+      syncType: SyncType.Recurring
+    }
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error(expectedErrorMsg)
     })
-    const getCNodeEndpointToSpIdMapStub = sandbox
-      .stub()
-      .returns(cNodeEndpointToSpIdMap)
-    const logger = {
-      info: sandbox.stub(),
-      warn: sandbox.stub(),
-      error: sandbox.stub()
-    }
+
+    const getCNodeEndpointToSpIdMapStub = getGetCNodeEndpointToSpIdMapStub(cNodeEndpointToSpIdMap)
+    
+    // stub computeSyncModeForUserAndReplica() being called with both primary-secondary1 and primary-secondary2 pairs
+    const computeSyncModeForUserAndReplicaExpectedConditionsArr = [
+      {
+        input: {
+          wallet,
+          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
+          secondaryClock: replicaToUserInfoMap[secondary1][wallet].clock,
+          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToUserInfoMap[secondary1][wallet].filesHash
+        },
+        output: SYNC_MODES.SyncSecondaryFromPrimary
+      },
+      {
+        input: {
+          wallet,
+          primaryClock: replicaToUserInfoMap[primary][wallet].clock,
+          secondaryClock: replicaToUserInfoMap[secondary2][wallet].clock,
+          primaryFilesHash: replicaToUserInfoMap[primary][wallet].filesHash,
+          secondaryFilesHash: replicaToUserInfoMap[secondary2][wallet].filesHash
+        },
+        output: SYNC_MODES.None
+      }
+    ]
+    const computeSyncModeForUserAndReplicaStub = getConditionalStub('computeSyncModeForUserAndReplica', computeSyncModeForUserAndReplicaExpectedConditionsArr)
 
     const findSyncRequestsJobProcessor = getJobProcessorStub(
       getNewOrExistingSyncReqStub,
-      getCNodeEndpointToSpIdMapStub
+      getCNodeEndpointToSpIdMapStub,
+      computeSyncModeForUserAndReplicaStub
     )
 
-    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
-    expect(
-      await findSyncRequestsJobProcessor({
-        logger,
-        users,
-        unhealthyPeers,
-        replicaSetNodesToUserClockStatusesMap,
-        userSecondarySyncMetricsMap
-      })
-    ).to.deep.equal({
+    /**
+     * Verify job outputs the correct results: an error syncing from primary to secondary1
+     */
+
+    const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [
         `Error getting new or existing sync request for user ${wallet} and secondary ${secondary1} - ${expectedErrorMsg}`
       ],
       jobsToEnqueue: {}
+    }
+    const actualOutput = await findSyncRequestsJobProcessor({
+      users,
+      unhealthyPeers,
+      replicaToUserInfoMap,
+      userSecondarySyncMetricsMap,
+      logger
     })
-    expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
-      userWallet: wallet,
-      secondaryEndpoint: secondary1,
-      primaryEndpoint: primary,
-      syncType: SyncType.Recurring
-    })
+    expect(actualOutput).to.deep.equal(expectedOutput)
+    expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly(getNewOrExistingSyncReqExpectedInput)
+    expect(computeSyncModeForUserAndReplicaStub).to.have.been.calledTwice
+      .and.to.have.been.calledWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[0].input)
+      .and.to.have.been.calledWithExactly(computeSyncModeForUserAndReplicaExpectedConditionsArr[1].input)
   })
 })
