@@ -1,6 +1,4 @@
 
-import type { Gauge } from 'prom-client'
-
 import client from 'prom-client';
 import { getEnv } from './utils';
 
