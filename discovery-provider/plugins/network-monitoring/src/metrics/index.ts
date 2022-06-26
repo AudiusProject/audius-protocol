@@ -1,17 +1,16 @@
-import { 
-    allUserCountGauge, 
-    fullySyncedUsersCountGauge, 
-    gateway, 
-    generatingMetricsDurationGauge, 
-    partiallySyncedUsersCountGauge, 
+import {
+    allUserCountGauge,
+    fullySyncedUsersCountGauge,
+    gateway,
+    generatingMetricsDurationGauge,
+    partiallySyncedUsersCountGauge,
     primaryUserCountGauge,
-    unsyncedUsersCountGauge, 
-    exportDuration,
+    unsyncedUsersCountGauge,
 } from "../prometheus"
-import { 
-    getPrimaryUserCount, 
-    getAllUserCount, 
-    getFullySyncedUsersCount, 
+import {
+    getPrimaryUserCount,
+    getAllUserCount,
+    getFullySyncedUsersCount,
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount
 } from "./queries"
@@ -20,7 +19,7 @@ export const generateMetrics = async (run_id: number) => {
 
     console.log(`[${run_id}] generating metrics`)
 
-    const t0 = process.hrtime()
+    const endTimer = generatingMetricsDurationGauge.startTimer()
 
     /* 
     - he number of CID on each CN that have been replicated at least once
@@ -71,9 +70,8 @@ export const generateMetrics = async (run_id: number) => {
         console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
 
-    const tDelta = process.hrtime(t0)
-    await exportDuration(tDelta, run_id, generatingMetricsDurationGauge)
+    endTimer({ run_id: run_id })
 
-    console.log(`[${run_id}] finish generating metrics (${tDelta})`);
+    console.log(`[${run_id}] finish generating metrics`);
 }
 

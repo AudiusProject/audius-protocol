@@ -20,18 +20,17 @@ import {
     makeRequest,
     // retryAsyncFunctionOrError
 } from "../utils"
-import { 
-    missedUsersCountGauge, 
-    gateway, 
-    indexingContentDurationGauge, 
-    exportDuration 
+import {
+    missedUsersCountGauge,
+    gateway,
+    indexingContentDurationGauge,
 } from "../prometheus"
 
 export const indexContent = async (run_id: number) => {
 
     console.log(`[${run_id}] indexing content node`)
 
-    const t0 = process.hrtime()
+    const endTimer = indexingContentDurationGauge.startTimer()
 
     // get every content node and cid size
     // const content_nodes: {
@@ -98,10 +97,8 @@ export const indexContent = async (run_id: number) => {
         })
     )
 
-    const tDelta = process.hrtime(t0)
-    await exportDuration(tDelta, run_id, indexingContentDurationGauge)
-
-    console.log(`[${run_id}] finished indexing content nodes (${tDelta[0]!})`)
+    endTimer({ run_id: run_id })
+    console.log(`[${run_id}] finished indexing content nodes`)
 }
 
 // for batch in batches
