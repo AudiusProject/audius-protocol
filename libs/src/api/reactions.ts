@@ -20,7 +20,7 @@ export class Reactions extends Base {
     logger: any
   }): Promise<{ success: boolean; error: string | null }> {
     try {
-      await this.identityService.submitReaction({
+      await this['identityService'].submitReaction({
         reactedTo,
         reactionValue
       })

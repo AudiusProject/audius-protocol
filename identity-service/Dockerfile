@@ -9,7 +9,7 @@ FROM node:14.16-alpine
 
 WORKDIR /usr/src/app
 
-RUN apk update && apk add rsyslog python3 python3-dev py3-pip curl
+RUN apk update && apk add rsyslog python3 python3-dev py3-pip curl bash
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .

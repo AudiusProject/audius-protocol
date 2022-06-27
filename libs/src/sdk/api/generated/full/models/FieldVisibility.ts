@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -56,42 +55,5 @@ export interface FieldVisibility {
      * @memberof FieldVisibility
      */
     remixes?: boolean;
-}
-
-export function FieldVisibilityFromJSON(json: any): FieldVisibility {
-    return FieldVisibilityFromJSONTyped(json, false);
-}
-
-export function FieldVisibilityFromJSONTyped(json: any, ignoreDiscriminator: boolean): FieldVisibility {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'mood': !exists(json, 'mood') ? undefined : json['mood'],
-        'tags': !exists(json, 'tags') ? undefined : json['tags'],
-        'genre': !exists(json, 'genre') ? undefined : json['genre'],
-        'share': !exists(json, 'share') ? undefined : json['share'],
-        'play_count': !exists(json, 'play_count') ? undefined : json['play_count'],
-        'remixes': !exists(json, 'remixes') ? undefined : json['remixes'],
-    };
-}
-
-export function FieldVisibilityToJSON(value?: FieldVisibility | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'mood': value.mood,
-        'tags': value.tags,
-        'genre': value.genre,
-        'share': value.share,
-        'play_count': value.play_count,
-        'remixes': value.remixes,
-    };
 }
 

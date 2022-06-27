@@ -66,7 +66,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get a playlist by ID
      */
-    async getPlaylist(requestParameters: GetPlaylistRequest, initOverrides?: RequestInit): Promise<NonNullable<PlaylistResponse["data"]>> {
+    async getPlaylist(requestParameters: GetPlaylistRequest): Promise<NonNullable<PlaylistResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
             throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylist.');
         }
@@ -80,13 +80,13 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<PlaylistResponse["data"]>>;
+        }) as Promise<NonNullable<PlaylistResponse["data"]>>;
     }
 
     /**
      * Fetch tracks within a playlist.
      */
-    async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest, initOverrides?: RequestInit): Promise<NonNullable<PlaylistTracksResponse["data"]>> {
+    async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest): Promise<NonNullable<PlaylistTracksResponse["data"]>> {
         if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
             throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylistTracks.');
         }
@@ -100,13 +100,13 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<PlaylistTracksResponse["data"]>>;
+        }) as Promise<NonNullable<PlaylistTracksResponse["data"]>>;
     }
 
     /**
      * Gets trending playlists for a time period
      */
-    async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TrendingPlaylistsResponse["data"]>> {
+    async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}): Promise<NonNullable<TrendingPlaylistsResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.time !== undefined) {
@@ -120,13 +120,13 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrendingPlaylistsResponse["data"]>>;
+        }) as Promise<NonNullable<TrendingPlaylistsResponse["data"]>>;
     }
 
     /**
      * Search for a playlist
      */
-    async searchPlaylists(requestParameters: SearchPlaylistsRequest, initOverrides?: RequestInit): Promise<NonNullable<PlaylistSearchResult["data"]>> {
+    async searchPlaylists(requestParameters: SearchPlaylistsRequest): Promise<NonNullable<PlaylistSearchResult["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchPlaylists.');
         }
@@ -144,7 +144,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<PlaylistSearchResult["data"]>>;
+        }) as Promise<NonNullable<PlaylistSearchResult["data"]>>;
     }
 
 }

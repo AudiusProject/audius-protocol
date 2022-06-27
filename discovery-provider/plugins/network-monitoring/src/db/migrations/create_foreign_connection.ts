@@ -2,15 +2,9 @@
 
 import type { QueryInterface } from "sequelize"
 import type { MigrationParams, RunnableMigration } from "umzug"
+import { getEnv } from "../../utils"
 
-// FIXME: Pull in env vars more robustly
-const fdb = {
-    name: process.env['FDB_NAME'] || '',
-    host: process.env['FDB_HOST'] || '',
-    port: process.env['FDB_PORT'] || '',
-    username: process.env['FDB_USERNAME'] || '',
-    password: process.env['FDB_PASSWORD'] || '',
-}
+const { fdb } = getEnv()
 
 const migration: RunnableMigration<QueryInterface> = {
     name: 'create_foreign_connection',

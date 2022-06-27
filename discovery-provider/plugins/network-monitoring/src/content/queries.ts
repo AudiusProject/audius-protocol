@@ -354,7 +354,8 @@ export const savePrimaryUserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
+): Promise<number> => {
+
     try {
         await Promise.all(
             results.map(async ({ walletPublicKey, clock }) => {
@@ -366,7 +367,7 @@ export const savePrimaryUserResults = async (
                         AND run_id = :run_id;
                 `, {
                         type: QueryTypes.UPDATE,
-                        replacements: { run_id, walletPublicKey, clock }
+                        replacements: { run_id, walletPublicKey, clock },
                     })
                 } catch (e) {
                     console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
@@ -376,63 +377,78 @@ export const savePrimaryUserResults = async (
         )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return
+        return results.length
     }
 
-    return
+    return 0
 }
 
 export const saveSecondary1UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
+): Promise<number> => {
+
     try {
         await Promise.all(
             results.map(async ({ walletPublicKey, clock }) => {
-                await sequelizeConn.query(`
+
+                try {
+                    await sequelizeConn.query(`
                     UPDATE network_monitoring_users
                     SET secondary1_clock_value = :clock
                     WHERE wallet = :walletPublicKey
                     AND run_id = :run_id;
                 `, {
-                    type: QueryTypes.UPDATE,
-                    replacements: { run_id, walletPublicKey, clock }
-                })
+                        type: QueryTypes.UPDATE,
+                        replacements: { run_id, walletPublicKey, clock },
+                    })
+                } catch (e) {
+                    console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
+                    return
+                }
             })
+
         )
+
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return
+        return results.length
     }
 
-    return
+    return 0
 }
 
 export const saveSecondary2UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
+): Promise<number> => {
+
     try {
         await Promise.all(
             results.map(async ({ walletPublicKey, clock }) => {
-                await sequelizeConn.query(`
+                try {
+                    await sequelizeConn.query(`
                     UPDATE network_monitoring_users
                     SET secondary2_clock_value = :clock
                     WHERE wallet = :walletPublicKey
                     AND run_id = :run_id;
                 `, {
-                    type: QueryTypes.UPDATE,
-                    replacements: { run_id, walletPublicKey, clock }
-                })
+                        type: QueryTypes.UPDATE,
+                        replacements: { run_id, walletPublicKey, clock },
+                    })
+                } catch (e) {
+                    console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
+                    return
+                }
             })
         )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return
+        return results.length
     }
 
-    return
+    return 0
 }
 

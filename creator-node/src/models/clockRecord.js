@@ -4,7 +4,8 @@ module.exports = (sequelize, DataTypes) => {
   const SourceTableTypesObj = {
     AudiusUser: 'AudiusUser',
     Track: 'Track',
-    File: 'File'
+    File: 'File',
+    Playlist: 'Playlist'
   }
 
   const ClockRecord = sequelize.define(

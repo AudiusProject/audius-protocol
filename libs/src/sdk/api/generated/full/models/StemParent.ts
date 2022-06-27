@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -32,34 +31,5 @@ export interface StemParent {
      * @memberof StemParent
      */
     parent_track_id: number;
-}
-
-export function StemParentFromJSON(json: any): StemParent {
-    return StemParentFromJSONTyped(json, false);
-}
-
-export function StemParentFromJSONTyped(json: any, ignoreDiscriminator: boolean): StemParent {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'category': json['category'],
-        'parent_track_id': json['parent_track_id'],
-    };
-}
-
-export function StemParentToJSON(value?: StemParent | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'category': value.category,
-        'parent_track_id': value.parent_track_id,
-    };
 }
 

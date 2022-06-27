@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Favorite,
     FavoriteFromJSON,
@@ -33,32 +32,5 @@ export interface FavoritesResponse {
      * @memberof FavoritesResponse
      */
     data?: Array<Favorite>;
-}
-
-export function FavoritesResponseFromJSON(json: any): FavoritesResponse {
-    return FavoritesResponseFromJSONTyped(json, false);
-}
-
-export function FavoritesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): FavoritesResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(FavoriteFromJSON)),
-    };
-}
-
-export function FavoritesResponseToJSON(value?: FavoritesResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(FavoriteToJSON)),
-    };
 }
 

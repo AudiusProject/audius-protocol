@@ -400,7 +400,7 @@ async function renderAndSendNotificationEmail (
     logger.info({ job: 'renderAndSendNotificationEmail', totalDuration, getEmailDuration }, `renderAndSendNotificationEmail | ${userId}, ${userEmail}, in ${totalDuration} sec`)
     return true
   } catch (e) {
-    logger.error(`Error in renderAndSendNotificationEmail ${e}`)
+    logger.error(`Error in renderAndSendNotificationEmail ${e.stack}`)
     return false
   }
 }

@@ -8,7 +8,7 @@ const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
-const { logger } = require('./logging')
+const { logger, getStartTime, logInfoWithDuration } = require('./logging')
 const utils = require('./utils')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -58,6 +58,7 @@ class ServiceRegistry {
     this.trustedNotifierManager = null
 
     this.servicesInitialized = false
+    this.asynchronousServicesInitialized = false
     this.servicesThatRequireServerInitialized = false
   }
 
@@ -65,8 +66,6 @@ class ServiceRegistry {
    * Configure all services
    */
   async initServices() {
-    await this.blacklistManager.init()
-
     // init libs
     this.libs = await this._initAudiusLibs()
 
@@ -82,6 +81,28 @@ class ServiceRegistry {
     this.sessionExpirationQueue.start()
 
     this.servicesInitialized = true
+  }
+
+  /**
+   * These services do not need to be awaited and do not require the server.
+   */
+  async initServicesAsynchronously() {
+    const start = getStartTime()
+
+    // Initialize BlacklistManager. If error occurs, do not continue with app start up.
+    try {
+      await this.blacklistManager.init()
+    } catch (e) {
+      this.logError(e.message)
+      process.exit(1)
+    }
+
+    this.asynchronousServicesInitialized = true
+
+    logInfoWithDuration(
+      { logger, startTime: start },
+      'ServiceRegistry || Initialized asynchronous services'
+    )
   }
 
   /**
@@ -110,11 +131,36 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
+    // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
+    const stateMonitoringAdapter = new BullAdapter(stateMonitoringQueue, {
+      readOnlyMode: true
+    })
+    const stateReconciliationAdapter = new BullAdapter(
+      stateReconciliationQueue,
+      { readOnlyMode: true }
+    )
+
+    // These queues have very large inputs and outputs, so we truncate job
+    // data and results that are nested >=5 levels or contain strings >=10,000 characters
+    stateMonitoringAdapter.setFormatter('data', this.truncateBull.bind(this))
+    stateMonitoringAdapter.setFormatter(
+      'returnValue',
+      this.truncateBull.bind(this)
+    )
+    stateReconciliationAdapter.setFormatter(
+      'data',
+      this.truncateBull.bind(this)
+    )
+    stateReconciliationAdapter.setFormatter(
+      'returnValue',
+      this.truncateBull.bind(this)
+    )
+
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
-        new BullAdapter(stateMonitoringQueue, { readOnlyMode: true }),
-        new BullAdapter(stateReconciliationQueue, { readOnlyMode: true }),
+        stateMonitoringAdapter,
+        stateReconciliationAdapter,
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -126,11 +172,81 @@ class ServiceRegistry {
         new BullAdapter(sessionExpirationQueue, { readOnlyMode: true }),
         new BullAdapter(skippedCidsRetryQueue, { readOnlyMode: true })
       ],
-      serverAdapter: serverAdapter
+      serverAdapter
     })
 
     serverAdapter.setBasePath('/health/bull')
     app.use('/health/bull', serverAdapter.getRouter())
+  }
+
+  /**
+   * Truncates large JSON data in Bull Board after any of the following is exceeded:
+   * - 7 levels of nesting
+   * - 10,000 characters (strings only)
+   * - 100 elements (arrays) or 100 keys (objects)
+   *
+   * Adapted from https://github.com/felixmosh/bull-board/pull/414#issuecomment-1134874761
+   *
+   * @param {Object} dataToTruncate the data that will be truncated as needed
+   * @param {number} [curDepth] the current depth of the object (this function is called recursively)
+   * @returns dataToTruncate with the following replacements when the above thresholds are exceeded:
+   * - [Truncated string of length <length>]
+   * - [Truncated array with <length> elements],
+   * - [Truncated object with <length> keys]
+   */
+  truncateBull(dataToTruncate, curDepth = 0) {
+    if (
+      typeof dataToTruncate === 'object' &&
+      dataToTruncate !== null &&
+      dataToTruncate !== undefined
+    ) {
+      if (curDepth < 7) {
+        const newDepth = curDepth + 1
+        if (Array.isArray(dataToTruncate)) {
+          if (dataToTruncate.length > 100) {
+            return `[Truncated array with ${dataToTruncate.length} elements]`
+          }
+          const truncatedArr = []
+          dataToTruncate.forEach((element) => {
+            truncatedArr.push(this.truncateBull(element, newDepth))
+          })
+          return truncatedArr
+        }
+        const json = Object.assign({}, dataToTruncate)
+        Object.entries(dataToTruncate).forEach(([key, value]) => {
+          switch (typeof value) {
+            case 'string':
+              json[key] =
+                value.length > 10_000
+                  ? `[Truncated string of length ${value.length}]`
+                  : value
+              break
+            case 'object':
+              if (Array.isArray(value)) {
+                json[key] =
+                  value.length > 100
+                    ? `[Truncated array with ${value.length} elements]`
+                    : this.truncateBull(value, newDepth)
+              } else {
+                const length = Object.keys(value).length
+                json[key] =
+                  length > 100
+                    ? `[Truncated object with ${length} keys]`
+                    : this.truncateBull(value, newDepth)
+              }
+              break
+            default:
+              json[key] = value
+              break
+          }
+        })
+        return json
+      }
+      return Array.isArray(dataToTruncate)
+        ? `[Truncated array with ${dataToTruncate.length} elements]`
+        : `[Truncated object with ${Object.keys(dataToTruncate).length} keys]`
+    }
+    return dataToTruncate
   }
 
   /**
@@ -144,6 +260,8 @@ class ServiceRegistry {
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
   async initServicesThatRequireServer(app) {
+    const start = getStartTime()
+
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -153,7 +271,7 @@ class ServiceRegistry {
     await this._initSnapbackSM()
     this.stateMachineManager = new StateMachineManager()
     const { stateMonitoringQueue, stateReconciliationQueue } =
-      await this.stateMachineManager.init(this.libs)
+      await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -185,7 +303,11 @@ class ServiceRegistry {
     }
 
     this.servicesThatRequireServerInitialized = true
-    this.logInfo(`All services that require server successfully initialized!`)
+
+    logInfoWithDuration(
+      { logger, startTime: start },
+      'ServiceRegistry || Initialized services that require server'
+    )
   }
 
   logInfo(msg) {

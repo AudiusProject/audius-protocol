@@ -1,10 +1,11 @@
 
 import Web3 from 'web3';
 const web3 = new Web3()
+const dotenv = require('dotenv')
+
 
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
-import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 import retry from 'async-retry';
@@ -17,47 +18,7 @@ axios.defaults.timeout = 300_000 // 5min
 axios.defaults.httpAgent = new http.Agent({ timeout: 60000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized: false })
 
-
-export const getExternalRequestParams = (): {
-    deregisteredCN: string[],
-    signatureSpID?: number,
-    signatureSPDelegatePrivateKey?: string
-} => {
-    const devModeEnv: string = process.env['DEV_MODE'] || 'false'
-    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
-    const secretsFile: string = process.env['SECRETS_FILE'] || ''
-
-    // console.log(`devModeEnv: ${devModeEnv} \n deregisteredContentNodesEnv: ${deregisteredContentNodesEnv} \n secretsFile: ${secretsFile}`)
-
-    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
-    const devMode: boolean = devModeEnv in ['TRUE', 'True', 'true', '1', 't', 'T']
-
-    // Ensure global `signatureSpID` and `signatureSPDelegatePrivateKey` fields are set, if not in DEV_MODE
-    if (devMode) {
-        return {
-            deregisteredCN,
-        }
-    }
-
-
-    if (!fs.existsSync(secretsFile)) {
-        throw new Error('Missing required secrets file')
-    }
-    const secrets = JSON.parse(fs.readFileSync(secretsFile).toString())
-
-    const signatureSpID: number = secrets.signatureSpID
-    const signatureSPDelegatePrivateKey: string = secrets.signatureSPDelegatePrivateKey
-
-    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
-        throw new Error('Missing required signature configs')
-    }
-
-    return {
-        deregisteredCN,
-        signatureSpID,
-        signatureSPDelegatePrivateKey,
-    }
-}
+let envInitialized = false
 
 export const makeRequest = async (
     request: {
@@ -195,4 +156,55 @@ export const retryAsyncFunctionOrError = async <T>(maxTries: number, func: () =>
 
 export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+export const getEnv = () => {
+
+    if (!envInitialized) {
+        const nodeEnv = process.env['NODE_ENV']
+
+        if (nodeEnv === "production") {
+            console.log('[+] running in production (.env.prod)')
+            dotenv.config({ path: '.env.prod' })
+        } else if (nodeEnv === "staging") {
+            console.log('[+] running in staging (.env.stage)')
+            dotenv.config({ path: '.env.stage' })
+        } else {
+            console.log('[+] running locally (.env.local)')
+            dotenv.config({ path: '.env.local' })
+
+        }
+
+        envInitialized = true
+    }
+
+
+    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
+    const signatureSpID = parseInt(process.env['SIGNATURE_SPID'] || '0')
+    const signatureSPDelegatePrivateKey = process.env['SIGNATURE_SP_DELEGATE_PRIV_KEY'] || ''
+
+    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
+
+    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
+        throw new Error('Missing required signature configs')
+    }
+
+    const db = {
+        name: process.env['DB_NAME'] || '',
+        host: process.env['DB_HOST'] || '',
+        port: parseInt(process.env['DB_PORT'] || ''),
+        username: process.env['DB_USERNAME'] || '',
+        password: process.env['DB_PASSWORD'] || '',
+        sql_logger: (process.env['SQL_LOGGING'] || '') in ['T', 't', 'True', 'true', '1']
+    }
+
+    const fdb = {
+        name: process.env['FDB_NAME'] || '',
+        host: process.env['FDB_HOST'] || '',
+        port: process.env['FDB_PORT'] || '',
+        username: process.env['FDB_USERNAME'] || '',
+        password: process.env['FDB_PASSWORD'] || '',
+    }
+
+    return { db, fdb, deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey }
 }

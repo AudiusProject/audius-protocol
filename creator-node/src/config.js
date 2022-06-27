@@ -618,10 +618,10 @@ const config = convict({
     env: 'skippedCIDRetryQueueMaxAgeHr',
     default: 8760 // 1 year in hrs
   },
-  openRestyCacheCIDEnabled: {
-    doc: 'Flag to enable or disable OpenResty',
+  contentCacheLayerEnabled: {
+    doc: 'Flag to enable or disable the nginx cache layer that caches content',
     format: 'BooleanCustom',
-    env: 'openRestyCacheCIDEnabled',
+    env: 'contentCacheLayerEnabled',
     default: false
   },
   reconfigNodeWhitelist: {
@@ -671,6 +671,12 @@ const config = convict({
     format: 'nat',
     env: 'snapbackMaxLastSuccessfulRunDelayMs',
     default: 5 * 60 * 60 * 1000 // 5 hrs
+  },
+  disableSnapback: {
+    doc: 'True to not run any snapback queues (old state machine and old syncs)',
+    format: Boolean,
+    env: 'disableSnapback',
+    default: false
   }
   /**
    * unsupported options at the moment

@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     PlaylistFull,
     PlaylistFullFromJSON,
@@ -81,46 +80,5 @@ export interface FullPlaylistResponse {
      * @memberof FullPlaylistResponse
      */
     data?: Array<PlaylistFull>;
-}
-
-export function FullPlaylistResponseFromJSON(json: any): FullPlaylistResponse {
-    return FullPlaylistResponseFromJSONTyped(json, false);
-}
-
-export function FullPlaylistResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullPlaylistResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'latest_chain_block': json['latest_chain_block'],
-        'latest_indexed_block': json['latest_indexed_block'],
-        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
-        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
-        'signature': json['signature'],
-        'timestamp': json['timestamp'],
-        'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(PlaylistFullFromJSON)),
-    };
-}
-
-export function FullPlaylistResponseToJSON(value?: FullPlaylistResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'latest_chain_block': value.latest_chain_block,
-        'latest_indexed_block': value.latest_indexed_block,
-        'latest_chain_slot_plays': value.latest_chain_slot_plays,
-        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
-        'signature': value.signature,
-        'timestamp': value.timestamp,
-        'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(PlaylistFullToJSON)),
-    };
 }
 

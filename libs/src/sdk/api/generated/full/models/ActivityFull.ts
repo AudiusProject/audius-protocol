@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -38,36 +37,5 @@ export interface ActivityFull {
      * @memberof ActivityFull
      */
     item?: object;
-}
-
-export function ActivityFullFromJSON(json: any): ActivityFull {
-    return ActivityFullFromJSONTyped(json, false);
-}
-
-export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): ActivityFull {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'item_type': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : json['item'],
-    };
-}
-
-export function ActivityFullToJSON(value?: ActivityFull | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'timestamp': value.timestamp,
-        'item_type': value.item_type,
-        'item': value.item,
-    };
 }
 
