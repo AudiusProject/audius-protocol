@@ -44,7 +44,7 @@ class CNodeToSpIdMapManager {
       throw new Error(errorMessage)
     }
 
-    logger.info(`updateEndpointToSpIdMap Success. Size: ${mapLength.length}`)
+    logger.info(`updateEndpointToSpIdMap Success. Size: ${mapLength}`)
   }
 }
 
