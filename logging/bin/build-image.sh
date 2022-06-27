@@ -11,7 +11,7 @@ if [[ "${1}" == "" ]]; then
     echo ${CURRENT_INDEX_VERSION} > current_index_version
 fi
 
-API_CREDS=$(./bin/create-sp-es-api-keys.sh)
+API_CREDS=$(./bin/create-operator-es-api-keys.sh)
 API_ID=$(echo ${API_CREDS} | jq -j .id | base64)
 API_KEY=$(echo ${API_CREDS} | jq -j .api_key | base64)
 . .env
