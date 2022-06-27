@@ -7,6 +7,9 @@ from src.utils.spl_audio import to_wei
 es_url = os.getenv("audius_elasticsearch_url")
 esclient = None
 if es_url:
+    # for now just printing this out to see if celery might be re-init client over and over
+    # in future will check if esclient exists before creating
+    print(f"elasticsearch init client pid {os.getpid()}")
     esclient = Elasticsearch(es_url)
 
 # uses aliases
