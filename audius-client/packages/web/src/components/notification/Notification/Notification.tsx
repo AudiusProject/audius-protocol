@@ -13,6 +13,7 @@ import {
 } from 'common/store/notifications/types'
 import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 
+import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { FavoriteNotification } from './FavoriteNotification'
@@ -63,7 +64,6 @@ export const Notification = (props: NotificationProps) => {
     entity,
     entities
   } as unknown) as Notifications
-
   const getNotificationElement = () => {
     switch (notification.type) {
       case NotificationType.Announcement: {
@@ -113,6 +113,9 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.UserSubscription: {
         return <UserSubscriptionNotification notification={notification} />
+      }
+      case NotificationType.AddTrackToPlaylist: {
+        return <AddTrackToPlaylistNotification notification={notification} />
       }
       default: {
         return null

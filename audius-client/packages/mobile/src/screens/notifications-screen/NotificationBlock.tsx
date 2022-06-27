@@ -24,6 +24,7 @@ import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
 import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
 import IconAudius from 'app/assets/images/iconAudius.svg'
 import IconHeart from 'app/assets/images/iconHeart.svg'
+import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import IconStars from 'app/assets/images/iconStars.svg'
@@ -93,7 +94,8 @@ const typeIconMap: Record<
   [NotificationType.TipReceive]: () => IconTrending,
   [NotificationType.TipSend]: () => IconTrending,
   [NotificationType.SupporterRankUp]: () => IconTrending,
-  [NotificationType.SupportingRankUp]: () => IconTrending
+  [NotificationType.SupportingRankUp]: () => IconTrending,
+  [NotificationType.AddTrackToPlaylist]: () => IconPlaylists
 }
 
 const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
@@ -113,7 +115,8 @@ const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
   [NotificationType.TipReceive]: () => '',
   [NotificationType.TipSend]: () => '',
   [NotificationType.SupporterRankUp]: () => '',
-  [NotificationType.SupportingRankUp]: () => ''
+  [NotificationType.SupportingRankUp]: () => '',
+  [NotificationType.AddTrackToPlaylist]: () => 'TRACK ADDED TO PLAYLIST'
 }
 
 const useStyles = makeStyles(({ spacing, palette }, { isViewed }) => ({
