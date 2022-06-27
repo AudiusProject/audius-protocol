@@ -26,7 +26,7 @@ const {
 } = require('../../fileManager')
 
 const config = require('../../config')
-const { ensureStorageMiddleware } = require('middlewares')
+const { ensureStorageMiddleware } = require('../../middlewares')
 
 const router = express.Router()
 
@@ -244,7 +244,7 @@ router.post(
 )
 router.post(
   '/health_check/fileupload/cleanup',
-  healthCheckVerifySignature,
+  // healthCheckVerifySignature,
   ensureStorageMiddleware,
   handleTrackContentUpload,
   healthCheckFileUploadController
