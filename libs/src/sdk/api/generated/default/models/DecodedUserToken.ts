@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     ProfilePicture,
     ProfilePictureFromJSON,
@@ -75,46 +74,5 @@ export interface DecodedUserToken {
      * @memberof DecodedUserToken
      */
     iat: string;
-}
-
-export function DecodedUserTokenFromJSON(json: any): DecodedUserToken {
-    return DecodedUserTokenFromJSONTyped(json, false);
-}
-
-export function DecodedUserTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): DecodedUserToken {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'userId': json['userId'],
-        'email': json['email'],
-        'name': json['name'],
-        'handle': json['handle'],
-        'verified': json['verified'],
-        'profilePicture': !exists(json, 'profilePicture') ? undefined : ProfilePictureFromJSON(json['profilePicture']),
-        'sub': json['sub'],
-        'iat': json['iat'],
-    };
-}
-
-export function DecodedUserTokenToJSON(value?: DecodedUserToken | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'userId': value.userId,
-        'email': value.email,
-        'name': value.name,
-        'handle': value.handle,
-        'verified': value.verified,
-        'profilePicture': ProfilePictureToJSON(value.profilePicture),
-        'sub': value.sub,
-        'iat': value.iat,
-    };
 }
 

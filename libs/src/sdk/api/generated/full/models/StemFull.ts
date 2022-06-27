@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -56,42 +55,5 @@ export interface StemFull {
      * @memberof StemFull
      */
     blocknumber: number;
-}
-
-export function StemFullFromJSON(json: any): StemFull {
-    return StemFullFromJSONTyped(json, false);
-}
-
-export function StemFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): StemFull {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'id': json['id'],
-        'parent_id': json['parent_id'],
-        'category': json['category'],
-        'cid': json['cid'],
-        'user_id': json['user_id'],
-        'blocknumber': json['blocknumber'],
-    };
-}
-
-export function StemFullToJSON(value?: StemFull | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'id': value.id,
-        'parent_id': value.parent_id,
-        'category': value.category,
-        'cid': value.cid,
-        'user_id': value.user_id,
-        'blocknumber': value.blocknumber,
-    };
 }
 

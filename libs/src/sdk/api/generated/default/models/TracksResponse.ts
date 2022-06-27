@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Track,
     TrackFromJSON,
@@ -33,32 +32,5 @@ export interface TracksResponse {
      * @memberof TracksResponse
      */
     data?: Array<Track>;
-}
-
-export function TracksResponseFromJSON(json: any): TracksResponse {
-    return TracksResponseFromJSONTyped(json, false);
-}
-
-export function TracksResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TracksResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TrackFromJSON)),
-    };
-}
-
-export function TracksResponseToJSON(value?: TracksResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TrackToJSON)),
-    };
 }
 
