@@ -230,12 +230,14 @@ describe('Test Health Check', function () {
         }
       },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
-      latestMonitorStateJobStart: null,
-      latestMonitorStateJobSuccess: null,
-      latestFindSyncRequestsJobStart: null,
-      latestFindSyncRequestsJobSuccess: null,
-      latestFindReplicaSetUpdatesJobStart: null,
-      latestFindReplicaSetUpdatesJobSuccess: null
+      stateMachineJobs: {
+        latestMonitorStateJobStart: null,
+        latestMonitorStateJobSuccess: null,
+        latestFindSyncRequestsJobStart: null,
+        latestFindSyncRequestsJobSuccess: null,
+        latestFindReplicaSetUpdatesJobStart: null,
+        latestFindReplicaSetUpdatesJobSuccess: null
+      }
     })
   })
 
@@ -334,12 +336,14 @@ describe('Test Health Check', function () {
         }
       },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
-      latestMonitorStateJobStart: null,
-      latestMonitorStateJobSuccess: null,
-      latestFindSyncRequestsJobStart: null,
-      latestFindSyncRequestsJobSuccess: null,
-      latestFindReplicaSetUpdatesJobStart: null,
-      latestFindReplicaSetUpdatesJobSuccess: null
+      stateMachineJobs: {
+        latestMonitorStateJobStart: null,
+        latestMonitorStateJobSuccess: null,
+        latestFindSyncRequestsJobStart: null,
+        latestFindSyncRequestsJobSuccess: null,
+        latestFindReplicaSetUpdatesJobStart: null,
+        latestFindReplicaSetUpdatesJobSuccess: null
+      }
     })
   })
 
@@ -427,12 +431,14 @@ describe('Test Health Check', function () {
         }
       },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
-      latestMonitorStateJobStart: null,
-      latestMonitorStateJobSuccess: null,
-      latestFindSyncRequestsJobStart: null,
-      latestFindSyncRequestsJobSuccess: null,
-      latestFindReplicaSetUpdatesJobStart: null,
-      latestFindReplicaSetUpdatesJobSuccess: null
+      stateMachineJobs: {
+        latestMonitorStateJobStart: null,
+        latestMonitorStateJobSuccess: null,
+        latestFindSyncRequestsJobStart: null,
+        latestFindSyncRequestsJobSuccess: null,
+        latestFindReplicaSetUpdatesJobStart: null,
+        latestFindReplicaSetUpdatesJobSuccess: null
+      }
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -561,12 +567,14 @@ describe('Test Health Check Verbose', function () {
         }
       },
       solDelegatePublicKeyBase58: SOL_PUBLIC_KEY_BASE58,
-      latestMonitorStateJobStart: null,
-      latestMonitorStateJobSuccess: null,
-      latestFindSyncRequestsJobStart: null,
-      latestFindSyncRequestsJobSuccess: null,
-      latestFindReplicaSetUpdatesJobStart: null,
-      latestFindReplicaSetUpdatesJobSuccess: null
+      stateMachineJobs: {
+        latestMonitorStateJobStart: null,
+        latestMonitorStateJobSuccess: null,
+        latestFindSyncRequestsJobStart: null,
+        latestFindSyncRequestsJobSuccess: null,
+        latestFindReplicaSetUpdatesJobStart: null,
+        latestFindReplicaSetUpdatesJobSuccess: null
+      }
     })
   })
 

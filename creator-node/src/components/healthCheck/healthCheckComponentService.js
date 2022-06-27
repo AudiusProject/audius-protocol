@@ -180,20 +180,24 @@ const healthCheck = async (
     shouldHandleTranscode,
     asyncProcessingQueue: asyncProcessingQueueJobs,
     solDelegatePublicKeyBase58,
-    latestMonitorStateJobStart: parseDateOrNull(latestMonitorStateJobStart),
-    latestMonitorStateJobSuccess: parseDateOrNull(latestMonitorStateJobSuccess),
-    latestFindSyncRequestsJobStart: parseDateOrNull(
-      latestFindSyncRequestsJobStart
-    ),
-    latestFindSyncRequestsJobSuccess: parseDateOrNull(
-      latestFindSyncRequestsJobSuccess
-    ),
-    latestFindReplicaSetUpdatesJobStart: parseDateOrNull(
-      latestFindReplicaSetUpdatesJobStart
-    ),
-    latestFindReplicaSetUpdatesJobSuccess: parseDateOrNull(
-      latestFindReplicaSetUpdatesJobSuccess
-    )
+    stateMachineJobs: {
+      latestMonitorStateJobStart: parseDateOrNull(latestMonitorStateJobStart),
+      latestMonitorStateJobSuccess: parseDateOrNull(
+        latestMonitorStateJobSuccess
+      ),
+      latestFindSyncRequestsJobStart: parseDateOrNull(
+        latestFindSyncRequestsJobStart
+      ),
+      latestFindSyncRequestsJobSuccess: parseDateOrNull(
+        latestFindSyncRequestsJobSuccess
+      ),
+      latestFindReplicaSetUpdatesJobStart: parseDateOrNull(
+        latestFindReplicaSetUpdatesJobStart
+      ),
+      latestFindReplicaSetUpdatesJobSuccess: parseDateOrNull(
+        latestFindReplicaSetUpdatesJobSuccess
+      )
+    }
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
