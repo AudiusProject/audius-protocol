@@ -65,3 +65,9 @@ export const totalJobDurationGauge = new client.Gauge({
     help: 'the amount of time it takes for an entire network monitoring job to complete',
     labelNames: ['run_id'],
 })
+
+export const userBatchDurationGauge = new client.Gauge({
+    name: 'audius_network_monitoring_user_batch_duration',
+    help: 'the amount of time it takes to fetch and save batch of users to the db',
+    labelNames: ['run_id', 'endpoint'],
+})

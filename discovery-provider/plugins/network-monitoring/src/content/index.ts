@@ -24,6 +24,7 @@ import {
     missedUsersCountGauge,
     gateway,
     indexingContentDurationGauge,
+    userBatchDurationGauge,
 } from "../prometheus"
 
 export const indexContent = async (run_id: number) => {
@@ -125,6 +126,9 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
         ].map(async ({ getBatch, saveBatch, count }) => {
             for (let offset = 0; offset < count; offset += batchSize) {
                 try {
+
+                    let endBatchTimer = userBatchDurationGauge.startTimer()
+
                     console.log(`[getBatch:${offset}:${batchSize}:${count}]`)
                     const walletBatch = await getBatch(
                         run_id,
@@ -144,6 +148,8 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     )
 
                     missedUsers += await saveBatch(run_id, spid, results)
+
+                    endBatchTimer({ run_id: run_id, endpoint: endpoint })
                     // add user to save queue
                     // saveQueue.push(saveBatch(run_id, spid, results))
                 } catch (e) {
