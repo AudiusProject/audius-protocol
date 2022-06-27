@@ -266,6 +266,11 @@ export function* parseAndProcessNotifications(
     if (notification.type === NotificationType.TipReceive) {
       reactionSignatureToFetch.push(notification.tipTxSignature)
     }
+    if (notification.type === NotificationType.AddTrackToPlaylist) {
+      trackIdsToFetch.push(notification.trackId)
+      userIdsToFetch.push(notification.playlistOwnerId)
+      collectionIdsToFetch.push(notification.playlistId)
+    }
   })
 
   const [tracks]: Track[][] = yield* all([

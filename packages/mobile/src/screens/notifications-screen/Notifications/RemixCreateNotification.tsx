@@ -5,6 +5,7 @@ import {
   getNotificationUser
 } from 'audius-client/src/common/store/notifications/selectors'
 import {
+  EntityType,
   RemixCreate,
   TrackEntity
 } from 'audius-client/src/common/store/notifications/types'
@@ -47,7 +48,7 @@ export const RemixCreateNotification = (
   const tracks = useSelectorWeb(
     state => getNotificationEntities(state, notification),
     isEqual
-  )
+  ) as EntityType[]
 
   const childTrack = tracks?.find(
     (track): track is TrackEntity =>
