@@ -98,7 +98,7 @@ const audiusSdk = sdk({ appName: 'Name of your app goes here' })
 #### 4. Make your first API call using the SDK!
 
 ```js
-const tracks = audiusSdk.discoveryNode.getTracks()
+const tracks = await audiusSdk.discoveryNode.getTracks()
 console.log(tracks, 'Tracks fetched!')
 ```
 
@@ -110,6 +110,6 @@ import { sdk } from '@audius/sdk'
 
 window.Web3 = Web3
 const audiusSdk = sdk({ appName: 'My Example App' })
-const tracks = audiusSdk.discoveryNode.getTracks()
+const tracks = await audiusSdk.discoveryNode.getTracks()
 console.log(tracks, 'Tracks fetched!')
 ```
