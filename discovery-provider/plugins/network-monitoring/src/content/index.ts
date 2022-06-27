@@ -149,6 +149,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
                     missedUsers += await saveBatch(run_id, spid, results)
 
+                    // Record the duration for the batch and export to prometheus
                     endBatchTimer({ run_id: run_id, endpoint: endpoint })
                     // add user to save queue
                     // saveQueue.push(saveBatch(run_id, spid, results))
@@ -162,6 +163,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     // Check to make sure all users saved
     console.log(`[${run_id}:${spid}] missed users ${missedUsers}`)
 
+    // Record the number of usered skipped/errored for the endpoint and export to prometheus
     missedUsersCountGauge.set({ endpoint, run_id }, missedUsers)
 
     try {

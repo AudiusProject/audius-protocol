@@ -131,6 +131,8 @@ export const getCidReplicationFactor = async (run_id: number): Promise<number> =
     return replicationFactor
 }
 
+// The number of users whose primary content node is in sync 
+// with all of their secondary content nodes in their replica set
 export const getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
@@ -153,6 +155,8 @@ export const getFullySyncedUsersCount = async (run_id: number): Promise<number> 
     return usersCount
 }
 
+// The number of users whose primary content node is only in sync
+// with one of their secondary content nodes in their replica set
 export const getPartiallySyncedUsersCount = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
@@ -177,6 +181,8 @@ export const getPartiallySyncedUsersCount = async (run_id: number): Promise<numb
     return usersCount
 }
 
+// The number of users whose primary content node isn't in sync 
+// with any of their other secondary content nodes in their replica set
 export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
