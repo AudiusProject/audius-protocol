@@ -671,12 +671,8 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
   })
 
   /** Wipe all CNodeUsers + dependent data */
-<<<<<<< HEAD
-  after(async () => {
-    sinon.restore()
-=======
   after(async function () {
->>>>>>> f69e157e... [ASI-756] PR #3 - Update snapback logic to consume filesHash (#2186)
+    sinon.restore()
     await destroyUsers()
     await server.close()
   })
@@ -702,16 +698,9 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
         .expect(200)
     }
 
-<<<<<<< HEAD
     const uploadTrackState = async () => {
       // Mock `generateNonImageCid()` in `handleTrackContentRoute()` to succeed
       const mockCid = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
-=======
-    const uploadTrackState = async function () {
-      // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
-      const MockSavefileMultihash =
-        'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
->>>>>>> f69e157e... [ASI-756] PR #3 - Update snapback logic to consume filesHash (#2186)
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService.js',
         {
@@ -862,18 +851,8 @@ describe('Test fetchFilesHashFromDB()', async function () {
   let cnodeUser, cnodeUserUUID, server
 
   /** Init server to run DB migrations */
-<<<<<<< HEAD
-  before(async () => {
+  before(async function() {
     const appInfo = await getApp(getLibsMock(), BlacklistManager)
-=======
-  before(async function () {
-    const appInfo = await getApp(
-      getIPFSMock(),
-      getLibsMock(),
-      BlacklistManager,
-      getIPFSMock(true)
-    )
->>>>>>> f69e157e... [ASI-756] PR #3 - Update snapback logic to consume filesHash (#2186)
     server = appInfo.server
   })
 

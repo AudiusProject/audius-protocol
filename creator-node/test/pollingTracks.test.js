@@ -69,18 +69,11 @@ function _getTestSegmentFilePathAtIndex(index) {
   return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
 }
 
-<<<<<<< HEAD
-describe('test Polling Tracks with mocks', function () {
-  let app, server, libsMock, handleTrackContentRoute
-=======
 describe('test Polling Tracks with mocked IPFS', function () {
   let app,
     server,
-    ipfsMock,
-    ipfsLatestMock,
     libsMock,
     handleTrackContentRoute
->>>>>>> f69e157e... [ASI-756] PR #3 - Update snapback logic to consume filesHash (#2186)
   let session, userId, userWallet
 
   const spId = 1
