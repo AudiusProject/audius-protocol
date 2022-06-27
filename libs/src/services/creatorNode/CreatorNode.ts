@@ -25,6 +25,10 @@ type Metadata = {
   cover_art_sizes: string
 }
 
+type PlaylistMetadata = {
+  playlist_contents: unknown
+}
+
 type ProgressCB = (loaded: number, total: number) => void
 
 type MonitoringCallbacks = {
@@ -395,6 +399,26 @@ export class CreatorNode {
         data: {
           metadata,
           sourceFile
+        }
+      },
+      true
+    )
+    return body
+  }
+
+  /**
+   * Uploads playlist metadata to a creator node
+   * source file must be provided (returned from uploading track content).
+   * @param metadata
+   */
+  async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
+    // TODO: Schema validation flow
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/playlists/metadata',
+        method: 'post',
+        data: {
+          metadata
         }
       },
       true
