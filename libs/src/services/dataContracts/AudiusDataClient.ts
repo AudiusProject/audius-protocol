@@ -27,8 +27,6 @@ export class AudiusDataClient extends ContractClient {
             nonce,
             sig
         )
-        console.log(method)
-
         const tx = await this.web3Manager.sendTransaction(
             method,
             this.contractRegistryKey,

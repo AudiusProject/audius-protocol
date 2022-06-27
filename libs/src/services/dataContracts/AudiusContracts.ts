@@ -138,7 +138,7 @@ export class AudiusContracts {
       "AudiusData",
       this.getRegistryAddressForContract,
       this.logger,
-      "0xDDb64fE46a91D46ee29420539FC25FD07c5FEa3E" // TODO: Config var
+      "0xaf5C4C6C7920B4883bC6252e9d9B8fE27187Cf68" // TODO: Config var
     )
 
     this.contractClients = [
