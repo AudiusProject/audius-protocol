@@ -32,10 +32,17 @@ If this is your first time, view this [tutorial](https://www.elastic.co/guide/en
 ## Other Useful Links
 
 * [Elastic Deployment](https://cloud.elastic.co/deployments/814a17235d004d12bb315e8d466e32e3)
-* [Fleet](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/fleet/agents)
-* [Docker Metrics](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/kibana#/dashboard/docker-AV4REOpp5NkDleZmzKkE)
-* [Filebeat Documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-overview.html)
-* [Metricbeat Documentation](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-overview.html)
+* Additional Quick Links:
+    * [Fleet](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/fleet/agents)
+    * [Docker Metrics](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/kibana#/dashboard/docker-AV4REOpp5NkDleZmzKkE)
+    * [Data Views](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/management/kibana/dataViews)
+    * [Indices](https://audius-1.kb.us-central1.gcp.cloud.es.io:9243/app/management/data/index_management/indices)
+* Additional Getting Started Guides:
+    * [Filebeat Documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-overview.html)
+    * [Metricbeat Documentation](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-overview.html)
+    * [Using Fleet and Elastic Agent](https://www.elastic.co/guide/en/fleet/current/fleet-elastic-agent-quick-start.html)
+    * [Using Cloud ID](https://www.elastic.co/guide/en/cloud-enterprise/current/ece-cloud-id.html)
+
 
 ## Test Modifications
 
