@@ -7,11 +7,11 @@ import {
     getUserCounts,
     getAllContentNodes,
     getPrimaryWalletBatch,
-    getSecondary1WalletBatch,
-    getSecondary2WalletBatch,
+    // getSecondary1WalletBatch,
+    // getSecondary2WalletBatch,
     savePrimaryUserResults,
-    saveSecondary1UserResults,
-    saveSecondary2UserResults,
+    // saveSecondary1UserResults,
+    // saveSecondary2UserResults,
 } from "./queries"
 import {
     // asyncSleep,
@@ -109,12 +109,12 @@ export const indexContent = async (run_id: number) => {
 const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     console.log(`[${run_id}:${spid}] check users`)
 
-    // const saveQueue: Promise<void>[] = []
+    const saveQueue: Promise<void>[] = []
     const batchSize = 5000
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
-    const [primaryCount, secondary1Count, secondary2Count] = await getUserCounts(run_id, spid)
+    const [ primaryCount ] = await getUserCounts(run_id, spid)
 
     let missedUsers = 0
 
@@ -129,11 +129,14 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
             { getBatch: getPrimaryWalletBatch, saveBatch: savePrimaryUserResults, count: primaryCount },
 
             // Methods for fetching and saving the user's secondary1 node
-            { getBatch: getSecondary1WalletBatch, saveBatch: saveSecondary1UserResults, count: secondary1Count },
+            // { getBatch: getSecondary1WalletBatch, saveBatch: saveSecondary1UserResults, count: secondary1Count },
 
             // Methods for fetching and saving the user's secondary2 node
-            { getBatch: getSecondary2WalletBatch, saveBatch: saveSecondary2UserResults, count: secondary2Count },
+            // { getBatch: getSecondary2WalletBatch, saveBatch: saveSecondary2UserResults, count: secondary2Count },
         ].map(async ({ getBatch, saveBatch, count }) => {
+
+            let walletCursor = ''
+
             for (let offset = 0; offset < count; offset += batchSize) {
                 try {
 
@@ -141,15 +144,23 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
                     console.log(`[getBatch:${offset}:${batchSize}:${count}]`)
 
+                    const getBatchStart = process.hrtime()
+
                     // Fetch a batch of users from the network_monitoring postgres DB
                     const walletBatch = await getBatch(
                         run_id,
                         spid,
-                        offset,
+                        walletCursor,
                         batchSize,
                     )
+                    const getBatchEnd = process.hrtime(getBatchStart)
+                    console.log(`[${run_id}:${spid}:${offset}] getBatch duration: ${Math.round(getBatchEnd[0]! * 1e3 + getBatchEnd[1]! * 1e-6)} ms`)
 
                     if (walletBatch.length === 0) { return }
+
+                    walletCursor = walletBatch[walletBatch.length-1]!
+
+                    const getClockValueStart = process.hrtime()
 
                     // Fetch the clock values for all the users in the batch from 
                     // the content nodes in their replica set
@@ -161,9 +172,15 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         signatureSPDelegatePrivateKey,
                     )
 
-                    // Save the clock values for all the user in the batch
-                    // to the network_monitoring postgres DB
-                    missedUsers += await saveBatch(run_id, spid, results)
+                    console.log(`[${run_id}:${spid}:${offset}] getUserClockValues duration: ${process.hrtime(getClockValueStart)[0]!} secs`)
+
+                    const saveBatchStart = process.hrtime()
+
+                    // missedUsers += await saveBatch(run_id, spid, results)
+                    await saveBatch(run_id, spid, results)
+
+
+                    console.log(`[${run_id}:${spid}:${offset}] saveBatch duration: ${process.hrtime(saveBatchStart)[0]!} secs`)
 
                     // Record the duration for the batch and export to prometheus
                     endBatchTimer({ run_id: run_id, endpoint: endpoint })
@@ -176,7 +193,9 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         console.log(`[checkUsers(batch)] error pushing metrics to pushgateway - ${(e as Error).message}`)
                     }
 
-                    // add user to save queue
+                    // Save the clock values for all the user in the batch
+                    // to the network_monitoring postgres DB
+                    // by adding user to save queue
                     // saveQueue.push(saveBatch(run_id, spid, results))
                 } catch (e) {
                     console.log(`[checkUsers:${spid}] error - ${(e as Error).message}`)
@@ -198,8 +217,9 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     } catch (e) {
         console.log(`[checkUsers] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
+
+    await Promise.all(saveQueue);
     console.log(`[${run_id}:${spid}] finish saving user content node data to db`)
-    // await Promise.all(saveQueue);
 }
 
 // for batch in batches
