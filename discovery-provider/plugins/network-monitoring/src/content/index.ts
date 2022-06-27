@@ -110,7 +110,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     console.log(`[${run_id}:${spid}] check users`)
 
     // const saveQueue: Promise<void>[] = []
-    const batchSize = 500
+    const batchSize = 5000
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
@@ -118,10 +118,20 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
     let missedUsers = 0
 
+    // In parallel, for every replica in a user's replica set (primary, secondary1, secondary2)
+    // that equals the current content node endpoint (${endpoint})
+    //      Get the user's wallets
+    // .    Get the clock value for that user from the content node 
+    // .    Save the clock value in the network_monitoring DB
     await Promise.all(
         [
+            // Methods for fetching and saving the user's primary node
             { getBatch: getPrimaryWalletBatch, saveBatch: savePrimaryUserResults, count: primaryCount },
+
+            // Methods for fetching and saving the user's secondary1 node
             { getBatch: getSecondary1WalletBatch, saveBatch: saveSecondary1UserResults, count: secondary1Count },
+
+            // Methods for fetching and saving the user's secondary2 node
             { getBatch: getSecondary2WalletBatch, saveBatch: saveSecondary2UserResults, count: secondary2Count },
         ].map(async ({ getBatch, saveBatch, count }) => {
             for (let offset = 0; offset < count; offset += batchSize) {
