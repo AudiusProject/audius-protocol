@@ -82,7 +82,7 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TracksResponse["data"]>> {
+    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}): Promise<NonNullable<TracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.permalink) {
@@ -100,13 +100,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TracksResponse["data"]>>;
+        }) as Promise<NonNullable<TracksResponse["data"]>>;
     }
 
     /**
      * Gets a track by ID
      */
-    async getTrack(requestParameters: GetTrackRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackResponse["data"]>> {
+    async getTrack(requestParameters: GetTrackRequest): Promise<NonNullable<TrackResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrack.');
         }
@@ -120,13 +120,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrackResponse["data"]>>;
+        }) as Promise<NonNullable<TrackResponse["data"]>>;
     }
 
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
      */
-    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TracksResponse["data"]>> {
+    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}): Promise<NonNullable<TracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.genre !== undefined) {
@@ -144,13 +144,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TracksResponse["data"]>>;
+        }) as Promise<NonNullable<TracksResponse["data"]>>;
     }
 
     /**
      * Search for a track or tracks
      */
-    async searchTracks(requestParameters: SearchTracksRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackSearch["data"]>> {
+    async searchTracks(requestParameters: SearchTracksRequest): Promise<NonNullable<TrackSearch["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchTracks.');
         }
@@ -172,7 +172,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrackSearch["data"]>>;
+        }) as Promise<NonNullable<TrackSearch["data"]>>;
     }
 
 }

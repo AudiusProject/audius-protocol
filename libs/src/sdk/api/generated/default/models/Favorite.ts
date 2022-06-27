@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -38,36 +37,5 @@ export interface Favorite {
      * @memberof Favorite
      */
     user_id: string;
-}
-
-export function FavoriteFromJSON(json: any): Favorite {
-    return FavoriteFromJSONTyped(json, false);
-}
-
-export function FavoriteFromJSONTyped(json: any, ignoreDiscriminator: boolean): Favorite {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'favorite_item_id': json['favorite_item_id'],
-        'favorite_type': json['favorite_type'],
-        'user_id': json['user_id'],
-    };
-}
-
-export function FavoriteToJSON(value?: Favorite | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'favorite_item_id': value.favorite_item_id,
-        'favorite_type': value.favorite_type,
-        'user_id': value.user_id,
-    };
 }
 

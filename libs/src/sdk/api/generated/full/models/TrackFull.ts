@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     DownloadMetadata,
     DownloadMetadataFromJSON,
@@ -309,108 +308,5 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     is_available?: boolean;
-}
-
-export function TrackFullFromJSON(json: any): TrackFull {
-    return TrackFullFromJSONTyped(json, false);
-}
-
-export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackFull {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
-        'description': !exists(json, 'description') ? undefined : json['description'],
-        'genre': !exists(json, 'genre') ? undefined : json['genre'],
-        'id': json['id'],
-        'mood': !exists(json, 'mood') ? undefined : json['mood'],
-        'release_date': !exists(json, 'release_date') ? undefined : json['release_date'],
-        'remix_of': !exists(json, 'remix_of') ? undefined : FullRemixParentFromJSON(json['remix_of']),
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
-        'tags': !exists(json, 'tags') ? undefined : json['tags'],
-        'title': json['title'],
-        'user': UserFullFromJSON(json['user']),
-        'duration': json['duration'],
-        'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
-        'play_count': json['play_count'],
-        'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
-        'blocknumber': json['blocknumber'],
-        'create_date': !exists(json, 'create_date') ? undefined : json['create_date'],
-        'cover_art_sizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
-        'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
-        'credits_splits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
-        'download': !exists(json, 'download') ? undefined : DownloadMetadataFromJSON(json['download']),
-        'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
-        'license': !exists(json, 'license') ? undefined : json['license'],
-        'iswc': !exists(json, 'iswc') ? undefined : json['iswc'],
-        'field_visibility': !exists(json, 'field_visibility') ? undefined : FieldVisibilityFromJSON(json['field_visibility']),
-        'followee_reposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
-        'has_current_user_reposted': json['has_current_user_reposted'],
-        'is_unlisted': json['is_unlisted'],
-        'has_current_user_saved': json['has_current_user_saved'],
-        'followee_favorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
-        'route_id': json['route_id'],
-        'stem_of': !exists(json, 'stem_of') ? undefined : StemParentFromJSON(json['stem_of']),
-        'track_segments': !exists(json, 'track_segments') ? undefined : ((json['track_segments'] as Array<any>).map(TrackSegmentFromJSON)),
-        'updated_at': !exists(json, 'updated_at') ? undefined : json['updated_at'],
-        'user_id': json['user_id'],
-        'is_delete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
-        'cover_art': !exists(json, 'cover_art') ? undefined : json['cover_art'],
-        'is_available': !exists(json, 'is_available') ? undefined : json['is_available'],
-    };
-}
-
-export function TrackFullToJSON(value?: TrackFull | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'artwork': TrackArtworkToJSON(value.artwork),
-        'description': value.description,
-        'genre': value.genre,
-        'id': value.id,
-        'mood': value.mood,
-        'release_date': value.release_date,
-        'remix_of': FullRemixParentToJSON(value.remix_of),
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
-        'tags': value.tags,
-        'title': value.title,
-        'user': UserFullToJSON(value.user),
-        'duration': value.duration,
-        'downloadable': value.downloadable,
-        'play_count': value.play_count,
-        'permalink': value.permalink,
-        'blocknumber': value.blocknumber,
-        'create_date': value.create_date,
-        'cover_art_sizes': value.cover_art_sizes,
-        'created_at': value.created_at,
-        'credits_splits': value.credits_splits,
-        'download': DownloadMetadataToJSON(value.download),
-        'isrc': value.isrc,
-        'license': value.license,
-        'iswc': value.iswc,
-        'field_visibility': FieldVisibilityToJSON(value.field_visibility),
-        'followee_reposts': ((value.followee_reposts as Array<any>).map(RepostToJSON)),
-        'has_current_user_reposted': value.has_current_user_reposted,
-        'is_unlisted': value.is_unlisted,
-        'has_current_user_saved': value.has_current_user_saved,
-        'followee_favorites': ((value.followee_favorites as Array<any>).map(FavoriteToJSON)),
-        'route_id': value.route_id,
-        'stem_of': StemParentToJSON(value.stem_of),
-        'track_segments': value.track_segments === undefined ? undefined : ((value.track_segments as Array<any>).map(TrackSegmentToJSON)),
-        'updated_at': value.updated_at,
-        'user_id': value.user_id,
-        'is_delete': value.is_delete,
-        'cover_art': value.cover_art,
-        'is_available': value.is_available,
-    };
 }
 

@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     TrendingTimesIds,
     TrendingTimesIdsFromJSON,
@@ -33,32 +32,5 @@ export interface TrendingIdsResponse {
      * @memberof TrendingIdsResponse
      */
     data?: TrendingTimesIds;
-}
-
-export function TrendingIdsResponseFromJSON(json: any): TrendingIdsResponse {
-    return TrendingIdsResponseFromJSONTyped(json, false);
-}
-
-export function TrendingIdsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrendingIdsResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : TrendingTimesIdsFromJSON(json['data']),
-    };
-}
-
-export function TrendingIdsResponseToJSON(value?: TrendingIdsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': TrendingTimesIdsToJSON(value.data),
-    };
 }
 

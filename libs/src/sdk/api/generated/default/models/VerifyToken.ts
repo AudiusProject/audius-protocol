@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     DecodedUserToken,
     DecodedUserTokenFromJSON,
@@ -33,32 +32,5 @@ export interface VerifyToken {
      * @memberof VerifyToken
      */
     data?: DecodedUserToken;
-}
-
-export function VerifyTokenFromJSON(json: any): VerifyToken {
-    return VerifyTokenFromJSONTyped(json, false);
-}
-
-export function VerifyTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): VerifyToken {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : DecodedUserTokenFromJSON(json['data']),
-    };
-}
-
-export function VerifyTokenToJSON(value?: VerifyToken | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': DecodedUserTokenToJSON(value.data),
-    };
 }
 

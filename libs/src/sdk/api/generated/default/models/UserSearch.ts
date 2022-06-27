@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     User,
     UserFromJSON,
@@ -33,32 +32,5 @@ export interface UserSearch {
      * @memberof UserSearch
      */
     data?: Array<User>;
-}
-
-export function UserSearchFromJSON(json: any): UserSearch {
-    return UserSearchFromJSONTyped(json, false);
-}
-
-export function UserSearchFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserSearch {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserFromJSON)),
-    };
-}
-
-export function UserSearchToJSON(value?: UserSearch | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserToJSON)),
-    };
 }
 

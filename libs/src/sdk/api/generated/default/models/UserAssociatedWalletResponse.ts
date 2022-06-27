@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     EncodedUserId,
     EncodedUserIdFromJSON,
@@ -33,32 +32,5 @@ export interface UserAssociatedWalletResponse {
      * @memberof UserAssociatedWalletResponse
      */
     data?: EncodedUserId;
-}
-
-export function UserAssociatedWalletResponseFromJSON(json: any): UserAssociatedWalletResponse {
-    return UserAssociatedWalletResponseFromJSONTyped(json, false);
-}
-
-export function UserAssociatedWalletResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserAssociatedWalletResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : EncodedUserIdFromJSON(json['data']),
-    };
-}
-
-export function UserAssociatedWalletResponseToJSON(value?: UserAssociatedWalletResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': EncodedUserIdToJSON(value.data),
-    };
 }
 

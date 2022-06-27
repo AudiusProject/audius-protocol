@@ -380,7 +380,7 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleases(initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async bestNewReleases(): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -390,13 +390,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTrackResponse["data"]>> {
+    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}): Promise<NonNullable<FullTrackResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.userId !== undefined) {
@@ -418,13 +418,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTrackResponse["data"]>>;
+        }) as Promise<NonNullable<FullTrackResponse["data"]>>;
     }
 
     /**
      * Gets the tracks found on the \"Most Loved\" smart playlist
      */
-    async getMostLovedTracks(requestParameters: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getMostLovedTracks(requestParameters: GetMostLovedTracksRequest = {}): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.userId !== undefined) {
@@ -446,13 +446,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Get recommended tracks
      */
-    async getRecommendedTracks(requestParameters: GetRecommendedTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getRecommendedTracks(requestParameters: GetRecommendedTracksRequest = {}): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.limit !== undefined) {
@@ -482,13 +482,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Get recommended tracks using the given trending strategy version
      */
-    async getRecommendedTracksWithVersion(requestParameters: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getRecommendedTracksWithVersion(requestParameters: GetRecommendedTracksWithVersionRequest): Promise<NonNullable<FullTracksResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
             throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getRecommendedTracksWithVersion.');
         }
@@ -522,13 +522,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Gets a list of tracks that have stems available for remixing
      */
-    async getRemixableTracks(requestParameters: GetRemixableTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTrackResponse["data"]>> {
+    async getRemixableTracks(requestParameters: GetRemixableTracksRequest = {}): Promise<NonNullable<FullTrackResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.limit !== undefined) {
@@ -550,13 +550,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTrackResponse["data"]>>;
+        }) as Promise<NonNullable<FullTrackResponse["data"]>>;
     }
 
     /**
      * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
      */
-    async getTrack(requestParameters: GetTrackRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTrackResponse["data"]>> {
+    async getTrack(requestParameters: GetTrackRequest): Promise<NonNullable<FullTrackResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrack.');
         }
@@ -586,13 +586,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTrackResponse["data"]>>;
+        }) as Promise<NonNullable<FullTrackResponse["data"]>>;
     }
 
     /**
      * Gets all the tracks that the given track remixes
      */
-    async getTrackRemixParents(requestParameters: GetTrackRemixParentsRequest, initOverrides?: RequestInit): Promise<NonNullable<RemixingResponse["data"]>> {
+    async getTrackRemixParents(requestParameters: GetTrackRemixParentsRequest): Promise<NonNullable<RemixingResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrackRemixParents.');
         }
@@ -618,13 +618,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<RemixingResponse["data"]>>;
+        }) as Promise<NonNullable<RemixingResponse["data"]>>;
     }
 
     /**
      * Get all tracks that remix the given track
      */
-    async getTrackRemixes(requestParameters: GetTrackRemixesRequest, initOverrides?: RequestInit): Promise<NonNullable<RemixesResponseFull["data"]>> {
+    async getTrackRemixes(requestParameters: GetTrackRemixesRequest): Promise<NonNullable<RemixesResponseFull["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrackRemixes.');
         }
@@ -650,13 +650,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<RemixesResponseFull["data"]>>;
+        }) as Promise<NonNullable<RemixesResponseFull["data"]>>;
     }
 
     /**
      * Get the remixable stems of a track
      */
-    async getTrackStems(requestParameters: GetTrackStemsRequest, initOverrides?: RequestInit): Promise<NonNullable<StemsResponse["data"]>> {
+    async getTrackStems(requestParameters: GetTrackStemsRequest): Promise<NonNullable<StemsResponse["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrackStems.');
         }
@@ -670,13 +670,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<StemsResponse["data"]>>;
+        }) as Promise<NonNullable<StemsResponse["data"]>>;
     }
 
     /**
      * Gets the track IDs of the top trending tracks on Audius
      */
-    async getTrendingTrackIDs(requestParameters: GetTrendingTrackIDsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<TrendingIdsResponse["data"]>> {
+    async getTrendingTrackIDs(requestParameters: GetTrendingTrackIDsRequest = {}): Promise<NonNullable<TrendingIdsResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.genre !== undefined) {
@@ -690,13 +690,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrendingIdsResponse["data"]>>;
+        }) as Promise<NonNullable<TrendingIdsResponse["data"]>>;
     }
 
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
      */
-    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -726,13 +726,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version
      */
-    async getTrendingTracksIDsWithVersion(requestParameters: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<TrendingIdsResponse["data"]>> {
+    async getTrendingTracksIDsWithVersion(requestParameters: GetTrendingTracksIDsWithVersionRequest): Promise<NonNullable<TrendingIdsResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
             throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingTracksIDsWithVersion.');
         }
@@ -750,13 +750,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrendingIdsResponse["data"]>>;
+        }) as Promise<NonNullable<TrendingIdsResponse["data"]>>;
     }
 
     /**
      * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
      */
-    async getTrendingTracksWithVersion(requestParameters: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getTrendingTracksWithVersion(requestParameters: GetTrendingTracksWithVersionRequest): Promise<NonNullable<FullTracksResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
             throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingTracksWithVersion.');
         }
@@ -790,13 +790,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Gets the tracks found on the \"Under the Radar\" smart playlist
      */
-    async getUnderTheRadarTracks(requestParameters: GetUnderTheRadarTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getUnderTheRadarTracks(requestParameters: GetUnderTheRadarTracksRequest = {}): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -830,13 +830,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Gets the top 100 trending underground tracks on Audius
      */
-    async getUndergroundTrendingTracks(requestParameters: GetUndergroundTrendingTracksRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getUndergroundTrendingTracks(requestParameters: GetUndergroundTrendingTracksRequest = {}): Promise<NonNullable<FullTracksResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -858,13 +858,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
      */
-    async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit): Promise<NonNullable<FullTracksResponse["data"]>> {
+    async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest): Promise<NonNullable<FullTracksResponse["data"]>> {
         if (requestParameters.version === null || requestParameters.version === undefined) {
             throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getUndergroundTrendingTracksWithVersion.');
         }
@@ -890,13 +890,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FullTracksResponse["data"]>>;
+        }) as Promise<NonNullable<FullTracksResponse["data"]>>;
     }
 
     /**
      * Get users that favorited a track
      */
-    async getUsersFromFavorites(requestParameters: GetUsersFromFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackFavoritesResponseFull["data"]>> {
+    async getUsersFromFavorites(requestParameters: GetUsersFromFavoritesRequest): Promise<NonNullable<TrackFavoritesResponseFull["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getUsersFromFavorites.');
         }
@@ -922,13 +922,13 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrackFavoritesResponseFull["data"]>>;
+        }) as Promise<NonNullable<TrackFavoritesResponseFull["data"]>>;
     }
 
     /**
      * Get the users that reposted a track
      */
-    async getUsersFromReposts(requestParameters: GetUsersFromRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<TrackRepostsResponseFull["data"]>> {
+    async getUsersFromReposts(requestParameters: GetUsersFromRepostsRequest): Promise<NonNullable<TrackRepostsResponseFull["data"]>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getUsersFromReposts.');
         }
@@ -954,7 +954,7 @@ export class TracksApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TrackRepostsResponseFull["data"]>>;
+        }) as Promise<NonNullable<TrackRepostsResponseFull["data"]>>;
     }
 
 }

@@ -458,7 +458,7 @@ const config = convict({
     doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
-    default: 0
+    default: 3
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -676,7 +676,7 @@ const config = convict({
     doc: 'True to not run any snapback queues (old state machine and old syncs)',
     format: Boolean,
     env: 'disableSnapback',
-    default: false
+    default: true
   }
   /**
    * unsupported options at the moment
