@@ -3,6 +3,7 @@ import {
   NotificationType
 } from 'audius-client/src/common/store/notifications/types'
 
+import AddTrackToPlaylist from './AddTrackToPlaylist'
 import Announcement from './Announcement'
 import ChallengeReward from './ChallengeReward'
 import Cosign from './Cosign'
@@ -43,6 +44,8 @@ const NotificationContent = ({ notification }: NotificationContentProps) => {
       return <ChallengeReward notification={notification} />
     case NotificationType.TierChange:
       return <TierChange notification={notification} />
+    case NotificationType.AddTrackToPlaylist:
+      return <AddTrackToPlaylist notification={notification} />
     default:
       return null
   }

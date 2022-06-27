@@ -97,3 +97,12 @@
 .iconAnnouncement g path {
   fill: var(--secondary);
 }
+
+.iconAddTrackToPlaylist {
+  composes: icon;
+  height: 24px;
+}
+
+.iconAddTrackToPlaylist g path {
+  fill: var(--secondary);
+}

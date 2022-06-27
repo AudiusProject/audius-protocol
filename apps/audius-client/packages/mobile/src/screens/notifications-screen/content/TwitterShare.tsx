@@ -11,7 +11,8 @@ import {
   RemixCreate,
   RemixCosign,
   ChallengeReward,
-  TierChange
+  TierChange,
+  AddTrackToPlaylist
 } from 'audius-client/src/common/store/notifications/types'
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
@@ -140,6 +141,16 @@ export const getTierChangeText = (notif: TierChange & { user: User }) => {
   }
 }
 
+export const getAddTrackToPlaylistText = (notif: AddTrackToPlaylist) => {
+  const { track, playlist } = notif.entities
+  const playlistOwner = playlist.user
+
+  return {
+    link: getEntityRoute(playlist, Entity.Playlist, true),
+    text: `Listen to my track ${track.title} on ${playlist.playlist_name} by ${playlistOwner.handle} on @AudiusProject #Audius`
+  }
+}
+
 export const getNotificationTwitterText = async (notification: any) => {
   if (notification.type === NotificationType.Milestone) {
     return getAchievementText(notification)
@@ -153,6 +164,8 @@ export const getNotificationTwitterText = async (notification: any) => {
     return getRewardsText(notification)
   } else if (notification.type === NotificationType.TierChange) {
     return getTierChangeText(notification)
+  } else if (notification.type === NotificationType.AddTrackToPlaylist) {
+    return getAddTrackToPlaylistText(notification)
   }
 }
 

@@ -110,6 +110,8 @@ export const getNotificationRoute = (notification: Notification) => {
     case NotificationType.ChallengeReward:
     case NotificationType.TierChange:
       return getAudioPageRoute()
+    case NotificationType.AddTrackToPlaylist:
+      return getEntityRoute(notification.entities.playlist, Entity.Playlist)
   }
 }
 
@@ -201,5 +203,11 @@ export const getNotificationScreen = (
         screen: 'AudioScreen' as const,
         params: contextualParams
       }
+    case NotificationType.AddTrackToPlaylist:
+      return getEntityScreen(
+        notification.entities.playlist,
+        Entity.Playlist,
+        contextualParams
+      )
   }
 }
