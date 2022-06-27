@@ -26,6 +26,7 @@ export const indexDiscovery = async (): Promise<number> => {
     // Pull cids into table `network_monitoring_cids_from_discovery`
     await importCids(run_id)
 
+    // Record indexing duration and export to push-gateway
     endTimer({ run_id: run_id })
 
     console.log(`[${run_id}] finished indexing discovery database`)

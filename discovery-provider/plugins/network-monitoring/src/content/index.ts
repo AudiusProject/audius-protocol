@@ -151,6 +151,15 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
                     // Record the duration for the batch and export to prometheus
                     endBatchTimer({ run_id: run_id, endpoint: endpoint })
+
+                    try {
+                        // Finish by publishing metrics to prometheus push gateway
+                        console.log(`[${run_id}] pushing metrics to gateway`);
+                        await gateway.pushAdd({ jobName: 'network-monitoring' })
+                    } catch (e) {
+                        console.log(`[checkUsers(batch)] error pushing metrics to pushgateway - ${(e as Error).message}`)
+                    }
+
                     // add user to save queue
                     // saveQueue.push(saveBatch(run_id, spid, results))
                 } catch (e) {
