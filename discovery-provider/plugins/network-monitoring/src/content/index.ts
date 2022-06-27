@@ -130,6 +130,8 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     let endBatchTimer = userBatchDurationGauge.startTimer()
 
                     console.log(`[getBatch:${offset}:${batchSize}:${count}]`)
+
+                    // Fetch a batch of users from the network_monitoring postgres DB
                     const walletBatch = await getBatch(
                         run_id,
                         spid,
@@ -139,6 +141,8 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
                     if (walletBatch.length === 0) { return }
 
+                    // Fetch the clock values for all the users in the batch from 
+                    // the content nodes in their replica set
                     const results = await getUserClockValues(
                         endpoint,
                         walletBatch,
@@ -147,13 +151,15 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         signatureSPDelegatePrivateKey,
                     )
 
+                    // Save the clock values for all the user in the batch
+                    // to the network_monitoring postgres DB
                     missedUsers += await saveBatch(run_id, spid, results)
 
                     // Record the duration for the batch and export to prometheus
                     endBatchTimer({ run_id: run_id, endpoint: endpoint })
 
                     try {
-                        // Finish by publishing metrics to prometheus push gateway
+                        // Publish metrics to prometheus push gateway
                         console.log(`[${run_id}] pushing metrics to gateway`);
                         await gateway.pushAdd({ jobName: 'network-monitoring' })
                     } catch (e) {
@@ -205,7 +211,9 @@ export const checkCID = async (
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
+    // CIDs that point to images vs CIDs that d
     await Promise.all([
+        // Handler for non-image CIDs
         (async () => {
             if (cidCount === 0) { return }
 
@@ -230,6 +238,8 @@ export const checkCID = async (
                 // await asyncSleep(6000)
             }
         })(),
+
+        // Handler for image CIDs
         (async () => {
             if (imageCidCount === 0) { return }
             for (let offset = 0; offset < imageCidCount; offset += batchSize) {

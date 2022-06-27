@@ -160,6 +160,7 @@ export const asyncSleep = (milliseconds: number) => {
 
 export const getEnv = () => {
 
+    // Initialize ENV if not already initialized
     if (!envInitialized) {
         const nodeEnv = process.env['NODE_ENV']
 
