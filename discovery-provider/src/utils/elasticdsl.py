@@ -6,7 +6,7 @@ from src.utils.spl_audio import to_wei
 
 es_url = os.getenv("audius_elasticsearch_url")
 esclient = None
-if es_url:
+if es_url and not esclient:
     esclient = Elasticsearch(es_url)
 
 # uses aliases

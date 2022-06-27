@@ -35,7 +35,7 @@ from src.queries.search_config import (
     user_handle_exact_match_boost,
     user_name_weight,
 )
-from src.queries.search_es import search_es_full
+from src.queries.search_es import search_es_full, search_tags_es
 from src.queries.search_track_tags import search_track_tags
 from src.queries.search_user_tags import search_user_tags
 from src.utils.db_session import get_db_read_replica
@@ -97,6 +97,11 @@ def search_tags():
     results = {}
 
     (limit, offset) = get_pagination_vars()
+
+    if os.getenv("audius_elasticsearch_search_enabled"):
+        hits = search_tags_es(search_str, kind, current_user_id, limit, offset)
+        return api_helpers.success_response(hits)
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
         if searchKind in [SearchKind.all, SearchKind.tracks]:
