@@ -188,7 +188,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
 
     const weeklyEmailUsersWithUnseeenNotifications = await getUserIdsWithUnseenNotifications({
       userIds: weeklyEmailUsers,
-      gtTimeStamp: dayAgo
+      gtTimeStamp: weekAgo
     })
     weeklyEmailUsersWithUnseeenNotifications.forEach(item => pendingNotificationUsers.add(item))
 
@@ -231,7 +231,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
     for (let chunk = 0; chunk * chuckSize < userInfo.length; chunk += 1) {
       let start = chunk * chuckSize
       let end = (chunk + 1) * chuckSize
-      const chuckResults = await Promise.all(userInfo.slice(start, end).map(async (user) => {
+      const chunkResults = await Promise.all(userInfo.slice(start, end).map(async (user) => {
         try {
           let { email: userEmail, blockchainUserId: userId, timezone } = user
           if (timezone === null) { timezone = DEFAULT_TIMEZONE }
@@ -297,7 +297,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           return { result: Results.ERROR, error: e.toString() }
         }
       }))
-      results.push(...chuckResults)
+      results.push(...chunkResults)
     }
 
     const aggregatedResults = results.reduce((acc, response) => {
