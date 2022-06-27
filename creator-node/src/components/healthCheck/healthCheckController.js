@@ -26,6 +26,7 @@ const {
 } = require('../../fileManager')
 
 const config = require('../../config')
+const { ensureStorageMiddleware } = require('middlewares')
 
 const router = express.Router()
 
@@ -204,6 +205,15 @@ const healthCheckFileUploadController = async (req) => {
   if (err) {
     return errorResponseServerError(err)
   }
+
+  await AsyncProcessingQueue.addTranscodeAndSegmentTask({
+    logContext: req.logContext,
+    req: {
+      fileName: req.fileName,
+      fileDir: req.fileDir,
+      uuid: req.logContext.requestID
+    }
+  })
   return successResponse({ success: true })
 }
 
@@ -228,8 +238,15 @@ router.get(
 router.post(
   '/health_check/fileupload',
   healthCheckVerifySignature,
+  ensureStorageMiddleware,
   handleTrackContentUpload,
-  handleResponseWithHeartbeat(healthCheckFileUploadController)
+  healthCheckFileUploadController
 )
-
+router.post(
+  '/health_check/fileupload/cleanup',
+  healthCheckVerifySignature,
+  ensureStorageMiddleware,
+  handleTrackContentUpload,
+  healthCheckFileUploadController
+)
 module.exports = router
