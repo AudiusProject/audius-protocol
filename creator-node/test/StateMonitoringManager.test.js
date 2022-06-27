@@ -56,13 +56,18 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
   }
 
   it('creates the queue and registers its event handlers', async function () {
+    // Mock the latest userId, which is used during init as an upper bound
+    // to start the monitoring queue at a random user
+    const discoveryNodeEndpoint = 'https://discoveryNodeEndpoint.co'
+    nock(discoveryNodeEndpoint).get('/latest/user').reply(200, { data: 0 })
+
     // Initialize StateMonitoringManager and spy on its registerQueueEventHandlersAndJobProcessors function
     const stateMonitoringManager = new StateMonitoringManager()
     sandbox.spy(
       stateMonitoringManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const queue = await stateMonitoringManager.init('discoveryNodeEndpoint')
+    const queue = await stateMonitoringManager.init(discoveryNodeEndpoint)
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
     expect(queue).to.exist.and.to.be.instanceOf(BullQueue)
