@@ -6,7 +6,7 @@ import {
 import { indexDiscovery } from './discovery'
 import { indexContent } from './content'
 import { generateMetrics } from './metrics'
-import { totalJobDurationGauge } from './prometheus'
+import { gateway, totalJobDurationGauge } from './prometheus'
 
 const main = async () => {
 
@@ -31,6 +31,16 @@ const main = async () => {
 
     // Record job duration and export to prometheus
     endTimer({ run_id: run_id })
+
+    try {
+        // Finish by publishing metrics to prometheus push gateway
+        console.log(`[${run_id}] pushing metrics to gateway`);
+        await gateway.pushAdd({ jobName: 'network-monitoring' })
+    } catch (e) {
+        console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
+    }
+
+
 
     process.exit(0)
 }

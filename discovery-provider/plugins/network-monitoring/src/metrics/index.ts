@@ -62,6 +62,9 @@ export const generateMetrics = async (run_id: number) => {
     partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
     unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
 
+    // Record duration for generating metrics and export to prometheus
+    endTimer({ run_id: run_id })
+
     try {
         // Finish by publishing metrics to prometheus push gateway
         console.log(`[${run_id}] pushing metrics to gateway`);
@@ -70,8 +73,6 @@ export const generateMetrics = async (run_id: number) => {
         console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
 
-    // Record duration for generating metrics and export to prometheus
-    endTimer({ run_id: run_id })
 
     console.log(`[${run_id}] finish generating metrics`);
 }
