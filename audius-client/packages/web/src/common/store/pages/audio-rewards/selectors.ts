@@ -1,3 +1,5 @@
+import { createSelector } from 'reselect'
+
 import { ChallengeRewardID } from 'common/models/AudioRewards'
 import { CommonState } from 'common/store'
 
@@ -7,8 +9,23 @@ export const getTrendingRewardsModalType = (state: CommonState) =>
 export const getChallengeRewardsModalType = (state: CommonState) =>
   state.pages.audioRewards.challengeRewardsModalType
 
-export const getUserChallenges = (state: CommonState) =>
+export const getUserChallengeSpecifierMap = (state: CommonState) =>
   state.pages.audioRewards.userChallenges
+
+// Returns just a single challenge per challengeId
+export const getUserChallenges = createSelector(
+  [getUserChallengeSpecifierMap],
+  challenges => {
+    return Object.values(challenges).reduce((acc, cur) => {
+      const challenge = Object.values(cur)[0]
+      if (!challenge) return acc // Shouldn't happen
+      return {
+        ...acc,
+        [challenge.challenge_id]: challenge
+      }
+    }, {})
+  }
+)
 
 export const getUndisbursedUserChallenges = (state: CommonState) =>
   state.pages.audioRewards.undisbursedChallenges.filter(challenge => {
@@ -20,7 +37,10 @@ export const getUndisbursedUserChallenges = (state: CommonState) =>
 export const getUserChallenge = (
   state: CommonState,
   props: { challengeId: ChallengeRewardID }
-) => state.pages.audioRewards.userChallenges[props.challengeId]
+) =>
+  Object.values(
+    state.pages.audioRewards.userChallenges[props.challengeId] || {}
+  )[0]
 
 export const getUserChallengesOverrides = (state: CommonState) =>
   state.pages.audioRewards.userChallengesOverrides

@@ -1,4 +1,3 @@
-import { User } from '@sentry/browser'
 import {
   call,
   fork,
@@ -9,13 +8,9 @@ import {
   takeEvery,
   takeLatest,
   delay
-} from 'redux-saga/effects'
+} from 'typed-redux-saga/macro'
 
-import {
-  ChallengeRewardID,
-  FailureReason,
-  UserChallenge
-} from 'common/models/AudioRewards'
+import { FailureReason, UserChallenge } from 'common/models/AudioRewards'
 import { StringAudio } from 'common/models/Wallet'
 import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
@@ -28,11 +23,10 @@ import {
   getClaimStatus,
   getClaimToRetry,
   getUserChallenge,
-  getUserChallenges,
-  getUserChallengesOverrides
+  getUserChallengesOverrides,
+  getUserChallengeSpecifierMap
 } from 'common/store/pages/audio-rewards/selectors'
 import {
-  Claim,
   resetAndCancelClaimReward,
   claimChallengeReward,
   claimChallengeRewardFailed,
@@ -112,8 +106,9 @@ function* retryClaimChallengeReward({
   errorResolved: boolean
   retryOnFailure: boolean
 }) {
-  const claimStatus: ClaimStatus = yield select(getClaimStatus)
-  const claim: Claim = yield select(getClaimToRetry)
+  const claimStatus = yield* select(getClaimStatus)
+  const claim = yield* select(getClaimToRetry)
+  if (!claim) return
   if (claimStatus === ClaimStatus.WAITING_FOR_RETRY) {
     // Restore the challenge rewards modal if necessary
     yield put(
@@ -187,12 +182,12 @@ function* claimChallengeRewardAsync(
   // This is possible because the client may optimistically set a challenge as complete
   // even though the DN has not yet indexed the change that would mark the challenge as complete.
   // In this case, we wait until the challenge is complete in the DN before claiming
-  const challenge: UserChallenge = yield select(getUserChallenge, {
+  const challenge = yield* select(getUserChallenge, {
     challengeId
   })
   if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
     console.log('Waiting for challenge completion...')
-    const raceResult: { isComplete?: boolean } = yield race({
+    const raceResult: { isComplete?: boolean } = yield* race({
       isComplete: call(
         waitForValue,
         getUserChallenge,
@@ -209,8 +204,10 @@ function* claimChallengeRewardAsync(
     }
   }
 
-  const currentUser: User = yield select(getAccountUser)
-  const feePayerOverride: string = yield select(getFeePayer)
+  const currentUser = yield* select(getAccountUser)
+  const feePayerOverride = yield* select(getFeePayer)
+
+  if (!currentUser) return
 
   // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
   const endpoints =
@@ -234,7 +231,7 @@ function* claimChallengeRewardAsync(
       challenge_id: challengeId,
       specifier
     }))
-    const response: { error?: string } = yield call(
+    const response: { error?: string } = yield* call(
       AudiusBackend.submitAndEvaluateAttestations,
       {
         challenges,
@@ -324,11 +321,11 @@ function* claimChallengeRewardAsync(
 }
 
 function* watchSetHCaptchaStatus() {
-  yield takeLatest(setHCaptchaStatus.type, function* (
+  yield* takeLatest(setHCaptchaStatus.type, function* (
     action: ReturnType<typeof setHCaptchaStatus>
   ) {
     const { status } = action.payload
-    yield call(retryClaimChallengeReward, {
+    yield* call(retryClaimChallengeReward, {
       errorResolved: status === HCaptchaStatus.SUCCESS,
       retryOnFailure: true
     })
@@ -336,7 +333,7 @@ function* watchSetHCaptchaStatus() {
 }
 
 function* watchSetCognitoFlowStatus() {
-  yield takeLatest(setCognitoFlowStatus.type, function* (
+  yield* takeLatest(setCognitoFlowStatus.type, function* (
     action: ReturnType<typeof setCognitoFlowStatus>
   ) {
     const { status } = action.payload
@@ -347,12 +344,13 @@ function* watchSetCognitoFlowStatus() {
       // otherwise may get failure reason that says cognito
       // even though user completed the cognito flow
       let numRetries = 0
-      const handle: string = yield select(getUserHandle)
+      const handle = yield* select(getUserHandle)
+      if (!handle) return
       do {
         try {
-          const { exists } = yield call(getCognitoExists, handle)
+          const { exists } = yield* call(getCognitoExists, handle)
           if (exists) {
-            yield call(retryClaimChallengeReward, {
+            yield* call(retryClaimChallengeReward, {
               errorResolved: true,
               retryOnFailure: false
             })
@@ -370,7 +368,7 @@ function* watchSetCognitoFlowStatus() {
       } while (numRetries++ < COGNITO_CHECK_MAX_RETRIES)
 
       if (numRetries === COGNITO_CHECK_MAX_RETRIES) {
-        yield call(retryClaimChallengeReward, {
+        yield* call(retryClaimChallengeReward, {
           errorResolved: false,
           retryOnFailure: false
         })
@@ -380,12 +378,12 @@ function* watchSetCognitoFlowStatus() {
 }
 
 function* watchClaimChallengeReward() {
-  yield takeLatest(claimChallengeReward.type, function* (
+  yield* takeLatest(claimChallengeReward.type, function* (
     args: ReturnType<typeof claimChallengeReward>
   ) {
     // Race the claim against the user clicking "close" on the modal,
     // so that the claim saga gets canceled if the modal is closed
-    yield race({
+    yield* race({
       task: call(claimChallengeRewardAsync, args),
       cancel: take(resetAndCancelClaimReward.type)
     })
@@ -393,8 +391,9 @@ function* watchClaimChallengeReward() {
 }
 
 function* fetchUserChallengesAsync() {
-  yield call(waitForBackendSetup)
-  const currentUserId: number = yield select(getUserId)
+  yield* call(waitForBackendSetup)
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return
 
   try {
     const userChallenges: UserChallenge[] = yield call(
@@ -422,24 +421,24 @@ function* checkForNewDisbursements(
   if (!userChallenges) {
     return
   }
-  const prevChallenges: Partial<Record<
-    ChallengeRewardID,
-    UserChallenge
-  >> = yield select(getUserChallenges)
-  const challengesOverrides: Partial<Record<
-    ChallengeRewardID,
-    UserChallenge
-  >> = yield select(getUserChallengesOverrides)
+  const prevChallenges = yield* select(getUserChallengeSpecifierMap)
+  const challengesOverrides = yield* select(getUserChallengesOverrides)
   let newDisbursement = false
+
   for (const challenge of userChallenges) {
-    const prevChallenge = prevChallenges[challenge.challenge_id]
+    const prevChallenge =
+      prevChallenges[challenge.challenge_id]?.[challenge.specifier]
     const challengeOverrides = challengesOverrides[challenge.challenge_id]
+
     // Check for new disbursements
+    const wasNotPreviouslyDisbursed =
+      prevChallenge && !prevChallenge.is_disbursed
+    const wasNotDisbursedThisSession =
+      !challengeOverrides || !challengeOverrides.is_disbursed
     if (
       challenge.is_disbursed &&
-      prevChallenge &&
-      !prevChallenge.is_disbursed && // it wasn't already claimed
-      (!challengeOverrides || !challengeOverrides.is_disbursed) // we didn't claim this session
+      wasNotPreviouslyDisbursed &&
+      wasNotDisbursedThisSession
     ) {
       newDisbursement = true
     }
@@ -452,17 +451,17 @@ function* checkForNewDisbursements(
 }
 
 function* watchFetchUserChallengesSucceeded() {
-  yield takeEvery(fetchUserChallengesSucceeded.type, function* (
+  yield* takeEvery(fetchUserChallengesSucceeded.type, function* (
     action: ReturnType<typeof fetchUserChallengesSucceeded>
   ) {
-    yield call(checkForNewDisbursements, action)
-    yield call(handleOptimisticChallengesOnUpdate, action)
+    yield* call(checkForNewDisbursements, action)
+    yield* call(handleOptimisticChallengesOnUpdate, action)
   })
 }
 
 function* watchFetchUserChallenges() {
-  yield takeEvery(fetchUserChallenges.type, function* () {
-    yield call(fetchUserChallengesAsync)
+  yield* takeEvery(fetchUserChallenges.type, function* () {
+    yield* call(fetchUserChallengesAsync)
   })
 }
 
@@ -472,7 +471,7 @@ function* watchFetchUserChallenges() {
  */
 function* handleOptimisticListenStreakUpdate(
   challenge: UserChallenge,
-  challengeOverrides?: UserChallenge
+  challengeOverrides?: Partial<UserChallenge>
 ) {
   if (
     (challengeOverrides?.current_step_count ?? 0) > 0 &&
@@ -497,14 +496,11 @@ function* handleOptimisticChallengesOnUpdate(
     return
   }
 
-  const challengesOverrides: Partial<Record<
-    ChallengeRewardID,
-    UserChallenge
-  >> = yield select(getUserChallengesOverrides)
+  const challengesOverrides = yield* select(getUserChallengesOverrides)
 
   for (const challenge of userChallenges) {
     if (challenge.challenge_id === 'listen-streak') {
-      yield call(
+      yield* call(
         handleOptimisticListenStreakUpdate,
         challenge,
         challengesOverrides[challenge.challenge_id]
@@ -517,13 +513,10 @@ function* handleOptimisticChallengesOnUpdate(
  * Updates the listen streak optimistically if current_step_count is zero and a track is played
  */
 function* watchUpdateOptimisticListenStreak() {
-  yield takeEvery(updateOptimisticListenStreak.type, function* () {
-    const listenStreakChallenge: ReturnType<typeof getUserChallenge> = yield select(
-      getUserChallenge,
-      {
-        challengeId: 'listen-streak'
-      }
-    )
+  yield* takeEvery(updateOptimisticListenStreak.type, function* () {
+    const listenStreakChallenge = yield* select(getUserChallenge, {
+      challengeId: 'listen-streak'
+    })
     if (listenStreakChallenge?.current_step_count === 0) {
       yield put(
         setUserChallengeCurrentStepCount({
@@ -536,11 +529,11 @@ function* watchUpdateOptimisticListenStreak() {
 }
 
 function* watchUpdateHCaptchaScore() {
-  yield takeEvery(updateHCaptchaScore.type, function* (
+  yield* takeEvery(updateHCaptchaScore.type, function* (
     action: ReturnType<typeof updateHCaptchaScore>
   ): any {
     const { token } = action.payload
-    const result = yield call(AudiusBackend.updateHCaptchaScore, token)
+    const result = yield* call(AudiusBackend.updateHCaptchaScore, token)
     if (result.error) {
       yield put(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
     } else {
@@ -557,7 +550,7 @@ function* pollUserChallenges(frequency: number) {
 }
 
 function* userChallengePollingDaemon() {
-  yield call(remoteConfigInstance.waitForRemoteConfig)
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
   const defaultChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_MS
   )!
@@ -567,9 +560,9 @@ function* userChallengePollingDaemon() {
 
   yield take(fetchAccountSucceeded.type)
   yield fork(function* () {
-    yield call(visibilityPollingDaemon, fetchUserChallenges())
+    yield* call(visibilityPollingDaemon, fetchUserChallenges())
   })
-  yield call(
+  yield* call(
     foregroundPollingDaemon,
     fetchUserChallenges(),
     defaultChallengePollingTimeout,
