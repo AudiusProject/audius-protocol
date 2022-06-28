@@ -55,7 +55,9 @@ type RewardsUIState = {
   loading: boolean
   trendingRewardsModalType: TrendingRewardsModalType
   challengeRewardsModalType: ChallengeRewardsModalType
-  userChallenges: Partial<Record<ChallengeRewardID, UserChallenge>>
+  userChallenges: Partial<
+    Record<ChallengeRewardID, Record<Specifier, UserChallenge>>
+  >
   undisbursedChallenges: UndisbursedUserChallenge[]
   userChallengesOverrides: Partial<
     Record<ChallengeRewardID, Partial<UserChallenge>>
@@ -98,11 +100,14 @@ const slice = createSlice({
         state.userChallenges = {}
       } else {
         state.userChallenges = userChallenges.reduce<
-          Partial<Record<ChallengeRewardID, UserChallenge>>
+          Partial<Record<ChallengeRewardID, Record<Specifier, UserChallenge>>>
         >(
           (acc, challenge) => ({
             ...acc,
-            [challenge.challenge_id]: challenge
+            [challenge.challenge_id]: {
+              ...(acc[challenge.challenge_id] || {}),
+              [challenge.specifier]: challenge
+            }
           }),
           {}
         )
@@ -128,9 +133,15 @@ const slice = createSlice({
       }>
     ) => {
       const { challengeId, specifiers } = action.payload
-      const userChallenge = state.userChallenges[challengeId]
+
+      const userChallenge = Object.values(
+        state.userChallenges[challengeId] || {}
+      )[0]
+
+      if (!userChallenge) return
+
       // Keep track of individual challenges for rolled up aggregates
-      if (userChallenge?.challenge_type === 'aggregate') {
+      if (userChallenge.challenge_type === 'aggregate') {
         state.disbursedChallenges[challengeId] = ([] as string[]).concat(
           state.disbursedChallenges[challengeId] ?? [],
           specifiers
