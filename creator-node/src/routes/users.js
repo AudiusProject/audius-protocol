@@ -278,6 +278,13 @@ module.exports = function (app) {
     '/users/batch_clock_status',
     handleResponse(async (req, res) => {
       const { walletPublicKeys /* [walletPublicKey] */ } = req.body
+
+      if (walletPublicKeys == null) {
+        return errorResponseBadRequest(
+          'Must provide valid walletPublicKeys field in request body'
+        )
+      }
+
       const walletPublicKeysSet = new Set(walletPublicKeys)
 
       // Enforce max # of wallets to prevent high db query time
