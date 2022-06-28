@@ -7,13 +7,10 @@ from sqlalchemy.orm import Session
 top_k = 100
 
 
-def update_related_artist_minhash(session: Session):
-
+def build_minhash(session: Session):
     engine = session.get_bind()
     connection = engine.raw_connection()
     cursor = connection.cursor()
-
-    cursor.execute("truncate table related_artists;")
 
     cursor.execute(
         """
@@ -44,7 +41,21 @@ def update_related_artist_minhash(session: Session):
         follower_counts[user_id] = len(follower_ids)
         forest.add(user_id, mh)
 
+    connection.commit()
+    connection.close()
     forest.index()
+    return (user_mh, forest)
+
+
+def update_related_artist_minhash(session: Session):
+
+    (user_mh, forest) = build_minhash(session)
+
+    engine = session.get_bind()
+    connection = engine.raw_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("truncate table related_artists;")
 
     for user_id, mh in user_mh.items():
 
@@ -64,7 +75,7 @@ def update_related_artist_minhash(session: Session):
         rows = sorted(rows, key=lambda x: x[2], reverse=True)[:top_k]
 
         insert_query = "insert into related_artists (user_id, related_artist_user_id, score, created_at) values %s"
-        execute_values(cursor, insert_query, rows, template=None, page_size=100)
+        execute_values(cursor, insert_query, rows, template=None, page_size=10000)
 
     connection.commit()
     connection.close()
