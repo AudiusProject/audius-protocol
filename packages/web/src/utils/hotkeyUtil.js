@@ -50,6 +50,7 @@ function fireHotkey(e, mapping, preventDefault) {
         cb(e)
       }
     } else {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
       // If no modifier keys are required, fire the callback.
       if (preventDefault) e.preventDefault()
       mapping[e.keyCode](e)
