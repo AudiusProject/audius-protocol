@@ -17,7 +17,7 @@ function replace_address {
 }
 
 function generate_key {
-    if [[ "$2" == "" ]]; then
+    if [[ "$2" != "" ]]; then
         echo $2 >$1
     else
         solana-keygen new -f -s --no-bip39-passphrase -o $1
@@ -27,25 +27,25 @@ function generate_key {
 # cd into solana-programs
 cd $(dirname "$(readlink -f "$0")")/..
 
-mkdir -p target/deploy anchor/audius-data/target/deploy
+mkdir -p ${CARGO_TARGET_DIR:-target}/deploy anchor/audius-data/target/deploy
 
-generate_key target/deploy/audius_eth_registry-keypair.json "$AUDIUS_ETH_REGISTRY_PRIVATE_KEY"
-replace_address audius_eth_registry/src/lib.rs target/deploy/audius_eth_registry-keypair.json
+generate_key ${CARGO_TARGET_DIR:-target}/deploy/audius_eth_registry-keypair.json "$AUDIUS_ETH_REGISTRY_PRIVATE_KEY"
+replace_address audius_eth_registry/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/audius_eth_registry-keypair.json
 
-generate_key target/deploy/track_listen_count-keypair.json "$TRACK_LISTEN_COUNT_PRIVATE_KEY"
-replace_address track_listen_count/src/lib.rs target/deploy/track_listen_count-keypair.json
+generate_key ${CARGO_TARGET_DIR:-target}/deploy/track_listen_count-keypair.json "$TRACK_LISTEN_COUNT_PRIVATE_KEY"
+replace_address track_listen_count/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/track_listen_count-keypair.json
 
-generate_key target/deploy/claimable_tokens-keypair.json "$CLAIMABLE_TOKENS_PRIVATE_KEY"
-replace_address claimable-tokens/program/src/lib.rs target/deploy/claimable_tokens-keypair.json
+generate_key ${CARGO_TARGET_DIR:-target}/deploy/claimable_tokens-keypair.json "$CLAIMABLE_TOKENS_PRIVATE_KEY"
+replace_address claimable-tokens/program/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/claimable_tokens-keypair.json
 
-generate_key target/deploy/audius_reward_manager-keypair.json "$REWARD_MANAGER_PRIVATE_KEY"
-replace_address reward-manager/program/src/lib.rs target/deploy/audius_reward_manager-keypair.json
+generate_key ${CARGO_TARGET_DIR:-target}/deploy/audius_reward_manager-keypair.json "$REWARD_MANAGER_PRIVATE_KEY"
+replace_address reward-manager/program/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/audius_reward_manager-keypair.json
 
-generate_key anchor/audius-data/target/deploy/audius_data-keypair.json "$AUDIUS_DATA_PRIVATE_KEY"
+generate_key ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json "$AUDIUS_DATA_PRIVATE_KEY"
 replace_address \
     anchor/audius-data/programs/audius-data/src/lib.rs \
     anchor/audius-data/Anchor.toml \
-    anchor/audius-data/target/deploy/audius_data-keypair.json
+    ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json
 
 cargo build-bpf
 cargo build -p audius-eth-registry-cli

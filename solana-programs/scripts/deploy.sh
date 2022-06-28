@@ -19,7 +19,13 @@ function airdrop_till {
 cd $(dirname "$(readlink -f "$0")")/..
 
 solana -V
-solana config set -u $SOLANA_HOST
+solana config set -u "$SOLANA_HOST"
+
+# TODO: Remove this when we deprecate service-commands
+if [[ "$valid_signer_eth_address" != "" ]]; then
+    valid_signer_eth_address=0xc7dE2857e17dc213C42eEd938A685b8FeF958088
+    valid_signer_eth_private_key=0xd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003
+fi
 
 echo "----------- Waiting for $SOLANA_HOST ------------"
 
@@ -242,3 +248,29 @@ yarn run ts-node cli/main.ts --function initContentNode \
     --network "$SOLANA_HOST"
 cd ../..
 echo
+
+# TODO: Remove this when we deprecate service-commands
+cat >solana-program-config.json <<EOF
+{
+    "anchorProgramId": "$(solana address -k anchor/audius-data/target/deploy/audius_data-keypair.json)",
+    "anchorAdminPublicKey": "$(solana address -k "$admin_authority_keypair")",
+    "anchorAdminPrivateKey": "$(cat "$admin_authority_keypair")",
+    "anchorAdminStoragePublicKey": "$(solana address -k "$admin_account_keypair")",
+    "anchorAdminStoragePrivateKey": "$(cat "$admin_account_keypair")",
+    "trackListenCountAddress": "$(solana address -k target/deploy/track_listen_count-keypair.json)",
+    "audiusEthRegistryAddress": "$(solana address -k target/deploy/audius_eth_registry-keypair.json)",
+    "validSigner": "$(solana address -k "$valid_signer_keypair")"
+    "signerGroup": "$(solana address -k "$signer_group_keypair")",
+    "feePayerWallets": [{ "privateKey": $(cat "$feepayer_keypair") }],
+    "feePayerWalletPubkey": "$(solana address -k "$feepayer_keypair")",
+    "ownerWallet": $(cat "$owner_keypair"),
+    "ownerWalletPubkey": "$(solana address -k "$owner_keypair")",
+    "endpoint": "$SOLANA_HOST",
+    "signerPrivateKey": "$valid_signer_eth_private_key",
+    "splToken": "$(solana address -k "$token_keypair")",
+    "claimableTokenAddress": "$(solana address -k target/deploy/claimable_token-keypair.json)",
+    "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
+    "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",
+    "rewardsManagerTokenAccount": "$(solana address -k "$reward_manager_token_pda_keypair")"
+}
+EOF

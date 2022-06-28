@@ -20,19 +20,14 @@ ARG REWARD_MANAGER_PRIVATE_KEY
 ARG AUDIUS_DATA_PRIVATE_KEY
 
 COPY . .
-RUN --mount=type=cache,target=/tmp/cache \
+RUN --mount=type=cache,target=/usr/src/app/target-cache \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
-    cp -r * /tmp/cache && \
-    cd /tmp/cache && \
-    bash scripts/build.sh && \
-    mkdir -p /usr/src/app/target/debug /usr/src/app/target/deploy && \
-    cp target/debug/* /usr/src/app/target/debug/ | true && \
-    cp target/deploy/* /usr/src/app/target/deploy/ && \
-    mkdir -p /usr/src/app/anchor/audius-data/target/idl /usr/src/app/anchor/audius-data/target/deploy && \
-    cp anchor/audius-data/target/idl/* /usr/src/app/anchor/audius-data/target/idl && \
-    cp anchor/audius-data/target/deploy/* /usr/src/app/anchor/audius-data/target/deploy && \
-    cp -r anchor/audius-data/target/types /usr/src/app/anchor/audius-data/target/types
+    CARGO_TARGET_DIR=/usr/src/app/target-cache ./scripts/build.sh && \
+    mkdir -p target target/debug anchor/audius-data/target && \
+    cp -r target-cache/deploy target/ && \
+    cp target-cache/debug/*-cli target/debug && \
+    cp -r target-cache/deploy anchor/audius-data/target/
 
 ARG BUILD_ID
 LABEL prune=true
