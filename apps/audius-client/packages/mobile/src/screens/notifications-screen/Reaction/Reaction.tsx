@@ -44,13 +44,13 @@ export const Reaction = (props: ReactionProps) => {
   }, [statusProp])
 
   useEffect(() => {
-    if (status === 'unselected' || !isVisible) {
+    if (status === 'unselected' || !isVisible || !isOpen) {
       // Pause if off screen or unselected
       animationRef.current?.pause()
     } else if (isVisible && autoPlay) {
       animationRef.current?.play()
     }
-  }, [status, autoPlay, isVisible])
+  }, [status, autoPlay, isVisible, isOpen])
 
   useEffect(() => {
     if (ref.current && isOpen) {
