@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from integration_tests.utils import populate_mock_db
-from src.models import Milestone
+from src.models.notifications.milestone import Milestone
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 

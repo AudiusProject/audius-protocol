@@ -89,6 +89,8 @@ jobs:
               A up;
               A run monitoring up;
               A down;
+              cd "$PROTOCOL_DIR";
+              git checkout -f;
               exit;
             EOF
 
@@ -362,8 +364,8 @@ jobs:
             export spOwnerWallet='yes'
             export isCIBuild=true
             npm run test:coverage:ci
-      - coveralls/upload:
-          path_to_lcov: ./creator-node/coverage/lcov.info
+      # - coveralls/upload:
+      #     path_to_lcov: ./creator-node/coverage/lcov.info
 
   test-discovery-provider:
     docker:

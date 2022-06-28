@@ -3,7 +3,10 @@ from typing import List, Optional, TypedDict
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
-from src.models import AggregatePlays, Track, TrackRoute, User
+from src.models.social.aggregate_plays import AggregatePlays
+from src.models.tracks.track import Track
+from src.models.tracks.track_route import TrackRoute
+from src.models.users.user import User
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     add_query_pagination,

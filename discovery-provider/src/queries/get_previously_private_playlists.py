@@ -1,5 +1,5 @@
 from src import exceptions
-from src.models import Playlist
+from src.models.playlists.playlist import Playlist
 from src.utils.db_session import get_db_read_replica
 
 

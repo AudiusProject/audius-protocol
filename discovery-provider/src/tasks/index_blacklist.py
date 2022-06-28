@@ -1,7 +1,8 @@
 import logging
 
 from src.app import get_contract_addresses
-from src.models import BlacklistedIPLD, IPLDBlacklistBlock
+from src.models.indexing.blacklisted_ipld import BlacklistedIPLD
+from src.models.indexing.ipld_blacklist_block import IPLDBlacklistBlock
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
 from src.utils.redis_constants import (

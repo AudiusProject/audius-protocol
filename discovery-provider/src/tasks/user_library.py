@@ -6,7 +6,8 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
-from src.models import Playlist, Save, SaveType
+from src.models.playlists.playlist import Playlist
+from src.models.social.save import Save, SaveType
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)

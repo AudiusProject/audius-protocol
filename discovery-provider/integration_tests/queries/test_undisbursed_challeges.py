@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db_blocks
-from src.models import Challenge, ChallengeType, User, UserBankAccount, UserChallenge
+from src.models.rewards.challenge import Challenge, ChallengeType
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
 from src.utils.db_session import get_db
 

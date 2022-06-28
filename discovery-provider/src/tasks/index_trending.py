@@ -5,7 +5,8 @@ from typing import List, Optional, Tuple
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from src.models import Block, Track
+from src.models.indexing.block import Block
+from src.models.tracks.track import Track
 from src.queries.get_trending_tracks import (
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,

@@ -2,7 +2,7 @@ import logging  # pylint: disable=C0302
 
 from flask.globals import request
 from sqlalchemy import and_, or_
-from src.models import Track
+from src.models.tracks.track import Track
 from src.queries.query_helpers import (
     get_users_by_id,
     get_users_ids,

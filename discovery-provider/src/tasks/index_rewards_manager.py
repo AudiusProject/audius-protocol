@@ -8,12 +8,10 @@ import base58
 from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models import (
-    ChallengeDisbursement,
-    RewardManagerTransaction,
-    User,
-    UserChallenge,
-)
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.reward_manager import RewardManagerTransaction
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
