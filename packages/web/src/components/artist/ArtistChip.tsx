@@ -132,7 +132,6 @@ const ArtistChip = ({
             wrapperClassName={styles.profilePictureWrapper}
             className={styles.profilePicture}
             image={profilePicture}
-            onClick={onClickArtistName}
           />
         </ArtistPopover>
       ) : (
@@ -140,14 +139,10 @@ const ArtistChip = ({
           wrapperClassName={styles.profilePictureWrapper}
           className={styles.profilePicture}
           image={profilePicture}
-          onClick={onClickArtistName}
         />
       )}
       <div className={styles.text}>
-        <div
-          className={cn(styles.identity, 'name')}
-          onClick={onClickArtistName}
-        >
+        <div className={cn(styles.identity, 'name')}>
           <ArtistIdentifier
             userId={userId}
             name={name}
