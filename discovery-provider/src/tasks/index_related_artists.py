@@ -3,6 +3,7 @@ from typing import Union
 
 from redis import Redis
 from src.queries.get_related_artists import update_related_artist_scores_if_needed
+from src.queries.get_related_artists_minhash import update_related_artist_minhash
 from src.tasks.celery_app import celery
 from src.utils.session_manager import SessionManager
 
@@ -16,6 +17,11 @@ def queue_related_artist_calculation(redis: Redis, user_id: int):
 
 
 def process_related_artists_queue(db: SessionManager, redis: Redis):
+
+    with db.scoped_session() as session:
+        update_related_artist_minhash(session)
+    return
+
     next: Union[int, bool] = True
     needed_update_count = 0
     with db.scoped_session() as session:
@@ -45,7 +51,7 @@ def index_related_artists(self):
     redis = index_related_artists.redis
     db = index_related_artists.db
     have_lock = False
-    update_lock = redis.lock("related_artists_lock", timeout=3600)
+    update_lock = redis.lock("related_artists_lock", timeout=86400)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
