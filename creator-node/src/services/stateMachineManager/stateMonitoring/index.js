@@ -27,7 +27,7 @@ const logger = createChildLogger(baseLogger, {
  * - finding users who need a replica set update (when an unhealthy primary or secondary should be replaced)
  */
 class StateMonitoringManager {
-  async init(discoveryNodeEndpoint) {
+  async init(discoveryNodeEndpoint, prometheusRegistry) {
     const queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
@@ -35,10 +35,12 @@ class StateMonitoringManager {
     this.registerQueueEventHandlersAndJobProcessors({
       queue,
       monitorStateJobFailureCallback: this.enqueueMonitorStateJobAfterFailure,
-      processMonitorStateJob: this.processMonitorStateJob.bind(this),
-      processFindSyncRequestsJob: this.processFindSyncRequestsJob.bind(this),
+      processMonitorStateJob:
+        this.makeProcessMonitorStateJob(prometheusRegistry).bind(this),
+      processFindSyncRequestsJob:
+        this.makeProcessFindSyncRequestsJob(prometheusRegistry).bind(this),
       processFindReplicaSetUpdatesJob:
-        this.processFindReplicaSetUpdatesJob.bind(this)
+        this.makeProcessFindReplicaSetUpdatesJob(prometheusRegistry).bind(this)
     })
 
     // Don't start this queue on local dev because jobs process quickly with 0 users, which spams the logs
@@ -76,6 +78,7 @@ class StateMonitoringManager {
 
   /**
    * Registers event handlers for logging and job success/failure.
+   * @param {Object} params
    * @param {Object} params.queue the queue to register events for
    * @param {Function<failedJob>} params.monitorStateJobFailureCallback the function to call when a monitorState job fails
    * @param {Function<job>} params.processMonitorStateJob the function to call when processing a job from the queue to monitor state
@@ -195,31 +198,37 @@ class StateMonitoringManager {
    * Job processor boilerplate
    */
 
-  async processMonitorStateJob(job) {
-    return processJob(
-      JOB_NAMES.MONITOR_STATE,
-      job,
-      monitorStateJobProcessor,
-      logger
-    )
+  makeProcessMonitorStateJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.MONITOR_STATE,
+        job,
+        monitorStateJobProcessor,
+        logger,
+        prometheusRegistry
+      )
   }
 
-  async processFindSyncRequestsJob(job) {
-    return processJob(
-      JOB_NAMES.FIND_SYNC_REQUESTS,
-      job,
-      findSyncRequestsJobProcessor,
-      logger
-    )
+  makeProcessFindSyncRequestsJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.FIND_SYNC_REQUESTS,
+        job,
+        findSyncRequestsJobProcessor,
+        logger,
+        prometheusRegistry
+      )
   }
 
-  async processFindReplicaSetUpdatesJob(job) {
-    return processJob(
-      JOB_NAMES.FIND_REPLICA_SET_UPDATES,
-      job,
-      findReplicaSetUpdatesJobProcessor,
-      logger
-    )
+  makeProcessFindReplicaSetUpdatesJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+        job,
+        findReplicaSetUpdatesJobProcessor,
+        logger,
+        prometheusRegistry
+      )
   }
 }
 

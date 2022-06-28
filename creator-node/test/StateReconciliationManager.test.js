@@ -37,6 +37,18 @@ describe('test StateReconciliationManager initialization, events, and job proces
     sandbox.restore()
   })
 
+  function getPrometheusRegistry() {
+    const startTimerStub = sandbox.stub().returns(() => {})
+    const getMetricStub = sandbox.stub().returns({
+      startTimer: startTimerStub
+    })
+    const prometheusRegistry = {
+      getMetric: getMetricStub,
+      metricNames: {}
+    }
+    return prometheusRegistry
+  }
+
   function getProcessJobMock() {
     const loggerStub = {
       info: sandbox.stub(),
@@ -49,6 +61,9 @@ describe('test StateReconciliationManager initialization, events, and job proces
       {
         '../../logging': {
           createChildLogger
+        },
+        '../../redis': {
+          set: sandbox.stub()
         }
       }
     )
@@ -62,7 +77,7 @@ describe('test StateReconciliationManager initialization, events, and job proces
       stateReconciliationManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const queue = await stateReconciliationManager.init()
+    const queue = await stateReconciliationManager.init(getPrometheusRegistry())
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
     expect(queue).to.exist.and.to.be.instanceOf(BullQueue)
@@ -100,7 +115,9 @@ describe('test StateReconciliationManager initialization, events, and job proces
       }
     }
     await expect(
-      new MockStateReconciliationManager().processManualSyncJob(job)
+      new MockStateReconciliationManager().makeProcessManualSyncJob(
+        getPrometheusRegistry()
+      )(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
     expect(issueSyncReqStub).to.have.been.calledOnceWithExactly({
       logger: loggerStub,
@@ -131,7 +148,9 @@ describe('test StateReconciliationManager initialization, events, and job proces
       }
     }
     await expect(
-      new MockStateReconciliationManager().processRecurringSyncJob(job)
+      new MockStateReconciliationManager().makeProcessRecurringSyncJob(
+        getPrometheusRegistry()
+      )(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
     expect(issueSyncReqStub).to.have.been.calledOnceWithExactly({
       logger: loggerStub,
@@ -176,7 +195,9 @@ describe('test StateReconciliationManager initialization, events, and job proces
       }
     }
     await expect(
-      new MockStateReconciliationManager().processUpdateReplicaSetJob(job)
+      new MockStateReconciliationManager().makeProcessUpdateReplicaSetJob(
+        getPrometheusRegistry()
+      )(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
     expect(updateReplicaSetStub).to.have.been.calledOnceWithExactly({
       logger: loggerStub,

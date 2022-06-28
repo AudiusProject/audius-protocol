@@ -2,6 +2,7 @@ const promClient = require('prom-client')
 const _ = require('lodash')
 const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
+const { JOB_NAMES } = require('../stateMachineManager/stateMachineConstants')
 
 /**
  * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -26,6 +27,13 @@ let MetricNames = {
     'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_monitoring_duration_seconds'
+}
+// Add a histogram for each job in the state machine queues.
+// The only label they use is: uncaughtError=true/false
+for (const jobName of Object.values(JOB_NAMES)) {
+  MetricNames[
+    `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+  ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
 }
 MetricNames = Object.freeze(
   _.mapValues(MetricNames, (metricName) => NamespacePrefix + metricName)
@@ -85,7 +93,24 @@ const Metrics = Object.freeze({
         5
       )
     }
-  }
+  },
+  // Add histogram for each job in the state machine queues
+  ...Object.fromEntries(
+    Object.values(JOB_NAMES).map((jobName) => [
+      MetricNames[`STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`],
+      {
+        metricType: MetricTypes.HISTOGRAM,
+        metricConfig: {
+          name: MetricNames[
+            `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+          ],
+          help: `Duration in seconds for a ${jobName} job to complete`,
+          labelNames: ['uncaughtError'], // Whether the job completed (including with a caught error) or quit unexpectedly
+          buckets: [1, 5, 10, 30, 60, 120] // 1 second to 2 minutes
+        }
+      }
+    ])
+  )
 })
 
 module.exports.NamespacePrefix = NamespacePrefix

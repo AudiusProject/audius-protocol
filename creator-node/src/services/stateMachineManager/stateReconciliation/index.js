@@ -22,16 +22,19 @@ const logger = createChildLogger(baseLogger, {
  * - updating user's replica sets when one or more nodes in their replica set becomes unhealthy
  */
 class StateReconciliationManager {
-  async init() {
+  async init(prometheusRegistry) {
     const queue = this.makeQueue(
       config.get('redisHost'),
       config.get('redisPort')
     )
     this.registerQueueEventHandlersAndJobProcessors({
       queue,
-      processManualSync: this.processManualSyncJob.bind(this),
-      processRecurringSync: this.processRecurringSyncJob.bind(this),
-      processUpdateReplicaSet: this.processUpdateReplicaSetJob.bind(this)
+      processManualSync:
+        this.makeProcessManualSyncJob(prometheusRegistry).bind(this),
+      processRecurringSync:
+        this.makeProcessRecurringSyncJob(prometheusRegistry).bind(this),
+      processUpdateReplicaSet:
+        this.makeProcessUpdateReplicaSetJob(prometheusRegistry).bind(this)
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
@@ -126,31 +129,37 @@ class StateReconciliationManager {
    * Job processor boilerplate
    */
 
-  async processManualSyncJob(job) {
-    return processJob(
-      JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
-      job,
-      handleSyncRequestJobProcessor,
-      logger
-    )
+  makeProcessManualSyncJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
+        job,
+        handleSyncRequestJobProcessor,
+        logger,
+        prometheusRegistry
+      )
   }
 
-  async processRecurringSyncJob(job) {
-    return processJob(
-      JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
-      job,
-      handleSyncRequestJobProcessor,
-      logger
-    )
+  makeProcessRecurringSyncJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
+        job,
+        handleSyncRequestJobProcessor,
+        logger,
+        prometheusRegistry
+      )
   }
 
-  async processUpdateReplicaSetJob(job) {
-    return processJob(
-      JOB_NAMES.UPDATE_REPLICA_SET,
-      job,
-      updateReplicaSetJobProcessor,
-      logger
-    )
+  makeProcessUpdateReplicaSetJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.UPDATE_REPLICA_SET,
+        job,
+        updateReplicaSetJobProcessor,
+        logger,
+        prometheusRegistry
+      )
   }
 }
 

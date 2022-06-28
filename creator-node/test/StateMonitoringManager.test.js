@@ -37,6 +37,18 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     sandbox.restore()
   })
 
+  function getPrometheusRegistry() {
+    const startTimerStub = sandbox.stub().returns(() => {})
+    const getMetricStub = sandbox.stub().returns({
+      startTimer: startTimerStub
+    })
+    const prometheusRegistry = {
+      getMetric: getMetricStub,
+      metricNames: {}
+    }
+    return prometheusRegistry
+  }
+
   function getProcessJobMock() {
     const loggerStub = {
       info: sandbox.stub(),
@@ -49,6 +61,9 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
       {
         '../../logging': {
           createChildLogger
+        },
+        '../../redis': {
+          set: sandbox.stub()
         }
       }
     )
@@ -67,7 +82,10 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
       stateMonitoringManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const queue = await stateMonitoringManager.init(discoveryNodeEndpoint)
+    const queue = await stateMonitoringManager.init(
+      discoveryNodeEndpoint,
+      getPrometheusRegistry()
+    )
 
     // Verify that the queue was successfully initialized and that its event listeners were registered
     expect(queue).to.exist.and.to.be.instanceOf(BullQueue)
@@ -98,7 +116,10 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
     // Initialize StateMonitoringManager
     const stateMonitoringManager = new MockStateMonitoringManager()
-    const queue = await stateMonitoringManager.init(discoveryNodeEndpoint)
+    const queue = await stateMonitoringManager.init(
+      discoveryNodeEndpoint,
+      getPrometheusRegistry()
+    )
 
     // Verify that the queue has the correct initial job in it
     return expect(queue.getJobs('delayed'))
@@ -125,7 +146,10 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
 
     // Initialize StateMonitoringManager
     const stateMonitoringManager = new MockStateMonitoringManager()
-    const queue = await stateMonitoringManager.init('discoveryNodeEndpoint')
+    const queue = await stateMonitoringManager.init(
+      'discoveryNodeEndpoint',
+      getPrometheusRegistry()
+    )
 
     // Verify that the queue won't process or queue jobs because it's paused
     const isQueuePaused = await queue.isPaused()
@@ -158,7 +182,9 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
       }
     }
     await expect(
-      new MockStateMonitoringManager().processMonitorStateJob(job)
+      new MockStateMonitoringManager().makeProcessMonitorStateJob(
+        getPrometheusRegistry()
+      )(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
     expect(processStateMonitoringJobStub).to.have.been.calledOnceWithExactly({
       logger: loggerStub,
@@ -193,7 +219,9 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
       }
     }
     await expect(
-      new MockStateMonitoringManager().processFindSyncRequestsJob(job)
+      new MockStateMonitoringManager().makeProcessFindSyncRequestsJob(
+        getPrometheusRegistry()
+      )(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
     expect(processFindSyncRequestsJobStub).to.have.been.calledOnceWithExactly({
       logger: loggerStub,
@@ -232,7 +260,9 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
       }
     }
     await expect(
-      new MockStateMonitoringManager().processFindReplicaSetUpdatesJob(job)
+      new MockStateMonitoringManager().makeProcessFindReplicaSetUpdatesJob(
+        getPrometheusRegistry()
+      )(job)
     ).to.eventually.be.fulfilled.and.deep.equal(expectedResult)
     expect(
       processfindReplicaSetUpdatesJobStub
@@ -250,7 +280,10 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
     // Initialize StateMonitoringManager and stubbed queue.add()
     const discoveryNodeEndpoint = 'http://test_dn.co'
     const stateMonitoringManager = new StateMonitoringManager()
-    await stateMonitoringManager.init(discoveryNodeEndpoint)
+    await stateMonitoringManager.init(
+      discoveryNodeEndpoint,
+      getPrometheusRegistry()
+    )
     const queueAdd = sandbox.stub()
 
     // Call function that enqueues a new job after the previous job failed
