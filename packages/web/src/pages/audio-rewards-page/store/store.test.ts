@@ -21,7 +21,8 @@ import {
   getClaimToRetry,
   getUserChallenge,
   getUserChallenges,
-  getUserChallengesOverrides
+  getUserChallengesOverrides,
+  getUserChallengeSpecifierMap
 } from 'common/store/pages/audio-rewards/selectors'
 import {
   Claim,
@@ -563,11 +564,13 @@ describe('Rewards Page Sagas', () => {
         .provide([
           ...fetchUserChallengesProvisions,
           [
-            select(getUserChallenges),
+            select(getUserChallengeSpecifierMap),
             {
               'profile-completion': {
-                is_complete: true,
-                is_disbursed: false
+                [testUser.user_id]: {
+                  is_complete: true,
+                  is_disbursed: false
+                }
               }
             }
           ],
@@ -589,11 +592,13 @@ describe('Rewards Page Sagas', () => {
         .provide([
           ...fetchUserChallengesProvisions,
           [
-            select(getUserChallenges),
+            select(getUserChallengeSpecifierMap),
             {
               'profile-completion': {
-                is_complete: true,
-                is_disbursed: true
+                [testUser.user_id]: {
+                  is_complete: true,
+                  is_disbursed: true
+                }
               }
             }
           ],
@@ -614,11 +619,13 @@ describe('Rewards Page Sagas', () => {
         .provide([
           ...fetchUserChallengesProvisions,
           [
-            select(getUserChallenges),
+            select(getUserChallengeSpecifierMap),
             {
-              referrals: {
-                is_complete: true,
-                is_disbursed: false
+              [testUser.user_id]: {
+                referrals: {
+                  is_complete: true,
+                  is_disbursed: false
+                }
               }
             }
           ],
@@ -664,12 +671,14 @@ describe('Rewards Page Sagas', () => {
         )
         .provide([
           [
-            select(getUserChallenges),
+            select(getUserChallengeSpecifierMap),
             {
               'listen-streak': {
-                current_step_count: 0,
-                is_complete: false,
-                is_disbursed: false
+                [testUser.user_id]: {
+                  current_step_count: 0,
+                  is_complete: false,
+                  is_disbursed: false
+                }
               }
             }
           ],
@@ -714,12 +723,14 @@ describe('Rewards Page Sagas', () => {
         )
         .provide([
           [
-            select(getUserChallenges),
+            select(getUserChallengeSpecifierMap),
             {
               'listen-streak': {
-                current_step_count: 0,
-                is_complete: false,
-                is_disbursed: false
+                [testUser.user_id]: {
+                  current_step_count: 0,
+                  is_complete: false,
+                  is_disbursed: false
+                }
               }
             }
           ],
