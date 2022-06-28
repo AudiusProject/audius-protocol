@@ -1,4 +1,5 @@
-from src.models import Save, SaveType, Track
+from src.models.social.save import Save, SaveType
+from src.models.tracks.track import Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     add_query_pagination,

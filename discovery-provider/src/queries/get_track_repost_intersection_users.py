@@ -1,5 +1,8 @@
 from src import exceptions
-from src.models import Follow, Repost, RepostType, Track, User
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost, RepostType
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.queries.query_helpers import paginate_query
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica

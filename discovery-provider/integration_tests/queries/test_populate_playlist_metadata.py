@@ -1,7 +1,8 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
-from src.models import RepostType, SaveType
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_playlist_metadata
 from src.utils.db_session import get_db

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models import AggregatePlays
+from src.models.social.aggregate_plays import AggregatePlays
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)

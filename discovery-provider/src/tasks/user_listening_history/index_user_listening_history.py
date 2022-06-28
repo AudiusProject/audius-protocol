@@ -3,8 +3,8 @@ import time
 from typing import DefaultDict
 
 import sqlalchemy as sa
-from src.models import Play
-from src.models.models import UserListeningHistory
+from src.models.social.play import Play
+from src.models.users.user_listening_history import UserListeningHistory
 from src.tasks.celery_app import celery
 from src.tasks.user_listening_history.listen_history import ListenHistory
 from src.utils.update_indexing_checkpoints import (

@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
 from src.app import create_app, create_celery
-from src.models import Base
+from src.models.base import Base
 from src.utils import helpers
 from src.utils.redis_connection import get_redis
 from web3 import HTTPProvider, Web3

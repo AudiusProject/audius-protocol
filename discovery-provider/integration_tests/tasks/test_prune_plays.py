@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models import Play, PlaysArchive
+from src.models.social.play import Play
+from src.models.social.plays_archive import PlaysArchive
 from src.tasks.prune_plays import _prune_plays
 from src.utils.config import shared_config
 from src.utils.db_session import get_db

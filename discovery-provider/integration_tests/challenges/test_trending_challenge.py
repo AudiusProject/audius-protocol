@@ -11,8 +11,9 @@ from src.challenges.trending_challenge import (
     trending_track_challenge_manager,
     trending_underground_track_challenge_manager,
 )
-from src.models import TrendingResult
-from src.models.models import Challenge, UserChallenge
+from src.models.rewards.challenge import Challenge
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.tracks.trending_result import TrendingResult
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType

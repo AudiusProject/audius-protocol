@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from src.models import RouteMetrics
+from src.models.metrics.route_metrics import RouteMetrics
 from src.queries.get_route_metrics import _get_route_metrics
 from src.utils.db_session import get_db
 

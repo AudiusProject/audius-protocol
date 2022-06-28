@@ -1,6 +1,9 @@
 from sqlalchemy import desc, func
 from src import exceptions
-from src.models import AggregateUser, Playlist, Repost, RepostType, User
+from src.models.playlists.playlist import Playlist
+from src.models.social.repost import Repost, RepostType
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.query_helpers import add_query_pagination, populate_user_metadata
 from src.utils import helpers

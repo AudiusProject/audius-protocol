@@ -4,7 +4,7 @@ from typing import Dict, Optional, TypedDict
 
 from redis import Redis
 from sqlalchemy import desc
-from src.models import UserBankTransaction
+from src.models.users.user_bank import UserBankTransaction
 from src.tasks.index_user_bank import cache_latest_sol_user_bank_db_tx
 from src.utils import helpers
 from src.utils.cache_solana_program import (

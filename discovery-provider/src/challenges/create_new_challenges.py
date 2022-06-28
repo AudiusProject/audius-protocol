@@ -4,7 +4,7 @@ import pathlib
 from os import path
 from typing import List, Optional, TypedDict
 
-from src.models import Challenge
+from src.models.rewards.challenge import Challenge
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 import logging
 
-from src.models import AssociatedWallet
+from src.models.users.associated_wallet import AssociatedWallet
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
