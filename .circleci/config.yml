@@ -89,6 +89,8 @@ jobs:
               A up;
               A run monitoring up;
               A down;
+              cd "$PROTOCOL_DIR";
+              git checkout -f;
               exit;
             EOF
 
