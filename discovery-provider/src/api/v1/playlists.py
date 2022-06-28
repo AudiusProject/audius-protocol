@@ -195,6 +195,11 @@ top_parser.add_argument(
     choices=("album", "playlist"),
     description="The collection type",
 )
+top_parser.add_argument(
+    "mood",
+    required=False,
+    description="Filer to a mood",
+)
 
 
 @ns.route("/top", doc=False)
