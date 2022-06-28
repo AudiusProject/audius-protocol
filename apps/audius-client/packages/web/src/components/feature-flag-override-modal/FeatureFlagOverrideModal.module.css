@@ -10,3 +10,9 @@
   justify-content: space-between;
   gap: 16px;
 }
+
+.loader {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
