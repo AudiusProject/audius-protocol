@@ -427,6 +427,32 @@ export class CreatorNode {
   }
 
   /**
+   * Associate an uploaded playlist metadata file with a blockchainId
+   * @param blockchainId - Valid ID assigned to playlist
+   * @param metadataFileUUID unique ID for metadata playlist
+   * @param blockNumber
+   */
+  async associatePlaylistMetadata(
+    blockchainId: number,
+    metadataFileUUID: string,
+    blockNumber: number
+  ) {
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/playlists',
+        method: 'post',
+        data: {
+          blockchainId,
+          metadataFileUUID,
+          blockNumber
+        }
+      },
+      true
+    )
+    return body
+  }
+
+  /**
    * Creates a track on the content node, associating track id with file content
    * @param audiusTrackId returned by track creation on-blockchain
    * @param metadataFileUUID unique ID for metadata file

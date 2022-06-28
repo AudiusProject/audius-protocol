@@ -73,6 +73,48 @@ class Playlists extends Base {
 
   /* ------- SETTERS ------- */
 
+  async createPlaylist2 (playlistName, trackIds, coverPhoto, description, isAlbum) {
+    // TODO: Abstract determining a valid ID
+    const ownerId = this.userStateManager.getCurrentUserId()
+    const action = 'Create'
+    const entityType = 'Playlist'
+    const entityId = 10
+    this.REQUIRES(Services.CREATOR_NODE)
+    console.log(`Playlist2 | New create playlist function invoked! ${ownerId}`)
+    console.log(coverPhoto)
+    const dirCID = await this.uploadPlaylistCoverPhoto(coverPhoto, true)
+    console.log(`Playlist2 | Uploaded image w/dirCID = ${dirCID}`)
+    const metadata = {
+      action,
+      entity_type: entityType,
+      playlist_id: entityId,
+      playlist_contents: trackIds,
+      playlist_name: playlistName,
+      playlist_image_sizes_multihash: dirCID,
+      description,
+      isAlbum
+    }
+    console.log(`Playlist2 | New create playlist function metadata! ${ownerId}, ${JSON.stringify(metadata)}`)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadPlaylistMetadata(metadata)
+    console.log(`Playlist2 | New playlist metadata ${JSON.stringify(metadataMultihash)}`)
+    const resp = await this.contracts.AudiusDataClient.manageEntity(
+      ownerId,
+      entityType,
+      entityId,
+      action,
+      metadataMultihash
+    )
+    const receipt = resp.txReceipt
+    console.log(`Playlist2 | ${JSON.stringify(receipt)} ${metadataFileUUID}, associating next...`)
+    const blocknumber = receipt.blockNumber
+    const associateResponse = await this.creatorNode.associatePlaylistMetadata(
+      entityId,
+      metadataFileUUID,
+      blocknumber
+    )
+    console.log(`Playlist2 | Associated! ${JSON.stringify(associateResponse)}`)
+  }
+
   /**
    * Creates a new playlist
    * @param {number} userId

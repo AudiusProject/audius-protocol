@@ -32,6 +32,7 @@ export class AudiusDataClient extends ContractClient {
             this.contractRegistryKey,
             contractAddress
         )
+        console.log(tx)
         return {
             txReceipt: tx
         }
