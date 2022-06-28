@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   Modal,
@@ -39,8 +39,10 @@ const setOverrideSetting = (flag: string, val: OverrideSetting) => {
 
 export const FeatureFlagOverrideModal = () => {
   const hotkeyToggle = useDevModeHotkey(70 /* f */)
+  // Ref to handle modal toggle from the hotkey
+  // Needed to avoid it getting out of sync when using closeModal function
+  const hotkeyRef = useRef<boolean | null>(null)
   const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
-  const [hotkeyLoaded, setHotkeyLoaded] = useState(false)
   const [isOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
   const [overrideSettings, setOverrideSettings] = useState(
@@ -65,16 +67,20 @@ export const FeatureFlagOverrideModal = () => {
     remoteConfigInstance.waitForUserRemoteConfig().then(updateDefaultSettings)
   }, [])
 
-  const openModal = () => setIsOpen(true)
-  const closeModal = () => setIsOpen(false)
+  const closeModal = useCallback(() => {
+    hotkeyRef.current = false
+    setIsOpen(false)
+  }, [hotkeyRef, setIsOpen])
 
   useEffect(() => {
-    if (hotkeyLoaded) {
-      isOpen ? closeModal() : openModal()
-    } else {
-      setHotkeyLoaded(true)
+    if (hotkeyRef.current === null) {
+      hotkeyRef.current = false
+      return
     }
-  }, [hotkeyToggle])
+
+    hotkeyRef.current = !hotkeyRef.current
+    setIsOpen(hotkeyRef.current)
+  }, [hotkeyToggle, setIsOpen])
 
   return (
     <Modal
@@ -115,7 +121,7 @@ export const FeatureFlagOverrideModal = () => {
             ))}
           </div>
         ) : (
-          <LoadingSpinner />
+          <LoadingSpinner className={styles.loader} />
         )}
       </ModalContent>
     </Modal>
