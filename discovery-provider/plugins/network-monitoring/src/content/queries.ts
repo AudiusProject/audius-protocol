@@ -281,31 +281,31 @@ export const getUserCounts = async (run_id: number, spid: number): Promise<[numb
     return [userCounts.primary_count, userCounts.secondary1_count, userCounts.secondary2_count]
 }
 
+// export const getPrimaryWalletBatch = async (
+//     run_id: number,
+//     spid: number,
+//     cursor: string,
+//     limit: number,
+// ): Promise<string[]> => {
+//     const walletBatchResp: unknown[] = await sequelizeConn.query(`
+//         SELECT wallet 
+//         FROM network_monitoring_users
+//         WHERE run_id = :run_id
+//         AND primaryspid = :spid
+//         AND wallet > :cursor
+//         ORDER BY wallet
+//         LIMIT :limit;
+//     `, {
+//         type: QueryTypes.SELECT,
+//         replacements: { run_id, spid, cursor, limit }
+//     })
+
+//     const walletBatch = (walletBatchResp as { wallet: string }[]).map(item => item.wallet)
+
+//     return walletBatch
+// }
+
 export const getPrimaryWalletBatch = async (
-    run_id: number,
-    spid: number,
-    cursor: string,
-    limit: number,
-): Promise<string[]> => {
-    const walletBatchResp: unknown[] = await sequelizeConn.query(`
-        SELECT wallet 
-        FROM network_monitoring_users
-        WHERE run_id = :run_id
-        AND primaryspid = :spid
-        AND wallet > :cursor
-        ORDER BY wallet
-        LIMIT :limit;
-    `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id, spid, cursor, limit }
-    })
-
-    const walletBatch = (walletBatchResp as { wallet: string }[]).map(item => item.wallet)
-
-    return walletBatch
-}
-
-export const getSecondary1WalletBatch = async (
     run_id: number,
     spid: number,
     offset: number,
@@ -315,9 +315,56 @@ export const getSecondary1WalletBatch = async (
         SELECT wallet 
         FROM network_monitoring_users
         WHERE run_id = :run_id
-        AND secondary1spid = :spid
+        AND primaryspid = :spid
         OFFSET :offset
         LIMIT :limit;
+    `, {
+        type: QueryTypes.SELECT,
+        replacements: { run_id, spid, offset, limit }
+    })
+
+    const walletBatch = (walletBatchResp as { wallet: string }[]).map(item => item.wallet)
+
+    return walletBatch
+}
+
+// export const getSecondary1WalletBatch = async (
+//     run_id: number,
+//     spid: number,
+//     cursor: string,
+//     limit: number,
+// ): Promise<string[]> => {
+//     const walletBatchResp: unknown[] = await sequelizeConn.query(`
+//     SELECT wallet 
+//     FROM network_monitoring_users
+//     WHERE run_id = :run_id
+//     AND secondary1spid = :spid
+//     AND wallet > :cursor
+//     ORDER BY wallet
+//     LIMIT :limit;
+//     `, {
+//         type: QueryTypes.SELECT,
+//         replacements: { run_id, spid, limit, cursor }
+//     })
+
+//     const walletBatch = (walletBatchResp as { wallet: string }[]).map(item => item.wallet)
+
+//     return walletBatch
+// }
+
+export const getSecondary1WalletBatch = async (
+    run_id: number,
+    spid: number,
+    offset: number,
+    limit: number,
+): Promise<string[]> => {
+    const walletBatchResp: unknown[] = await sequelizeConn.query(`
+    SELECT wallet 
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
+    AND secondary1spid = :spid
+    OFFSET :offset
+    LIMIT :limit;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id, spid, limit, offset }
@@ -328,6 +375,30 @@ export const getSecondary1WalletBatch = async (
     return walletBatch
 }
 
+// export const getSecondary2WalletBatch = async (
+//     run_id: number,
+//     spid: number,
+//     cursor: string,
+//     limit: number,
+// ): Promise<string[]> => {
+//     const walletBatchResp: unknown[] = await sequelizeConn.query(`
+//     SELECT wallet 
+//     FROM network_monitoring_users
+//     WHERE run_id = :run_id
+//     AND secondary2spid = :spid
+//     AND wallet > :cursor
+//     ORDER BY wallet
+//     LIMIT :limit;
+//     `, {
+//         type: QueryTypes.SELECT,
+//         replacements: { run_id, spid, limit, cursor }
+//     })
+
+//     const walletBatch = (walletBatchResp as { wallet: string }[]).map(item => item.wallet)
+
+//     return walletBatch
+// }
+
 export const getSecondary2WalletBatch = async (
     run_id: number,
     spid: number,
@@ -335,12 +406,12 @@ export const getSecondary2WalletBatch = async (
     limit: number,
 ): Promise<string[]> => {
     const walletBatchResp: unknown[] = await sequelizeConn.query(`
-        SELECT wallet 
-        FROM network_monitoring_users
-        WHERE run_id = :run_id
-        AND secondary2spid = :spid
-        OFFSET :offset
-        LIMIT :limit;
+    SELECT wallet 
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
+    AND secondary2spid = :spid
+    OFFSET :offset
+    LIMIT :limit;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id, spid, limit, offset }
@@ -387,6 +458,7 @@ export const savePrimaryUserResults = async (
 }
 */
 
+/*
 export const savePrimaryUserResults = async (
     run_id: number,
     spid: number,
@@ -429,6 +501,35 @@ export const savePrimaryUserResults = async (
         await t.rollback()
     }
 }
+*/
+
+export const savePrimaryUserResults = async (
+    run_id: number,
+    spid: number,
+    results: { walletPublicKey: string, clock: number }[],
+): Promise<number> => {
+
+    try {
+        const queryStr = `UPDATE network_monitoring_users as nm_users
+                    SET primary_clock_value = tmp.clock::text::int
+                    FROM (
+                        VALUES 
+                            ${formatUserValues(run_id, results)}
+                    ) AS tmp(run_id, wallet, clock)
+                    WHERE nm_users.wallet = tmp.wallet::text
+                    AND nm_users.run_id::text = tmp.run_id::text;`
+
+        await sequelizeConn.query(queryStr, {
+            type: QueryTypes.UPDATE,
+        })
+
+    } catch (e) {
+        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        return results.length
+    }
+
+    return 0
+}
 
 // export const savePrimaryUserResults = async (
 //     run_id: number,
@@ -465,78 +566,71 @@ export const saveSecondary1UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
+): Promise<number> => {
     try {
-        await Promise.all(
-            results.map(async ({ walletPublicKey, clock }) => {
-
-                try {
-                    await sequelizeConn.query(`
+        await sequelizeConn.query(`
                     UPDATE network_monitoring_users as nm_users
-                    SET secondary1_clock_value = tmp.clock
+                    SET secondary1_clock_value = tmp.clock::text::int
                     FROM (
-                        VALUES (
+                        VALUES 
                             ${formatUserValues(run_id, results)}
-                        )
                     ) AS tmp(run_id, wallet, clock)
-                    WHERE nm_users.wallet::text = tmp.wallet::text
-                    AND nm_users.run_id::integer = tmp.run_id::integer;
+                    WHERE nm_users.wallet = tmp.wallet::text
+                    AND nm_users.run_id::text = tmp.run_id::text;
                 `, {
-                        type: QueryTypes.UPDATE,
-                        replacements: { run_id, walletPublicKey, clock },
-                    })
-                } catch (e) {
-                    console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
-                    return
-                }
-            })
-
-        )
+            type: QueryTypes.UPDATE,
+            replacements: { run_id },
+        })
 
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        return results.length
     }
+
+    return 0
 }
 
 export const saveSecondary2UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
+): Promise<number> => {
 
     try {
-        await Promise.all(
-            results.map(async ({ walletPublicKey, clock }) => {
-                try {
-                    await sequelizeConn.query(`
+        const queryStr = `
                     UPDATE network_monitoring_users as nm_users
-                    SET secocndary2_clock_value = tmp.clock
+                    SET secondary2_clock_value = tmp.clock::text::int
                     FROM (
-                        VALUES (
+                        VALUES 
                             ${formatUserValues(run_id, results)}
-                        )
                     ) AS tmp(run_id, wallet, clock)
-                    WHERE nm_users.wallet::text = tmp.wallet::text
-                    AND nm_users.run_id::integer = tmp.run_id::integer;
-                `, {
-                        type: QueryTypes.UPDATE,
-                        replacements: { run_id, walletPublicKey, clock },
-                    })
-                } catch (e) {
-                    console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
-                }
-            })
-        )
+                    WHERE nm_users.wallet = tmp.wallet::text
+                    AND nm_users.run_id::text = tmp.run_id::text;
+                `
+
+        await sequelizeConn.query(queryStr, {
+            type: QueryTypes.UPDATE,
+            replacements: { run_id },
+        })
+
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+        return results.length
     }
+
+    return 0
 }
 
 const formatUserValues = (run_id: number, results: { walletPublicKey: string, clock: number }[]): string => {
     let formattedStr = ''
 
     results.forEach((result, i) => {
-        if (result.walletPublicKey === null || result.walletPublicKey === undefined) {
+        if (
+            result.walletPublicKey === undefined
+            || result.walletPublicKey === null 
+            || result.clock === undefined
+            || result.clock === null 
+        ) {
             return
         }
 
