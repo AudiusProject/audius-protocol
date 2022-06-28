@@ -19,7 +19,9 @@ def queue_related_artist_calculation(redis: Redis, user_id: int):
 def process_related_artists_queue(db: SessionManager, redis: Redis):
 
     with db.scoped_session() as session:
+        logger.info("index_related_artists.py | starting")
         update_related_artist_minhash(session)
+        logger.info("index_related_artists.py | done")
     return
 
     next: Union[int, bool] = True
@@ -51,7 +53,7 @@ def index_related_artists(self):
     redis = index_related_artists.redis
     db = index_related_artists.db
     have_lock = False
-    update_lock = redis.lock("related_artists_lock", timeout=86400)
+    update_lock = redis.lock("related_artists_lock", timeout=600)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

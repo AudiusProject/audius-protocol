@@ -1,3 +1,5 @@
+import datetime
+
 from datasketch import MinHash, MinHashLSHForest
 from psycopg2.extras import execute_values
 from sqlalchemy.orm import Session
@@ -49,6 +51,7 @@ def update_related_artist_minhash(session: Session):
         # 2x overfetch with rescore to improve accuracy:
         # http://ekzhu.com/datasketch/lshforest.html#tips-for-improving-accuracy
         similar = forest.query(mh, top_k * 2)
+        created_at = datetime.datetime.now()
 
         rows = []
         for other_id in similar:
@@ -56,16 +59,11 @@ def update_related_artist_minhash(session: Session):
                 continue
             mh2 = user_mh[other_id]
             score = mh.jaccard(mh2)
-            rows.append((user_id, other_id, score))
+            rows.append((user_id, other_id, score, created_at))
 
         rows = sorted(rows, key=lambda x: x[2], reverse=True)[:top_k]
 
-        for row in rows:
-            print("minhash:", row)
-
-        insert_query = (
-            "insert into relart2 (user_id, related_artist_user_id, score) values %s"
-        )
+        insert_query = "insert into related_artists (user_id, related_artist_user_id, score, created_at) values %s"
         execute_values(cursor, insert_query, rows, template=None, page_size=100)
 
     connection.commit()
