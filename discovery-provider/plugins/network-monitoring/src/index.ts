@@ -33,14 +33,12 @@ const main = async () => {
     endTimer({ run_id: run_id })
 
     try {
-        // Finish by publishing metrics to prometheus push gateway
+        // Finish by publishing any outstanding metrics to prometheus push gateway
         console.log(`[${run_id}] pushing metrics to gateway`);
         await gateway.pushAdd({ jobName: 'network-monitoring' })
     } catch (e) {
         console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
-
-
 
     process.exit(0)
 }
