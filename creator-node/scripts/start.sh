@@ -71,9 +71,9 @@ if [[ "$devMode" == "true" ]]; then
         npm link
         cd ../app
         npm link @audius/sdk
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger)
     else
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
 else
     node build/src/index.js | tee >(logger)
