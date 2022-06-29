@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Integer, String, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class PlaysArchive(Base):
+class PlaysArchive(Base, RepresentableMixin):
     __tablename__ = "plays_archive"
 
     id = Column(Integer, primary_key=True)
@@ -18,15 +19,3 @@ class PlaysArchive(Base):
     archived_at = Column(
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
-
-    def __repr__(self):
-        return f"<Play(\
-id={self.id},\
-user_id={self.user_id},\
-source={self.source},\
-play_item_id={self.play_item_id}\
-slot={self.slot}\
-signature={self.signature}\
-updated_at={self.updated_at}\
-created_at={self.created_at}\
-archived_at={self.archived_at})>"

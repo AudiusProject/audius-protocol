@@ -1,0 +1,19 @@
+services:
+  filebeat:
+    image: audius/filebeat:8.2.0
+    container_name: filebeat
+    user: root
+    restart: always
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # for system and auth modules
+      - /var/log/:/var/log/:ro
+
+  metricbeat:
+    image: audius/metricbeat:8.2.0
+    container_name: metricbeat
+    user: root
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

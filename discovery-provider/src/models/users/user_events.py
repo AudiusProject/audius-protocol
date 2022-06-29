@@ -1,8 +1,9 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class UserEvents(Base):
+class UserEvents(Base, RepresentableMixin):
     """
     User events track event metadata a user may produce as a part of their interaction
     with the protocol over time, e.g. who was the user referred by? has the user signed in on a mobile app?
@@ -25,13 +26,3 @@ class UserEvents(Base):
 
     referrer = Column(Integer, nullable=True)
     is_mobile_user = Column(Boolean, nullable=False, default=False)
-
-    def __repr__(self):
-        return f"<UserEvents(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-slot={self.slot},\
-is_current={self.is_current},\
-id={self.id},\
-user_id={self.user_id},\
-referrer={self.referrer},\
-is_mobile_user={self.is_mobile_user})>"
