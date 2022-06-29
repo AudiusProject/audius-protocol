@@ -44,7 +44,7 @@ If this is your first time, view this [tutorial](https://www.elastic.co/guide/en
     * [Using Cloud ID](https://www.elastic.co/guide/en/cloud-enterprise/current/ece-cloud-id.html)
 
 
-## Developer Flow
+## Build and Test Locally
 
 The developer flow is similar to the release flow in that:
 
