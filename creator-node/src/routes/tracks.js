@@ -177,8 +177,10 @@ module.exports = function (app) {
     ensureValidSPMiddleware,
     handleResponse(async (req, res) => {
       const fileDir = req.body.fileDir
-      if (!fileDir.includes('tmp_track_artifacts')){
-        return errorResponseBadRequest('Cannot remove track folder outside temporary track artifacts')
+      if (!fileDir.includes('tmp_track_artifacts')) {
+        return errorResponseBadRequest(
+          'Cannot remove track folder outside temporary track artifacts'
+        )
       }
       await removeTrackFolder({ logContext: req.logContext }, fileDir)
 
