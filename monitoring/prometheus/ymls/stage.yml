@@ -28,7 +28,7 @@
     scheme: 'http'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['35.202.199.159:9091']
+      - targets: ['discoveryprovider2.staging.audius.co:9091']
         labels:
           host: 'discoveryprovider2.staging.audius.co'
           environment: 'stage'
