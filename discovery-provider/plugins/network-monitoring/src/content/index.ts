@@ -85,11 +85,6 @@ export const indexContent = async (run_id: number) => {
         // for each content node...
         content_nodes.map(async (cnode, _) => {
 
-            const healthy = await checkNodeHealth(cnode.endpoint)
-            if (!healthy) {
-                return
-            }
-
             // const image_cid_count: string = image_to_content_nodes[i]?.cid_count || '0'
             return new Promise<void>(async resolve => {
                 await Promise.all([
@@ -404,33 +399,5 @@ const getUserClockValues = async (
             walletPublicKey,
             clock: -1
         }))
-    }
-}
-
-const checkNodeHealth = async (endpoint: string): Promise<boolean> => {
-    try {
-        const axiosReqObj = {
-            method: 'get',
-            url: '/health_check',
-            baseURL: endpoint,
-            data: {},
-            params: {},
-        }
-
-        const batchClockStatusResp = await makeRequest(
-            axiosReqObj,
-            1,
-            false,
-            [],
-            {},
-        )
-
-
-        return batchClockStatusResp.response?.data?.healthly === true
-
-    } catch (e) {
-        console.log(`[checkNodeHealth Error] - ${endpoint} - ${(e as Error).message}`)
-
-        return false
     }
 }
