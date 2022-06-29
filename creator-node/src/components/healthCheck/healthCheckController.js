@@ -69,6 +69,7 @@ const healthCheckVerifySignature = (req, res, next) => {
       )
     )
   }
+  // todo - also allow other registered nodes to test this
   const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
   if (recoveredPublicWallet !== delegateOwnerWallet) {
     return sendResponse(
@@ -200,12 +201,15 @@ const healthCheckVerboseController = async (req) => {
 const healthCheckFileUploadController = async (req) => {
   const err =
     req.fileFilterError ||
-    req.fileSizeError ||
-    (await removeTrackFolder(req, req.fileDir))
+    req.fileSizeError
   if (err) {
+    await removeTrackFolder(req, req.fileDir)
     return errorResponseServerError(err)
   }
 
+  const AsyncProcessingQueue =
+    req.app.get('serviceRegistry').asyncProcessingQueue
+  req.logger.info("about to add addTranscodeAndSegmentTask")
   await AsyncProcessingQueue.addTranscodeAndSegmentTask({
     logContext: req.logContext,
     req: {
@@ -214,7 +218,8 @@ const healthCheckFileUploadController = async (req) => {
       uuid: req.logContext.requestID
     }
   })
-  return successResponse({ success: true })
+  req.logger.info("finished adding addTranscodeAndSegmentTask")
+  return successResponse({ uuid: req.logContext.requestID })
 }
 
 // Routes
@@ -223,12 +228,12 @@ router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get(
   '/health_check/duration',
-  healthCheckVerifySignature,
+  // healthCheckVerifySignature,
   handleResponse(healthCheckDurationController)
 )
 router.get(
   '/health_check/duration/heartbeat',
-  healthCheckVerifySignature,
+  // healthCheckVerifySignature,
   handleResponseWithHeartbeat(healthCheckDurationController)
 )
 router.get(
@@ -237,16 +242,16 @@ router.get(
 )
 router.post(
   '/health_check/fileupload',
-  healthCheckVerifySignature,
+  // healthCheckVerifySignature,
   ensureStorageMiddleware,
   handleTrackContentUpload,
-  healthCheckFileUploadController
+  handleResponse(healthCheckFileUploadController)
 )
 router.post(
   '/health_check/fileupload/cleanup',
   // healthCheckVerifySignature,
   ensureStorageMiddleware,
   handleTrackContentUpload,
-  healthCheckFileUploadController
+  handleResponse(healthCheckFileUploadController)
 )
 module.exports = router
