@@ -12,12 +12,16 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, validates
 from src.model_validator import ModelValidator
 from src.models.base import Base
-from src.models.model_utils import get_fields_to_validate, validate_field_helper
+from src.models.model_utils import (
+    RepresentableMixin,
+    get_fields_to_validate,
+    validate_field_helper,
+)
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 
 
-class Track(Base):
+class Track(Base, RepresentableMixin):
     __tablename__ = "tracks"
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
@@ -92,44 +96,3 @@ class Track(Base):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "Track", getattr(Track, field).type)
-
-    def __repr__(self):
-        return (
-            f"<Track("
-            f"blockhash={self.blockhash},"
-            f"blocknumber={self.blocknumber},"
-            f"slot={self.slot},"
-            f"txhash={self.txhash},"
-            f"track_id={self.track_id},"
-            f"is_current={self.is_current},"
-            f"is_delete={self.is_delete},"
-            f"is_unlisted={self.is_unlisted},"
-            f"owner_id={self.owner_id},"
-            f"route_id={self.route_id},"
-            f"title={self.title},"
-            f"length={self.length},"
-            f"cover_art={self.cover_art},"
-            f"cover_art_sizes={self.cover_art_sizes},"
-            f"tags={self.tags},"
-            f"genre={self.genre},"
-            f"mood={self.mood},"
-            f"credits_splits={self.credits_splits},"
-            f"remix_of={self.remix_of},"
-            f"create_date={self.create_date},"
-            f"release_date={self.release_date},"
-            f"file_type={self.file_type},"
-            f"description={self.description},"
-            f"license={self.license},"
-            f"isrc={self.isrc},"
-            f"iswc={self.iswc},"
-            f"track_segments={self.track_segments},"
-            f"metadata_multihash={self.metadata_multihash},"
-            f"download={self.download},"
-            f"updated_at={self.updated_at},"
-            f"created_at={self.created_at},"
-            f"stem_of={self.stem_of},"
-            f"permalink={self.permalink},"
-            f"user={self.user}"
-            f"is_available={self.is_available}"
-            ")>"
-        )

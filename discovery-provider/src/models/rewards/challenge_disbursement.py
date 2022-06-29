@@ -1,8 +1,9 @@
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class ChallengeDisbursement(Base):
+class ChallengeDisbursement(Base, RepresentableMixin):
     __tablename__ = "challenge_disbursements"
 
     challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
@@ -13,12 +14,3 @@ class ChallengeDisbursement(Base):
     specifier = Column(String, nullable=False)
 
     PrimaryKeyConstraint(challenge_id, specifier)
-
-    def __repr__(self):
-        return f"<ChallengeDisbursement,\
-challenge_id={self.challenge_id},\
-user_id={self.user_id},\
-amount={self.amount},\
-signature={self.signature},\
-slot={self.slot},\
-specifier={self.specifier})>"

@@ -2,6 +2,7 @@ import enum
 
 from sqlalchemy import Column, DateTime, Enum, Integer, String, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
 class SkippedTransactionLevel(str, enum.Enum):
@@ -9,7 +10,7 @@ class SkippedTransactionLevel(str, enum.Enum):
     network = "network"
 
 
-class SkippedTransaction(Base):
+class SkippedTransaction(Base, RepresentableMixin):
     __tablename__ = "skipped_transactions"
 
     id = Column(Integer, primary_key=True, nullable=False)
@@ -25,13 +26,3 @@ class SkippedTransaction(Base):
         nullable=False,
         default=SkippedTransactionLevel.node,
     )
-
-    def __repr__(self):
-        return f"<SkippedTransaction(\
-id={self.id},\
-blocknumber={self.blocknumber},\
-blockhash={self.blockhash},\
-txhash={self.txhash},\
-level={self.level},\
-created_at={self.created_at},\
-updated_at={self.updated_at})>"

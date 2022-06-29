@@ -8,9 +8,10 @@ from sqlalchemy import (
     String,
 )
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class Follow(Base):
+class Follow(Base, RepresentableMixin):
     __tablename__ = "follows"
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
@@ -26,14 +27,3 @@ class Follow(Base):
     PrimaryKeyConstraint(
         is_current, follower_user_id, followee_user_id, txhash, created_at
     )
-
-    def __repr__(self):
-        return f"<Follow(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-txhash={self.txhash},\
-slot={self.slot},\
-follower_user_id={self.follower_user_id},\
-followee_user_id={self.followee_user_id},\
-is_current={self.is_current},\
-is_delete={self.is_delete},\
-created_at={self.created_at})>"
