@@ -127,7 +127,7 @@ module.exports = function (app) {
    * Given that the request is coming from a valid SP, serve the corresponding file
    * from the transcode handoff
    *
-   * This route is used on an available SP when the primary requests the transcoded files after
+   * This route is called from the primary to request the transcoded files after
    * sending the first request for the transcode handoff. This route does not run on the primary.
    */
   app.get(
@@ -170,6 +170,17 @@ module.exports = function (app) {
         )
       }
     }
+  )
+
+  app.post(
+    'transcode_and_segment/clear_filesystem',
+    ensureValidSPMiddleware,
+    handleResponse(async (req, res) => {
+      const fileDir = req.body.fileDir
+      removeTrackFolder({ logContext: req.logContext }, fileDir)
+
+      return successResponse()
+    })
   )
 
   /**
