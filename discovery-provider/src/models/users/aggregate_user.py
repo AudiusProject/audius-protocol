@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Index, Integer
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class AggregateUser(Base):
+class AggregateUser(Base, RepresentableMixin):
     __tablename__ = "aggregate_user"
 
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
@@ -17,14 +18,3 @@ class AggregateUser(Base):
     supporting_count = Column(Integer, nullable=False, server_default="0")
 
     Index("aggregate_user_idx", "user_id", unique=True)
-
-    def __repr__(self):
-        return f"<AggregateUser(\
-user_id={self.user_id},\
-track_count={self.track_count},\
-playlist_count={self.playlist_count},\
-album_count={self.album_count},\
-follower_count={self.follower_count},\
-following_count={self.following_count},\
-repost_count={self.repost_count},\
-track_save_count={self.track_save_count})>"

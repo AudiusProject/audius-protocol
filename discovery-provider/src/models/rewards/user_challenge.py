@@ -7,9 +7,10 @@ from sqlalchemy import (
     String,
 )
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class UserChallenge(Base):
+class UserChallenge(Base, RepresentableMixin):
     """Represents user progress through a particular challenge."""
 
     __tablename__ = "user_challenges"
@@ -22,12 +23,3 @@ class UserChallenge(Base):
     current_step_count = Column(Integer)
 
     PrimaryKeyConstraint(challenge_id, specifier)
-
-    def __repr__(self):
-        return f"<UserChallenge(\
-challenge_id={self.challenge_id},\
-user_id={self.user_id},\
-specifier={self.specifier},\
-is_complete={self.is_complete},\
-completed_blocknumber={self.completed_blocknumber},\
-current_step_count={self.current_step_count})>"

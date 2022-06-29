@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Float, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class TrackTrendingScore(Base):
+class TrackTrendingScore(Base, RepresentableMixin):
     """
     Trending Scores for tracks
     """
@@ -18,14 +19,3 @@ class TrackTrendingScore(Base):
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(track_id, genre, version, time_range)
-
-    def __repr__(self):
-        return f"<TrackTrendingScore(\
-track_id={self.track_id},\
-type={self.type},\
-genre={self.genre},\
-version={self.version},\
-time_range={self.time_range},\
-score={self.score},\
-created_at={self.created_at},\
-)>"

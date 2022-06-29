@@ -1,8 +1,9 @@
 from sqlalchemy import Boolean, Column, Integer
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class ProfileCompletionChallenge(Base):
+class ProfileCompletionChallenge(Base, RepresentableMixin):
     __tablename__ = "challenge_profile_completion"
 
     user_id = Column(Integer, nullable=False, primary_key=True)
@@ -13,14 +14,3 @@ class ProfileCompletionChallenge(Base):
     follows = Column(Boolean, nullable=False)
     favorites = Column(Boolean, nullable=False)
     reposts = Column(Boolean, nullable=False)
-
-    def __repr__(self):
-        return f"<ProfileCompletionChallenge,\
-user_id={self.user_id},\
-profile_description={self.profile_description},\
-profile_name={self.profile_name},\
-profile_picture={self.profile_picture},\
-profile_cover_photo={self.profile_cover_photo},\
-follows_complete={self.follows},\
-favorites_complete={self.favorites},\
-reposts_complete={self.reposts})>"

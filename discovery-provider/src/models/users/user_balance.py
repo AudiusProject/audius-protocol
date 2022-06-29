@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Integer, String, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class UserBalance(Base):
+class UserBalance(Base, RepresentableMixin):
     __tablename__ = "user_balances"
 
     user_id = Column(Integer, nullable=False, primary_key=True)
@@ -18,11 +19,3 @@ class UserBalance(Base):
 
     # wAudio balance
     waudio = Column(String, nullable=False)
-
-    def __repr__(self):
-        return f"<UserBalance(\
-user_id={self.user_id},\
-balance={self.balance},\
-associated_wallets_balance={self.associated_wallets_balance}\
-associated_sol_wallets_balance={self.associated_sol_wallets_balance}\
-waudio={self.waudio})>"
