@@ -3,7 +3,9 @@ from datetime import datetime, timezone
 from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
-from src.models import Track, URSMContentNode, User
+from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.tasks.celery_app import celery
 from src.utils.redis_constants import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,

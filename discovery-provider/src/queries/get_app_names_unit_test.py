@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
-from src.models import AppNameMetrics, RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetrics
+from src.models.metrics.route_metrics import RouteMetrics
 from src.queries.get_app_names import get_app_names
 
 

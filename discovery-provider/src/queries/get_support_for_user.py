@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple, TypedDict
 
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from src.models import AggregateUserTips
+from src.models.users.aggregate_user_tips import AggregateUserTips
 from src.queries.query_helpers import get_users_by_id, paginate_query
 from src.utils.db_session import get_db_read_replica
 

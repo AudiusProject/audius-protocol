@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, create_autospec
 import pytest
 from construct import Container, ListContainer
 from integration_tests.utils import populate_mock_db
-from src.models.models import AudiusDataTx
+from src.models.indexing.audius_data_tx import AudiusDataTx
 from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.utils.cid_metadata_client import CIDMetadataClient

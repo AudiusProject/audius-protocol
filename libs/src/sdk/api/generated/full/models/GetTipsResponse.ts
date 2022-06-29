@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     FullTip,
     FullTipFromJSON,
@@ -81,46 +80,5 @@ export interface GetTipsResponse {
      * @memberof GetTipsResponse
      */
     data?: Array<FullTip>;
-}
-
-export function GetTipsResponseFromJSON(json: any): GetTipsResponse {
-    return GetTipsResponseFromJSONTyped(json, false);
-}
-
-export function GetTipsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetTipsResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'latest_chain_block': json['latest_chain_block'],
-        'latest_indexed_block': json['latest_indexed_block'],
-        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
-        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
-        'signature': json['signature'],
-        'timestamp': json['timestamp'],
-        'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(FullTipFromJSON)),
-    };
-}
-
-export function GetTipsResponseToJSON(value?: GetTipsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'latest_chain_block': value.latest_chain_block,
-        'latest_indexed_block': value.latest_indexed_block,
-        'latest_chain_slot_plays': value.latest_chain_slot_plays,
-        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
-        'signature': value.signature,
-        'timestamp': value.timestamp,
-        'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(FullTipToJSON)),
-    };
 }
 

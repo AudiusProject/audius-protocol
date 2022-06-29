@@ -1,4 +1,5 @@
-import { createChildLogger } from '../../logging'
+const { createChildLogger } = require('../../logging')
+const redis = require('../../redis')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -17,7 +18,9 @@ module.exports = async function (jobName, job, jobProcessor, parentLogger) {
 
   let result
   try {
+    await redis.set(`latestJobStart_${jobName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })
+    await redis.set(`latestJobSuccess_${jobName}`, Date.now())
   } catch (error) {
     jobLogger.error(`Error processing job: ${error}`)
     result = { error: error.message || `${error}` }

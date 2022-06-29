@@ -2,7 +2,7 @@ import logging
 from unittest import mock
 
 from integration_tests.utils import populate_mock_db
-from src.models import Track
+from src.models.tracks.track import Track
 from src.tasks.update_track_is_available import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     _get_redis_set_members_as_list,

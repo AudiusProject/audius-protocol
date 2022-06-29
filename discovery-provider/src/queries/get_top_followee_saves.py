@@ -1,6 +1,8 @@
 from sqlalchemy import desc, func
 from src import exceptions
-from src.models import Follow, Save, Track
+from src.models.social.follow import Follow
+from src.models.social.save import Save
+from src.models.tracks.track import Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     get_users_by_id,

@@ -3,8 +3,12 @@ from datetime import datetime
 import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.profile_challenge import profile_challenge_manager
-from src.models import Block, Follow, Repost, RepostType, Save, SaveType, User
-from src.models.models import Challenge
+from src.models.indexing.block import Block
+from src.models.rewards.challenge import Challenge
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost, RepostType
+from src.models.social.save import Save, SaveType
+from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 

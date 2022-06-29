@@ -1,7 +1,8 @@
 import logging  # pylint: disable=C0302
 
 import sqlalchemy
-from src.models import Playlist, Track
+from src.models.playlists.playlist import Playlist
+from src.models.tracks.track import Track
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.utils import helpers
 

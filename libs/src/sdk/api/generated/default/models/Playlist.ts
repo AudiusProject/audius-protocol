@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     PlaylistArtwork,
     PlaylistArtworkFromJSON,
@@ -87,48 +86,5 @@ export interface Playlist {
      * @memberof Playlist
      */
     user: User;
-}
-
-export function PlaylistFromJSON(json: any): Playlist {
-    return PlaylistFromJSONTyped(json, false);
-}
-
-export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): Playlist {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'artwork': !exists(json, 'artwork') ? undefined : PlaylistArtworkFromJSON(json['artwork']),
-        'description': !exists(json, 'description') ? undefined : json['description'],
-        'id': json['id'],
-        'is_album': json['is_album'],
-        'playlist_name': json['playlist_name'],
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
-        'total_play_count': json['total_play_count'],
-        'user': UserFromJSON(json['user']),
-    };
-}
-
-export function PlaylistToJSON(value?: Playlist | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'artwork': PlaylistArtworkToJSON(value.artwork),
-        'description': value.description,
-        'id': value.id,
-        'is_album': value.is_album,
-        'playlist_name': value.playlist_name,
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
-        'total_play_count': value.total_play_count,
-        'user': UserToJSON(value.user),
-    };
 }
 

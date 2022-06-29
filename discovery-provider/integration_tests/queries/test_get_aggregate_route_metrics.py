@@ -1,9 +1,15 @@
 from datetime import date, timedelta
 
-from src.models import (
+from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,
+)
+from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
+)
+from src.models.metrics.aggregate_monthly_total_users_metrics import (
     AggregateMonthlyTotalUsersMetrics,
+)
+from src.models.metrics.aggregate_monthly_unique_users_metrics import (
     AggregateMonthlyUniqueUsersMetrics,
 )
 from src.queries.get_route_metrics import _get_aggregate_route_metrics

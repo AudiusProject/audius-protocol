@@ -1,4 +1,4 @@
-from src.models import Block
+from src.models.indexing.block import Block
 from src.utils import db_session, helpers
 
 

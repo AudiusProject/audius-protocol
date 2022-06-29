@@ -355,14 +355,6 @@ const getCID = async (req, res) => {
     }
   }
 
-  // If client has provided filename, set filename in header to be auto-populated in download prompt.
-  if (req.query.filename) {
-    res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
-  }
-
-  // Set the CID cache-control so that client caches the response for 30 days
-  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-
   /**
    * If the file is found on file system, stream from file system
    */
@@ -380,6 +372,7 @@ const getCID = async (req, res) => {
         stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
         time: `${Date.now() - startMs}ms`
       })
+      _setHeadersForStreaming(req, res)
       logGetCIDDecisionTree(decisionTree, req)
       return fsStream
     } catch (e) {
@@ -480,6 +473,7 @@ const getCID = async (req, res) => {
       time: `${Date.now() - startMs}ms`
     })
 
+    _setHeadersForStreaming()
     logGetCIDDecisionTree(decisionTree, req)
     return fsStream
   } catch (e) {
@@ -585,6 +579,21 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
     logger.error(errMsg)
     throw new Error(errMsg)
   }
+}
+
+/**
+ * Sets headers for streaming
+ * @param {Object} req
+ * @param {Object} res
+ */
+function _setHeadersForStreaming(req, res) {
+  // If client has provided filename, set filename in header to be auto-populated in download prompt.
+  if (req.query.filename) {
+    res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
+  }
+
+  // Set the CID cache-control so that client caches the response for 30 days
+  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
 }
 
 /**

@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Favorite,
     FavoriteFromJSON,
@@ -201,78 +200,5 @@ export interface PlaylistFull {
      * @memberof PlaylistFull
      */
     track_count: number;
-}
-
-export function PlaylistFullFromJSON(json: any): PlaylistFull {
-    return PlaylistFullFromJSONTyped(json, false);
-}
-
-export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): PlaylistFull {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'artwork': !exists(json, 'artwork') ? undefined : PlaylistArtworkFromJSON(json['artwork']),
-        'description': !exists(json, 'description') ? undefined : json['description'],
-        'id': json['id'],
-        'is_album': json['is_album'],
-        'playlist_name': json['playlist_name'],
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
-        'total_play_count': json['total_play_count'],
-        'user': UserFullFromJSON(json['user']),
-        'blocknumber': json['blocknumber'],
-        'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
-        'followee_reposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
-        'followee_favorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
-        'has_current_user_reposted': json['has_current_user_reposted'],
-        'has_current_user_saved': json['has_current_user_saved'],
-        'is_delete': json['is_delete'],
-        'is_private': json['is_private'],
-        'updated_at': !exists(json, 'updated_at') ? undefined : json['updated_at'],
-        'added_timestamps': ((json['added_timestamps'] as Array<any>).map(PlaylistAddedTimestampFromJSON)),
-        'user_id': json['user_id'],
-        'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
-        'cover_art': !exists(json, 'cover_art') ? undefined : json['cover_art'],
-        'cover_art_sizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
-        'track_count': json['track_count'],
-    };
-}
-
-export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'artwork': PlaylistArtworkToJSON(value.artwork),
-        'description': value.description,
-        'id': value.id,
-        'is_album': value.is_album,
-        'playlist_name': value.playlist_name,
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
-        'total_play_count': value.total_play_count,
-        'user': UserFullToJSON(value.user),
-        'blocknumber': value.blocknumber,
-        'created_at': value.created_at,
-        'followee_reposts': ((value.followee_reposts as Array<any>).map(RepostToJSON)),
-        'followee_favorites': ((value.followee_favorites as Array<any>).map(FavoriteToJSON)),
-        'has_current_user_reposted': value.has_current_user_reposted,
-        'has_current_user_saved': value.has_current_user_saved,
-        'is_delete': value.is_delete,
-        'is_private': value.is_private,
-        'updated_at': value.updated_at,
-        'added_timestamps': ((value.added_timestamps as Array<any>).map(PlaylistAddedTimestampToJSON)),
-        'user_id': value.user_id,
-        'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
-        'cover_art': value.cover_art,
-        'cover_art_sizes': value.cover_art_sizes,
-        'track_count': value.track_count,
-    };
 }
 

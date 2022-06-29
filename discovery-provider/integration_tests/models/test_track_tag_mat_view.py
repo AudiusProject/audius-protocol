@@ -1,6 +1,6 @@
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
-from src.models import TagTrackUserMatview
+from src.models.tracks.tag_track_user_matview import TagTrackUserMatview
 from src.utils.db_session import get_db
 
 

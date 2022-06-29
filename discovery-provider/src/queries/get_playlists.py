@@ -4,7 +4,9 @@ import sqlalchemy
 from flask.globals import request
 from sqlalchemy import desc
 from src import exceptions
-from src.models import Playlist, RepostType, SaveType
+from src.models.playlists.playlist import Playlist
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
 from src.queries.query_helpers import (
     get_users_by_id,
     get_users_ids,

@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models.models import IndexingCheckpoints, UserListeningHistory
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
+from src.models.users.user_listening_history import UserListeningHistory
 from src.tasks.user_listening_history.index_user_listening_history import (
     USER_LISTENING_HISTORY_TABLE_NAME,
     _index_user_listening_history,

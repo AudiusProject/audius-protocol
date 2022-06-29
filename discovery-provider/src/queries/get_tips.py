@@ -5,7 +5,11 @@ from typing import List, Tuple, TypedDict, Union, cast
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Query, aliased
 from sqlalchemy.orm.session import Session
-from src.models import AggregateUser, AggregateUserTips, Follow, User, UserTip
+from src.models.social.follow import Follow
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.aggregate_user_tips import AggregateUserTips
+from src.models.users.user import User
+from src.models.users.user_tip import UserTip
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import paginate_query, populate_user_metadata
 from src.utils.db_session import get_db_read_replica

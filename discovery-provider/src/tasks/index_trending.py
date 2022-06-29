@@ -5,7 +5,8 @@ from typing import List, Optional, Tuple
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from src.models import Block, Track
+from src.models.indexing.block import Block
+from src.models.tracks.track import Track
 from src.queries.get_trending_tracks import (
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
@@ -269,7 +270,7 @@ def index_trending_task(self):
     redis = index_trending_task.redis
     web3 = index_trending_task.web3
     have_lock = False
-    update_lock = redis.lock("index_trending_lock", timeout=7200)
+    update_lock = redis.lock("index_trending_lock", timeout=86400)
     try:
         should_update_timestamp = get_should_update_trending(
             db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC

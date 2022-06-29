@@ -6,15 +6,13 @@ import redis
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
-from src.models import (
-    AggregatePlays,
-    AggregateUser,
-    Follow,
-    RepostType,
-    SaveType,
-    Track,
-    User,
-)
+from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.follow import Follow
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
+from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.user import User
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,

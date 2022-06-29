@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     ConnectedWallets,
     ConnectedWalletsFromJSON,
@@ -33,32 +32,5 @@ export interface ConnectedWalletsResponse {
      * @memberof ConnectedWalletsResponse
      */
     data?: ConnectedWallets;
-}
-
-export function ConnectedWalletsResponseFromJSON(json: any): ConnectedWalletsResponse {
-    return ConnectedWalletsResponseFromJSONTyped(json, false);
-}
-
-export function ConnectedWalletsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ConnectedWalletsResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ConnectedWalletsFromJSON(json['data']),
-    };
-}
-
-export function ConnectedWalletsResponseToJSON(value?: ConnectedWalletsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': ConnectedWalletsToJSON(value.data),
-    };
 }
 

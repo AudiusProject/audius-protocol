@@ -7,13 +7,10 @@ from typing import List, Optional, Set, Tuple
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from src.models import (
-    AssociatedWallet,
-    SPLTokenTransaction,
-    User,
-    UserBankAccount,
-    WalletChain,
-)
+from src.models.indexing.spl_token_transaction import SPLTokenTransaction
+from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
