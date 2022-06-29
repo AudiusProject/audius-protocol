@@ -27,3 +27,49 @@ services:
     restart: always
     volumes:
       - ./data/grafana:/var/lib/grafana
+
+  # Exporters
+
+  ## Postgres Exporters
+
+  exporter_postgres_dn1:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "5010:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql+psycopg2://postgres:postgres@$dn1_discovery-provider-db_1:5432/audius_discovery
+
+  exporter_postgres_cn1:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4010:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgres://postgres:postgres@$cn1_creator-node-db_1:5432/audius_creator_node
+
+  exporter_postgres_cn2:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4011:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgres://postgres:postgres@$cn2_creator-node-db_1:5432/audius_creator_node
+
+  exporter_postgres_cn3:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4012:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgres://postgres:postgres@$cn3_creator-node-db_1:5432/audius_creator_node
+
+  exporter_postgres_cn4:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "4013:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgres://postgres:postgres@$cn4_creator-node-db_1:5432/audius_creator_node
+
+  exporter_postgres_is:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.10.1
+    ports:
+      - "7010:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgres://postgres:postgres@audius-identity-service_identity-db_1:5432/audius_identity_service
