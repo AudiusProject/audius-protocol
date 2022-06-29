@@ -46,9 +46,9 @@
     scheme: 'http'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['discoveryprovider4.audius.co:9091']
+      - targets: ['networkmonitoring.audius.co:9091']
         labels:
-          host: 'discoveryprovider4.audius.co'
+          host: 'networkmonitoring.audius.co'
           environment: 'prod'
           service: 'audius'
           component: 'network-monitoriong'
