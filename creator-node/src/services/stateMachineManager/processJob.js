@@ -1,5 +1,8 @@
+const _ = require('lodash')
+
 const { createChildLogger } = require('../../logging')
 const redis = require('../../redis')
+const { JOB_NAMES } = require('./stateMachineConstants')
 
 /**
  * Higher order function to wrap a job processor with a logger and a try-catch.
@@ -33,7 +36,7 @@ module.exports = async function (
   try {
     await redis.set(`latestJobStart_${jobName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })
-    metricEndTimerFn({ uncaughtError: false })
+    metricEndTimerFn({ uncaughtError: false, ...getLabels(jobName, result) })
     await redis.set(`latestJobSuccess_${jobName}`, Date.now())
   } catch (error) {
     jobLogger.error(`Error processing job: ${error}`)
@@ -42,4 +45,20 @@ module.exports = async function (
   }
 
   return result
+}
+
+/**
+ * Creates prometheus label names and values that are specific to the given job type and its results.
+ * @param {string} jobName the name of the job to generate metrics for
+ * @param {Object} jobResult the result of the job to generate metrics for
+ */
+const getLabels = (jobName, jobResult) => {
+  if (jobName === JOB_NAMES.UPDATE_REPLICA_SET) {
+    const { issuedReconfig, newReplicaSet } = jobResult
+    return {
+      issuedReconfig: issuedReconfig || 'false',
+      reconfigType: _.snakeCase(newReplicaSet?.reconfigType || 'null')
+    }
+  }
+  return {}
 }
