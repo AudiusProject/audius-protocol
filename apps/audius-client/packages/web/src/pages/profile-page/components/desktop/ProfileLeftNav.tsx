@@ -203,7 +203,8 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
         />
-        {isTippingEnabled && accountUser && accountUser.user_id !== userId ? (
+        {isTippingEnabled &&
+        (!accountUser || accountUser.user_id !== userId) ? (
           <OpacityTransition render={renderTipAudioButton} />
         ) : null}
         {isTippingEnabled && <SupportingList />}
