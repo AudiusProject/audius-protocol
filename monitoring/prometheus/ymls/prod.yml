@@ -46,9 +46,9 @@
     scheme: 'https'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['networkmonitoring.audius.com']
+      - targets: ['monitoring.audius.com']
         labels:
-          host: 'networkmonitoring.audius.co'
+          host: 'monitoring.audius.co'
           environment: 'prod'
           service: 'audius'
           component: 'network-monitoriong'

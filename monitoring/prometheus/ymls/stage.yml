@@ -28,9 +28,9 @@
     scheme: 'https'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['networkmonitoring.staging.audius.co']
+      - targets: ['monitoring.staging.audius.co']
         labels:
-          host: 'networkmonitoring.staging.audius.co'
+          host: 'monitoring.staging.audius.co'
           environment: 'stage'
           service: 'audius'
           component: 'network-monitoring'
