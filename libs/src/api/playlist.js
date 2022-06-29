@@ -24,6 +24,7 @@ class Playlists extends Base {
     this.addPlaylistSave = this.addPlaylistSave.bind(this)
     this.deletePlaylistSave = this.deletePlaylistSave.bind(this)
     this.deletePlaylist = this.deletePlaylist.bind(this)
+    this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
   }
 
   /* ------- GETTERS ------- */
@@ -71,16 +72,45 @@ class Playlists extends Base {
     return this.discoveryProvider.getSavedAlbums(limit, offset, withUsers)
   }
 
+  /**
+   * Calculate an unoccupied playlist ID
+   * Maximum value is UINT MAX
+   */
+  async getValidPlaylistId () {
+    let playlistId = 10
+    let validIdFound = false
+    while (!validIdFound) {
+      const resp = await this.getPlaylists(1, 0, [playlistId])
+      if (resp.length !== 0) {
+        playlistId = Math.floor(
+          Math.random() * 9007199254740991
+        )
+      } else {
+        validIdFound = true
+      }
+    }
+    console.log(`Playlist2 | Returning playlistID=${playlistId}`)
+    return playlistId
+  }
+
   /* ------- SETTERS ------- */
 
+  /**
+   * Create a playlist using updated data contracts flow
+   * @param {*} playlistName
+   * @param {*} trackIds
+   * @param {*} coverPhoto
+   * @param {*} description
+   * @param {*} isAlbum
+   */
   async createPlaylist2 (playlistName, trackIds, coverPhoto, description, isAlbum) {
     // TODO: Abstract determining a valid ID
     const ownerId = this.userStateManager.getCurrentUserId()
+    console.log(`Playlist2 | New create playlist function invoked! ${ownerId}`)
     const action = 'Create'
     const entityType = 'Playlist'
-    const entityId = 10
+    const entityId = await this.getValidPlaylistId()
     this.REQUIRES(Services.CREATOR_NODE)
-    console.log(`Playlist2 | New create playlist function invoked! ${ownerId}`)
     console.log(coverPhoto)
     const dirCID = await this.uploadPlaylistCoverPhoto(coverPhoto, true)
     console.log(`Playlist2 | Uploaded image w/dirCID = ${dirCID}`)
