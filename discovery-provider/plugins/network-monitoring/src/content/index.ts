@@ -83,9 +83,9 @@ export const indexContent = async (run_id: number) => {
 
     await Promise.all(
         // for each content node...
-        content_nodes.map((cnode, _) => {
+        content_nodes.map(async (cnode, _) => {
 
-            const healthy = checkNodeHealth(cnode.endpoint)
+            const healthy = await checkNodeHealth(cnode.endpoint)
             if (!healthy) {
                 return
             }
