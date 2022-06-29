@@ -42,6 +42,7 @@ const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
 const { promisify } = require('util')
+const { Readable } = require('stream')
 
 const fsStat = promisify(fs.stat)
 
@@ -115,6 +116,7 @@ const streamFromFileSystem = async (
       fileStream
         .on('open', () => fileStream.pipe(res))
         .on('end', () => {
+          _setHeadersForStreaming(req, res)
           res.end()
           resolve()
         })
@@ -141,10 +143,10 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
 /**
  * Given a CID, return the appropriate file
  * 1. Check if file exists at expected storage path (current and legacy)
- * 1. If found, stream from FS
- * 2. Else, check if CID exists in DB. If not, return 404 not found error
- * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
- * 4. If not avail in CN network, respond with 400 server error
+ * 2. If found, stream from FS
+ * 3. Else, check if CID exists in DB. If not, return 404 not found error
+ * 4. If exists in DB, fetch file from CN network, save to FS, and stream from FS
+ * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
   if (!(req.params && req.params.CID)) {
@@ -372,7 +374,6 @@ const getCID = async (req, res) => {
         stage: `STREAM_FROM_FILE_SYSTEM_COMPLETE`,
         time: `${Date.now() - startMs}ms`
       })
-      _setHeadersForStreaming(req, res)
       logGetCIDDecisionTree(decisionTree, req)
       return fsStream
     } catch (e) {
@@ -473,7 +474,6 @@ const getCID = async (req, res) => {
       time: `${Date.now() - startMs}ms`
     })
 
-    _setHeadersForStreaming()
     logGetCIDDecisionTree(decisionTree, req)
     return fsStream
   } catch (e) {
@@ -623,6 +623,29 @@ async function _generateContentToHash(resizeResp, dirCID) {
 }
 
 module.exports = function (app) {
+  app.get('/test', async (req, res) => {
+    try {
+      const dumbBuffer = Buffer.from('dumb buffer', 'utf-8')
+      const stream = Readable.from(dumbBuffer)
+
+      res.set('Content-Length', 6)
+      return new Promise((resolve, reject) => {
+        stream
+          .on('open', () => stream.pipe(res))
+          .on('end', () => {
+            _setHeadersForStreaming(req, res)
+            res.end()
+            resolve()
+          })
+          .on('error', (e) => {
+            reject(e)
+          })
+      })
+    } catch (e) {
+      return sendResponse(req, res, errorResponseBadRequest(`blah balhb error`))
+    }
+  })
+
   app.get(
     '/async_processing_status',
     handleResponse(async (req, res) => {
