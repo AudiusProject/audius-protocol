@@ -15,17 +15,6 @@ services:
       - poa-contracts-abis:/usr/src/app/build/contracts
     ports:
       - "8545:8545"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "require('http').request('http://localhost:8545').end()"
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
     deploy:
       mode: global
 
@@ -72,17 +61,6 @@ services:
       - eth-contracts-abis:/usr/src/app/build/contracts
     ports:
       - "8546:8545"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "require('http').request('http://localhost:8545').end()"
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 10
     deploy:
       mode: global
 
