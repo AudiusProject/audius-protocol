@@ -20,13 +20,8 @@ const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
 
 const { recoverWallet } = require('../../apiSigning')
-const {
-  handleTrackContentUpload,
-  removeTrackFolder
-} = require('../../fileManager')
 
 const config = require('../../config')
-const { ensureStorageMiddleware } = require('../../middlewares')
 
 const router = express.Router()
 
@@ -44,6 +39,7 @@ const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
   config.get('findReplicaSetUpdatesJobLastSuccessfulRunDelayMs')
 
 // Helper Functions
+
 /**
  * Verifies that the request is made by the delegate Owner
  */
@@ -65,6 +61,7 @@ const healthCheckVerifySignature = (req, res, next) => {
   const recoveredTimestampDate = new Date(timestamp)
   const currentTimestampDate = new Date()
   const requestAge = currentTimestampDate - recoveredTimestampDate
+
   if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
     return sendResponse(
       req,
@@ -74,7 +71,7 @@ const healthCheckVerifySignature = (req, res, next) => {
       )
     )
   }
-  // todo - also allow other registered nodes to test this
+
   const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
   if (recoveredPublicWallet !== delegateOwnerWallet) {
     return sendResponse(

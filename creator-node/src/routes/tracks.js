@@ -177,7 +177,7 @@ module.exports = function (app) {
     ensureValidSPMiddleware,
     handleResponse(async (req, res) => {
       const fileDir = req.body.fileDir
-      removeTrackFolder({ logContext: req.logContext }, fileDir)
+      await removeTrackFolder({ logContext: req.logContext }, fileDir)
 
       return successResponse()
     })
