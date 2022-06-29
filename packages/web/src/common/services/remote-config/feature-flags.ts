@@ -61,5 +61,5 @@ export const flagCohortType: {
   [FeatureFlags.ENABLE_SPL_AUDIO]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.PLAYLIST_FOLDERS]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: FeatureFlagCohortType.SESSION_ID,
-  [FeatureFlags.TIPPING_ENABLED]: FeatureFlagCohortType.USER_ID
+  [FeatureFlags.TIPPING_ENABLED]: FeatureFlagCohortType.SESSION_ID
 }
