@@ -1,6 +1,5 @@
 import { createRef, Component } from 'react'
 
-import Slider from 'antd/lib/slider'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconVolume0 } from 'assets/img/iconVolume0.svg'
@@ -10,6 +9,7 @@ import { ReactComponent as IconVolume3 } from 'assets/img/iconVolume3.svg'
 import { setupHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 
 import styles from './VolumeBar.module.css'
+import { Slider } from './slider/Slider'
 
 const getVolumeIcon = volumeLevel => {
   if (volumeLevel === 0) return IconVolume0
@@ -59,15 +59,6 @@ class VolumeBar extends Component {
    */
   volumeChange = (value, persist = true) => {
     // Round the volume bar tracker's right edge when it reaches 100%
-    if (value === 100) {
-      this.volumeBarRef.current
-        .getElementsByClassName('ant-slider-track')[0]
-        .classList.add('borderRadius')
-    } else if (value < 100 && this.state.volumeLevel === 100) {
-      this.volumeBarRef.current
-        .getElementsByClassName('ant-slider-track')[0]
-        .classList.remove('borderRadius')
-    }
     if (persist) {
       window.localStorage.setItem('volume', value)
     }
@@ -102,7 +93,7 @@ class VolumeBar extends Component {
             defaultValue={defaultValue}
             value={this.state.volumeLevel}
             max={granularity}
-            tipFormatter={null}
+            showHandle={false}
             onChange={this.volumeChange}
           />
         </div>
