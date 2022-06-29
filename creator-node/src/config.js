@@ -458,7 +458,7 @@ const config = convict({
     doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
-    default: 0
+    default: 3
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -618,10 +618,10 @@ const config = convict({
     env: 'skippedCIDRetryQueueMaxAgeHr',
     default: 8760 // 1 year in hrs
   },
-  openRestyCacheCIDEnabled: {
-    doc: 'Flag to enable or disable OpenResty',
+  contentCacheLayerEnabled: {
+    doc: 'Flag to enable or disable the nginx cache layer that caches content',
     format: 'BooleanCustom',
-    env: 'openRestyCacheCIDEnabled',
+    env: 'contentCacheLayerEnabled',
     default: false
   },
   reconfigNodeWhitelist: {
@@ -666,11 +666,29 @@ const config = convict({
     env: 'audiusContentInfraSetup',
     default: ''
   },
-  snapbackMaxLastSuccessfulRunDelayMs: {
-    doc: 'Max time delay since last snapback successful run (milliseconds)',
+  monitorStateJobLastSuccessfulRunDelayMs: {
+    doc: 'Max time delay since last monitor-state job successfully ran (milliseconds)',
     format: 'nat',
-    env: 'snapbackMaxLastSuccessfulRunDelayMs',
-    default: 5 * 60 * 60 * 1000 // 5 hrs
+    env: 'monitorStateJobLastSuccessfulRunDelayMs',
+    default: 10 * 60 * 1000 // 10 mins
+  },
+  findSyncRequestsJobLastSuccessfulRunDelayMs: {
+    doc: 'Max time delay since last find-sync-requests job successfully ran (milliseconds)',
+    format: 'nat',
+    env: 'findSyncRequestsJobLastSuccessfulRunDelayMs',
+    default: 10 * 60 * 1000 // 10 mins
+  },
+  findReplicaSetUpdatesJobLastSuccessfulRunDelayMs: {
+    doc: 'Max time delay since last find-replica-set-updates job successfully ran (milliseconds)',
+    format: 'nat',
+    env: 'findReplicaSetUpdatesJobLastSuccessfulRunDelayMs',
+    default: 10 * 60 * 1000 // 10 mins
+  },
+  disableSnapback: {
+    doc: 'True to not run any snapback queues (old state machine and old syncs)',
+    format: Boolean,
+    env: 'disableSnapback',
+    default: true
   }
   /**
    * unsupported options at the moment

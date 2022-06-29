@@ -168,7 +168,7 @@ const initializeApis = ({
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
-  const resolve = new ResolveApi(generatedApiClientConfig)
+  const { resolve } = new ResolveApi(generatedApiClientConfig)
 
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfig as any),

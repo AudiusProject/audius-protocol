@@ -1,45 +1,37 @@
 import logging  # pylint: disable=C0302
+from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import List, Tuple
+from typing import Dict, List, Tuple, TypedDict
 
 from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 from src import api_helpers
-from src.models import (
-    AggregateUser,
-    Block,
-    ChallengeDisbursement,
-    Follow,
-    Milestone,
-    Playlist,
-    Remix,
-    Repost,
-    RepostType,
-    Save,
-    SaveType,
-    SupporterRankUp,
-    Track,
-    User,
-    UserBalanceChange,
-    UserTip,
-)
-from src.models.reaction import Reaction
+from src.models.indexing.block import Block
+from src.models.notifications.milestone import Milestone, MilestoneName
+from src.models.playlists.playlist import Playlist
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.social.follow import Follow
+from src.models.social.reaction import Reaction
+from src.models.social.repost import Repost, RepostType
+from src.models.social.save import Save, SaveType
+from src.models.tracks.remix import Remix
+from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.supporter_rank_up import SupporterRankUp
+from src.models.users.user import User
+from src.models.users.user_balance_change import UserBalanceChange
+from src.models.users.user_tip import UserTip
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
-from src.queries.query_helpers import (
-    get_follower_count_dict,
-    get_repost_counts,
-    get_save_counts,
-)
-from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import (
     latest_sol_aggregate_tips_slot_key,
-    latest_sol_listen_count_milestones_slot_key,
+    latest_sol_plays_slot_key,
     latest_sol_rewards_manager_slot_key,
 )
 from src.utils.spl_audio import to_wei_string
@@ -201,6 +193,90 @@ def get_cosign_remix_notifications(session, max_block_number, remix_tracks):
     return remix_notifications
 
 
+class GroupMilestones(TypedDict):
+    tracks: Dict[int, int]
+    albums: Dict[int, int]
+    playlists: Dict[int, int]
+
+
+class MilestoneInfo(TypedDict):
+    favorite_counts: GroupMilestones
+    repost_counts: GroupMilestones
+    follower_counts: Dict[int, int]
+
+
+def get_milestone_info(
+    session: Session, min_block_number, max_block_number
+) -> MilestoneInfo:
+    milestones_in_block = session.query(
+        Milestone.name, Milestone.id, Milestone.threshold
+    ).filter(
+        Milestone.blocknumber > min_block_number,
+        Milestone.blocknumber <= max_block_number,
+    )
+    milestones = defaultdict(list)
+
+    for milestone_name, *id_threshold in milestones_in_block:
+        milestones[milestone_name].append(id_threshold)
+
+    milestone_playlist_ids = [
+        playlist_id
+        for name, playlist_id, _ in milestones_in_block
+        if name
+        in (
+            MilestoneName.PLAYLIST_REPOST_COUNT,
+            MilestoneName.PLAYLIST_SAVE_COUNT,
+        )
+    ]
+
+    playlist_id_albums: Dict[int, bool] = {}
+    if milestone_playlist_ids:
+        playlist_id_albums_response = (
+            session.query(Playlist.playlist_id, Playlist.is_album)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.playlist_id.in_(milestone_playlist_ids),
+            )
+            .all()
+        )
+        playlist_id_albums = dict(playlist_id_albums_response)
+
+    album_favorites: List[Tuple[int, int]] = []
+    playlist_favorites: List[Tuple[int, int]] = []
+    for id, threshold in milestones.get(MilestoneName.PLAYLIST_SAVE_COUNT, []):
+        if id in playlist_id_albums and playlist_id_albums[id]:
+            album_favorites.append((id, threshold))
+        else:
+            playlist_favorites.append((id, threshold))
+
+    album_reposts: List[Tuple[int, int]] = []
+    playlist_reposts: List[Tuple[int, int]] = []
+    for id, threshold in milestones.get(MilestoneName.PLAYLIST_REPOST_COUNT, []):
+        if id in playlist_id_albums and playlist_id_albums[id]:
+            album_reposts.append((id, threshold))
+        else:
+            playlist_reposts.append((id, threshold))
+
+    favorite_milestones: GroupMilestones = {
+        "tracks": dict(milestones.get(MilestoneName.TRACK_SAVE_COUNT, [])),
+        "albums": dict(album_favorites),
+        "playlists": dict(playlist_favorites),
+    }
+
+    repost_milestones: GroupMilestones = {
+        "tracks": dict(milestones.get(MilestoneName.TRACK_REPOST_COUNT, [])),
+        "albums": dict(album_reposts),
+        "playlists": dict(playlist_reposts),
+    }
+
+    milestone_info: MilestoneInfo = {
+        "follower_counts": dict(milestones.get(MilestoneName.FOLLOWER_COUNT, [])),
+        "repost_counts": repost_milestones,
+        "favorite_counts": favorite_milestones,
+    }
+    return milestone_info
+
+
 @bp.route("/notifications", methods=("GET",))
 # pylint: disable=R0915
 def notifications():
@@ -299,8 +375,6 @@ def notifications():
         )
 
         follow_results = follow_query.all()
-        # Used to retrieve follower counts for this window
-        followed_users = []
         # Represents all follow notifications
         follow_notifications = []
         for entry in follow_results:
@@ -315,14 +389,6 @@ def notifications():
                 },
             }
             follow_notifications.append(follow_notif)
-            # Add every user who gained a new follower
-            followed_users.append(entry.followee_user_id)
-
-        # Query count for any user w/new followers
-        follower_counts = get_follower_count_dict(
-            session, followed_users, max_block_number
-        )
-        milestone_info["follower_counts"] = follower_counts
 
         notifications_unsorted.extend(follow_notifications)
 
@@ -403,58 +469,11 @@ def notifications():
             favorite_notifications.append(favorite_notif)
         notifications_unsorted.extend(favorite_notifications)
 
-        track_favorite_dict = {}
-        album_favorite_dict = {}
-        playlist_favorite_dict = {}
-
         if favorited_track_ids:
-            track_favorite_counts = get_save_counts(
-                session,
-                False,
-                False,
-                favorited_track_ids,
-                [SaveType.track],
-                max_block_number,
-            )
-            track_favorite_dict = dict(track_favorite_counts)
-
             favorite_remix_notifications = get_cosign_remix_notifications(
                 session, max_block_number, favorite_remix_tracks
             )
             notifications_unsorted.extend(favorite_remix_notifications)
-
-        if favorited_album_ids:
-            album_favorite_counts = get_save_counts(
-                session,
-                False,
-                False,
-                favorited_album_ids,
-                [SaveType.album],
-                max_block_number,
-            )
-            album_favorite_dict = dict(album_favorite_counts)
-
-        if favorited_playlist_ids:
-            playlist_favorite_counts = get_save_counts(
-                session,
-                False,
-                False,
-                favorited_playlist_ids,
-                [SaveType.playlist],
-                max_block_number,
-            )
-            playlist_favorite_dict = dict(playlist_favorite_counts)
-
-        milestone_info[const.notification_favorite_counts] = {}
-        milestone_info[const.notification_favorite_counts][
-            const.tracks
-        ] = track_favorite_dict
-        milestone_info[const.notification_favorite_counts][
-            const.albums
-        ] = album_favorite_dict
-        milestone_info[const.notification_favorite_counts][
-            const.playlists
-        ] = playlist_favorite_dict
 
         logger.info(f"notifications.py | favorites at {datetime.now() - start_time}")
 
@@ -580,60 +599,13 @@ def notifications():
         # Append repost notifications
         notifications_unsorted.extend(repost_notifications)
 
-        track_repost_count_dict = {}
-        album_repost_count_dict = {}
-        playlist_repost_count_dict = {}
-
         # Aggregate repost counts for relevant fields
         # Used to notify users of entity-specific milestones
         if reposted_track_ids:
-            track_repost_counts = get_repost_counts(
-                session,
-                False,
-                False,
-                reposted_track_ids,
-                [RepostType.track],
-                max_block_number,
-            )
-            track_repost_count_dict = dict(track_repost_counts)
-
             repost_remix_notifications = get_cosign_remix_notifications(
                 session, max_block_number, repost_remix_tracks
             )
             notifications_unsorted.extend(repost_remix_notifications)
-
-        if reposted_album_ids:
-            album_repost_counts = get_repost_counts(
-                session,
-                False,
-                False,
-                reposted_album_ids,
-                [RepostType.album],
-                max_block_number,
-            )
-            album_repost_count_dict = dict(album_repost_counts)
-
-        if reposted_playlist_ids:
-            playlist_repost_counts = get_repost_counts(
-                session,
-                False,
-                False,
-                reposted_playlist_ids,
-                [RepostType.playlist],
-                max_block_number,
-            )
-            playlist_repost_count_dict = dict(playlist_repost_counts)
-
-        milestone_info[const.notification_repost_counts] = {}
-        milestone_info[const.notification_repost_counts][
-            const.tracks
-        ] = track_repost_count_dict
-        milestone_info[const.notification_repost_counts][
-            const.albums
-        ] = album_repost_count_dict
-        milestone_info[const.notification_repost_counts][
-            const.playlists
-        ] = playlist_repost_count_dict
 
         # Query relevant created entity notification - tracks/albums/playlists
         created_notifications = []
@@ -886,25 +858,27 @@ def notifications():
                 # skip empty playlists
                 continue
             playlist_contents = entry.playlist_contents
-            playlist_blocknumber = entry.blocknumber
-            playlist_block = web3.eth.get_block(playlist_blocknumber)
-            playlist_block_timestamp = playlist_block.timestamp
+            min_block = web3.eth.get_block(min_block_number)
+            max_block = web3.eth.get_block(max_block_number)
 
             for track in playlist_contents["track_ids"]:
                 track_id = track["track"]
                 track_timestamp = track["time"]
                 # We know that this track was added to the playlist at this specific update
-                if track_timestamp == playlist_block_timestamp:
+                if (
+                    min_block.timestamp < track_timestamp
+                    and track_timestamp <= max_block.timestamp
+                ):
                     track_ids.append(track_id)
                     track_added_to_playlist_notification = {
-                        const.notification_type: const.notification_type_track_added_to_playlist,
+                        const.notification_type: const.notification_type_add_track_to_playlist,
                         const.notification_blocknumber: entry.blocknumber,
                         const.notification_timestamp: entry.created_at,
                         const.notification_initiator: entry.playlist_owner_id,
                     }
                     metadata = {
-                        const.notification_entity_id: track_id,
-                        const.notification_entity_type: "track",
+                        const.playlist_id: entry.playlist_id,
+                        const.track_id: track_id,
                     }
                     track_added_to_playlist_notification[
                         const.notification_metadata
@@ -930,14 +904,12 @@ def notifications():
 
         # Loop over notifications and populate their metadata
         for notification in track_added_to_playlist_notifications:
-            track_id = notification[const.notification_metadata][
-                const.notification_entity_id
-            ]
+            track_id = notification[const.notification_metadata][const.track_id]
             track_owner_id = track_owner_map[track_id]
             if track_owner_id != notification[const.notification_initiator]:
                 # add tracks that don't belong to the playlist owner
                 notification[const.notification_metadata][
-                    const.notification_entity_owner_id
+                    const.track_owner_id
                 ] = track_owner_id
                 created_notifications.append(notification)
 
@@ -1062,6 +1034,8 @@ def notifications():
         f"notifications.py | sorted notifications {datetime.now() - start_time}"
     )
 
+    milestone_info = get_milestone_info(session, min_block_number, max_block_number)
+
     return api_helpers.success_response(
         {
             "notifications": sorted_notifications,
@@ -1073,7 +1047,7 @@ def notifications():
 
 
 def get_max_slot(redis: Redis):
-    listen_milestone_slot = redis.get(latest_sol_listen_count_milestones_slot_key)
+    listen_milestone_slot = redis.get(latest_sol_plays_slot_key)
     if listen_milestone_slot:
         listen_milestone_slot = int(listen_milestone_slot)
 
@@ -1146,7 +1120,7 @@ def solana_notifications():
         challenge_disbursement_results = (
             session.query(ChallengeDisbursement)
             .filter(
-                ChallengeDisbursement.slot >= min_slot_number,
+                ChallengeDisbursement.slot > min_slot_number,
                 ChallengeDisbursement.slot <= max_slot_number,
             )
             .all()
@@ -1168,8 +1142,8 @@ def solana_notifications():
         track_listen_milestone: List[Tuple(Milestone, int)] = (
             session.query(Milestone, Track.owner_id)
             .filter(
-                Milestone.name == LISTEN_COUNT_MILESTONE,
-                Milestone.slot >= min_slot_number,
+                Milestone.name == MilestoneName.LISTEN_COUNT,
+                Milestone.slot > min_slot_number,
                 Milestone.slot <= max_slot_number,
             )
             .join(Track, Track.track_id == Milestone.id and Track.is_current == True)
@@ -1195,7 +1169,7 @@ def solana_notifications():
         supporter_rank_ups_result = (
             session.query(SupporterRankUp)
             .filter(
-                SupporterRankUp.slot >= min_slot_number,
+                SupporterRankUp.slot > min_slot_number,
                 SupporterRankUp.slot <= max_slot_number,
             )
             .all()
@@ -1218,7 +1192,7 @@ def solana_notifications():
         user_tips_result: List[UserTip] = (
             session.query(UserTip)
             .filter(
-                UserTip.slot >= min_slot_number,
+                UserTip.slot > min_slot_number,
                 UserTip.slot <= max_slot_number,
             )
             .all()
@@ -1245,7 +1219,7 @@ def solana_notifications():
             session.query(Reaction, User.user_id)
             .join(User, User.wallet == Reaction.sender_wallet)
             .filter(
-                Reaction.slot >= min_slot_number,
+                Reaction.slot > min_slot_number,
                 Reaction.slot <= max_slot_number,
                 User.is_current == True,
             )

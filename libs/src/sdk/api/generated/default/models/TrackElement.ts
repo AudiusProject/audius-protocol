@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -26,32 +25,5 @@ export interface TrackElement {
      * @memberof TrackElement
      */
     parent_track_id: string;
-}
-
-export function TrackElementFromJSON(json: any): TrackElement {
-    return TrackElementFromJSONTyped(json, false);
-}
-
-export function TrackElementFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackElement {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'parent_track_id': json['parent_track_id'],
-    };
-}
-
-export function TrackElementToJSON(value?: TrackElement | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'parent_track_id': value.parent_track_id,
-    };
 }
 

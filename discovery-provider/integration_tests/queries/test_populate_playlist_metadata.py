@@ -1,7 +1,8 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
-from src.models import RepostType, SaveType
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_playlist_metadata
 from src.utils.db_session import get_db
@@ -47,7 +48,6 @@ def test_populate_playlist_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_playlist")
         playlist_ids = [1, 2, 3, 4]
         playlists = [
             {"playlist_id": 1, "playlist_contents": {"track_ids": []}},

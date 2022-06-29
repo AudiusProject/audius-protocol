@@ -15,11 +15,12 @@ import {
 } from "./queries"
 import {
     // asyncSleep,
+    getEnv,
     generateSPSignatureParams,
-    getExternalRequestParams,
     makeRequest,
     // retryAsyncFunctionOrError
 } from "../utils"
+import { missedUsersCountGauge, gateway } from "../prometheus"
 
 export const indexContent = async (run_id: number) => {
 
@@ -101,12 +102,14 @@ export const indexContent = async (run_id: number) => {
 const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     console.log(`[${run_id}:${spid}] check users`)
 
-    const saveQueue: Promise<void>[] = []
+    // const saveQueue: Promise<void>[] = []
     const batchSize = 500
 
-    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getExternalRequestParams()
+    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
     const [primaryCount, secondary1Count, secondary2Count] = await getUserCounts(run_id, spid)
+
+    let missedUsers = 0
 
     await Promise.all(
         [
@@ -134,19 +137,30 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         signatureSPDelegatePrivateKey,
                     )
 
+                    missedUsers += await saveBatch(run_id, spid, results)
                     // add user to save queue
-                    saveQueue.push(saveBatch(run_id, spid, results))
+                    // saveQueue.push(saveBatch(run_id, spid, results))
                 } catch (e) {
                     console.log(`[checkUsers:${spid}] error - ${(e as Error).message}`)
                 }
-
             }
         })
     )
 
     // Check to make sure all users saved
+    console.log(`[${run_id}:${spid}] missed users ${missedUsers}`)
+
+    missedUsersCountGauge.set({ endpoint, run_id }, missedUsers)
+
+    try {
+        // Finish by publishing metrics to prometheus push gateway
+        console.log(`[${run_id}] pushing metrics to gateway`);
+        await gateway.pushAdd({ jobName: 'network-monitoring' })
+    } catch (e) {
+        console.log(`[checkUsers] error pushing metrics to pushgateway - ${(e as Error).message}`)
+    }
     console.log(`[${run_id}:${spid}] finish saving user content node data to db`)
-    await Promise.all(saveQueue);
+    // await Promise.all(saveQueue);
 }
 
 // for batch in batches
@@ -166,7 +180,7 @@ export const checkCID = async (
     const saveQueue: Promise<void>[] = []
     const batchSize = 500
 
-    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getExternalRequestParams()
+    const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
     await Promise.all([
         (async () => {

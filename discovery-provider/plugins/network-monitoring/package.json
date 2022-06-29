@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "npx tsc && node build/index.js",
+    "dev": "npx tsc && node build/index.js",
+    "staging": "npx tsc && NODE_ENV=staging node build/index.js",
+    "start": "npx tsc && NODE_ENV=production node build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

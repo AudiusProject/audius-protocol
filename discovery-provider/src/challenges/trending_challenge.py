@@ -10,8 +10,8 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import UserChallenge
-from src.models.trending_result import TrendingResult
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.tracks.trending_result import TrendingResult
 
 logger = logging.getLogger(__name__)
 

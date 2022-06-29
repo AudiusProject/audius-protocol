@@ -8,7 +8,11 @@ from sqlalchemy.sql import functions, null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
-from src.models import Remix, Stem, Track, TrackRoute, User
+from src.models.tracks.remix import Remix
+from src.models.tracks.stem import Stem
+from src.models.tracks.track import Track
+from src.models.tracks.track_route import TrackRoute
+from src.models.users.user import User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash

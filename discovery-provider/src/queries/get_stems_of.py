@@ -1,4 +1,5 @@
-from src.models import Stem, Track
+from src.models.tracks.stem import Stem
+from src.models.tracks.track import Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 

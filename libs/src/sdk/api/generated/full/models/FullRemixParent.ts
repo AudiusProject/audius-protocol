@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     FullRemix,
     FullRemixFromJSON,
@@ -33,32 +32,5 @@ export interface FullRemixParent {
      * @memberof FullRemixParent
      */
     tracks?: Array<FullRemix>;
-}
-
-export function FullRemixParentFromJSON(json: any): FullRemixParent {
-    return FullRemixParentFromJSONTyped(json, false);
-}
-
-export function FullRemixParentFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullRemixParent {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(FullRemixFromJSON)),
-    };
-}
-
-export function FullRemixParentToJSON(value?: FullRemixParent | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(FullRemixToJSON)),
-    };
 }
 

@@ -10,7 +10,7 @@ const {
 } = require('../stateMachineUtils')
 const { QUEUE_NAMES, JOB_NAMES } = require('../stateMachineConstants')
 
-// Number of users to process each time processStateMonitoringJob is called
+// Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
 const THIS_CNODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
@@ -33,12 +33,17 @@ module.exports = async function ({
 
   // Record all stages of this function along with associated information for use in logging
   const decisionTree = []
-  _addToDecisionTree(decisionTree, 'BEGIN processStateMonitoringJob', logger, {
-    lastProcessedUserId,
-    discoveryNodeEndpoint,
-    THIS_CNODE_ENDPOINT,
-    USERS_PER_JOB
-  })
+  _addToDecisionTree(
+    decisionTree,
+    'BEGIN monitor-state job processor',
+    logger,
+    {
+      lastProcessedUserId,
+      discoveryNodeEndpoint,
+      THIS_CNODE_ENDPOINT,
+      USERS_PER_JOB
+    }
+  )
 
   let users = []
   let unhealthyPeers = new Set()
@@ -53,24 +58,18 @@ module.exports = async function ({
         USERS_PER_JOB
       )
 
-      _addToDecisionTree(
-        decisionTree,
-        'getNodeUsers and sliceUsers Success',
-        logger,
-        { usersLength: users?.length }
-      )
+      _addToDecisionTree(decisionTree, 'getNodeUsers Success', logger, {
+        usersLength: users?.length
+      })
     } catch (e) {
       // Make the next job try again instead of looping back to userId 0
       users = [{ user_id: lastProcessedUserId }]
 
-      _addToDecisionTree(
-        decisionTree,
-        'getNodeUsers or sliceUsers Error',
-        logger,
-        { error: e.message }
-      )
+      _addToDecisionTree(decisionTree, 'getNodeUsers Error', logger, {
+        error: e.message
+      })
       throw new Error(
-        `processStateMonitoringJob getNodeUsers or sliceUsers Error: ${e.toString()}`
+        `monitor-state job processor getNodeUsers Error: ${e.toString()}`
       )
     }
 
@@ -83,12 +82,12 @@ module.exports = async function ({
     } catch (e) {
       _addToDecisionTree(
         decisionTree,
-        'processStateMonitoringJob getUnhealthyPeers Error',
+        'monitor-state job processor getUnhealthyPeers Error',
         logger,
         { error: e.message }
       )
       throw new Error(
-        `processStateMonitoringJob getUnhealthyPeers Error: ${e.toString()}`
+        `monitor-state job processor getUnhealthyPeers Error: ${e.toString()}`
       )
     }
 
@@ -133,7 +132,7 @@ module.exports = async function ({
         { error: e.message }
       )
       throw new Error(
-        'processStateMonitoringJob retrieveClockStatusesForUsersAcrossReplicaSet Error'
+        'monitor-state job processor retrieveClockStatusesForUsersAcrossReplicaSet Error'
       )
     }
 
@@ -159,13 +158,13 @@ module.exports = async function ({
         { error: e.message }
       )
       throw new Error(
-        'processStateMonitoringJob computeUserSecondarySyncSuccessRatesMap Error'
+        'monitor-state job processor computeUserSecondarySyncSuccessRatesMap Error'
       )
     }
   } catch (e) {
-    logger.info(`processStateMonitoringJob ERROR: ${e.toString()}`)
+    logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
-    _addToDecisionTree(decisionTree, 'END processStateMachineOperation', logger)
+    _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
 
     // Log decision tree
     _printDecisionTree(decisionTree, logger)
@@ -236,7 +235,7 @@ const _validateJobData = (
 const _addToDecisionTree = (decisionTree, stage, logger, data = {}) => {
   const obj = { stage, data, time: Date.now() }
 
-  let logStr = `monitorState.jobProcessor ${stage} - Data ${JSON.stringify(
+  let logStr = `monitor-state job processor ${stage} - Data ${JSON.stringify(
     data
   )}`
 
@@ -266,11 +265,11 @@ const _printDecisionTree = (decisionTree, logger) => {
   }
   try {
     logger.info(
-      `monitorState.jobProcessor Decision Tree${JSON.stringify(decisionTree)}`
+      `monitor-state job processor Decision Tree${JSON.stringify(decisionTree)}`
     )
   } catch (e) {
     logger.error(
-      `Error printing monitorState.jobProcessor Decision Tree ${decisionTree}`
+      `Error printing monitor-state job processor Decision Tree ${decisionTree}`
     )
   }
 }

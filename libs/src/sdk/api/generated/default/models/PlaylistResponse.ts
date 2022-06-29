@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Playlist,
     PlaylistFromJSON,
@@ -33,32 +32,5 @@ export interface PlaylistResponse {
      * @memberof PlaylistResponse
      */
     data?: Array<Playlist>;
-}
-
-export function PlaylistResponseFromJSON(json: any): PlaylistResponse {
-    return PlaylistResponseFromJSONTyped(json, false);
-}
-
-export function PlaylistResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): PlaylistResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(PlaylistFromJSON)),
-    };
-}
-
-export function PlaylistResponseToJSON(value?: PlaylistResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(PlaylistToJSON)),
-    };
 }
 

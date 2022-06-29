@@ -10,18 +10,11 @@ from redis import Redis
 from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import Play
+from src.models.social.play import Play
 from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_transaction_types import (
-    ConfirmedSignatureForAddressResult,
-    TransactionInfoResult,
-)
+from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
 from src.tasks.celery_app import celery
-from src.tasks.index_listen_count_milestones import (
-    CURRENT_PLAY_INDEXING,
-    TRACK_LISTEN_IDS,
-)
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
     cache_latest_sol_db_tx,
@@ -29,7 +22,6 @@ from src.utils.cache_solana_program import (
 )
 from src.utils.config import shared_config
 from src.utils.helpers import split_list
-from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
@@ -482,10 +474,6 @@ def parse_sol_tx_batch(
             f"index_solana_plays.py | DB | Saved to DB in {time.time() - db_save_start}"
         )
 
-        track_play_ids = [play["play_item_id"] for play in plays]
-        if track_play_ids:
-            redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
-
         logger.info("index_solana_plays.py | Dispatching listen events")
         listen_dispatch_start = time.time()
         for event in challenge_bus_events:
@@ -579,6 +567,9 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     # The last transaction processed
     last_tx = None
 
+    # The latest play slot to be processed
+    latest_play_slot = None
+
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
         latest_global_slot = solana_client_manager.get_slot()
@@ -631,6 +622,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
                         # Otherwise, ensure this transaction is still processed
                         transaction_signature_batch.append(tx_sig)
                 # Restart processing at the end of this transaction signature batch
+
+                # get latest play slot from the first fetch
+                if transaction_signature_batch and not latest_play_slot:
+                    latest_play_slot = transactions_array[0]["slot"]
+
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
 
@@ -659,26 +655,16 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         ):
             parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
 
-    try:
-        if transaction_signatures and transaction_signatures[-1]:
-            last_tx_sig = transaction_signatures[-1][-1]
-            tx_info = solana_client_manager.get_sol_tx_info(last_tx_sig)
-            tx_result: TransactionInfoResult = tx_info["result"]
-            set_json_cached_key(
-                redis,
-                CURRENT_PLAY_INDEXING,
-                {"slot": tx_result["slot"], "timestamp": tx_result["blockTime"]},
-            )
-    except Exception as e:
-        logger.error(
-            "index_solana_plays.py | Unable to set redis current play indexing",
-            exc_info=True,
+    if latest_play_slot:
+        logger.info(
+            f"index_solana_plays.py | Setting latest plays slot {latest_play_slot}"
         )
-        raise e
+        redis.set(latest_sol_plays_slot_key, latest_play_slot)
 
-    if last_tx and transaction_signatures:
-        redis.set(latest_sol_plays_slot_key, last_tx["slot"])
     elif latest_global_slot is not None:
+        logger.info(
+            f"index_solana_plays.py | Setting latest plays slot as the latest global slot {latest_global_slot}"
+        )
         redis.set(latest_sol_plays_slot_key, latest_global_slot)
 
 

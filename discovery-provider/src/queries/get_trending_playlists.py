@@ -14,7 +14,11 @@ from src.api.v1.helpers import (
     format_offset,
     to_dict,
 )
-from src.models import AggregateUser, Follow, Playlist, RepostType, Save, SaveType
+from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.repost import RepostType
+from src.models.social.save import Save, SaveType
+from src.models.users.aggregate_user import AggregateUser
 from src.queries import response_name_constants
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists

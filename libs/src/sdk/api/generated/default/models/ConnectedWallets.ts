@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -32,34 +31,5 @@ export interface ConnectedWallets {
      * @memberof ConnectedWallets
      */
     spl_wallets: Array<string>;
-}
-
-export function ConnectedWalletsFromJSON(json: any): ConnectedWallets {
-    return ConnectedWalletsFromJSONTyped(json, false);
-}
-
-export function ConnectedWalletsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ConnectedWallets {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'erc_wallets': json['erc_wallets'],
-        'spl_wallets': json['spl_wallets'],
-    };
-}
-
-export function ConnectedWalletsToJSON(value?: ConnectedWallets | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'erc_wallets': value.erc_wallets,
-        'spl_wallets': value.spl_wallets,
-    };
 }
 

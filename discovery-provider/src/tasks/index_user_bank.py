@@ -12,8 +12,9 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import User, UserBankAccount, UserBankTransaction
-from src.models.user_tip import UserTip
+from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount, UserBankTransaction
+from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,

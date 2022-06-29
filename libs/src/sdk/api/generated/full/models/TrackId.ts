@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -26,32 +25,5 @@ export interface TrackId {
      * @memberof TrackId
      */
     id: string;
-}
-
-export function TrackIdFromJSON(json: any): TrackId {
-    return TrackIdFromJSONTyped(json, false);
-}
-
-export function TrackIdFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackId {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'id': json['id'],
-    };
-}
-
-export function TrackIdToJSON(value?: TrackId | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'id': value.id,
-    };
 }
 

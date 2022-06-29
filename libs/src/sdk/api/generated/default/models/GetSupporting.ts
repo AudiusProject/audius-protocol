@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Supporting,
     SupportingFromJSON,
@@ -33,32 +32,5 @@ export interface GetSupporting {
      * @memberof GetSupporting
      */
     data?: Array<Supporting>;
-}
-
-export function GetSupportingFromJSON(json: any): GetSupporting {
-    return GetSupportingFromJSONTyped(json, false);
-}
-
-export function GetSupportingFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetSupporting {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(SupportingFromJSON)),
-    };
-}
-
-export function GetSupportingToJSON(value?: GetSupporting | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(SupportingToJSON)),
-    };
 }
 

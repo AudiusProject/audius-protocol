@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
-from src.models import Track
+from src.models.tracks.track import Track
 
 
 def get_prev_track_entries(session: Session, entries: List[Track]):

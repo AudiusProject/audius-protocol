@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
           'RemixCreate',
           'RemixCosign',
           'TrendingTrack',
-          'ChallengeReward'
+          'ChallengeReward',
+          'AddTrackToPlaylist'
         ]
       }),
       allowNull: false
@@ -64,6 +65,10 @@ module.exports = (sequelize, DataTypes) => {
     timestamp: {
       type: DataTypes.DATE,
       allowNull: false
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true
     }
   }, {})
 

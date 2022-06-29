@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -32,34 +31,5 @@ export interface TrackSegment {
      * @memberof TrackSegment
      */
     multihash: string;
-}
-
-export function TrackSegmentFromJSON(json: any): TrackSegment {
-    return TrackSegmentFromJSONTyped(json, false);
-}
-
-export function TrackSegmentFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackSegment {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'duration': json['duration'],
-        'multihash': json['multihash'],
-    };
-}
-
-export function TrackSegmentToJSON(value?: TrackSegment | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'duration': value.duration,
-        'multihash': value.multihash,
-    };
 }
 

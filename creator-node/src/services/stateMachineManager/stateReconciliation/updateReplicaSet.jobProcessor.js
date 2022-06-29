@@ -27,10 +27,10 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {number} param.secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
  * @param {string[]} param.unhealthyReplicas the endpoints of the user's replica set that are currently unhealthy
- * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of user's node endpoint strings to clock value of node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
-module.exports = async function (
+module.exports = async function ({
   logger,
   wallet,
   userId,
@@ -40,19 +40,7 @@ module.exports = async function (
   unhealthyReplicas,
   replicaSetNodesToUserClockStatusesMap,
   enabledReconfigModes
-) {
-  _validateJobData(
-    logger,
-    primary,
-    secondary1,
-    secondary2,
-    wallet,
-    unhealthyReplicas,
-    healthyNodes,
-    replicaSetNodesToUserClockStatusesMap,
-    enabledReconfigModes
-  )
-
+}) {
   /**
    * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
    * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
@@ -68,18 +56,31 @@ module.exports = async function (
       }
     )
 
-  const healthyNodes = Object.keys(healthyServicesMap)
+  const healthyNodes = Object.keys(healthyServicesMap || {})
   if (healthyNodes.length === 0)
     throw new Error(
       'Auto-selecting Content Nodes returned an empty list of healthy nodes.'
     )
+
+  _validateJobData(
+    logger,
+    primary,
+    secondary1,
+    secondary2,
+    wallet,
+    unhealthyReplicas,
+    healthyNodes,
+    replicaSetNodesToUserClockStatusesMap,
+    enabledReconfigModes
+  )
 
   let errorMsg = ''
   let issuedReconfig = false
   let syncJobsToEnqueue = []
   let newReplicaSet = {}
   try {
-    newReplicaSet = await determineNewReplicaSet({
+    newReplicaSet = await _determineNewReplicaSet({
+      logger,
       wallet,
       primary,
       secondary1,
@@ -90,7 +91,7 @@ module.exports = async function (
       enabledReconfigModes
     })
     ;({ errorMsg, issuedReconfig, syncJobsToEnqueue } =
-      await issueUpdateReplicaSetOp(
+      await _issueUpdateReplicaSetOp(
         userId,
         wallet,
         primary,
@@ -103,6 +104,7 @@ module.exports = async function (
     logger.error(
       `ERROR issuing update replica set op: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | Error: ${e.toString()}`
     )
+    errorMsg = e.toString()
   }
 
   return {
@@ -112,16 +114,14 @@ module.exports = async function (
     healthyNodes,
     jobsToEnqueue: syncJobsToEnqueue?.length
       ? {
-          jobsToEnqueue: {
-            [QUEUE_NAMES.STATE_RECONCILIATION]: syncJobsToEnqueue
-          }
+          [QUEUE_NAMES.STATE_RECONCILIATION]: syncJobsToEnqueue
         }
       : {}
   }
 }
 
 /**
- * Logic to determine the new replica set. Used in reconfig op.
+ * Logic to determine the new replica set.
  *
  * The logic below is as follows:
  * 1. Select the unhealthy replica set nodes size worth of healthy nodes to prepare for issuing reconfig
@@ -132,9 +132,9 @@ module.exports = async function (
  *  - ** if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
  *  - if entire replica set is unhealthy -> {primary: null, secondary1: null, secondary2: null, issueReconfig: false}
  *
- * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. See `peerSetManager` instance variable for more information.
+ * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. See `../CNodeHealthManager.js` for more information.
  *
- * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on the curretly enabled reconfig mode. See `RECONFIG_MODE` variable for more information.
+ * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on the currently enabled reconfig mode. See `RECONFIG_MODE` variable for more information.
  *
  * @param {Object} param
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
@@ -144,7 +144,7 @@ module.exports = async function (
  * @param {string} param.wallet current user's wallet address
  * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
  * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
- * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  * @returns {Object}
  * {
@@ -154,7 +154,7 @@ module.exports = async function (
  *  issueReconfig: {boolean} flag to issue reconfig or not
  * }
  */
-const determineNewReplicaSet = async ({
+const _determineNewReplicaSet = async ({
   logger,
   primary,
   secondary1,
@@ -169,7 +169,7 @@ const determineNewReplicaSet = async ({
   const healthyReplicaSet = new Set(
     currentReplicaSet.filter((node) => !unhealthyReplicasSet.has(node))
   )
-  const newReplicaNodes = await selectRandomReplicaSetNodes(
+  const newReplicaNodes = await _selectRandomReplicaSetNodes(
     healthyReplicaSet,
     unhealthyReplicasSet.size,
     healthyNodes,
@@ -178,8 +178,7 @@ const determineNewReplicaSet = async ({
   )
 
   if (unhealthyReplicasSet.size === 1) {
-    return determineNewReplicaSetWhenOneNodeIsUnhealthy(
-      wallet,
+    return _determineNewReplicaSetWhenOneNodeIsUnhealthy(
       primary,
       secondary1,
       secondary2,
@@ -189,7 +188,7 @@ const determineNewReplicaSet = async ({
       enabledReconfigModes
     )
   } else if (unhealthyReplicasSet.size === 2) {
-    return determineNewReplicaSetWhenTwoNodesAreUnhealthy(
+    return _determineNewReplicaSetWhenTwoNodesAreUnhealthy(
       primary,
       secondary1,
       secondary2,
@@ -215,7 +214,7 @@ const _validateJobData = (
   secondary1,
   secondary2,
   wallet,
-  unhealthyReplicasSet,
+  unhealthyReplicas,
   healthyNodes,
   replicaSetNodesToUserClockStatusesMap,
   enabledReconfigModes
@@ -245,9 +244,9 @@ const _validateJobData = (
       `Invalid type ("${typeof wallet}") or value ("${wallet}") of wallet param`
     )
   }
-  if (!(unhealthyReplicasSet instanceof Set)) {
+  if (!(unhealthyReplicas instanceof Array)) {
     throw new Error(
-      `Invalid type ("${typeof unhealthyReplicasSet}") or value ("${unhealthyReplicasSet}") of unhealthyReplicasSet param`
+      `Invalid type ("${typeof unhealthyReplicas}") or value ("${unhealthyReplicas}") of unhealthyReplicasSet param`
     )
   }
   if (!(healthyNodes instanceof Array)) {
@@ -272,17 +271,15 @@ const _validateJobData = (
 
 /**
  * Determines new replica set when one node in the current replica set is unhealthy.
- * @param {*} wallet wallet address of user whose replica set contains 1 unhealthy node to be replaced
  * @param {*} primary user's current primary endpoint
  * @param {*} secondary1 user's current first secondary endpoint
  * @param {*} secondary2 user's current second secondary endpoint
  * @param {*} unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
- * @param {*} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+ * @param {*} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
  * @param {*} newReplicaNode endpoint of node that will replace the unhealthy node
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy node
  */
-const determineNewReplicaSetWhenOneNodeIsUnhealthy = (
-  wallet,
+const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   primary,
   secondary1,
   secondary2,
@@ -295,8 +292,8 @@ const determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
   if (unhealthyReplicasSet.has(primary)) {
     const [newPrimary, currentHealthySecondary] =
-      replicaSetNodesToUserClockStatusesMap[secondary1][wallet] >=
-      replicaSetNodesToUserClockStatusesMap[secondary2][wallet]
+      replicaSetNodesToUserClockStatusesMap[secondary1] >=
+      replicaSetNodesToUserClockStatusesMap[secondary2]
         ? [secondary1, secondary2]
         : [secondary2, secondary1]
     return {
@@ -336,7 +333,7 @@ const determineNewReplicaSetWhenOneNodeIsUnhealthy = (
  * @param {*} newReplicaNodes array of endpoints of nodes that will replace the unhealthy nodes
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy nodes
  */
-const determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
+const _determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
   primary,
   secondary1,
   secondary2,
@@ -386,18 +383,18 @@ const determineNewReplicaSetWhenTwoNodesAreUnhealthy = (
  * @param {Object} logger a logger that can be filtered on jobName and jobId
  * @returns {string[]} a string[] of the new replica set nodes
  */
-const selectRandomReplicaSetNodes = async (
+const _selectRandomReplicaSetNodes = async (
   healthyReplicaSet,
   numberOfUnhealthyReplicas,
   healthyNodes,
   wallet,
   logger
 ) => {
-  const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
+  const logStr = `[_selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
     ...healthyReplicaSet
-  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${
-    healthyNodes.length
-  } ||`
+  ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} healthyNodes=${[
+    ...healthyNodes
+  ]} ||`
 
   const newReplicaNodesSet = new Set()
   let selectNewReplicaSetAttemptCounter = 0
@@ -455,7 +452,7 @@ const selectRandomReplicaSetNodes = async (
  * @param {Object} newReplicaSet {newPrimary, newSecondary1, newSecondary2, issueReconfig, reconfigType}
  * @param {Object} logger a logger that can be filtered on jobName and jobId
  */
-const issueUpdateReplicaSetOp = async (
+const _issueUpdateReplicaSetOp = async (
   userId,
   wallet,
   primary,
@@ -465,7 +462,7 @@ const issueUpdateReplicaSetOp = async (
   logger
 ) => {
   const response = {
-    errorMsg: null,
+    errorMsg: '',
     issuedReconfig: false,
     syncJobsToEnqueue: []
   }
@@ -482,7 +479,7 @@ const issueUpdateReplicaSetOp = async (
     newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
     logger.info(
-      `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} newReplicaSetEndpoints=${JSON.stringify(
+      `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} newReplicaSetEndpoints=${JSON.stringify(
         newReplicaSetEndpoints
       )}`
     )
@@ -490,7 +487,7 @@ const issueUpdateReplicaSetOp = async (
     // If snapback is not enabled, Log reconfig op without issuing.
     if (!issueReconfig) {
       logger.info(
-        `[issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
+        `[_issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
       )
       return response
     }
@@ -500,7 +497,7 @@ const issueUpdateReplicaSetOp = async (
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
       if (!CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[endpt]) {
-        response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
+        response.errorMsg = `[_issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}] | endpointToSPIdMap=${JSON.stringify(
           CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()
         )} | endpt=${endpt}. Skipping reconfig.`
         logger.error(response.errorMsg)
@@ -521,7 +518,7 @@ const issueUpdateReplicaSetOp = async (
       )
       const timeElapsedMs = Date.now() - startTimeMs
       logger.info(
-        `[issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
+        `[_issueUpdateReplicaSetOp] updateReplicaSet took ${timeElapsedMs}ms for userId=${userId} wallet=${wallet} `
       )
 
       response.issuedReconfig = true
@@ -532,7 +529,7 @@ const issueUpdateReplicaSetOp = async (
       )
     }
 
-    // Enqueue a sync for new primary to new secondaries. If there is no diff, then this is a no-op.
+    // Enqueue a sync from new primary to new secondary1. If there is no diff, then this is a no-op.
     const { duplicateSyncReq, syncReqToEnqueue: syncToEnqueueToSecondary1 } =
       getNewOrExistingSyncReq({
         userWallet: wallet,
@@ -540,25 +537,37 @@ const issueUpdateReplicaSetOp = async (
         secondaryEndpoint: newSecondary1,
         syncType: SyncType.Recurring
       })
+    if (!_.isEmpty(duplicateSyncReq)) {
+      logger.warn(
+        `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary1: ${duplicateSyncReq}`
+      )
+    } else if (!_.isEmpty(syncToEnqueueToSecondary1)) {
+      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary1)
+    }
 
-    const { duplicateSyncReq: _, syncReqToEnqueue: syncToEnqueueToSecondary2 } =
-      getNewOrExistingSyncReq({
-        userWallet: wallet,
-        primaryEndpoint: newPrimary,
-        secondaryEndpoint: newSecondary2,
-        syncType: SyncType.Recurring
-      })
-
-    response.syncJobsToEnqueue.push(
-      syncToEnqueueToSecondary1,
-      syncToEnqueueToSecondary2
-    )
+    // Enqueue a sync from new primary to new secondary2. If there is no diff, then this is a no-op.
+    const {
+      duplicateSyncReq: duplicateSyncReq2,
+      syncReqToEnqueue: syncToEnqueueToSecondary2
+    } = getNewOrExistingSyncReq({
+      userWallet: wallet,
+      primaryEndpoint: newPrimary,
+      secondaryEndpoint: newSecondary2,
+      syncType: SyncType.Recurring
+    })
+    if (!_.isEmpty(duplicateSyncReq2)) {
+      logger.warn(
+        `[_issueUpdateReplicaSetOp] Reconfig had duplicate sync request to secondary2: ${duplicateSyncReq2}`
+      )
+    } else if (!_.isEmpty(syncToEnqueueToSecondary2)) {
+      response.syncJobsToEnqueue.push(syncToEnqueueToSecondary2)
+    }
 
     logger.info(
-      `[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
+      `[_issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`
     )
   } catch (e) {
-    response.errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
+    response.errorMsg = `[_issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}`
     logger.error(response.errorMsg)
     return response
   }

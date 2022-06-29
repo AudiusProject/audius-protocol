@@ -5,6 +5,12 @@ import {
 
 export const sharedIndexSettings: IndicesIndexSettings = {
   analysis: {
+    normalizer: {
+      lower_asciifolding: {
+        type: 'custom',
+        filter: ['asciifolding', 'lowercase'],
+      },
+    },
     analyzer: {
       standard_asciifolding: {
         type: 'custom',

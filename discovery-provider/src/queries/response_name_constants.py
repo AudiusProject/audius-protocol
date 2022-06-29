@@ -84,7 +84,7 @@ notification_type_remix_create = "RemixCreate"
 notification_type_remix_cosign = "RemixCosign"
 notification_type_playlist_update = "PlaylistUpdate"
 notification_type_tier_change = "TierChange"
-notification_type_track_added_to_playlist = "TrackAddedToPlaylist"
+notification_type_add_track_to_playlist = "AddTrackToPlaylist"
 
 notification_blocknumber = "blocknumber"
 notification_initiator = "initiator"

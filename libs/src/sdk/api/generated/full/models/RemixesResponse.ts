@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     TrackFull,
     TrackFullFromJSON,
@@ -39,34 +38,5 @@ export interface RemixesResponse {
      * @memberof RemixesResponse
      */
     tracks?: Array<TrackFull>;
-}
-
-export function RemixesResponseFromJSON(json: any): RemixesResponse {
-    return RemixesResponseFromJSONTyped(json, false);
-}
-
-export function RemixesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemixesResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'count': json['count'],
-        'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
-    };
-}
-
-export function RemixesResponseToJSON(value?: RemixesResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'count': value.count,
-        'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(TrackFullToJSON)),
-    };
 }
 

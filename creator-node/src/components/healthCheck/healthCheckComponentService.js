@@ -70,8 +70,12 @@ const healthCheck = async (
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
     latestSyncFailTimestamp,
-    stateMachineQueueLatestJobSuccess,
-    stateMachineQueueLatestJobStart
+    latestMonitorStateJobStart,
+    latestMonitorStateJobSuccess,
+    latestFindSyncRequestsJobStart,
+    latestFindSyncRequestsJobSuccess,
+    latestFindReplicaSetUpdatesJobStart,
+    latestFindReplicaSetUpdatesJobSuccess
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -90,8 +94,12 @@ const healthCheck = async (
     MONITORS.DAILY_SYNC_FAIL_COUNT,
     MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP,
     MONITORS.LATEST_SYNC_FAIL_TIMESTAMP,
-    MONITORS.LATEST_STATE_MACHINE_QUEUE_SUCCESS,
-    MONITORS.LATEST_STATE_MACHINE_QUEUE_START
+    MONITORS.LATEST_MONITOR_STATE_JOB_START,
+    MONITORS.LATEST_MONITOR_STATE_JOB_SUCCESS,
+    MONITORS.LATEST_FIND_SYNC_REQUESTS_JOB_START,
+    MONITORS.LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS,
+    MONITORS.LATEST_FIND_REPLICA_SET_UPDATES_JOB_START,
+    MONITORS.LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
   ])
 
   let currentSnapbackReconfigMode
@@ -172,12 +180,24 @@ const healthCheck = async (
     shouldHandleTranscode,
     asyncProcessingQueue: asyncProcessingQueueJobs,
     solDelegatePublicKeyBase58,
-    stateMachineQueueLatestJobSuccess: stateMachineQueueLatestJobSuccess
-      ? new Date(parseInt(stateMachineQueueLatestJobSuccess)).toISOString()
-      : null,
-    stateMachineQueueLatestJobStart: stateMachineQueueLatestJobStart
-      ? new Date(parseInt(stateMachineQueueLatestJobStart)).toISOString()
-      : null
+    stateMachineJobs: {
+      latestMonitorStateJobStart: parseDateOrNull(latestMonitorStateJobStart),
+      latestMonitorStateJobSuccess: parseDateOrNull(
+        latestMonitorStateJobSuccess
+      ),
+      latestFindSyncRequestsJobStart: parseDateOrNull(
+        latestFindSyncRequestsJobStart
+      ),
+      latestFindSyncRequestsJobSuccess: parseDateOrNull(
+        latestFindSyncRequestsJobSuccess
+      ),
+      latestFindReplicaSetUpdatesJobStart: parseDateOrNull(
+        latestFindReplicaSetUpdatesJobStart
+      ),
+      latestFindReplicaSetUpdatesJobSuccess: parseDateOrNull(
+        latestFindReplicaSetUpdatesJobSuccess
+      )
+    }
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
@@ -211,6 +231,10 @@ const healthCheck = async (
   }
 
   return response
+}
+
+const parseDateOrNull = (date) => {
+  return date ? new Date(parseInt(date)).toISOString() : null
 }
 
 // TODO remove verbose health check after fully deprecated

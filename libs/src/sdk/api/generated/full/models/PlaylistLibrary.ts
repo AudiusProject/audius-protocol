@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -26,32 +25,5 @@ export interface PlaylistLibrary {
      * @memberof PlaylistLibrary
      */
     contents?: Array<object>;
-}
-
-export function PlaylistLibraryFromJSON(json: any): PlaylistLibrary {
-    return PlaylistLibraryFromJSONTyped(json, false);
-}
-
-export function PlaylistLibraryFromJSONTyped(json: any, ignoreDiscriminator: boolean): PlaylistLibrary {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'contents': !exists(json, 'contents') ? undefined : json['contents'],
-    };
-}
-
-export function PlaylistLibraryToJSON(value?: PlaylistLibrary | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'contents': value.contents,
-    };
 }
 

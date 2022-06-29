@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     SupporterReference,
     SupporterReferenceFromJSON,
@@ -75,44 +74,5 @@ export interface FullTip {
      * @memberof FullTip
      */
     tx_signature: string;
-}
-
-export function FullTipFromJSON(json: any): FullTip {
-    return FullTipFromJSONTyped(json, false);
-}
-
-export function FullTipFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullTip {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'amount': json['amount'],
-        'sender': UserFullFromJSON(json['sender']),
-        'receiver': UserFullFromJSON(json['receiver']),
-        'created_at': json['created_at'],
-        'slot': json['slot'],
-        'followee_supporters': ((json['followee_supporters'] as Array<any>).map(SupporterReferenceFromJSON)),
-        'tx_signature': json['tx_signature'],
-    };
-}
-
-export function FullTipToJSON(value?: FullTip | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'amount': value.amount,
-        'sender': UserFullToJSON(value.sender),
-        'receiver': UserFullToJSON(value.receiver),
-        'created_at': value.created_at,
-        'slot': value.slot,
-        'followee_supporters': ((value.followee_supporters as Array<any>).map(SupporterReferenceToJSON)),
-        'tx_signature': value.tx_signature,
-    };
 }
 

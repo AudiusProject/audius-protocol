@@ -1,89 +1,115 @@
-# @audius/sdk
+# Audius Javascript SDK
 
-A javascript sdk for interacting with services in the Audius protocol.
+## Overview
 
-## Typed API client generation
+The Audius SDK allows you to easily build upon and interact with the Audius network. Currently, we only have a Typescript/Javascript SDK.
 
-The sdk uses `@openapitools/openapi-generator-cli` which requires Java 8 runtime (JRE) to be installed.
+We're actively working on building out more SDK features and functionality - stay tuned!
 
-Linux:
+## Installation
 
-```bash
-sudo apt install default-jre
+- [In the browser/Vanilla JS](#in-the-browservanilla-js)
+- [In Node.js](#in-nodejs)
+
+### In the browser/Vanilla JS
+
+#### 0. Include Web3.js
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 ```
 
-### Generating Types
+#### 1. Include the SDK script tag
 
-Commands are in the form:
-
-```bash
-npm run gen:{env}:{flavor?}
+```html
+<!-- Put this AFTER web3.js -->
+<script src="https://cdn.jsdelivr.net/npm/@audius/sdk@latest/dist/sdk.min.js"></script>
 ```
 
-#### Options
+The Audius SDK will then be assigned to `window.audiusSdk`.
 
-- `env` choices=("dev", "stage", "prod"): Which environment to choose the Discovery Provider to generate from
-  - `dev`: http://dn1_web-server_1:5000/
-  - `stage`: https://discoveryprovider.staging.audius.co/
-  - `prod`: https://discoveryprovider.audius.co
-- `flavor` [optional] choices=("default", "full"): Which flavor of the API to generate types for
-  - undefined for both
-  - `default` for /v1
-  - `full` for /v1/full
+#### 2. Initialize the SDK
 
-```bash
-#### DEVELOPMENT ####
-npm run gen:dev
-npm run gen:dev:default
-npm run gen:dev:full
-
-#### STAGING ####
-npm run gen:stage
-npm run gen:stage:default
-npm run gen:stage:full
-
-#### PROD ####
-npm run gen:prod
-npm run gen:prod:default
-npm run gen:prod:full
+```js
+const audiusSdk = window.audiusSdk({ appName: 'Name of your app goes here' })
 ```
 
-#### Manually
+#### 3. Make your first API call using the SDK!
 
-Alternatively, run the script manually:
-
-```bash
-node ./gen.js --help
+```js
+const tracks = await audiusSdk.discoveryNode.getTracks()
 ```
 
+#### Full example
+
+```html title="index.html"
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@audius/sdk@latest/dist/sdk.min.js"></script>
+    <script>
+      const audiusSdk = window.audiusSdk({
+        appName: "My Example App",
+      });
+      const tracks = await audiusSdk.discoveryNode.getTracks();
+      console.log(tracks, "Tracks fetched!");
+    </script>
+  </head>
+  <body>
+    <h1>Example content</h1>
+  </body>
+</html>
 ```
-Usage: gen [options] [command]
 
-Options:
-  -h, --help            display help for command
+### In Node.js
 
-Commands:
-  generate [options]    Generates the client
-  template [generator]  Download templates for the given generator
-  help [command]        display help for command
+#### 0. Install the SDK package using your preferred JS package manager
+
+In your terminal, run:
+
+```bash"
+npm install @audius/sdk
 ```
 
-### Getting templates
+#### 1. [Skip if not in browser environment] Install web3.js
 
-See also: https://openapi-generator.tech/docs/templating
+In your terminal, run:
 
-```bash
-node ./src/sdk/api/generator/gen.js template --help
+```bash"
+npm install web3
 ```
 
-```bash
-Usage: gen template [options] [generator]
+#### 2. [Skip if not in browser environment] Assign web3.js to `window.Web3`
 
-Download templates for the given generator
+```js
+import Web3 from 'web3'
+window.Web3 = Web3
+```
 
-Arguments:
-  generator   The generator to download templates for (default: "typescript-fetch")
+#### 3. Initialize the SDK
 
-Options:
-  -h, --help  display help for command
+```js
+import { sdk } from '@audius/sdk'
+
+const audiusSdk = sdk({ appName: 'Name of your app goes here' })
+```
+
+#### 4. Make your first API call using the SDK!
+
+```js
+const tracks = await audiusSdk.discoveryNode.getTracks()
+console.log(tracks, 'Tracks fetched!')
+```
+
+#### Full example
+
+```js title="app.js"
+import Web3 from 'web3'
+import { sdk } from '@audius/sdk'
+
+window.Web3 = Web3
+const audiusSdk = sdk({ appName: 'My Example App' })
+const tracks = await audiusSdk.discoveryNode.getTracks()
+console.log(tracks, 'Tracks fetched!')
 ```

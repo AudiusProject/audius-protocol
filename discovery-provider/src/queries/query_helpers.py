@@ -7,22 +7,18 @@ from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 from src import exceptions
-from src.models import (
-    AggregatePlaylist,
-    AggregatePlays,
-    AggregateTrack,
-    AggregateUser,
-    Follow,
-    Playlist,
-    Remix,
-    Repost,
-    RepostType,
-    Save,
-    SaveType,
-    Track,
-    User,
-    UserBankAccount,
-)
+from src.models.playlists.aggregate_playlist import AggregatePlaylist
+from src.models.playlists.playlist import Playlist
+from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost, RepostType
+from src.models.social.save import Save, SaveType
+from src.models.tracks.aggregate_track import AggregateTrack
+from src.models.tracks.remix import Remix
+from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount
 from src.queries import response_name_constants
 from src.queries.get_balances import get_balances
 from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache

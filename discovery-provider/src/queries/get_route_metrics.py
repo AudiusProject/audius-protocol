@@ -5,15 +5,21 @@ from datetime import date, timedelta
 
 from sqlalchemy import asc, desc, func, or_
 from src import exceptions
-from src.models import (
+from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,
-    AggregateDailyUniqueUsersMetrics,
-    AggregateMonthlyTotalUsersMetrics,
-    AggregateMonthlyUniqueUsersMetrics,
-    RouteMetrics,
-    RouteMetricsDayMatview,
-    RouteMetricsMonthMatview,
 )
+from src.models.metrics.aggregate_daily_unique_users_metrics import (
+    AggregateDailyUniqueUsersMetrics,
+)
+from src.models.metrics.aggregate_monthly_total_users_metrics import (
+    AggregateMonthlyTotalUsersMetrics,
+)
+from src.models.metrics.aggregate_monthly_unique_users_metrics import (
+    AggregateMonthlyUniqueUsersMetrics,
+)
+from src.models.metrics.route_metrics import RouteMetrics
+from src.models.metrics.route_metrics_day_matview import RouteMetricsDayMatview
+from src.models.metrics.route_metrics_month_matview import RouteMetricsMonthMatview
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

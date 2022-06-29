@@ -3,8 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models import AggregatePlays
-from src.tasks.aggregates.index_aggregate_plays import _update_aggregate_plays
+from src.models.social.aggregate_plays import AggregatePlays
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -50,7 +49,6 @@ def test_index_aggregate_plays_populate(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -83,12 +81,6 @@ def test_index_aggregate_plays_update(app):
             {"track_id": 3, "title": "track 3"},
             {"track_id": 4, "title": "track 4"},
         ],
-        "aggregate_plays": [
-            # Current Plays
-            {"play_item_id": 1, "count": 3},
-            {"play_item_id": 2, "count": 3},
-            {"play_item_id": 3, "count": 3},
-        ],
         "indexing_checkpoints": [
             {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
@@ -115,7 +107,6 @@ def test_index_aggregate_plays_update(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_plays(session)
 
         results: List[AggregatePlays] = (
             session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
@@ -130,67 +121,3 @@ def test_index_aggregate_plays_update(app):
         assert results[2].count == 3
         assert results[3].play_item_id == 4
         assert results[3].count == 2
-
-
-def test_index_aggregate_plays_same_checkpoint(app):
-    """Test that we should not update when last index is the same"""
-    # setup
-    with app.app_context():
-        db = get_db()
-
-    # run
-    entities = {
-        "tracks": [
-            {"track_id": 1, "title": "track 1"},
-            {"track_id": 2, "title": "track 2"},
-            {"track_id": 3, "title": "track 3"},
-            {"track_id": 4, "title": "track 4"},
-        ],
-        "aggregate_plays": [
-            # Current Plays
-            {"play_item_id": 1, "count": 3},
-            {"play_item_id": 2, "count": 3},
-            {"play_item_id": 3, "count": 3},
-        ],
-        "indexing_checkpoints": [
-            {"tablename": "aggregate_plays", "last_checkpoint": 9}
-        ],
-        "plays": [
-            # Current Plays
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 1},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 2},
-            {"item_id": 3},
-            {"item_id": 3},
-            {"item_id": 3},
-        ],
-    }
-
-    populate_mock_db(db, entities)
-
-    with db.scoped_session() as session:
-        _update_aggregate_plays(session)
-
-        results: List[AggregatePlays] = (
-            session.query(AggregatePlays).order_by(AggregatePlays.play_item_id).all()
-        )
-
-        assert len(results) == 3
-
-
-def test_index_aggregate_plays_no_plays(app):
-    """Tests that aggregate_plays should skip indexing if there are no plays"""
-    # setup
-    with app.app_context():
-        db = get_db()
-
-    # run
-    entities = {"plays": []}
-
-    populate_mock_db(db, entities)
-
-    with db.scoped_session() as session:
-        _update_aggregate_plays(session)

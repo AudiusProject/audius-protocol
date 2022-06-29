@@ -7,7 +7,8 @@ const FEATURE_FLAGS = Object.freeze({
   REWARDS_ATTESTATION_ENABLED: 'rewards_attestation_enabled',
   REWARDS_NOTIFICATIONS_ENABLED: 'rewards_notifications_enabled',
   SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED: 'social_proof_to_send_audio_enabled',
-  DETECT_ABUSE_ON_RELAY: 'detect_abuse_on_relay'
+  DETECT_ABUSE_ON_RELAY: 'detect_abuse_on_relay',
+  TIPPING_ENABLED: 'tipping_enabled'
 })
 
 // Default values for feature flags while optimizely has not loaded
@@ -19,7 +20,8 @@ const DEFAULTS = Object.freeze({
   [FEATURE_FLAGS.REWARDS_ATTESTATION_ENABLED]: false,
   [FEATURE_FLAGS.REWARDS_NOTIFICATIONS_ENABLED]: false,
   [FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED]: true,
-  [FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY]: false
+  [FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY]: false,
+  [FEATURE_FLAGS.TIPPING_ENABLED]: false
 })
 
 /**

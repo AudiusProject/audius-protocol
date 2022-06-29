@@ -4,7 +4,7 @@ from typing import Any, Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from src.database_task import DatabaseTask
-from src.models import Playlist
+from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers

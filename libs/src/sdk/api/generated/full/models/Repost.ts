@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -38,36 +37,5 @@ export interface Repost {
      * @memberof Repost
      */
     user_id: string;
-}
-
-export function RepostFromJSON(json: any): Repost {
-    return RepostFromJSONTyped(json, false);
-}
-
-export function RepostFromJSONTyped(json: any, ignoreDiscriminator: boolean): Repost {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'repost_item_id': json['repost_item_id'],
-        'repost_type': json['repost_type'],
-        'user_id': json['user_id'],
-    };
-}
-
-export function RepostToJSON(value?: Repost | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'repost_item_id': value.repost_item_id,
-        'repost_type': value.repost_type,
-        'user_id': value.user_id,
-    };
 }
 

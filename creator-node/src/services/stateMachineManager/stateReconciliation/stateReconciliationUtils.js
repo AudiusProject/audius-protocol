@@ -53,13 +53,13 @@ const getNewOrExistingSyncReq = ({
     syncType === SyncType.Manual
       ? JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST
       : JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST
-  const jobProps = {
+  const jobData = {
     syncType,
     syncRequestParameters
   }
   const syncReqToEnqueue = {
     jobName,
-    jobProps
+    jobData
   }
 
   // Record sync in syncDeDuplicator
@@ -67,7 +67,7 @@ const getNewOrExistingSyncReq = ({
     syncType,
     userWallet,
     secondaryEndpoint,
-    jobProps
+    jobData
   )
 
   return { syncReqToEnqueue }

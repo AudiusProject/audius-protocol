@@ -78,7 +78,7 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async search(requestParameters: SearchRequest, initOverrides?: RequestInit): Promise<NonNullable<SearchFullResponse["data"]>> {
+    async search(requestParameters: SearchRequest): Promise<NonNullable<SearchFullResponse["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling search.');
         }
@@ -112,14 +112,14 @@ export class SearchApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<SearchFullResponse["data"]>>;
+        }) as Promise<NonNullable<SearchFullResponse["data"]>>;
     }
 
     /**
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async searchAutocomplete(requestParameters: SearchAutocompleteRequest, initOverrides?: RequestInit): Promise<NonNullable<SearchAutocompleteResponse["data"]>> {
+    async searchAutocomplete(requestParameters: SearchAutocompleteRequest): Promise<NonNullable<SearchAutocompleteResponse["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchAutocomplete.');
         }
@@ -153,7 +153,7 @@ export class SearchApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<SearchAutocompleteResponse["data"]>>;
+        }) as Promise<NonNullable<SearchAutocompleteResponse["data"]>>;
     }
 
 }

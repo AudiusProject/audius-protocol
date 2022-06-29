@@ -7,7 +7,9 @@ import pytest
 import src.utils.multihash
 from chance import chance
 from integration_tests.utils import toBytes
-from src.models.models import Block, Track, User
+from src.models.indexing.block import Block
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.queries.get_skipped_transactions import get_indexing_error
 from src.utils.helpers import remove_test_file
 from src.utils.indexing_errors import IndexingError

@@ -1,7 +1,8 @@
 
-require('dotenv').config({ path: '.env.stage' })
-
-import { connectToDBAndRunMigrations } from './db'
+import {
+    closeDBConnection,
+    connectToDBAndRunMigrations
+} from './db'
 import { indexDiscovery } from './discovery'
 import { indexContent } from './content'
 import { generateMetrics } from './metrics'
@@ -15,6 +16,8 @@ const main = async () => {
     await indexContent(run_id)
 
     await generateMetrics(run_id)
+
+    await closeDBConnection()
 
     process.exit(0)
 }

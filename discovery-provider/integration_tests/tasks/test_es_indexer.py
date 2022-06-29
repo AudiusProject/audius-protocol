@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 esclient = Elasticsearch(os.environ["audius_elasticsearch_url"])
 
 basic_entities = {
-    "aggregate_plays": [{"play_item_id": 1, "count": 1}],
-    "aggregate_user": [{"user_id": 1, "track_count": 1}],
     "users": [
         {"user_id": 1, "handle": "user1"},
         {"user_id": 2, "handle": "user2"},

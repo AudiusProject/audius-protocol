@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Tip,
     TipFromJSON,
@@ -33,32 +32,5 @@ export interface GetTipsResponse {
      * @memberof GetTipsResponse
      */
     data?: Array<Tip>;
-}
-
-export function GetTipsResponseFromJSON(json: any): GetTipsResponse {
-    return GetTipsResponseFromJSONTyped(json, false);
-}
-
-export function GetTipsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetTipsResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TipFromJSON)),
-    };
-}
-
-export function GetTipsResponseToJSON(value?: GetTipsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TipToJSON)),
-    };
 }
 

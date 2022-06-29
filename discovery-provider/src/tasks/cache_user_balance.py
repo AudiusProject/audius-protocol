@@ -10,13 +10,11 @@ from spl.token.client import Token
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from src.app import get_eth_abi_values
-from src.models import (
-    AssociatedWallet,
-    User,
-    UserBalance,
-    UserBalanceChange,
-    UserBankAccount,
-)
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
+from src.models.users.user_balance import UserBalance
+from src.models.users.user_balance_change import UserBalanceChange
+from src.models.users.user_bank import UserBankAccount
 from src.queries.get_balances import (
     IMMEDIATE_REFRESH_REDIS_PREFIX,
     LAZY_REFRESH_REDIS_PREFIX,

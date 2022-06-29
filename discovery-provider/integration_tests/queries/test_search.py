@@ -3,15 +3,19 @@ import subprocess
 from datetime import datetime
 
 import pytest
-from src.models import Block, Follow, Playlist, Save, SaveType, Track, User, UserBalance
+from src.models.indexing.block import Block
+from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.save import Save, SaveType
+from src.models.tracks.track import Track
+from src.models.users.user import User
+from src.models.users.user_balance import UserBalance
 from src.queries.search_es import search_es_full
 from src.queries.search_queries import (
     playlist_search_query,
     track_search_query,
     user_search_query,
 )
-from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
-from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils.db_session import get_db
 
 
@@ -239,15 +243,9 @@ def setup_search(app_module):
             session.flush()
 
         # Refresh the lexeme matview
-        _update_aggregate_track(session)
         session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict;")
-
-        session.execute(
-            UPDATE_AGGREGATE_USER_QUERY, {"prev_indexed_aggregate_block": 0}
-        )
         session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict;")
 
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_playlist;")
         session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict;")
         session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict;")
 

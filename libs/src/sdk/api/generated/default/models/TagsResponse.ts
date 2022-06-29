@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -26,32 +25,5 @@ export interface TagsResponse {
      * @memberof TagsResponse
      */
     data?: Array<string>;
-}
-
-export function TagsResponseFromJSON(json: any): TagsResponse {
-    return TagsResponseFromJSONTyped(json, false);
-}
-
-export function TagsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TagsResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : json['data'],
-    };
-}
-
-export function TagsResponseToJSON(value?: TagsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data,
-    };
 }
 

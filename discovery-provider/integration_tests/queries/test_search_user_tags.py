@@ -1,6 +1,5 @@
 from integration_tests.utils import populate_mock_db
 from src.queries.search_user_tags import search_user_tags
-from src.tasks.index_aggregate_user import _update_aggregate_user
 from src.utils.db_session import get_db
 
 
@@ -35,8 +34,6 @@ def test_search_user_tags(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_user(session)
-
         session.execute("REFRESH MATERIALIZED VIEW tag_track_user")
 
         args = {

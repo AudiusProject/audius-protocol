@@ -103,6 +103,7 @@ describe('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconfig mo
     const MaxRecurringRequestSyncJobConcurrency = 1
     nodeConfig.set('maxManualRequestSyncJobConcurrency', MaxManualRequestSyncJobConcurrency)
     nodeConfig.set('maxRecurringRequestSyncJobConcurrency', MaxRecurringRequestSyncJobConcurrency)
+    nodeConfig.set('disableSnapback', false)
 
     // Mock out the initial call to sync
     nock(constants.secondary1Endpoint)

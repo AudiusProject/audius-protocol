@@ -1,7 +1,9 @@
 from sqlalchemy import desc
 from src import exceptions
-from src.models import Playlist, RepostType, SaveType
-from src.models.models import AggregatePlaylist
+from src.models.playlists.aggregate_playlist import AggregatePlaylist
+from src.models.playlists.playlist import Playlist
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
 from src.queries.query_helpers import (
     create_followee_playlists_subquery,
     decayed_score,

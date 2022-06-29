@@ -53,7 +53,7 @@ export interface {{classname}}Interface {
      * @throws {RequiredError}
      * @memberof {{classname}}Interface
      */
-    {{nickname}}Raw({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit): Promise<runtime.ApiResponse<{{{returnType}}}{{^returnType}}void{{/returnType}}>>;
+    {{nickname}}Raw({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{/allParams.0}}): Promise<runtime.ApiResponse<{{{returnType}}}{{^returnType}}void{{/returnType}}>>;
 
     /**
      {{#notes}}
@@ -64,10 +64,10 @@ export interface {{classname}}Interface {
      {{/summary}}
      */
     {{^useSingleRequestParameter}}
-    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
+    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}{{/allParams}}): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
     {{/useSingleRequestParameter}}
     {{#useSingleRequestParameter}}
-    {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
+    {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{/allParams.0}}): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
     {{/useSingleRequestParameter}}
 
 {{/operation}}
@@ -96,7 +96,7 @@ export class {{classname}} extends runtime.BaseAPI {
      * {{&summary}}
      {{/summary}}
      */
-    async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit): Promise<NonNullable<{{returnType}}["data"]>> {
+    async {{nickname}}({{#allParams.0}}requestParameters: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}{{/allParams.0}}): Promise<NonNullable<{{returnType}}["data"]>> {
         {{#allParams}}
         {{#required}}
         if (requestParameters.{{paramName}} === null || requestParameters.{{paramName}} === undefined) {
@@ -289,7 +289,7 @@ export class {{classname}} extends runtime.BaseAPI {
             {{#hasFormParams}}
             body: formParams,
             {{/hasFormParams}}
-        }, initOverrides) as Promise<NonNullable<{{returnType}}["data"]>>;
+        }) as Promise<NonNullable<{{returnType}}["data"]>>;
     }
 
     {{/returnType}}

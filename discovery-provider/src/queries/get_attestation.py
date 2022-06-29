@@ -6,7 +6,10 @@ from hexbytes import HexBytes
 from solana.publickey import PublicKey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
-from src.models.models import Challenge, ChallengeDisbursement, User, UserChallenge
+from src.models.rewards.challenge import Challenge
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
 from src.solana.constants import WAUDIO_DECIMALS
 from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,

@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 
 from sqlalchemy import desc, func
-from src.models import TagTrackUserMatview
+from src.models.tracks.tag_track_user_matview import TagTrackUserMatview
 from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)

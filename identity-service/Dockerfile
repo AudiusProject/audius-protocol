@@ -26,7 +26,8 @@ RUN apk update && \
     apk add python3 && \
     apk add python3-dev && \
     apk add py3-pip && \
-    apk add curl
+    apk add curl && \
+    apk add bash
 
 EXPOSE 7000
 

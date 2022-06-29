@@ -1,6 +1,8 @@
 from sqlalchemy import desc
 from sqlalchemy.orm import aliased
-from src.models import AggregateTrack, Stem, Track
+from src.models.tracks.aggregate_track import AggregateTrack
+from src.models.tracks.stem import Stem
+from src.models.tracks.track import Track
 from src.queries.query_helpers import (
     add_users_to_tracks,
     decayed_score,

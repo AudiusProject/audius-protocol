@@ -2,8 +2,8 @@ from typing import List, Optional, TypedDict
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models.models import User
-from src.models.reaction import Reaction
+from src.models.social.reaction import Reaction
+from src.models.users.user import User
 
 
 class ReactionResponse(TypedDict):

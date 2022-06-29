@@ -4,7 +4,10 @@ import redis
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
-from src.models.models import Block, Challenge, User, UserChallenge
+from src.models.indexing.block import Block
+from src.models.rewards.challenge import Challenge
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 

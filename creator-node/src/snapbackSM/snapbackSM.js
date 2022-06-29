@@ -286,16 +286,18 @@ class SnapbackSM {
       )
 
       // Initialize recurringSyncQueue job processor
-      this.recurringSyncQueue.process(
-        this.MaxRecurringRequestSyncJobConcurrency,
-        async (job) => {
-          try {
-            await this.processSyncOperation(job, SyncType.Recurring)
-          } catch (e) {
-            this.logError(`RecurringSyncQueue processing error ${e}`)
+      if (!this.nodeConfig.get('disableSnapback')) {
+        this.recurringSyncQueue.process(
+          this.MaxRecurringRequestSyncJobConcurrency,
+          async (job) => {
+            try {
+              await this.processSyncOperation(job, SyncType.Recurring)
+            } catch (e) {
+              this.logError(`RecurringSyncQueue processing error ${e}`)
+            }
           }
-        }
-      )
+        )
+      }
       this.inittedJobProcessors = true
     }
 
@@ -305,10 +307,12 @@ class SnapbackSM {
     this.usersPerJob = this.nodeConfig.get('snapbackUsersPerJob')
 
     // Enqueue first job after a delay. This job requeues itself upon completion or failure
-    await this.stateMachineQueue.add(
-      /** data */ { startTime: Date.now() },
-      /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
-    )
+    if (!this.nodeConfig.get('disableSnapback')) {
+      await this.stateMachineQueue.add(
+        /** data */ { startTime: Date.now() },
+        /** opts */ { delay: STATE_MACHINE_QUEUE_INIT_DELAY_MS }
+      )
+    }
 
     this.log(
       `SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job with ${STATE_MACHINE_QUEUE_INIT_DELAY_MS}ms delay; a new will be enqueued after each previous job finishes`

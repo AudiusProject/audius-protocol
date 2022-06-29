@@ -26,6 +26,7 @@ def create_instance(provider, image, disk_size, machine_type, spot_instance, nam
         check=False,
     )
 
+
 def create_instance_command_parser(subparser):
     parser_create_instance = subparser.add_parser(
         "create-instance",
@@ -66,8 +67,17 @@ def create_instance_command_parser(subparser):
         help="name to assign to the created instance",
     )
 
+
 def setup(
-    provider, service, user, config, fast, protocol_git_ref, client_git_ref, spot_instance, name
+    provider,
+    service,
+    user,
+    config,
+    fast,
+    protocol_git_ref,
+    client_git_ref,
+    spot_instance,
+    name,
 ):
     """Setup a environment suitable for development on a remote machine"""
     subprocess.run(
@@ -170,12 +180,11 @@ def main():
     parser = argparse.ArgumentParser(
         exit_on_error=False,
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=
-"""
+        epilog="""
 Other commands:
     `seed` - seed user data eg `A seed <operation>` or `A seed --help` for options
     all other commands will pass through to service-commands/scripts/setup.js
-"""
+""",
     )
 
     subparser = parser.add_subparsers(

@@ -372,7 +372,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_blacklist",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
-            "src.tasks.aggregates.index_aggregate_plays",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
@@ -382,9 +381,6 @@ def configure_celery(celery, test_config=None):
             "src.monitors.monitoring_queue",
             "src.tasks.cache_trending_playlists",
             "src.tasks.index_solana_plays",
-            "src.tasks.index_aggregate_views",
-            "src.tasks.index_aggregate_user",
-            "src.tasks.aggregates.index_aggregate_track",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
@@ -392,7 +388,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
-            "src.tasks.index_listen_count_milestones",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
@@ -426,10 +421,6 @@ def configure_celery(celery, test_config=None):
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=300),
             },
-            "update_aggregate_plays": {
-                "task": "update_aggregate_plays",
-                "schedule": timedelta(seconds=15),
-            },
             "index_hourly_play_counts": {
                 "task": "index_hourly_play_counts",
                 "schedule": timedelta(seconds=30),
@@ -462,18 +453,6 @@ def configure_celery(celery, test_config=None):
                 "task": "index_solana_plays",
                 "schedule": timedelta(seconds=5),
             },
-            "update_aggregate_user": {
-                "task": "update_aggregate_user",
-                "schedule": timedelta(seconds=30),
-            },
-            "update_aggregate_track": {
-                "task": "update_aggregate_track",
-                "schedule": timedelta(seconds=30),
-            },
-            "update_aggregate_playlist": {
-                "task": "update_aggregate_playlist",
-                "schedule": timedelta(seconds=30),
-            },
             "index_user_bank": {
                 "task": "index_user_bank",
                 "schedule": timedelta(seconds=5),
@@ -497,10 +476,6 @@ def configure_celery(celery, test_config=None):
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(seconds=60),
-            },
-            "index_listen_count_milestones": {
-                "task": "index_listen_count_milestones",
-                "schedule": timedelta(seconds=5),
             },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",

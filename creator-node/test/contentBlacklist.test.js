@@ -705,7 +705,7 @@ describe('test ContentBlacklist', function () {
     // TODO: add remove and test that the segments are unblacklisted
   })
 
-  it.skip('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID without the trackId query string', async () => {
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID without the trackId query string', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
@@ -773,7 +773,7 @@ describe('test ContentBlacklist', function () {
     )
   })
 
-  it.skip('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<trackIdThatDoesntContainCID>', async () => {
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<trackIdThatDoesntContainCID>', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
@@ -985,7 +985,7 @@ describe('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  it.skip('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
+  it('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
     const trackId = data.track.blockchainId
@@ -1062,7 +1062,7 @@ describe('test ContentBlacklist', function () {
       .send(associateRequest)
 
     // Upload a track
-    let trackUploadResponse = await uploadTrack(
+    const trackUploadResponse = await uploadTrack(
       testAudioFilePath,
       cnodeUserUUID,
       mockServiceRegistry.blacklistManager

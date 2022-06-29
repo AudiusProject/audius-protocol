@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     UserFull,
     UserFullFromJSON,
@@ -45,36 +44,5 @@ export interface FullSupporting {
      * @memberof FullSupporting
      */
     receiver: UserFull;
-}
-
-export function FullSupportingFromJSON(json: any): FullSupporting {
-    return FullSupportingFromJSONTyped(json, false);
-}
-
-export function FullSupportingFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullSupporting {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'rank': json['rank'],
-        'amount': json['amount'],
-        'receiver': UserFullFromJSON(json['receiver']),
-    };
-}
-
-export function FullSupportingToJSON(value?: FullSupporting | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'rank': value.rank,
-        'amount': value.amount,
-        'receiver': UserFullToJSON(value.receiver),
-    };
 }
 

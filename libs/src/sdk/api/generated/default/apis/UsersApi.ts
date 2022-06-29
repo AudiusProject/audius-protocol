@@ -188,7 +188,7 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the User\'s ERC and SPL connected wallets
      */
-    async getConnectedWallets(requestParameters: GetConnectedWalletsRequest, initOverrides?: RequestInit): Promise<NonNullable<ConnectedWalletsResponse["data"]>> {
+    async getConnectedWallets(requestParameters: GetConnectedWalletsRequest): Promise<NonNullable<ConnectedWalletsResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getConnectedWallets.');
         }
@@ -202,13 +202,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<ConnectedWalletsResponse["data"]>>;
+        }) as Promise<NonNullable<ConnectedWalletsResponse["data"]>>;
     }
 
     /**
      * Gets a user\'s favorite tracks
      */
-    async getFavorites(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit): Promise<NonNullable<FavoritesResponse["data"]>> {
+    async getFavorites(requestParameters: GetFavoritesRequest): Promise<NonNullable<FavoritesResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFavorites.');
         }
@@ -222,13 +222,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<FavoritesResponse["data"]>>;
+        }) as Promise<NonNullable<FavoritesResponse["data"]>>;
     }
 
     /**
      * Gets the given user\'s reposts
      */
-    async getReposts(requestParameters: GetRepostsRequest, initOverrides?: RequestInit): Promise<NonNullable<Reposts["data"]>> {
+    async getReposts(requestParameters: GetRepostsRequest): Promise<NonNullable<Reposts["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getReposts.');
         }
@@ -254,13 +254,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<Reposts["data"]>>;
+        }) as Promise<NonNullable<Reposts["data"]>>;
     }
 
     /**
      * Gets the supporters of the given user
      */
-    async getSupporters(requestParameters: GetSupportersRequest, initOverrides?: RequestInit): Promise<NonNullable<GetSupporters["data"]>> {
+    async getSupporters(requestParameters: GetSupportersRequest): Promise<NonNullable<GetSupporters["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporters.');
         }
@@ -282,13 +282,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<GetSupporters["data"]>>;
+        }) as Promise<NonNullable<GetSupporters["data"]>>;
     }
 
     /**
      * Gets the users that the given user supports
      */
-    async getSupportings(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit): Promise<NonNullable<GetSupporting["data"]>> {
+    async getSupportings(requestParameters: GetSupportingsRequest): Promise<NonNullable<GetSupporting["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupportings.');
         }
@@ -310,14 +310,14 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<GetSupporting["data"]>>;
+        }) as Promise<NonNullable<GetSupporting["data"]>>;
     }
 
     /**
      * Gets the most used track tags by a user.
      * Fetch most used tags in a user\'s tracks
      */
-    async getTopTrackTags(requestParameters: GetTopTrackTagsRequest, initOverrides?: RequestInit): Promise<NonNullable<TagsResponse["data"]>> {
+    async getTopTrackTags(requestParameters: GetTopTrackTagsRequest): Promise<NonNullable<TagsResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getTopTrackTags.');
         }
@@ -339,13 +339,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TagsResponse["data"]>>;
+        }) as Promise<NonNullable<TagsResponse["data"]>>;
     }
 
     /**
      * Gets the tracks created by a user using their user ID
      */
-    async getTracksByUser(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit): Promise<NonNullable<TracksResponse["data"]>> {
+    async getTracksByUser(requestParameters: GetTracksByUserRequest): Promise<NonNullable<TracksResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getTracksByUser.');
         }
@@ -375,13 +375,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<TracksResponse["data"]>>;
+        }) as Promise<NonNullable<TracksResponse["data"]>>;
     }
 
     /**
      * Gets a single user by their user ID
      */
-    async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit): Promise<NonNullable<UserResponse["data"]>> {
+    async getUser(requestParameters: GetUserRequest): Promise<NonNullable<UserResponse["data"]>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUser.');
         }
@@ -395,13 +395,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<UserResponse["data"]>>;
+        }) as Promise<NonNullable<UserResponse["data"]>>;
     }
 
     /**
      * Gets a User ID from an associated wallet address
      */
-    async getUserIDFromWallet(requestParameters: GetUserIDFromWalletRequest, initOverrides?: RequestInit): Promise<NonNullable<UserAssociatedWalletResponse["data"]>> {
+    async getUserIDFromWallet(requestParameters: GetUserIDFromWalletRequest): Promise<NonNullable<UserAssociatedWalletResponse["data"]>> {
         if (requestParameters.associatedWallet === null || requestParameters.associatedWallet === undefined) {
             throw new runtime.RequiredError('associatedWallet','Required parameter requestParameters.associatedWallet was null or undefined when calling getUserIDFromWallet.');
         }
@@ -419,13 +419,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<UserAssociatedWalletResponse["data"]>>;
+        }) as Promise<NonNullable<UserAssociatedWalletResponse["data"]>>;
     }
 
     /**
      * Search for users that match the given query
      */
-    async searchUsers(requestParameters: SearchUsersRequest, initOverrides?: RequestInit): Promise<NonNullable<UserSearch["data"]>> {
+    async searchUsers(requestParameters: SearchUsersRequest): Promise<NonNullable<UserSearch["data"]>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchUsers.');
         }
@@ -443,13 +443,13 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<UserSearch["data"]>>;
+        }) as Promise<NonNullable<UserSearch["data"]>>;
     }
 
     /**
      * Verify if the given jwt ID token was signed by the subject (user) in the payload
      */
-    async verifyIDToken(requestParameters: VerifyIDTokenRequest, initOverrides?: RequestInit): Promise<NonNullable<VerifyToken["data"]>> {
+    async verifyIDToken(requestParameters: VerifyIDTokenRequest): Promise<NonNullable<VerifyToken["data"]>> {
         if (requestParameters.token === null || requestParameters.token === undefined) {
             throw new runtime.RequiredError('token','Required parameter requestParameters.token was null or undefined when calling verifyIDToken.');
         }
@@ -467,7 +467,7 @@ export class UsersApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<VerifyToken["data"]>>;
+        }) as Promise<NonNullable<VerifyToken["data"]>>;
     }
 
 }

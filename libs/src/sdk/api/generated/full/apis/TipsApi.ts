@@ -72,7 +72,7 @@ export class TipsApi extends runtime.BaseAPI {
     /**
      * Gets the most recent tips on the network
      */
-    async getTips(requestParameters: GetTipsRequest = {}, initOverrides?: RequestInit): Promise<NonNullable<GetTipsResponse["data"]>> {
+    async getTips(requestParameters: GetTipsRequest = {}): Promise<NonNullable<GetTipsResponse["data"]>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -122,7 +122,7 @@ export class TipsApi extends runtime.BaseAPI {
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }, initOverrides) as Promise<NonNullable<GetTipsResponse["data"]>>;
+        }) as Promise<NonNullable<GetTipsResponse["data"]>>;
     }
 
 }

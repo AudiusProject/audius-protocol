@@ -34,8 +34,12 @@ const {
   getDailySyncFailCount,
   getLatestSyncSuccessTimestamp,
   getLatestSyncFailTimestamp,
-  getStateMachineQueueLatestJobSuccess,
-  getStateMachineQueueLatestJobStart
+  getLatestMonitorStateJobStart,
+  getLatestMonitorStateJobSuccess,
+  getLatestFindSyncRequestsJobStart,
+  getLatestFindSyncRequestsJobSuccess,
+  getLatestFindReplicaSetUpdatesJobStart,
+  getLatestFindReplicaSetUpdatesJobSuccess
 } = require('./stateMachine')
 const redis = require('../redis')
 
@@ -220,17 +224,39 @@ const LATEST_SYNC_FAIL_TIMESTAMP = {
   type: 'string'
 }
 
-const LATEST_STATE_MACHINE_QUEUE_SUCCESS = {
-  name: 'stateMachineQueueLatestJobSuccess',
-  func: getStateMachineQueueLatestJobSuccess,
-  ttl: 5, // 5 /* mins */ * 60 /* s */,
+const LATEST_MONITOR_STATE_JOB_START = {
+  name: 'latestMonitorStateJobStart',
+  func: getLatestMonitorStateJobStart,
   type: 'string'
 }
 
-const LATEST_STATE_MACHINE_QUEUE_START = {
-  name: 'stateMachineQueueLatestJobStart',
-  func: getStateMachineQueueLatestJobStart,
-  ttl: 5, // 5 /* mins */ * 60 /* s */,
+const LATEST_MONITOR_STATE_JOB_SUCCESS = {
+  name: 'latestMonitorStateJobSuccess',
+  func: getLatestMonitorStateJobSuccess,
+  type: 'string'
+}
+
+const LATEST_FIND_SYNC_REQUESTS_JOB_START = {
+  name: 'latestFindSyncRequestsJobStart',
+  func: getLatestFindSyncRequestsJobStart,
+  type: 'string'
+}
+
+const LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS = {
+  name: 'latestFindSyncRequestsJobSuccess',
+  func: getLatestFindSyncRequestsJobSuccess,
+  type: 'string'
+}
+
+const LATEST_FIND_REPLICA_SET_UPDATES_JOB_START = {
+  name: 'latestFindReplicaSetUpdatesJobStart',
+  func: getLatestFindReplicaSetUpdatesJobStart,
+  type: 'string'
+}
+
+const LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS = {
+  name: 'latestFindReplicaSetUpdatesJobSuccess',
+  func: getLatestFindReplicaSetUpdatesJobSuccess,
   type: 'string'
 }
 
@@ -260,8 +286,12 @@ const MONITORS = {
   DAILY_SYNC_FAIL_COUNT,
   LATEST_SYNC_SUCCESS_TIMESTAMP,
   LATEST_SYNC_FAIL_TIMESTAMP,
-  LATEST_STATE_MACHINE_QUEUE_SUCCESS,
-  LATEST_STATE_MACHINE_QUEUE_START
+  LATEST_MONITOR_STATE_JOB_START,
+  LATEST_MONITOR_STATE_JOB_SUCCESS,
+  LATEST_FIND_SYNC_REQUESTS_JOB_START,
+  LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS,
+  LATEST_FIND_REPLICA_SET_UPDATES_JOB_START,
+  LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
 }
 
 const getMonitorRedisKey = (monitor) =>

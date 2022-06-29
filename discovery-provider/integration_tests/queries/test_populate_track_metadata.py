@@ -3,7 +3,6 @@ import logging
 from integration_tests.utils import populate_mock_db
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_track_metadata
-from src.tasks.aggregates.index_aggregate_track import _update_aggregate_track
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -53,7 +52,6 @@ def test_populate_track_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        _update_aggregate_track(session)
         track_ids = [1, 2, 3]
         tracks = [
             {"track_id": 1},

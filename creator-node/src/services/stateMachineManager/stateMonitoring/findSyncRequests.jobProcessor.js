@@ -1,3 +1,5 @@
+const _ = require('lodash')
+
 const config = require('../../../config')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { SyncType, QUEUE_NAMES } = require('../stateMachineConstants')
@@ -199,8 +201,11 @@ const _findSyncsForUser = (
           primaryEndpoint: thisContentNodeEndpoint,
           syncType: SyncType.Recurring
         })
-        if (syncReqToEnqueue) syncReqsToEnqueue.push(syncReqToEnqueue)
-        else if (duplicateSyncReq) duplicateSyncReqs.push(duplicateSyncReq)
+        if (!_.isEmpty(syncReqToEnqueue)) {
+          syncReqsToEnqueue.push(syncReqToEnqueue)
+        } else if (!_.isEmpty(duplicateSyncReq)) {
+          duplicateSyncReqs.push(duplicateSyncReq)
+        }
       } catch (e) {
         errors.push(
           `Error getting new or existing sync request for user ${wallet} and secondary ${secondary} - ${e.message}`
