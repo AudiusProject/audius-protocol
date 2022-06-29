@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
 import { getUser } from 'audius-client/src/common/store/cache/users/selectors'
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
+import { useTwitterButtonStatus } from 'common/hooks/useTwitterButtonStatus'
 import { fetchUserSocials } from 'common/store/cache/users/actions'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
@@ -21,8 +22,6 @@ const useStyles = makeStyles(({ palette }) => ({
     backgroundColor: palette.staticTwitterBlue
   }
 }))
-
-type ShareStatus = 'idle' | 'loading' | 'success'
 
 type StaticTwitterProps = {
   type: 'static'
@@ -49,14 +48,17 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   const styles = useStyles()
   const openLink = useOnOpenLink()
   const dispatchWeb = useDispatchWeb()
-  const [shareTwitterStatus, setShareTwitterStatus] = useState<ShareStatus>(
-    'idle'
-  )
   const user = useSelectorWeb(state =>
     getUser(state, { handle: 'handle' in other ? other.handle : undefined })
   )
-  const userName = user?.name
-  const twitterHandle = user ? user.twitter_handle : null
+
+  const {
+    userName,
+    shareTwitterStatus,
+    twitterHandle,
+    setLoading,
+    setIdle
+  } = useTwitterButtonStatus(user)
 
   const handlePress = useCallback(() => {
     if (other.type === 'static' && other.analytics) {
@@ -64,28 +66,20 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     }
     if (other.type === 'dynamic') {
       dispatchWeb(fetchUserSocials(other.handle))
-      setShareTwitterStatus('loading')
+      setLoading()
     }
-  }, [other, dispatchWeb])
+  }, [other, dispatchWeb, setLoading])
 
-  useEffect(() => {
-    if (shareTwitterStatus === 'loading' && twitterHandle !== null) {
-      setShareTwitterStatus('success')
+  if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
+    const handle = twitterHandle ? `@${twitterHandle}` : userName
+    const twitterData = other.shareData(handle)
+    if (twitterData) {
+      const { shareText, analytics } = twitterData
+      openLink(getTwitterLink(url, shareText))
+      track(analytics)
+      setIdle()
     }
-  }, [shareTwitterStatus, twitterHandle])
-
-  useEffect(() => {
-    if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
-      const handle = twitterHandle ? `@${twitterHandle}` : userName
-      const twitterData = other.shareData(handle)
-      if (twitterData) {
-        const { shareText, analytics } = twitterData
-        openLink(getTwitterLink(url, shareText))
-        track(analytics)
-        setShareTwitterStatus('idle')
-      }
-    }
-  }, [other, shareTwitterStatus, twitterHandle, userName, openLink, url])
+  }
 
   return (
     <Button
