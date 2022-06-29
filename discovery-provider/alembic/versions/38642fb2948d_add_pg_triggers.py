@@ -26,6 +26,11 @@ def upgrade():
     connection = op.get_bind()
     connection.execute(
         """
+        SELECT pg_cancel_backend(pid)
+        FROM pg_stat_activity 
+        WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%' and pid <> pg_backend_pid() 
+        ORDER BY query_start DESC;
+        
         begin;
             WITH new_plays AS (
                 SELECT
