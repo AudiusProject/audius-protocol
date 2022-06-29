@@ -908,7 +908,7 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
     } catch (e) {
       assert.strictEqual(
         e.message,
-        '[computeSyncModeForUserAndReplica] Error: Missing or invalid params'
+        '[computeSyncModeForUserAndReplica()] Error: Missing or invalid params'
       )
     }
   })
@@ -1045,9 +1045,10 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       secondaryFilesHash = '0x456'
 
       // Mock DBManager.fetchFilesHashFromDB() to throw error
+      const errorMsg = 'Mock - Failed to fetch filesHash'
       const DBManagerMock = require('../src/dbManager')
       DBManagerMock.fetchFilesHashFromDB = async () => {
-        throw new Error('Mock - Failed to fetch filesHash')
+        throw new Error(errorMsg)
       }
       proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
         '../../../dbManager': DBManagerMock
@@ -1064,7 +1065,7 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       } catch (e) {
         assert.strictEqual(
           e.message,
-          '[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - Mock - Failed to fetch filesHash'
+          `[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()] Error - ${errorMsg}`
         )
       }
     })

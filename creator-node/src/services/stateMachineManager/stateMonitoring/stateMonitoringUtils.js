@@ -399,7 +399,10 @@ const _aggregateOps = async (
 
 /**
  * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
- * @notice Is used when both replicas are running version >= 0.3.51
+ *
+ * It is possible for filesHashes to diverge despite clock equality because clock equality can happen if different content with same number of clockRecords is uploaded to different replicas.
+ * This is an error condition and needs to be identified and rectified.
+ *
  * @param {Object} param
  * @param {string} param.wallet user wallet
  * @param {number} param.primaryClock clock value on user's primary
@@ -423,37 +426,30 @@ const computeSyncModeForUserAndReplica = async ({
     secondaryFilesHash === undefined
   ) {
     throw new Error(
-      '[computeSyncModeForUserAndReplica] Error: Missing or invalid params'
+      '[computeSyncModeForUserAndReplica()] Error: Missing or invalid params'
     )
   }
 
   if (
     primaryClock === secondaryClock &&
-    primaryFilesHash === secondaryFilesHash
-  ) {
-    /**
-     * Nodes have identical data -> no sync needed
-     */
-    return SYNC_MODES.None
-  } else if (
-    primaryClock === secondaryClock &&
     primaryFilesHash !== secondaryFilesHash
   ) {
     /**
-     * If clocks are same but filesHashes are not, this means secondary and primary states for user
-     *    have diverged. To fix this issue, primary should sync content from secondary and
-     *    subsequently force secondary to resync state from primary.
+     * This is an error condition, indicating that primary and secondary states for user have diverged.
+     * To fix this issue, primary should sync content from secondary and then force secondary to resync its entire state from primary.
      */
     return SYNC_MODES.SyncPrimaryFromSecondary
   } else if (primaryClock < secondaryClock) {
     /**
      * Secondary has more data than primary -> primary must sync from secondary
      */
+
     return SYNC_MODES.SyncPrimaryFromSecondary
   } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
     /**
-     * secondaryFilesHash will be null if secondary has no files for user -> secondary must sync from primary
+     * secondaryFilesHash will be null if secondary has no clockRecords for user -> secondary must sync from primary
      */
+
     return SYNC_MODES.SyncSecondaryFromPrimary
   } else if (primaryClock > secondaryClock && secondaryFilesHash !== null) {
     /**
@@ -462,18 +458,21 @@ const computeSyncModeForUserAndReplica = async ({
 
     let primaryFilesHashForRange
     try {
-      // Throws error if failure after all retries
-      primaryFilesHashForRange = await retry(
-        async () =>
+      // Throws error if fails after all retries
+      primaryFilesHashForRange = await Utils.asyncRetry({
+        asyncFn: async () =>
           DBManager.fetchFilesHashFromDB({
             lookupKey: { lookupWallet: wallet },
             clockMin: 0,
             clockMax: secondaryClock + 1
           }),
-        { retries: FETCH_FILES_HASH_NUM_RETRIES }
-      )
+        options: { retries: FETCH_FILES_HASH_NUM_RETRIES },
+        logger,
+        logLabel:
+          '[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()]'
+      })
     } catch (e) {
-      const errorMsg = `[computeSyncModeForUserAndReplica] Error: failed DBManager.fetchFilesHashFromDB() - ${e.message}`
+      const errorMsg = `[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()] Error - ${e.message}`
       logger.error(errorMsg)
       throw new Error(errorMsg)
     }
@@ -484,6 +483,11 @@ const computeSyncModeForUserAndReplica = async ({
       return SYNC_MODES.SyncPrimaryFromSecondary
     }
   } else {
+    /**
+     * primaryClock === secondaryClock && primaryFilesHash === secondaryFilesHash
+     * Nodes have identical data = healthy state -> no sync needed
+     */
+
     return SYNC_MODES.None
   }
 }
