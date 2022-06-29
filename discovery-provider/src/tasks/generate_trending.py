@@ -3,7 +3,12 @@ from datetime import datetime, timedelta
 from urllib.parse import unquote
 
 from sqlalchemy import desc, func
-from src.models import AggregatePlays, Follow, Play, RepostType, SaveType, Track
+from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.follow import Follow
+from src.models.social.play import Play
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
+from src.models.tracks.track import Track
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     get_genre_list,

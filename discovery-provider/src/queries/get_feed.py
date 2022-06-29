@@ -2,7 +2,11 @@ import datetime
 
 from flask import request
 from sqlalchemy import and_, desc, func, or_
-from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
+from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost, RepostType
+from src.models.social.save import SaveType
+from src.models.tracks.track import Track
 from src.queries import response_name_constants
 from src.queries.get_feed_es import get_feed_es
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks

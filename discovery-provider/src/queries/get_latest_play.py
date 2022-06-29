@@ -1,4 +1,4 @@
-from src.models import Play
+from src.models.social.play import Play
 from src.utils import db_session
 
 

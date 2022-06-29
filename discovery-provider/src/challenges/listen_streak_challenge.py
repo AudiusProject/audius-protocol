@@ -8,7 +8,8 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event import ChallengeEvent
-from src.models.models import ListenStreakChallenge, UserChallenge
+from src.models.rewards.listen_streak_challenge import ListenStreakChallenge
+from src.models.rewards.user_challenge import UserChallenge
 
 
 def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:

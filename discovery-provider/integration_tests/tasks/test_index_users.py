@@ -5,14 +5,14 @@ from unittest import mock
 from integration_tests.challenges.index_helpers import AttrDict, CIDMetadataClient
 from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
-from src.models import (
-    AssociatedWallet,
-    Block,
+from src.models.indexing.block import Block
+from src.models.indexing.skipped_transaction import (
     SkippedTransaction,
     SkippedTransactionLevel,
-    User,
-    UserEvents,
 )
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
+from src.models.users.user_events import UserEvents
 from src.tasks.metadata import user_metadata_format
 from src.tasks.users import (
     UserEventsMetadata,
@@ -613,10 +613,11 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
         txhash=cursed_tx_hash,
         user_id=91238,
         name="birbs",
-        is_current=None,
-        is_creator=None,
-        updated_at=test_timestamp,
-        created_at=None,
+        # Bad fields
+        is_current=None,  # type: ignore
+        is_creator=None,  # type: ignore
+        updated_at=None,  # type: ignore
+        created_at=None,  # type: ignore
     )
 
     mocker.patch(
@@ -634,7 +635,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                     "args": AttrDict(
                         {
                             "_userId": cursed_user_record.user_id,
-                            "_name": cursed_user_record.name.encode("utf-8"),
+                            "_name": (cursed_user_record.name or "").encode("utf-8"),
                         }
                     )
                 },
@@ -653,7 +654,7 @@ def test_user_indexing_skip_tx(bus_mock: mock.MagicMock, app, mocker):
                     "args": AttrDict(
                         {
                             "_userId": blessed_user_record.user_id,
-                            "_name": blessed_user_record.name.encode("utf-8"),
+                            "_name": (blessed_user_record.name or "").encode("utf-8"),
                         }
                     )
                 },

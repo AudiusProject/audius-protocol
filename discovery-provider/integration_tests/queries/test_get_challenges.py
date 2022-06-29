@@ -14,15 +14,12 @@ from src.challenges.referral_challenge import (
     referral_challenge_manager,
     verified_referral_challenge_manager,
 )
-from src.models import (
-    Block,
-    Challenge,
-    ChallengeDisbursement,
-    ChallengeType,
-    ListenStreakChallenge,
-    UserChallenge,
-)
-from src.models.models import User
+from src.models.indexing.block import Block
+from src.models.rewards.challenge import Challenge, ChallengeType
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.listen_streak_challenge import ListenStreakChallenge
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
 from src.queries.get_challenges import get_challenges
 from src.utils.config import shared_config
 from src.utils.db_session import get_db

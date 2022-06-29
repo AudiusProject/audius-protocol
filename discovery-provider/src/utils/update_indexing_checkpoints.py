@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from src.models import IndexingCheckpoints
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
 
 UPDATE_INDEXING_CHECKPOINTS_QUERY = """
     INSERT INTO indexing_checkpoints (tablename, last_checkpoint)

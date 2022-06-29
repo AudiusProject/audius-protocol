@@ -6,7 +6,7 @@ from typing import Any, Callable, Optional
 from redis import Redis
 from sqlalchemy import text
 from sqlalchemy.orm.session import Session
-from src.models import Block
+from src.models.indexing.block import Block
 from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,

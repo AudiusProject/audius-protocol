@@ -2,7 +2,8 @@ import logging
 from functools import reduce
 
 from sqlalchemy import asc, desc, func
-from src.models import AppNameMetrics, RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetrics
+from src.models.metrics.route_metrics import RouteMetrics
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

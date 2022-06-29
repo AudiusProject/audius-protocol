@@ -1,7 +1,7 @@
 import logging
-from operator import or_  # pylint: disable=C0302
+from operator import or_
 
-from src.models import User
+from src.models.users.user import User
 from src.queries.query_helpers import add_query_pagination
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica

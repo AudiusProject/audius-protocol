@@ -6,7 +6,7 @@ from typing import List
 import redis
 from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import desc
-from src.models.related_artist import RelatedArtist
+from src.models.users.related_artist import RelatedArtist
 from src.tasks.index_related_artists import (
     process_related_artists_queue,
     queue_related_artist_calculation,

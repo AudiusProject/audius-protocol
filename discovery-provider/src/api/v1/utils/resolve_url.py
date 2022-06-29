@@ -6,7 +6,7 @@ from src.api.v1 import api as api_v1
 from src.api.v1.playlists import ns as playlists_ns
 from src.api.v1.tracks import ns as tracks_ns
 from src.api.v1.users import ns as users_ns
-from src.models import User
+from src.models.users.user import User
 from src.utils.helpers import encode_int_id
 
 track_url_regex = re.compile(r"^/(?P<handle>[^/]*)/(?P<slug>[^/]*)$")

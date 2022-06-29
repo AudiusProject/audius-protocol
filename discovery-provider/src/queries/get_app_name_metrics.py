@@ -4,11 +4,13 @@ from datetime import date, timedelta
 
 from sqlalchemy import asc, desc, func
 from src import exceptions
-from src.models import (
+from src.models.metrics.aggregate_daily_app_name_metrics import (
     AggregateDailyAppNameMetrics,
-    AggregateMonthlyAppNameMetrics,
-    AppNameMetrics,
 )
+from src.models.metrics.aggregate_monthly_app_name_metrics import (
+    AggregateMonthlyAppNameMetrics,
+)
+from src.models.metrics.app_name_metrics import AppNameMetrics
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

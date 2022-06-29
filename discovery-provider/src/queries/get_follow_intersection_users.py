@@ -1,4 +1,5 @@
-from src.models import Follow, User
+from src.models.social.follow import Follow
+from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     get_current_user_id,
