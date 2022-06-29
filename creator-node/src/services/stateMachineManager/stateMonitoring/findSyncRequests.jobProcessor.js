@@ -232,6 +232,7 @@ const _findSyncsForUser = async (
           secondaryEndpoint: secondary,
           syncType: SyncType.Recurring
         })
+
         if (!_.isEmpty(syncReqToEnqueue)) {
           syncReqsToEnqueue.push(syncReqToEnqueue)
         } else if (!_.isEmpty(duplicateSyncReq)) {
@@ -246,8 +247,8 @@ const _findSyncsForUser = async (
     } else if (syncMode === SYNC_MODES.SyncPrimaryFromSecondary) {
       /**
        * TODO - currently just logs as placeholder
-       * 1. await syncFromSecondary()
-       * 2. issue sync to secondary with forceResync = true
+       * 1. Primary will sync all content from secondary
+       * 2. Primary will force secondary to wipe its local state and resync all content
        */
       logger.info(
         `[findSyncRequests][_findSyncsForUser][SyncPrimaryFromSecondary = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
