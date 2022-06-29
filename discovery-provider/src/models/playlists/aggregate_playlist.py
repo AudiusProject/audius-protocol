@@ -1,8 +1,9 @@
 from sqlalchemy import Boolean, Column, Index, Integer
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class AggregatePlaylist(Base):
+class AggregatePlaylist(Base, RepresentableMixin):
     __tablename__ = "aggregate_playlist"
 
     playlist_id = Column(Integer, primary_key=True, nullable=False, index=True)
@@ -11,10 +12,3 @@ class AggregatePlaylist(Base):
     save_count = Column(Integer, nullable=False)
 
     Index("aggregate_playlist_idx", "playlist_id", unique=True)
-
-    def __repr__(self):
-        return f"<AggregatePlaylist(\
-playlist_id={self.playlist_id},\
-is_album={self.is_album},\
-repost_count={self.repost_count},\
-save_count={self.save_count})>"

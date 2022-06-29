@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class TagTrackUserMatview(Base):
+class TagTrackUserMatview(Base, RepresentableMixin):
     __tablename__ = "tag_track_user"
 
     tag = Column(String, nullable=False)
@@ -10,9 +11,3 @@ class TagTrackUserMatview(Base):
     owner_id = Column(Integer, nullable=False)
 
     PrimaryKeyConstraint(tag, track_id, owner_id)
-
-    def __repr__(self):
-        return f"<TagTrackUserMatview(\
-tag={self.tag},\
-track_id={self.track_id},\
-owner_id={self.owner_id})>"

@@ -11,6 +11,7 @@ from sqlalchemy import (
     String,
 )
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
 class RepostType(str, enum.Enum):
@@ -19,7 +20,7 @@ class RepostType(str, enum.Enum):
     album = "album"
 
 
-class Repost(Base):
+class Repost(Base, RepresentableMixin):
     __tablename__ = "reposts"
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
@@ -34,15 +35,3 @@ class Repost(Base):
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(user_id, repost_item_id, repost_type, is_current, txhash)
-
-    def __repr__(self):
-        return f"<Repost(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-txhash={self.txhash},\
-slot={self.slot},\
-user_id={self.user_id},\
-repost_item_id={self.repost_item_id},\
-repost_type={self.repost_type},\
-is_current={self.is_current},\
-is_delete={self.is_delete},\
-created_at={self.created_at})>"

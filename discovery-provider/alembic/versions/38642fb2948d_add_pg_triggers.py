@@ -13,6 +13,8 @@ Revises: cdf1f6197fc6
 Create Date: 2022-06-13 20:28:06.487553
 
 """
+
+import sqlalchemy
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -25,7 +27,13 @@ depends_on = None
 def upgrade():
     connection = op.get_bind()
     connection.execute(
-        """
+        sqlalchemy.text(
+            """
+        SELECT pg_cancel_backend(pid)
+        FROM pg_stat_activity 
+        WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%' and pid <> pg_backend_pid() 
+        ORDER BY query_start DESC;
+        
         begin;
             WITH new_plays AS (
                 SELECT
@@ -84,6 +92,7 @@ def upgrade():
                 for each row execute procedure handle_play();
         commit;
     """
+        )
     )
 
 

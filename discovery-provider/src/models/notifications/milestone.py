@@ -2,6 +2,7 @@ import enum
 
 from sqlalchemy import Column, DateTime, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
 class MilestoneName(str, enum.Enum):
@@ -13,7 +14,7 @@ class MilestoneName(str, enum.Enum):
     PLAYLIST_REPOST_COUNT = "PLAYLIST_REPOST_COUNT"
 
 
-class Milestone(Base):
+class Milestone(Base, RepresentableMixin):
     __tablename__ = "milestones"
 
     id = Column(Integer, nullable=False)
@@ -23,13 +24,3 @@ class Milestone(Base):
     slot = Column(Integer, nullable=True)
     timestamp = Column(DateTime, nullable=False)
     PrimaryKeyConstraint(id, name, threshold)
-
-    def __repr__(self):
-        return f"<Milestone(\
-id={self.id},\
-name={self.name},\
-threshold={self.threshold},\
-blocknumber={self.blocknumber},\
-slot={self.slot},\
-timestamp={self.timestamp},\
-)>"
