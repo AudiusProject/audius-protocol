@@ -375,6 +375,7 @@
 
 .twitterButton .twitterText {
   font-size: var(--font-m);
+  color: var(--static-white);
 }
 .twitterButton .twitterIcon {
   margin-right: 8px !important;
@@ -382,6 +383,7 @@
 .twitterButton .twitterIcon svg {
   width: 24px;
   height: 18px;
+  fill: var(--static-white);
 }
 
 .buttonSpacer {
