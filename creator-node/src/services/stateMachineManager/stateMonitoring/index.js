@@ -41,10 +41,7 @@ class StateMonitoringManager {
         this.processFindReplicaSetUpdatesJob.bind(this)
     })
 
-    // Don't start this queue on local dev because jobs process quickly with 0 users, which spams the logs
-    if (!config.get('creatorNodeIsDebug')) {
-      await this.startQueue(queue, discoveryNodeEndpoint)
-    }
+    await this.startQueue(queue, discoveryNodeEndpoint)
 
     return queue
   }
