@@ -42,7 +42,6 @@ const { libs } = require('@audius/sdk')
 const Utils = libs.Utils
 
 const { promisify } = require('util')
-const { Readable } = require('stream')
 
 const fsStat = promisify(fs.stat)
 
@@ -112,11 +111,21 @@ const streamFromFileSystem = async (
       res.set('Content-Length', stat.size)
     }
 
+    // If client has provided filename, set filename in header to be auto-populated in download prompt.
+    if (req.query.filename) {
+      res.setHeader(
+        'Content-Disposition',
+        contentDisposition(req.query.filename)
+      )
+    }
+
+    // Set the CID cache-control so that client caches the response for 30 days
+    res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+
     await new Promise((resolve, reject) => {
       fileStream
         .on('open', () => fileStream.pipe(res))
         .on('end', () => {
-          _setHeadersForStreaming(req, res)
           res.end()
           resolve()
         })
@@ -125,6 +134,9 @@ const streamFromFileSystem = async (
         })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
+
     // Unable to stream from file system. Throw a server error message
     throw e
   }
@@ -582,21 +594,6 @@ const _verifyContentMatchesHash = async function (req, resizeResp, dirCID) {
 }
 
 /**
- * Sets headers for streaming
- * @param {Object} req
- * @param {Object} res
- */
-function _setHeadersForStreaming(req, res) {
-  // If client has provided filename, set filename in header to be auto-populated in download prompt.
-  if (req.query.filename) {
-    res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
-  }
-
-  // Set the CID cache-control so that client caches the response for 30 days
-  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-}
-
-/**
  * Helper fn to generate the input for `generateImageCids()`
  * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
  * @param {string} dirCID the directory CID from `resizeResp`
@@ -623,29 +620,6 @@ async function _generateContentToHash(resizeResp, dirCID) {
 }
 
 module.exports = function (app) {
-  app.get('/test', async (req, res) => {
-    try {
-      const dumbBuffer = Buffer.from('dumb buffer', 'utf-8')
-      const stream = Readable.from(dumbBuffer)
-
-      res.set('Content-Length', 6)
-      return new Promise((resolve, reject) => {
-        stream
-          .on('open', () => stream.pipe(res))
-          .on('end', () => {
-            _setHeadersForStreaming(req, res)
-            res.end()
-            resolve()
-          })
-          .on('error', (e) => {
-            reject(e)
-          })
-      })
-    } catch (e) {
-      return sendResponse(req, res, errorResponseBadRequest(`blah balhb error`))
-    }
-  })
-
   app.get(
     '/async_processing_status',
     handleResponse(async (req, res) => {
