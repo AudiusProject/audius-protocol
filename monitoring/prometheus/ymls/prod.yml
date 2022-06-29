@@ -51,4 +51,4 @@
           host: 'monitoring.audius.co'
           environment: 'prod'
           service: 'audius'
-          component: 'network-monitoriong'
+          component: 'network-monitoring'
