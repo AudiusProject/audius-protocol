@@ -34,6 +34,7 @@ const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
 const { Reactions } = require('./api/reactions')
+const { AudiusData } = require('./api/audiusData')
 
 class AudiusLibs {
   /**
@@ -557,6 +558,7 @@ class AudiusLibs {
     this.File = new File(this.User, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
+    this.AudiusData = new AudiusData(...services)
   }
 }
 

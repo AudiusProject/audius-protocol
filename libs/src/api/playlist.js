@@ -72,78 +72,7 @@ class Playlists extends Base {
     return this.discoveryProvider.getSavedAlbums(limit, offset, withUsers)
   }
 
-  /**
-   * Calculate an unoccupied playlist ID
-   * Maximum value is UINT MAX
-   */
-  async getValidPlaylistId () {
-    let playlistId = 10
-    let validIdFound = false
-    while (!validIdFound) {
-      const resp = await this.getPlaylists(1, 0, [playlistId])
-      if (resp.length !== 0) {
-        playlistId = Math.floor(
-          Math.random() * 9007199254740991
-        )
-      } else {
-        validIdFound = true
-      }
-    }
-    console.log(`Playlist2 | Returning playlistID=${playlistId}`)
-    return playlistId
-  }
-
   /* ------- SETTERS ------- */
-
-  /**
-   * Create a playlist using updated data contracts flow
-   * @param {*} playlistName
-   * @param {*} trackIds
-   * @param {*} coverPhoto
-   * @param {*} description
-   * @param {*} isAlbum
-   */
-  async createPlaylist2 (playlistName, trackIds, coverPhoto, description, isAlbum) {
-    // TODO: Abstract determining a valid ID
-    const ownerId = this.userStateManager.getCurrentUserId()
-    console.log(`Playlist2 | New create playlist function invoked! ${ownerId}`)
-    const action = 'Create'
-    const entityType = 'Playlist'
-    const entityId = await this.getValidPlaylistId()
-    this.REQUIRES(Services.CREATOR_NODE)
-    console.log(coverPhoto)
-    const dirCID = await this.uploadPlaylistCoverPhoto(coverPhoto, true)
-    console.log(`Playlist2 | Uploaded image w/dirCID = ${dirCID}`)
-    const metadata = {
-      action,
-      entity_type: entityType,
-      playlist_id: entityId,
-      playlist_contents: trackIds,
-      playlist_name: playlistName,
-      playlist_image_sizes_multihash: dirCID,
-      description,
-      isAlbum
-    }
-    console.log(`Playlist2 | New create playlist function metadata! ${ownerId}, ${JSON.stringify(metadata)}`)
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadPlaylistMetadata(metadata)
-    console.log(`Playlist2 | New playlist metadata ${JSON.stringify(metadataMultihash)}`)
-    const resp = await this.contracts.AudiusDataClient.manageEntity(
-      ownerId,
-      entityType,
-      entityId,
-      action,
-      metadataMultihash
-    )
-    const receipt = resp.txReceipt
-    console.log(`Playlist2 | ${JSON.stringify(receipt)} ${metadataFileUUID}, associating next...`)
-    const blocknumber = receipt.blockNumber
-    const associateResponse = await this.creatorNode.associatePlaylistMetadata(
-      entityId,
-      metadataFileUUID,
-      blocknumber
-    )
-    console.log(`Playlist2 | Associated! ${JSON.stringify(associateResponse)}`)
-  }
 
   /**
    * Creates a new playlist

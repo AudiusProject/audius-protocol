@@ -1,4 +1,4 @@
 // Placeholder type for base.js
 declare const Base: any
-
-export { Base }
+declare const Services: any
+export { Base, Services }
