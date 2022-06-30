@@ -2,7 +2,7 @@
 
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
-import { retryAsyncFunctionOrError } from "../utils"
+const retry = require('async-retry')
 
 
 export const getAllContentNodes = async (run_id: number): Promise<{ spid: number, endpoint: string }[]> => {
@@ -102,8 +102,9 @@ export const getCIDBatch = async (
 
     try {
 
-        const cidBatch: { cid: string, user_id: number }[] = await retryAsyncFunctionOrError(5, async (): Promise<{ cid: string, user_id: number }[]> => {
-            const cidBatchResp = await sequelizeConn.query(`
+        const cidBatch: { cid: string, user_id: number }[] = await retry(
+            async (): Promise<{ cid: string, user_id: number }[]> => {
+                const cidBatchResp = await sequelizeConn.query(`
             SELECT user_id, cid, endpoint 
             FROM (
                 SELECT cids_current_run.user_id as user_id, cid, unnest(string_to_array(replica_set, ',')) as endpoint
@@ -121,15 +122,17 @@ export const getCIDBatch = async (
             OFFSET :offset
             LIMIT :limit;
         `, {
-                replacements: { run_id, endpoint, offset, limit },
-                type: QueryTypes.SELECT,
-            })
+                    replacements: { run_id, endpoint, offset, limit },
+                    type: QueryTypes.SELECT,
+                })
 
-            const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
-                return { cid: reqObject.cid, user_id: reqObject.user_id }
-            })
+                const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
+                    return { cid: reqObject.cid, user_id: reqObject.user_id }
+                })
 
-            return cidBatch
+                return cidBatch
+            }, {
+            retries: 5,
         })
 
         return cidBatch
@@ -149,8 +152,9 @@ export const getImageCIDBatch = async (
 
     try {
 
-        const cidBatch: { cid: string, user_id: number }[] = await retryAsyncFunctionOrError(5, async (): Promise<{ cid: string, user_id: number }[]> => {
-            const cidBatchResp = await sequelizeConn.query(`
+        const cidBatch: { cid: string, user_id: number }[] = await retry(
+            async (): Promise<{ cid: string, user_id: number }[]> => {
+                const cidBatchResp = await sequelizeConn.query(`
                 SELECT user_id, cid, endpoint 
                 FROM (
                     SELECT cids_current_run.user_id as user_id, cid, unnest(string_to_array(replica_set, ',')) as endpoint
@@ -168,15 +172,17 @@ export const getImageCIDBatch = async (
                 OFFSET :offset
                 LIMIT :limit;
         `, {
-                replacements: { run_id, endpoint, offset, limit },
-                type: QueryTypes.SELECT,
-            })
+                    replacements: { run_id, endpoint, offset, limit },
+                    type: QueryTypes.SELECT,
+                })
 
-            const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
-                return { cid: reqObject.cid, user_id: reqObject.user_id }
-            })
+                const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
+                    return { cid: reqObject.cid, user_id: reqObject.user_id }
+                })
 
-            return cidBatch
+                return cidBatch
+            }, {
+            retries: 5,
         })
 
         return cidBatch
@@ -368,10 +374,16 @@ export const savePrimaryUserResults = async (
                     WHERE nm_users.wallet = tmp.wallet::text
                     AND nm_users.run_id::text = tmp.run_id::text;`
 
-        await sequelizeConn.query(queryStr, {
-            type: QueryTypes.UPDATE,
-        })
-
+        await retry(
+            async () => {
+                await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+            },
+            {
+                retries: 3,
+                factor: 2,
+                randomize: true,
+            }
+        )
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
         return results.length
@@ -387,7 +399,7 @@ export const saveSecondary1UserResults = async (
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<number> => {
     try {
-        await sequelizeConn.query(`
+        const queryStr = `
                     UPDATE network_monitoring_users as nm_users
                     SET secondary1_clock_value = tmp.clock::text::int
                     FROM (
@@ -396,10 +408,18 @@ export const saveSecondary1UserResults = async (
                     ) AS tmp(run_id, wallet, clock)
                     WHERE nm_users.wallet = tmp.wallet::text
                     AND nm_users.run_id::text = tmp.run_id::text;
-                `, {
-            type: QueryTypes.UPDATE,
-            replacements: { run_id },
-        })
+                `
+
+        await retry(
+            async () => {
+                await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+            },
+            {
+                retries: 3,
+                factor: 2,
+                randomize: true,
+            }
+        )
 
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
@@ -427,10 +447,16 @@ export const saveSecondary2UserResults = async (
                     AND nm_users.run_id::text = tmp.run_id::text;
                 `
 
-        await sequelizeConn.query(queryStr, {
-            type: QueryTypes.UPDATE,
-            replacements: { run_id },
-        })
+        await retry(
+            async () => {
+                await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+            },
+            {
+                retries: 3,
+                factor: 2,
+                randomize: true,
+            }
+        )
 
     } catch (e) {
         console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
@@ -446,9 +472,9 @@ const formatUserValues = (run_id: number, results: { walletPublicKey: string, cl
     results.forEach((result, i) => {
         if (
             result.walletPublicKey === undefined
-            || result.walletPublicKey === null 
+            || result.walletPublicKey === null
             || result.clock === undefined
-            || result.clock === null 
+            || result.clock === null
         ) {
             return
         }

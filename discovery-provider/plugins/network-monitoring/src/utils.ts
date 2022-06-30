@@ -140,20 +140,6 @@ export const sortObj = (obj: Record<any, any>) => {
     }, {});
 }
 
-export const retryAsyncFunctionOrError = async <T>(maxTries: number, func: () => T): Promise<T> => {
-    for (let i = 0; i < maxTries; i++) {
-        try {
-            const returnValue = await func()
-            return returnValue
-        } catch (e) {
-            console.log(`[retryAsyncFunctionOrError:${func.toString()}] the function failed (${(e as Error).message}), lets try again`)
-            continue
-        }
-    }
-
-    throw new Error(`[${func}] it didnt work :(`)
-}
-
 export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
