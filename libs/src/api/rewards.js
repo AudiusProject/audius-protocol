@@ -602,10 +602,14 @@ class Rewards extends Base {
     if (endpoints) {
       attestEndpoints = sampleSize(endpoints, numAttestations)
     } else {
-      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({quorumSize: numAttestations, useWhitelist: false, filter: async (node) => {
-        const isRegistered = await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
-        return isRegistered
-      }})
+      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+        quorumSize: numAttestations,
+        useWhitelist: false,
+        filter: async (node) => {
+          const isRegistered = await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
+          return isRegistered
+        }
+      })
     }
 
     if (attestEndpoints.length < numAttestations) {

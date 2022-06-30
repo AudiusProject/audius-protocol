@@ -122,7 +122,7 @@ class ServiceProvider extends Base {
    * @param {any[]} discoveryNodes the verbose list of discovery nodes to select from
    * @param {(node: { delegateOwnerWallet: string }) => boolean} filter an optional filter step to remove certain nodes
    */
-  async getUniquelyOwnedDiscoveryNodes ({quorumSize, discoveryNodes = [], filter = (node) => true, useWhitelist = true }) {
+  async getUniquelyOwnedDiscoveryNodes ({ quorumSize, discoveryNodes = [], filter = (node) => true, useWhitelist = true }) {
     if (!discoveryNodes || discoveryNodes.length === 0) {
       // Whitelist logic: if useWhitelist is false, pass in null to override internal whitelist logic; if true, pass in undefined
       // so service selector uses internal whitelist
