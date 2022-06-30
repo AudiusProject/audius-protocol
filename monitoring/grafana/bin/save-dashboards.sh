@@ -38,6 +38,8 @@ SET_REFRESH_INTERVAL='.refresh = "30m"'
 # set a time delay since graphs don't fall sharply down at the tail end
 SET_TIME_DELAY='.timepicker.nowDelay = "1m"'
 
+CLEAR_DATASOURCE_ID='del(.templating.list[].datasource.uid)'
+
 # RESET TEMPLATING
 # clear current selection
 RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
@@ -68,6 +70,7 @@ do
         | jq "${SET_REFRESH_INTERVAL}" \
         | jq "${SET_TIME_DELAY}" \
         | jq "${RESET_TEMPLATE_SELECTION}" \
+        | jq "${CLEAR_DATASOURCE_ID}" \
         | jq "${PUSH_FORMATTING}" \
         > ${path}
     echo "Saved to: ${path}"

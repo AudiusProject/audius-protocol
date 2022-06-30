@@ -121,6 +121,7 @@
         "type": "timeseries"
       }
     ],
+    "refresh": "30m",
     "schemaVersion": 36,
     "style": "dark",
     "tags": [],
@@ -138,8 +139,7 @@
     "title": "Audius Internal Health",
     "uid": "oKGi7A9nz",
     "version": null,
-    "weekStart": "",
-    "refresh": "30m"
+    "weekStart": ""
   },
   "overwrite": true
 }
