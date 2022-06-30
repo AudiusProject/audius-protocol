@@ -165,12 +165,13 @@ export const getPartiallySyncedUsersCount = async (run_id: number): Promise<numb
             run_id = :run_id
         AND 
             primary_clock_value IS NOT NULL
-        AND 
+        AND ( 
             primary_clock_value = secondary1_clock_value
-        OR
+            OR
             primary_clock_value = secondary2_clock_value
+        )
         AND 
-            secondary1_clock_value != secondary2_clock_value
+            secondary1_clock_value != secondary2_clock_value;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
@@ -194,7 +195,7 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
         AND 
             primary_clock_value != secondary1_clock_value
         AND
-            primary_clock_value != secondary2_clock_value
+            primary_clock_value != secondary2_clock_value;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
