@@ -716,8 +716,11 @@ export class DiscoveryProvider {
     return await this._makeRequest<CurrentUser>(req)
   }
 
+  /**
+   * @deprecated Migrate to using getTrendingPlaylists
+   */
   async getTopPlaylists(
-    type: string,
+    type: 'playlist' | 'album',
     limit: number,
     mood: string,
     filter: string,
@@ -727,6 +730,26 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getTrendingPlaylists(
+    type: 'playlist' | 'album',
+    limit?: number,
+    mood?: string,
+    filter?: string,
+    withUsers = false
+  ) {
+    const req = Requests.getTrendingPlaylists(
+      type,
+      limit,
+      mood,
+      filter,
+      withUsers
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * @deprecated Migrate to using getBestNewReleases
+   */
   async getTopFolloweeWindowed(
     type: string,
     window: string,
@@ -734,6 +757,15 @@ export class DiscoveryProvider {
     withUsers = false
   ) {
     const req = Requests.getTopFolloweeWindowed(type, window, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getBestNewReleases(
+    window: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getBestNewReleases(window, limit, withUsers)
     return await this._makeRequest(req)
   }
 
