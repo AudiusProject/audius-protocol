@@ -3,6 +3,7 @@ import os
 import time
 
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ def update_views(self, db):
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_materialized_views", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_materialized_views(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

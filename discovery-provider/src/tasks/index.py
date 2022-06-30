@@ -50,7 +50,7 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -1073,6 +1073,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 # CELERY TASKS
 @celery.task(name="update_discovery_provider", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

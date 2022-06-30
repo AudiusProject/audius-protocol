@@ -7,6 +7,7 @@ from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
@@ -214,6 +215,7 @@ def get_unavailable_tracks_redis_key(spID: int) -> str:
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_track_is_available(self) -> None:
     """Recurring task that updates whether tracks are available on the network"""
 
