@@ -28,6 +28,7 @@ def get_celery_tasks(**kwargs) -> str:
     i: Inspect = celery_app.control.inspect()
 
     active = i.active()
+    registered = i.registered()
 
     if active is None:
         return json.dumps([])
@@ -47,4 +48,23 @@ def get_celery_tasks(**kwargs) -> str:
             except KeyError:
                 continue
 
-    return json.dumps(celery_tasks)
+    registered_celery_tasks = []
+    for _, tasks in registered.items():
+        for task in tasks:
+            try:
+                registered_celery_tasks.append(
+                    GetTasksItem(
+                        task_id="",
+                        task_name=task,
+                        started_at="",
+                    )
+                )
+
+            except KeyError:
+                continue
+
+    ret = {
+        "celery_tasks": celery_tasks,
+        "registered_celery_tasks": registered_celery_tasks,
+    }
+    return json.dumps(ret)

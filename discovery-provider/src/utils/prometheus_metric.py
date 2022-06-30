@@ -1,10 +1,33 @@
 import logging
+from functools import wraps
 from time import time
 from typing import Callable, Dict
 
 from prometheus_client import Gauge, Histogram
 
 logger = logging.getLogger(__name__)
+
+
+def save_duration_metric(metric_group):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            metric = PrometheusMetric(
+                f"{metric_group}_duration_seconds",
+                f"How long a {metric_group} took to complete",
+                ("func_name", "success"),
+            )
+            try:
+                result = func(*args, **kwargs)
+                metric.save_time({"func_name": func.__name__, "success": True})
+                return result
+            except:
+                metric.save_time({"func_name": func.__name__, "success": False})
+                raise
+
+        return wrapper
+
+    return decorator
 
 
 class PrometheusType:
