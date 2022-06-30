@@ -761,16 +761,34 @@ export class DiscoveryProvider {
   }
 
   async getBestNewReleases(
+    encodedUserId: string,
     window: string,
     limit: string,
     withUsers = false
   ) {
-    const req = Requests.getBestNewReleases(window, limit, withUsers)
+    const req = Requests.getBestNewReleases(
+      window,
+      limit,
+      encodedUserId,
+      withUsers
+    )
     return await this._makeRequest(req)
   }
 
+  /**
+   * @deprecated Migrate to using getMostLovedTracks
+   */
   async getTopFolloweeSaves(type: string, limit: string, withUsers = false) {
     const req = Requests.getTopFolloweeSaves(type, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getMostLovedTracks(
+    encodedUserId: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getMostLovedTracks(encodedUserId, limit, withUsers)
     return await this._makeRequest(req)
   }
 

@@ -469,7 +469,7 @@ export const getUserAccount = (wallet: string) => {
 }
 
 /**
- * @deprecated Migrate to using getTrendingPlaylists
+ * @deprecated Migrate to using getTop
  */
  export const getTopPlaylists = (
   type: 'playlist' | 'album',
@@ -537,6 +537,21 @@ export const getBestNewReleases = (
     endpoint: `/v1/full/tracks/best_new_releases`,
     queryParams: {
       window,
+      limit,
+      user_id: encodedUserId,
+      with_users: withUsers
+    }
+  }
+}
+
+export const getMostLovedTracks = (
+  encodedUserId: string,
+  limit: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/most_loved`,
+    queryParams: {
       limit,
       user_id: encodedUserId,
       with_users: withUsers
