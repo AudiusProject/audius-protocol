@@ -131,14 +131,6 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - web-publish-github-release:
-      context: Audius Client
-      requires:
-        - web-hold-production
-      filters:
-        branches:
-          only: /(^release.*)$/
-
   # Production IPFS build
   - web-build-ipfs-production:
       requires:

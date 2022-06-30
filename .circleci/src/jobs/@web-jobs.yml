@@ -391,18 +391,3 @@ web-dist-linux-production:
   steps:
     - web-distribute:
         build-type: linux-publish-production
-
-web-publish-github-release:
-  working_directory: ~/audius-client
-  docker:
-    - image: cibuilds/github:0.10
-  steps:
-    - checkout
-    - attach_workspace:
-        at: ./
-    - run:
-        name: "Publish Release on GitHub"
-        command: |
-          VERSION=$(grep -m1 version ./packages/web/package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')
-          echo "$VERSION"
-          ghr -t ${GHI_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./packages/web

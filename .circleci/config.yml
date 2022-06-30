@@ -32,8 +32,37 @@ jobs:
           paths:
             - .circleci/continue_config.yml
 
+  # Bump version and create release branch
+  generate-release:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/node:14.18
+    steps:
+      - checkout
+      - run:
+          name: Bump version
+          command: |
+            git config --global user.email "audius-infra@audius.co"
+            git config --global user.name "audius-infra"
+            PREV_VERSION=$(jq -r .version ./lerna.json)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short v${PREV_VERSION}..HEAD)
+            MESSAGE="%s
+
+            ${CHANGELOG}"
+            npm i
+            npx lerna version patch --yes -m "${MESSAGE}"
+      - run:
+          name: Create release branch
+          command: |
+            VERSION=$(jq -r .version ./lerna.json)
+            git checkout -b release-v${VERSION}
+            git push -u origin release-v${VERSION}
+
 workflows:
   setup:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
 
@@ -70,3 +99,11 @@ workflows:
                 at: ../workspace
           requires:
             - generate-config
+
+  generate-release:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["generate-release", << pipeline.schedule.name >>]
+    jobs:
+      - generate-release
