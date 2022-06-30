@@ -718,7 +718,7 @@ class SnapbackSM {
         ) {
           const walletsOnReplicaSlice = walletsOnReplica.slice(
             i,
-            (i += MAX_BATCH_CLOCK_STATUS_BATCH_SIZE)
+            (i + MAX_BATCH_CLOCK_STATUS_BATCH_SIZE)
           )
 
           const axiosReqParams = {
