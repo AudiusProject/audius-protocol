@@ -11,7 +11,7 @@ import {
   sortServiceTimings,
   ServiceName,
   Timing,
-  Logger,
+  Logger
 } from '../../utils'
 import { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } from './constants'
 import type { MonitoringCallbacks } from './CreatorNode'
