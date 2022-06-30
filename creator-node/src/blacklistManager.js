@@ -260,19 +260,28 @@ class BlacklistManager {
 
     // also retrieves the CID's directly from the files table so we get copy320
     if (inputTrackIds.length > 0) {
-      const files = await models.File.findAll({
-        where: {
-          trackBlockchainId: inputTrackIds
+      let files, transaction
+      try {
+        transaction = await models.sequelize.transaction()
+        files = await models.File.findAll({
+          where: {
+            trackBlockchainId: inputTrackIds
+          }
+        })
+
+        for (const file of files) {
+          if (
+            file.type === 'track' ||
+            file.type === 'copy320' ||
+            !CID_WHITELIST.has(file.multihash)
+          ) {
+            segmentCIDs.add(file.multihash)
+          }
         }
-      })
-      for (const file of files) {
-        if (
-          file.type === 'track' ||
-          file.type === 'copy320' ||
-          !CID_WHITELIST.has(file.multihash)
-        ) {
-          segmentCIDs.add(file.multihash)
-        }
+
+        await transaction.commit()
+      } catch (e) {
+        await transaction.rollback()
       }
     }
 
