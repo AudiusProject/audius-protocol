@@ -61,6 +61,13 @@ class StateMachineManager {
     }
   }
 
+  /**
+   * Deserializes the results of a job and updates the enabled reconfig modes to be either:
+   * - enabled (to the highest enabled mode configured) if the job fetched the mapping successfully
+   * - disabled if the job encountered an error fetching the mapping
+   * @param {number} jobId the ID of the job that completed
+   * @param {string} resultString the stringified JSON of the job's returnValue
+   */
   async updateMapOnMapFetchJobComplete(jobId, resultString) {
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult = {}
