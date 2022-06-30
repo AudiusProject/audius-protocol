@@ -471,7 +471,7 @@ export const getUserAccount = (wallet: string) => {
 /**
  * @deprecated Migrate to using getTop
  */
- export const getTopPlaylists = (
+export const getTopPlaylists = (
   type: 'playlist' | 'album',
   limit: number,
   mood: string,
@@ -507,7 +507,6 @@ export const getTrendingPlaylists = (
     }
   }
 }
-
 
 /**
  * @deprecated Migrate to using getBestNewReleases
