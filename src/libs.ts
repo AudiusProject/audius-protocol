@@ -1,4 +1,4 @@
-import AudiusLibs from '@audius/libs'
+import { libs as AudiusLibs } from '@audius/sdk'
 
 const E = process.env
 
@@ -13,7 +13,8 @@ const libs = new AudiusLibs({
     E.ETH_PROVIDER_URL,
     E.ETH_OWNER_WALLET
   ),
-  discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
+  discoveryProviderConfig: {
+  }
 })
 
 export default libs

@@ -29,7 +29,7 @@
   "homepage": "https://github.com/AudiusProject/general-admission#readme",
   "dependencies": {
     "@audius/fetch-nft": "^0.1.5",
-    "@audius/libs": "1.2.30",
+    "@audius/sdk": "0.0.9",
     "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.30.2",
     "abort-controller": "^3.0.0",
