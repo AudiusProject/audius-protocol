@@ -110,7 +110,6 @@ export const indexContent = async (run_id: number) => {
 const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
     console.log(`[${run_id}:${spid}] check users`)
 
-    const saveQueue: Promise<void>[] = []
     const batchSize = 5000
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
@@ -136,8 +135,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
             { getBatch: getSecondary2WalletBatch, saveBatch: saveSecondary2UserResults, count: secondary2Count },
         ].map(async ({ getBatch, saveBatch, count }) => {
 
-            // let walletCursor = ''
-
             for (let offset = 0; offset < count; offset += batchSize) {
                 try {
 
@@ -149,7 +146,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     const walletBatch = await getBatch(
                         run_id,
                         spid,
-                        // walletCursor,
                         offset,
                         batchSize,
                     )
@@ -157,8 +153,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     console.log(`[getBatch:${offset}:${batchSize}:${count}] duration: ${Math.round(getBatchEnd[0]! * 1e3 + getBatchEnd[1]! * 1e-6)} ms`)
 
                     if (walletBatch.length === 0) { return }
-
-                    // walletCursor = walletBatch[walletBatch.length-1]!
 
                     const getClockValueStart = process.hrtime()
 
@@ -178,7 +172,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     const saveBatchStart = process.hrtime()
 
                     missedUsers += await saveBatch(run_id, spid, results)
-                    // await saveBatch(run_id, spid, results)
 
                     const saveBatchEnd = process.hrtime(saveBatchStart)
                     console.log(`[${run_id}:${spid}:${offset}] saveBatch duration: ${Math.round(saveBatchEnd[0]! * 1e3 + saveBatchEnd[1]! * 1e-6)} ms`)
@@ -193,11 +186,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     } catch (e) {
                         console.log(`[checkUsers(batch)] error pushing metrics to pushgateway - ${(e as Error).message}`)
                     }
-
-                    // Save the clock values for all the user in the batch
-                    // to the network_monitoring postgres DB
-                    // by adding user to save queue
-                    // saveQueue.push(saveBatch(run_id, spid, results))
                 } catch (e) {
                     console.log(`[checkUsers:${spid}] error - ${(e as Error).message}`)
                 }
@@ -219,7 +207,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
         console.log(`[checkUsers] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
 
-    await Promise.all(saveQueue);
     console.log(`[${run_id}:${spid}] finish saving user content node data to db`)
 }
 
