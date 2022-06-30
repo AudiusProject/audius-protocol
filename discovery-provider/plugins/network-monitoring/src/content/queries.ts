@@ -364,32 +364,46 @@ export const savePrimaryUserResults = async (
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<number> => {
 
-    try {
-        const queryStr = `UPDATE network_monitoring_users as nm_users
+    const miniBatchSize = 500
+    const count = results.length
+
+    let missedUsers = 0
+
+    // Break the batch of clock value into smaller mini-batches 
+    // to cause less errors and make debugging easier
+    for (let offset = 0; offset < count; offset += miniBatchSize) {
+
+        const end = (offset + miniBatchSize) >= results.length ? results.length - 1 : (offset + miniBatchSize)
+
+        const miniBatch = results.slice(offset, end)
+
+        try {
+            const queryStr = `UPDATE network_monitoring_users as nm_users
                     SET primary_clock_value = tmp.clock::text::int
                     FROM (
                         VALUES 
-                            ${formatUserValues(run_id, results)}
+                            ${formatUserValues(run_id, miniBatch)}
                     ) AS tmp(run_id, wallet, clock)
                     WHERE nm_users.wallet = tmp.wallet::text
                     AND nm_users.run_id::text = tmp.run_id::text;`
 
-        await retry(
-            async () => {
-                await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
-            },
-            {
-                retries: 3,
-                factor: 2,
-                randomize: true,
-            }
-        )
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return results.length
+            await retry(
+                async () => {
+                    await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+                },
+                {
+                    retries: 3,
+                    factor: 2,
+                    randomize: true,
+                }
+            )
+        } catch (e) {
+            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+            missedUsers += end - offset
+        }
     }
 
-    return 0
+    return missedUsers
 }
 
 
@@ -398,35 +412,47 @@ export const saveSecondary1UserResults = async (
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<number> => {
-    try {
-        const queryStr = `
-                    UPDATE network_monitoring_users as nm_users
+
+    const miniBatchSize = 500
+    const count = results.length
+
+    let missedUsers = 0
+
+    // Break the batch of clock value into smaller mini-batches 
+    // to cause less errors and make debugging easier
+    for (let offset = 0; offset < count; offset += miniBatchSize) {
+
+        const end = (offset + miniBatchSize) >= results.length ? results.length - 1 : (offset + miniBatchSize)
+
+        const miniBatch = results.slice(offset, end)
+
+        try {
+            const queryStr = `UPDATE network_monitoring_users as nm_users
                     SET secondary1_clock_value = tmp.clock::text::int
                     FROM (
                         VALUES 
-                            ${formatUserValues(run_id, results)}
+                            ${formatUserValues(run_id, miniBatch)}
                     ) AS tmp(run_id, wallet, clock)
                     WHERE nm_users.wallet = tmp.wallet::text
-                    AND nm_users.run_id::text = tmp.run_id::text;
-                `
+                    AND nm_users.run_id::text = tmp.run_id::text;`
 
-        await retry(
-            async () => {
-                await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
-            },
-            {
-                retries: 3,
-                factor: 2,
-                randomize: true,
-            }
-        )
-
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return results.length
+            await retry(
+                async () => {
+                    await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+                },
+                {
+                    retries: 3,
+                    factor: 2,
+                    randomize: true,
+                }
+            )
+        } catch (e) {
+            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+            missedUsers += end - offset
+        }
     }
 
-    return 0
+    return missedUsers
 }
 
 export const saveSecondary2UserResults = async (
@@ -435,35 +461,46 @@ export const saveSecondary2UserResults = async (
     results: { walletPublicKey: string, clock: number }[],
 ): Promise<number> => {
 
-    try {
-        const queryStr = `
-                    UPDATE network_monitoring_users as nm_users
+    const miniBatchSize = 500
+    const count = results.length
+
+    let missedUsers = 0
+
+    // Break the batch of clock value into smaller mini-batches 
+    // to cause less errors and make debugging easier
+    for (let offset = 0; offset < count; offset += miniBatchSize) {
+
+        const end = (offset + miniBatchSize) >= results.length ? results.length - 1 : (offset + miniBatchSize)
+
+        const miniBatch = results.slice(offset, end)
+
+        try {
+            const queryStr = `UPDATE network_monitoring_users as nm_users
                     SET secondary2_clock_value = tmp.clock::text::int
                     FROM (
                         VALUES 
-                            ${formatUserValues(run_id, results)}
+                            ${formatUserValues(run_id, miniBatch)}
                     ) AS tmp(run_id, wallet, clock)
                     WHERE nm_users.wallet = tmp.wallet::text
-                    AND nm_users.run_id::text = tmp.run_id::text;
-                `
+                    AND nm_users.run_id::text = tmp.run_id::text;`
 
-        await retry(
-            async () => {
-                await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
-            },
-            {
-                retries: 3,
-                factor: 2,
-                randomize: true,
-            }
-        )
-
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return results.length
+            await retry(
+                async () => {
+                    await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+                },
+                {
+                    retries: 3,
+                    factor: 2,
+                    randomize: true,
+                }
+            )
+        } catch (e) {
+            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+            missedUsers += end - offset
+        }
     }
 
-    return 0
+    return missedUsers
 }
 
 const formatUserValues = (run_id: number, results: { walletPublicKey: string, clock: number }[]): string => {
