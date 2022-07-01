@@ -11,24 +11,30 @@ import {
 } from './Icons'
 
 import { formatCount } from './utils'
+import { notificationTypes } from '../../constants'
 
-export const NotificationType = Object.freeze({
-  Follow: 'Follow',
-  Repost: 'Repost',
-  Favorite: 'Favorite',
-  Milestone: 'Milestone',
-  UserSubscription: 'UserSubscription',
-  Announcement: 'Announcement',
-  RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign',
-  TrendingTrack: 'TrendingTrack',
-  ChallengeReward: 'ChallengeReward',
-  AddTrackToPlaylist: 'AddTrackToPlaylist',
-  TipReceive: 'TipReceive',
-  Reaction: 'Reaction',
-  SupporterRankUp: 'SupporterRankUp',
-  SupportingRankUp: 'SupportingRankUp'
-})
+const emailNotifTypes = [
+  notificationTypes.Follow,
+  notificationTypes.Repost.base,
+  notificationTypes.Favorite.base,
+  notificationTypes.Milestone,
+  notificationTypes.UserSubscription,
+  notificationTypes.Announcement,
+  notificationTypes.RemixCreate,
+  notificationTypes.RemixCosign,
+  notificationTypes.TrendingTrack,
+  notificationTypes.ChallengeReward,
+  notificationTypes.AddTrackToPlaylist,
+  notificationTypes.TipReceive,
+  notificationTypes.Reaction,
+  notificationTypes.SupporterRankUp,
+  notificationTypes.SupportingRankUp
+]
+export const NotificationType = Object.freeze(
+  new Map(
+    emailNotifTypes.map(type => [type, type])
+  )
+)
 
 const challengeRewardsConfig = {
   referred: {
