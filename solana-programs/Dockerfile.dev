@@ -34,7 +34,8 @@ RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/usr/src/app/anchor/audius-data/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
-    ./scripts/setup-predeployed.sh /usr/db
+    ./scripts/setup-predeployed.sh /usr/db && \
+    cp -r anchor/audius-data/target/idl anchor/audius-data/
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
     CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1

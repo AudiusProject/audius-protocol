@@ -116,6 +116,8 @@ services:
         reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
         reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
         valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
+    volumes:
+      - solana-programs-idl:/usr/src/app/anchor/audius-data/target/idl
     ports:
       - "8899:8899"
     deploy:
@@ -254,6 +256,7 @@ services:
       - ./discovery-provider:/audius-discovery-provider
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
+      - solana-programs-idl:/audius-discovery-provider/idl
       - ./dev:/tmp/dev
     depends_on:
       poa-ganache:
@@ -314,4 +317,5 @@ services:
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
+  solana-programs-idl:
   audius-libs:
