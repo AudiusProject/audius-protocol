@@ -61,11 +61,11 @@ export const indexContent = async (run_id: number) => {
     //     return content_nodes
     // })
 
-    const content_nodes = await getAllContentNodes(run_id)
+    const contentNodes = await getAllContentNodes(run_id)
 
     await Promise.all(
         // for each content node...
-        content_nodes.map(async (cnode, _) => {
+        contentNodes.map(async (cnode, _) => {
 
             // const image_cid_count: string = image_to_content_nodes[i]?.cid_count || '0'
             return new Promise<void>(async resolve => {
