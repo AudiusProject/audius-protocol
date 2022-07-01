@@ -5,6 +5,7 @@ import { sequelizeConn } from "../db"
 const retry = require('async-retry')
 
 
+// Fetch all content nodes from a specfic run
 export const getAllContentNodes = async (run_id: number): Promise<{ spid: number, endpoint: string }[]> => {
 
     const endpointsResp: unknown[] = await sequelizeConn.query(`
@@ -19,6 +20,7 @@ export const getAllContentNodes = async (run_id: number): Promise<{ spid: number
     return endpoints
 }
 
+// Create a table containing every content node (endpoint+spid) and the number of CIDs (non-image) that should be on that content node
 export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
     console.log(`[${run_id}] get endpoint => cidcount mapping`)
 
@@ -56,6 +58,7 @@ export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: num
     return endpointToCIDCount
 }
 
+// Create a table containing every content node (endpoint+spid) and the number of image CIDs that should be on that content node
 export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
     console.log(`[${run_id}] get endpoint => imageCidcount mapping`)
 
@@ -92,6 +95,7 @@ export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid
     return endpointToCIDCount
 }
 
+// Fetch a batch of CIDs (non-image) for a specific content node from the table `network_monitoring_cids_from_discovery`
 export const getCIDBatch = async (
     run_id: number,
     endpoint: string,
@@ -142,6 +146,7 @@ export const getCIDBatch = async (
     }
 }
 
+// Fetch a batch of image CIDs for a specific content node from the table `network_monitoring_cids_from_discovery`
 export const getImageCIDBatch = async (
     run_id: number,
     endpoint: string,
@@ -192,6 +197,7 @@ export const getImageCIDBatch = async (
     }
 }
 
+// Save a batch of CIDs for a specfic content node into the table `network_monitoring_cids_from_content`
 export const saveCIDResults = async (
     run_id: number,
     spid: number,
@@ -241,6 +247,9 @@ export const saveCIDResults = async (
     }
 }
 
+// Create a table containing every content node 
+// and the number of users with that content node as their primary, secondary1, or secondary2
+// i.e. { spid: { primary_count, secondary1_count, secondary2_count } }[]
 export const getUserCounts = async (run_id: number, spid: number): Promise<[number, number, number]> => {
 
     console.log(`[${run_id}:${spid}] get user counts`)
@@ -287,6 +296,7 @@ export const getUserCounts = async (run_id: number, spid: number): Promise<[numb
     return [userCounts.primary_count, userCounts.secondary1_count, userCounts.secondary2_count]
 }
 
+// Fetch a batch of users with a specific content node as their primary from the table `network_monitoring_users`
 export const getPrimaryWalletBatch = async (
     run_id: number,
     spid: number,
@@ -310,6 +320,7 @@ export const getPrimaryWalletBatch = async (
     return walletBatch
 }
 
+// Fetch a batch of users with a specific content node as their secondary1 from the table `network_monitoring_users`
 export const getSecondary1WalletBatch = async (
     run_id: number,
     spid: number,
@@ -333,7 +344,7 @@ export const getSecondary1WalletBatch = async (
     return walletBatch
 }
 
-
+// Fetch a batch of users with a specific content node as their secondary2 from the table `network_monitoring_users`
 export const getSecondary2WalletBatch = async (
     run_id: number,
     spid: number,
@@ -357,7 +368,7 @@ export const getSecondary2WalletBatch = async (
     return walletBatch
 }
 
-
+// Save the clock value for batch of users with a specific content node as their primary from the table `network_monitoring_users`
 export const savePrimaryUserResults = async (
     run_id: number,
     spid: number,
@@ -406,7 +417,7 @@ export const savePrimaryUserResults = async (
     return missedUsers
 }
 
-
+// Save the clock value for batch of users with a specific content node as their secondary1 from the table `network_monitoring_users`
 export const saveSecondary1UserResults = async (
     run_id: number,
     spid: number,
@@ -455,6 +466,7 @@ export const saveSecondary1UserResults = async (
     return missedUsers
 }
 
+// Save the clock value for batch of users with a specific content node as their secondary2 from the table `network_monitoring_users`
 export const saveSecondary2UserResults = async (
     run_id: number,
     spid: number,
@@ -503,6 +515,8 @@ export const saveSecondary2UserResults = async (
     return missedUsers
 }
 
+// Helper function to format an array of clock values as a string to be injected into a SQL query string
+// i.e. 1, { walletPublicKey: '0x12345', clock: 1 } => '(1, '0x12345', 1)'
 const formatUserValues = (run_id: number, results: { walletPublicKey: string, clock: number }[]): string => {
     let formattedStr = ''
 
