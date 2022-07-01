@@ -373,7 +373,7 @@ class AudiusLibs {
   }
 
   /** Init services based on presence of a relevant config. */
-  async init() {
+  async init () {
     this.userStateManager = new UserStateManager({
       localStorage: this.localStorage
     })

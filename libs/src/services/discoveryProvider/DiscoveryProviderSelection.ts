@@ -15,7 +15,7 @@ import semver from 'semver'
 import type { EthContracts } from '../ethContracts'
 import type { AxiosResponse } from 'axios'
 import type { Maybe, Nullable } from '../../utils'
-import { LocalStorage } from '../../utils/localStorage'
+import type { LocalStorage } from '../../utils/localStorage'
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5
 
@@ -134,10 +134,12 @@ export class DiscoveryProviderSelection extends ServiceSelection {
 
   /** Sets a cached discovery provider in localstorage */
   async setCached(endpoint: string) {
-    await this.localStorage.setItem(
-      DISCOVERY_PROVIDER_TIMESTAMP,
-      JSON.stringify({ endpoint, timestamp: Date.now() })
-    )
+    if (this.localStorage) {
+      await this.localStorage.setItem(
+        DISCOVERY_PROVIDER_TIMESTAMP,
+        JSON.stringify({ endpoint, timestamp: Date.now() })
+      )
+    }
   }
 
   /** Allows the selection take a shortcut if there's a cached provider */

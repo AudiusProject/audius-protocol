@@ -1,5 +1,5 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from './constants'
-import { LocalStorage } from './utils/localStorage'
+import type { LocalStorage } from './utils/localStorage'
 
 export type CurrentUser = {
   user_id: string
