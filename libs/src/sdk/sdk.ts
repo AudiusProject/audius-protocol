@@ -34,6 +34,7 @@ import {
   IDENTITY_SERVICE_ENDPOINT,
   WORMHOLE_ADDRESS
 } from './constants'
+import { LocalStorage } from '../utils/localStorage'
 
 type Web3Config = {
   providers: string[]
@@ -60,6 +61,10 @@ type SdkConfig = {
    * Configuration for the IdentityService client
    */
   identityServiceConfig?: IdentityService
+  /**
+   * Optional custom local storage
+   */
+  localStorage?: LocalStorage
   /**
    * Configuration for Web3
    */
@@ -98,7 +103,7 @@ const initializeServices = (config: SdkConfig) => {
     identityServiceConfig
   } = config
 
-  const userStateManager = new UserStateManager()
+  const userStateManager = new UserStateManager({ localStorage })
 
   const identityService = new IdentityService({
     identityServiceEndpoint: IDENTITY_SERVICE_ENDPOINT,
@@ -126,6 +131,7 @@ const initializeServices = (config: SdkConfig) => {
   const discoveryProvider = new DiscoveryProvider({
     ethContracts,
     userStateManager,
+    localStorage,
     ...discoveryProviderConfig
   })
 

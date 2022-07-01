@@ -34,6 +34,7 @@ const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
 const { Reactions } = require('./api/reactions')
+const { getPlatformLocalStorage } = require('./utils/localStorage')
 
 class AudiusLibs {
   /**
@@ -41,7 +42,7 @@ class AudiusLibs {
    * @param {string} url
    * @param {boolean?} useHedgehogLocalStorage whether or not to read hedgehog entropy in local storage
    */
-  static configIdentityService (url, useHedgehogLocalStorage = true) {
+  static configIdentityService(url, useHedgehogLocalStorage = true) {
     return { url, useHedgehogLocalStorage }
   }
 
@@ -49,7 +50,7 @@ class AudiusLibs {
    * Configures an identity service wrapper
    * @param {string} url
    */
-  static configComstock (url) {
+  static configComstock(url) {
     return { url }
   }
 
@@ -64,7 +65,7 @@ class AudiusLibs {
    * @param {function} monitoringCallbacks.request
    * @param {function} monitoringCallbacks.healthCheck
    */
-  static configCreatorNode (
+  static configCreatorNode(
     fallbackUrl,
     lazyConnect = false,
     passList = null,
@@ -88,7 +89,7 @@ class AudiusLibs {
    * @param {?string} walletOverride wallet address to force use instead of the first wallet on the provided web3
    * @param {?number} walletIndex if using a wallet returned from web3, pick the wallet at this index
    */
-  static async configExternalWeb3 (
+  static async configExternalWeb3(
     registryAddress,
     web3Provider,
     networkId,
@@ -114,7 +115,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers, privateKey) {
+  static configInternalWeb3(registryAddress, providers, privateKey) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -147,7 +148,7 @@ class AudiusLibs {
    * @param {string?} claimDistributionContractAddress
    * @param {string?} wormholeContractAddress
    */
-  static configEthWeb3 (
+  static configEthWeb3(
     tokenAddress,
     registryAddress,
     providers,
@@ -187,7 +188,7 @@ class AudiusLibs {
    * @param {string} config.ethBridgeAddress
    * @param {string} config.ethTokenBridgeAddress
    */
-  static configWormhole ({
+  static configWormhole({
     rpcHosts,
     solBridgeAddress,
     solTokenBridgeAddress,
@@ -231,7 +232,7 @@ class AudiusLibs {
    * @param {PublicKey|string} audiusDataProgramId program ID for the audius-data Anchor program
    * @param {Idl} audiusDataIdl IDL for the audius-data Anchor program.
    */
-  static configSolanaWeb3 ({
+  static configSolanaWeb3({
     solanaClusterEndpoint,
     mintAddress,
     solanaTokenAddress,
@@ -283,7 +284,7 @@ class AudiusLibs {
    * @param {string} config.programId Program ID of the audius data program
    * @param {string} config.adminAccount Public Key of admin account
    */
-  static configSolanaAudiusData ({ programId, adminAccount }) {
+  static configSolanaAudiusData({ programId, adminAccount }) {
     return {
       programId,
       adminAccount
@@ -300,7 +301,7 @@ class AudiusLibs {
    *  })
    *  await audius.init()
    */
-  constructor ({
+  constructor({
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
@@ -315,7 +316,8 @@ class AudiusLibs {
     logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
-    preferHigherPatchForSecondaries = true
+    preferHigherPatchForSecondaries = true,
+    localStorage = getPlatformLocalStorage()
   }) {
     // set version
 
@@ -362,6 +364,7 @@ class AudiusLibs {
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
+    this.localStorage = localStorage
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -370,8 +373,10 @@ class AudiusLibs {
   }
 
   /** Init services based on presence of a relevant config. */
-  async init () {
-    this.userStateManager = new UserStateManager()
+  async init() {
+    this.userStateManager = new UserStateManager({
+      localStorage: this.localStorage
+    })
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
@@ -493,6 +498,7 @@ class AudiusLibs {
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
+        localStorage: this.localStorage,
         ...this.discoveryProviderConfig
       })
       await this.discoveryProvider.init()

@@ -149,7 +149,7 @@ export class ServiceSelection {
     }
 
     // If a short circuit is provided, take it. Don't check it, just use it.
-    const shortcircuit = this.shortcircuit()
+    const shortcircuit = await this.shortcircuit()
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.CHECK_SHORT_CIRCUIT,
       val: shortcircuit
@@ -325,7 +325,7 @@ export class ServiceSelection {
   }
 
   /** A short-circuit. If overriden, can be used to skip selection (which could be slow) */
-  shortcircuit(): null | string {
+  async shortcircuit(): Promise<null | string> {
     return null
   }
 
