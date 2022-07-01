@@ -1,11 +1,7 @@
 import React from 'react'
 
 import Footer from './Footer'
-import Notification, {
-  NotificationType,
-  getUsers,
-  getEntity
-} from './notifications/Notification'
+import Notification, { NotificationType } from './notifications/Notification'
 
 const AudiusImage = () => {
   return (
