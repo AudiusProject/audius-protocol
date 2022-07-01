@@ -226,9 +226,9 @@ def update_track_is_available(self) -> None:
         timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
     )
 
-    try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
+    have_lock = update_lock.acquire(blocking=False)
+    if have_lock:
+        try:
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
@@ -238,21 +238,20 @@ def update_track_is_available(self) -> None:
                 fetch_unavailable_track_ids_in_network(session, redis)
 
             update_tracks_is_available_status(db, redis)
-        else:
-            logger.warning(
-                "update_track_is_available.py | Lock not acquired",
-                exc_info=True,
+        except Exception as e:
+            logger.error(
+                "update_track_is_available.py | Fatal error in main loop", exc_info=True
             )
-
-    except Exception as e:
-        logger.error(
-            "update_track_is_available.py | Fatal error in main loop", exc_info=True
-        )
-        raise e
-    finally:
-        if have_lock:
-            update_lock.release()
+            raise e
+        finally:
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
             )
+            if have_lock:
+                update_lock.release()
+    else:
+        logger.warning(
+            "update_track_is_available.py | Lock not acquired",
+            exc_info=True,
+        )
