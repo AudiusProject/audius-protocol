@@ -61,23 +61,6 @@ export const indexContent = async (run_id: number) => {
     //     return content_nodes
     // })
 
-    // console.log(content_nodes)
-    // console.log(image_to_content_nodes)
-
-    // await new Promise<void>(async resolve => {
-    //     const cn_id: number = parseInt(process.env['CNID'] || '0')
-    //     console.log('[+] Content Node index: ', cn_id)
-    //     const cnode = content_nodes[cn_id]!
-    //     await Promise.all([
-    //         // check user clock value
-    //         checkUsers(run_id, cnode.spid, cnode.endpoint),
-
-    //         // check user cids
-    //         checkCIDS(run_id, cnode.spid, cnode.endpoint, cnode.cid_count),
-    //     ])
-    //     resolve()
-    // })
-
     const content_nodes = await getAllContentNodes(run_id)
 
     await Promise.all(
@@ -214,7 +197,6 @@ export const checkCID = async (
 ) => {
     console.log(`[${run_id}:${spid}] check cids`)
 
-    // const saveQueue: Promise<void>[] = []
     const batchSize = 500
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
@@ -240,10 +222,6 @@ export const checkCID = async (
                 )
 
                 await saveCIDResults(run_id, spid, batch, results)
-                // saveQueue.push(saveCIDResults(run_id, spid, batch, results))
-
-                // Give the DB and IO a break
-                // await asyncSleep(6000)
             }
         })(),
 
@@ -265,16 +243,11 @@ export const checkCID = async (
                 )
 
                 await saveCIDResults(run_id, spid, batch, results)
-                // saveQueue.push(saveCIDResults(run_id, spid, batch, results))
-
-                // Give the DB and IO a break
-                // await asyncSleep(3000)
             }
         })(),
     ])
 
     console.log(`[${run_id}:${spid}] finish saving cid content node data to db`)
-    // await Promise.all(saveQueue);
 }
 
 const checkIfCIDsExistOnCN = async (
