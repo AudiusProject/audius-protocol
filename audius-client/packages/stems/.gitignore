@@ -9,6 +9,7 @@ example/node_modules
 build
 dist
 .rpt2_cache
+storybook-static
 
 # misc
 .DS_Store

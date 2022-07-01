@@ -1,0 +1,60 @@
+stems-build-storybook:
+  working_directory: ~/stems
+  docker:
+    - image: circleci/node:14.18
+  steps:
+    - checkout
+
+    # Download and cache dependencies
+    - restore_cache:
+        keys:
+          - dependency-cache-{{ checksum "packages/stems/package-lock.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dependency-cache-
+
+    - run:
+        name: install dependencies
+        command: |
+          cd packages/stems
+          npm ci
+
+    - run:
+        name: build storybook
+        command: |
+          cd packages/stems
+          npm run build-storybook
+
+    - save_cache:
+        key: dependency-cache-{{ checksum "packages/stems/package-lock.json" }}
+        paths:
+          - ./packages/stems/node_modules
+
+    # Persist the build directory to a workspace
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - packages/stems/storybook-static
+
+stems-deploy-storybook:
+  working_directory: ~/stems
+  docker:
+    - image: circleci/node:14.18
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: install wrangler
+        command: |
+          cd packages/stems
+          npm install @cloudflare/wrangler
+    - run:
+        name: Set up workers site
+        command: |
+          cd packages/stems/scripts/workers-site
+          npm i
+    - run:
+        name: Deploy to Cloudflare
+        command: |
+          cd packages/stems
+          npx wrangler publish

@@ -73,8 +73,10 @@ workflows:
           mapping: |
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
+            packages/stems/.* run-stems-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
+            .circleci/.* run-stems-workflow true
           name: trigger-relevant-workflows
           filters:
             branches:
@@ -92,7 +94,8 @@ workflows:
               only: << pipeline.parameters.run-all-workflows-branch-regex >>
           parameters: '{
             "run-web-workflow": true,
-            "run-mobile-workflow": true
+            "run-mobile-workflow": true,
+            "run-stems-workflow": true
             }'
           pre-steps:
             - attach_workspace:
