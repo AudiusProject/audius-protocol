@@ -1,7 +1,7 @@
 const moment = require('moment')
 const axios = require('axios')
 const models = require('../models')
-const NotificationType = require('../routes/notifications').NotificationType
+const { notificationTypes: NotificationType } = require('../notifications/constants')
 const Entity = require('../routes/notifications').Entity
 const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
 const { formatNotificationProps } = require('./formatNotificationMetadata')
@@ -171,8 +171,8 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         )
         break
       }
-      case NotificationType.FavoriteTrack:
-      case NotificationType.RepostTrack: {
+      case NotificationType.Favorite.track:
+      case NotificationType.Repost.track: {
         userIdsToFetch.push(
           ...notification.actions
             .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
@@ -180,16 +180,16 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         trackIdsToFetch.push(notification.entityId)
         break
       }
-      case NotificationType.FavoritePlaylist:
-      case NotificationType.FavoriteAlbum:
-      case NotificationType.RepostPlaylist:
-      case NotificationType.RepostAlbum: {
+      case NotificationType.Favorite.playlist:
+      case NotificationType.Favorite.album:
+      case NotificationType.Repost.playlist:
+      case NotificationType.Repost.album: {
         userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT))
         collectionIdsToFetch.push(notification.entityId)
         break
       }
-      case NotificationType.CreateAlbum:
-      case NotificationType.CreatePlaylist: {
+      case NotificationType.Create.album:
+      case NotificationType.Create.playlist: {
         collectionIdsToFetch.push(notification.entityId)
         break
       }
@@ -203,7 +203,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         }
         break
       }
-      case NotificationType.CreateTrack: {
+      case NotificationType.Create.track: {
         trackIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
         break
       }

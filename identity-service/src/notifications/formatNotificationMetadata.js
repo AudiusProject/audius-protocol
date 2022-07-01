@@ -1,4 +1,4 @@
-const NotificationType = require('../routes/notifications').NotificationType
+const { notificationTypes: NotificationType } = require('../notifications/constants')
 const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
 const { actionEntityTypes, notificationTypes } = require('./constants')
@@ -14,7 +14,7 @@ const getRankSuffix = (num) => {
 
 const formatFavorite = (notification, metadata, entity) => {
   return {
-    type: NotificationType.Favorite,
+    type: NotificationType.Favorite.base,
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
@@ -27,7 +27,7 @@ const formatFavorite = (notification, metadata, entity) => {
 
 const formatRepost = (notification, metadata, entity) => {
   return {
-    type: NotificationType.Repost,
+    type: NotificationType.Repost.base,
     users: notification.actions.map(action => {
       const userId = action.actionEntityId
       const user = metadata.users[userId]
@@ -202,31 +202,31 @@ function formatSupportingRankUp (notification, metadata) {
 
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
-  [NotificationType.FavoriteTrack]: (notification, metadata) => {
+  [NotificationType.Favorite.track]: (notification, metadata) => {
     const track = metadata.tracks[notification.entityId]
     return formatFavorite(notification, metadata, { type: Entity.Track, name: track.title })
   },
-  [NotificationType.FavoritePlaylist]: (notification, metadata) => {
+  [NotificationType.Favorite.playlist]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
     return formatFavorite(notification, metadata, { type: Entity.Playlist, name: collection.playlist_name })
   },
-  [NotificationType.FavoriteAlbum]: (notification, metadata) => {
+  [NotificationType.Favorite.album]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
     return formatFavorite(notification, metadata, { type: Entity.Album, name: collection.playlist_name })
   },
-  [NotificationType.RepostTrack]: (notification, metadata) => {
+  [NotificationType.Repost.track]: (notification, metadata) => {
     const track = metadata.tracks[notification.entityId]
     return formatRepost(notification, metadata, { type: Entity.Track, name: track.title })
   },
-  [NotificationType.RepostPlaylist]: (notification, metadata) => {
+  [NotificationType.Repost.playlist]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
     return formatRepost(notification, metadata, { type: Entity.Playlist, name: collection.playlist_name })
   },
-  [NotificationType.RepostAlbum]: (notification, metadata) => {
+  [NotificationType.Repost.album]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
     return formatRepost(notification, metadata, { type: Entity.Album, name: collection.playlist_name })
   },
-  [NotificationType.CreateTrack]: (notification, metadata) => {
+  [NotificationType.Create.track]: (notification, metadata) => {
     const trackId = notification.actions[0].actionEntityId
     const track = metadata.tracks[trackId]
     const count = notification.actions.length
@@ -234,7 +234,7 @@ const notificationResponseMap = {
     let users = [{ name: user.name, image: user.thumbnail }]
     return formatUserSubscription(notification, metadata, { type: Entity.Track, count, name: track.title }, users)
   },
-  [NotificationType.CreateAlbum]: (notification, metadata) => {
+  [NotificationType.Create.album]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
     let users = notification.actions.map(action => {
       const userId = action.actionEntityId
@@ -243,7 +243,7 @@ const notificationResponseMap = {
     })
     return formatUserSubscription(notification, metadata, { type: Entity.Album, count: 1, name: collection.playlist_name }, users)
   },
-  [NotificationType.CreatePlaylist]: (notification, metadata) => {
+  [NotificationType.Create.playlist]: (notification, metadata) => {
     const collection = metadata.collections[notification.entityId]
     let users = notification.actions.map(action => {
       const userId = action.actionEntityId
@@ -323,15 +323,15 @@ const makeSupportingOrSupporterTitle = (notification) => `#${notification.rank} 
 
 const notificationResponseTitleMap = {
   [NotificationType.Follow]: () => NewFollowerTitle,
-  [NotificationType.FavoriteTrack]: () => NewFavoriteTitle,
-  [NotificationType.FavoritePlaylist]: () => NewFavoriteTitle,
-  [NotificationType.FavoriteAlbum]: () => NewFavoriteTitle,
-  [NotificationType.RepostTrack]: () => NewRepostTitle,
-  [NotificationType.RepostPlaylist]: () => NewRepostTitle,
-  [NotificationType.RepostAlbum]: () => NewRepostTitle,
-  [NotificationType.CreateTrack]: () => NewSubscriptionUpdateTitle,
-  [NotificationType.CreateAlbum]: () => NewSubscriptionUpdateTitle,
-  [NotificationType.CreatePlaylist]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.Favorite.track]: () => NewFavoriteTitle,
+  [NotificationType.Favorite.playlist]: () => NewFavoriteTitle,
+  [NotificationType.Favorite.album]: () => NewFavoriteTitle,
+  [NotificationType.Repost.track]: () => NewRepostTitle,
+  [NotificationType.Repost.playlist]: () => NewRepostTitle,
+  [NotificationType.Repost.album]: () => NewRepostTitle,
+  [NotificationType.Create.track]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.Create.album]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.Create.playlist]: () => NewSubscriptionUpdateTitle,
   [NotificationType.MilestoneListen]: () => NewMilestoneTitle,
   [NotificationType.Milestone]: () => NewMilestoneTitle,
   [NotificationType.TrendingTrack]: () => TrendingTrackTitle,
