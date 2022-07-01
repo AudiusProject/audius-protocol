@@ -52,7 +52,7 @@
 	{
 		"id": "send-first-tip",
 		"type": "boolean",
-		"amount": 3,
+		"amount": 2,
 		"active": true,
 		"starting_block": 0
 	}
