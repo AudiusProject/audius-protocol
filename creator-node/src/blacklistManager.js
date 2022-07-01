@@ -126,6 +126,8 @@ class BlacklistManager {
    * @param {number[]} allTrackIdsToBlacklist aggregate list of track ids to blacklist from explicit track id blacklist and tracks from blacklisted users
    */
   static async addAggregateCIDsToRedis(allTrackIdsToBlacklist) {
+    const transaction = await models.sequelize.transaction()
+
     let i
     for (
       i = 0;
@@ -143,7 +145,7 @@ class BlacklistManager {
         )
 
         const segmentsFromTrackIdsToBlacklist =
-          await BlacklistManager.getCIDsToBlacklist(tracksSlice)
+          await BlacklistManager.getCIDsToBlacklist(tracksSlice, transaction)
 
         this.logDebug(
           `[addAggregateCIDsToRedis] - number of segments: ${segmentsFromTrackIdsToBlacklist.length}`
@@ -154,6 +156,7 @@ class BlacklistManager {
           segmentsFromTrackIdsToBlacklist
         )
       } catch (e) {
+        await transaction.rollback()
         throw new Error(
           `[addAggregateCIDsToRedis] - Could not add tracks slice ${i} to ${
             i + PROCESS_TRACKS_BATCH_SIZE
@@ -161,6 +164,8 @@ class BlacklistManager {
         )
       }
     }
+
+    await transaction.commit()
   }
 
   /**
@@ -231,10 +236,14 @@ class BlacklistManager {
   /**
    * Retrieves all CIDs from input trackIds from db
    * @param {number[]} trackIds
+   * @param {Object} transaction
    * @returns {Object[]} array of track model objects from table
    */
-  static async getAllCIDsFromTrackIdsInDb(trackIds) {
-    return models.Track.findAll({ where: { blockchainId: trackIds } })
+  static async getAllCIDsFromTrackIdsInDb(trackIds, transaction) {
+    return models.Track.findAll({
+      where: { blockchainId: trackIds },
+      transaction
+    })
   }
 
   /**
@@ -242,8 +251,11 @@ class BlacklistManager {
    * @param {number[]} allTrackIds all the trackIds to find CIDs for (explictly blacklisted tracks and tracks from blacklisted users)
    * @returns {string[]} all CIDs that are blacklisted from input track ids
    */
-  static async getCIDsToBlacklist(inputTrackIds) {
-    const tracks = await this.getAllCIDsFromTrackIdsInDb(inputTrackIds)
+  static async getCIDsToBlacklist(inputTrackIds, transaction) {
+    const tracks = await this.getAllCIDsFromTrackIdsInDb(
+      inputTrackIds,
+      transaction
+    )
 
     const segmentCIDs = new Set()
 
@@ -260,28 +272,21 @@ class BlacklistManager {
 
     // also retrieves the CID's directly from the files table so we get copy320
     if (inputTrackIds.length > 0) {
-      let files, transaction
-      try {
-        transaction = await models.sequelize.transaction()
-        files = await models.File.findAll({
-          where: {
-            trackBlockchainId: inputTrackIds
-          }
-        })
+      const files = await models.File.findAll({
+        where: {
+          trackBlockchainId: inputTrackIds
+        },
+        transaction
+      })
 
-        for (const file of files) {
-          if (
-            file.type === 'track' ||
-            file.type === 'copy320' ||
-            !CID_WHITELIST.has(file.multihash)
-          ) {
-            segmentCIDs.add(file.multihash)
-          }
+      for (const file of files) {
+        if (
+          file.type === 'track' ||
+          file.type === 'copy320' ||
+          !CID_WHITELIST.has(file.multihash)
+        ) {
+          segmentCIDs.add(file.multihash)
         }
-
-        await transaction.commit()
-      } catch (e) {
-        await transaction.rollback()
       }
     }
 
