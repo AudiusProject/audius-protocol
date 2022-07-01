@@ -1,10 +1,11 @@
-import { ComponentType } from 'react'
+import { ComponentType, ReactNode } from 'react'
 
 import { View } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -22,7 +23,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type UserListTitleProps = {
   icon: ComponentType<SvgProps>
-  title: JSX.Element | string
+  title: ReactNode
 }
 export const UserListTitle = (props: UserListTitleProps) => {
   const { icon: Icon, title } = props
@@ -31,7 +32,12 @@ export const UserListTitle = (props: UserListTitleProps) => {
 
   return (
     <View style={styles.root}>
-      <Icon style={styles.icon} fill={neutralLight2} height={20} width={20} />
+      <Icon
+        style={styles.icon}
+        fill={neutralLight2}
+        height={spacing(6)}
+        width={spacing(6)}
+      />
       <Text
         variant='h1'
         accessibilityRole='header'
