@@ -489,13 +489,21 @@ export const getTopPlaylists = (
   }
 }
 
-export const getTrendingPlaylists = (
-  type: 'playlist' | 'album',
-  limit?: number,
-  mood?: string,
-  filter?: string,
+export type GetTrendingPlaylistsParams = {
+  type: 'playlist' | 'album'
+  limit?: number
+  mood?: string
+  filter?: string
+  withUsers?: boolean
+}
+
+export const getTrendingPlaylists = ({
+  type,
+  limit,
+  mood,
+  filter,
   withUsers = false
-) => {
+}: GetTrendingPlaylistsParams) => {
   return {
     endpoint: `/v1/full/playlists/top`,
     queryParams: {

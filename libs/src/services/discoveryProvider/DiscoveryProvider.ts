@@ -730,20 +730,20 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
-  async getTrendingPlaylists(
-    type: 'playlist' | 'album',
-    limit?: number,
-    mood?: string,
-    filter?: string,
+  async getTrendingPlaylists({
+    type,
+    limit,
+    mood,
+    filter,
     withUsers = false
-  ) {
-    const req = Requests.getTrendingPlaylists(
+  }: Requests.GetTrendingPlaylistsParams) {
+    const req = Requests.getTrendingPlaylists({
       type,
       limit,
       mood,
       filter,
       withUsers
-    )
+    })
     return await this._makeRequest(req)
   }
 
