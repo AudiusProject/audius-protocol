@@ -38,8 +38,6 @@ const FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
 const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
   config.get('findReplicaSetUpdatesJobLastSuccessfulRunDelayMs')
 
-
-
 /**
  * Controller for `health_check` route, calls
  * `healthCheckComponentService`.

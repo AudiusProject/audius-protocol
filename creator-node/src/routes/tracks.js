@@ -94,16 +94,16 @@ module.exports = function (app) {
     })
   )
 
-    /**
-     * Delete all temporary transcode artifacts from track transcode handoff flow.
-     * This is called on the node that was handed off the transcode to clear the state from disk
-     */
+  /**
+   * Delete all temporary transcode artifacts from track transcode handoff flow.
+   * This is called on the node that was handed off the transcode to clear the state from disk
+   */
   app.post(
     '/clear_transcode_and_segment_artifacts',
     ensureValidSPMiddleware,
     handleResponse(async (req, res) => {
       const fileDir = req.body.fileDir
-      req.logger.info("Clearing filesystem fileDir", fileDir)
+      req.logger.info('Clearing filesystem fileDir', fileDir)
       if (!fileDir.includes('tmp_track_artifacts')) {
         return errorResponseBadRequest(
           'Cannot remove track folder outside temporary track artifacts'
