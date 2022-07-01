@@ -319,6 +319,7 @@ class StateMonitoringManager {
         monitoringQueueLogger,
         prometheusRegistry
       )
+  }
 
   async processFetchCNodeEndpointToSpIdMapJob(job) {
     return processJob(
