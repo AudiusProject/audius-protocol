@@ -12,17 +12,25 @@ def save_duration_metric(metric_group):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            metric = PrometheusMetric(
-                f"{metric_group}_duration_seconds",
+            histogram_metric = PrometheusMetric(
+                f"completed_{metric_group}_duration_seconds",
                 f"How long a {metric_group} took to complete",
                 ("func_name", "success"),
             )
+            gauge_metric = PrometheusMetric(
+                f"last_{metric_group}_duration_seconds",
+                f"How long a {metric_group} has been running",
+                ("func_name", "success"),
+                metric_type=PrometheusType.GAUGE
+            )
             try:
                 result = func(*args, **kwargs)
-                metric.save_time({"func_name": func.__name__, "success": True})
+                histogram_metric.save_time({"func_name": func.__name__, "success": True})
+                gauge_metric.save_time({"func_name": func.__name__, "success": True})
                 return result
             except:
-                metric.save_time({"func_name": func.__name__, "success": False})
+                histogram_metric.save_time({"func_name": func.__name__, "success": False})
+                gauge_metric.save_time({"func_name": func.__name__, "success": False})
                 raise
 
         return wrapper

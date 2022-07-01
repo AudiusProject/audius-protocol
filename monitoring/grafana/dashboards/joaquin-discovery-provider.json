@@ -1,0 +1,377 @@
+{
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "title": "Celery Tasks",
+        "type": "row"
+      },
+      {
+        "datasource": {
+          "type": "prometheus"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "decimals": 0,
+            "mappings": [],
+            "max": 180,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 60
+                },
+                {
+                  "color": "red",
+                  "value": 120
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 1
+        },
+        "id": 6,
+        "options": {
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "max by (func_name) (audius_dn_completed_celery_task_duration_seconds_sum{environment=~\"$env\", host=~\"$host\", success=\"True\"} / audius_dn_completed_celery_task_duration_seconds_count{environment=~\"$env\", host=~\"$host\", success=\"True\"})",
+            "legendFormat": "{{func_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Celery Task (Durations)",
+        "type": "bargauge"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "6jA6F3qnz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "transparent",
+                    "index": 0
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "max": 180,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 60
+                },
+                {
+                  "color": "red",
+                  "value": 120
+                }
+              ]
+            },
+            "unit": "none"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 1
+        },
+        "id": 4,
+        "options": {
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "audius_dn_active_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+            "instant": false,
+            "legendFormat": "{{task_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Celery Tasks (Active)",
+        "type": "bargauge"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "6jA6F3qnz"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 9
+        },
+        "id": 8,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "audius_dn_last_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}",
+            "legendFormat": "{{func_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Last Successful Celery Task Duration",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "30m",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
+          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Environment",
+          "multi": false,
+          "name": "env",
+          "options": [],
+          "query": {
+            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 2,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
+          "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Host",
+          "multi": false,
+          "name": "host",
+          "options": [],
+          "query": {
+            "query": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-2h",
+      "to": "now"
+    },
+    "timepicker": {
+      "nowDelay": "1m",
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "Joaquin - Discovery Provider",
+    "uid": "ZUjg533nk",
+    "version": null,
+    "weekStart": ""
+  },
+  "overwrite": true
+}
