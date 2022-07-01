@@ -62,7 +62,7 @@ else
     export PROTOCOL_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 fi
 
-pip3 install -r $PROTOCOL_DIR/dev/requirements.txt
+python3 -m pip install -r $PROTOCOL_DIR/dev/requirements.txt
 
 mkdir -p "$HOME/.local/bin"
 
