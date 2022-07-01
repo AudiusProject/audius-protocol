@@ -24,7 +24,6 @@ class Playlists extends Base {
     this.addPlaylistSave = this.addPlaylistSave.bind(this)
     this.deletePlaylistSave = this.deletePlaylistSave.bind(this)
     this.deletePlaylist = this.deletePlaylist.bind(this)
-    this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
   }
 
   /* ------- GETTERS ------- */

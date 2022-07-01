@@ -64,6 +64,7 @@ playlist_factory = None
 user_library_factory = None
 ipld_blacklist_factory = None
 user_replica_set_manager = None
+audius_data = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
@@ -135,6 +136,12 @@ def init_contracts():
         abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
+    audius_data_address = "0xEC5d4F247aF81A843612eb1371CBCfa88b762119"
+    audius_data_inst = web3.eth.contract(
+        address=audius_data_address,
+        abi=abi_values["AudiusData"]["abi"]
+    )
+
     contract_address_dict = {
         "registry": registry_address,
         "user_factory": user_factory_address,
@@ -144,6 +151,7 @@ def init_contracts():
         "user_library_factory": user_library_factory_address,
         "ipld_blacklist_factory": ipld_blacklist_factory_address,
         "user_replica_set_manager": user_replica_set_manager_address,
+        "audius_data": audius_data_address
     }
 
     return (
@@ -155,6 +163,7 @@ def init_contracts():
         user_library_factory_inst,
         ipld_blacklist_factory_inst,
         user_replica_set_manager_inst,
+        audius_data_inst,
         contract_address_dict,
     )
 
@@ -188,6 +197,7 @@ def create_celery(test_config=None):
     global user_library_factory
     global ipld_blacklist_factory
     global user_replica_set_manager
+    global audius_data
     global contract_addresses
     # pylint: enable=W0603
 
@@ -200,8 +210,10 @@ def create_celery(test_config=None):
         user_library_factory,
         ipld_blacklist_factory,
         user_replica_set_manager,
+        audius_data,
         contract_addresses,
     ) = init_contracts()
+    logger.info(f"contract_addresses_dict {contract_addresses}")
 
     return create(test_config, mode="celery")
 

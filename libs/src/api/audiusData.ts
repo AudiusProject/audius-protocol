@@ -3,7 +3,8 @@ import { Base, Services } from './base'
 export class AudiusData extends Base {
   constructor(...args: any[]) {
     super(...args)
-    // this.submitReaction = this.submitReaction.bind(this)
+    this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
+    this.createPlaylist = this.createPlaylist.bind(this)
   }
 
     /**

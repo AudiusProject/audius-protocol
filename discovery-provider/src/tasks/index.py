@@ -72,6 +72,7 @@ SOCIAL_FEATURE_FACTORY = CONTRACT_TYPES.SOCIAL_FEATURE_FACTORY.value
 PLAYLIST_FACTORY = CONTRACT_TYPES.PLAYLIST_FACTORY.value
 USER_LIBRARY_FACTORY = CONTRACT_TYPES.USER_LIBRARY_FACTORY.value
 USER_REPLICA_SET_MANAGER = CONTRACT_TYPES.USER_REPLICA_SET_MANAGER.value
+AUDIUS_DATA = CONTRACT_TYPES.AUDIUS_DATA.value
 
 USER_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.USER_FACTORY]
 TRACK_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.TRACK_FACTORY]
@@ -436,6 +437,7 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
+        logger.info(f"index.py | checking {tx_type} vs {tx_target_contract_address}")
         tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
         if tx_is_type:
             contract_type = tx_type
@@ -444,6 +446,8 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
             break
+
+    logger.info(f"index.py | checking returned {contract_type} vs {tx_target_contract_address}")
     return contract_type
 
 
@@ -599,6 +603,7 @@ def index_blocks(self, db, blocks_list):
                     PLAYLIST_FACTORY: [],
                     USER_LIBRARY_FACTORY: [],
                     USER_REPLICA_SET_MANAGER: [],
+                    AUDIUS_DATA: []
                 }
                 try:
                     """
@@ -703,6 +708,7 @@ def index_blocks(self, db, blocks_list):
                     Add state changes in block to db (users, tracks, etc.)
                     """
                     process_state_changes_start_time = time.time()
+                    logger.info(f"index.py | processing {txs_grouped_by_type}")
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
@@ -1119,6 +1125,7 @@ def update_task(self):
         address=get_contract_addresses()[USER_REPLICA_SET_MANAGER],
         abi=user_replica_set_manager_abi,
     )
+    logger.info(f"index.py | contract_address {get_contract_addresses()}")
 
     update_task.track_contract = track_contract
     update_task.user_contract = user_contract

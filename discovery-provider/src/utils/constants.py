@@ -1034,6 +1034,7 @@ class CONTRACT_TYPES(Enum):
     PLAYLIST_FACTORY = "playlist_factory"
     USER_LIBRARY_FACTORY = "user_library_factory"
     USER_REPLICA_SET_MANAGER = "user_replica_set_manager"
+    AUDIUS_DATA = "audius_data"
 
 
 CONTRACT_NAMES_ON_CHAIN = {
