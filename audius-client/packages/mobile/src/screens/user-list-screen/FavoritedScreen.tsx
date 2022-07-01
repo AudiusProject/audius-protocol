@@ -3,11 +3,12 @@ import { useCallback } from 'react'
 import { setFavorite } from 'audius-client/src/common/store/user-list/favorites/actions'
 import { getUserList } from 'audius-client/src/common/store/user-list/favorites/selectors'
 
-import { Screen } from 'app/components/core'
+import IconHeart from 'app/assets/images/iconHeart.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
+import { UserListScreen } from './UserListScreen'
 
 const messages = {
   title: 'Favorites'
@@ -23,12 +24,12 @@ export const FavoritedScreen = () => {
   }, [dispatchWeb, id, favoriteType])
 
   return (
-    <Screen title={messages.title} variant='white'>
+    <UserListScreen title={messages.title} titleIcon={IconHeart}>
       <UserList
         userSelector={getUserList}
         tag='FAVORITES'
         setUserList={handleSetFavorited}
       />
-    </Screen>
+    </UserListScreen>
   )
 }

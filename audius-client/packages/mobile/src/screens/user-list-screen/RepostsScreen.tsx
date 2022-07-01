@@ -3,11 +3,12 @@ import { useCallback } from 'react'
 import { setRepost } from 'audius-client/src/common/store/user-list/reposts/actions'
 import { getUserList } from 'audius-client/src/common/store/user-list/reposts/selectors'
 
-import { Screen } from 'app/components/core'
+import IconRepost from 'app/assets/images/iconRepost.svg'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
+import { UserListScreen } from './UserListScreen'
 
 const messages = {
   title: 'Reposts'
@@ -23,12 +24,12 @@ export const RepostsScreen = () => {
   }, [dispatchWeb, id, repostType])
 
   return (
-    <Screen title={messages.title} variant='white'>
+    <UserListScreen title={messages.title} titleIcon={IconRepost}>
       <UserList
         userSelector={getUserList}
         tag='REPOSTS'
         setUserList={handleSetRepost}
       />
-    </Screen>
+    </UserListScreen>
   )
 }

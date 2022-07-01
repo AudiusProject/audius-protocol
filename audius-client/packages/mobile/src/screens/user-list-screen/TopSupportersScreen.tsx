@@ -9,14 +9,14 @@ import {
 import { View } from 'react-native'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
-import { Screen, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useRoute } from 'app/hooks/useRoute'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { makeStyles } from 'app/styles'
 
 import { UserList } from './UserList'
-import { UserListTitle } from './UserListTitle'
+import { UserListScreen } from './UserListScreen'
 
 const messages = {
   title: 'Top Supporters'
@@ -24,7 +24,6 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing }) => ({
   titleNameContainer: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: -spacing(3)
@@ -34,12 +33,19 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const HeaderTitle = ({ source }: { source: 'profile' | 'feed' }) => {
+export const TopSupportersScreen = () => {
   const styles = useStyles()
+  const { params } = useRoute<'TopSupporters'>()
+  const { userId, source } = params
   const supportersId = useSelectorWeb(getSupportersId)
   const supportersUser = useSelectorWeb(state =>
     getUser(state, { id: supportersId })
   )
+  const dispatchWeb = useDispatchWeb()
+
+  const handleSetSupporters = useCallback(() => {
+    dispatchWeb(setTopSupporters(userId))
+  }, [dispatchWeb, userId])
 
   const title =
     source === 'feed' && supportersUser ? (
@@ -53,25 +59,13 @@ const HeaderTitle = ({ source }: { source: 'profile' | 'feed' }) => {
       messages.title
     )
 
-  return <UserListTitle icon={IconTrophy} title={title} />
-}
-
-export const TopSupportersScreen = () => {
-  const { params } = useRoute<'TopSupporters'>()
-  const { userId, source } = params
-  const dispatchWeb = useDispatchWeb()
-
-  const handleSetSupporters = useCallback(() => {
-    dispatchWeb(setTopSupporters(userId))
-  }, [dispatchWeb, userId])
-
   return (
-    <Screen headerTitle={() => <HeaderTitle source={source} />} variant='white'>
+    <UserListScreen title={title} titleIcon={IconTrophy}>
       <UserList
         userSelector={getUserList}
         tag='TOP SUPPORTERS'
         setUserList={handleSetSupporters}
       />
-    </Screen>
+    </UserListScreen>
   )
 }
