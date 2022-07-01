@@ -139,8 +139,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
                     let endBatchTimer = userBatchDurationGauge.startTimer()
 
-                    const getBatchStart = process.hrtime()
-
                     // Fetch a batch of users from the network_monitoring postgres DB
                     const walletBatch = await getBatch(
                         run_id,
@@ -148,12 +146,9 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         offset,
                         batchSize,
                     )
-                    const getBatchEnd = process.hrtime(getBatchStart)
-                    console.log(`[getBatch:${offset}:${batchSize}:${count}] duration: ${Math.round(getBatchEnd[0]! * 1e3 + getBatchEnd[1]! * 1e-6)} ms`)
+                    console.log(`[getBatch:${offset}:${batchSize}:${count}]`)
 
                     if (walletBatch.length === 0) { return }
-
-                    const getClockValueStart = process.hrtime()
 
                     // Fetch the clock values for all the users in the batch from 
                     // the content nodes in their replica set
@@ -165,15 +160,11 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                         signatureSPDelegatePrivateKey,
                     )
 
-                    const getClockValueEnd = process.hrtime(getClockValueStart)
-                    console.log(`[${run_id}:${spid}:${offset}] getUserClockValues duration: ${Math.round(getClockValueEnd[0]! * 1e3 + getClockValueEnd[1]! * 1e-6)} ms`)
-
-                    const saveBatchStart = process.hrtime()
+                    console.log(`[getUserClockValues ${run_id}:${spid}:${offset}] `)
 
                     missedUsers += await saveBatch(run_id, spid, results)
 
-                    const saveBatchEnd = process.hrtime(saveBatchStart)
-                    console.log(`[${run_id}:${spid}:${offset}] saveBatch duration: ${Math.round(saveBatchEnd[0]! * 1e3 + saveBatchEnd[1]! * 1e-6)} ms`)
+                    console.log(`[savebatch ${run_id}:${spid}:${offset}]`)
 
                     // Record the duration for the batch and export to prometheus
                     endBatchTimer({ run_id: run_id, endpoint: endpoint })
