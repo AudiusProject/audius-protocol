@@ -51,7 +51,12 @@ const ClientNotificationTypes = new Set([
   NotificationType.TrendingTrack,
   NotificationType.ChallengeReward,
   NotificationType.TierChange,
-  NotificationType.AddTrackToPlaylist
+  NotificationType.AddTrackToPlaylist,
+  NotificationType.TipSend,
+  NotificationType.TipReceive,
+  NotificationType.Reaction,
+  NotificationType.SupportingRankUp,
+  NotificationType.SupporterRankUp
 ])
 
 const Entity = Object.freeze({
