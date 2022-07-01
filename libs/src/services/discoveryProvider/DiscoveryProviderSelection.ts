@@ -134,7 +134,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
 
   /** Sets a cached discovery provider in localstorage */
   async setCached(endpoint: string) {
-    await localStorage.setItem(
+    await this.localStorage.setItem(
       DISCOVERY_PROVIDER_TIMESTAMP,
       JSON.stringify({ endpoint, timestamp: Date.now() })
     )

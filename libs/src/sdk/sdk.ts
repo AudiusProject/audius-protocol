@@ -34,7 +34,7 @@ import {
   IDENTITY_SERVICE_ENDPOINT,
   WORMHOLE_ADDRESS
 } from './constants'
-import { LocalStorage } from '../utils/localStorage'
+import type { LocalStorage } from '../utils/localStorage'
 
 type Web3Config = {
   providers: string[]
