@@ -29,7 +29,9 @@ class StateMachineManager {
         audiusLibs.discoveryProvider.discoveryProviderEndpoint,
         prometheusRegistry
       )
-    const stateReconciliationQueue = await stateReconciliationManager.init()
+    const stateReconciliationQueue = await stateReconciliationManager.init(
+      prometheusRegistry
+    )
 
     // Upon completion, make jobs record metrics and enqueue other jobs as necessary
     stateMonitoringQueue.on(
