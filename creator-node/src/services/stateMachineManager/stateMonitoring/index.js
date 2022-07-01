@@ -264,6 +264,7 @@ class StateMonitoringManager {
    * Clears the cNodeEndpoint->spId map queue and adds an initial job.
    * Future jobs are added to the queue as a result of this initial job succeeding/failing.
    * @param {Object} queue the cNodeEndpoint->spId map queue to consume jobs from
+   * @param {Object} prometheusRegistry the registry of metrics from src/services/prometheusMonitoring/prometheusRegistry.js
    */
   async startEndpointToSpIdMapQueue(queue, prometheusRegistry) {
     // Clear any old state if redis was running but the rest of the server restarted
