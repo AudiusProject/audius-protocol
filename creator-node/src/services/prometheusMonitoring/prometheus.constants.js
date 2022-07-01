@@ -3,7 +3,7 @@ const _ = require('lodash')
 const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
-  JOB_NAMES,
+  JOB_NAMES: STATE_MACHINE_JOB_NAMES,
   SyncType
 } = require('../stateMachineManager/stateMachineConstants')
 
@@ -33,7 +33,7 @@ let MetricNames = {
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
-for (const jobName of Object.values(JOB_NAMES)) {
+for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
   MetricNames[
     `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
   ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
@@ -54,7 +54,7 @@ const MetricLabels = Object.freeze({
     ]
   },
   [MetricNames[
-    `STATE_MACHINE_${JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+    `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
   ]]: {
     // Whether or not the user's replica set was updated during this job
     issuedReconfig: ['false', 'true'],
@@ -114,7 +114,7 @@ const Metrics = Object.freeze({
   },
   // Add histogram for each job in the state machine queues
   ...Object.fromEntries(
-    Object.values(JOB_NAMES).map((jobName) => [
+    Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [
       MetricNames[`STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`],
       {
         metricType: MetricTypes.HISTOGRAM,
