@@ -29,8 +29,8 @@ function MockLibs(getSlot = () => 100, getBlockNumber = () => 100) {
     submitAndEvaluate: (args) => {},
     getUndisbursedChallenges: (args) => {},
     ServiceProvider: {
-      getUniquelyOwnedDiscoveryNodes: (quorumSize, nodes) => {
-        return nodes.slice(0, quorumSize)
+      getUniquelyOwnedDiscoveryNodes: ({ quorumSize, discoveryNodes }) => {
+        return discoveryNodes.slice(0, quorumSize)
       }
     }
   }
