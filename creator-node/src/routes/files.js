@@ -539,9 +539,6 @@ const getDirCID = async (req, res) => {
     redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   }
 
-  // Set the CID cache-control so that client cache the response for 30 days
-  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-
   // Attempt to stream file to client
   try {
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
@@ -562,8 +559,6 @@ const getDirCID = async (req, res) => {
       `Error calling findCIDInNetwork for path ${storagePath}`,
       e
     )
-    // Unset the cache-control header so that a bad response is not cached
-    res.removeHeader('cache-control')
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }

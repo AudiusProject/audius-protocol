@@ -60,6 +60,18 @@ full_playlists_response = make_full_response(
     "full_playlist_response", full_ns, fields.List(fields.Nested(full_playlist_model))
 )
 
+playlists_with_score = ns.clone(
+    "playlist_full",
+    full_playlist_model,
+    {"score": fields.Float},
+)
+
+full_playlists_with_score_response = make_full_response(
+    "full_playlist_with_score_response",
+    full_ns,
+    fields.List(fields.Nested(playlists_with_score)),
+)
+
 
 def get_playlist(playlist_id, current_user_id):
     """Returns a single playlist, or None"""
@@ -195,13 +207,18 @@ top_parser.add_argument(
     choices=("album", "playlist"),
     description="The collection type",
 )
+top_parser.add_argument(
+    "mood",
+    required=False,
+    description="Filer to a mood",
+)
 
 
-@ns.route("/top", doc=False)
+@full_ns.route("/top", doc=False)
 class Top(Resource):
     @record_metrics
     @ns.doc(id="""Top Playlists""", description="""Gets top playlists.""")
-    @ns.marshal_with(playlists_response)
+    @ns.marshal_with(full_playlists_with_score_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
         args = top_parser.parse_args()
