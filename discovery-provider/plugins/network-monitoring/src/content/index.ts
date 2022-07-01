@@ -68,16 +68,13 @@ export const indexContent = async (run_id: number) => {
         contentNodes.map(async (cnode, _) => {
 
             // const image_cid_count: string = image_to_content_nodes[i]?.cid_count || '0'
-            return new Promise<void>(async resolve => {
-                await Promise.all([
-                    // check user clock value
-                    checkUsers(run_id, cnode.spid, cnode.endpoint),
+            await Promise.all([
+                // check user clock value
+                checkUsers(run_id, cnode.spid, cnode.endpoint),
 
-                    // check user cids
-                    // checkCIDS(run_id, cnode.spid, cnode.endpoint, parseInt(cnode.cid_count), parseInt(image_cid_count)),
-                ])
-                resolve()
-            })
+                // check user cids
+                // checkCIDS(run_id, cnode.spid, cnode.endpoint, parseInt(cnode.cid_count), parseInt(image_cid_count)),
+            ])
         })
     )
 
