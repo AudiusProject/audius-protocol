@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Date, Integer, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class AggregateMonthlyPlays(Base):
+class AggregateMonthlyPlays(Base, RepresentableMixin):
     # Created for potential use case of year trending
     # No dependencies as of now
 
@@ -13,9 +14,3 @@ class AggregateMonthlyPlays(Base):
         Date, primary_key=True, nullable=False, default=func.now()
     )  # monthly timestamps
     count = Column(Integer, nullable=False)
-
-    def __repr__(self):
-        return f"<AggregateMonthlyPlays(\
-play_item_id={self.play_item_id},\
-timestamp={self.timestamp},\
-count={self.count})>"

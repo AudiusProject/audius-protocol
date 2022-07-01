@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Date, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class TrendingResult(Base):
+class TrendingResult(Base, RepresentableMixin):
     """
     Trending Results track the top trending tracks/playlists each week to keep a record of the winners
     for reference in the trending challenges
@@ -16,12 +17,3 @@ class TrendingResult(Base):
     version = Column(String, nullable=False)
     week = Column(Date, nullable=False)
     PrimaryKeyConstraint(rank, type, version, week)
-
-    def __repr__(self):
-        return f"<TrendingResult(\
-user_id={self.user_id},\
-id={self.id},\
-type={self.type},\
-version={self.version},\
-week={self.week},\
-)>"

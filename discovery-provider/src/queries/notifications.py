@@ -1023,6 +1023,8 @@ def notifications():
             f"notifications.py | all playlist updates at {datetime.now() - start_time}"
         )
 
+        milestone_info = get_milestone_info(session, min_block_number, max_block_number)
+
     # Final sort - TODO: can we sort by timestamp?
     sorted_notifications = sorted(
         notifications_unsorted,
@@ -1033,8 +1035,6 @@ def notifications():
     logger.info(
         f"notifications.py | sorted notifications {datetime.now() - start_time}"
     )
-
-    milestone_info = get_milestone_info(session, min_block_number, max_block_number)
 
     return api_helpers.success_response(
         {

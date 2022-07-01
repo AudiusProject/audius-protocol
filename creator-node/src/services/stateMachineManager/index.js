@@ -18,30 +18,17 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    // TODO: Decide on interval to run this on
-    try {
-      NodeToSpIdManager.updateCnodeEndpointToSpIdMap(audiusLibs.ethContracts)
-
-      // Update enabledReconfigModesSet after successful `updateCnodeEndpointToSpIdMap()` call
-      this.updateEnabledReconfigModesSet()
-    } catch (e) {
-      // Disable reconfig after failed update
-      this.updateEnabledReconfigModesSet(
-        /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
-      )
-      baseLogger.error(`updateEndpointToSpIdMap Error: ${e.message}`)
-    }
+    // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
+    QueueInterfacer.init(audiusLibs)
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
     const stateReconciliationManager = new StateReconciliationManager()
-    const stateMonitoringQueue = await stateMonitoringManager.init(
-      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      prometheusRegistry
-    )
-    const stateReconciliationQueue = await stateReconciliationManager.init(
-      prometheusRegistry
-    )
+    const { stateMonitoringQueue, cNodeEndpointToSpIdMapQueue } =
+      await stateMonitoringManager.init(
+        audiusLibs.discoveryProvider.discoveryProviderEndpoint
+      )
+    const stateReconciliationQueue = await stateReconciliationManager.init()
 
     // Upon completion, make jobs record metrics and enqueue other jobs as necessary
     stateMonitoringQueue.on(
@@ -61,12 +48,47 @@ class StateMachineManager {
       ).bind(this)
     )
 
-    // TODO: Remove this and libs another way -- maybe init a new instance for each updateReplicaSet job
-    QueueInterfacer.init(audiusLibs)
+    // Update the mapping in this StateMachineManager whenever a job successfully fetches it
+    cNodeEndpointToSpIdMapQueue.on(
+      'global:completed',
+      this.updateMapOnMapFetchJobComplete.bind(this)
+    )
 
     return {
       stateMonitoringQueue,
+      cNodeEndpointToSpIdMapQueue,
       stateReconciliationQueue
+    }
+  }
+
+  /**
+   * Deserializes the results of a job and updates the enabled reconfig modes to be either:
+   * - enabled (to the highest enabled mode configured) if the job fetched the mapping successfully
+   * - disabled if the job encountered an error fetching the mapping
+   * @param {number} jobId the ID of the job that completed
+   * @param {string} resultString the stringified JSON of the job's returnValue
+   */
+  async updateMapOnMapFetchJobComplete(jobId, resultString) {
+    // Bull serializes the job result into redis, so we have to deserialize it into JSON
+    let jobResult = {}
+    try {
+      jobResult = JSON.parse(resultString) || {}
+    } catch (e) {
+      baseLogger.warn(
+        `Failed to parse cNodeEndpoint->spId map jobId ${jobId} result string: ${resultString}`
+      )
+      return
+    }
+
+    const { errorMsg } = jobResult
+    if (errorMsg?.length) {
+      // Disable reconfigs if there was an error fetching the mapping
+      this.updateEnabledReconfigModesSet(
+        /* override */ RECONFIG_MODES.RECONFIG_DISABLED.key
+      )
+    } else {
+      // Update the reconfig mode to the highest enabled mode if there was no error
+      this.updateEnabledReconfigModesSet()
     }
   }
 
