@@ -117,7 +117,12 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
-  setupBullMonitoring(app, stateMonitoringQueue, stateReconciliationQueue) {
+  setupBullMonitoring(
+    app,
+    stateMonitoringQueue,
+    cNodeEndpointToSpIdMapQueue,
+    stateReconciliationQueue
+  ) {
     this.logInfo('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
@@ -161,6 +166,7 @@ class ServiceRegistry {
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
+        new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
@@ -270,8 +276,11 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
     this.stateMachineManager = new StateMachineManager()
-    const { stateMonitoringQueue, stateReconciliationQueue } =
-      await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+    const {
+      stateMonitoringQueue,
+      cNodeEndpointToSpIdMapQueue,
+      stateReconciliationQueue
+    } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -294,6 +303,7 @@ class ServiceRegistry {
       this.setupBullMonitoring(
         app,
         stateMonitoringQueue,
+        cNodeEndpointToSpIdMapQueue,
         stateReconciliationQueue
       )
     } catch (e) {
