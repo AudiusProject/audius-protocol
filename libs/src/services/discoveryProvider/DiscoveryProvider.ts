@@ -730,14 +730,14 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
-  async getTrendingPlaylists({
+  async getTopFullPlaylists({
     type,
     limit,
     mood,
     filter,
     withUsers = false
-  }: Requests.GetTrendingPlaylistsParams) {
-    const req = Requests.getTrendingPlaylists({
+  }: Requests.GetTopFullPlaylistsParams) {
+    const req = Requests.getTopFullPlaylists({
       type,
       limit,
       mood,
