@@ -127,6 +127,12 @@ const startApp = async () => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
+
+    // Block further content upload
+
+    // Wrap up queues to some timeout (30s?)
+
+    // kill app
     logger.info('Shutting down db and express app...', signal, error)
     sequelize.close()
     if (appInfo) {

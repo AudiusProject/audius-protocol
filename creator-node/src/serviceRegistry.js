@@ -164,8 +164,8 @@ class ServiceRegistry {
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     createBullBoard({
       queues: [
-        stateMonitoringAdapter,
-        stateReconciliationAdapter,
+        stateMonitoringAdapter, // stateMonitoringQueue
+        stateReconciliationAdapter, // stateReconciliationQueue
         new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
