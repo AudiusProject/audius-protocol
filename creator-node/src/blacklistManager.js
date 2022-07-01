@@ -236,19 +236,22 @@ class BlacklistManager {
   /**
    * Retrieves all CIDs from input trackIds from db
    * @param {number[]} trackIds
-   * @param {Object} transaction
+   * @param {Object} transaction sequelize transaction object
    * @returns {Object[]} array of track model objects from table
    */
   static async getAllCIDsFromTrackIdsInDb(trackIds, transaction) {
-    return models.Track.findAll({
-      where: { blockchainId: trackIds },
-      transaction
-    })
+    const queryConfig = { where: { blockchainId: trackIds } }
+    if (transaction) {
+      queryConfig.transaction = transaction
+    }
+
+    return models.Track.findAll(queryConfig)
   }
 
   /**
    * Retrieves all the deduped CIDs from the params and builds a mapping to <trackId: segments> for explicit trackIds (i.e. trackIds from table, not tracks belonging to users).
    * @param {number[]} allTrackIds all the trackIds to find CIDs for (explictly blacklisted tracks and tracks from blacklisted users)
+   * @param {Object} transaction sequelize transaction object
    * @returns {string[]} all CIDs that are blacklisted from input track ids
    */
   static async getCIDsToBlacklist(inputTrackIds, transaction) {
@@ -272,12 +275,16 @@ class BlacklistManager {
 
     // also retrieves the CID's directly from the files table so we get copy320
     if (inputTrackIds.length > 0) {
-      const files = await models.File.findAll({
+      const queryConfig = {
         where: {
           trackBlockchainId: inputTrackIds
-        },
-        transaction
-      })
+        }
+      }
+      if (transaction) {
+        queryConfig.transaction = transaction
+      }
+
+      const files = await models.File.findAll(queryConfig)
 
       for (const file of files) {
         if (
