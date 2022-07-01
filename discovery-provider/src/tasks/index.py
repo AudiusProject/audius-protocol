@@ -32,6 +32,7 @@ from src.queries.get_skipped_transactions import (
     set_indexing_error,
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
+from src.tasks.audius_data import audius_data_state_update
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.playlists import playlist_state_update
@@ -65,6 +66,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
+from src.utils.user_event_constants import audius_data_event_types_arr
 
 USER_FACTORY = CONTRACT_TYPES.USER_FACTORY.value
 TRACK_FACTORY = CONTRACT_TYPES.TRACK_FACTORY.value
@@ -88,6 +90,9 @@ USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
 USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
     CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
 ]
+AUDIUS_DATA_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
+    CONTRACT_TYPES.AUDIUS_DATA
+]
 
 TX_TYPE_TO_HANDLER_MAP = {
     USER_FACTORY: user_state_update,
@@ -96,6 +101,7 @@ TX_TYPE_TO_HANDLER_MAP = {
     PLAYLIST_FACTORY: playlist_state_update,
     USER_LIBRARY_FACTORY: user_library_state_update,
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
+    AUDIUS_DATA: audius_data_state_update
 }
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
@@ -266,10 +272,12 @@ def fetch_cid_metadata(
     db,
     user_factory_txs,
     track_factory_txs,
+    audius_data_txs
 ):
     start_time = datetime.now()
     user_contract = update_task.user_contract
     track_contract = update_task.track_contract
+    audius_data_contract = update_task.audius_data_contract
 
     blacklisted_cids: Set[str] = set()
     cids_txhash_set: Tuple[str, Any] = set()
@@ -321,6 +329,23 @@ def fetch_cid_metadata(
                     else:
                         blacklisted_cids.add(cid)
                     cid_to_user_id[cid] = track_owner_id
+
+        for tx_receipt in audius_data_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            for event_type in audius_data_event_types_arr:
+                audius_data_events_tx = getattr(
+                    audius_data_contract.events, event_type
+                )().processReceipt(tx_receipt)
+                for entry in audius_data_events_tx:
+                    event_args = entry["args"]
+                    user_id = event_args._userId
+                    entity_type = event_args._entityType
+                    cid = event_args._metadata
+                    # TODO - skip if not a multihash
+                    logger.info(f"index.py | newcontract {txhash}, {event_args}, {entity_type}, {cid}")
+                    cids_txhash_set.add((cid, txhash))
+                    cid_to_user_id[cid] = user_id
+                    cid_type[cid] = "playlist_data"
 
         # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
         user_to_replica_set = dict(
@@ -669,6 +694,7 @@ def index_blocks(self, db, blocks_list):
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
+                        txs_grouped_by_type[AUDIUS_DATA]
                     )
                     logger.info(
                         f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
@@ -1125,7 +1151,14 @@ def update_task(self):
         address=get_contract_addresses()[USER_REPLICA_SET_MANAGER],
         abi=user_replica_set_manager_abi,
     )
-    logger.info(f"index.py | contract_address {get_contract_addresses()}")
+
+    audius_data_contract_abi = update_task.abi_values[
+        AUDIUS_DATA_CONTRACT_NAME
+    ]["abi"]
+    audius_data_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[AUDIUS_DATA],
+        abi=audius_data_contract_abi
+    )
 
     update_task.track_contract = track_contract
     update_task.user_contract = user_contract
@@ -1133,6 +1166,7 @@ def update_task(self):
     update_task.social_feature_contract = social_feature_contract
     update_task.user_library_contract = user_library_contract
     update_task.user_replica_set_manager_contract = user_replica_set_manager_contract
+    update_task.audius_data_contract = audius_data_contract
 
     # Update redis cache for health check queries
     update_latest_block_redis()
