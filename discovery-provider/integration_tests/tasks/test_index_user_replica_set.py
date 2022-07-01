@@ -11,7 +11,7 @@ from src.models.indexing.skipped_transaction import (
     SkippedTransaction,
     SkippedTransactionLevel,
 )
-from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.users.user import User
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils.db_session import get_db
@@ -93,7 +93,7 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         updated_at=test_timestamp,
         created_at=None,
     )
-    blessed_content_node_record = URSMContentNode(
+    blessed_content_node_record = UrsmContentNode(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=blessed_cnode_tx_hash,
@@ -103,7 +103,7 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
         owner_wallet=test_wallet,
         created_at=test_timestamp,
     )
-    cursed_content_node_record = URSMContentNode(
+    cursed_content_node_record = UrsmContentNode(
         blockhash=test_block_hash,
         blocknumber=test_block_number,
         txhash=cursed_cnode_tx_hash,
@@ -253,17 +253,17 @@ def test_user_replica_set_indexing_skip_tx(app, mocker):
                 .first()
             ) == None
             assert (
-                session.query(URSMContentNode)
+                session.query(UrsmContentNode)
                 .filter(
-                    URSMContentNode.cnode_sp_id
+                    UrsmContentNode.cnode_sp_id
                     == blessed_content_node_record.cnode_sp_id
                 )
                 .first()
             )
             assert (
-                session.query(URSMContentNode)
+                session.query(UrsmContentNode)
                 .filter(
-                    URSMContentNode.cnode_sp_id
+                    UrsmContentNode.cnode_sp_id
                     == cursed_content_node_record.cnode_sp_id
                 )
                 .first()

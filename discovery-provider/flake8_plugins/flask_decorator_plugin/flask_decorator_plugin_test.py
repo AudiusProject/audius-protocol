@@ -93,7 +93,7 @@ class FullTrendingPlaylists(Resource):
 
 doc_false_example = """
 @ns.route(\"/aggregates/routes/trailing/month\", doc=False)
-class AggregateRouteMetricsTrailingMonth(Resource):
+class Aggregatet_route_metrics_trailing_month(Resource):
     @cache(ttl_sec=30 * 60)
     @record_metrics
     @ns.doc({\"params\": {\"foo\": \"bar\"}})
@@ -107,7 +107,7 @@ class AggregateRouteMetricsTrailingMonth(Resource):
 top_level_expect_example = """
 @ns.route(\"/app_name/trailing/<string:time_range>\")
 @ns.expect(trailing_app_name_parser)
-class TrailingAppNameMetrics(Resource):
+class TrailingAppNameMetric(Resource):
     @ns.doc(
         id=\"Get Trailing App Name Metrics\",
         description=\"Gets the trailing app name metrics\",
@@ -121,7 +121,7 @@ class TrailingAppNameMetrics(Resource):
 
 route_doc_example = """
 @ns.route(\"/app_name/trailing/<string:time_range>\", doc={\"params\":{\"time_range\": \"A time range\"}})
-class TrailingAppNameMetrics(Resource):
+class TrailingAppNameMetric(Resource):
     @ns.doc(
         id=\"Get Trailing App Name Metrics\",
         description=\"Gets the trailing app name metrics\",

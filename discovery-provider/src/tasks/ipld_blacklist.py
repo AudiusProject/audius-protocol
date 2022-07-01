@@ -1,6 +1,6 @@
 import logging
 
-from src.models.indexing.blacklisted_ipld import BlacklistedIPLD
+from src.models.indexing.ipld_blacklist import IpldBlacklist
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def add_to_blacklist(
         event_blockhash = task.web3.toHex(entry.blockHash)
         event_args = entry["args"]
 
-        ipld_blacklist_model = BlacklistedIPLD(
+        ipld_blacklist_model = IpldBlacklist(
             blockhash=event_blockhash,
             blocknumber=block_number,
             ipld=helpers.multihash_digest_to_cid(event_args._multihashDigest),
@@ -64,7 +64,7 @@ def add_to_blacklist(
         )
 
         ipld_blacklist_exists = (
-            session.query(BlacklistedIPLD)
+            session.query(IpldBlacklist)
             .filter_by(
                 blockhash=event_blockhash,
                 ipld=helpers.multihash_digest_to_cid(event_args._multihashDigest),
@@ -80,7 +80,7 @@ def add_to_blacklist(
 
 
 def is_blacklisted_ipld(session, ipld_blacklist_multihash):
-    ipld_blacklist_entry = session.query(BlacklistedIPLD).filter(
-        BlacklistedIPLD.ipld == ipld_blacklist_multihash
+    ipld_blacklist_entry = session.query(IpldBlacklist).filter(
+        IpldBlacklist.ipld == ipld_blacklist_multihash
     )
     return ipld_blacklist_entry.count() > 0
