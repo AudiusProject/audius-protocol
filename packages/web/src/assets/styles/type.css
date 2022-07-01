@@ -4,17 +4,78 @@
  */
 
 /*
- * Gilroy Font
+ * Avenir Condensed Font
  * Used in public site, don't want to prefetch these
  * for every DApp load.
  */
 @font-face {
-  font-family: 'Gilroy';
+  font-family: 'Avenir Next LT Pro Condensed';
   font-style: normal;
-  font-weight: 950;
+  font-weight: 900;
   font-display: block;
-  src: url('../fonts/Gilroy-Black.woff2') format('woff2');
+  src: url('../fonts/AvenirNextLTPro-Heavy-Condensed.otf');
 }
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Bold-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Bold-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Demi-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Medium-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 300;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Light-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 200;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-UltLt-Condensed.otf');
+}
+@font-face {
+  font-family: 'Avenir Next LT Pro Condensed';
+  font-style: normal;
+  font-weight: 100;
+  font-display: block;
+  src: url('../fonts/AvenirNextLTPro-Thin-Condensed.otf');
+}
+/*
+ * Gilroy Font
+ * Used in public site, don't want to prefetch these
+ * for every DApp load.
+ */
 @font-face {
   font-family: 'Gilroy';
   font-style: normal;

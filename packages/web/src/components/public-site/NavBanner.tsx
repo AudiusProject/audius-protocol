@@ -9,21 +9,30 @@ import {
 import cn from 'classnames'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
+import { useMatchesBreakpoint } from 'common/hooks/useMatchesBreakpoint'
 import {
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,
   AUDIUS_EXPLORE_LINK,
-  AUDIUS_ORG
+  AUDIUS_ORG,
+  AUDIUS_BLOG_LINK,
+  DOWNLOAD_START_LINK
 } from 'utils/route'
 
 import styles from './NavBanner.module.css'
 import { handleClickRoute } from './handleClickRoute'
 
+const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
+const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
+  `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
+)
 const messages = {
   explore: 'Explore',
   trending: 'Trending',
   hotAndNew: 'Hot & New',
   token: 'Token',
+  blog: 'Blog',
+  download: 'Download',
   startListening: 'Start Listening'
 }
 
@@ -36,6 +45,10 @@ type NavBannerProps = {
 }
 
 const NavBanner = (props: NavBannerProps) => {
+  const isNarrow = useMatchesBreakpoint({
+    mediaQuery: MOBILE_WIDTH_MEDIA_QUERY,
+    initialValue: props.isMobile
+  })
   const [isScrolling, setIsScrolling] = useState(false)
   const setScrolling = useCallback(() => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop
@@ -61,13 +74,23 @@ const NavBanner = (props: NavBannerProps) => {
   )
   const onClickToken = handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite)
 
+  const onClickBlog = handleClickRoute(
+    AUDIUS_BLOG_LINK,
+    props.setRenderPublicSite
+  )
+
+  const onClickDownload = handleClickRoute(
+    DOWNLOAD_START_LINK,
+    props.setRenderPublicSite
+  )
+
   useEffect(() => {
     setScrolling()
     window.addEventListener('scroll', setScrolling)
     return () => window.removeEventListener('scroll', setScrolling)
   }, [setScrolling])
 
-  if (props.isMobile) {
+  if (props.isMobile || isNarrow) {
     return (
       <div
         className={cn(styles.mobileContainer, {
@@ -86,6 +109,10 @@ const NavBanner = (props: NavBannerProps) => {
             alt='Audius Logo'
           />
         </div>
+        <IconTrending
+          className={styles.trendingIcon}
+          onClick={onClickTrending}
+        />
       </div>
     )
   }
@@ -133,8 +160,14 @@ const NavBanner = (props: NavBannerProps) => {
           />
         </div>
         <div className={styles.linkContainer}>
-          <div onClick={onClickToken} className={styles.token}>
+          <div onClick={onClickBlog} className={styles.rightLink}>
+            {messages.blog}
+          </div>
+          <div onClick={onClickToken} className={styles.rightLink}>
             {messages.token}
+          </div>
+          <div onClick={onClickDownload} className={styles.rightLink}>
+            {messages.download}
           </div>
           <div onClick={onClickTrending} className={styles.startListening}>
             {messages.startListening}

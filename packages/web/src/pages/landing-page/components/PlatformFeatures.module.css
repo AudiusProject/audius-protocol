@@ -3,15 +3,15 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  background: linear-gradient(129.23deg, #f3f2f5 0%, #fbfbfc 100%);
-  -webkit-clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
-  clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
-  padding: 94px 0px 114px;
+  background: linear-gradient(129.23deg, #f3f2f5 4.22%, #fbfbfc 95.97%);
+  -webkit-clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 100%);
+  padding: 120px 100px 114px;
 }
 
 .content {
   width: 100%;
-  max-width: 1144px;
+  max-width: 1240px;
   display: inline-flex;
   flex-direction: column;
 }
@@ -30,19 +30,21 @@
   align-items: center;
 }
 
+:global(#landingPage) .title {
+  font-family: 'Avenir Next LT Pro Condensed' !important;
+}
+
 .title {
-  color: #480b79;
-  font-family: Gilroy !important;
-  font-size: 42px;
-  font-weight: bold;
+  color: #7e1bcc;
+  font-size: 48px;
+  font-weight: 900;
   line-height: 56px;
+  text-transform: uppercase;
   text-align: center;
 }
 
 .subTitle {
-  max-width: 608px;
-  color: #c2c0cc;
-  font-family: Gilroy !important;
+  color: #858199;
   font-size: 21px;
   font-weight: 500;
   line-height: 31px;
@@ -52,16 +54,17 @@
 .body {
   display: inline-flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
 }
 
-.guitarImage {
-  user-select: none;
-  flex: 1;
+.crowdImg {
+  min-height: 100%;
   object-fit: cover;
-  height: 408px;
+  user-select: none;
+  flex: 1.3;
+  height: 410px;
   width: 100%;
-  max-width: 563px;
+  max-width: 53%;
   border-radius: 8px;
   box-shadow: 0 10px 50px -2px rgba(53, 5, 152, 0.4);
 }
@@ -71,12 +74,12 @@
   display: inline-flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 395px;
+  min-height: 410px;
 }
 
 .feature {
   margin-left: 21px;
-  padding: 20px 15px 22px 37px;
+  padding: 24px 24px 24px 30px;
   border-radius: 12px;
   background-color: #ffffff;
   box-shadow: 0 16px 20px 0 rgba(232, 228, 234, 0.5);
@@ -84,11 +87,15 @@
   align-items: center;
 }
 
+.feature:not(:first-child) {
+  margin-top: 16px;
+}
+
 .featureIcon {
   width: 100%;
   max-width: 48px;
   height: auto;
-  margin-right: 37px;
+  margin-right: 36px;
 }
 
 .featureText {
@@ -107,8 +114,8 @@
   border-radius: 13px;
   background-color: #7e1bcc;
   color: #ffffff;
-  font-family: Gilroy !important;
   font-size: 13px;
+  line-height: 13px;
   font-weight: 800;
   letter-spacing: 1px;
   margin-bottom: 10px;
@@ -116,7 +123,7 @@
 
 .featureDescription {
   color: #858199;
-  font-family: Gilroy !important;
+  font-weight: 400;
   font-size: 16px;
   line-height: 24px;
 }
@@ -135,7 +142,7 @@
   background: linear-gradient(129.23deg, #f3f2f5 0%, #fbfbfc 100%);
   -webkit-clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
   clip-path: polygon(0 3%, 100% 0, 100% 97%, 0 100%);
-  padding: 65px 35px;
+  padding: 65px 35px 88px;
 }
 
 .isMobile .header {
@@ -143,59 +150,57 @@
 }
 
 .isMobile .title {
-  color: #480b79;
-  font-family: Gilroy;
-  font-size: 32px;
-  font-weight: bold;
-  line-height: 56px;
+  font-size: 40px;
+  line-height: 48px;
   text-align: center;
 }
 
 .isMobile .subTitle {
-  color: #c2c0cc;
-  font-family: Gilroy;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 23px;
+  line-height: 30px;
   text-align: center;
 }
 
+.isMobile .animateTitleContainer {
+  margin-bottom: 0;
+}
+
 .isMobile .body {
-  margin-top: 32px;
+  margin-top: 48px;
   flex-direction: column;
 }
 
-.isMobile .guitarImage {
-  height: auto;
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 10px 50px -2px rgba(53, 5, 152, 0.4);
+.isMobile .crowdImg {
+  flex: initial;
+  height: 240px;
+  min-height: initial;
+  max-width: initial;
 }
 
 .isMobile .features {
-  margin-top: 31px;
+  margin-top: 10px;
 }
 
 .isMobile .feature {
   display: inline-flex;
   justify-content: center;
   align-content: center;
-  flex-direction: column;
-  background-color: rgba(0, 0, 0, 0);
-  box-shadow: none;
-  margin: 0px 0px 32px;
-  padding: 0px;
+  border-radius: 12px;
+  box-shadow: 0px 16px 20px rgba(232, 228, 234, 0.5);
+  background: #ffffff;
+  margin: 0px 0px 10px;
+  padding: 24px 16px;
 }
 
 .isMobile .featureIcon {
-  margin: 0px;
+  margin-left: 12px;
 }
 
 .isMobile .featureText {
   width: 100%;
   display: inline-flex;
   flex-direction: column;
-  align-items: center;
 }
 
 .isMobile .featureTitle {
@@ -205,9 +210,7 @@
 }
 
 .isMobile .featureDescription {
-  color: #858199;
-  font-family: Gilroy;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 24px;
-  text-align: center;
+  font-weight: 500;
 }

@@ -1,6 +1,6 @@
 .container {
   flex-shrink: 0;
-  margin: 44px 0px;
+  margin: 44px 0px 120px 0px;
   flex-shrink: 0;
   overflow: hidden;
   width: 100%;
@@ -10,6 +10,7 @@
 
 .content {
   max-width: 1110px;
+  margin: 0px 100px;
   position: relative;
 }
 
@@ -23,9 +24,10 @@
 }
 
 .productShot {
+  margin-bottom: 70px;
   user-select: none;
   width: 100%;
-  max-width: 807px;
+  max-width: 1110px;
 }
 
 .title {
@@ -33,10 +35,10 @@
   display: inline-flex;
   overflow: hidden;
   color: #a3a1b2;
-  font-family: Gilroy !important;
-  font-size: 64px;
+  font-size: 34px;
   font-weight: 800;
-  line-height: 78px;
+  line-height: 42px;
+  text-transform: uppercase;
   text-align: center;
 }
 
@@ -44,13 +46,26 @@
   position: relative;
   display: inline-flex;
   overflow: hidden;
-
-  font-family: Gilroy !important;
+  text-transform: uppercase;
   font-size: 64px;
   font-weight: 800;
   line-height: 78px;
   text-align: center;
   margin-bottom: 16px;
+}
+
+@media (max-width: 1240px) {
+  .coloredTitle {
+    font-size: 48px;
+    line-height: 60px;
+  }
+}
+
+@media (max-width: 994px) {
+  .coloredTitle {
+    font-size: 34px;
+    line-height: 60px;
+  }
 }
 
 .coloredTitleWord {
@@ -60,9 +75,8 @@
 }
 
 .subText {
-  color: #c2c0cc;
-  font-family: Gilroy !important;
-  font-size: 21px;
+  color: #858199;
+  font-size: 22px;
   font-weight: 500;
   line-height: 34px;
   text-align: center;
@@ -92,6 +106,10 @@
   margin-right: 18px;
   overflow: hidden;
   display: inline-flex;
+}
+
+.mobileContainer .textAnimate:last-child {
+  margin-right: 0;
 }
 
 .gradient1 {
@@ -132,7 +150,7 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: 20px 0px 96px;
+  padding: 20px 0px 48px;
   overflow: hidden;
 }
 
@@ -159,12 +177,15 @@
   flex-wrap: wrap;
   justify-content: center;
   color: #a3a1b2;
-  font-family: Gilroy;
-  font-size: 48px;
+  font-size: 20px;
   font-weight: 800;
-  line-height: 64px;
+  letter-spacing: 10px;
+  line-height: 25px;
   text-align: center;
-  max-width: 350px;
+  position: relative;
+  /* Counteract the spacing on the last character */
+  left: 6px;
+  max-width: 351px;
   margin: -12px auto 0px;
 }
 
@@ -172,32 +193,42 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  font-family: Gilroy;
-  font-size: 48px;
   font-weight: 800;
-  line-height: 64px;
+  font-size: 35px;
+  line-height: 43px;
+  max-width: 500px;
   text-align: center;
-  max-width: 350px;
+  text-transform: uppercase;
 
   background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 40px;
+  margin: 0 auto 24px auto;
 }
 
 .mobileContainer .coloredTitleWord {
   margin-bottom: 0px;
 }
 
+.mobileContainer .textAnimate:not(:first-child) .coloredTitleWord {
+  margin-right: -18px;
+}
+
+.mobileContainer .textAnimate {
+  overflow: visible;
+}
+
+.mobileContainer .textAnimate:last-child {
+  margin-right: 0;
+}
+
 .mobileContainer .textDescription {
   width: 100%;
-  color: #c2c0cc;
-  font-family: Gilroy;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 23px;
+  line-height: 30px;
   text-align: center;
-  padding: 0px 6px;
+  padding: 0px 20px;
 }
 
 .mobileContainer .textDescription p {

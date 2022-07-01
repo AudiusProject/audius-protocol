@@ -3,40 +3,45 @@ import { ReactNode } from 'react'
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
+import crowdImg from 'assets/img/publicSite/ImgCrowd.jpg'
 import { ReactComponent as IconAudio } from 'assets/img/publicSite/iconAudio.svg'
-import { ReactComponent as IconCensorship } from 'assets/img/publicSite/iconCensorship.svg'
 import { ReactComponent as IconFree } from 'assets/img/publicSite/iconFree.svg'
-import womanPlayingGuitarImg1x from 'assets/img/publicSite/woman-playing-guitar@1x.jpg'
-import womanPlayingGuitarImg2x from 'assets/img/publicSite/woman-playing-guitar@2x.jpg'
+import { ReactComponent as IconRemix } from 'assets/img/publicSite/iconRemix.svg'
+import { useMatchesBreakpoint } from 'common/hooks/useMatchesBreakpoint'
 import useHasViewed from 'hooks/useHasViewed'
 
 import styles from './PlatformFeatures.module.css'
 
+const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
+const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
+  `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
+)
+
 const messages = {
-  title: (isMobile: boolean) =>
-    isMobile ? 'Designed for Artists' : 'Audius Listens to Artists',
+  title: 'Audius Listens to Artists',
   subTitle:
-    'Music platforms were at their best when they listened to what artists and fans wanted - not corporations or major labels'
+    'Audius listens to the needs of artists and fans - not just corporations & major labels'
 }
 
 type FeatureProps = {
   title: string
   description: string | ReactNode
   icon: ReactNode
+  iconPosition: 'above' | 'side'
 }
 
-const features: Array<FeatureProps> = [
+const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
   {
     title: 'HQ AUDIO',
     description:
       'Audius offers crystal clear streaming at 320kbps! The highest quality sound from any free music platform.',
-    icon: <IconFree className={styles.featureIcon} />
+    icon: <IconAudio className={styles.featureIcon} />
   },
   {
     title: 'FREE FOREVER',
     description:
       'Unlimited uploads, metrics, dashboards, and more - All free forever, no strings attached.',
-    icon: <IconAudio className={styles.featureIcon} />
+    icon: <IconFree className={styles.featureIcon} />
   },
   {
     title: 'EXCLUSIVE CONTENT',
@@ -54,15 +59,16 @@ const features: Array<FeatureProps> = [
         .
       </>
     ),
-    icon: <IconCensorship className={styles.featureIcon} />
+    icon: <IconRemix className={styles.featureIcon} />
   }
 ]
 
 const Feature = (props: FeatureProps) => {
   return (
     <div className={styles.feature}>
-      {props.icon}
+      {props.iconPosition === 'side' ? props.icon : null}
       <div className={styles.featureText}>
+        {props.iconPosition === 'above' ? props.icon : null}
         <div className={styles.featureTitle}>{props.title}</div>
         <div className={styles.featureDescription}>{props.description}</div>
       </div>
@@ -75,6 +81,11 @@ type PlatformFeaturesProps = {
 }
 
 const PlatformFeatures = (props: PlatformFeaturesProps) => {
+  const isNarrow = useMatchesBreakpoint({
+    mediaQuery: MOBILE_WIDTH_MEDIA_QUERY,
+    initialValue: props.isMobile
+  })
+
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -101,21 +112,24 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
             }}
           >
             <div className={styles.header}>
-              <h3 className={styles.title}>{messages.title(props.isMobile)}</h3>
+              <h3 className={styles.title}>{messages.title}</h3>
               <h4 className={styles.subTitle}>{messages.subTitle}</h4>
             </div>
           </animated.div>
         </div>
         <div className={styles.body}>
           <img
-            src={womanPlayingGuitarImg1x}
-            srcSet={`${womanPlayingGuitarImg1x} 1x, ${womanPlayingGuitarImg2x} 2x`}
-            className={styles.guitarImage}
-            alt='Woman playing guitar'
+            src={crowdImg}
+            className={styles.crowdImg}
+            alt='DJ performing in front of crowd'
           />
           <div className={styles.features}>
             {features.map(feature => (
-              <Feature key={feature.title} {...feature} />
+              <Feature
+                iconPosition={!props.isMobile && isNarrow ? 'above' : 'side'}
+                key={feature.title}
+                {...feature}
+              />
             ))}
           </div>
         </div>

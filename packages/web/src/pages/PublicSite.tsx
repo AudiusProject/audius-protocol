@@ -18,6 +18,7 @@ const BASENAME = process.env.PUBLIC_URL
 const PrivacyPolicyPage = lazy(() =>
   import('pages/privacy-policy-page/PrivacyPolicyPage')
 )
+const DownloadPage = lazy(() => import('pages/download-page/DownloadPage'))
 const TermsOfUsePage = lazy(() =>
   import('pages/terms-of-use-page/TermsOfUsePage')
 )
@@ -129,6 +130,17 @@ const PublicSite = ({
               window.location.href = AUDIUS_PRESS_LINK
               return null
             }}
+          />
+          <Route
+            exact
+            path={'/download'}
+            render={() => (
+              <DownloadPage
+                isMobile={isMobileOrNarrow}
+                openNavScreen={openNavScreen}
+                setRenderPublicSite={setRenderPublicSite}
+              />
+            )}
           />
           <Route
             exact

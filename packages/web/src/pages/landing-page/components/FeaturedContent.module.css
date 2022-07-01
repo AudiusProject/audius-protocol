@@ -5,7 +5,7 @@
   display: flex;
   flex-shrink: 0;
   justify-content: center;
-  padding: 94px 0px 114px;
+  padding: 100px 100px 0px 100px;
   overflow: hidden;
 }
 
@@ -13,14 +13,14 @@
   position: relative;
   z-index: 5;
   width: 100%;
-  max-width: 1144px;
+  max-width: 1240px;
   display: inline-flex;
   flex-direction: column;
 }
 
 .animateTitleContainer {
   overflow: hidden;
-  margin-bottom: 58px;
+  margin-bottom: 16px;
 }
 
 .header {
@@ -29,19 +29,21 @@
   align-items: flex-start;
 }
 
+:global(#landingPage) .title {
+  font-family: 'Avenir Next LT Pro Condensed' !important;
+}
+
 .title {
-  color: #480b79;
-  font-family: Gilroy !important;
-  font-size: 42px;
-  font-weight: bold;
+  color: #7e1bcc;
+  font-size: 48px;
+  font-weight: 900;
   line-height: 56px;
-  text-align: center;
+  text-transform: uppercase;
 }
 
 .subTitle {
   max-width: 608px;
-  color: #c2c0cc;
-  font-family: Gilroy !important;
+  color: #858199;
   font-size: 21px;
   font-weight: 500;
   line-height: 31px;
@@ -52,19 +54,27 @@
   flex: 1;
   display: inline-flex;
   justify-content: space-between;
-  align-items: center;
+  flex-wrap: wrap;
   transition: all 0.3s ease-in-out;
+}
+
+@media (max-width: 1380px) {
+  .tracksContainer {
+    max-width: 700px;
+    margin: 0 auto;
+  }
 }
 
 .trackMoveContainer {
   user-select: none;
-  flex: 1 0 293px;
+  flex: 1 0;
 }
 
 .trackContainer {
+  margin-top: 24px;
   user-select: none;
   cursor: pointer;
-  height: 293px;
+  height: 292px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -73,8 +83,8 @@
 
 .track {
   overflow: hidden;
-  height: 266px;
-  width: 266px;
+  height: 292px;
+  width: 292px;
   margin: 0px auto;
   border-radius: 16px;
   transition: all 0.3s ease-in-out;
@@ -110,15 +120,17 @@
   );
 }
 
-.track .trackTitle {
-  opacity: 0;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 23px;
+.trackTitleContainer {
+  margin-top: 24px;
   text-align: center;
-  margin-bottom: 4px;
-  transition: all 0.07s ease-in-out;
+}
+
+.trackTitle {
+  color: #858199;
+  font-size: 21px;
+  line-height: 26px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .track .trackArtist {
@@ -156,7 +168,7 @@
   right: -10%;
   width: 120%;
   height: auto;
-  top: 50%;
+  top: 19%;
   z-index: 0;
 }
 
@@ -167,27 +179,21 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  padding: 116px 26px 56px;
+  padding: 58px 24px 12px;
   position: relative;
   height: auto;
   overflow: hidden;
 }
 
 .mobileContainer .title {
-  color: #480b79;
-  font-family: Gilroy;
-  font-size: 32px;
-  font-weight: bold;
-  line-height: 56px;
+  font-size: 40px;
+  line-height: 48px;
   text-align: center;
 }
 .mobileContainer .subTitle {
-  max-width: 300px;
-  color: #c2c0cc;
-  font-family: Gilroy;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 23px;
+  line-height: 24px;
   text-align: center;
 }
 
@@ -197,24 +203,25 @@
   display: inline-flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  justify-content: space-around;
-  margin-top: 38px;
+  justify-content: space-evenly;
+  margin-top: 24px;
 }
 
 .mobileContainer .trackContainer {
-  max-width: 152px;
+  max-width: 165px;
   height: auto;
   display: inline-flex;
   flex-direction: column;
   flex-wrap: wrap;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+  margin-top: 0;
 }
 
 .mobileContainer .trackImage {
-  height: 152px;
-  width: 152px;
+  height: 164px;
+  width: 164px;
   border-radius: 8px;
   margin-bottom: 8px;
   background-size: cover;
@@ -223,13 +230,15 @@
 
 .mobileContainer .trackTitle {
   position: relative;
-  color: #858199;
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;
   text-align: center;
   margin: 0px auto 2px;
-  padding-left: 16px;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+  text-overflow: ellipsis;
 }
 
 .mobileContainer .mobileIconArrow {
