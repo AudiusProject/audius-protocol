@@ -4,7 +4,7 @@ import { getCurrentUserExists } from 'services/LocalStorage'
 import { setupMobileLogging } from 'services/Logging'
 import { BackendDidSetup } from 'services/native-mobile-interface/lifecycle'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
-import { getPathname } from 'utils/route'
+import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
 import Dapp from './app'
 
@@ -16,29 +16,14 @@ const NoConnectivityPage = lazy(() =>
 
 const PublicSite = lazy(() => import('./pages/PublicSite'))
 
-const validPublicSitePathnames = [
-  '',
-  'press',
-  'legal/terms-of-use',
-  'legal/privacy-policy',
-  'auth-redirect'
-]
-
-const publicSiteSubPathnames = [
-  'press',
-  'legal/terms-of-use',
-  'legal/privacy-policy',
-  'auth-redirect'
-]
-
 const isPublicSiteRoute = (location = window.location) => {
-  const pathname = getPathname(location).slice(1).toLowerCase()
-  return validPublicSitePathnames.includes(pathname)
+  const pathname = getPathname(location).toLowerCase()
+  return [...publicSiteRoutes, HOME_PAGE].includes(pathname)
 }
 
 const isPublicSiteSubRoute = (location = window.location) => {
-  const pathname = getPathname(location).slice(1).toLowerCase()
-  return publicSiteSubPathnames.includes(pathname)
+  const pathname = getPathname(location).toLowerCase()
+  return publicSiteRoutes.includes(pathname)
 }
 
 const clientIsElectron = isElectron()

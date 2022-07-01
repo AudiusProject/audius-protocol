@@ -21,7 +21,7 @@
   width: calc(100vw + 30px);
   margin: -10px;
   filter: blur(5px);
-  background-size: 1000px;
+  background-size: cover;
   background-position: 50% 5%;
 }
 
@@ -36,10 +36,10 @@
   z-index: 2000;
   height: 100vh;
   width: 100vw;
-  padding: 24px 24px 54px;
+  padding: 24px;
   display: inline-flex;
+  justify-content: space-between;
   flex-direction: column;
-  align-items: center;
 }
 
 .iconContainer {
@@ -49,6 +49,7 @@
 }
 
 .iconClose {
+  position: absolute;
   width: 32px;
   height: 32px;
 }
@@ -57,51 +58,51 @@
   fill: var(--static-white);
 }
 
-.centerLogo {
-  flex: 0 1 133px;
-  margin: 0px auto;
-}
-
 .horizontalLogo {
-  width: 182px;
+  width: 195px;
   margin: 0px auto;
   filter: brightness(0) invert(1);
 }
 
-.startListeningButtonContainer {
-  flex: 0 1 143px;
+.startListeningButtonContaier {
+  margin-top: 32px;
 }
 
 .startListeningButton {
-  border-radius: 9px;
-  background-color: var(--static-primary);
-  box-shadow: 0 5px 20px 0 rgba(25, 0, 96, 0.5);
-  padding: 16px 40px;
-  color: var(--static-white);
-  font-family: Gilroy;
-  font-size: var(--font-2xl);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.3px;
-  line-height: 29px;
+  width: 100%;
+  padding: 13px 0px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
   text-align: center;
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3, 1px 2px 5px rgba(133, 129, 153, 0.25);
+  color: #7e1bcc;
+  border: none;
+  transform: scale3d(1, 1, 1);
 }
 
-.dappLinksContainer {
-  flex: 0 1 173px;
+@media screen and (min-height: 705px) {
+  .dappLinksContainer {
+    margin-top: 56px;
+  }
 }
 
 .dappLinks {
+  height: 100%;
   display: inline-flex;
   flex-direction: column;
-  justify-content: space-between;
-  margin-bottom: 48px;
-  height: 125px;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .dappLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 32px;
 }
 
 .dappLinkIcon {
@@ -116,26 +117,25 @@
 .dappLinkText {
   margin-left: 16px;
   color: var(--static-white);
-  font-size: var(--font-2xl);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.3px;
+  font-size: 24px;
+  line-height: 24px;
+  font-weight: 700;
 }
 
 .linksContainer {
-  flex: 1;
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: inline-grid;
+  grid-template-columns: repeat(3, 1fr);
+  flex-grow: 1;
+  align-content: flex-end;
+  row-gap: 16px;
 }
 
 .link {
-  font-size: var(--font-m);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.2px;
-  line-height: 19px;
-  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
   color: var(--static-white);
-  font-family: Gilroy;
+  white-space: nowrap;
 }
 
 .iconsContainer {
@@ -146,8 +146,8 @@
 }
 
 .icon {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 
 .icon path {

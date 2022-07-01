@@ -3,16 +3,15 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import cn from 'classnames'
 import { useChain, useSpring, useTrail, animated } from 'react-spring'
 
+import productShot from 'assets/img/publicSite/AudiusWeb@2x.png'
 import dotsLogo1x from 'assets/img/publicSite/dot-logo@1x.jpg'
 import dotsLogo2x from 'assets/img/publicSite/dot-logo@2x.jpg'
-import productShot1x from 'assets/img/publicSite/product-shot@1x.png'
-import productShot2x from 'assets/img/publicSite/product-shot@2x.png'
 
 import styles from './Description.module.css'
 
 const messages = {
-  title1: 'We Give Everyone the',
-  title2: 'Freedom to Share & Listen',
+  title1: 'Next Generation',
+  title2: 'Web-3 Streaming Platform',
   description:
     'Audius is a brand-new streaming platform built for all musicians, not just those signed to labels.',
   features:
@@ -101,16 +100,10 @@ const Description = (props: DescriptionProps) => {
   if (props.isMobile) {
     return (
       <div className={styles.mobileContainer}>
-        <img
-          src={dotsLogo1x}
-          srcSet={`${dotsLogo1x} 1x, ${dotsLogo2x} 2x`}
-          className={styles.dotsLogo}
-          alt='Background moving dot pattern'
-        />
         <div className={styles.textSection}>
           <img
-            src={productShot1x}
-            srcSet={`${productShot1x} 1x, ${productShot2x} 2x`}
+            src={productShot}
+            srcSet={`${productShot} 2x`}
             className={styles.productShot}
             alt='Audius Product Shot'
           />
@@ -188,8 +181,8 @@ const Description = (props: DescriptionProps) => {
       <div className={styles.content}>
         <div className={styles.foreground}>
           <img
-            src={productShot1x}
-            srcSet={`${productShot1x} 1x, ${productShot2x} 2x`}
+            src={productShot}
+            srcSet={`${productShot} 2x`}
             className={styles.productShot}
             alt='Audius Product Shot'
           />

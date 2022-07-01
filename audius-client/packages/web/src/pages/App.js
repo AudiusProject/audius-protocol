@@ -149,7 +149,8 @@ import {
   AUDIO_NFT_PLAYLIST_PAGE,
   DEACTIVATE_PAGE,
   SUPPORTING_USERS_ROUTE,
-  TOP_SUPPORTERS_USERS_ROUTE
+  TOP_SUPPORTERS_USERS_ROUTE,
+  publicSiteRoutes
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -515,6 +516,17 @@ class App extends Component {
 
           <Suspense fallback={null}>
             <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
+              {publicSiteRoutes.map(route => (
+                // Redirect all public site routes to the corresponding pathname.
+                // This is necessary first because otherwise pathnames like
+                // legal/privacy-policy will match the track route.
+                <Redirect
+                  key={route}
+                  from={route}
+                  to={{ pathname: getPathname() }}
+                />
+              ))}
+
               <Route
                 exact
                 path={SIGN_IN_PAGE}

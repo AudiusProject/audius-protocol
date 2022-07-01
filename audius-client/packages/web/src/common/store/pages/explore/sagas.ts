@@ -4,6 +4,7 @@ import { ID } from 'common/models/Identifiers'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
+import { STATIC_EXPLORE_CONTENT_URL } from 'utils/constants'
 
 import {
   fetchExplore,
@@ -12,10 +13,9 @@ import {
 } from './slice'
 
 const EXPLORE_CONTENT_URL =
-  process.env.REACT_APP_EXPLORE_CONTENT_URL ||
-  'https://download.audius.co/static-resources/explore-content.json'
+  process.env.REACT_APP_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
 
-const fetchExploreContent = async () => {
+export const fetchExploreContent = async () => {
   return fetch(EXPLORE_CONTENT_URL).then(resp => resp.json())
 }
 

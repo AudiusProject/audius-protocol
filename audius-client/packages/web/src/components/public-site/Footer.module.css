@@ -3,13 +3,13 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 49px 0px 39px;
+  padding: 49px 50px 39px;
 }
 
 .content {
   flex-shrink: 0;
   width: 100%;
-  max-width: 1140px;
+  max-width: 1240px;
   display: inline-flex;
   flex-direction: column;
 }
@@ -33,12 +33,13 @@
   transition: all 0.15s ease-in-out;
   border: none;
   border-radius: 6px;
-  background-color: var(--static-secondary);
-  box-shadow: 0 10px 30px -2px rgba(89, 11, 151, 0.3);
+  background-color: var(--static-primary);
+  box-shadow: 0 10px 30px -2px rgb(89 11 151 / 10%);
   padding: 12px 24px;
-
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   color: var(--static-white);
-  font-family: Gilroy !important;
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 0.2px;
@@ -50,14 +51,18 @@
 
 .startListeningButton:hover {
   transform: scale3d(1.03, 1.03, 1.03);
-  background-color: #8615df;
-  box-shadow: 0 20px 30px -2px rgba(89, 11, 151, 0.3);
+  background-color: #dc19f0;
+  box-shadow: 0 10px 30px -1px rgb(25 0 96 / 20%);
 }
 
 .startListeningButton:active {
   transform: scale3d(0.99, 0.99, 0.99);
-  background-color: #6a08b7;
-  box-shadow: 0 1px 2px -2px rgba(89, 11, 151, 0.3);
+  background-color: #ba02ce;
+  box-shadow: 0 10px 30px -1px rgb(25 0 96 / 20%);
+}
+
+.arrowRight {
+  margin-left: 4px;
 }
 
 .divider {
@@ -85,14 +90,19 @@
 }
 
 .siteLinksRowContainer {
-  max-width: 269px;
-  display: inline-flex;
-  justify-content: space-between;
+  max-width: 300px;
+  display: inline-grid;
+  grid-row-gap: 12px;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.siteLinksRowContainer:not(:first-child) {
+  padding-top: 12px;
 }
 
 .siteLink {
   color: var(--static-neutral) !important;
-  font-family: Gilroy !important;
+  font-weight: 500;
   font-size: var(--font-s);
   line-height: 24px;
   text-decoration-color: var(--static-neutral) !important;
@@ -113,12 +123,18 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
+  align-self: baseline;
+  margin-left: 16px;
+  margin-right: 16px;
   color: var(--static-neutral);
-  font-family: Gilroy !important;
   font-size: var(--font-s);
   line-height: 20px;
+  font-weight: 500;
   text-align: center;
+}
+
+.madeWithLoveContainer {
+  margin-top: 10px;
 }
 
 .heart {
@@ -160,27 +176,24 @@
 }
 
 .socialIconLink path {
-  fill: var(--static-neutral-light-4);
+  fill: var(--static-neutral);
 }
 
 /* Bottom Links */
 .bottomLinks {
-  margin: 0px auto;
   width: 100%;
-  max-width: 250px;
+  margin-top: 24px;
   display: inline-flex;
   justify-content: space-between;
 }
 
 .bottomLink {
-  color: var(--static-neutral-light-4) !important;
-  font-family: Gilroy !important;
+  color: var(--static-neutral) !important;
   font-size: var(--font-s);
-  text-decoration-color: var(--static-neutral-light-4) !important;
 }
 
 .bottomLink:hover {
-  text-decoration: underline var(--static-neutral-light-4) !important;
+  text-decoration: underline var(--static-neutral) !important;
 }
 
 .link {
@@ -209,6 +222,7 @@
 
 .isMobile .startListeningButton {
   margin: 24px auto 0px;
+  width: 100%;
 }
 
 .isMobile .divider {
@@ -223,7 +237,10 @@
 }
 
 .isMobile .rightsContainer {
+  width: 100%;
   order: 3;
+  margin-left: initial;
+  margin-right: initial;
 }
 
 .isMobile .socialLinks {
@@ -240,7 +257,6 @@
 }
 
 .isMobile .siteLinksRowContainer {
-  height: 32px;
   max-width: 100%;
 }
 
