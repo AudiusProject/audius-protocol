@@ -10,7 +10,6 @@ import {
   MultipleMusicalNotesIcon,
 } from './Icons'
 
-import { formatCount } from './utils'
 import { notificationTypes as NotificationType } from '../../constants'
 
 const challengeRewardsConfig = {
