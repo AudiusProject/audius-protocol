@@ -1,0 +1,226 @@
+{
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "6jA6F3qnz"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "transparent",
+                    "index": 0
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 60
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "libraryPanel": {
+          "description": "",
+          "meta": {
+            "connectedDashboards": 3,
+            "created": "2022-07-01T07:03:00Z",
+            "createdBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            },
+            "folderName": "General",
+            "folderUid": "",
+            "updated": "2022-07-01T09:11:50Z",
+            "updatedBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            }
+          },
+          "name": "Celery Tasks (Active)",
+          "type": "bargauge",
+          "uid": "ilGck637k",
+          "version": 4
+        },
+        "options": {
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "audius_dn_active_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+            "instant": false,
+            "legendFormat": "{{task_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Celery Tasks (Active)",
+        "type": "bargauge"
+      }
+    ],
+    "refresh": "30m",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
+          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Environment",
+          "multi": false,
+          "name": "env",
+          "options": [],
+          "query": {
+            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 2,
+          "type": "query"
+        },
+        {
+          "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
+          "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+          "description": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Host",
+          "multi": false,
+          "name": "host",
+          "options": [],
+          "query": {
+            "query": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-2h",
+      "to": "now"
+    },
+    "timepicker": {
+      "nowDelay": "1m",
+      "refresh_intervals": [
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "Overview",
+    "uid": "Ayvzmeq7z",
+    "version": null,
+    "weekStart": ""
+  },
+  "overwrite": true
+}

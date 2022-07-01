@@ -48,7 +48,7 @@ RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
-for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | .uid')
+for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
 do
     response=$(curl \
         -s \
@@ -57,9 +57,15 @@ do
         -H 'Accept: application/json' \
         ${BASE_URL}/api/dashboards/uid/${uid})
 
-    slug=$(echo $response | jq -r '.meta.slug')
-    path=grafana/dashboards/$slug.json
-    echo $response \
+    # create local filepath using the .meta key
+    slug=$(echo ${response} | jq -r '.meta.slug')
+    # recreate the folder slug using bash instead of calling /api/search again
+    folder=$(echo ${response} | jq -r '.meta.folderTitle' | tr "-" " " | xargs | tr " " "-" | tr '[:upper:]' '[:lower:]')
+    path=grafana/dashboards/${folder}
+    mkdir -p "${path}"
+    path=${path}/${slug}.json
+
+    echo ${response} \
         | jq "${CLEAR_METADATA}" \
         | jq "${CLEAR_ITERATION}" \
         | jq "${CLEAR_VERSION}" \
@@ -72,6 +78,6 @@ do
         | jq "${RESET_TEMPLATE_SELECTION}" \
         | jq "${CLEAR_DATASOURCE_ID}" \
         | jq "${PUSH_FORMATTING}" \
-        > ${path}
+        > "${path}"
     echo "Saved to: ${path}"
 done

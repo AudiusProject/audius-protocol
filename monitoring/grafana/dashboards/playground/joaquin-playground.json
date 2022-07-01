@@ -78,7 +78,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -168,7 +169,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -272,7 +274,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -361,7 +364,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -462,7 +466,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -552,7 +557,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -1596,7 +1602,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 92
+          "y": 84
         },
         "id": 41,
         "panels": [],
@@ -1643,8 +1649,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1660,7 +1665,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 93
+          "y": 85
         },
         "id": 43,
         "options": {
@@ -1702,6 +1707,9 @@
       "list": [
         {
           "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
           "description": "",
           "hide": 0,
@@ -1722,6 +1730,9 @@
         },
         {
           "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count, host)",
           "description": "",
           "hide": 0,
@@ -1773,7 +1784,7 @@
       ]
     },
     "timezone": "",
-    "title": "Discovery Provider",
+    "title": "Joaquin - Playground",
     "uid": "000000004",
     "version": null,
     "weekStart": ""

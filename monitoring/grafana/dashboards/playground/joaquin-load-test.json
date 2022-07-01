@@ -27,12 +27,119 @@
     "liveNow": false,
     "panels": [
       {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "6jA6F3qnz"
+        },
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "transparent",
+                    "index": 0
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 60
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "id": 45,
+        "libraryPanel": {
+          "description": "",
+          "meta": {
+            "connectedDashboards": 3,
+            "created": "2022-07-01T07:03:00Z",
+            "createdBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            },
+            "folderName": "General",
+            "folderUid": "",
+            "updated": "2022-07-01T09:11:50Z",
+            "updatedBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            }
+          },
+          "name": "Celery Tasks (Active)",
+          "type": "bargauge",
+          "uid": "ilGck637k",
+          "version": 4
+        },
+        "options": {
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "audius_dn_active_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+            "instant": false,
+            "legendFormat": "{{task_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Celery Tasks (Active)",
+        "type": "bargauge"
+      },
+      {
         "collapsed": false,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 0
+          "y": 8
         },
         "id": 37,
         "panels": [],
@@ -78,7 +185,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -94,7 +202,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 1
+          "y": 9
         },
         "id": 38,
         "options": {
@@ -168,7 +276,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -183,7 +292,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 1
+          "y": 9
         },
         "id": 39,
         "options": {
@@ -225,7 +334,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 9
+          "y": 17
         },
         "id": 21,
         "panels": [],
@@ -272,7 +381,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -288,7 +398,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 10
+          "y": 18
         },
         "id": 23,
         "options": {
@@ -361,7 +471,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green"
+                  "color": "green",
+                  "value": null
                 },
                 {
                   "color": "red",
@@ -377,7 +488,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 10
+          "y": 18
         },
         "id": 24,
         "options": {
@@ -416,7 +527,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 18
+          "y": 26
         },
         "id": 9,
         "panels": [],
@@ -478,7 +589,7 @@
           "h": 11,
           "w": 12,
           "x": 0,
-          "y": 19
+          "y": 27
         },
         "id": 18,
         "options": {
@@ -568,7 +679,7 @@
           "h": 11,
           "w": 12,
           "x": 12,
-          "y": 19
+          "y": 27
         },
         "id": 2,
         "links": [],
@@ -663,7 +774,7 @@
           "h": 11,
           "w": 24,
           "x": 0,
-          "y": 30
+          "y": 38
         },
         "id": 19,
         "options": {
@@ -704,7 +815,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 41
+          "y": 49
         },
         "id": 10,
         "panels": [],
@@ -766,7 +877,7 @@
           "h": 7,
           "w": 12,
           "x": 0,
-          "y": 42
+          "y": 50
         },
         "id": 3,
         "links": [],
@@ -861,7 +972,7 @@
           "h": 7,
           "w": 12,
           "x": 12,
-          "y": 42
+          "y": 50
         },
         "id": 4,
         "links": [],
@@ -902,7 +1013,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 49
+          "y": 57
         },
         "id": 11,
         "panels": [],
@@ -964,7 +1075,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 50
+          "y": 58
         },
         "id": 14,
         "options": {
@@ -1054,7 +1165,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 50
+          "y": 58
         },
         "id": 16,
         "options": {
@@ -1144,7 +1255,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 58
+          "y": 66
         },
         "id": 25,
         "options": {
@@ -1185,7 +1296,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 66
+          "y": 74
         },
         "id": 33,
         "panels": [],
@@ -1247,7 +1358,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 67
+          "y": 75
         },
         "id": 27,
         "options": {
@@ -1337,7 +1448,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 67
+          "y": 75
         },
         "id": 26,
         "options": {
@@ -1378,7 +1489,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 75
+          "y": 83
         },
         "id": 31,
         "panels": [],
@@ -1465,7 +1576,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 76
+          "y": 84
         },
         "id": 28,
         "options": {
@@ -1555,7 +1666,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 76
+          "y": 84
         },
         "id": 29,
         "options": {
@@ -1596,7 +1707,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 84
+          "y": 92
         },
         "id": 12,
         "panels": [],
@@ -1658,7 +1769,7 @@
           "h": 7,
           "w": 12,
           "x": 0,
-          "y": 85
+          "y": 93
         },
         "id": 7,
         "links": [],
@@ -1751,7 +1862,7 @@
           "h": 7,
           "w": 12,
           "x": 12,
-          "y": 85
+          "y": 93
         },
         "id": 8,
         "links": [],
@@ -1814,7 +1925,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 92
+          "y": 100
         },
         "id": 41,
         "panels": [],
@@ -1861,8 +1972,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -1878,7 +1988,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 93
+          "y": 101
         },
         "id": 43,
         "options": {
@@ -1920,6 +2030,9 @@
       "list": [
         {
           "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
           "description": "",
           "hide": 0,
@@ -1940,6 +2053,9 @@
         },
         {
           "allValue": ".*",
+          "datasource": {
+            "type": "prometheus"
+          },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
           "hide": 0,
@@ -1991,7 +2107,7 @@
       ]
     },
     "timezone": "",
-    "title": "Load Test",
+    "title": "Joaquin - Load Test",
     "uid": "000000002",
     "version": null,
     "weekStart": ""
