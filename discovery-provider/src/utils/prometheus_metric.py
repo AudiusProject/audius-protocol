@@ -25,13 +25,21 @@ def save_duration_metric(metric_group):
             )
             try:
                 result = func(*args, **kwargs)
-                histogram_metric.save_time({"func_name": func.__name__, "success": True})
-                gauge_metric.save_time({"func_name": func.__name__, "success": True})
-                return result
-            except:
-                histogram_metric.save_time({"func_name": func.__name__, "success": False})
-                gauge_metric.save_time({"func_name": func.__name__, "success": False})
-                raise
+                try:
+                    histogram_metric.save_time({"func_name": func.__name__, "success": True})
+                    gauge_metric.save_time({"func_name": func.__name__, "success": True})
+                except Exception as e:
+                    logger.exception("Failed to save successful metrics", e)
+                finally:
+                    return result
+            except Exception as e:
+                try:
+                    histogram_metric.save_time({"func_name": func.__name__, "success": False})
+                    gauge_metric.save_time({"func_name": func.__name__, "success": False})
+                except Exception as inner_e:
+                    logger.exception("Failed to save unsuccessful metrics", inner_e)
+                finally:
+                    raise e
 
         return wrapper
 
