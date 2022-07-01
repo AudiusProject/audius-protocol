@@ -21,21 +21,29 @@ def save_duration_metric(metric_group):
                 f"last_{metric_group}_duration_seconds",
                 f"How long a {metric_group} has been running",
                 ("func_name", "success"),
-                metric_type=PrometheusType.GAUGE
+                metric_type=PrometheusType.GAUGE,
             )
             try:
                 result = func(*args, **kwargs)
                 try:
-                    histogram_metric.save_time({"func_name": func.__name__, "success": True})
-                    gauge_metric.save_time({"func_name": func.__name__, "success": True})
+                    histogram_metric.save_time(
+                        {"func_name": func.__name__, "success": True}
+                    )
+                    gauge_metric.save_time(
+                        {"func_name": func.__name__, "success": True}
+                    )
                 except Exception as e:
                     logger.exception("Failed to save successful metrics", e)
                 finally:
                     return result
             except Exception as e:
                 try:
-                    histogram_metric.save_time({"func_name": func.__name__, "success": False})
-                    gauge_metric.save_time({"func_name": func.__name__, "success": False})
+                    histogram_metric.save_time(
+                        {"func_name": func.__name__, "success": False}
+                    )
+                    gauge_metric.save_time(
+                        {"func_name": func.__name__, "success": False}
+                    )
                 except Exception as inner_e:
                     logger.exception("Failed to save unsuccessful metrics", inner_e)
                 finally:
