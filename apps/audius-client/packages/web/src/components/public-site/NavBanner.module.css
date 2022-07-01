@@ -17,8 +17,8 @@
   align-items: center;
   margin: 0px auto;
   width: 100%;
-  padding: 0px 32px;
-  max-width: 1204px;
+  padding: 0px 100px;
+  max-width: 1440px;
 }
 
 .invertColors {
@@ -29,7 +29,6 @@
 
 /* Left Icons */
 .iconContainer {
-  flex: 1;
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
@@ -65,10 +64,11 @@
 
 /* Center Logo */
 .centerLogo {
-  flex: 1;
+  flex-grow: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-right: 12px;
 }
 
 .horizontalLogo {
@@ -87,16 +87,14 @@
 
 /* Right Links */
 .linkContainer {
-  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+  color: var(--static-white);
 }
 
-.token {
+.rightLink {
   cursor: pointer;
-  color: var(--static-white);
-  font-family: Gilroy !important;
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 0.2px;
@@ -107,19 +105,19 @@
   transform: scale3d(1, 1, 1);
 }
 
-.token:hover {
+.rightLink:hover {
   text-decoration: underline;
   opacity: 0.8;
   transform: scale3d(1.03, 1.03, 1.03);
 }
 
-.token:active {
+.rightLink:active {
   opacity: 0.8;
   transform: scale3d(0.99, 0.99, 0.99);
 }
 
-.invertColors .token {
-  display: none;
+.invertColors .linkContainer {
+  color: var(--static-secondary);
 }
 
 .startListening {
@@ -128,8 +126,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #480b79;
-  font-family: Gilroy !important;
+  color: #7e1bcc;
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   letter-spacing: 0.2px;
@@ -175,7 +172,7 @@
   position: fixed;
   width: 100%;
   top: 0px;
-  padding: 16px;
+  padding: 0px 22px;
   height: 80px;
   display: inline-flex;
   align-items: center;
@@ -194,14 +191,18 @@
 }
 
 .kebabMenu {
-  position: absolute;
-  left: 24px;
-  top: 24px;
   height: 32px;
   width: 32px;
+  padding-right: 2px;
 }
 
-.kebabMenu path {
+.trendingIcon {
+  height: 28px;
+  width: 28px;
+}
+
+.kebabMenu path,
+.trendingIcon path {
   fill: var(--static-white);
 }
 

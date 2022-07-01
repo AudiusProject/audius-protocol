@@ -26,7 +26,3 @@
   background: #a116b7;
   color: #fff;
 }
-
-:global(#landingPage).container * {
-  font-family: Gilroy !important;
-}

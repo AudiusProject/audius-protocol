@@ -6,7 +6,7 @@
 
 .content {
   position: relative;
-  margin: 120px 0px;
+  margin: 160px 0px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,9 +29,9 @@
 }
 
 .tagline {
+  font-weight: 500;
   max-width: 470px;
-  color: #480b79;
-  font-family: Gilroy !important;
+  color: #858199;
   font-size: 36px;
   line-height: 48px;
   text-align: center;
@@ -61,15 +61,13 @@
 .isMobile .tagline {
   position: relative;
   z-index: 5;
-  max-width: 470px;
-  color: #480b79;
-  font-family: Gilroy !important;
   text-align: center;
-
-  color: #480b79;
-  font-family: Gilroy;
-  font-size: 27px;
-  line-height: 36px;
+  font-size: 36px;
+  line-height: 48px;
   padding: 0px 12px;
   margin-top: 12px;
+}
+
+.isMobile .quotePyramid {
+  height: 315px;
 }

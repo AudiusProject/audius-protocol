@@ -1,23 +1,26 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
+import { IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
 import { useChain, useTrail, animated } from 'react-spring'
 
+import appImg from 'assets/img/publicSite/AudiusAppAlt@2x.png'
 import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
-import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
+import { useMatchesBreakpoint } from 'common/hooks/useMatchesBreakpoint'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
 
 import styles from './CTAListening.module.css'
 
+const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia('(max-width: 1150px)')
+
 const messages = {
-  title1: 'Highest Audio Quality of Any Free',
-  title2: 'Streaming Service',
-  cta: 'Start Listening'
+  title1: '320kbps Streaming For Free',
+  title2: 'The way your music should be heard.',
+  cta: 'Start Uploading Today'
 }
 
-const title = `${messages.title1} ${messages.title2}`
 const title1Items = messages.title1.split(' ')
 const title2Items = messages.title2.split(' ')
 
@@ -27,6 +30,10 @@ type CTAListeningProps = {
 }
 
 const CTAListening = (props: CTAListeningProps) => {
+  const isNarrow = useMatchesBreakpoint({
+    initialValue: props.isMobile,
+    mediaQuery: MOBILE_WIDTH_MEDIA_QUERY
+  })
   const [hasViewed, setHasViewed] = useState(false)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -69,7 +76,7 @@ const CTAListening = (props: CTAListeningProps) => {
     return () => window.removeEventListener('scroll', refInView)
   }, [refInView])
 
-  if (props.isMobile) {
+  if (props.isMobile || isNarrow) {
     return (
       <div className={styles.mobileContainer}>
         <div className={styles.bgContainer}>
@@ -86,8 +93,20 @@ const CTAListening = (props: CTAListeningProps) => {
             />
           </Parallax>
         </div>
-        <div className={styles.content}>
-          <div className={styles.title}>{title}</div>
+        <div className={styles.textContent}>
+          <div className={styles.appImgContainer}>
+            <img
+              src={appImg}
+              className={styles.appImg}
+              alt='Audius mobile app'
+            />
+          </div>
+          <div className={styles.titlesContainer}>
+            <div className={styles.title}>
+              <div className={styles.title1}>{messages.title1}</div>
+              <div className={styles.title2}>{messages.title2}</div>
+            </div>
+          </div>
           <button
             onClick={handleClickRoute(
               AUDIUS_LISTENING_LINK,
@@ -106,32 +125,16 @@ const CTAListening = (props: CTAListeningProps) => {
   return (
     <div ref={containerRef} className={styles.container}>
       <div className={styles.content}>
-        <div className={styles.title}>
-          <h3 className={styles.title1}>
-            {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (
-              <animated.span
-                key={title1Items[index]}
-                className={cn(styles.textAnimate)}
-                style={{
-                  ...rest,
-                  transform: x.interpolate(
-                    (x: number) => `translate3d(0,${x}px,0)`
-                  )
-                }}
-              >
-                <animated.div className={styles.word}>
-                  {' '}
-                  {title1Items[index]}{' '}
-                </animated.div>
-              </animated.span>
-            ))}
-          </h3>
-          <h3 className={styles.title2}>
-            {secondTitle.map(
-              ({ x, wordYPosition, ...rest }: any, index: number) => (
+        <div className={styles.appImgContainer}>
+          <img src={appImg} className={styles.appImg} alt='Audius mobile app' />
+        </div>
+        <div className={styles.textContent}>
+          <div className={styles.title}>
+            <h3 className={styles.title1}>
+              {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (
                 <animated.span
-                  key={title2Items[index]}
-                  className={cn(cn(styles.textAnimate))}
+                  key={title1Items[index]}
+                  className={cn(styles.textAnimateTitle1)}
                   style={{
                     ...rest,
                     transform: x.interpolate(
@@ -139,27 +142,48 @@ const CTAListening = (props: CTAListeningProps) => {
                     )
                   }}
                 >
-                  <animated.div
-                    className={cn(styles.word, styles.coloredTitleWord)}
-                  >
+                  <animated.div className={styles.word}>
                     {' '}
-                    {title2Items[index]}{' '}
+                    {title1Items[index]}{' '}
                   </animated.div>
                 </animated.span>
-              )
+              ))}
+            </h3>
+            <h3 className={styles.title2}>
+              {secondTitle.map(
+                ({ x, wordYPosition, ...rest }: any, index: number) => (
+                  <animated.span
+                    key={title2Items[index]}
+                    className={cn(cn(styles.textAnimateTitle2))}
+                    style={{
+                      ...rest,
+                      transform: x.interpolate(
+                        (x: number) => `translate3d(0,${x}px,0)`
+                      )
+                    }}
+                  >
+                    <animated.div
+                      className={cn(styles.word, styles.coloredTitleWord)}
+                    >
+                      {' '}
+                      {title2Items[index]}{' '}
+                    </animated.div>
+                  </animated.span>
+                )
+              )}
+            </h3>
+          </div>
+          <button
+            onClick={handleClickRoute(
+              AUDIUS_LISTENING_LINK,
+              props.setRenderPublicSite
             )}
-          </h3>
+            className={styles.ctaButton}
+          >
+            {messages.cta}
+            <IconArrow className={styles.arrowRight} />
+          </button>
         </div>
-        <button
-          onClick={handleClickRoute(
-            AUDIUS_LISTENING_LINK,
-            props.setRenderPublicSite
-          )}
-          className={styles.ctaButton}
-        >
-          {messages.cta}
-          <IconArrow className={styles.arrowRight} />
-        </button>
       </div>
       <div className={styles.bgContainer}>
         <div className={styles.parallaxBg}></div>

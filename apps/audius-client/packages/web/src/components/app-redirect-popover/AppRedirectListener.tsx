@@ -7,17 +7,17 @@ import { Dispatch } from 'redux'
 
 import { MobileOS } from 'common/models/OS'
 import { getMobileOS } from 'utils/clientUtil'
-import { APP_REDIRECT } from 'utils/route'
+import {
+  APP_REDIRECT,
+  ANDROID_PLAY_STORE_LINK,
+  IOS_WEBSITE_STORE_LINK,
+  IOS_APP_STORE_LINK
+} from 'utils/route'
 
 type AppRedirectListenerProps = ReturnType<typeof mapDispatchToProps>
 
 const EMBED_HASH = '#embed'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-const IOS_APP_STORE_LINK = 'itms-apps://us/app/audius-music/id1491270519'
-const ANDROID_PLAY_STORE_LINK =
-  'https://play.google.com/store/apps/details?id=co.audius.app'
-const IOS_WEBSITE_STORE_LINK =
-  'https://apps.apple.com/us/app/audius-music/id1491270519'
 
 /**
  * `AppRedirectListener` listens to redirects from the `AppRedirectPopover`.

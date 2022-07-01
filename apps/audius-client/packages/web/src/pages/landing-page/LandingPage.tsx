@@ -131,11 +131,11 @@ const LandingPage = (props: LandingPageProps) => {
         <Description isMobile={props.isMobile} />
         <ArtistTestimonials isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
-        <FeaturedContent
+        <CTAListening
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <CTAListening
+        <FeaturedContent
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />

@@ -1,0 +1,19 @@
+.container {
+  flex-shrink: 0;
+  display: inline-flex;
+  flex-direction: column;
+  margin: 50px auto 50px;
+  font-size: 24px;
+  line-height: 34px;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+}
+
+.downloadStarting {
+  color: var(--static-secondary);
+}
+
+.didntWork {
+  margin-top: 8px;
+}

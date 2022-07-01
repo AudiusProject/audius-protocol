@@ -1,6 +1,8 @@
 .container {
   flex-shrink: 0;
-  margin: 44px 0px 16px;
+  margin: 44px 0px 100px;
+  padding-left: 100px;
+  padding-right: 100px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -8,7 +10,7 @@
 
 .content {
   width: 100%;
-  max-width: 1144px;
+  max-width: 1240px;
   position: relative;
 }
 
@@ -27,19 +29,22 @@
   max-width: 807px;
 }
 
+:global(#landingPage) .title {
+  font-family: 'Avenir Next LT Pro Condensed' !important;
+}
+
 .title {
-  color: #480b79;
-  font-family: Gilroy !important;
-  font-size: 42px;
-  font-weight: bold;
+  color: #7e1bcc;
+  font-size: 48px;
+  font-weight: 900;
   line-height: 56px;
   width: 100%;
+  text-transform: uppercase;
 }
 
 .subTitle {
-  color: #c2c0cc;
-  font-family: Gilroy !important;
-  font-size: 21px;
+  color: #858199;
+  font-size: 22px;
   font-weight: 500;
   line-height: 34px;
   width: 100%;
@@ -58,21 +63,24 @@
   position: absolute;
   background-repeat: repeat;
   background-size: 500px 201px;
-  top: -69px;
+  top: -390px;
   left: -152px;
   z-index: 0;
 }
 
 .cardMoveContainer {
+  margin-bottom: 32px;
   user-select: none;
 }
 
 .artistsContainer {
   display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  flex-wrap: wrap;
   width: 100%;
-  margin-top: 40px;
+  margin: -34px 0 0 -60px;
+  width: calc(100% + 60px);
 }
 
 /*  Artist Component */
@@ -80,26 +88,23 @@
 .artistContainer {
   display: inline-flex;
   flex-direction: column;
-  height: 200px;
-  width: 200px;
-  transition: all 0.25s ease-in-out;
-  transform: scale3d(1, 1, 1);
-  cursor: pointer;
+  margin: 34px 0 0 60px;
 }
 
-.artistContainer:hover {
-  transform: scale3d(1.1, 1.1, 1.1);
+.artistImageWrapper {
+  border-radius: 50%;
+  height: 200px;
+  width: 200px;
+  overflow: hidden;
 }
 
 .artistImage {
   height: 100%;
   width: 100%;
-  border-radius: 50%;
 }
 
 .artistName {
-  color: #480b79;
-  font-family: Gilroy !important;
+  color: #858199;
   font-size: 21px;
   font-weight: 500;
   line-height: 25px;
@@ -107,68 +112,8 @@
   margin: 18px auto 0px;
 }
 
-/* Quote Container */
-.quoteContainer {
-  width: 100%;
-  margin: 0px -64px;
-  position: relative;
-  height: 211px;
-}
-
-.quoteBlock {
-  margin-top: 34px;
-  width: 100%;
-  max-width: 510px;
-  border: 2px solid rgba(72, 11, 121, 0.25);
-  border-radius: 12px;
-  background: linear-gradient(315deg, #5d24e6 0%, #882feb 100%);
-  box-shadow: 0 11px 50px -2px rgba(110, 40, 232, 0.4);
-}
-
-.quoteCarrotContainer {
-  position: relative;
-  width: 100%;
-}
-
-.quoteCarrot {
-  height: 18px;
-  background: linear-gradient(315deg, #5d24e6 0%, #882feb 100%);
-  width: 100%;
-  position: absolute;
-  top: -18px;
-  left: 0px;
-}
-
-.quoteContent {
-  position: relative;
-  height: 155px;
-  overflow: hidden;
-}
-
-.quote {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
-.artistQuoteContainer {
-  display: inline-flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 16px 32px;
-  color: #ffffff;
-  font-family: Gilroy !important;
-  font-size: 21px;
-  font-weight: 500;
-  line-height: 25px;
-}
-
 .byArtistName {
   color: #ffffff;
-  font-family: Gilroy !important;
   font-size: 18px;
   font-weight: bold;
   width: 100%;
@@ -179,6 +124,7 @@
 .animateTitleContainer {
   overflow: hidden;
   width: 100%;
+  margin-bottom: 48px;
 }
 
 /* Mobile */
@@ -189,33 +135,31 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 120px;
 }
 
 .mobileContainer .title {
   z-index: 1;
-  color: #480b79;
-  font-family: Gilroy;
-  font-size: 32px;
-  font-weight: bold;
-  line-height: 56px;
+  font-size: 40px;
+  line-height: 48px;
   text-align: center;
 }
 
 .mobileContainer .subTitle {
   z-index: 1;
   max-width: 300px;
-  color: #c2c0cc;
-  font-family: Gilroy;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 23px;
+  line-height: 30px;
   text-align: center;
 }
 
 .mobileContainer .artistsContainer {
+  margin: unset;
   max-width: 400px;
   z-index: 1;
   display: inline-flex;
+  margin-top: 64px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
@@ -223,66 +167,49 @@
 
 .mobileContainer .artistCard {
   margin: 0px 12px 16px;
-  max-width: 118px;
 }
 
-.mobileContainer .artistImage {
-  height: 118px;
-  width: 118px;
+.mobileContainer .overflowArtistCard {
+  display: inline-block;
+  overflow: hidden;
+  height: 125px;
+  width: 125px;
   border-radius: 50%;
+  border: solid 4px #ffffff;
+}
+
+.mobileContainer .overflowArtistCard:not(:first-child) {
+  margin-left: -53px;
+}
+
+.mobileContainer .overflowArtistsContainer {
+  max-width: 400px;
+  justify-content: center;
+}
+
+.mobileContainer .overflowArtistsText {
+  color: #7e1bcc;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 22px;
+  margin-top: 6px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.mobileContainer .artistImageWrapper {
+  width: 150px;
+  height: 150px;
   margin-bottom: 8px;
 }
 
 .mobileContainer .artistName {
-  color: #480b79;
-  font-family: Gilroy;
+  color: #7e1bcc;
   font-size: 16px;
   font-weight: 500;
   line-height: 19px;
   text-align: center;
   margin: 0px auto;
-}
-
-.mobileContainer .quoteCarrot {
-  position: relative;
-  top: 2px;
-  margin: 18px 0px 0px;
-  height: 16px;
-  z-index: 5;
-  background: linear-gradient(315deg, #5d24e6 0%, #882feb 100%);
-  width: 100%;
-  clip-path: polygon(50% 0, calc(50% - 10px) 100%, calc(50% + 10px) 100%);
-}
-
-.mobileContainer .quoteBlock {
-  z-index: 1;
-  position: relative;
-  margin: 0px 6px 55px;
-  width: auto;
-  padding: 17px 26px;
-  border: 2px solid rgba(72, 11, 121, 0.25);
-  border-radius: 12px;
-  background: linear-gradient(315deg, #5d24e6 0%, #882feb 100%);
-  box-shadow: 0 11px 50px -2px rgba(110, 40, 232, 0.4);
-  display: inline-flex;
-  flex-direction: column;
-
-  color: #ffffff;
-  font-family: Gilroy;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 24px;
-}
-
-.mobileContainer .artistQuoteName {
-  margin-top: 8px;
-  color: #ffffff;
-  width: 100%;
-  font-family: Gilroy;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 19px;
-  text-align: right;
 }
 
 .mobileContainer .dotsBackground {
