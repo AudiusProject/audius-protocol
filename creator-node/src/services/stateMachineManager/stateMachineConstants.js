@@ -1,8 +1,6 @@
 module.exports = {
-  // Max number of completed/failed jobs to keep in redis for the state monitoring queue
-  MONITORING_QUEUE_HISTORY: 20,
-  // Max number of completed/failed jobs to keep in redis for the state monitoring queue
-  RECONCILIATION_QUEUE_HISTORY: 300,
+  // Max millis to run a fetch cNodeEndpoint->spId mapping job for before marking it as stalled (1 minute)
+  C_NODE_ENDPOINT_TO_SP_ID_MAP_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60,
   // Max millis to run a StateMonitoringQueue job for before marking it as stalled (1 hour)
   STATE_MONITORING_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
   // Millis to delay starting the first job in the StateMonitoringQueue (30 seconds)
@@ -29,9 +27,19 @@ module.exports = {
   SYNC_MONITORING_RETRY_DELAY_MS: 15_000,
   // Max number of attempts to select new replica set in reconfig
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: 5,
+  QUEUE_HISTORY: Object.freeze({
+    // Max number of completed/failed jobs to keep in redis for the state monitoring queue
+    STATE_MONITORING: 20,
+    // Max number of completed/failed jobs to keep in redis for the cNodeEndpoint->spId map queue
+    C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
+    // Max number of completed/failed jobs to keep in redis for the state monitoring queue
+    STATE_RECONCILIATION: 300
+  }),
   QUEUE_NAMES: Object.freeze({
     // Name of StateMonitoringQueue
     STATE_MONITORING: 'state-monitoring-queue',
+    // Name of queue that only processes jobs to fetch the cNodeEndpoint->spId mapping,
+    C_NODE_ENDPOINT_TO_SP_ID_MAP: 'c-node-to-endpoint-sp-id-map-queue',
     // Name of StateReconciliationQueue
     STATE_RECONCILIATION: 'state-reconciliation-queue'
   }),
@@ -42,6 +50,8 @@ module.exports = {
     FIND_SYNC_REQUESTS: 'find-sync-requests',
     // Name of job in monitoring queue that determines replica set updates that should happen for users
     FIND_REPLICA_SET_UPDATES: 'find-replica-set-updates',
+    // Name of job that fetches the cNodeEndpoint->spId mapping and updates the local copy of it for other jobs to use
+    C_NODE_ENDPOINT_TO_SP_ID_MAP: 'update-c-node-to-endpoint-sp-id-map',
     // Name of job in reconciliation queue that issues a manual outgoing sync request to this node or to another node
     ISSUE_MANUAL_SYNC_REQUEST: 'issue-manual-sync-request',
     // Name of job in reconciliation queue that issues a recurring outgoing sync request to this node or to another node

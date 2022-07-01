@@ -73,10 +73,7 @@ const migration: RunnableMigration<QueryInterface> = {
                 ctype VARCHAR,
                 CONSTRAINT fk_run_id
                     FOREIGN KEY (run_id)
-                    REFERENCES network_monitoring_index_blocks(run_id),
-                CONSTRAINT fk_user_id 
-                    FOREIGN KEY (run_id, user_id)
-                    REFERENCES network_monitoring_users(run_id, user_id)
+                    REFERENCES network_monitoring_index_blocks(run_id)
             );
         `)
 
@@ -90,9 +87,6 @@ const migration: RunnableMigration<QueryInterface> = {
                 CONSTRAINT fk_run_id 
                     FOREIGN KEY (run_id)
                     REFERENCES network_monitoring_index_blocks(run_id),
-                CONSTRAINT fk_user_id 
-                    FOREIGN KEY (run_id, user_id)
-                    REFERENCES network_monitoring_users(run_id, user_id),
                 CONSTRAINT fk_content_node_spID 
                     FOREIGN KEY (run_id, content_node_spID)
                     REFERENCES network_monitoring_content_nodes(run_id, spID)

@@ -468,8 +468,11 @@ export const getUserAccount = (wallet: string) => {
   }
 }
 
+/**
+ * @deprecated Migrate to using getTop
+ */
 export const getTopPlaylists = (
-  type: string,
+  type: 'playlist' | 'album',
   limit: number,
   mood: string,
   filter: string,
@@ -486,6 +489,36 @@ export const getTopPlaylists = (
   }
 }
 
+export type GetTrendingPlaylistsParams = {
+  type: 'playlist' | 'album'
+  limit?: number
+  mood?: string
+  filter?: string
+  withUsers?: boolean
+}
+
+export const getTrendingPlaylists = ({
+  type,
+  limit,
+  mood,
+  filter,
+  withUsers = false
+}: GetTrendingPlaylistsParams) => {
+  return {
+    endpoint: `/v1/full/playlists/top`,
+    queryParams: {
+      type,
+      limit,
+      mood,
+      filter,
+      with_users: withUsers
+    }
+  }
+}
+
+/**
+ * @deprecated Migrate to using getBestNewReleases
+ */
 export const getTopFolloweeWindowed = (
   type: string,
   window: string,
@@ -496,6 +529,38 @@ export const getTopFolloweeWindowed = (
     endpoint: `/top_followee_windowed/${type}/${window}`,
     queryParams: {
       limit,
+      with_users: withUsers
+    }
+  }
+}
+
+export const getBestNewReleases = (
+  window: string,
+  limit: string,
+  encodedUserId: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/best_new_releases`,
+    queryParams: {
+      window,
+      limit,
+      user_id: encodedUserId,
+      with_users: withUsers
+    }
+  }
+}
+
+export const getMostLovedTracks = (
+  encodedUserId: string,
+  limit: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/most_loved`,
+    queryParams: {
+      limit,
+      user_id: encodedUserId,
       with_users: withUsers
     }
   }

@@ -1,18 +1,25 @@
-import { 
-    allUserCountGauge, 
-    fullySyncedUsersCountGauge, 
-    gateway, 
-    primaryUserCountGauge, 
+import {
+    allUserCountGauge,
+    fullySyncedUsersCountGauge,
+    gateway,
+    generatingMetricsDurationGauge,
+    partiallySyncedUsersCountGauge,
+    primaryUserCountGauge,
+    unsyncedUsersCountGauge,
 } from "../prometheus"
-import { 
-    getPrimaryUserCount, 
-    getAllUserCount, 
-    getFullySyncedUsersCount 
+import {
+    getPrimaryUserCount,
+    getAllUserCount,
+    getFullySyncedUsersCount,
+    getPartiallySyncedUsersCount,
+    getUnsyncedUsersCount
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
 
     console.log(`[${run_id}] generating metrics`)
+
+    const endTimer = generatingMetricsDurationGauge.startTimer()
 
     /* 
     - he number of CID on each CN that have been replicated at least once
@@ -40,6 +47,10 @@ export const generateMetrics = async (run_id: number) => {
 
     const fullySyncedUsersCount = await getFullySyncedUsersCount(run_id)
 
+    const partiallySyncedUserCount = await getPartiallySyncedUsersCount(run_id)
+
+    const unsyncedUsersCount = await getUnsyncedUsersCount(run_id)
+
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)
     })
@@ -48,6 +59,11 @@ export const generateMetrics = async (run_id: number) => {
     })
 
     fullySyncedUsersCountGauge.set({ run_id }, fullySyncedUsersCount)
+    partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
+    unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
+
+    // Record duration for generating metrics and export to prometheus
+    endTimer({ run_id: run_id })
 
     try {
         // Finish by publishing metrics to prometheus push gateway
@@ -56,6 +72,7 @@ export const generateMetrics = async (run_id: number) => {
     } catch (e) {
         console.log(`[generateMetrics] error pushing metrics to pushgateway - ${(e as Error).message}`)
     }
+
 
     console.log(`[${run_id}] finish generating metrics`);
 }

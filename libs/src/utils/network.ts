@@ -285,7 +285,15 @@ async function allRequests({
         .then((response) => {
           const isValid = validationCheck(response)
           if (isValid) {
-            resolve(urlMap[url] as Service)
+            if (typeof urlMap[url] === 'string') {
+              resolve(urlMap[url] as Service)
+            } else {
+              const serviceWithResponse: Service = {
+                ...(urlMap[url] as ServiceWithEndpoint),
+                ...response.data.data
+              }
+              resolve(serviceWithResponse)
+            }
           } else {
             resolve(null)
           }
