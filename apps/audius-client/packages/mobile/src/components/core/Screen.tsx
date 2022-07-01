@@ -28,7 +28,7 @@ export type ScreenProps = {
   topbarLeftStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
   topbarRight?: Nullable<ReactElement>
   topbarRightStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
-  title?: Nullable<string>
+  title?: Nullable<ReactNode>
   headerTitle?: ReactNode
   style?: StyleProp<ViewStyle>
   variant?: 'primary' | 'secondary' | 'white'
