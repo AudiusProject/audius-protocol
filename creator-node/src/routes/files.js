@@ -111,6 +111,17 @@ const streamFromFileSystem = async (
       res.set('Content-Length', stat.size)
     }
 
+    // If client has provided filename, set filename in header to be auto-populated in download prompt.
+    if (req.query.filename) {
+      res.setHeader(
+        'Content-Disposition',
+        contentDisposition(req.query.filename)
+      )
+    }
+
+    // Set the CID cache-control so that client caches the response for 30 days
+    res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+
     await new Promise((resolve, reject) => {
       fileStream
         .on('open', () => fileStream.pipe(res))
@@ -123,6 +134,9 @@ const streamFromFileSystem = async (
         })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
+
     // Unable to stream from file system. Throw a server error message
     throw e
   }
@@ -141,10 +155,10 @@ const logGetCIDDecisionTree = (decisionTree, req) => {
 /**
  * Given a CID, return the appropriate file
  * 1. Check if file exists at expected storage path (current and legacy)
- * 1. If found, stream from FS
- * 2. Else, check if CID exists in DB. If not, return 404 not found error
- * 3. If exists in DB, fetch file from CN network, save to FS, and stream from FS
- * 4. If not avail in CN network, respond with 400 server error
+ * 2. If found, stream from FS
+ * 3. Else, check if CID exists in DB. If not, return 404 not found error
+ * 4. If exists in DB, fetch file from CN network, save to FS, and stream from FS
+ * 5. If not avail in CN network, respond with 400 server error
  */
 const getCID = async (req, res) => {
   if (!(req.params && req.params.CID)) {
@@ -355,14 +369,6 @@ const getCID = async (req, res) => {
     }
   }
 
-  // If client has provided filename, set filename in header to be auto-populated in download prompt.
-  if (req.query.filename) {
-    res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
-  }
-
-  // Set the CID cache-control so that client caches the response for 30 days
-  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-
   /**
    * If the file is found on file system, stream from file system
    */
@@ -533,9 +539,6 @@ const getDirCID = async (req, res) => {
     redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   }
 
-  // Set the CID cache-control so that client cache the response for 30 days
-  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-
   // Attempt to stream file to client
   try {
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
@@ -556,8 +559,6 @@ const getDirCID = async (req, res) => {
       `Error calling findCIDInNetwork for path ${storagePath}`,
       e
     )
-    // Unset the cache-control header so that a bad response is not cached
-    res.removeHeader('cache-control')
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }

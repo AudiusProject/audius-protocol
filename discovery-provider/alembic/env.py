@@ -13,7 +13,7 @@ from sqlalchemy.schema import CreateIndex, CreateTable, DropIndex, DropTable
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from src.models import Base
+from src.models.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -90,11 +90,11 @@ def _add_if_not_exists(element, compiler, **kw):
     elif isinstance(element, AddColumn):
         output = visit_add_column(element, compiler, **kw)
     return re.sub(
-            "(CREATE|ADD) (TABLE|INDEX|COLUMN)",
-            r"\g<1> \g<2> IF NOT EXISTS",
-            output,
-            re.S,
-        )
+        "(CREATE|ADD) (TABLE|INDEX|COLUMN)",
+        r"\g<1> \g<2> IF NOT EXISTS",
+        output,
+        re.S,
+    )
 
 
 @compiles(DropIndex)
@@ -109,9 +109,7 @@ def _add_if_exists(element, compiler, **kw):
         output = compiler.visit_drop_table(element, **kw)
     elif isinstance(element, DropColumn):
         output = visit_drop_column(element, compiler, **kw)
-    return re.sub(
-        "DROP (TABLE|INDEX|COLUMN)", r"DROP \g<1> IF EXISTS", output, re.S
-    )
+    return re.sub("DROP (TABLE|INDEX|COLUMN)", r"DROP \g<1> IF EXISTS", output, re.S)
 
 
 if context.is_offline_mode():

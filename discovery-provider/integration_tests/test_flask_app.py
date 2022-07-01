@@ -1,7 +1,7 @@
 import configparser
 import os
 
-from src import models
+from src.models.users.user import User
 from src.utils.config import config_files
 from src.utils.db_session import get_db
 
@@ -17,7 +17,7 @@ def test_creator_endpoint(app, client):
         db = get_db()
 
     with db.scoped_session() as session:
-        query_results = session.query(models.User).order_by(models.User.user_id).all()
+        query_results = session.query(User).order_by(User.user_id).all()
         num_query_results = len(query_results)
         assert num_users_from_endpoint == num_query_results
 

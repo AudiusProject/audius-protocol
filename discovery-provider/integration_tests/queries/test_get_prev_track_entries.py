@@ -1,5 +1,5 @@
 from integration_tests.utils import populate_mock_db
-from src.models.models import Track
+from src.models.tracks.track import Track
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.utils.db_session import get_db
 

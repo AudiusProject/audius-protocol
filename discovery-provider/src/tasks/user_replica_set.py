@@ -5,7 +5,8 @@ from typing import Set, Tuple
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import get_eth_abi_values
 from src.database_task import DatabaseTask
-from src.models import URSMContentNode, User
+from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.users.user import User
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.users import invalidate_old_user, lookup_user_record
 from src.utils import helpers

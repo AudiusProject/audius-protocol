@@ -1,5 +1,5 @@
 from src.challenges.create_new_challenges import create_new_challenges
-from src.models import Challenge
+from src.models.rewards.challenge import Challenge
 from src.utils.db_session import get_db
 
 

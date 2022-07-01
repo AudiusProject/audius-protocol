@@ -4,8 +4,9 @@ from datetime import datetime
 import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
-from src.models import Block, User
-from src.models.models import Challenge
+from src.models.indexing.block import Block
+from src.models.rewards.challenge import Challenge
+from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 

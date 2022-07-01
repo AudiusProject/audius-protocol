@@ -2,7 +2,8 @@ import logging  # pylint: disable=C0302
 
 from flask.globals import request
 from sqlalchemy import and_, desc
-from src.models import Remix, Track
+from src.models.tracks.remix import Remix
+from src.models.tracks.track import Track
 from src.queries.query_helpers import (
     add_query_pagination,
     add_users_to_tracks,

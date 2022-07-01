@@ -1,11 +1,21 @@
 import logging
 
-from src.models import (
+from src.models.metrics.aggregate_daily_app_name_metrics import (
     AggregateDailyAppNameMetrics,
+)
+from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,
+)
+from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
+)
+from src.models.metrics.aggregate_monthly_app_name_metrics import (
     AggregateMonthlyAppNameMetrics,
+)
+from src.models.metrics.aggregate_monthly_total_users_metrics import (
     AggregateMonthlyTotalUsersMetrics,
+)
+from src.models.metrics.aggregate_monthly_unique_users_metrics import (
     AggregateMonthlyUniqueUsersMetrics,
 )
 

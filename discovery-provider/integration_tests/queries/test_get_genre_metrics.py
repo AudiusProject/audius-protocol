@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
-from src.models import Block, Track
+from src.models.indexing.block import Block
+from src.models.tracks.track import Track
 from src.queries.get_genre_metrics import _get_genre_metrics
 from src.utils.db_session import get_db
 

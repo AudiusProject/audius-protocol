@@ -1,7 +1,12 @@
+import enum
+from typing import Optional, TypedDict
+
 from sqlalchemy import desc
 from src import exceptions
-from src.models import Playlist, RepostType, SaveType
-from src.models.models import AggregatePlaylist
+from src.models.playlists.aggregate_playlist import AggregatePlaylist
+from src.models.playlists.playlist import Playlist
+from src.models.social.repost import RepostType
+from src.models.social.save import SaveType
 from src.queries.query_helpers import (
     create_followee_playlists_subquery,
     decayed_score,
@@ -15,7 +20,19 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 
-def get_top_playlists(kind, args):
+class GetTopPlaylistsArgs(TypedDict):
+    limit: Optional[int]
+    mood: Optional[str]
+    filter: Optional[str]
+    with_users: Optional[bool]
+
+
+class TopPlaylistKind(str, enum.Enum):
+    playlist = "playlist"
+    album = "album"
+
+
+def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     current_user_id = get_current_user_id(required=False)
 
     # Argument parsing and checking

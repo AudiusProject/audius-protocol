@@ -1,0 +1,244 @@
+# https://www.elastic.co/guide/en/beats/filebeat/current/configuration-autodiscover.html
+# https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-reference-yml.html
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: msg
+              json.add_error_key: true
+              # should ideally work, but breaks and is not needed atm.
+              # https://www.elastic.co/guide/en/beats/filebeat/current/multiline-examples.html
+              # multiline.pattern: '^{'
+              # multiline.negate: true
+              # multiline.match: after
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
+                - rename:
+                    fields:
+                      - from: "json.msg"
+                        to: "audius.message"
+                      - from: "json.level"
+                        to: "audius.level"
+                      - from: "json.funcName"
+                        to: "audius.func"
+                      - from: "json.lineno"
+                        to: "audius.lineno"
+                      - from: "json.pathname"
+                        to: "audius.pathname"
+                      - from: "json.service"
+                        to: "audius.service"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "dn1_web-server"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: msg
+              json.add_error_key: true
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
+                - rename:
+                    fields:
+                      - from: "json.msg"
+                        to: "audius.message"
+                      - from: "json.logLevel"
+                        to: "audius.level"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "creator-node"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: message
+              json.add_error_key: true
+              json.ignore_decoding_error: true
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
+                - rename:
+                    fields:
+                      - from: "json.msg"
+                        to: "audius.message"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "audius-identity-service_identity-service"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              json.message_key: msg
+              json.add_error_key: true
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
+                - rename:
+                    fields:
+                      - from: "json.message"
+                        to: "audius.message"
+                      - from: "json.log.level"
+                        to: "audius.level"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "filebeat"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
+                - rename:
+                    fields:
+                      - from: "message"
+                        to: "audius.message"
+                      - from: "cloud.instance.name"
+                        to: "audius.hostname"
+                    ignore_missing: true
+                    fail_on_error: true
+                - copy_fields:
+                    fields:
+                      - from: "container.name"
+                        to: "audius.container"
+                    ignore_missing: true
+                    fail_on_error: true
+          condition.or:
+            - contains:
+                docker.container.image: "metricbeat"
+            - contains:
+                docker.container.image: "redis"
+            - contains:
+                docker.container.image: "postgres"
+            - contains:
+                docker.container.image: "solana-programs"
+            - contains:
+                docker.container.image: "ganache"
+        - config:
+            - type: container
+              paths:
+                - "/var/lib/docker/containers/${data.docker.container.id}/*.log"
+              processors:
+                - add_cloud_metadata: ~
+                - add_docker_metadata: ~
+                - add_host_metadata: ~
+                - add_locale: ~
+          condition.and:
+            - not.contains:
+                docker.container.image: "dn1_web-server"
+            - not.contains:
+                docker.container.image: "creator-node"
+            - not.equals:
+                docker.container.image: "audius-identity-service_identity-service"
+            - not.contains:
+                docker.container.image: "beat"
+            - not.contains:
+                docker.container.image: "redis"
+            - not.contains:
+                docker.container.image: "postgres"
+            - not.contains:
+                docker.container.image: "solana-programs"
+            - not.contains:
+                docker.container.image: "ganache"
+
+cloud.id: "${ELASTIC_CLOUD_ID}"
+output.elasticsearch:
+  hosts: "${ELASTIC_ENDPOINT}"
+  api_key: "${API_ID}:${API_KEY}"
+  indices:
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-app-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.or:
+        - regexp:
+            container.name: dn._web-server_.
+        - regexp:
+            container.name: cn._creator-node_.
+        - regexp:
+            container.name: audius-identity-service_identity-service_.
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-db-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.or:
+        - regexp:
+            container.name: .*redis.*
+        - regexp:
+            container.name: .*discovery-provider-db.*
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-beats-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.or:
+        - equals:
+            container.name: filebeat
+        - equals:
+            container.name: metricbeat
+    # catch all for all other containers, until promoted
+    - index: "filebeat-${CURRENT_INDEX_VERSION}-misc-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+# lessens the amount of permissions needed
+setup.ilm.check_exists: false
+
+# enable cleaner filebeat logs
+logging.json: true
+logging.metrics.enabled: false
+logging.to_files: false
+logging.to_syslog: false
+monitoring:
+  enabled: false
+output.console:
+  enabled: false
+  codec.json:
+    pretty: true
+    escape_html: false
+output.file:
+  enabled: false

@@ -4,7 +4,7 @@ from time import time
 from unittest.mock import MagicMock
 
 from hexbytes import HexBytes
-from src.models import Block
+from src.models.indexing.block import Block
 from src.queries.get_health import get_health
 from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,

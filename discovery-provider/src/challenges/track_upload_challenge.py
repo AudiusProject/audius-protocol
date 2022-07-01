@@ -7,7 +7,8 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models import Track, UserChallenge
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.tracks.track import Track
 
 
 class TrackUploadChallengeUpdater(ChallengeUpdater):

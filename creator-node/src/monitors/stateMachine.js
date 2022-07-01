@@ -2,6 +2,9 @@ const redis = require('../redis')
 
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
 const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
+const {
+  JOB_NAMES
+} = require('../services/stateMachineManager/stateMachineConstants')
 
 /**
  * Get the total number of syncs that met 'status' per wallet per day for the given number of days
@@ -67,12 +70,28 @@ const getLatestSyncFailTimestamp = async () => {
   return fail
 }
 
-const getStateMachineQueueLatestJobSuccess = async () => {
-  return redis.get('stateMachineQueueLatestJobSuccess')
+const getLatestMonitorStateJobStart = async () => {
+  return redis.get(`latestJobStart_${JOB_NAMES.MONITOR_STATE}`)
 }
 
-const getStateMachineQueueLatestJobStart = async () => {
-  return redis.get('stateMachineQueueLatestJobStart')
+const getLatestMonitorStateJobSuccess = async () => {
+  return redis.get(`latestJobSuccess_${JOB_NAMES.MONITOR_STATE}`)
+}
+
+const getLatestFindSyncRequestsJobStart = async () => {
+  return redis.get(`latestJobStart_${JOB_NAMES.FIND_SYNC_REQUESTS}`)
+}
+
+const getLatestFindSyncRequestsJobSuccess = async () => {
+  return redis.get(`latestJobSuccess_${JOB_NAMES.FIND_SYNC_REQUESTS}`)
+}
+
+const getLatestFindReplicaSetUpdatesJobStart = async () => {
+  return redis.get(`latestJobStart_${JOB_NAMES.FIND_REPLICA_SET_UPDATES}`)
+}
+
+const getLatestFindReplicaSetUpdatesJobSuccess = async () => {
+  return redis.get(`latestJobSuccess_${JOB_NAMES.FIND_REPLICA_SET_UPDATES}`)
 }
 
 module.exports = {
@@ -82,6 +101,10 @@ module.exports = {
   getDailySyncFailCount,
   getLatestSyncSuccessTimestamp,
   getLatestSyncFailTimestamp,
-  getStateMachineQueueLatestJobSuccess,
-  getStateMachineQueueLatestJobStart
+  getLatestMonitorStateJobStart,
+  getLatestMonitorStateJobSuccess,
+  getLatestFindSyncRequestsJobStart,
+  getLatestFindSyncRequestsJobSuccess,
+  getLatestFindReplicaSetUpdatesJobStart,
+  getLatestFindReplicaSetUpdatesJobSuccess
 }

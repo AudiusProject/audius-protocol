@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from src.api.v1.helpers import (
     extend_favorite,
@@ -123,18 +123,7 @@ def search_es_full(args: dict):
                 ]
             )
 
-    # add size and limit with some
-    # over-fetching for sake of drop_copycats
-    index_name = ""
-    for dsl in mdsl:
-        if "index" in dsl:
-            index_name = dsl["index"]
-            continue
-        dsl["size"] = limit
-        dsl["from"] = offset
-        if index_name == ES_USERS:
-            dsl["size"] = limit + 5
-
+    mdsl_limit_offset(mdsl, limit, offset)
     mfound = esclient.msearch(searches=mdsl)
 
     response: Dict = {
@@ -168,6 +157,96 @@ def search_es_full(args: dict):
         if current_user_id:
             response["saved_albums"] = pluck_hits(mfound["responses"].pop(0))
 
+    finalize_response(response, limit, current_user_id)
+    return response
+
+
+def search_tags_es(q: str, kind="all", current_user_id=None, limit=0, offset=0):
+    if not esclient:
+        raise Exception("esclient is None")
+
+    do_tracks = kind == "all" or kind == "tracks"
+    do_users = kind == "all" or kind == "users"
+    mdsl: Any = []
+
+    def tag_match(fieldname):
+        match = {
+            "query": {
+                "bool": {
+                    "must": [{"match": {fieldname: {"query": q}}}],
+                    "must_not": [],
+                    "should": [],
+                }
+            }
+        }
+        return match
+
+    if do_tracks:
+        mdsl.extend([{"index": ES_TRACKS}, tag_match("tag_list")])
+        if current_user_id:
+            dsl = tag_match("tag_list")
+            dsl["query"]["bool"]["must"].append(be_saved(current_user_id))
+            mdsl.extend([{"index": ES_TRACKS}, dsl])
+
+    if do_users:
+        mdsl.extend([{"index": ES_USERS}, tag_match("tracks.tags")])
+        if current_user_id:
+            dsl = tag_match("tracks.tags")
+            dsl["query"]["bool"]["must"].append(be_followed(current_user_id))
+            mdsl.extend([{"index": ES_USERS}, dsl])
+
+    mdsl_limit_offset(mdsl, limit, offset)
+    mfound = esclient.msearch(searches=mdsl)
+
+    response: Dict = {
+        "tracks": [],
+        "saved_tracks": [],
+        "users": [],
+        "followed_users": [],
+    }
+
+    if do_tracks:
+        response["tracks"] = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            response["saved_tracks"] = pluck_hits(mfound["responses"].pop(0))
+
+    if do_users:
+        response["users"] = pluck_hits(mfound["responses"].pop(0))
+        if current_user_id:
+            response["followed_users"] = pluck_hits(mfound["responses"].pop(0))
+
+    finalize_response(response, limit, current_user_id, legacy_mode=True)
+    return response
+
+
+def mdsl_limit_offset(mdsl, limit, offset):
+    # add size and limit with some over-fetching
+    # for sake of drop_copycats
+    index_name = ""
+    for dsl in mdsl:
+        if "index" in dsl:
+            index_name = dsl["index"]
+            continue
+        dsl["size"] = limit
+        dsl["from"] = offset
+        if index_name == ES_USERS:
+            dsl["size"] = limit + 5
+
+
+def finalize_response(
+    response: Dict, limit: int, current_user_id: Optional[int], legacy_mode=False
+):
+    """Hydrates users and contextualizes results for current user (if applicable).
+    Also removes extra indexed fields so as to match the fieldset from postgres.
+
+    legacy_mode=True will skip v1 api transforms.
+    This is similar to the code in get_feed_es (which does it's own thing,
+      but could one day use finalize_response with legacy_mode=True).
+    e.g. doesn't encode IDs and populates `followee_saves` instead of `followee_reposts`
+    """
+    if not esclient:
+        raise Exception("esclient is None")
+
     # hydrate users, saves, reposts
     item_keys = []
     user_ids = set()
@@ -175,15 +254,8 @@ def search_es_full(args: dict):
         user_ids.add(current_user_id)
 
     # collect keys for fetching
-    for k in [
-        "tracks",
-        "saved_tracks",
-        "playlists",
-        "saved_playlists",
-        "albums",
-        "saved_albums",
-    ]:
-        for item in response[k]:
+    for items in response.values():
+        for item in items:
             item_keys.append(item_key(item))
             user_ids.add(item.get("owner_id", item.get("playlist_owner_id")))
 
@@ -192,7 +264,8 @@ def search_es_full(args: dict):
     current_user = None
 
     if user_ids:
-        users_mget = esclient.mget(index=ES_USERS, ids=list(user_ids))
+        ids = [str(id) for id in user_ids]
+        users_mget = esclient.mget(index=ES_USERS, ids=ids)
         users_by_id = {d["_id"]: d["_source"] for d in users_mget["docs"] if d["found"]}
         if current_user_id:
             current_user = users_by_id.get(str(current_user_id))
@@ -209,25 +282,24 @@ def search_es_full(args: dict):
     for k in ["tracks", "saved_tracks"]:
         tracks = response[k]
         hydrate_user(tracks, users_by_id)
-        hydrate_saves_reposts(tracks, follow_saves, follow_reposts)
-        response[k] = transform_tracks(tracks, users_by_id, current_user)
+        hydrate_saves_reposts(tracks, follow_saves, follow_reposts, legacy_mode)
+        response[k] = [map_track(track, current_user, legacy_mode) for track in tracks]
 
     # users: finalize
     for k in ["users", "followed_users"]:
         users = drop_copycats(response[k])
         users = users[:limit]
-        response[k] = [
-            extend_user(populate_user_metadata_es(user, current_user)) for user in users
-        ]
+        response[k] = [map_user(user, current_user, legacy_mode) for user in users]
 
     # playlists: finalize
-    for k in ["playlists", "saved_playlists"]:
+    for k in ["playlists", "saved_playlists", "albums", "saved_albums"]:
+        if k not in response:
+            continue
         playlists = response[k]
-        hydrate_saves_reposts(playlists, follow_saves, follow_reposts)
+        hydrate_saves_reposts(playlists, follow_saves, follow_reposts, legacy_mode)
         hydrate_user(playlists, users_by_id)
         response[k] = [
-            extend_playlist(populate_track_or_playlist_metadata_es(item, current_user))
-            for item in playlists
+            map_playlist(playlist, current_user, legacy_mode) for playlist in playlists
         ]
 
     return response
@@ -403,18 +475,33 @@ def hydrate_user(items, users_by_id):
             item["user"] = user
 
 
-def hydrate_saves_reposts(items, follow_saves, follow_reposts):
+def hydrate_saves_reposts(items, follow_saves, follow_reposts, legacy_mode):
     for item in items:
         ik = item_key(item)
-        item["followee_reposts"] = [extend_repost(r) for r in follow_reposts[ik]]
-        item["followee_favorites"] = [extend_favorite(x) for x in follow_saves[ik]]
+        if legacy_mode:
+            item["followee_reposts"] = follow_reposts[ik]
+            item["followee_saves"] = follow_saves[ik]
+        else:
+            item["followee_reposts"] = [extend_repost(r) for r in follow_reposts[ik]]
+            item["followee_favorites"] = [extend_favorite(x) for x in follow_saves[ik]]
 
 
-def transform_tracks(tracks, users_by_id, current_user):
-    tracks_out = []
-    for track in tracks:
-        track = populate_track_or_playlist_metadata_es(track, current_user)
+def map_user(user, current_user, legacy_mode):
+    user = populate_user_metadata_es(user, current_user)
+    if not legacy_mode:
+        user = extend_user(user)
+    return user
+
+
+def map_track(track, current_user, legacy_mode):
+    track = populate_track_or_playlist_metadata_es(track, current_user)
+    if not legacy_mode:
         track = extend_track(track)
-        tracks_out.append(track)
+    return track
 
-    return tracks_out
+
+def map_playlist(playlist, current_user, legacy_mode):
+    playlist = populate_track_or_playlist_metadata_es(playlist, current_user)
+    if not legacy_mode:
+        playlist = extend_playlist(playlist)
+    return playlist

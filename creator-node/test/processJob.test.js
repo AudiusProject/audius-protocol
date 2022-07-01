@@ -29,6 +29,9 @@ describe('test processJob() util function', function () {
       {
         '../../logging': {
           createChildLogger
+        },
+        '../../redis': {
+          set: sandbox.stub()
         }
       }
     )

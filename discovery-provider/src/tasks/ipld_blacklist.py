@@ -1,6 +1,6 @@
 import logging
 
-from src.models import BlacklistedIPLD
+from src.models.indexing.blacklisted_ipld import BlacklistedIPLD
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)

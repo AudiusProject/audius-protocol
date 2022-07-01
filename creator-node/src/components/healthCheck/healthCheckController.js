@@ -33,9 +33,14 @@ const router = express.Router()
 const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 const numberOfCPUs = os.cpus().length
 
-const SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
-  'snapbackMaxLastSuccessfulRunDelayMs'
+const MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
+  'monitorStateJobLastSuccessfulRunDelayMs'
 )
+const FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
+  'findSyncRequestsJobLastSuccessfulRunDelayMs'
+)
+const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
+  config.get('findReplicaSetUpdatesJobLastSuccessfulRunDelayMs')
 
 // Helper Functions
 /**
@@ -111,16 +116,65 @@ const healthCheckController = async (req) => {
     randomBytesToSign
   )
 
-  const { stateMachineQueueLatestJobSuccess } = response
-  if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
-    response.snapbackMaxLastSuccessfulRunDelayMs =
-      SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-    const delta =
-      Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
-    if (delta > SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS) {
-      return errorResponseServerError(
-        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
-      )
+  if (enforceStateMachineQueueHealth) {
+    const { stateMachineJobs } = response
+    const {
+      latestMonitorStateJobSuccess,
+      latestFindSyncRequestsJobSuccess,
+      latestFindReplicaSetUpdatesJobSuccess
+    } = stateMachineJobs
+    const stateMachineErrors = []
+
+    // Enforce time since last successful monitor-state job
+    if (latestMonitorStateJobSuccess) {
+      response.stateMachineJobs.monitorStateJobLastSuccessfulRunDelayMs =
+        MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      const monitorStateDelta =
+        Date.now() - new Date(latestMonitorStateJobSuccess).getTime()
+      if (
+        monitorStateDelta > MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      ) {
+        stateMachineErrors.push(
+          `monitor-state job not healthy - last successful run ${monitorStateDelta}ms ago not within healthy threshold of ${MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
+        )
+      }
+    }
+
+    // Enforce time since last successful find-sync-requests job
+    if (latestFindSyncRequestsJobSuccess) {
+      response.stateMachineJobs.findSyncRequestsJobLastSuccessfulRunDelayMs =
+        FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      const findSyncRequestsDelta =
+        Date.now() - new Date(latestFindSyncRequestsJobSuccess).getTime()
+      if (
+        findSyncRequestsDelta >
+        FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      ) {
+        stateMachineErrors.push(
+          `find-sync-requests job not healthy - last successful run ${findSyncRequestsDelta}ms ago not within healthy threshold of ${FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
+        )
+      }
+    }
+
+    // Enforce time since last successful find-replica-set-updates job
+    if (latestFindReplicaSetUpdatesJobSuccess) {
+      response.stateMachineJobs.findReplicaSetUpdatesJobLastSuccessfulRunDelayMs =
+        FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      const findReplicaSetUpdatesDelta =
+        Date.now() - new Date(latestFindReplicaSetUpdatesJobSuccess).getTime()
+      if (
+        findReplicaSetUpdatesDelta >
+        FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      ) {
+        stateMachineErrors.push(
+          `find-replica-set-updates job not healthy - last successful run ${findReplicaSetUpdatesDelta}ms ago not within healthy threshold of ${FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
+        )
+      }
+    }
+
+    // Return errors
+    if (stateMachineErrors.length) {
+      return errorResponseServerError(JSON.stringify(stateMachineErrors))
     }
   }
 

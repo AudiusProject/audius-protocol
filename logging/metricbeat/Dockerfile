@@ -1,0 +1,16 @@
+FROM docker.elastic.co/beats/metricbeat:8.2.0
+
+ARG ELASTIC_ENDPOINT
+ARG ELASTIC_CLOUD_ID
+ARG API_ID
+ARG API_KEY
+ARG git_sha
+
+ENV ELASTIC_ENDPOINT ${ELASTIC_ENDPOINT}
+ENV ELASTIC_CLOUD_ID ${ELASTIC_CLOUD_ID}
+ENV API_ID ${API_ID}
+ENV API_KEY ${API_KEY}
+
+COPY start.sh /start.sh
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+CMD ["/start.sh"]
