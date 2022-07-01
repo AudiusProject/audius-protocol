@@ -1,7 +1,8 @@
 import React from 'react'
 
 import Footer from './Footer'
-import Notification, { NotificationType } from './notifications/Notification'
+import Notification from './notifications/Notification'
+import { notificationTypes as NotificationType } from '../constants'
 
 const AudiusImage = () => {
   return (
@@ -48,11 +49,11 @@ const getNumberSuffix = (num) => {
 }
 
 const snippetMap = {
-  [NotificationType.Favorite] (notification) {
+  [NotificationType.Favorite.base] (notification) {
     const [user] = notification.users
     return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
-  [NotificationType.Repost] (notification) {
+  [NotificationType.Repost.base] (notification) {
     const [user] = notification.users
     return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },

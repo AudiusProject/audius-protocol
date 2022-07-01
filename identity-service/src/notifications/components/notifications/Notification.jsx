@@ -11,30 +11,7 @@ import {
 } from './Icons'
 
 import { formatCount } from './utils'
-import { notificationTypes } from '../../constants'
-
-const emailNotifTypes = [
-  notificationTypes.Follow,
-  notificationTypes.Repost.base,
-  notificationTypes.Favorite.base,
-  notificationTypes.Milestone,
-  notificationTypes.UserSubscription,
-  notificationTypes.Announcement,
-  notificationTypes.RemixCreate,
-  notificationTypes.RemixCosign,
-  notificationTypes.TrendingTrack,
-  notificationTypes.ChallengeReward,
-  notificationTypes.AddTrackToPlaylist,
-  notificationTypes.TipReceive,
-  notificationTypes.Reaction,
-  notificationTypes.SupporterRankUp,
-  notificationTypes.SupportingRankUp
-]
-export const NotificationType = Object.freeze(
-  new Map(
-    emailNotifTypes.map(type => [type, type])
-  )
-)
+import { notificationTypes as NotificationType } from '../../constants'
 
 const challengeRewardsConfig = {
   referred: {
@@ -134,7 +111,7 @@ export const getEntity = (entity) => {
 }
 
 const notificationMap = {
-  [NotificationType.Favorite] (notification) {
+  [NotificationType.Favorite.base] (notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
@@ -143,7 +120,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.Repost] (notification) {
+  [NotificationType.Repost.base] (notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
