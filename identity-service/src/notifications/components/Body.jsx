@@ -97,6 +97,18 @@ const snippetMap = {
   },
   [NotificationType.AddTrackToPlaylist] (notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to ${notification.playlist.playlist_name}`
+  },
+  [NotificationType.TipReceive] (notification) {
+    return `${notification.sendingUser.name} sent you a tip of ${notification.amount} $AUDIO`
+  },
+  [NotificationType.Reaction] (notification) {
+    return `${notification.reactingUser.name} reacted to your tip of ${notification.amount} $AUDIO`
+  },
+  [NotificationType.SupporterRankUp] (notification) {
+    return `${notification.sendingUser.name} became your #${notification.rank} top supporter`
+  },
+  [NotificationType.SupportingRankUp] (notification) {
+    return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
   }
 }
 

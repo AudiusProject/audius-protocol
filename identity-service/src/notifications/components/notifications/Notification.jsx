@@ -23,7 +23,11 @@ export const NotificationType = Object.freeze({
   RemixCosign: 'RemixCosign',
   TrendingTrack: 'TrendingTrack',
   ChallengeReward: 'ChallengeReward',
-  AddTrackToPlaylist: 'AddTrackToPlaylist'
+  AddTrackToPlaylist: 'AddTrackToPlaylist',
+  TipReceive: 'TipReceive',
+  Reaction: 'Reaction',
+  SupporterRankUp: 'SupporterRankUp',
+  SupportingRankUp: 'SupportingRankUp'
 })
 
 const challengeRewardsConfig = {
