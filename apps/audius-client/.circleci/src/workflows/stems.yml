@@ -1,0 +1,13 @@
+when: << pipeline.parameters.run-stems-workflow >>
+jobs:
+  - stems-build-storybook:
+      filters:
+        branches:
+          only: /^main$/
+  - stems-deploy-storybook:
+      context: Audius Client
+      requires:
+        - stems-build-storybook
+      filters:
+        branches:
+          only: /^main$/
