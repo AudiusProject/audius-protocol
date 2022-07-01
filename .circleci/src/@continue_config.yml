@@ -12,6 +12,9 @@ parameters:
   run-mobile-workflow:
     type: boolean
     default: false
+  run-stems-workflow:
+    type: boolean
+    default: false
 
 workflows:
   version: 2.1
