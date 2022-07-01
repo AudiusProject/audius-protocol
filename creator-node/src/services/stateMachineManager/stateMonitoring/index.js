@@ -38,7 +38,10 @@ class StateMonitoringManager {
       config.get('redisHost'),
       config.get('redisPort')
     )
-    await this.startEndpointToSpIdMapQueue(cNodeEndpointToSpIdMapQueue)
+    await this.startEndpointToSpIdMapQueue(
+      cNodeEndpointToSpIdMapQueue,
+      prometheusRegistry
+    )
 
     // Create and start queue to monitor state for syncs and reconfigs
     const stateMonitoringQueue = this.makeMonitoringQueue(
@@ -262,14 +265,16 @@ class StateMonitoringManager {
    * Future jobs are added to the queue as a result of this initial job succeeding/failing.
    * @param {Object} queue the cNodeEndpoint->spId map queue to consume jobs from
    */
-  async startEndpointToSpIdMapQueue(queue) {
+  async startEndpointToSpIdMapQueue(queue, prometheusRegistry) {
     // Clear any old state if redis was running but the rest of the server restarted
     await queue.obliterate({ force: true })
 
     queue.process(
       JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
       1 /** concurrency */,
-      this.processFetchCNodeEndpointToSpIdMapJob
+      this.makeProcessFetchCNodeEndpointToSpIdMapJob(prometheusRegistry).bind(
+        this
+      )
     )
 
     // Since we can't pass 0 to Bull's limiter.max, enforce a rate limit of 0 by
@@ -321,13 +326,15 @@ class StateMonitoringManager {
       )
   }
 
-  async processFetchCNodeEndpointToSpIdMapJob(job) {
-    return processJob(
-      JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
-      job,
-      fetchCNodeEndpointToSpIdMapJobProcessor,
-      cNodeEndpointToSpIdMapQueueLogger
-    )
+  makeProcessFetchCNodeEndpointToSpIdMapJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.C_NODE_ENDPOINT_TO_SP_ID_MAP,
+        job,
+        fetchCNodeEndpointToSpIdMapJobProcessor,
+        cNodeEndpointToSpIdMapQueueLogger,
+        prometheusRegistry
+      )
   }
 }
 
