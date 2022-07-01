@@ -2,6 +2,10 @@ const promClient = require('prom-client')
 const _ = require('lodash')
 const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
+const {
+  JOB_NAMES: STATE_MACHINE_JOB_NAMES,
+  SyncType
+} = require('../stateMachineManager/stateMachineConstants')
 
 /**
  * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
@@ -27,17 +31,39 @@ let MetricNames = {
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_monitoring_duration_seconds'
 }
+// Add a histogram for each job in the state machine queues.
+// Some have custom labels below, and all of them use the label: uncaughtError=true/false
+for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
+  MetricNames[
+    `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+  ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
+}
 MetricNames = Object.freeze(
   _.mapValues(MetricNames, (metricName) => NamespacePrefix + metricName)
 )
 
 const MetricLabels = Object.freeze({
   [MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
+    // The type of sync issued -- manual or recurring
+    syncType: [_.snakeCase(SyncType.Manual), _.snakeCase(SyncType.Recurring)],
     // The reason another sync is needed
     reason_for_additional_sync: [
       'secondary_progressed_too_slow', // The secondary sync went through, but its clock value didn't increase enough
       'secondary_failed_to_progress', // The secondary's clock value did not increase at all
       'none' // No additional sync is required -- the first sync was successful
+    ]
+  },
+  [MetricNames[
+    `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
+  ]]: {
+    // Whether or not the user's replica set was updated during this job
+    issuedReconfig: ['false', 'true'],
+    // The type of reconfig, if any, that happened during this job (or that would happen if reconfigs were enabled)
+    reconfigType: [
+      'one_secondary', // Only one secondary was replaced in the user's replica set
+      'multiple_secondaries', // Both secondaries were replaced in the user's replica set
+      'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes,
+      'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   }
 })
@@ -85,7 +111,33 @@ const Metrics = Object.freeze({
         5
       )
     }
-  }
+  },
+  // Add histogram for each job in the state machine queues
+  ...Object.fromEntries(
+    Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [
+      MetricNames[`STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`],
+      {
+        metricType: MetricTypes.HISTOGRAM,
+        metricConfig: {
+          name: MetricNames[
+            `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+          ],
+          help: `Duration in seconds for a ${jobName} job to complete`,
+          labelNames: [
+            // Whether the job completed (including with a caught error) or quit unexpectedly
+            'uncaughtError',
+            // Label names, if any, that are specific to this job type
+            ...(MetricLabelNames[
+              MetricNames[
+                `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
+              ]
+            ] || [])
+          ],
+          buckets: [1, 5, 10, 30, 60, 120] // 1 second to 2 minutes
+        }
+      }
+    ])
+  )
 })
 
 module.exports.NamespacePrefix = NamespacePrefix

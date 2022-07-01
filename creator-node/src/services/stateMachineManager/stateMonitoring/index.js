@@ -32,7 +32,7 @@ const cNodeEndpointToSpIdMapQueueLogger = createChildLogger(baseLogger, {
  * - finding users who need a replica set update (when an unhealthy primary or secondary should be replaced)
  */
 class StateMonitoringManager {
-  async init(discoveryNodeEndpoint) {
+  async init(discoveryNodeEndpoint, prometheusRegistry) {
     // Create and start queue to fetch cNodeEndpoint->spId mapping
     const cNodeEndpointToSpIdMapQueue = this.makeCNodeToEndpointSpIdMapQueue(
       config.get('redisHost'),
@@ -48,10 +48,12 @@ class StateMonitoringManager {
     this.registerMonitoringQueueEventHandlersAndJobProcessors({
       monitoringQueue: stateMonitoringQueue,
       monitorStateJobFailureCallback: this.enqueueMonitorStateJobAfterFailure,
-      processMonitorStateJob: this.processMonitorStateJob.bind(this),
-      processFindSyncRequestsJob: this.processFindSyncRequestsJob.bind(this),
+      processMonitorStateJob:
+        this.makeProcessMonitorStateJob(prometheusRegistry).bind(this),
+      processFindSyncRequestsJob:
+        this.makeProcessFindSyncRequestsJob(prometheusRegistry).bind(this),
       processFindReplicaSetUpdatesJob:
-        this.processFindReplicaSetUpdatesJob.bind(this)
+        this.makeProcessFindReplicaSetUpdatesJob(prometheusRegistry).bind(this)
     })
     await this.startMonitoringQueue(stateMonitoringQueue, discoveryNodeEndpoint)
 
@@ -117,6 +119,7 @@ class StateMonitoringManager {
 
   /**
    * Registers event handlers for logging and job success/failure.
+   * @param {Object} params
    * @param {Object} params.monitoringQueue the monitoring queue to register events for
    * @param {Function<failedJob>} params.monitorStateJobFailureCallback the function to call when a monitorState job fails
    * @param {Function<job>} params.processMonitorStateJob the function to call when processing a job from the queue to monitor state
@@ -285,31 +288,37 @@ class StateMonitoringManager {
    * Job processor boilerplate
    */
 
-  async processMonitorStateJob(job) {
-    return processJob(
-      JOB_NAMES.MONITOR_STATE,
-      job,
-      monitorStateJobProcessor,
-      monitoringQueueLogger
-    )
+  makeProcessMonitorStateJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.MONITOR_STATE,
+        job,
+        monitorStateJobProcessor,
+        monitoringQueueLogger,
+        prometheusRegistry
+      )
   }
 
-  async processFindSyncRequestsJob(job) {
-    return processJob(
-      JOB_NAMES.FIND_SYNC_REQUESTS,
-      job,
-      findSyncRequestsJobProcessor,
-      monitoringQueueLogger
-    )
+  makeProcessFindSyncRequestsJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.FIND_SYNC_REQUESTS,
+        job,
+        findSyncRequestsJobProcessor,
+        monitoringQueueLogger,
+        prometheusRegistry
+      )
   }
 
-  async processFindReplicaSetUpdatesJob(job) {
-    return processJob(
-      JOB_NAMES.FIND_REPLICA_SET_UPDATES,
-      job,
-      findReplicaSetUpdatesJobProcessor,
-      monitoringQueueLogger
-    )
+  makeProcessFindReplicaSetUpdatesJob(prometheusRegistry) {
+    return async (job) =>
+      processJob(
+        JOB_NAMES.FIND_REPLICA_SET_UPDATES,
+        job,
+        findReplicaSetUpdatesJobProcessor,
+        monitoringQueueLogger,
+        prometheusRegistry
+      )
   }
 
   async processFetchCNodeEndpointToSpIdMapJob(job) {

@@ -55,8 +55,16 @@ module.exports = async function ({
           thisContentNodeEndpoint,
           unhealthyPeersSet,
           userSecondarySyncMetricsMap[user.wallet] || {
-            [user.secondary1]: { successRate: 1, failureCount: 0 },
-            [user.secondary2]: { successRate: 1, failureCount: 0 }
+            [user.secondary1]: {
+              successRate: 1,
+              successCount: 0,
+              failureCount: 0
+            },
+            [user.secondary2]: {
+              successRate: 1,
+              successCount: 0,
+              failureCount: 0
+            }
           },
           minSecondaryUserSyncSuccessPercent,
           minFailedSyncRequestsBeforeReconfig,
@@ -109,6 +117,7 @@ module.exports = async function ({
   }
 
   return {
+    cNodeEndpointToSpIdMap: CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap(),
     jobsToEnqueue: updateReplicaSetJobs?.length
       ? {
           [QUEUE_NAMES.STATE_RECONCILIATION]: updateReplicaSetJobs
