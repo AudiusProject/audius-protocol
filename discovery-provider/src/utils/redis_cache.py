@@ -93,6 +93,7 @@ def set_json_cached_key(redis, key, obj, ttl=None):
 
 
 def cache(**kwargs):
+    logger.info("isaac cache")
     """
     Cache decorator.
     Should be called with `@cache(ttl_sec=123, transform=transform_response, cache_prefix_override='some-prefix')`
@@ -154,6 +155,8 @@ def cache(**kwargs):
                     set_json_cached_key(redis, key, resp, ttl_sec)
                 return resp, status_code
             set_json_cached_key(redis, key, response, ttl_sec)
+            logger.info(f"isaac cache transform {transform}")
+
             return transform(response)
 
         return inner_wrap

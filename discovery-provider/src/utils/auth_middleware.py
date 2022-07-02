@@ -36,7 +36,8 @@ def auth_middleware(**kwargs):
         def inner_wrap(*args, **kwargs):
             message = request.headers.get(MESSAGE_HEADER)
             signature = request.headers.get(SIGNATURE_HEADER)
-
+            logger.info(f"isaac message {message}")
+            logger.info(f"isaac signature {signature}")
             authed_user_id = None
             if message and signature:
                 web3 = web3_provider.get_web3()
