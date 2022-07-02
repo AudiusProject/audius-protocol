@@ -2,8 +2,9 @@ import { FollowSource } from 'audius-client/src/common/models/Analytics'
 import { View, Text } from 'react-native'
 
 import { FollowButton, FollowsYouChip } from 'app/components/user'
+import UserBadges from 'app/components/user-badges'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { makeStyles } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
 import { SubscribeButton } from './SubscribeButton'
@@ -13,6 +14,13 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   username: {
     ...typography.h1,
     color: palette.neutral
+  },
+  name: {
+    ...flexRowCentered()
+  },
+  badges: {
+    marginBottom: 6,
+    marginLeft: 2
   },
   handleInfo: {
     marginTop: -6,
@@ -105,9 +113,17 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   return (
     <View pointerEvents='box-none' style={styles.info}>
       <View>
-        <Text accessibilityRole='header' style={styles.username}>
-          {name}
-        </Text>
+        <View style={styles.name}>
+          <Text accessibilityRole='header' style={styles.username}>
+            {name}
+          </Text>
+          <UserBadges
+            user={profile}
+            badgeSize={12}
+            style={styles.badges}
+            hideName
+          />
+        </View>
         <View style={styles.handleInfo}>
           <View style={styles.handle}>
             <Text style={styles.handleText}>@{handle}</Text>
