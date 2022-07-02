@@ -356,6 +356,9 @@ USER_REPOSTS_ROUTE = "/<string:id>/reposts"
 reposts_response = make_response(
     "reposts", ns, fields.List(fields.Nested(activity_model))
 )
+full_reposts_response = make_full_response(
+    "full_reposts", full_ns, fields.List(fields.Nested(activity_model_full))
+)
 
 
 @ns.route(USER_REPOSTS_ROUTE)
@@ -393,11 +396,6 @@ class RepostList(Resource):
         activities = list(map(extend_activity, reposts))
 
         return success_response(activities)
-
-
-full_reposts_response = make_full_response(
-    "full_reposts", full_ns, fields.List(fields.Nested(activity_model_full))
-)
 
 
 @full_ns.route(USER_REPOSTS_ROUTE)
@@ -503,6 +501,14 @@ class HandleRepostList(HandleFullRepostList):
         return super()._get(handle)
 
 
+favorites_response = make_response(
+    "favorites_response", ns, fields.List(fields.Nested(activity_model))
+)
+favorites_full_response = make_full_response(
+    "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
+)
+
+
 @ns.route("/<string:id>/favorites")
 class FavoritedTracks(Resource):
     @record_metrics
@@ -546,13 +552,6 @@ class MostUsedTags(Resource):
         tags = get_top_user_track_tags({"user_id": decoded_id, "limit": limit})
         return success_response(tags)
 
-
-favorites_response = make_response(
-    "favorites_response", ns, fields.List(fields.Nested(activity_model))
-)
-favorites_full_response = make_full_response(
-    "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
-)
 
 USER_FAVORITED_TRACKS_ROUTE = "/<string:id>/favorites/tracks"
 
@@ -608,7 +607,7 @@ class UserFavoritedTracks(UserFavoritedTracksFull):
 
 
 history_response = make_full_response(
-    "history_response", full_ns, fields.List(fields.Nested(activity_model))
+    "history_response", ns, fields.List(fields.Nested(activity_model))
 )
 history_response_full = make_full_response(
     "history_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
@@ -624,7 +623,7 @@ class TrackHistoryFull(Resource):
     def _get(self, id):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
-        current_user_id = get_current_user_id(args)
+        current_user_id = get_current_user_id(args)  # non optional?
         offset = format_offset(args)
         limit = format_limit(args)
         get_tracks_args = GetUserListeningHistoryArgs(
@@ -698,7 +697,7 @@ class UserSearchResult(Resource):
 
 
 followers_response = make_full_response(
-    "followers_response", full_ns, fields.List(fields.Nested(user_model))
+    "followers_response", ns, fields.List(fields.Nested(user_model))
 )
 full_followers_response = make_full_response(
     "full_followers_response", full_ns, fields.List(fields.Nested(user_model_full))
@@ -806,13 +805,13 @@ class FollowingUsers(FullFollowingUsers):
     @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(following_response)
     def get(self, id):
-        return super._get(id)
+        return super()._get(id)
 
 
 related_artist_route_parser = pagination_with_current_user_parser.copy()
 related_artist_route_parser.remove_argument("offset")
 related_artist_response = make_response(
-    "related_artist_response", full_ns, fields.List(fields.Nested(user_model))
+    "related_artist_response", ns, fields.List(fields.Nested(user_model))
 )
 related_artist_response_full = make_full_response(
     "related_artist_response_full", full_ns, fields.List(fields.Nested(user_model_full))
@@ -865,7 +864,7 @@ top_genre_users_route_parser.add_argument(
     "genre", required=False, action="append", description="List of Genres"
 )
 top_genre_users_response = make_response(
-    "top_genre_users_response+", full_ns, fields.List(fields.Nested(user_model))
+    "top_genre_users_response+", ns, fields.List(fields.Nested(user_model))
 )
 top_genre_users_response_full = make_full_response(
     "top_genre_users_response_full",
@@ -919,8 +918,8 @@ class TopGenreUsers(FullTopGenreUsers):
         return super()._get()
 
 
-top_users_response = make_full_response(
-    "top_users_response", full_ns, fields.List(fields.Nested(user_model))
+top_users_response = make_response(
+    "top_users_response", ns, fields.List(fields.Nested(user_model))
 )
 top_users_response_full = make_full_response(
     "top_users_response_full", full_ns, fields.List(fields.Nested(user_model_full))
@@ -932,7 +931,7 @@ TOP_ROUTE = "/top"
 @full_ns.route(TOP_ROUTE)
 class FullTopUsers(Resource):
     @cache(ttl_sec=60 * 60 * 24)
-    def _get():
+    def _get(self):
         args = pagination_with_current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
 
@@ -1209,17 +1208,13 @@ class FullGetSupporters(Resource):
         return success_response(support)
 
 
-full_get_supporter_response = make_full_response(
-    "full_get_supporter", full_ns, fields.Nested(supporter_response_full)
-)
-
-
 get_supporter_response = make_response(
     "get_supporter", ns, fields.Nested(supporter_response)
 )
 full_get_supporter_response = make_full_response(
     "full_get_supporter", full_ns, fields.Nested(supporter_response_full)
 )
+
 
 SUPPORTER_USER_ROUTE = "/<string:id>/supporters/<string:supporter_user_id>"
 
@@ -1324,8 +1319,10 @@ full_get_supporting_response = make_full_response(
     "full_get_supporting", full_ns, fields.Nested(supporting_response_full)
 )
 
-# non full not necessary here either?
-@full_ns.route("/<string:id>/supporting/<string:supported_user_id>")
+
+@full_ns.route(
+    "/<string:id>/supporting/<string:supported_user_id>"
+)  # non full not necessary here either?
 class FullGetSupporting(Resource):
     @record_metrics
     @full_ns.doc(
@@ -1363,7 +1360,7 @@ verify_token_response = make_response(
 class GetTokenVerification(Resource):
     @record_metrics
     @ns.doc(
-        id="""Verify ID token""",
+        id="""Verify ID Token""",
         description="""Verify if the given jwt ID token was signed by the subject (user) in the payload""",
         responses={
             200: "Success",
