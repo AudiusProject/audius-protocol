@@ -27,7 +27,7 @@ do
         -X POST \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
-        -d "@${GRAFANA_DASHBOARD_DIR}${json_dashboard}" \
+        -d "@${json_dashboard}" \
         ${BASE_URL}/api/dashboards/import \
     | jq .
     echo "Uploaded: ${json_dashboard}"
