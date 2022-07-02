@@ -305,6 +305,8 @@ Setting `Soft min` and `Soft max` is useful when displaying metrics that may occ
 
 `Unit` is perhaps the most important to set. Always ensure this is set.
 
+For large numbers, use the `short` `Unit`.
+
 The `Color Scheme` should remain set to `Classic Palette` to help standardize our visual experience, but sometimes `Green -> Red` or `Red -> Green` palettes are ideal.
 
 #### Thresholds
