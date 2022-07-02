@@ -392,6 +392,9 @@ git pull
 # deploy the manual changes seen, as well as the new intended changes
 ./grafana/bin/upload-dashboards.sh
 
+# "manual mode" supports uploading one file at a time
+# ./grafana/bin/upload-dashboards.sh filename.json
+
 # return to the master branch prior to logging out
 # git checkout master
 ```
