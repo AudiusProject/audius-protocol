@@ -76,7 +76,6 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       ],
       include: [{
         model: models.SolanaNotificationAction,
-        required: true,
         as: 'actions'
       }],
       limit
@@ -96,6 +95,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
       group: ['Notification.id']
     })
+    logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | length of notifCountQuery is ${notifCountQuery.length}`)
 
     const solanaNotifCountQuery = await models.SolanaNotification.findAll({
       where: {
@@ -107,10 +107,11 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
           [models.Sequelize.Op.gt]: fromTime.toDate()
         }
       },
-      include: [{ model: models.SolanaNotificationAction, as: 'actions', required: true, attributes: [] }],
+      include: [{ model: models.SolanaNotificationAction, as: 'actions', attributes: [] }],
       attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
       group: ['SolanaNotification.id']
     })
+    logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | length of solanaNotifCountQuery is ${solanaNotifCountQuery.length}`)
 
     const notificationCount = notifCountQuery.length + solanaNotifCountQuery.length
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
@@ -146,7 +147,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const fethNotificationsTime = Date.now()
     const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
-    logger.info({ job: 'fetchNotificationMetdata', durationn: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
+    logger.info({ job: 'fetchNotificationMetdata', duration: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
