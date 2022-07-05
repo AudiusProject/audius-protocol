@@ -1,3 +1,4 @@
+import axios from "axios"
 import {
     allUserCountGauge,
     fullySyncedUsersCountGauge,
@@ -7,6 +8,7 @@ import {
     primaryUserCountGauge,
     unsyncedUsersCountGauge,
 } from "../prometheus"
+import { getEnv } from "../utils"
 import {
     getPrimaryUserCount,
     getAllUserCount,
@@ -65,6 +67,14 @@ export const generateMetrics = async (run_id: number) => {
     // Record duration for generating metrics and export to prometheus
     endTimer({ run_id: run_id })
 
+    await publishSlackReport({
+        allUsersCount: allUserCount,
+        primaryUsersCount: primaryUserCount,
+        fullySyncedUsersCount: fullySyncedUsersCount,
+        partiallySyncedUsersCount: partiallySyncedUserCount,
+        unsyncedUsersCount: unsyncedUsersCount,
+    })
+
     try {
         // Finish by publishing metrics to prometheus push gateway
         console.log(`[${run_id}] pushing metrics to gateway`);
@@ -77,3 +87,19 @@ export const generateMetrics = async (run_id: number) => {
     console.log(`[${run_id}] finish generating metrics`);
 }
 
+const publishSlackReport = async (metrics: Object) => {
+
+    const { slack } = getEnv()
+
+    if (slack.url === '' || slack.channelId === '') {
+        return
+    }
+
+    let message = metrics.toString()
+
+    try {
+        await axios.post(slack.url, { channel: slack.channelId, text: message })
+    } catch (e) {
+        console.log(`Error posting to slack in slack reporter ${(e as Error).toString()}`)
+    }
+}
