@@ -29,7 +29,6 @@ from src.api.v1.helpers import (
     success_response,
     verify_token_parser,
 )
-from src.api.v1.models.common import favorite
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
