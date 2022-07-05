@@ -32,11 +32,11 @@
 This repo is maintained using [`lerna`](https://github.com/lerna). After cloning run:
 
 ```bash
-npm run init
+npm install
 ```
 
 This will do the following:
 
-- Install all dependencies (`npx lerna exec -- npm i`)
-  > Not using `npx lerna bootstrap` because react-native doesn't support symlinks
+- Install root dependencies
+- Install all package dependencies using `lerna bootstrap`
 - Initialize git hooks (`npx @escape.tech/mookme init --only-hook --skip-types-selection`)

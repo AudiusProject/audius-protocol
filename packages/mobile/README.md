@@ -20,8 +20,6 @@ cp .env.prod.tmpl .env.prod
 ```bash
 # install cocoapods
 sudo gem install cocoapods
-# install local dependencies
-npm install
 
 cd ios
 pod install
@@ -32,11 +30,6 @@ npm run bundle:ios
 ```
 
 ### Android
-
-```bash
-# install local dependencies
-npm install
-```
 
 ## Running against localhost
 

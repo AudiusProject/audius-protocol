@@ -17,8 +17,7 @@ web-init:
     - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
 
     - run: |
-        cd packages/web
-        npm ci --ignore-scripts
+        npm ci
 
     - save_cache:
         key: dependency-cache-{{ checksum "packages/web/package-lock.json" }}
@@ -44,6 +43,8 @@ web-init:
         root: ./
         paths:
           - packages/web/node_modules
+          - packages/stems/node_modules
+          - packages/stems/dist
 
 web-build-demo:
   working_directory: ~/audius-client
