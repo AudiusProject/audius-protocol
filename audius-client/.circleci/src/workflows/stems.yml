@@ -1,6 +1,9 @@
 when: << pipeline.parameters.run-stems-workflow >>
 jobs:
+  - stems-init
   - stems-build-storybook:
+      requires:
+        - stems-init
       filters:
         branches:
           only: /^main$/
