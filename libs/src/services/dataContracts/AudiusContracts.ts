@@ -33,10 +33,7 @@ const IPLDBlacklistFactoryABI = Utils.importDataContractABI(
 const UserReplicaSetManagerABI = Utils.importDataContractABI(
   'UserReplicaSetManager.json'
 ).abi
-const AudiusDataABI = Utils.importDataContractABI(
-  'AudiusData.json'
-).abi
-console.log(AudiusDataABI)
+const AudiusDataABI = Utils.importDataContractABI('AudiusData.json').abi
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -135,10 +132,10 @@ export class AudiusContracts {
     this.AudiusDataClient = new AudiusDataClient(
       this.web3Manager,
       AudiusDataABI,
-      "AudiusData",
+      'AudiusData',
       this.getRegistryAddressForContract,
       this.logger,
-      "0xDDb64fE46a91D46ee29420539FC25FD07c5FEa3E" // TODO: Config var
+      '0xaf5C4C6C7920B4883bC6252e9d9B8fE27187Cf68' // TODO: Config var
     )
 
     this.contractClients = [
