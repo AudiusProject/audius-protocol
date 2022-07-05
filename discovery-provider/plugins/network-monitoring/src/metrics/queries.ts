@@ -214,7 +214,7 @@ export const getGhostUsersCount = async (run_id: number): Promise<number> => {
         WHERE 
             run_id = :run_id
         AND 
-            primary_clock_value IS NULL
+            primary_clock_value IS NULL;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id },
