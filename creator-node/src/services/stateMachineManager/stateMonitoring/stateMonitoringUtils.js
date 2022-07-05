@@ -1,17 +1,23 @@
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
+const retry = require('async-retry')
 
 const config = require('../../../config')
 const Utils = require('../../../utils')
-const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const { logger } = require('../../../logging')
+
+const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const SecondarySyncHealthTracker = require('../../../snapbackSM/secondarySyncHealthTracker')
+const DBManager = require('../../../dbManager')
+
 const {
   AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE,
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
-  GET_NODE_USERS_DEFAULT_PAGE_SIZE
+  GET_NODE_USERS_DEFAULT_PAGE_SIZE,
+  SYNC_MODES,
+  FETCH_FILES_HASH_NUM_RETRIES
 } = require('../stateMachineConstants')
 
 const MIN_FAILED_SYNC_REQUESTS_BEFORE_RECONFIG = config.get(
@@ -181,9 +187,316 @@ const computeUserSecondarySyncSuccessRatesMap = async (nodeUsers) => {
   return userSecondarySyncMetricsMap
 }
 
+/**
+ * For every node user, record sync requests to issue to secondaries if this node is primary
+ * and record replica set updates to issue for any unhealthy replicas
+ *
+ * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet }
+ * @param {Set<string>} unhealthyPeers set of unhealthy peers
+ * @param {string (wallet): Object{ string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }}} userSecondarySyncMetricsMap mapping of nodeUser's wallet (string) to metrics for their sync success to secondaries
+ * @param {Object} endpointToSPIdMap
+ * @returns
+ * {
+ *  requiredUpdateReplicaSetOps: {Object[]} array of {...nodeUsers, unhealthyReplicas: {string[]} endpoints of unhealthy rset nodes }
+ *  potentialSyncRequests: {Object[]} array of {...nodeUsers, endpoint: {string} endpoint to sync to }
+ * }
+ * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
+ */
+const aggregateReconfigAndPotentialSyncOps = async (
+  nodeUsers,
+  unhealthyPeers,
+  userSecondarySyncMetricsMap,
+  endpointToSPIdMap,
+  thisContentNodeEndpoint
+) => {
+  // Parallelize calling _aggregateOps on chunks of 500 nodeUsers at a time
+  const nodeUserBatches = _.chunk(
+    nodeUsers,
+    AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE
+  )
+  const results = []
+  for (const nodeUserBatch of nodeUserBatches) {
+    const resultBatch = await Promise.allSettled(
+      nodeUserBatch.map((nodeUser) =>
+        _aggregateOps(
+          nodeUser,
+          unhealthyPeers,
+          userSecondarySyncMetricsMap[nodeUser.wallet],
+          endpointToSPIdMap,
+          thisContentNodeEndpoint
+        )
+      )
+    )
+    results.push(...resultBatch)
+  }
+
+  // Combine each batch's requiredUpdateReplicaSetOps and potentialSyncRequests
+  let requiredUpdateReplicaSetOps = []
+  let potentialSyncRequests = []
+  for (const promiseResult of results) {
+    // Skip and log failed promises
+    const {
+      status: promiseStatus,
+      value: reconfigAndSyncOps,
+      reason: promiseError
+    } = promiseResult
+    if (promiseStatus !== 'fulfilled') {
+      logger.error(
+        `aggregateReconfigAndPotentialSyncOps encountered unexpected failure: ${
+          promiseError.message || promiseError
+        }`
+      )
+      continue
+    }
+
+    // Combine each promise's requiredUpdateReplicaSetOps and potentialSyncRequests
+    const {
+      requiredUpdateReplicaSetOps: requiredUpdateReplicaSetOpsFromPromise,
+      potentialSyncRequests: potentialSyncRequestsFromPromise
+    } = reconfigAndSyncOps
+    requiredUpdateReplicaSetOps = requiredUpdateReplicaSetOps.concat(
+      requiredUpdateReplicaSetOpsFromPromise
+    )
+    potentialSyncRequests = potentialSyncRequests.concat(
+      potentialSyncRequestsFromPromise
+    )
+  }
+
+  return { requiredUpdateReplicaSetOps, potentialSyncRequests }
+}
+
+/**
+ * Used to determine the `requiredUpdateReplicaSetOps` and `potentialSyncRequests` for a given nodeUser.
+ * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
+ * @param {Set<string>} unhealthyPeers set of unhealthy peers
+ * @param {string (secondary endpoint): Object{ successRate: number (0-1), successCount: number, failureCount: number }} userSecondarySyncMetrics mapping of each secondary to the success metrics the nodeUser has had syncing to it
+ * @param {Object} endpointToSPIdMap
+ */
+const _aggregateOps = async (
+  nodeUser,
+  unhealthyPeers,
+  userSecondarySyncMetrics,
+  endpointToSPIdMap,
+  thisContentNodeEndpoint
+) => {
+  const requiredUpdateReplicaSetOps = []
+  const potentialSyncRequests = []
+  const unhealthyReplicas = new Set()
+
+  const {
+    wallet,
+    primary,
+    secondary1,
+    secondary2,
+    primarySpID,
+    secondary1SpID,
+    secondary2SpID
+  } = nodeUser
+
+  /**
+   * If this node is primary for user, check both secondaries for health
+   * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
+   */
+  let replicaSetNodesToObserve = [
+    { endpoint: secondary1, spId: secondary1SpID },
+    { endpoint: secondary2, spId: secondary2SpID }
+  ]
+
+  if (primary === thisContentNodeEndpoint) {
+    // filter out false-y values to account for incomplete replica sets
+    const secondariesInfo = replicaSetNodesToObserve.filter(
+      (entry) => entry.endpoint
+    )
+
+    /**
+     * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
+     */
+    for (const secondaryInfo of secondariesInfo) {
+      const secondary = secondaryInfo.endpoint
+
+      const { successRate, successCount, failureCount } =
+        userSecondarySyncMetrics[secondary]
+
+      // Error case 1 - mismatched spID
+      if (endpointToSPIdMap[secondary] !== secondaryInfo.spId) {
+        logger.error(
+          `processStateMachineOperation Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`
+        )
+        unhealthyReplicas.add(secondary)
+
+        // Error case 2 - already marked unhealthy
+      } else if (unhealthyPeers.has(secondary)) {
+        logger.error(
+          `processStateMachineOperation Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`
+        )
+        unhealthyReplicas.add(secondary)
+
+        // Error case 3 - low user sync success rate
+      } else if (
+        failureCount >= MIN_FAILED_SYNC_REQUESTS_BEFORE_RECONFIG &&
+        successRate < MIN_SECONDARY_USER_SYNC_SUCCESS_PERCENT
+      ) {
+        logger.error(
+          `processStateMachineOperation Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${MIN_SECONDARY_USER_SYNC_SUCCESS_PERCENT}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`
+        )
+        unhealthyReplicas.add(secondary)
+
+        // Success case
+      } else {
+        potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
+      }
+    }
+
+    /**
+     * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
+     */
+    if (unhealthyReplicas.size > 0) {
+      requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
+    }
+
+    /**
+     * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
+     * Ignore unhealthy secondaries for now
+     */
+  } else {
+    // filter out false-y values to account for incomplete replica sets and filter out the
+    // the self node
+    replicaSetNodesToObserve = [
+      { endpoint: primary, spId: primarySpID },
+      ...replicaSetNodesToObserve
+    ]
+    replicaSetNodesToObserve = replicaSetNodesToObserve.filter((entry) => {
+      return entry.endpoint && entry.endpoint !== thisContentNodeEndpoint
+    })
+
+    for (const replica of replicaSetNodesToObserve) {
+      // If the map's spId does not match the query's spId, then regardless
+      // of the relationship of the node to the user, issue a reconfig for that node
+      if (endpointToSPIdMap[replica.endpoint] !== replica.spId) {
+        unhealthyReplicas.add(replica.endpoint)
+      } else if (unhealthyPeers.has(replica.endpoint)) {
+        // Else, continue with conducting extra health check if the current observed node is a primary, and
+        // add to `unhealthyReplicas` if observed node is a secondary
+        let addToUnhealthyReplicas = true
+
+        if (replica.endpoint === primary) {
+          addToUnhealthyReplicas = !(await isPrimaryHealthy(primary))
+        }
+
+        if (addToUnhealthyReplicas) {
+          unhealthyReplicas.add(replica.endpoint)
+        }
+      }
+    }
+
+    if (unhealthyReplicas.size > 0) {
+      requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
+    }
+  }
+
+  return { requiredUpdateReplicaSetOps, potentialSyncRequests }
+}
+
+/**
+ * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
+ *
+ * It is possible for filesHashes to diverge despite clock equality because clock equality can happen if different content with same number of clockRecords is uploaded to different replicas.
+ * This is an error condition and needs to be identified and rectified.
+ *
+ * @param {Object} param
+ * @param {string} param.wallet user wallet
+ * @param {number} param.primaryClock clock value on user's primary
+ * @param {number} param.secondaryClock clock value on user's secondary
+ * @param {string} param.primaryFilesHash filesHash on user's primary
+ * @param {string} param.secondaryFilesHash filesHash on user's secondary
+ * @returns {SYNC_MODES} syncMode one of None, SyncSecondaryFromPrimary, MergePrimaryAndSecondary
+ */
+const computeSyncModeForUserAndReplica = async ({
+  wallet,
+  primaryClock,
+  secondaryClock,
+  primaryFilesHash,
+  secondaryFilesHash
+}) => {
+  if (
+    !Number.isInteger(primaryClock) ||
+    !Number.isInteger(secondaryClock) ||
+    // `null` is a valid filesHash value; `undefined` is not
+    primaryFilesHash === undefined ||
+    secondaryFilesHash === undefined
+  ) {
+    throw new Error(
+      '[computeSyncModeForUserAndReplica()] Error: Missing or invalid params'
+    )
+  }
+
+  if (
+    primaryClock === secondaryClock &&
+    primaryFilesHash !== secondaryFilesHash
+  ) {
+    /**
+     * This is an error condition, indicating that primary and secondary states for user have diverged.
+     * To fix this issue, primary should sync content from secondary and then force secondary to resync its entire state from primary.
+     */
+    return SYNC_MODES.MergePrimaryAndSecondary
+  } else if (primaryClock < secondaryClock) {
+    /**
+     * Secondary has more data than primary -> primary must sync from secondary
+     */
+
+    return SYNC_MODES.MergePrimaryAndSecondary
+  } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
+    /**
+     * secondaryFilesHash will be null if secondary has no clockRecords for user -> secondary must sync from primary
+     */
+
+    return SYNC_MODES.SyncSecondaryFromPrimary
+  } else if (primaryClock > secondaryClock && secondaryFilesHash !== null) {
+    /**
+     * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
+     */
+
+    let primaryFilesHashForRange
+    try {
+      // Throws error if fails after all retries
+      primaryFilesHashForRange = await Utils.asyncRetry({
+        asyncFn: async () =>
+          DBManager.fetchFilesHashFromDB({
+            lookupKey: { lookupWallet: wallet },
+            clockMin: 0,
+            clockMax: secondaryClock + 1
+          }),
+        options: { retries: FETCH_FILES_HASH_NUM_RETRIES },
+        logger,
+        logLabel:
+          '[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()]'
+      })
+    } catch (e) {
+      const errorMsg = `[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()] Error - ${e.message}`
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
+    }
+
+    if (primaryFilesHashForRange === secondaryFilesHash) {
+      return SYNC_MODES.SyncSecondaryFromPrimary
+    } else {
+      return SYNC_MODES.MergePrimaryAndSecondary
+    }
+  } else {
+    /**
+     * primaryClock === secondaryClock && primaryFilesHash === secondaryFilesHash
+     * Nodes have identical data = healthy state -> no sync needed
+     */
+
+    return SYNC_MODES.None
+  }
+}
+
 module.exports = {
   getLatestUserIdFromDiscovery,
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap
+  computeUserSecondarySyncSuccessRatesMap,
+  aggregateReconfigAndPotentialSyncOps,
+  computeSyncModeForUserAndReplica
 }
