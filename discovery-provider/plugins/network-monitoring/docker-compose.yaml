@@ -25,7 +25,7 @@ services:
   network-monitoring:
     build: 
       context: '.'
-      # dockerfile: Dockerfile.test
+      dockerfile: Dockerfile.test
     depends_on:
       - network-monitoring-db
       - network-monitoring-push-gateway

@@ -71,3 +71,21 @@ export const userBatchDurationGauge = new client.Gauge({
     help: 'the amount of time it takes to fetch and save a user batch',
     labelNames: ['run_id', 'endpoint'],
 })
+
+export const primaryUserCountEndpointGauge = new client.Gauge({
+    name: 'audius_nm_primary_user_count_endpoint',
+    help: 'blah',
+    labelNames: ['run_id', 'endpoint']
+})
+
+export const secondary1UserCountEndpointGauge = new client.Gauge({
+    name: 'audius_nm_secondary1_user_count_endpoint',
+    help: 'blah',
+    labelNames: ['run_id', 'endpoint']
+})
+
+export const secondary2UserCountEndpointGauge = new client.Gauge({
+    name: 'audius_nm_secondary2_user_count_endpoint',
+    help: 'blah',
+    labelNames: ['run_id', 'endpoint']
+})
