@@ -5,7 +5,6 @@ from typing import Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
-from pyrsistent import m
 from src.tasks.metadata import (
     playlist_metadata_format,
     track_metadata_format,
