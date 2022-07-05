@@ -25,7 +25,7 @@ def audius_data_state_update(
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     num_total_changes = 0
 
-    changed_entity_ids: Dict[str, Set[(int)]]
+    changed_entity_ids: Dict[str, Set[(int)]] = {}
 
     if not audius_data_txs:
         return num_total_changes, changed_entity_ids
