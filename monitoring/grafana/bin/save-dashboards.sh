@@ -38,6 +38,7 @@ SET_REFRESH_INTERVAL='.refresh = "30m"'
 # set a time delay since graphs don't fall sharply down at the tail end
 SET_TIME_DELAY='.timepicker.nowDelay = "1m"'
 
+# clear prometheus id
 CLEAR_DATASOURCE_ID='del(.templating.list[].datasource.uid)'
 
 # RESET TEMPLATING
@@ -47,6 +48,24 @@ RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 # REQUIRED FOR PUSHING JSON-BACKED DASHBOARDS VIA THE API
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
+
+
+# FOLDERS
+# ids have to be unique
+CLEAR_FOLDER_IDS='del(.[].id)'
+
+path=grafana/dashboards/folders.json
+response=$(curl \
+    -s \
+    -H "Authorization: Bearer ${BEARER_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json' \
+    ${BASE_URL}/api/folders)
+
+echo ${response} \
+    | jq "${CLEAR_FOLDER_IDS}" \
+    > "${path}"
+echo "Saved to: ${path}"
 
 for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
 do
