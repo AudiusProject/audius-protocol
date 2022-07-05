@@ -202,6 +202,7 @@ class App extends Component {
     showWeb3ErrorBanner: null,
 
     showUpdateAppBanner: false,
+    showWebUpdateBanner: false,
     showRequiresUpdate: false,
     isUpdating: false,
 
@@ -254,6 +255,12 @@ class App extends Component {
 
       this.ipc.on('updateError', (event, arg) => {
         console.error('updateError', event, arg)
+      })
+
+      // This is for patch updates so that only the web assets are updated
+      this.ipc.on('webUpdateAvailable', (event, arg) => {
+        console.info('webUpdateAvailable', event, arg)
+        this.setState({ showWebUpdate: true })
       })
 
       // There is an update available, the user should update if it's
@@ -415,8 +422,18 @@ class App extends Component {
     this.ipc.send('update')
   }
 
+  acceptWebUpdate = () => {
+    if (this.state.showWebUpdateBanner) this.dismissUpdateWebAppBanner()
+    this.setState({ isUpdating: true })
+    this.ipc.send('web-update')
+  }
+
   dismissUpdateAppBanner = () => {
     this.setState({ showUpdateAppBanner: false })
+  }
+
+  dismissUpdateWebAppBanner = () => {
+    this.setState({ showWebUpdateBanner: false })
   }
 
   showDownloadAppModal = () => {
@@ -441,6 +458,7 @@ class App extends Component {
     const {
       showCTABanner,
       showUpdateAppBanner,
+      showWebUpdate,
       showWeb3ErrorBanner,
       isUpdating,
       showRequiresUpdate,
@@ -493,6 +511,12 @@ class App extends Component {
             alert
             isElectron={client === Client.ELECTRON}
             onClose={this.dismissWeb3ErrorBanner}
+          />
+        ) : null}
+        {showWebUpdate ? (
+          <UpdateAppBanner
+            onAccept={this.acceptWebUpdate}
+            onClose={this.dismissUpdateWebAppBanner}
           />
         ) : null}
         {this.props.showCookieBanner ? <CookieBanner /> : null}

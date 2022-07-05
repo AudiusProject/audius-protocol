@@ -16,6 +16,11 @@ const {
 } = require('electron')
 const logger = require('electron-log')
 const { autoUpdater } = require('electron-updater')
+const fetch = require('node-fetch')
+const semver = require('semver')
+const tar = require('tar')
+
+const POLL_FOR_WEB_UPDATES_INTERVAL_MS = 60_000 // 1 min
 
 const Environment = Object.freeze({
   PRODUCTION: 0,
@@ -24,15 +29,20 @@ const Environment = Object.freeze({
 })
 
 const args = process.argv.slice(2)
+const appVersion = require('../package.json').version
 
-let appEnvironment, localhostPort, scheme
+let appEnvironment,
+  buildName,
+  localhostPort,
+  // The main app window
+  mainWindow,
+  s3Bucket,
+  scheme
 
 // Try getting the env from the program args if available.
 // Otherwise, try getting env from the electronConfig file.
 let env = null
-if (args.length > 0) {
-  env = args[0]
-}
+if (args.length > 0) env = args[0]
 if (!env) {
   const configFile = path.resolve(app.getAppPath(), 'electronConfig.json')
   try {
@@ -52,18 +62,26 @@ switch (env) {
     appEnvironment = Environment.LOCALHOST
     localhostPort = args[1] || '3000'
     scheme = 'audius-localhost'
+    buildName = 'build'
+    s3Bucket = ''
     break
   case 'staging':
     appEnvironment = Environment.STAGING
     scheme = 'audius-staging'
+    buildName = 'build-staging'
+    s3Bucket = 'staging.audius.co'
     break
   case 'production':
     appEnvironment = Environment.PRODUCTION
     scheme = 'audius'
+    buildName = 'build-production'
+    s3Bucket = 'audius.co'
     break
   default:
     appEnvironment = ''
     scheme = ''
+    buildName = 'build'
+    s3Bucket = 'audius.co'
     break
 }
 
@@ -103,6 +121,84 @@ const reformatURL = url => {
   return `${scheme}://-/${path}`
 }
 
+const registerBuild = directory => {
+  const handler = async (request, cb) => {
+    const indexPath = path.join(directory, 'index.html')
+    const filePath = path.join(directory, new url.URL(request.url).pathname)
+
+    const cbArgs = { path: (await getPath(filePath)) || indexPath }
+    cb(cbArgs)
+  }
+
+  session.defaultSession.protocol.unregisterProtocol(scheme)
+  session.defaultSession.protocol.registerFileProtocol(scheme, handler, err => {
+    if (err) console.error(err)
+  })
+}
+
+const downloadWebUpdateAndNotify = async () => {
+  const newBuildPath = path.resolve(app.getAppPath(), `${buildName}.tar.gz`)
+  const webUpdateDir = path.resolve(app.getAppPath(), `web-update`)
+  const fileStream = fs.createWriteStream(newBuildPath)
+
+  // Fetch the build tar.gz file and write to file
+  const data = await fetch(
+    `https://s3.us-west-1.amazonaws.com/${s3Bucket}/${buildName}.tar.gz`
+  )
+  await new Promise((resolve, reject) => {
+    data.body.pipe(fileStream)
+    data.body.on('error', reject)
+    fileStream.on('finish', resolve)
+  })
+
+  // Create web-update directory and untar the build inside
+  if (!fs.existsSync(webUpdateDir)) fs.mkdirSync(webUpdateDir)
+  tar.x({
+    cwd: path.resolve(app.getAppPath(), `web-update`),
+    file: newBuildPath
+  })
+
+  // Notify the user of the update
+  mainWindow.webContents.send('webUpdateAvailable')
+}
+
+const checkForWebUpdate = () => {
+  const webUpdateInterval = setInterval(async () => {
+    const data = await fetch(
+      `https://s3.us-west-1.amazonaws.com/${s3Bucket}/package.json`
+    )
+    const packageJson = JSON.parse(await data.text())
+    const newVersion = packageJson.version
+
+    let currentVersion = appVersion
+
+    // Additional check for the version from the build package.json
+    // Needed after web updates because the local package.json version is not updated
+    if (
+      fs.existsSync(path.resolve(app.getAppPath(), `${buildName}/package.json`))
+    ) {
+      const buidlPackageJson = JSON.parse(
+        fs.readFileSync(
+          path.resolve(app.getAppPath(), `${buildName}/package.json`)
+        )
+      )
+
+      currentVersion = buidlPackageJson.version
+    }
+
+    // If there is a patch version update, download it and notify the user
+    // Minor version updates should be handled by the autoupdater
+    if (
+      semver.major(currentVersion) === semver.major(newVersion) &&
+      semver.minor(currentVersion) === semver.minor(newVersion) &&
+      semver.patch(currentVersion) < semver.patch(newVersion)
+    ) {
+      clearInterval(webUpdateInterval)
+      downloadWebUpdateAndNotify()
+    }
+  }, POLL_FOR_WEB_UPDATES_INTERVAL_MS)
+}
+
 /**
  * Initializes the auto-updater. Updater flows as follows:
  *
@@ -125,8 +221,6 @@ const initAutoUpdater = () => {
   autoUpdater.logger.transports.file.level = 'info'
 }
 
-// The main app window
-let mainWindow
 // Set if the app is opened up via a deep link (e.g. audius://handle in the web browser)
 let deepLinkedURL
 const createWindow = () => {
@@ -156,38 +250,9 @@ const createWindow = () => {
   if (appEnvironment === Environment.LOCALHOST) {
     mainWindow.loadURL(`http://localhost:${localhostPort}`)
   } else {
-    let directory
-    switch (appEnvironment) {
-      case Environment.STAGING:
-        directory = path.resolve(app.getAppPath(), 'build-staging')
-        break
-      case Environment.PRODUCTION:
-        directory = path.resolve(app.getAppPath(), 'build-production')
-        break
-      default:
-        // Should not be exercised, but default to a `build` dir if present
-        directory = path.resolve(app.getAppPath(), 'build')
-        break
-    }
-
-    const handler = async (request, cb) => {
-      const indexPath = path.join(directory, 'index.html')
-      const filePath = path.join(directory, new url.URL(request.url).pathname)
-
-      const cbArgs = { path: (await getPath(filePath)) || indexPath }
-      cb(cbArgs)
-    }
-
-    session.defaultSession.protocol.registerFileProtocol(
-      scheme,
-      handler,
-      err => {
-        // The scheme has probably already been registered. Most likely safe to ignore.
-        if (err) {
-          console.log(err)
-        }
-      }
-    )
+    const buildDirectory = path.resolve(app.getAppPath(), buildName)
+    registerBuild(buildDirectory)
+    checkForWebUpdate()
 
     // Win protocol handler
     if (process.platform === 'win32') {
@@ -356,6 +421,44 @@ ipcMain.on('update', async (event, arg) => {
     await new Promise(resolve => setTimeout(resolve, 100))
   }
   autoUpdater.quitAndInstall()
+})
+
+ipcMain.on('web-update', async (event, arg) => {
+  if (
+    fs.existsSync(path.resolve(app.getAppPath(), `web-update/${buildName}`))
+  ) {
+    try {
+      // Rename web-update dir and move to base folder
+      fs.renameSync(
+        path.resolve(app.getAppPath(), `web-update/${buildName}`),
+        path.resolve(app.getAppPath(), `${buildName}-new`)
+      )
+      // Remove the web-update dir
+      fs.rmdirSync(path.resolve(app.getAppPath(), 'web-update'))
+      // Rename old dir to old
+      fs.renameSync(
+        path.resolve(app.getAppPath(), buildName),
+        path.resolve(app.getAppPath(), `${buildName}-old`)
+      )
+      // Rename new dir to current name
+      fs.renameSync(
+        path.resolve(app.getAppPath(), `${buildName}-new`),
+        path.resolve(app.getAppPath(), buildName)
+      )
+      // Remove old dir
+      fs.rmdirSync(path.resolve(app.getAppPath(), `${buildName}-old`), {
+        recursive: true,
+        force: true
+      })
+
+      registerBuild(path.resolve(app.getAppPath(), buildName))
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  mainWindow.reload()
+  checkForWebUpdate()
 })
 
 ipcMain.on('quit', (event, arg) => {
