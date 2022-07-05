@@ -166,7 +166,6 @@ def parse_playlist_create_data_event(
 ):
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
     block_integer_time = int(block_timestamp)
-    logger.info(f"index.py | AudiusData | Parsing event...")
     playlist_record.playlist_owner_id = playlist_owner_id
     # TODO: Fix isAlbum to is_album
     playlist_record.is_album = playlist_metadata["isAlbum"]
