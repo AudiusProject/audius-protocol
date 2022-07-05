@@ -50,7 +50,6 @@ export const createNewRun = async (): Promise<number> => {
 }
 
 // Delete old runs so the postgres DB doesn't hog disk space
-// NOTE: the order of deletion is important
 export const deleteOldRunData = async (run_id: number): Promise<void> => {
     console.log(`[${run_id}] deleting old run data`)
 
