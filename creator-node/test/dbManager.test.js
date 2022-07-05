@@ -2,7 +2,7 @@ const assert = require('assert')
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const getUuid = require('uuid/v4')
-const crypto = require('crypto')
+
 const request = require('supertest')
 const path = require('path')
 const sinon = require('sinon')
@@ -19,11 +19,12 @@ const {
   createStarterCNodeUser,
   getCNodeUser,
   destroyUsers,
-  createSession
+  createSession,
+  createStarterCNodeUserWithKey
 } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const { saveFileToStorage } = require('./lib/helpers')
+const { saveFileToStorage, computeFilesHash } = require('./lib/helpers')
 
 const TestAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
@@ -77,7 +78,7 @@ describe('Test createNewDataRecord()', async function () {
     await server.close()
   })
 
-  it('Sequential createNewDataRecord - create 2 records', async () => {
+  it('Sequential createNewDataRecord - create 2 records', async function () {
     const sequelizeTableInstance = models.File
 
     /**
@@ -165,7 +166,7 @@ describe('Test createNewDataRecord()', async function () {
     assert.strictEqual(file.clock, initialClockVal + 2)
   })
 
-  it('Concurrent createNewDataRecord - successfully makes concurrent calls in separate transactions', async () => {
+  it('Concurrent createNewDataRecord - successfully makes concurrent calls in separate transactions', async function () {
     const sequelizeTableInstance = models.File
     const numEntries = 5
 
@@ -186,7 +187,7 @@ describe('Test createNewDataRecord()', async function () {
     // Make multiple concurrent calls - create a transaction for each call
     const arr = _.range(1, numEntries + 1) // [1, 2, ..., numEntries]
     let createdFiles = await Promise.all(
-      arr.map(async () => {
+      arr.map(async function () {
         const transaction = await models.sequelize.transaction()
         const createdFile = await DBManager.createNewDataRecord(
           createFileQueryObj,
@@ -235,7 +236,7 @@ describe('Test createNewDataRecord()', async function () {
     })
   })
 
-  it('Concurrent createNewDataRecord - fails to make concurrent calls in a single transaction due to ClockRecords_pkey', async () => {
+  it('Concurrent createNewDataRecord - fails to make concurrent calls in a single transaction due to ClockRecords_pkey', async function () {
     const sequelizeTableInstance = models.File
     const numEntries = 5
 
@@ -258,7 +259,7 @@ describe('Test createNewDataRecord()', async function () {
     try {
       const arr = _.range(1, numEntries + 1) // [1, 2, ..., numEntries]
       await Promise.all(
-        arr.map(async () => {
+        arr.map(async function () {
           const createdFile = await DBManager.createNewDataRecord(
             createFileQueryObj,
             cnodeUserUUID,
@@ -304,7 +305,7 @@ describe('Test createNewDataRecord()', async function () {
   /**
    * Simulates /image_upload and /track_content routes, which write multiple files sequentially in atomic tx
    */
-  it('Sequential createNewDataRecord - successfully makes multiple sequential calls in single transaction', async () => {
+  it('Sequential createNewDataRecord - successfully makes multiple sequential calls in single transaction', async function () {
     const sequelizeTableInstance = models.File
     const numEntries = 5
 
@@ -359,7 +360,7 @@ describe('Test createNewDataRecord()', async function () {
     })
   })
 
-  it('Confirm file.pkey will block duplicate clock vals from being written', async () => {
+  it('Confirm file.pkey will block duplicate clock vals from being written', async function () {
     const transaction = await models.sequelize.transaction()
     try {
       createFileQueryObj = {
@@ -632,7 +633,7 @@ describe('Test deleteSessionTokensFromDB() when provided an Array of SessionToke
   })
 })
 
-describe('Test deleteAllCNodeUserDataFromDB()', async () => {
+describe('Test deleteAllCNodeUserDataFromDB()', async function () {
   const initialClockVal = 0
   const userId = 1
 
@@ -649,7 +650,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
   let session, app, cnodeUser, cnodeUserUUID, server, libsMock
 
   /** Init server to run DB migrations */
-  before(async () => {
+  before(async function () {
     const spId = 1
     libsMock = getLibsMock()
     const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
@@ -658,7 +659,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
   })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
-  beforeEach(async () => {
+  beforeEach(async function () {
     // Wipe all CNodeUsers + dependent data
     await destroyUsers()
     session = await createStarterCNodeUser(userId)
@@ -670,14 +671,14 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
   })
 
   /** Wipe all CNodeUsers + dependent data */
-  after(async () => {
+  after(async function () {
     sinon.restore()
     await destroyUsers()
     await server.close()
   })
 
-  it('Successfully deletes all state for CNodeUser with data in all tables', async () => {
-    const uploadAudiusUserState = async () => {
+  it('Successfully deletes all state for CNodeUser with data in all tables', async function () {
+    const uploadAudiusUserState = async function () {
       const audiusUserMetadata = { test: 'field1' }
       const audiusUserMetadataResp = await request(app)
         .post('/audius_users/metadata')
@@ -821,7 +822,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
 
     // delete all DB records
     await DBManager.deleteAllCNodeUserDataFromDB({
-      lookupCnodeUserUUID: cnodeUserUUID
+      lookupCNodeUserUUID: cnodeUserUUID
     })
 
     /** assert all tables empty */
@@ -839,23 +840,24 @@ describe('Test deleteAllCNodeUserDataFromDB()', async () => {
     assert.strictEqual(clockRecordEntries.length, 0)
   })
 
-  it.skip('external & internal transaction', async () => {})
+  it.skip('external & internal transaction', async function () {})
 })
 
-describe('Test fetchFilesHashFromDB()', async () => {
+describe('Test fetchFilesHashFromDB()', async function () {
   const initialClockVal = 0
+  const ClockZero = 0
   const filesTableInst = models.File
 
   let cnodeUser, cnodeUserUUID, server
 
   /** Init server to run DB migrations */
-  before(async () => {
+  before(async function() {
     const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
-  beforeEach(async () => {
+  beforeEach(async function () {
     // Wipe all CNodeUsers + dependent data
     await destroyUsers()
     const resp = await createStarterCNodeUser()
@@ -867,7 +869,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
   })
 
   /** Wipe all CNodeUsers + dependent data */
-  after(async () => {
+  after(async function () {
     await destroyUsers()
 
     await server.close()
@@ -904,7 +906,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
     return multihashes
   }
 
-  it('fetchFilesHashFromDB successfully returns hash', async () => {
+  it('fetchFilesHashFromDB successfully returns hash', async function () {
     const numFiles = 10
     const randomFileQueryObjects = generateRandomFileQueryObjects(numFiles)
     const multihashes = await createFilesForUser(
@@ -913,11 +915,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
     )
 
     // compute expectedFilesHash
-    const multihashString = `{${multihashes.join(',')}}`
-    const expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    let expectedFilesHash = computeFilesHash(multihashes)
 
     // fetch filesHash by cnodeUserUUID & assert equal
     let actualFilesHash = await DBManager.fetchFilesHashFromDB({
@@ -930,9 +928,31 @@ describe('Test fetchFilesHashFromDB()', async () => {
       lookupKey: { lookupWallet: cnodeUser.walletPublicKey }
     })
     assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    // Create CNU2
+    const walletCNU2 = getUuid()
+    const createCNU2Resp = await createStarterCNodeUserWithKey(walletCNU2)
+    const cnodeUserUUID2 = createCNU2Resp.cnodeUserUUID
+    const cnodeUser2 = await getCNodeUser(cnodeUserUUID2)
+    assert.strictEqual(cnodeUser2.clock, initialClockVal)
+
+    // Confirm handles user with no data
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({
+      lookupKey: { lookupCNodeUserUUID: cnodeUserUUID2 }
+    })
+    expectedFilesHash = null
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
+
+    // Confirm handles non-existent user
+    const cnodeUserUUID3 = getUuid()
+    actualFilesHash = await DBManager.fetchFilesHashFromDB({
+      lookupKey: { lookupCNodeUserUUID: cnodeUserUUID3 }
+    })
+    expectedFilesHash = null
+    assert.strictEqual(actualFilesHash, expectedFilesHash)
   })
 
-  it('fetchFilesHashFromDB successully returns hash by clock range when supplied', async () => {
+  it('fetchFilesHashFromDB successully returns hash by clock range when supplied', async function () {
     const numFiles = 10
     const randomFileQueryObjects = generateRandomFileQueryObjects(numFiles)
     const multihashes = await createFilesForUser(
@@ -944,11 +964,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
     const clockMax = 8 // exclusive
 
     /** clockMin */
-    let multihashString = `{${multihashes.slice(clockMin - 1).join(',')}}`
-    let expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    let expectedFilesHash = computeFilesHash(multihashes.slice(clockMin - 1))
     let actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMin
@@ -956,11 +972,7 @@ describe('Test fetchFilesHashFromDB()', async () => {
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMax */
-    multihashString = `{${multihashes.slice(0, clockMax - 1).join(',')}}`
-    expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    expectedFilesHash = computeFilesHash(multihashes.slice(0, clockMax - 1))
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMax
@@ -968,13 +980,8 @@ describe('Test fetchFilesHashFromDB()', async () => {
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMin and clockMax */
-    multihashString = `{${multihashes
-      .slice(clockMin - 1, clockMax - 1)
-      .join(',')}}`
-    expectedFilesHash = crypto
-      .createHash('md5')
-      .update(multihashString)
-      .digest('hex')
+    expectedFilesHash = computeFilesHash(multihashes
+      .slice(clockMin - 1, clockMax - 1))
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMin,
@@ -987,5 +994,75 @@ describe('Test fetchFilesHashFromDB()', async () => {
       clockMax
     })
     assert.strictEqual(actualFilesHash, expectedFilesHash)
+  })
+
+  it('fetchFilesHashesFromDB', async function () {
+    const numFiles = 10
+
+    // Upload files for CNU1
+    const randomFileQueryObjectsCNU1 = generateRandomFileQueryObjects(numFiles)
+    const multihashesCNU1 = await createFilesForUser(
+      cnodeUserUUID,
+      randomFileQueryObjectsCNU1
+    )
+
+    // compute expectedFilesHashCNU1
+    const expectedFilesHashCNU1 = computeFilesHash(multihashesCNU1)
+
+    // Create CNU2
+    const walletCNU2 = getUuid()
+    const createCNU2Resp = await createStarterCNodeUserWithKey(walletCNU2)
+    const cnodeUserUUID2 = createCNU2Resp.cnodeUserUUID
+    const cnodeUser2 = await getCNodeUser(cnodeUserUUID2)
+    assert.strictEqual(cnodeUser2.clock, initialClockVal)
+
+    // Upload files for cnodeUser2
+    const randomFileQueryObjectsCNU2 = generateRandomFileQueryObjects(numFiles)
+    const multihashesCNU2 = await createFilesForUser(
+      cnodeUserUUID2,
+      randomFileQueryObjectsCNU2
+    )
+
+    // compute expectedFilesHashCNU2
+    const expectedFilesHashCNU2 = computeFilesHash(multihashesCNU2)
+
+    // fetch filesHashes & assert equal
+    let cnodeUserUUIDs = [cnodeUserUUID, cnodeUserUUID2]
+    let actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs })
+    let expectedResp = {
+      [cnodeUserUUID]: expectedFilesHashCNU1,
+      [cnodeUserUUID2]: expectedFilesHashCNU2
+    }
+    assert.deepEqual(actualResp, expectedResp)
+
+    // Create CNU3 with no files
+    const walletCNU3 = getUuid()
+    const createCNU3Resp = await createStarterCNodeUserWithKey(walletCNU3)
+    const cnodeUserUUID3 = createCNU3Resp.cnodeUserUUID
+    const cnodeUser3 = await getCNodeUser(cnodeUserUUID3)
+    assert.strictEqual(cnodeUser3.clock, ClockZero)
+
+    // Correctly handles user with no files
+    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID3] })
+    expectedResp = { [cnodeUserUUID3]: null }
+    assert.deepEqual(actualResp, expectedResp)
+
+    // Correctly handles non-existent user
+    const cnodeUserUUID4 = getUuid()
+    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID4] })
+    expectedResp = { [cnodeUserUUID4]: null }
+    assert.deepEqual(actualResp, expectedResp)
+
+    // Correctly handles request with valid user, invalid user, and user with no files
+    actualResp = await DBManager.fetchFilesHashesFromDB({
+      cnodeUserUUIDs: [cnodeUserUUID, cnodeUserUUID2, cnodeUserUUID3, cnodeUserUUID4]
+    })
+    expectedResp = {
+      [cnodeUserUUID]: expectedFilesHashCNU1,
+      [cnodeUserUUID2]: expectedFilesHashCNU2,
+      [cnodeUserUUID3]: null,
+      [cnodeUserUUID4]: null
+    }
+    assert.deepEqual(actualResp, expectedResp)
   })
 })

@@ -4,7 +4,6 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const {
-  MetricTypes,
   MetricNames,
   MetricLabels
 } = require('../../services/prometheusMonitoring/prometheus.constants')
@@ -23,29 +22,30 @@ const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 
 /**
- * Given map(replica node => userWallets[]), retrieves clock values for every (node, userWallet) pair.
- * Also returns a set of any nodes that were unhealthy when queried for clock values.
- * @param {Object} replicasToWalletsMap map of <replica set node : wallets>
+ * Given map(replica set node => userWallets[]), retrieves user info for every (node, userWallet) pair
+ * Also updates unhealthyPeers param with nodes that were unhealthy when queried
  *
- * @returns {Object} { replicasToUserClockStatusMap: map(replica node => map(wallet => clockValue)), unhealthyPeers: Set<string> }
+ * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
+ *
+ * @returns {Object} response
+ * @returns {Object} response.replicaToUserInfoMap map(replica => map(wallet => { clock, filesHash }))
+ * @returns {Set} response.unhealthyPeers unhealthy peer endpoints
  */
-const retrieveClockStatusesForUsersAcrossReplicaSet = async (
-  replicasToWalletsMap
-) => {
-  const replicasToUserClockStatusMap = {}
+const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
+  const replicaToUserInfoMap = {}
   const unhealthyPeers = new Set()
 
   const spID = config.get('spID')
 
   /** In parallel for every replica, fetch clock status for all users on that replica */
-  const replicas = Object.keys(replicasToWalletsMap)
+  const replicas = Object.keys(replicaToWalletMap)
   await Promise.all(
     replicas.map(async (replica) => {
-      replicasToUserClockStatusMap[replica] = {}
+      replicaToUserInfoMap[replica] = {}
 
-      const walletsOnReplica = replicasToWalletsMap[replica]
+      const walletsOnReplica = replicaToWalletMap[replica]
 
-      // Make requests in batches, sequentially, to ensure POST request body does not exceed max size
+      // Make requests in batches, sequentially, since this is an expensive query
       for (
         let i = 0;
         i < walletsOnReplica.length;
@@ -58,13 +58,13 @@ const retrieveClockStatusesForUsersAcrossReplicaSet = async (
 
         const axiosReqParams = {
           baseURL: replica,
-          url: '/users/batch_clock_status',
+          url: '/users/batch_clock_status?returnFilesHash=true',
           method: 'post',
           data: { walletPublicKeys: walletsOnReplicaSlice },
           timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
         }
 
-        // Sign request to other CN to bypass rate limiting
+        // Generate and attach SP signature to bypass route rate limits
         const { timestamp, signature } = generateTimestampAndSignature(
           { spID: spID },
           DELEGATE_PRIVATE_KEY
@@ -83,25 +83,31 @@ const retrieveClockStatusesForUsersAcrossReplicaSet = async (
           errorMsg = e
         }
 
-        // If failed to get response after all attempts, add replica to `unhealthyPeers` set for reconfig
+        // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
         if (errorMsg) {
           logger.error(
-            `retrieveClockStatusesForUsersAcrossReplicaSet() Could not fetch clock values for wallets=${walletsOnReplica} on replica=${replica} ${errorMsg.toString()}`
+            `[retrieveUserInfoFromReplicaSet] Could not fetch clock values from replica ${replica}: ${errorMsg.toString()}`
           )
           unhealthyPeers.add(replica)
         }
 
-        // Add batch response data to aggregate output map
-        batchClockStatusResp.forEach((userClockValueResp) => {
-          const { walletPublicKey, clock } = userClockValueResp
-          replicasToUserClockStatusMap[replica][walletPublicKey] = clock
+        // Add response data to output aggregate map
+        batchClockStatusResp.forEach((clockStatusResp) => {
+          /**
+           * @notice `filesHash` will be null if node has no files for user. This can happen even if clock > 0 if user has AudiusUser or Track table records without any File table records
+           */
+          const { walletPublicKey, clock, filesHash } = clockStatusResp
+          replicaToUserInfoMap[replica][walletPublicKey] = {
+            clock,
+            filesHash
+          }
         })
       }
     })
   )
 
   return {
-    replicasToUserClockStatusMap,
+    replicaToUserInfoMap,
     unhealthyPeers
   }
 }
@@ -168,7 +174,7 @@ const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
 }
 
 module.exports = {
-  retrieveClockStatusesForUsersAcrossReplicaSet,
   retrieveClockValueForUserFromReplica,
+  retrieveUserInfoFromReplicaSet,
   makeHistogramToRecord
 }
