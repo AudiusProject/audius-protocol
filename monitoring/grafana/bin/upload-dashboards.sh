@@ -18,7 +18,7 @@ set +o allexport
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
 
-json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' | grep -v ${folder_json})
+json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json')
 for json_dashboard in ${json_dashboards}
 do
     curl \
