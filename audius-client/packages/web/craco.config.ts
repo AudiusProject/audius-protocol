@@ -1,3 +1,5 @@
+import path from 'path'
+
 import { addBeforeLoader, loaderByName, when } from '@craco/craco'
 import { Configuration } from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
@@ -16,8 +18,17 @@ export default {
       new BundleAnalyzerPlugin()
     ]),
     configure: (webpackConfig: Configuration) => {
+      // react-nil, our mobile-web renderer, requires react16
       if (isNative && webpackConfig?.resolve?.alias) {
-        webpackConfig.resolve.alias.react = 'react16'
+        webpackConfig.resolve.alias.react = path.resolve(
+          './node_modules/react16'
+        )
+      }
+
+      // this prevents symlinked packages from using their own react
+      // https://github.com/facebook/react/issues/13991#issuecomment-435587809
+      if (!isNative && webpackConfig.resolve?.alias) {
+        webpackConfig.resolve.alias.react = path.resolve('./node_modules/react')
       }
 
       const wasmExtensionRegExp = /\.wasm$/

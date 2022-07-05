@@ -60,7 +60,7 @@
     "@sentry/react-native": "3.2.8",
     "@svgr/core": "5.5.0",
     "array.prototype.flat": "1.2.5",
-    "audius-client": "file:../web",
+    "audius-client": "1.1.11",
     "babel-plugin-transform-remove-console": "6.9.4",
     "bn.js": "5.2.0",
     "color": "4.2.1",

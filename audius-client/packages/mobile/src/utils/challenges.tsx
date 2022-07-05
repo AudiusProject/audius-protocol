@@ -18,6 +18,7 @@ import NerdFace from 'app/assets/images/emojis/nerd-face.png'
 import WhiteHeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
+import IconTip from 'app/assets/images/iconTip.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 
 // TODO: These should be programmatic based on amount, but historically have not been
@@ -204,6 +205,18 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     buttonInfo: {
       label: challenges.trackUploadButton,
       renderIcon: color => <IconUpload fill={color} />,
+      iconPosition: 'right'
+    }
+  },
+  'send-first-tip': {
+    icon: MultipleMusicalNotes,
+    title: 'Send Your First Tip',
+    description: 'Show some love to your favorite artist and send them a tip',
+    shortDescription: 'Earn 2 $AUDIO',
+    progressLabel: 'Not Earned',
+    buttonInfo: {
+      label: 'Find Someone to Tip',
+      renderIcon: color => <IconTip fill={color} />,
       iconPosition: 'right'
     }
   }

@@ -57,6 +57,10 @@ const challengeInfoMap: Record<
   'mobile-install': {
     title: '📲 Get the App',
     amount: 1
+  },
+  'send-first-tip': {
+    title: 'Send Your First Tip',
+    amount: 2
   }
 }
 
