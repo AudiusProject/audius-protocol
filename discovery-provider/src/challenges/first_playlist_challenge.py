@@ -15,7 +15,7 @@ class FirstPlaylistChallengeUpdater(ChallengeUpdater):
         session: Session,
         event: str,
         user_challenges: List[UserChallenge],
-        step_cout: Optional[int],
+        step_count: Optional[int],
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
