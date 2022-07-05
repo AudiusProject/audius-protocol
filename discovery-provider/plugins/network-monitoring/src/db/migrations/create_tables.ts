@@ -28,7 +28,8 @@ const migration: RunnableMigration<QueryInterface> = {
                 run_id INT,
                 CONSTRAINT fk_run_id 
                     FOREIGN KEY (run_id)
-                    REFERENCES network_monitoring_index_blocks(run_id),
+                    REFERENCES network_monitoring_index_blocks(run_id)
+                    ON DELETE CASCADE,
 
                 PRIMARY KEY (run_id, spID)
             );
@@ -49,7 +50,8 @@ const migration: RunnableMigration<QueryInterface> = {
                 secondary2SpID INT,
                 CONSTRAINT fk_run_id
                     FOREIGN KEY (run_id)
-                    REFERENCES network_monitoring_index_blocks(run_id),
+                    REFERENCES network_monitoring_index_blocks(run_id)
+                    ON DELETE CASCADE,
                 CONSTRAINT fk_primarySpID
                     FOREIGN KEY (run_id, primarySpID)
                     REFERENCES network_monitoring_content_nodes(run_id, spID),
@@ -74,6 +76,7 @@ const migration: RunnableMigration<QueryInterface> = {
                 CONSTRAINT fk_run_id
                     FOREIGN KEY (run_id)
                     REFERENCES network_monitoring_index_blocks(run_id)
+                    ON DELETE CASCADE
             );
         `)
 
@@ -86,7 +89,8 @@ const migration: RunnableMigration<QueryInterface> = {
                 content_node_spID INT,
                 CONSTRAINT fk_run_id 
                     FOREIGN KEY (run_id)
-                    REFERENCES network_monitoring_index_blocks(run_id),
+                    REFERENCES network_monitoring_index_blocks(run_id)
+                    ON DELETE CASCADE,
                 CONSTRAINT fk_content_node_spID 
                     FOREIGN KEY (run_id, content_node_spID)
                     REFERENCES network_monitoring_content_nodes(run_id, spID)
@@ -95,11 +99,11 @@ const migration: RunnableMigration<QueryInterface> = {
     },
     down: async (params: MigrationParams<QueryInterface>) => {
         await params.context.sequelize.query(`
-            DROP TABLE network_monitoring_index_blocks;
-            DROP TABLE network_monitoring_content_nodes;
-            DROP TABLE network_monitoring_users;
-            DROP TABLE network_monitoring_cids_from_discovery;
             DROP TABLE network_monitoring_cids_from_content;
+            DROP TABLE network_monitoring_cids_from_discovery;
+            DROP TABLE network_monitoring_users;
+            DROP TABLE network_monitoring_content_nodes;
+            DROP TABLE network_monitoring_index_blocks;
         `)
     }
 }
