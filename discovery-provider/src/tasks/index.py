@@ -90,9 +90,7 @@ USER_LIBRARY_FACTORY_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
 USER_REPLICA_SET_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
     CONTRACT_TYPES.USER_REPLICA_SET_MANAGER
 ]
-AUDIUS_DATA_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[
-    CONTRACT_TYPES.AUDIUS_DATA
-]
+AUDIUS_DATA_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.AUDIUS_DATA]
 
 TX_TYPE_TO_HANDLER_MAP = {
     USER_FACTORY: user_state_update,
@@ -101,7 +99,7 @@ TX_TYPE_TO_HANDLER_MAP = {
     PLAYLIST_FACTORY: playlist_state_update,
     USER_LIBRARY_FACTORY: user_library_state_update,
     USER_REPLICA_SET_MANAGER: user_replica_set_state_update,
-    AUDIUS_DATA: audius_data_state_update
+    AUDIUS_DATA: audius_data_state_update,
 }
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
@@ -268,12 +266,7 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_cid_metadata(
-    db,
-    user_factory_txs,
-    track_factory_txs,
-    audius_data_txs
-):
+def fetch_cid_metadata(db, user_factory_txs, track_factory_txs, audius_data_txs):
     start_time = datetime.now()
     user_contract = update_task.user_contract
     track_contract = update_task.track_contract
@@ -342,7 +335,9 @@ def fetch_cid_metadata(
                     entity_type = event_args._entityType
                     cid = event_args._metadata
                     # TODO - skip if not a multihash
-                    logger.info(f"index.py | newcontract {txhash}, {event_args}, {entity_type}, {cid}")
+                    logger.info(
+                        f"index.py | newcontract {txhash}, {event_args}, {entity_type}, {cid}"
+                    )
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
                     cid_type[cid] = "playlist_data"
@@ -472,7 +467,9 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
             )
             break
 
-    logger.info(f"index.py | checking returned {contract_type} vs {tx_target_contract_address}")
+    logger.info(
+        f"index.py | checking returned {contract_type} vs {tx_target_contract_address}"
+    )
     return contract_type
 
 
@@ -628,7 +625,7 @@ def index_blocks(self, db, blocks_list):
                     PLAYLIST_FACTORY: [],
                     USER_LIBRARY_FACTORY: [],
                     USER_REPLICA_SET_MANAGER: [],
-                    AUDIUS_DATA: []
+                    AUDIUS_DATA: [],
                 }
                 try:
                     """
@@ -694,7 +691,7 @@ def index_blocks(self, db, blocks_list):
                         db,
                         txs_grouped_by_type[USER_FACTORY],
                         txs_grouped_by_type[TRACK_FACTORY],
-                        txs_grouped_by_type[AUDIUS_DATA]
+                        txs_grouped_by_type[AUDIUS_DATA],
                     )
                     logger.info(
                         f"index.py | index_blocks - fetch_ipfs_metadata in {time.time() - fetch_ipfs_metadata_start_time}s"
@@ -1152,12 +1149,9 @@ def update_task(self):
         abi=user_replica_set_manager_abi,
     )
 
-    audius_data_contract_abi = update_task.abi_values[
-        AUDIUS_DATA_CONTRACT_NAME
-    ]["abi"]
+    audius_data_contract_abi = update_task.abi_values[AUDIUS_DATA_CONTRACT_NAME]["abi"]
     audius_data_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[AUDIUS_DATA],
-        abi=audius_data_contract_abi
+        address=get_contract_addresses()[AUDIUS_DATA], abi=audius_data_contract_abi
     )
 
     update_task.track_contract = track_contract

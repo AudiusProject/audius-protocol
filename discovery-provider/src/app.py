@@ -138,8 +138,7 @@ def init_contracts():
 
     audius_data_address = "0xaf5C4C6C7920B4883bC6252e9d9B8fE27187Cf68"
     audius_data_inst = web3.eth.contract(
-        address=audius_data_address,
-        abi=abi_values["AudiusData"]["abi"]
+        address=audius_data_address, abi=abi_values["AudiusData"]["abi"]
     )
 
     contract_address_dict = {
@@ -151,7 +150,7 @@ def init_contracts():
         "user_library_factory": user_library_factory_address,
         "ipld_blacklist_factory": ipld_blacklist_factory_address,
         "user_replica_set_manager": user_replica_set_manager_address,
-        "audius_data": audius_data_address
+        "audius_data": audius_data_address,
     }
 
     return (

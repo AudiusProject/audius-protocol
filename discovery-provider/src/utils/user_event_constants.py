@@ -38,10 +38,6 @@ user_replica_set_manager_event_types_arr = [
     user_replica_set_manager_event_types_lookup["add_or_update_content_node"],
 ]
 
-audius_data_event_types_lookup = {
-    "manage_entity": "ManageEntity"
-}
+audius_data_event_types_lookup = {"manage_entity": "ManageEntity"}
 
-audius_data_event_types_arr = [
-    audius_data_event_types_lookup["manage_entity"]
-]
+audius_data_event_types_arr = [audius_data_event_types_lookup["manage_entity"]]

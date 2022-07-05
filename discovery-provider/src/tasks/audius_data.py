@@ -11,6 +11,7 @@ from src.utils.user_event_constants import audius_data_event_types_arr
 
 logger = logging.getLogger(__name__)
 
+
 def audius_data_state_update(
     self,
     update_task: DatabaseTask,
@@ -21,10 +22,11 @@ def audius_data_state_update(
     block_hash,
     ipfs_metadata,  # prefix unused args with underscore to prevent pylint
     _blacklisted_cids,
-) -> Tuple[int, Set]:
-    blockhash = update_task.web3.toHex(block_hash)
+) -> Tuple[int, Dict[str, Set[(int)]]]:
     num_total_changes = 0
-    changed_entity_ids: Set[(int, str)] = set()
+
+    changed_entity_ids: Dict[str, Set[(int)]]
+
     if not audius_data_txs:
         return num_total_changes, changed_entity_ids
 
@@ -48,8 +50,14 @@ def audius_data_state_update(
                 action = helpers.get_tx_arg(entry, "_action")
                 metadata_cid = helpers.get_tx_arg(entry, "_metadata")
                 signer = helpers.get_tx_arg(entry, "_signer")
-                metadata = ipfs_metadata[metadata_cid] if metadata_cid in ipfs_metadata else None
-                logger.info(f"index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}")
+                metadata = (
+                    ipfs_metadata[metadata_cid]
+                    if metadata_cid in ipfs_metadata
+                    else None
+                )
+                logger.info(
+                    f"index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}"
+                )
 
                 # Handle playlist creation
                 if entity_type == "Playlist" and action == "Create":
@@ -67,7 +75,7 @@ def audius_data_state_update(
                             playlist_id,
                             block_number,
                             block_hash,
-                            txhash
+                            txhash,
                         )
 
                     playlist_record = parse_playlist_create_data_event(
@@ -77,7 +85,7 @@ def audius_data_state_update(
                         existing_playlist_record,
                         metadata,
                         block_timestamp,
-                        session
+                        session,
                     )
 
                     if playlist_record is not None:
@@ -95,6 +103,9 @@ def audius_data_state_update(
                         processed_entries += 1
             num_total_changes += processed_entries
 
+    # Update changed entity dictionary
+    changed_entity_ids["playlist"] = playlist_ids
+
     for playlist_id, value_obj in playlist_events_lookup.items():
         logger.info(f"index.py | playlists.py | Adding {value_obj['playlist']})")
         if value_obj["events"]:
@@ -103,17 +114,20 @@ def audius_data_state_update(
 
     return num_total_changes, changed_entity_ids
 
-def get_audius_data_events_tx(update_task, event_type, tx_receipt):
-    return getattr(update_task.audius_data_contract.events, event_type)().processReceipt(
-        tx_receipt
-    )
 
-def lookup_playlist_data_record(update_task, session, playlist_id, block_number, block_hash, txhash):
+def get_audius_data_events_tx(update_task, event_type, tx_receipt):
+    return getattr(
+        update_task.audius_data_contract.events, event_type
+    )().processReceipt(tx_receipt)
+
+
+def lookup_playlist_data_record(
+    update_task, session, playlist_id, block_number, block_hash, txhash
+):
     event_blockhash = update_task.web3.toHex(block_hash)
     # Check if playlist record is in the DB
     playlist_exists = (
-        session.query(Playlist).filter_by(playlist_id=playlist_id).count()
-        > 0
+        session.query(Playlist).filter_by(playlist_id=playlist_id).count() > 0
     )
 
     playlist_record = None
@@ -140,23 +154,36 @@ def lookup_playlist_data_record(update_task, session, playlist_id, block_number,
 
     return playlist_record
 
+
 # Create playlist specific
 def parse_playlist_create_data_event(
-    update_task, entry, playlist_owner_id, playlist_record, playlist_metadata, block_timestamp, session
+    update_task,
+    entry,
+    playlist_owner_id,
+    playlist_record,
+    playlist_metadata,
+    block_timestamp,
+    session,
 ):
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
     block_integer_time = int(block_timestamp)
     logger.info(f"index.py | AudiusData | Parsing event...")
     playlist_record.playlist_owner_id = playlist_owner_id
     # TODO: Fix isAlbum to is_album
-    playlist_record.is_album = playlist_metadata['isAlbum']
-    playlist_record.description = playlist_metadata['description']
-    playlist_record.playlist_image_multihash = playlist_metadata['playlist_image_sizes_multihash']
-    playlist_record.playlist_image_sizes_multihash = playlist_metadata['playlist_image_sizes_multihash']
-    playlist_record.playlist_name = playlist_metadata['playlist_name']
-    playlist_record.is_private = playlist_metadata['is_private'] if 'is_private' in playlist_metadata else False
+    playlist_record.is_album = playlist_metadata["isAlbum"]
+    playlist_record.description = playlist_metadata["description"]
+    playlist_record.playlist_image_multihash = playlist_metadata[
+        "playlist_image_sizes_multihash"
+    ]
+    playlist_record.playlist_image_sizes_multihash = playlist_metadata[
+        "playlist_image_sizes_multihash"
+    ]
+    playlist_record.playlist_name = playlist_metadata["playlist_name"]
+    playlist_record.is_private = (
+        playlist_metadata["is_private"] if "is_private" in playlist_metadata else False
+    )
     playlist_content_array = []
-    track_ids = playlist_metadata['playlist_contents']
+    track_ids = playlist_metadata["playlist_contents"]
     if track_ids:
         for track_id in track_ids:
             playlist_content_array.append(
