@@ -3,7 +3,7 @@ import {
     fullySyncedUsersCountGauge,
     gateway,
     generatingMetricsDurationGauge,
-    noPrimaryUsersCountGauge,
+    nullPrimaryUsersCountGauge,
     partiallySyncedUsersCountGauge,
     primaryUserCountGauge,
     unsyncedUsersCountGauge,
@@ -53,7 +53,7 @@ export const generateMetrics = async (run_id: number) => {
 
     const unsyncedUsersCount = await getUnsyncedUsersCount(run_id)
 
-    const ghostUsersCount = await getUsersWithNullPrimaryClock(run_id)
+    const usersWithNullPrimaryClock = await getUsersWithNullPrimaryClock(run_id)
 
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)
@@ -65,7 +65,7 @@ export const generateMetrics = async (run_id: number) => {
     fullySyncedUsersCountGauge.set({ run_id }, fullySyncedUsersCount)
     partiallySyncedUsersCountGauge.set({ run_id }, partiallySyncedUserCount)
     unsyncedUsersCountGauge.set({ run_id }, unsyncedUsersCount)
-    noPrimaryUsersCountGauge.set({ run_id }, ghostUsersCount)
+    nullPrimaryUsersCountGauge.set({ run_id }, usersWithNullPrimaryClock)
 
     // Record duration for generating metrics and export to prometheus
     endTimer({ run_id: run_id })
