@@ -36,8 +36,8 @@ export const unsyncedUsersCountGauge = new client.Gauge({
     labelNames: ['run_id']
 })
 
-export const ghostUsersCountGauge = new client.Gauge({
-    name: 'audius_nm_ghost_user_count',
+export const noPrimaryUsersCountGauge = new client.Gauge({
+    name: 'audius_nm_no_primary_user_count',
     help: 'the number of users whose primary is null',
     labelNames: ['run_id']
 })
