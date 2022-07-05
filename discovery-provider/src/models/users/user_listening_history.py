@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Index, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class UserListeningHistory(Base):
+class UserListeningHistory(Base, RepresentableMixin):
     __tablename__ = "user_listening_history"
 
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
@@ -15,8 +16,3 @@ class UserListeningHistory(Base):
     # ]
 
     Index("user_id", "listening_history", unique=True)
-
-    def __repr__(self):
-        return f"<UserListeningHistory(\
-user_id={self.user_id},\
-listening_history={self.listening_history})>"

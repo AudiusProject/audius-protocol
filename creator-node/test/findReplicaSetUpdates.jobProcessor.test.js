@@ -147,6 +147,9 @@ describe('test findReplicaSetUpdates job processor', function () {
     return expect(
       runJobProcessor(jobProcessorArgs)
     ).to.eventually.be.fulfilled.and.deep.equal({
+      cNodeEndpointToSpIdMap:
+        jobProcessorArgs?.cNodeEndpointToSpIdMap ||
+        DEFAULT_CNODE_ENDOINT_TO_SP_ID_MAP,
       jobsToEnqueue: expectedUnhealthyReplicas?.length
         ? {
             [QUEUE_NAMES.STATE_RECONCILIATION]: [
@@ -261,8 +264,8 @@ describe('test findReplicaSetUpdates job processor', function () {
     // Make sync success rate lower than threshold
     const userSecondarySyncMetricsMap = {
       [wallet]: {
-        [secondary1]: { successRate: 0, failureCount: 100 },
-        [secondary2]: { successRate: 1, failureCount: 0 }
+        [secondary1]: { successRate: 0, successCount: 0, failureCount: 100 },
+        [secondary2]: { successRate: 1, successCount: 0, failureCount: 0 }
       }
     }
 

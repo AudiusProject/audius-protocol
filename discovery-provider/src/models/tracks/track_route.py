@@ -1,8 +1,9 @@
 from sqlalchemy import Boolean, Column, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class TrackRoute(Base):
+class TrackRoute(Base, RepresentableMixin):
     __tablename__ = "track_routes"
 
     # Actual URL slug for the track, includes collision_id
@@ -19,15 +20,3 @@ class TrackRoute(Base):
     txhash = Column(String, nullable=False)
 
     PrimaryKeyConstraint(owner_id, slug)
-
-    def __repr__(self):
-        return f"<TrackRoute(\
-slug={self.slug},\
-title_slug={self.title_slug},\
-collision_id={self.collision_id},\
-owner_id={self.owner_id},\
-track_id={self.track_id},\
-is_current={self.is_current},\
-blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-txhash={self.txhash})>"

@@ -194,7 +194,7 @@ const _findSyncsForUser = async (
       continue
     }
 
-    // Secondary have too low of a success rate -- don't sync to it
+    // Secondary has too low of a success rate -- don't sync to it
     if (
       failureCount >= minFailedSyncRequestsBeforeReconfig &&
       successRate < minSecondaryUserSyncSuccessPercent

@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class AggregateIntervalPlay(Base):
+class AggregateIntervalPlay(Base, RepresentableMixin):
     """
     Aggregate Interval Play aggregates the plays by time interval
     """
@@ -14,12 +15,3 @@ class AggregateIntervalPlay(Base):
     created_at = Column(Integer, nullable=False)
     week_listen_counts = Column(Integer, nullable=False, index=True)
     month_listen_counts = Column(Integer, nullable=False, index=True)
-
-    def __repr__(self):
-        return f"<AggregateIntervalPlay(\
-track_id={self.track_id},\
-genre={self.genre},\
-created_at={self.created_at},\
-week_listen_counts={self.week_listen_counts},\
-month_listen_counts={self.month_listen_counts},\
-)>"

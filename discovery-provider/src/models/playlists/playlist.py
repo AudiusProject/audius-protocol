@@ -11,10 +11,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import validates
 from src.model_validator import ModelValidator
 from src.models.base import Base
-from src.models.model_utils import validate_field_helper
+from src.models.model_utils import RepresentableMixin, validate_field_helper
 
 
-class Playlist(Base):
+class Playlist(Base, RepresentableMixin):
     __tablename__ = "playlists"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
@@ -47,23 +47,3 @@ class Playlist(Base):
         return validate_field_helper(
             field, value, "Playlist", getattr(Playlist, field).type
         )
-
-    def __repr__(self):
-        return f"<Playlist(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-slot={self.slot},\
-txhash={self.txhash},\
-playlist_id={self.playlist_id},\
-playlist_owner_id={self.playlist_owner_id},\
-is_album={self.is_album},\
-is_private={self.is_private},\
-playlist_name={self.playlist_name},\
-playlist_contents={self.playlist_contents},\
-playlist_image_multihash={self.playlist_image_multihash},\
-playlist_image_sizes_multihash={self.playlist_image_sizes_multihash},\
-description={self.description},\
-upc={self.upc}\
-is_current={self.is_current},\
-is_delete={self.is_delete},\
-updated_at={self.updated_at},\
-created_at={self.created_at})>"

@@ -252,7 +252,7 @@ class Rewards extends Base {
       endpoints = sampleSize(endpoints, quorumSize)
     } else {
       // If no endpoints array provided, select here
-      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(quorumSize)
+      endpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({ quorumSize })
     }
 
     if (endpoints.length < quorumSize) {
@@ -602,9 +602,13 @@ class Rewards extends Base {
     if (endpoints) {
       attestEndpoints = sampleSize(endpoints, numAttestations)
     } else {
-      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes(numAttestations, [], async (node) => {
-        const isRegistered = await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
-        return isRegistered
+      attestEndpoints = await this.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+        quorumSize: numAttestations,
+        useWhitelist: false,
+        filter: async (node) => {
+          const isRegistered = await this.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
+          return isRegistered
+        }
       })
     }
 

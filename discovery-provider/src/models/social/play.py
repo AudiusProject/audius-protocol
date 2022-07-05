@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Index, Integer, String, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class Play(Base):
+class Play(Base, RepresentableMixin):
     __tablename__ = "plays"
 
     id = Column(Integer, primary_key=True)
@@ -28,14 +29,3 @@ class Play(Base):
         unique=False,
     )
     Index("ix_plays_sol_signature", "play_item_id", "signature", unique=False)
-
-    def __repr__(self):
-        return f"<Play(\
-id={self.id},\
-user_id={self.user_id},\
-source={self.source},\
-play_item_id={self.play_item_id}\
-slot={self.slot}\
-signature={self.signature}\
-updated_at={self.updated_at}\
-created_at={self.created_at})>"

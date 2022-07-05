@@ -7,9 +7,10 @@ from sqlalchemy import (
     String,
 )
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class BlacklistedIPLD(Base):
+class BlacklistedIPLD(Base, RepresentableMixin):
     __tablename__ = "ipld_blacklists"
 
     blockhash = Column(
@@ -23,8 +24,3 @@ class BlacklistedIPLD(Base):
     is_current = Column(Boolean, nullable=False, index=True)
 
     PrimaryKeyConstraint(blockhash, ipld, is_blacklisted, is_current)
-
-    def __repr__(self):
-        return f"<BlacklistedIPLD(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},ipld={self.ipld}\
-is_blacklisted={self.is_blacklisted}, is_current={self.is_current})>"

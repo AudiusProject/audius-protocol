@@ -19,7 +19,6 @@ const {
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
 )
-const SP_ID = config.get('spID')
 const DELEGATE_PRIVATE_KEY = config.get('delegatePrivateKey')
 
 /**
@@ -36,8 +35,10 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
   const replicaToUserInfoMap = {}
   const unhealthyPeers = new Set()
 
-  // In parallel for every replica, fetch info for all users on that replica
-  const replicas = Object.keys(replicaToWalletMap)
+  const spID = config.get('spID')
+
+  /** In parallel for every replica, fetch clock status for all users on that replica */
+  const replicas = Object.keys(replicasToWalletsMap)
   await Promise.all(
     replicas.map(async (replica) => {
       replicaToUserInfoMap[replica] = {}
@@ -65,10 +66,10 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
 
         // Generate and attach SP signature to bypass route rate limits
         const { timestamp, signature } = generateTimestampAndSignature(
-          { spID: SP_ID },
+          { spID: spID },
           DELEGATE_PRIVATE_KEY
         )
-        axiosReqParams.params = { spID: SP_ID, timestamp, signature }
+        axiosReqParams.params = { spID: spID, timestamp, signature }
 
         let batchClockStatusResp = []
         let errorMsg
@@ -116,7 +117,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
  * Signs request with spID to bypass rate limits
  */
 const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
-  const spID = SP_ID
+  const spID = config.get('spID')
 
   const { timestamp, signature } = generateTimestampAndSignature(
     { spID },
