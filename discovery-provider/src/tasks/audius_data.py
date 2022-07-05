@@ -61,7 +61,6 @@ def audius_data_state_update(
 
                 # Handle playlist creation
                 if entity_type == "Playlist" and action == "Create":
-                    logger.info(f"index.py | AudiusData - create playlist detected")
                     playlist_id = entity_id
                     # look up or populate existing record
                     if playlist_id in playlist_events_lookup:
