@@ -29,7 +29,6 @@ There are 3 environments you can develop against
 ### Running
 
 ```bash
-npm install
 npm run start:<environment>
 ```
 

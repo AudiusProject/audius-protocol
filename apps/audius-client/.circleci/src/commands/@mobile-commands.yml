@@ -13,7 +13,7 @@ mobile-build-web-app:
           - dependency-cache-{{ checksum "packages/web/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - dependency-cache-
-    - run: cd packages/web && npm ci
+    - run: npm ci
     - save_cache:
         key: dependency-cache-{{ checksum "packages/web/package-lock.json" }}
         paths:

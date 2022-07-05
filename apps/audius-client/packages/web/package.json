@@ -267,6 +267,9 @@
     "coverageReporters": [
       "text",
       "html"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^react($|/.+)": "<rootDir>/node_modules/react$1"
+    }
   }
 }
