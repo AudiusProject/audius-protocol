@@ -63,41 +63,16 @@ export const deleteOldRunData = async (run_id: number): Promise<void> => {
         return
     }
 
-    // Delete old cids from content nodes
+    // Delete old runs
+    console.log("\t-> network_monitoring_index_blocks + cascading")
     await sequelizeConn.query(`
-        DELETE FROM network_monitoring_cids_from_content
+        DELETE FROM network_monitoring_index_blocks
         WHERE run_id < :toDelete;
     `, {
         type: QueryTypes.DELETE,
         replacements: { toDelete }
     })
 
-    // Delete old cids from discovery
-    await sequelizeConn.query(`
-    DELETE FROM network_monitoring_cids_from_discovery
-    WHERE run_id < :toDelete;
-    `, {
-        type: QueryTypes.DELETE,
-        replacements: { toDelete }
-    })
-
-    // Delete old users
-    await sequelizeConn.query(`
-     DELETE FROM network_monitoring_users
-     WHERE run_id < :toDelete;
-     `, {
-        type: QueryTypes.DELETE,
-        replacements: { toDelete }
-    })
-
-    // Delete old content nodes 
-    await sequelizeConn.query(`
-    DELETE FROM network_monitoring_content_nodes
-    WHERE run_id < :toDelete;
-    `, {
-        type: QueryTypes.DELETE,
-        replacements: { toDelete }
-    })
 }
 
 export const importContentNodes = async (run_id: number) => {
