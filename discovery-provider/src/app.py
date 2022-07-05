@@ -527,7 +527,8 @@ def configure_celery(celery, test_config=None):
         database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
     )
     db_read_replica = SessionManager(
-        database_url_read_replica, ast.literal_eval(shared_config["db"]["engine_args_literal"])
+        database_url_read_replica,
+        ast.literal_eval(shared_config["db"]["engine_args_literal"]),
     )
     logger.info("Database instance initialized!")
 
