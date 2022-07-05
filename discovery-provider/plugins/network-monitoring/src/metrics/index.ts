@@ -68,8 +68,6 @@ export const generateMetrics = async (run_id: number) => {
     endTimer({ run_id: run_id })
 
     await publishSlackReport({
-        allUsersCount: allUserCount,
-        primaryUsersCount: primaryUserCount,
         fullySyncedUsersCount: fullySyncedUsersCount,
         partiallySyncedUsersCount: partiallySyncedUserCount,
         unsyncedUsersCount: unsyncedUsersCount,
@@ -92,17 +90,23 @@ const publishSlackReport = async (metrics: Object) => {
     const { slack } = getEnv()
 
     if (
-        slack.token === '' 
-        || slack.url === '' 
+        slack.token === ''
+        || slack.url === ''
         || slack.channelId === ''
     ) {
         return
     }
 
-    let message = metrics.toString()
+    let message = `\`\`\`${JSON.stringify(metrics, null, 2)}\`\`\`` 
+    console.log(message)
 
     try {
-        await axios.post(slack.url, { token: slack.token, channel: slack.channelId, text: message })
+        await axios.post(
+            slack.url,
+            {
+                text: message,
+            }, 
+        )
     } catch (e) {
         console.log(`Error posting to slack in slack reporter ${(e as Error).toString()}`)
     }
