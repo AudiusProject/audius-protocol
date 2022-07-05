@@ -448,6 +448,12 @@ const config = convict({
 
   /** sync / snapback configs */
 
+  fetchCNodeEndpointToSpIdMapIntervalMs: {
+    doc: 'interval (ms) to update the cNodeEndpoint->spId mapping',
+    format: 'nat',
+    env: 'fetchCNodeEndpointToSpIdMapIntervalMs',
+    default: 3_600_000 // 1hr
+  },
   stateMonitoringQueueRateLimitInterval: {
     doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval jobs will run',
     format: 'nat',

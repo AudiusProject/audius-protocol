@@ -773,10 +773,10 @@ export class RewardsAttester {
     endpoints = [...endpoints].filter((e) => !blockSet.has(e.endpoint))
 
     this.endpoints =
-      await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes(
-        this.quorumSize,
-        endpoints
-      )
+      await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+        quorumSize: this.quorumSize,
+        discoveryNodes: endpoints
+      })
     this.logger.info(
       `Selected new discovery nodes in ${
         (Date.now() - startTime) / 1000
