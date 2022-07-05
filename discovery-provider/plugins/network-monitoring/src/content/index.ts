@@ -92,7 +92,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
-    const [ primaryCount, secondary1Count, secondary2Count ] = await getUserCounts(run_id, spid)
+    const [primaryCount, secondary1Count, secondary2Count] = await getUserCounts(run_id, spid)
 
     let missedUsers = 0
 
@@ -295,13 +295,21 @@ const checkIfCIDsExistOnCN = async (
     }
 }
 
+type batchUserClockValuesResults = [
+    number, 
+    { 
+        walletPublicKey: string, 
+        clock: number 
+    }[],
+]
+
 const getUserClockValues = async (
     endpoint: string,
     walletPublicKeys: string[],
     deregisteredCN: string[],
     signatureSpID: number | undefined,
     signatureSPDelegatePrivateKey: string | undefined,
-): Promise<[number, { walletPublicKey: string, clock: number }[]]> => {
+): Promise<batchUserClockValuesResults> => {
 
     try {
         const axiosReqObj = {
