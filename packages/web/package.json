@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "@audius/sdk": "0.0.4",
-    "@audius/stems": "1.1.11",
+    "@audius/stems": "1.1.12",
     "@craco/craco": "6.4.3",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@hcaptcha/react-hcaptcha": "0.3.6",
