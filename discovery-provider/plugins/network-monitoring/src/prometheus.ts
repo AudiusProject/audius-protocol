@@ -36,6 +36,12 @@ export const unsyncedUsersCountGauge = new client.Gauge({
     labelNames: ['run_id']
 })
 
+export const ghostUsersCountGauge = new client.Gauge({
+    name: 'audius_nm_ghost_user_count',
+    help: 'the number of users whose primary is null',
+    labelNames: ['run_id']
+})
+
 export const missedUsersCountGauge = new client.Gauge({
     name: 'audius_nm_missed_users_count',
     help: 'the number of users that got skipped while indexing content nodes',
@@ -70,22 +76,4 @@ export const userBatchDurationGauge = new client.Gauge({
     name: 'audius_nm_user_batch_duration',
     help: 'the amount of time it takes to fetch and save a user batch',
     labelNames: ['run_id', 'endpoint'],
-})
-
-export const primaryUserCountEndpointGauge = new client.Gauge({
-    name: 'audius_nm_primary_user_count_endpoint',
-    help: 'blah',
-    labelNames: ['run_id', 'endpoint']
-})
-
-export const secondary1UserCountEndpointGauge = new client.Gauge({
-    name: 'audius_nm_secondary1_user_count_endpoint',
-    help: 'blah',
-    labelNames: ['run_id', 'endpoint']
-})
-
-export const secondary2UserCountEndpointGauge = new client.Gauge({
-    name: 'audius_nm_secondary2_user_count_endpoint',
-    help: 'blah',
-    labelNames: ['run_id', 'endpoint']
 })

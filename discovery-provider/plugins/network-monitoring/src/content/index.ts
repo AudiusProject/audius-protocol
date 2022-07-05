@@ -23,9 +23,6 @@ import {
     gateway,
     indexingContentDurationGauge,
     userBatchDurationGauge,
-    primaryUserCountEndpointGauge,
-    secondary1UserCountEndpointGauge,
-    secondary2UserCountEndpointGauge,
 } from "../prometheus"
 
 export const indexContent = async (run_id: number) => {
@@ -95,13 +92,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
-    const [primaryCount, secondary1Count, secondary2Count] = await getUserCounts(run_id, spid)
-
-    console.log(primaryCount, secondary1Count, secondary2Count)
-
-    primaryUserCountEndpointGauge.set({ run_id: run_id, endpoint: endpoint }, primaryCount)
-    secondary1UserCountEndpointGauge.set({ run_id: run_id, endpoint: endpoint }, secondary1Count)
-    secondary2UserCountEndpointGauge.set({ run_id: run_id, endpoint: endpoint }, secondary2Count)
+    const [ primaryCount, secondary1Count, secondary2Count ] = await getUserCounts(run_id, spid)
 
     let missedUsers = 0
 
@@ -170,7 +161,6 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     missedUsers += batchSize
                 }
             }
-
         })
     )
 
