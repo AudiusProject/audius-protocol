@@ -17,28 +17,10 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
-(
-    IFS=$'\n'
-    folder_json=grafana/dashboards/folders.json
-    for folder in $(jq -c '.[]' ${folder_json})
-    do
-        curl \
-            -s \
-            -H "Authorization: Bearer ${BEARER_TOKEN}" \
-            -u ${GRAFANA_USER}:${GRAFANA_PASS} \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -H "Accept: application/json" \
-            -d ${folder} \
-            ${BASE_URL}/api/folders \
-        | jq .
-    done
-)
 
 json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' | grep -v ${folder_json})
 for json_dashboard in ${json_dashboards}
 do
-    folder_slug=$(basename $(dirname ${json_dashboards}))
     curl \
         -s \
         -H "Authorization: Bearer ${BEARER_TOKEN}" \

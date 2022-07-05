@@ -50,23 +50,6 @@ RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
 
-# FOLDERS
-# ids have to be unique
-CLEAR_FOLDER_IDS='del(.[].id)'
-
-path=grafana/dashboards/folders.json
-response=$(curl \
-    -s \
-    -H "Authorization: Bearer ${BEARER_TOKEN}" \
-    -H 'Content-Type: application/json' \
-    -H 'Accept: application/json' \
-    ${BASE_URL}/api/folders)
-
-echo ${response} \
-    | jq "${CLEAR_FOLDER_IDS}" \
-    > "${path}"
-echo "Saved to: ${path}"
-
 for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
 do
     response=$(curl \
@@ -78,9 +61,7 @@ do
 
     # create local filepath using the .meta key
     slug=$(echo ${response} | jq -r '.meta.slug')
-    # recreate the folder slug using bash instead of calling /api/search again
-    folder=$(echo ${response} | jq -r '.meta.folderTitle' | tr "-" " " | xargs | tr " " "-" | tr '[:upper:]' '[:lower:]')
-    path=grafana/dashboards/${folder}
+    path=grafana/dashboards
     mkdir -p "${path}"
     path=${path}/${slug}.json
 
