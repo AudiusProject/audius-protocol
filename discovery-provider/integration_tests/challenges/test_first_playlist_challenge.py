@@ -57,7 +57,7 @@ def test_first_playlist_challenge(app):
         bus.dispatch(
             ChallengeEvent.first_playlist,
             BLOCK_NUMBER,
-            1,  # user_id
+            user.user_id,
             {},
         )
 
