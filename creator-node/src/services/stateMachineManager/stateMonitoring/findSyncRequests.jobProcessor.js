@@ -110,14 +110,18 @@ module.exports = function ({
     for (const [secondary, resultCountMap] of Object.entries(
       secondaryToResultCountMap
     )) {
-      for (const [labelValue, metricValue] of Object.entries(resultCountMap))
+      for (const [labelValue, metricValue] of Object.entries(resultCountMap)) {
+        logger.info(
+          `Incrementing gauge for metric ${MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE} from primary=${primary} to secondary=${secondary} with result=${labelValue}`
+        )
         metricsToRecord.push(
           makeGaugeIncToRecord(
             MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
             metricValue,
-            { primary, secondary, result: labelValue }
+            { result: labelValue }
           )
         )
+      }
     }
   }
   return {

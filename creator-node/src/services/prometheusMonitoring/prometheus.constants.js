@@ -76,10 +76,6 @@ const MetricLabels = Object.freeze({
     ]
   },
   [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
-    // The primary node being synced from. Dynamic values because it can be any node
-    primary: [],
-    // The secondary node being synced to. Dynamic values because it can be any node
-    secondary: [],
     result: [
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job

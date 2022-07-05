@@ -143,21 +143,17 @@ describe('test findSyncRequests job processor', function () {
       metricsToRecord: [
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_to_sync_to.co',
             result: 'new_sync_request_enqueued'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         },
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_already_synced.co',
             result: 'no_sync_secondary_clock_gte_primary'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         }
@@ -261,21 +257,17 @@ describe('test findSyncRequests job processor', function () {
       metricsToRecord: [
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_to_sync_to.co',
             result: 'sync_request_already_enqueued'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         },
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_already_synced.co',
             result: 'no_sync_secondary_clock_gte_primary'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         }
@@ -348,21 +340,17 @@ describe('test findSyncRequests job processor', function () {
       metricsToRecord: [
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_to_sync_to.co',
             result: 'no_sync_already_marked_unhealthy'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         },
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_already_synced.co',
             result: 'no_sync_secondary_clock_gte_primary'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         }
@@ -429,21 +417,17 @@ describe('test findSyncRequests job processor', function () {
       metricsToRecord: [
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_to_sync_to.co',
             result: 'no_sync_sp_id_mismatch'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         },
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_already_synced.co',
             result: 'no_sync_secondary_clock_gte_primary'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         }
@@ -516,21 +500,17 @@ describe('test findSyncRequests job processor', function () {
       metricsToRecord: [
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_to_sync_to.co',
             result: 'no_sync_success_rate_too_low'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         },
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_already_synced.co',
             result: 'no_sync_secondary_clock_gte_primary'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         }
@@ -600,21 +580,17 @@ describe('test findSyncRequests job processor', function () {
       metricsToRecord: [
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_to_sync_to.co',
             result: 'no_sync_unexpected_error'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         },
         {
           metricLabels: {
-            primary: 'http://primary_cn.co',
-            secondary: 'http://secondary_already_synced.co',
             result: 'no_sync_secondary_clock_gte_primary'
           },
-          metricName: 'audius_cn_find_syncs_results_total',
+          metricName: 'audius_cn_find_sync_request_counts',
           metricType: 'GAUGE_INC',
           metricValue: 1
         }
