@@ -113,7 +113,7 @@ module.exports = function ({
       for (const [labelValue, metricValue] of Object.entries(resultCountMap))
         metricsToRecord.push(
           makeGaugeIncToRecord(
-            MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE,
+            MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
             metricValue,
             { primary, secondary, result: labelValue }
           )

@@ -24,13 +24,21 @@ const MetricTypes = Object.freeze({
   // SUMMARY: promClient.Summary
 })
 
+/**
+ * Types for recording a metric value.
+ */
+const MetricRecordType = Object.freeze({
+  GAUGE_INC: 'GAUGE_INC',
+  HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
+})
+
 let MetricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
     'issue_sync_request_monitoring_duration_seconds',
-  FIND_SYNCS_RESULTS_TOTAL_GAUGE: 'find_syncs_results_total'
+  FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -67,7 +75,7 @@ const MetricLabels = Object.freeze({
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   },
-  [MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE]: {
+  [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     // The primary node being synced from. Dynamic values because it can be any node
     primary: [],
     // The secondary node being synced to. Dynamic values because it can be any node
@@ -156,12 +164,12 @@ const Metrics = Object.freeze({
       }
     ])
   ),
-  [MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE]: {
+  [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     metricType: MetricTypes.GAUGE,
     metricConfig: {
-      name: MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE,
+      name: MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
-      labelNames: MetricLabelNames[MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE]
+      labelNames: MetricLabelNames[MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   }
 })
@@ -170,4 +178,5 @@ module.exports.NamespacePrefix = NamespacePrefix
 module.exports.MetricTypes = MetricTypes
 module.exports.MetricNames = MetricNames
 module.exports.MetricLabels = MetricLabels
+module.exports.MetricRecordType = MetricRecordType
 module.exports.Metrics = Metrics

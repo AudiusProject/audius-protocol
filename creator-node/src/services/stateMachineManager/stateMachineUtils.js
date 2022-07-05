@@ -4,7 +4,7 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const {
-  MetricTypes,
+  MetricRecordType,
   MetricNames,
   MetricLabels
 } = require('../../services/prometheusMonitoring/prometheus.constants')
@@ -141,19 +141,29 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
  * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
-  return makeMetricToRecord('HISTOGRAM', metricName, metricValue, metricLabels)
+  return makeMetricToRecord(
+    MetricRecordType.HISTOGRAM_OBSERVE,
+    metricName,
+    metricValue,
+    metricLabels
+  )
 }
 
 /**
- * Returns an object that can be returned from any state machine job to record an increase in a guage metric.
+ * Returns an object that can be returned from any state machine job to record an increase in a gauge metric.
  * Example: to call testGuage.inc({ status: 'success' }, 1), you would call this function with:
  * makeGaugeIncToRecord('test_gauge', 1, { status: 'success' })
  * @param {string} metricName the name of the metric from prometheus.constants
- * @param {number} metricValue the value to observe
+ * @param {number} incBy the metric value to increment by in Metric#inc for the prometheus gauge
  * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
  */
-const makeGaugeIncToRecord = (metricName, metricValue, metricLabels = {}) => {
-  return makeMetricToRecord('GAUGE_INC', metricName, metricValue, metricLabels)
+const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
+  return makeMetricToRecord(
+    MetricRecordType.GAUGE_INC,
+    metricName,
+    incBy,
+    metricLabels
+  )
 }
 
 /**
@@ -170,6 +180,9 @@ const makeMetricToRecord = (
   metricValue,
   metricLabels = {}
 ) => {
+  if (!Object.values(MetricRecordType).includes(metricType)) {
+    throw new Error(`Invalid metricType: ${metricType}`)
+  }
   if (!Object.values(MetricNames).includes(metricName)) {
     throw new Error(`Invalid metricName: ${metricName}`)
   }

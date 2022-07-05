@@ -1,5 +1,8 @@
 const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
+const {
+  MetricRecordType
+} = require('../prometheusMonitoring/prometheus.constants')
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -87,22 +90,7 @@ module.exports = function (
       )
     }
 
-    // Record metrics
-    ;(metricsToRecord || []).forEach((metricInfo) => {
-      try {
-        const { metricName, metricType, metricValue, metricLabels } = metricInfo
-        const metric = prometheusRegistry.getMetric(metricName)
-        if (metricType === 'HISTOGRAM') {
-          metric.observe(metricLabels, metricValue)
-        } else if (metricType === 'GAUGE_INC') {
-          metric.inc(metricLabels, metricValue)
-        } else {
-          logger.error(`Unexpected metric type: ${metricType}`)
-        }
-      } catch (error) {
-        logger.error(`Error recording metric ${metricInfo}: ${error}`)
-      }
-    })
+    recordMetrics(prometheusRegistry, logger, metricsToRecord)
   }
 }
 
@@ -179,4 +167,22 @@ const sanitizeAndTransformReconciliationJobs = (
     }
     return { name: job.jobName, data: job.jobData }
   })
+}
+
+const recordMetrics = (prometheusRegistry, logger, metricsToRecord = []) => {
+  for (const metricInfo of metricsToRecord) {
+    try {
+      const { metricName, metricType, metricValue, metricLabels } = metricInfo
+      const metric = prometheusRegistry.getMetric(metricName)
+      if (metricType === MetricRecordType.HISTOGRAM_OBSERVE) {
+        metric.observe(metricLabels, metricValue)
+      } else if (metricType === MetricRecordType.GAUGE_INC) {
+        metric.inc(metricLabels, metricValue)
+      } else {
+        logger.error(`Unexpected metric type: ${metricType}`)
+      }
+    } catch (error) {
+      logger.error(`Error recording metric ${metricInfo}: ${error}`)
+    }
+  }
 }
