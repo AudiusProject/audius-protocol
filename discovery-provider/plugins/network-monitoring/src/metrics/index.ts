@@ -14,7 +14,7 @@ import {
     getFullySyncedUsersCount,
     getPartiallySyncedUsersCount,
     getUnsyncedUsersCount,
-    getGhostUsersCount
+    getUsersWithNullPrimaryClock
 } from "./queries"
 
 export const generateMetrics = async (run_id: number) => {
@@ -53,7 +53,7 @@ export const generateMetrics = async (run_id: number) => {
 
     const unsyncedUsersCount = await getUnsyncedUsersCount(run_id)
 
-    const ghostUsersCount = await getGhostUsersCount(run_id)
+    const ghostUsersCount = await getUsersWithNullPrimaryClock(run_id)
 
     allUserCount.forEach(({ endpoint, count }) => {
         allUserCountGauge.set({ endpoint, run_id }, count)

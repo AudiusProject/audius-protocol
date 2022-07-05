@@ -207,7 +207,7 @@ export const getUnsyncedUsersCount = async (run_id: number): Promise<number> => 
 }
 
 // The number of users whose primary content node clock value is null
-export const getGhostUsersCount = async (run_id: number): Promise<number> => {
+export const getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
     const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
