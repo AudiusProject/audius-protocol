@@ -38,7 +38,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
   const spID = config.get('spID')
 
   /** In parallel for every replica, fetch clock status for all users on that replica */
-  const replicas = Object.keys(replicasToWalletsMap)
+  const replicas = Object.keys(replicaToWalletMap)
   await Promise.all(
     replicas.map(async (replica) => {
       replicaToUserInfoMap[replica] = {}

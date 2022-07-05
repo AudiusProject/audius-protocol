@@ -244,14 +244,14 @@ const _findSyncsForUser = async (
         )
         continue
       }
-    } else if (syncMode === SYNC_MODES.SyncPrimaryFromSecondary) {
+    } else if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
       /**
        * TODO - currently just logs as placeholder
        * 1. Primary will sync all content from secondary
        * 2. Primary will force secondary to wipe its local state and resync all content
        */
       logger.info(
-        `[findSyncRequests][_findSyncsForUser][SyncPrimaryFromSecondary = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
+        `[findSyncRequests][_findSyncsForUser][MergePrimaryAndSecondary = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
       )
     }
   }

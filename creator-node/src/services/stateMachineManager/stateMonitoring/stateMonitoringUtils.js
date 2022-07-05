@@ -409,7 +409,7 @@ const _aggregateOps = async (
  * @param {number} param.secondaryClock clock value on user's secondary
  * @param {string} param.primaryFilesHash filesHash on user's primary
  * @param {string} param.secondaryFilesHash filesHash on user's secondary
- * @returns {SYNC_MODES} syncMode one of None, SyncSecondaryFromPrimary, SyncPrimaryFromSecondary
+ * @returns {SYNC_MODES} syncMode one of None, SyncSecondaryFromPrimary, MergePrimaryAndSecondary
  */
 const computeSyncModeForUserAndReplica = async ({
   wallet,
@@ -438,13 +438,13 @@ const computeSyncModeForUserAndReplica = async ({
      * This is an error condition, indicating that primary and secondary states for user have diverged.
      * To fix this issue, primary should sync content from secondary and then force secondary to resync its entire state from primary.
      */
-    return SYNC_MODES.SyncPrimaryFromSecondary
+    return SYNC_MODES.MergePrimaryAndSecondary
   } else if (primaryClock < secondaryClock) {
     /**
      * Secondary has more data than primary -> primary must sync from secondary
      */
 
-    return SYNC_MODES.SyncPrimaryFromSecondary
+    return SYNC_MODES.MergePrimaryAndSecondary
   } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
     /**
      * secondaryFilesHash will be null if secondary has no clockRecords for user -> secondary must sync from primary
@@ -480,7 +480,7 @@ const computeSyncModeForUserAndReplica = async ({
     if (primaryFilesHashForRange === secondaryFilesHash) {
       return SYNC_MODES.SyncSecondaryFromPrimary
     } else {
-      return SYNC_MODES.SyncPrimaryFromSecondary
+      return SYNC_MODES.MergePrimaryAndSecondary
     }
   } else {
     /**

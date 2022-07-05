@@ -46,6 +46,7 @@ module.exports = {
 
   // Max number of attempts to select new replica set in reconfig
   MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS: 5,
+
   QUEUE_HISTORY: Object.freeze({
     // Max number of completed/failed jobs to keep in redis for the state monitoring queue
     STATE_MONITORING: 20,
@@ -54,6 +55,7 @@ module.exports = {
     // Max number of completed/failed jobs to keep in redis for the state monitoring queue
     STATE_RECONCILIATION: 300
   }),
+
   QUEUE_NAMES: Object.freeze({
     // Name of StateMonitoringQueue
     STATE_MONITORING: 'state-monitoring-queue',
@@ -123,9 +125,14 @@ module.exports = {
 
   // Sync mode for a (primary, secondary) pair for a user
   SYNC_MODES: Object.freeze({
+    // Replicas already in sync - no further sync needed
     None: 'NONE',
+
+    // Base case - secondary should sync its local state to primary's state
     SyncSecondaryFromPrimary: 'SYNC_SECONDARY_FROM_PRIMARY',
-    SyncPrimaryFromSecondary: 'SYNC_PRIMARY_FROM_SECONDARY'
+
+    // Edge case - secondary has state that primary needs: primary should merge its local state with secondary's state, and have secondary re-sync its entire local state
+    MergePrimaryAndSecondary: 'MERGE_PRIMARY_AND_SECONDARY'
   }),
 
   FETCH_FILES_HASH_NUM_RETRIES: 3

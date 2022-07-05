@@ -930,7 +930,7 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
     assert.strictEqual(syncMode, SYNC_MODES.None)
   })
 
-  it('Returns SYNC_MODES.SyncPrimaryFromSecondary if clocks equal and filesHashes unequal', async function () {
+  it('Returns SYNC_MODES.MergePrimaryAndSecondary if clocks equal and filesHashes unequal', async function () {
     primaryClock = 10
     secondaryClock = primaryClock
     primaryFilesHash = '0x123'
@@ -944,10 +944,10 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       secondaryFilesHash
     })
 
-    assert.strictEqual(syncMode, SYNC_MODES.SyncPrimaryFromSecondary)
+    assert.strictEqual(syncMode, SYNC_MODES.MergePrimaryAndSecondary)
   })
 
-  it('Returns SYNC_MODES.SyncPrimaryFromSecondary if primaryClock < secondaryClock', async function () {
+  it('Returns SYNC_MODES.MergePrimaryAndSecondary if primaryClock < secondaryClock', async function () {
     primaryClock = 5
     secondaryClock = 10
     primaryFilesHash = '0x123'
@@ -961,7 +961,7 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       secondaryFilesHash
     })
 
-    assert.strictEqual(syncMode, SYNC_MODES.SyncPrimaryFromSecondary)
+    assert.strictEqual(syncMode, SYNC_MODES.MergePrimaryAndSecondary)
   })
 
   it('Returns SYNC_MODES.SyncSecondaryFromPrimary if primaryClock > secondaryClock & secondaryFilesHash === null', async function () {
@@ -1008,7 +1008,7 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       assert.strictEqual(syncMode, SYNC_MODES.SyncSecondaryFromPrimary)
     })
 
-    it('Returns SYNC_MODES.SyncPrimaryFromSecondary if primaryFilesHashForRange != secondaryFilesHash', async function () {
+    it('Returns SYNC_MODES.MergePrimaryAndSecondary if primaryFilesHashForRange != secondaryFilesHash', async function () {
       primaryClock = 10
       secondaryClock = 5
       primaryFilesHash = '0x123'
@@ -1032,7 +1032,7 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
         secondaryFilesHash
       })
 
-      assert.strictEqual(syncMode, SYNC_MODES.SyncPrimaryFromSecondary)
+      assert.strictEqual(syncMode, SYNC_MODES.MergePrimaryAndSecondary)
     })
 
     it("Throws error primaryFilesHashForRange can't be retrieved", async function () {
