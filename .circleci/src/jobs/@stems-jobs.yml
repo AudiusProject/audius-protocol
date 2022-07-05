@@ -1,5 +1,5 @@
-stems-build-storybook:
-  working_directory: ~/stems
+stems-init:
+  working_directory: ~/audius-client
   docker:
     - image: circleci/node:14.18
   steps:
@@ -16,20 +16,39 @@ stems-build-storybook:
         name: install dependencies
         command: |
           cd packages/stems
-          npm ci
-
-    - run:
-        name: build storybook
-        command: |
-          cd packages/stems
-          npm run build-storybook
+          npm ci --ignore-scripts
 
     - save_cache:
         key: dependency-cache-{{ checksum "packages/stems/package-lock.json" }}
         paths:
           - ./packages/stems/node_modules
 
-    # Persist the build directory to a workspace
+    # Lint
+    - run:
+        name: lint
+        command: |
+          cd packages/stems
+          npm run lint
+
+    # Persist node modules directory to workspace
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - packages/stems/node_modules
+
+stems-build-storybook:
+  working_directory: ~/stems
+  docker:
+    - image: circleci/node:14.18
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: build storybook
+        command: |
+          cd packages/stems
+          npm run build-storybook
     - persist_to_workspace:
         root: ./
         paths:
