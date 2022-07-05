@@ -126,6 +126,8 @@ class BlacklistManager {
    * @param {number[]} allTrackIdsToBlacklist aggregate list of track ids to blacklist from explicit track id blacklist and tracks from blacklisted users
    */
   static async addAggregateCIDsToRedis(allTrackIdsToBlacklist) {
+    const transaction = await models.sequelize.transaction()
+
     let i
     for (
       i = 0;
@@ -143,7 +145,7 @@ class BlacklistManager {
         )
 
         const segmentsFromTrackIdsToBlacklist =
-          await BlacklistManager.getCIDsToBlacklist(tracksSlice)
+          await BlacklistManager.getCIDsToBlacklist(tracksSlice, transaction)
 
         this.logDebug(
           `[addAggregateCIDsToRedis] - number of segments: ${segmentsFromTrackIdsToBlacklist.length}`
@@ -154,6 +156,7 @@ class BlacklistManager {
           segmentsFromTrackIdsToBlacklist
         )
       } catch (e) {
+        await transaction.rollback()
         throw new Error(
           `[addAggregateCIDsToRedis] - Could not add tracks slice ${i} to ${
             i + PROCESS_TRACKS_BATCH_SIZE
@@ -161,6 +164,8 @@ class BlacklistManager {
         )
       }
     }
+
+    await transaction.commit()
   }
 
   /**
@@ -231,19 +236,29 @@ class BlacklistManager {
   /**
    * Retrieves all CIDs from input trackIds from db
    * @param {number[]} trackIds
+   * @param {Object} transaction sequelize transaction object
    * @returns {Object[]} array of track model objects from table
    */
-  static async getAllCIDsFromTrackIdsInDb(trackIds) {
-    return models.Track.findAll({ where: { blockchainId: trackIds } })
+  static async getAllCIDsFromTrackIdsInDb(trackIds, transaction) {
+    const queryConfig = { where: { blockchainId: trackIds } }
+    if (transaction) {
+      queryConfig.transaction = transaction
+    }
+
+    return models.Track.findAll(queryConfig)
   }
 
   /**
    * Retrieves all the deduped CIDs from the params and builds a mapping to <trackId: segments> for explicit trackIds (i.e. trackIds from table, not tracks belonging to users).
    * @param {number[]} allTrackIds all the trackIds to find CIDs for (explictly blacklisted tracks and tracks from blacklisted users)
+   * @param {Object} transaction sequelize transaction object
    * @returns {string[]} all CIDs that are blacklisted from input track ids
    */
-  static async getCIDsToBlacklist(inputTrackIds) {
-    const tracks = await this.getAllCIDsFromTrackIdsInDb(inputTrackIds)
+  static async getCIDsToBlacklist(inputTrackIds, transaction) {
+    const tracks = await this.getAllCIDsFromTrackIdsInDb(
+      inputTrackIds,
+      transaction
+    )
 
     const segmentCIDs = new Set()
 
@@ -260,11 +275,17 @@ class BlacklistManager {
 
     // also retrieves the CID's directly from the files table so we get copy320
     if (inputTrackIds.length > 0) {
-      const files = await models.File.findAll({
+      const queryConfig = {
         where: {
           trackBlockchainId: inputTrackIds
         }
-      })
+      }
+      if (transaction) {
+        queryConfig.transaction = transaction
+      }
+
+      const files = await models.File.findAll(queryConfig)
+
       for (const file of files) {
         if (
           file.type === 'track' ||

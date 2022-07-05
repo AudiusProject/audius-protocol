@@ -95,6 +95,27 @@ module.exports = function (app) {
   )
 
   /**
+   * Delete all temporary transcode artifacts from track transcode handoff flow.
+   * This is called on the node that was handed off the transcode to clear the state from disk
+   */
+  app.post(
+    '/clear_transcode_and_segment_artifacts',
+    ensureValidSPMiddleware,
+    handleResponse(async (req, res) => {
+      const fileDir = req.body.fileDir
+      req.logger.info('Clearing filesystem fileDir', fileDir)
+      if (!fileDir.includes('tmp_track_artifacts')) {
+        return errorResponseBadRequest(
+          'Cannot remove track folder outside temporary track artifacts'
+        )
+      }
+      await removeTrackFolder({ logContext: req.logContext }, fileDir)
+
+      return successResponse()
+    })
+  )
+
+  /**
    * Given that the requester is a valid SP, the current Content Node has enough storage,
    * upload the track to the current node and add a transcode and segmenting job to the queue.
    *
@@ -127,7 +148,7 @@ module.exports = function (app) {
    * Given that the request is coming from a valid SP, serve the corresponding file
    * from the transcode handoff
    *
-   * This route is used on an available SP when the primary requests the transcoded files after
+   * This route is called from the primary to request the transcoded files after
    * sending the first request for the transcode handoff. This route does not run on the primary.
    */
   app.get(

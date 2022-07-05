@@ -6,7 +6,6 @@ const sinon = require('sinon')
 const uuid = require('uuid/v4')
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
-const crypto = require('crypto')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
@@ -26,7 +25,7 @@ const {
 } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
-const { saveFileToStorage } = require('./lib/helpers')
+const { saveFileToStorage, computeFilesHash } = require('./lib/helpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(
@@ -70,8 +69,11 @@ function _getTestSegmentFilePathAtIndex(index) {
   return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
 }
 
-describe('test Polling Tracks with mocks', function () {
-  let app, server, libsMock, handleTrackContentRoute
+describe('test Polling Tracks with mocked IPFS', function () {
+  let app,
+    server,
+    libsMock,
+    handleTrackContentRoute
   let session, userId, userWallet
 
   const spId = 1
@@ -285,11 +287,7 @@ describe('test Polling Tracks with mocks', function () {
     const multihashesSorted = filesSorted.map((file) => file.multihash)
 
     // Confirm /users/clock_status returns expected info with `returnFilesHash` flag
-    const multihashStringFull = `{${multihashesSorted.join(',')}}`
-    const expectedFilesHashFull = crypto
-      .createHash('md5')
-      .update(multihashStringFull)
-      .digest('hex')
+    const expectedFilesHashFull = computeFilesHash(multihashesSorted)
     resp = await request(app)
       .get(`/users/clock_status/${wallet}?returnFilesHash=true`)
       .expect(200)
@@ -304,13 +302,8 @@ describe('test Polling Tracks with mocks', function () {
     const clockMax = 8
 
     /** clockMin */
-    const multihashStringClockMin = `{${multihashesSorted
-      .slice(clockMin - 1)
-      .join(',')}}`
-    const expectedFilesHashClockMin = crypto
-      .createHash('md5')
-      .update(multihashStringClockMin)
-      .digest('hex')
+    const expectedFilesHashClockMin = computeFilesHash(multihashesSorted
+      .slice(clockMin - 1))
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}`
@@ -324,13 +317,8 @@ describe('test Polling Tracks with mocks', function () {
     })
 
     /** clockMax */
-    const multihashStringClockMax = `{${multihashesSorted
-      .slice(0, clockMax - 1)
-      .join(',')}}`
-    const expectedFilesHashClockMax = crypto
-      .createHash('md5')
-      .update(multihashStringClockMax)
-      .digest('hex')
+    const expectedFilesHashClockMax = computeFilesHash(multihashesSorted
+      .slice(0, clockMax - 1))
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMax=${clockMax}`
@@ -344,13 +332,8 @@ describe('test Polling Tracks with mocks', function () {
     })
 
     /** clockMin and clockMax */
-    let multihashStringClockRange = `{${multihashesSorted
-      .slice(clockMin - 1, clockMax - 1)
-      .join(',')}}`
-    let expectedFilesHashClockRange = crypto
-      .createHash('md5')
-      .update(multihashStringClockRange)
-      .digest('hex')
+    let expectedFilesHashClockRange = computeFilesHash(multihashesSorted
+      .slice(clockMin - 1, clockMax - 1))
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMax}`
@@ -389,13 +372,9 @@ describe('test Polling Tracks with mocks', function () {
 
     /** partially overlapping clockrange */
     const clockMaxTooHigh = numExpectedFilesForUser + 5
-    multihashStringClockRange = `{${multihashesSorted
-      .slice(clockMin - 1, clockMaxTooHigh - 1)
-      .join(',')}}`
-    expectedFilesHashClockRange = crypto
-      .createHash('md5')
-      .update(multihashStringClockRange)
-      .digest('hex')
+    expectedFilesHashClockRange = computeFilesHash(
+      multihashesSorted.slice(clockMin - 1, clockMaxTooHigh - 1)
+    )
     resp = await request(app)
       .get(
         `/users/clock_status/${wallet}?returnFilesHash=true&filesHashClockRangeMin=${clockMin}&filesHashClockRangeMax=${clockMaxTooHigh}`
