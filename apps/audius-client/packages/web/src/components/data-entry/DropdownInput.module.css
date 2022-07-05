@@ -192,6 +192,7 @@
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
 }
+.select,
 .select > div {
   background: var(--white);
 }
@@ -221,7 +222,7 @@
 .select
   :global(.ant-select-item-option-selected.ant-select-item-option-active) {
   background: var(--secondary);
-  color: var(--white);
+  color: var(--darkmode-static-white);
 }
 
 .large.select :global(.ant-select-item) {
