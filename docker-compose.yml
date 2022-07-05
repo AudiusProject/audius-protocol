@@ -47,6 +47,8 @@ services:
         condition: service_healthy
       poa-ganache:
         condition: service_healthy
+    deploy:
+      mode: global
 
   # eth-contracts
 
@@ -93,6 +95,8 @@ services:
         condition: service_healthy
       eth-ganache:
         condition: service_healthy
+    deploy:
+      mode: global
 
   # solana-programs
 
@@ -133,6 +137,8 @@ services:
       - poa-contracts-abis:/usr/src/app/data-contracts/ABIs
       - eth-contracts-abis:/usr/src/app/eth-contracts/ABIs
       - ./libs/src:/usr/src/app/src
+    deploy:
+      mode: global
 
   # identity-service
 
@@ -228,8 +234,6 @@ services:
   discovery-provider:
     build: discovery-provider
     command: sh -c ". /tmp/dev/startup/startup.sh && scripts/start.sh"
-    ports:
-      - "5000-5010:5000"
     env_file: .env # used by the startup script
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache
@@ -273,8 +277,6 @@ services:
   creator-node:
     build: creator-node
     command: sh -c ". /tmp/dev/startup/startup.sh && scripts/start.sh"
-    ports:
-      - "4000-4010:4000"
     env_file: .env # used by the startup script
     environment:
       logLevel: "debug"
@@ -313,6 +315,15 @@ services:
         condition: service_started
     deploy:
       mode: replicated
+
+  proxy:
+    image: alpine:3.16.0
+    command: sh /tmp/dev/startup/proxy.sh
+    ports:
+      - "4000-4010:4000-4010"
+      - "5000-5010:5000-5010"
+    volumes:
+      - ./dev:/tmp/dev
 
 volumes:
   poa-contracts-abis:
