@@ -139,7 +139,29 @@ describe('test findSyncRequests job processor', function () {
       errors: [],
       jobsToEnqueue: {
         [QUEUE_NAMES.STATE_RECONCILIATION]: [expectedSyncReqToEnqueue]
-      }
+      },
+      metricsToRecord: [
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_to_sync_to.co',
+            result: 'new_sync_request_enqueued'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        },
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_already_synced.co',
+            result: 'no_sync_secondary_clock_gte_primary'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        }
+      ]
     })
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,
@@ -235,7 +257,29 @@ describe('test findSyncRequests job processor', function () {
     ).to.deep.equal({
       duplicateSyncReqs: [expectedDuplicateSyncReq],
       errors: [],
-      jobsToEnqueue: {}
+      jobsToEnqueue: {},
+      metricsToRecord: [
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_to_sync_to.co',
+            result: 'sync_request_already_enqueued'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        },
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_already_synced.co',
+            result: 'no_sync_secondary_clock_gte_primary'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        }
+      ]
     })
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,
@@ -300,7 +344,29 @@ describe('test findSyncRequests job processor', function () {
     ).to.deep.equal({
       duplicateSyncReqs: [],
       errors: [],
-      jobsToEnqueue: {}
+      jobsToEnqueue: {},
+      metricsToRecord: [
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_to_sync_to.co',
+            result: 'no_sync_already_marked_unhealthy'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        },
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_already_synced.co',
+            result: 'no_sync_secondary_clock_gte_primary'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        }
+      ]
     })
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
@@ -359,7 +425,29 @@ describe('test findSyncRequests job processor', function () {
     ).to.deep.equal({
       duplicateSyncReqs: [],
       errors: [],
-      jobsToEnqueue: {}
+      jobsToEnqueue: {},
+      metricsToRecord: [
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_to_sync_to.co',
+            result: 'no_sync_sp_id_mismatch'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        },
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_already_synced.co',
+            result: 'no_sync_secondary_clock_gte_primary'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        }
+      ]
     })
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
@@ -424,7 +512,29 @@ describe('test findSyncRequests job processor', function () {
     ).to.deep.equal({
       duplicateSyncReqs: [],
       errors: [],
-      jobsToEnqueue: {}
+      jobsToEnqueue: {},
+      metricsToRecord: [
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_to_sync_to.co',
+            result: 'no_sync_success_rate_too_low'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        },
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_already_synced.co',
+            result: 'no_sync_secondary_clock_gte_primary'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        }
+      ]
     })
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
   })
@@ -472,7 +582,7 @@ describe('test findSyncRequests job processor', function () {
       getCNodeEndpointToSpIdMapStub
     )
 
-    // Verify job outputs the correct results: sync to user1 to secondary1 because its clock value is behind
+    // Verify job outputs the correct results: sync to secondary1 errors, sync to secondary2 fails because it's already synced
     expect(
       findSyncRequestsJobProcessor({
         logger,
@@ -486,7 +596,29 @@ describe('test findSyncRequests job processor', function () {
       errors: [
         `Error getting new or existing sync request for user ${wallet} and secondary ${secondary1} - ${expectedErrorMsg}`
       ],
-      jobsToEnqueue: {}
+      jobsToEnqueue: {},
+      metricsToRecord: [
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_to_sync_to.co',
+            result: 'no_sync_unexpected_error'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        },
+        {
+          metricLabels: {
+            primary: 'http://primary_cn.co',
+            secondary: 'http://secondary_already_synced.co',
+            result: 'no_sync_secondary_clock_gte_primary'
+          },
+          metricName: 'audius_cn_find_syncs_results_total',
+          metricType: 'GAUGE_INC',
+          metricValue: 1
+        }
+      ]
     })
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
       userWallet: wallet,

@@ -1,8 +1,12 @@
 const _ = require('lodash')
 
 const config = require('../../../config')
+const {
+  MetricNames
+} = require('../../prometheusMonitoring/prometheus.constants')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { SyncType, QUEUE_NAMES } = require('../stateMachineConstants')
+const { makeGaugeIncToRecord } = require('../stateMachineUtils')
 const {
   getNewOrExistingSyncReq
 } = require('../stateReconciliation/stateReconciliationUtils')
@@ -40,6 +44,10 @@ module.exports = function ({
   )
 
   const unhealthyPeersSet = new Set(unhealthyPeers || [])
+  const metricsToRecord = []
+
+  // Mapping of primary -> (secondary -> { result: numTimesSeenResult })
+  const primaryToSecondaryToResultCountsMap = {}
 
   // Find any syncs that should be performed from each user to any of their secondaries
   let syncReqsToEnqueue = []
@@ -49,7 +57,8 @@ module.exports = function ({
     const {
       syncReqsToEnqueue: userSyncReqsToEnqueue,
       duplicateSyncReqs: userDuplicateSyncReqs,
-      errors: userErrors
+      errors: userErrors,
+      resultBySecondary: userResultsBySecondary
     } = _findSyncsForUser(
       user,
       thisContentNodeEndpoint,
@@ -67,8 +76,50 @@ module.exports = function ({
     } else if (userDuplicateSyncReqs?.length) {
       duplicateSyncReqs = duplicateSyncReqs.concat(userDuplicateSyncReqs)
     } else if (userErrors?.length) errors = errors.concat(userErrors)
+
+    // Increment total counters for the user's 2 secondaries so we can report an aggregate total
+    const { primary } = user
+    if (!primaryToSecondaryToResultCountsMap[primary]) {
+      primaryToSecondaryToResultCountsMap[primary] = {}
+    }
+    for (const [secondary, resultForSecondary] of Object.entries(
+      userResultsBySecondary
+    )) {
+      if (!primaryToSecondaryToResultCountsMap[primary][secondary]) {
+        primaryToSecondaryToResultCountsMap[primary][secondary] = {}
+      }
+      if (
+        !primaryToSecondaryToResultCountsMap[primary][secondary][
+          resultForSecondary
+        ]
+      ) {
+        primaryToSecondaryToResultCountsMap[primary][secondary][
+          resultForSecondary
+        ] = 0
+      }
+      primaryToSecondaryToResultCountsMap[primary][secondary][
+        resultForSecondary
+      ]++
+    }
   }
 
+  // Map the result of each findSyncs call to metrics for the reason a sync was found / not found
+  for (const [primary, secondaryToResultCountMap] of Object.entries(
+    primaryToSecondaryToResultCountsMap
+  )) {
+    for (const [secondary, resultCountMap] of Object.entries(
+      secondaryToResultCountMap
+    )) {
+      for (const [labelValue, metricValue] of Object.entries(resultCountMap))
+        metricsToRecord.push(
+          makeGaugeIncToRecord(
+            MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE,
+            metricValue,
+            { primary, secondary, result: labelValue }
+          )
+        )
+    }
+  }
   return {
     duplicateSyncReqs,
     errors,
@@ -76,7 +127,8 @@ module.exports = function ({
       ? {
           [QUEUE_NAMES.STATE_RECONCILIATION]: syncReqsToEnqueue
         }
-      : {}
+      : {},
+    metricsToRecord
   }
 }
 
@@ -147,8 +199,17 @@ const _findSyncsForUser = (
   const { primary, secondary1, secondary2, secondary1SpID, secondary2SpID } =
     user
 
+  const resultBySecondary = {
+    [secondary1]: 'not_checked',
+    [secondary2]: 'not_checked'
+  }
+
   // Only sync from this node to other nodes if this node is the user's primary
-  if (primary !== thisContentNodeEndpoint) return {}
+  if (primary !== thisContentNodeEndpoint) {
+    return {
+      resultBySecondary
+    }
+  }
 
   const replicaSetNodesToObserve = [
     { endpoint: secondary1, spId: secondary1SpID },
@@ -167,13 +228,17 @@ const _findSyncsForUser = (
     const { successRate, failureCount } = userSecondarySyncMetricsMap[secondary]
 
     // Secondary is unhealthy if we already marked it as unhealthy previously -- don't sync to it
-    if (unhealthyPeers.has(secondary)) continue
+    if (unhealthyPeers.has(secondary)) {
+      resultBySecondary[secondary] = 'no_sync_already_marked_unhealthy'
+      continue
+    }
 
     // Secondary is unhealthy if its spID is mismatched -- don't sync to it
     if (
       CNodeToSpIdMapManager.getCNodeEndpointToSpIdMap()[secondary] !==
       secondaryInfo.spId
     ) {
+      resultBySecondary[secondary] = 'no_sync_sp_id_mismatch'
       continue
     }
 
@@ -182,6 +247,7 @@ const _findSyncsForUser = (
       failureCount >= minFailedSyncRequestsBeforeReconfig &&
       successRate < minSecondaryUserSyncSuccessPercent
     ) {
+      resultBySecondary[secondary] = 'no_sync_success_rate_too_low'
       continue
     }
 
@@ -202,21 +268,29 @@ const _findSyncsForUser = (
           syncType: SyncType.Recurring
         })
         if (!_.isEmpty(syncReqToEnqueue)) {
+          resultBySecondary[secondary] = 'new_sync_request_enqueued'
           syncReqsToEnqueue.push(syncReqToEnqueue)
         } else if (!_.isEmpty(duplicateSyncReq)) {
+          resultBySecondary[secondary] = 'sync_request_already_enqueued'
           duplicateSyncReqs.push(duplicateSyncReq)
+        } else {
+          resultBySecondary[secondary] = 'new_sync_request_unable_to_enqueue'
         }
       } catch (e) {
+        resultBySecondary[secondary] = 'no_sync_unexpected_error'
         errors.push(
           `Error getting new or existing sync request for user ${wallet} and secondary ${secondary} - ${e.message}`
         )
       }
+    } else {
+      resultBySecondary[secondary] = 'no_sync_secondary_clock_gte_primary'
     }
   }
 
   return {
     syncReqsToEnqueue,
     duplicateSyncReqs,
-    errors
+    errors,
+    resultBySecondary
   }
 }

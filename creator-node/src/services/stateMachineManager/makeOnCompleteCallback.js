@@ -94,8 +94,8 @@ module.exports = function (
         const metric = prometheusRegistry.getMetric(metricName)
         if (metricType === 'HISTOGRAM') {
           metric.observe(metricLabels, metricValue)
-        } else if (metricType === 'GAUGE') {
-          metric.set(metricValue)
+        } else if (metricType === 'GAUGE_INC') {
+          metric.inc(metricLabels, metricValue)
         } else {
           logger.error(`Unexpected metric type: ${metricType}`)
         }

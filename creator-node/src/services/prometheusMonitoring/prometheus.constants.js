@@ -29,7 +29,8 @@ let MetricNames = {
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
-    'issue_sync_request_monitoring_duration_seconds'
+    'issue_sync_request_monitoring_duration_seconds',
+  FIND_SYNCS_RESULTS_TOTAL_GAUGE: 'find_syncs_results_total'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -64,6 +65,23 @@ const MetricLabels = Object.freeze({
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
       'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes,
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
+    ]
+  },
+  [MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE]: {
+    // The primary node being synced from. Dynamic values because it can be any node
+    primary: [],
+    // The secondary node being synced to. Dynamic values because it can be any node
+    secondary: [],
+    result: [
+      'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
+      'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
+      'no_sync_sp_id_mismatch', // Sync not found because the secondary's spID mismatched what the chain reported
+      'no_sync_success_rate_too_low', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
+      'no_sync_secondary_clock_gte_primary', // Sync not found because the secondary's clock value was greater than or equal to the primary's clock value
+      'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
+      'new_sync_request_enqueued', // Sync was found because all other conditions were met and primary clock value was greater than secondary
+      'sync_request_already_enqueued', // Sync was found but a duplicate request has already been enqueued so no need to enqueue another
+      'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]
   }
 })
@@ -137,7 +155,15 @@ const Metrics = Object.freeze({
         }
       }
     ])
-  )
+  ),
+  [MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE]: {
+    metricType: MetricTypes.GAUGE,
+    metricConfig: {
+      name: MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE,
+      help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
+      labelNames: MetricLabelNames[MetricNames.FIND_SYNCS_RESULTS_TOTAL_GAUGE]
+    }
+  }
 })
 
 module.exports.NamespacePrefix = NamespacePrefix
