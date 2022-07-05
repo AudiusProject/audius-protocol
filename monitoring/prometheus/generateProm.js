@@ -11,7 +11,7 @@ const readFromFileAndWriteToStream = (stream, filename) => {
   stream.write("\n")
 }
 
-const generateJobYaml = (url, env, scheme = 'https', component = 'discovery-provider') => {
+const generateJobYaml = ({ url, env, scheme = 'https', component = 'discovery-provider' }) => {
   url = url.replace("https://", "").replace("http://", "")
   sanitizedUrl = url.split(".").join("-")
 
@@ -67,7 +67,8 @@ const generateEnv = async (stream, env) => {
 
   for (const sp of serviceProviders) {
     const spEndpoint = sp.endpoint;
-    const yamlString = generateJobYaml(spEndpoint, env)
+    const serviceType = sp.type
+    const yamlString = generateJobYaml({ url: spEndpoint, env, component: serviceType })
     stream.write(yamlString);
     stream.write("\n")
   }
