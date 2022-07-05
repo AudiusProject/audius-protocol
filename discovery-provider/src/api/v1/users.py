@@ -339,9 +339,11 @@ class HandleFullTrackList(Resource):
 class HandleTrackList(HandleFullTrackList):
     @auth_middleware()
     @ns.doc(
-        id="""Get User by Handle""",
-        description="Gets a single user by their handle",
-        params={"handle": "A User handle"},
+        id="""Get Tracks by User Handle""",
+        description="""Gets the tracks created by a user using the user's handle""",
+        params={
+            "handle": "A User handle",
+        },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.expect(user_tracks_route_parser)
@@ -500,32 +502,6 @@ class HandleRepostList(HandleFullRepostList):
         return super()._get(handle)
 
 
-favorites_response = make_response(
-    "favorites_response", ns, fields.List(fields.Nested(activity_model))
-)
-favorites_full_response = make_full_response(
-    "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
-)
-
-
-@ns.route("/<string:id>/favorites")
-class FavoritedTracks(Resource):
-    @record_metrics
-    @ns.doc(
-        id="""Get Favorites""",
-        description="""Gets a user's favorite tracks""",
-        params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @ns.marshal_with(favorites_response)
-    @cache(ttl_sec=5)
-    def get(self, id):
-        decoded_id = decode_with_abort(id, ns)
-        favorites = get_saves("tracks", decoded_id)
-        favorites = list(map(extend_favorite, favorites))
-        return success_response(favorites)
-
-
 tags_route_parser = pagination_with_current_user_parser.copy()
 tags_route_parser.remove_argument("offset")
 tags_response = make_response("tags_response", ns, fields.List(fields.String))
@@ -550,6 +526,33 @@ class MostUsedTags(Resource):
         limit = format_limit(args)
         tags = get_top_user_track_tags({"user_id": decoded_id, "limit": limit})
         return success_response(tags)
+
+
+favorites_response = make_response(
+    "favorites_response", ns, fields.List(fields.Nested(activity_model))
+)
+favorites_full_response = make_full_response(
+    "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
+)
+
+
+# different route from /<string:id>/favorites/tracks
+@ns.route("/<string:id>/favorites")
+class FavoritedTracks(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Favorites""",
+        description="""Gets a user's favorite tracks""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        favorites = get_saves("tracks", decoded_id)
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
 
 
 USER_FAVORITED_TRACKS_ROUTE = "/<string:id>/favorites/tracks"
@@ -591,20 +594,6 @@ class UserFavoritedTracksFull(Resource):
         return self._get(id)
 
 
-@ns.route(USER_FAVORITED_TRACKS_ROUTE)
-class UserFavoritedTracks(UserFavoritedTracksFull):
-    @ns.doc(
-        id="""Get Favorites""",
-        description="""Gets a user's favorite tracks""",
-        params={"id": "A User ID"},
-        responses={200: "Success", 400: "Bad request", 500: "Server error"},
-    )
-    @ns.expect(pagination_with_current_user_parser)
-    @ns.marshal_with(favorites_response)
-    def get(self, id):
-        return super()._get(id)
-
-
 history_response = make_full_response(
     "history_response", ns, fields.List(fields.Nested(activity_model))
 )
@@ -622,7 +611,7 @@ class TrackHistoryFull(Resource):
     def _get(self, id):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
-        current_user_id = get_current_user_id(args)  # non optional?
+        current_user_id = get_current_user_id(args)
         offset = format_offset(args)
         limit = format_limit(args)
         get_tracks_args = GetUserListeningHistoryArgs(
@@ -863,7 +852,7 @@ top_genre_users_route_parser.add_argument(
     "genre", required=False, action="append", description="List of Genres"
 )
 top_genre_users_response = make_response(
-    "top_genre_users_response+", ns, fields.List(fields.Nested(user_model))
+    "top_genre_users_response", ns, fields.List(fields.Nested(user_model))
 )
 top_genre_users_response_full = make_full_response(
     "top_genre_users_response_full",
@@ -1074,9 +1063,7 @@ users_by_content_node_response = make_full_response(
 )
 
 
-@full_ns.route(
-    "/content_node/<string:replica_type>", doc=False
-)  # no non-full for this?
+@full_ns.route("/content_node/<string:replica_type>", doc=False)
 class UsersByContentNode(Resource):
     @ns.doc(
         id="""Get Users By Replica Type for Content Node""",
@@ -1264,10 +1251,10 @@ get_supporting_response = make_response(
     "get_supporting", ns, fields.List(fields.Nested(supporting_response))
 )
 
-USER_SUPPORTING_ROUTE = "/<string:id>/supporting"
+USER_SUPPORTINGS_ROUTE = "/<string:id>/supporting"
 
 
-@ns.route(USER_SUPPORTING_ROUTE)
+@ns.route(USER_SUPPORTINGS_ROUTE)
 class GetSupportings(Resource):
     @record_metrics
     @ns.doc(
@@ -1291,8 +1278,12 @@ full_get_supporting_response = make_full_response(
     "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
 )
 
+full_get_supporting_response = make_full_response(
+    "full_get_supporting", full_ns, fields.List(fields.Nested(supporting_response_full))
+)
 
-@full_ns.route(USER_SUPPORTING_ROUTE)
+
+@full_ns.route(USER_SUPPORTINGS_ROUTE)
 class FullGetSupportings(Resource):
     @record_metrics
     @full_ns.doc(
@@ -1318,24 +1309,14 @@ full_get_supporting_response = make_full_response(
     "full_get_supporting", full_ns, fields.Nested(supporting_response_full)
 )
 
+GET_SUPPORTING_ROUTE = "/<string:id>/supporting/<string:supported_user_id>"
 
-@full_ns.route(
-    "/<string:id>/supporting/<string:supported_user_id>"
-)  # non full not necessary here either?
+
+@full_ns.route(GET_SUPPORTING_ROUTE)
 class FullGetSupporting(Resource):
     @record_metrics
-    @full_ns.doc(
-        id="""Get Supporting""",
-        description="""Gets the support from the given user to the supported user""",
-        params={
-            "id": "A User ID",
-            "supported_user_id": "A User ID of a supported user",
-        },
-    )
-    @full_ns.expect(current_user_parser)
-    @full_ns.marshal_with(full_get_supporting_response)
     @cache(ttl_sec=5)
-    def get(self, id: str, supported_user_id: str):
+    def _get(self, id: str, supported_user_id: str):
         args = current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, full_ns)
         current_user_id = get_current_user_id(args)
@@ -1348,6 +1329,35 @@ class FullGetSupporting(Resource):
         if not support:
             abort_not_found(decoded_id, full_ns)
         return success_response(support[0])
+
+    @full_ns.doc(
+        id="""Get Supporting""",
+        description="""Gets the support from the given user to the supported user""",
+        params={
+            "id": "A User ID",
+            "supported_user_id": "A User ID of a supported user",
+        },
+    )
+    @full_ns.expect(current_user_parser)
+    @full_ns.marshal_with(full_get_supporting_response)
+    def get(self, id: str, supported_user_id: str):
+        return self._get(id, supported_user_id)
+
+
+@ns.route(GET_SUPPORTING_ROUTE)
+class GetSupporting(FullGetSupporting):
+    @ns.doc(
+        id="""Get Supporting""",
+        description="""Gets the support from the given user to the supported user""",
+        params={
+            "id": "A User ID",
+            "supported_user_id": "A User ID of a supported user",
+        },
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(get_supporting_response)
+    def get(self, id: str, supported_user_id: str):
+        return super()._get(id, supported_user_id)
 
 
 verify_token_response = make_response(
