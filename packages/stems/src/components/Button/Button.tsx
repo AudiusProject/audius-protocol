@@ -2,8 +2,9 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
+import { useMediaQueryListener } from 'hooks/useMediaQueryListener'
+
 import styles from './Button.module.css'
-import { useCollapsibleText } from './hooks'
 import { ButtonProps, Type, Size } from './types'
 
 const SIZE_STYLE_MAP = {
@@ -49,7 +50,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) {
-    const { textIsHidden } = useCollapsibleText(widthToHideText)
+    const { isMatch: textIsHidden } = useMediaQueryListener(
+      `(max-width: ${widthToHideText}px)`
+    )
     const disabled = disabledProp ?? isDisabled
     const isTextVisible = !!text && !textIsHidden
 

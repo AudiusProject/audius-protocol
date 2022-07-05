@@ -60,3 +60,4 @@ export {
 export { useHotkeys } from './hooks/useHotKeys'
 export { useClickOutside } from './hooks/useClickOutside'
 export { useScrollLock } from './hooks/useScrollLock'
+export { useMediaQueryListener } from './hooks/useMediaQueryListener'

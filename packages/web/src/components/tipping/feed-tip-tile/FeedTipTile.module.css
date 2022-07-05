@@ -43,6 +43,7 @@
   margin-left: 8px;
   font-weight: var(--font-bold);
   color: var(--neutral);
+  white-space: nowrap;
 }
 .name > span:hover {
   cursor: pointer;
@@ -72,6 +73,7 @@
   margin-left: 6px;
   color: var(--neutral-light-4);
   font-weight: var(--font-medium);
+  white-space: nowrap;
 }
 
 .tippers {
@@ -94,6 +96,7 @@
 .andOthers {
   margin-left: 4px;
   font-weight: var(--font-medium);
+  white-space: nowrap;
 }
 
 .buttons {
