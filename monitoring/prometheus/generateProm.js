@@ -52,7 +52,9 @@ const generateEnv = async (stream, env) => {
     preferHigherPatchForSecondaries: true
   })
   await audiusLibs.init()
-  const serviceProviders = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node');
+  const discoveryNodes = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node')
+  const contentNodes = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
+  const serviceProviders = [...discoveryNodes, ...contentNodes]
 
   // copy from environment-specific stubs
   readFromFileAndWriteToStream(stream, `${env}.yml`)
