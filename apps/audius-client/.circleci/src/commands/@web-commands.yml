@@ -69,8 +69,6 @@ web-build:
           cd packages/web
           CI=false npm run build:<< parameters.build-type >>
           cp package.json << parameters.build-name >>
-          tar -zcvf << parameters.build-name >>.tar.gz << parameters.build-name >>
-          cp << parameters.build-name >>.tar.gz << parameters.build-name >>
     - persist_to_workspace:
         root: ./
         paths:
