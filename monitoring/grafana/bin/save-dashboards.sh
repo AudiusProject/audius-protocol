@@ -27,7 +27,8 @@ CLEAR_DASHBOARD_ID='.id = null'
 
 # CLEAR PROMETHEUS UID
 # clears prometheus uid since each deployment is unique
-CLEAR_PROM_UID='del(.panels[].targets[]?.datasource.uid)'
+CLEAR_PROM_TARGET_UID='del(.panels[].targets[]?.datasource.uid)'
+CLEAR_PROM_PANEL_UID='del(.panels[].datasource)'
 
 # RESET TIME WINDOW AND REFRESH TIMES
 # restrict time windows to avoid Prometheus pressure
@@ -67,7 +68,8 @@ do
         | jq "${CLEAR_ITERATION}" \
         | jq "${CLEAR_VERSION}" \
         | jq "${CLEAR_DASHBOARD_ID}" \
-        | jq "${CLEAR_PROM_UID}" \
+        | jq "${CLEAR_PROM_TARGET_UID}" \
+        | jq "${CLEAR_PROM_PANEL_UID}" \
         | jq "${SET_TIME_WINDOW_FROM}" \
         | jq "${SET_TIME_WINDOW_TO}" \
         | jq "${SET_REFRESH_INTERVAL}" \
