@@ -120,7 +120,6 @@
         "id": 47,
         "panels": [
           {
-            "datasource": {},
             "description": "",
             "fieldConfig": {
               "defaults": {
@@ -171,7 +170,7 @@
               "description": "",
               "meta": {
                 "connectedDashboards": 3,
-                "created": "2022-07-06T01:01:15Z",
+                "created": "2022-07-06T20:04:10Z",
                 "createdBy": {
                   "avatarUrl": "",
                   "id": 0,
@@ -179,17 +178,17 @@
                 },
                 "folderName": "General",
                 "folderUid": "",
-                "updated": "2022-07-06T01:02:13Z",
+                "updated": "2022-07-06T20:04:10Z",
                 "updatedBy": {
-                  "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-                  "id": 1,
-                  "name": "admin"
+                  "avatarUrl": "",
+                  "id": 0,
+                  "name": ""
                 }
               },
               "name": "Celery Tasks (Active)",
               "type": "bargauge",
               "uid": "ilGck637k",
-              "version": 2
+              "version": 1
             },
             "options": {
               "displayMode": "gradient",
@@ -213,7 +212,7 @@
                 },
                 "editorMode": "code",
                 "exemplar": false,
-                "expr": "audius_dn_active_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+                "expr": "audius_dn_celery_task_active_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
                 "instant": false,
                 "legendFormat": "{{task_name}}",
                 "range": true,

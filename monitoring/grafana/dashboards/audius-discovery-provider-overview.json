@@ -93,7 +93,7 @@
           "description": "",
           "meta": {
             "connectedDashboards": 3,
-            "created": "2022-07-06T01:01:15Z",
+            "created": "2022-07-06T20:04:10Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -101,17 +101,17 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T01:02:13Z",
+            "updated": "2022-07-06T20:04:10Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "Celery Tasks (Active)",
           "type": "bargauge",
           "uid": "ilGck637k",
-          "version": 2
+          "version": 1
         },
         "options": {
           "displayMode": "gradient",
@@ -706,19 +706,19 @@
           "description": "",
           "meta": {
             "connectedDashboards": 1,
-            "created": "2022-07-06T06:40:46Z",
+            "created": "2022-07-06T20:04:10Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T06:40:46Z",
+            "updated": "2022-07-06T20:04:10Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "Blockdiff",
@@ -819,20 +819,20 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 2,
-            "created": "2022-07-06T06:41:55Z",
+            "connectedDashboards": 1,
+            "created": "2022-07-06T20:04:10Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T06:41:55Z",
+            "updated": "2022-07-06T20:04:10Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "POA Indexing",
@@ -974,20 +974,20 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 2,
-            "created": "2022-07-06T06:41:58Z",
+            "connectedDashboards": 1,
+            "created": "2022-07-06T20:04:10Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T06:41:58Z",
+            "updated": "2022-07-06T20:04:10Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "Solana Plays Indexing",
