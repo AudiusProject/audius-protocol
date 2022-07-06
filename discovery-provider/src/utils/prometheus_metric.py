@@ -13,12 +13,12 @@ def save_duration_metric(metric_group):
         @wraps(func)
         def wrapper(*args, **kwargs):
             histogram_metric = PrometheusMetric(
-                f"completed_{metric_group}_duration_seconds",
+                f"{metric_group}_completed_duration_seconds",
                 f"How long a {metric_group} took to complete",
                 ("func_name", "success"),
             )
             gauge_metric = PrometheusMetric(
-                f"last_{metric_group}_duration_seconds",
+                f"{metric_group}_last_duration_seconds",
                 f"How long a {metric_group} has been running",
                 ("func_name", "success"),
                 metric_type=PrometheusType.GAUGE,

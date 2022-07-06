@@ -33,7 +33,7 @@ def celery_tasks_prometheus_exporter():
     registered_tasks = all_tasks["registered_celery_tasks"]
 
     metric = PrometheusMetric(
-        "active_celery_task_duration_seconds",
+        "celery_task_active_duration_seconds",
         "How long the currently running celery task has been running",
         labelnames=["task_name"],
         metric_type=PrometheusType.GAUGE,
