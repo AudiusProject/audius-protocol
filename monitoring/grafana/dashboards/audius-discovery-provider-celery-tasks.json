@@ -146,6 +146,180 @@
         "type": "bargauge"
       },
       {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "transparent",
+                    "index": 0
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 60
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 9
+        },
+        "id": 22,
+        "libraryPanel": {
+          "description": "",
+          "meta": {
+            "connectedDashboards": 1,
+            "created": "2022-07-06T21:10:51Z",
+            "createdBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            },
+            "folderName": "General",
+            "folderUid": "",
+            "updated": "2022-07-06T21:15:24Z",
+            "updatedBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            }
+          },
+          "name": "Celery Tasks (Last Successful Duration)",
+          "type": "bargauge",
+          "uid": "3en9tpenk",
+          "version": 4
+        },
+        "options": {
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}",
+            "instant": false,
+            "legendFormat": "{{func_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Celery Tasks (Last Successful Duration)",
+        "type": "bargauge"
+      },
+      {
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "transparent",
+                    "index": 0
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 9
+        },
+        "id": 23,
+        "options": {
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "last"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"False\"}",
+            "instant": false,
+            "legendFormat": "{{func_name}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Celery Tasks (Last Failed Duration)",
+        "type": "bargauge"
+      },
+      {
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -205,7 +379,7 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 9
+          "y": 17
         },
         "id": 8,
         "options": {
@@ -295,7 +469,7 @@
           "h": 8,
           "w": 12,
           "x": 12,
-          "y": 9
+          "y": 17
         },
         "id": 18,
         "options": {
@@ -331,7 +505,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 17
+          "y": 25
         },
         "id": 2,
         "panels": [],
@@ -372,7 +546,7 @@
           "h": 8,
           "w": 8,
           "x": 0,
-          "y": 18
+          "y": 26
         },
         "id": 6,
         "options": {
@@ -439,7 +613,7 @@
           "h": 8,
           "w": 8,
           "x": 8,
-          "y": 18
+          "y": 26
         },
         "id": 9,
         "options": {
@@ -497,7 +671,7 @@
           "h": 8,
           "w": 8,
           "x": 16,
-          "y": 18
+          "y": 26
         },
         "id": 13,
         "options": {
@@ -537,7 +711,7 @@
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 26
+          "y": 34
         },
         "id": 17,
         "panels": [],
@@ -569,7 +743,7 @@
           "h": 8,
           "w": 8,
           "x": 0,
-          "y": 27
+          "y": 35
         },
         "id": 10,
         "options": {
@@ -627,7 +801,7 @@
           "h": 8,
           "w": 8,
           "x": 8,
-          "y": 27
+          "y": 35
         },
         "id": 12,
         "options": {
@@ -685,7 +859,7 @@
           "h": 8,
           "w": 8,
           "x": 16,
-          "y": 27
+          "y": 35
         },
         "id": 11,
         "options": {
