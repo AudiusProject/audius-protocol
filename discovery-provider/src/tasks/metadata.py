@@ -52,5 +52,6 @@ playlist_metadata_format = {
     "playlist_name": None,
     "playlist_image_sizes_multihash": None,
     "description": None,
-    "isAlbum": None,
+    "is_album": None,
+    "is_private": None,
 }
