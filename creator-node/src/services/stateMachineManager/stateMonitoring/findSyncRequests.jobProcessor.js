@@ -132,7 +132,7 @@ module.exports = async function ({
         // Log so we can find the primary+secondary for each result, but don't spam logs with the default result
         if (labelValue !== 'not_checked') {
           logger.info(
-            `Incrementing gauge for metric ${MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE} from primary=${primary} to secondary=${secondary} with result=${labelValue}`
+            `Recorded findSyncRequests from primary=${primary} to secondary=${secondary} with result=${labelValue}`
           )
         }
       }
