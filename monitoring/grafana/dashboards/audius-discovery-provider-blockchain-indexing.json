@@ -37,533 +37,12 @@
           "x": 0,
           "y": 0
         },
-        "id": 10,
-        "panels": [],
-        "title": "Celery Tasks",
-        "type": "row"
-      },
-      {
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [
-              {
-                "options": {
-                  "0": {
-                    "color": "transparent",
-                    "index": 0
-                  }
-                },
-                "type": "value"
-              }
-            ],
-            "max": 1,
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 1
-                },
-                {
-                  "color": "red",
-                  "value": 60
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 12,
-          "x": 0,
-          "y": 1
-        },
         "id": 2,
-        "libraryPanel": {
-          "description": "",
-          "meta": {
-            "connectedDashboards": 3,
-            "created": "2022-07-06T01:01:15Z",
-            "createdBy": {
-              "avatarUrl": "",
-              "id": 0,
-              "name": ""
-            },
-            "folderName": "General",
-            "folderUid": "",
-            "updated": "2022-07-06T01:02:13Z",
-            "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
-            }
-          },
-          "name": "Celery Tasks (Active)",
-          "type": "bargauge",
-          "uid": "ilGck637k",
-          "version": 2
-        },
-        "options": {
-          "displayMode": "gradient",
-          "minVizHeight": 10,
-          "minVizWidth": 0,
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [
-              "last"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "showUnfilled": true
-        },
-        "pluginVersion": "9.0.2",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "audius_dn_active_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
-            "instant": false,
-            "legendFormat": "{{task_name}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Celery Tasks (Active)",
-        "type": "bargauge"
-      },
-      {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 9
-        },
-        "id": 8,
         "panels": [],
-        "title": "Web Request Latency",
+        "title": "Blockdiff",
         "type": "row"
       },
       {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisLabel": "Average Latency (Max by route)",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "log": 2,
-                "type": "log"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 9,
-          "w": 12,
-          "x": 0,
-          "y": 10
-        },
-        "id": 4,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean",
-              "max",
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "sortBy": "Last *",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "sum(rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
-            "legendFormat": "average",
-            "range": true,
-            "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "max by (route) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
-            "hide": false,
-            "legendFormat": "{{route}}",
-            "range": true,
-            "refId": "B"
-          }
-        ],
-        "title": "Latency by Route",
-        "type": "timeseries"
-      },
-      {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 9,
-          "w": 12,
-          "x": 12,
-          "y": 10
-        },
-        "id": 6,
-        "options": {
-          "colorMode": "value",
-          "graphMode": "area",
-          "justifyMode": "auto",
-          "orientation": "auto",
-          "reduceOptions": {
-            "calcs": [
-              "lastNotNull"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "textMode": "auto"
-        },
-        "pluginVersion": "9.0.2",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "sum(rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
-            "legendFormat": "average",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Average Total Latency",
-        "type": "stat"
-      },
-      {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 19
-        },
-        "id": 12,
-        "panels": [],
-        "title": "Web Request Status Codes",
-        "type": "row"
-      },
-      {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisLabel": "Requests per Second (by code)",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "log": 2,
-                "type": "log"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "reqps"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 9,
-          "w": 12,
-          "x": 0,
-          "y": 20
-        },
-        "id": 14,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean",
-              "max",
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "sortBy": "Last *",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "(sum by (code) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])))",
-            "hide": false,
-            "legendFormat": "__auto",
-            "range": true,
-            "refId": "D"
-          }
-        ],
-        "title": "Status Codes (Rate)",
-        "type": "timeseries"
-      },
-      {
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisLabel": "% of Requests (by code)",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
-            },
-            "mappings": [],
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "red",
-                  "value": 80
-                }
-              ]
-            },
-            "unit": "percentunit"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 9,
-          "w": 12,
-          "x": 12,
-          "y": 20
-        },
-        "id": 16,
-        "options": {
-          "legend": {
-            "calcs": [
-              "mean",
-              "max",
-              "lastNotNull"
-            ],
-            "displayMode": "table",
-            "placement": "bottom",
-            "sortBy": "Last *",
-            "sortDesc": true
-          },
-          "tooltip": {
-            "mode": "multi",
-            "sort": "desc"
-          }
-        },
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "sum by (code) (audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"})",
-            "hide": true,
-            "legendFormat": "__auto",
-            "range": true,
-            "refId": "A"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "expr": "sum(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"})",
-            "hide": true,
-            "refId": "B"
-          },
-          {
-            "datasource": {
-              "name": "Expression",
-              "type": "__expr__"
-            },
-            "expression": "$A / $B",
-            "hide": false,
-            "refId": "C",
-            "type": "math"
-          },
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "expr": "(sum by (code) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])))",
-            "hide": true,
-            "legendFormat": "__auto",
-            "range": true,
-            "refId": "D"
-          }
-        ],
-        "title": "Status Codes",
-        "type": "timeseries"
-      },
-      {
-        "collapsed": false,
-        "gridPos": {
-          "h": 1,
-          "w": 24,
-          "x": 0,
-          "y": 29
-        },
-        "id": 18,
-        "panels": [],
-        "title": "Blockchain Indexing",
-        "type": "row"
-      },
-      {
-        "description": "",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -697,35 +176,11 @@
         },
         "gridPos": {
           "h": 8,
-          "w": 8,
+          "w": 12,
           "x": 0,
-          "y": 30
+          "y": 1
         },
-        "id": 20,
-        "libraryPanel": {
-          "description": "",
-          "meta": {
-            "connectedDashboards": 1,
-            "created": "2022-07-06T06:40:46Z",
-            "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
-            },
-            "folderName": "General",
-            "folderUid": "",
-            "updated": "2022-07-06T06:40:46Z",
-            "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
-            }
-          },
-          "name": "Blockdiff",
-          "type": "timeseries",
-          "uid": "hhRZ9K67k",
-          "version": 1
-        },
+        "id": 9,
         "options": {
           "legend": {
             "calcs": [
@@ -755,6 +210,102 @@
         ],
         "title": "Blockdiff",
         "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 1
+        },
+        "id": 10,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "9.0.2",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "max(audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"})",
+            "legendFormat": "Max",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "avg(audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"})",
+            "hide": false,
+            "legendFormat": "Average",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "min(audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"})",
+            "hide": false,
+            "legendFormat": "Min",
+            "range": true,
+            "refId": "C"
+          }
+        ],
+        "title": "Blockdiff",
+        "type": "stat"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 9
+        },
+        "id": 17,
+        "panels": [],
+        "title": "Chain Indexing",
+        "type": "row"
       },
       {
         "description": "",
@@ -812,10 +363,10 @@
         "gridPos": {
           "h": 8,
           "w": 8,
-          "x": 8,
-          "y": 30
+          "x": 0,
+          "y": 10
         },
-        "id": 22,
+        "id": 13,
         "libraryPanel": {
           "description": "",
           "meta": {
@@ -967,10 +518,10 @@
         "gridPos": {
           "h": 8,
           "w": 8,
-          "x": 16,
-          "y": 30
+          "x": 8,
+          "y": 10
         },
-        "id": 24,
+        "id": 14,
         "libraryPanel": {
           "description": "",
           "meta": {
@@ -1065,6 +616,136 @@
         ],
         "title": "Solana Plays Indexing",
         "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Task Duration",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 10
+        },
+        "id": 15,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_completed_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_eth\"}[5m])) by (le))",
+            "hide": false,
+            "legendFormat": "p50",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_completed_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_eth\"}[5m])) by (le))",
+            "hide": false,
+            "legendFormat": "p90",
+            "range": true,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_completed_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_eth\"}[5m])) by (le))",
+            "hide": false,
+            "legendFormat": "p95",
+            "range": true,
+            "refId": "D"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_completed_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_eth\"}[5m])) by (le))",
+            "hide": false,
+            "legendFormat": "p99",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_completed_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_eth\"}[5m])) by (le))",
+            "hide": false,
+            "legendFormat": "p999",
+            "range": true,
+            "refId": "E"
+          }
+        ],
+        "title": "ETH Indexing",
+        "type": "timeseries"
       }
     ],
     "refresh": "30m",
@@ -1149,8 +830,8 @@
       ]
     },
     "timezone": "",
-    "title": "Audius - Discovery Provider - Overview",
-    "uid": "Ayvzmeq7z",
+    "title": "Audius - Discovery Provider - Blockchain Indexing",
+    "uid": "vow-ZKenk",
     "version": null,
     "weekStart": ""
   },

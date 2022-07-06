@@ -43,10 +43,6 @@
         "type": "row"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "description": "",
         "fieldConfig": {
           "defaults": {
@@ -97,15 +93,15 @@
           "description": "",
           "meta": {
             "connectedDashboards": 3,
-            "created": "2022-07-01T07:03:00Z",
+            "created": "2022-07-06T01:01:15Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-01T09:11:50Z",
+            "updated": "2022-07-06T01:02:13Z",
             "updatedBy": {
               "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
               "id": 1,
@@ -115,7 +111,7 @@
           "name": "Celery Tasks (Active)",
           "type": "bargauge",
           "uid": "ilGck637k",
-          "version": 4
+          "version": 2
         },
         "options": {
           "displayMode": "gradient",
@@ -150,10 +146,6 @@
         "type": "bargauge"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -244,10 +236,6 @@
         "type": "timeseries"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -351,10 +339,6 @@
         "type": "row"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -422,10 +406,6 @@
         "type": "bargauge"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -493,10 +473,6 @@
         "type": "bargauge"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -569,10 +545,6 @@
         "type": "row"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -584,7 +556,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "red"
+                  "color": "red",
+                  "value": null
                 }
               ]
             },
@@ -630,10 +603,6 @@
         "type": "bargauge"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -645,7 +614,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "red"
+                  "color": "red",
+                  "value": null
                 }
               ]
             },
@@ -691,10 +661,6 @@
         "type": "bargauge"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "6jA6F3qnz"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -706,7 +672,8 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "red"
+                  "color": "red",
+                  "value": null
                 }
               ]
             },
@@ -762,7 +729,8 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
           },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
           "description": "",
@@ -785,7 +753,8 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
           },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
