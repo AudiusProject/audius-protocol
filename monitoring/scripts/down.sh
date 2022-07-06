@@ -4,5 +4,7 @@ set -ex
 
 docker-compose down
 
-sudo rm -rf ./data/grafana
+# include if you want to start with a clean slate
+# sudo rm -rf ./data/
+
 rm -f ./grafana/bearer.env

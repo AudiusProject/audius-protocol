@@ -6,6 +6,9 @@
 A run monitoring up
 
 # A run monitoring down
+
+# optionally remove all grafana and prometheus data
+# sudo rm -rf ./data/
 ```
 
 Access Grafana by visiting:
