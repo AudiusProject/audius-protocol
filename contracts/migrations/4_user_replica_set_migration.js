@@ -107,5 +107,6 @@ module.exports = (deployer, network, accounts) => {
     )
     seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
     console.log(`Seed complete: ${seedComplete}`)
+    process.env.dataContractsUrsmAddress = deployedProxyTx.address
   })
 }

@@ -159,6 +159,7 @@ const main = async () => {
   )
 
   // TODO: Deploy to docker registry (dockerhub)
+  // Ex. After local tag - docker push audius/ganache:data-contracts-predeployed-7a65bc3a54d5f84e1be805892935e121574b0772
   console.log('Be sure to publish the docker file if using externally')
   console.log(
     'ie. "docker push audius/ganache:data-contracts-predeployed-latest"'
