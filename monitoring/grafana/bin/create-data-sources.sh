@@ -64,6 +64,7 @@ do
         --data-binary '{
             "name":"prometheus",
             "type":"prometheus",
+            "uid":"r2_nnDL7z",
             "isDefault":true,
             "url":"http://prometheus:9090",
             "access":"proxy"}' \
