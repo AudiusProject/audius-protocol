@@ -121,7 +121,7 @@ services:
         reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
         valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
     volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/target/idl
+      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
       - "8899:8899"
     deploy:
