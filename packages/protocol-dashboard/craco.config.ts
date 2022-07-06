@@ -1,45 +1,71 @@
-import { addBeforeLoader, loaderByName, when } from '@craco/craco'
-import { Configuration } from 'webpack'
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
+import { Configuration, ProvidePlugin } from 'webpack'
 
-export default {
-  babel: {
-    plugins: ['lodash']
-  },
+const cracoConfig = {
   webpack: {
-    plugins: when(process.env.BUNDLE_ANALYZE === 'true', () => [
-      new BundleAnalyzerPlugin()
-    ]),
-    configure: (webpackConfig: Configuration) => {
-      const wasmExtensionRegExp = /\.wasm$/
-      webpackConfig.resolve?.extensions?.push('.wasm')
-
-      webpackConfig.module?.rules.forEach(rule => {
-        rule.oneOf?.forEach(oneOf => {
-          if (
-            typeof oneOf.loader === 'string' &&
-            oneOf.loader.indexOf('file-loader') >= 0
-          ) {
-            if (Array.isArray(oneOf.exclude)) {
-              oneOf.exclude.push(wasmExtensionRegExp)
+    configure: (config: Configuration) => {
+      return {
+        ...config,
+        module: {
+          ...config.module,
+          rules: [
+            ...(config.module?.rules ?? []),
+            {
+              test: /\.js$/,
+              enforce: 'pre',
+              use: ['source-map-loader']
+            },
+            {
+              test: /\.wasm$/,
+              type: 'webassembly/async'
             }
+          ]
+        },
+        plugins: [
+          ...(config.plugins ?? []),
+          new ProvidePlugin({
+            process: 'process/browser',
+            Buffer: ['buffer', 'Buffer']
+          })
+        ],
+        experiments: {
+          ...config.experiments,
+          asyncWebAssembly: true
+        },
+        resolve: {
+          ...config.resolve,
+          fallback: {
+            ...config.resolve?.fallback,
+            assert: require.resolve('assert'),
+            constants: require.resolve('constants-browserify'),
+            child_process: false,
+            crypto: require.resolve('crypto-browserify'),
+            fs: false,
+            http: require.resolve('stream-http'),
+            https: require.resolve('https-browserify'),
+            net: false,
+            os: require.resolve('os-browserify'),
+            path: require.resolve('path-browserify'),
+            stream: require.resolve('stream-browserify'),
+            url: require.resolve('url'),
+            zlib: require.resolve('browserify-zlib')
           }
-        })
-      })
-
-      const wasmLoader = {
-        test: /\.wasm$/,
-        include: /node_modules\/(bridge|token-bridge)/,
-        loaders: ['wasm-loader']
+        },
+        ignoreWarnings: [
+          function ignoreSourcemapsloaderWarnings(warning: any) {
+            return (
+              warning.module &&
+              warning.module.resource.includes('node_modules') &&
+              warning.details &&
+              warning.details.includes('source-map-loader')
+            )
+          }
+        ]
       }
-
-      addBeforeLoader(webpackConfig, loaderByName('file-loader'), wasmLoader)
-
-      return webpackConfig
     }
   },
-  // Disabling for now while we upgrade eslint and improve our config
   eslint: {
     enable: false
   }
 }
+
+export default cracoConfig
