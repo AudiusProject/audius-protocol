@@ -29,7 +29,7 @@ def convert_epoch_to_datetime(epoch):
 
 def celery_tasks_prometheus_exporter():
     all_tasks = get_celery_tasks()["celery_tasks"]
-    tasks = all_tasks["celery_tasks"]
+    active_tasks = all_tasks["active_tasks"]
     registered_tasks = all_tasks["registered_celery_tasks"]
 
     metric = PrometheusMetric(
@@ -40,7 +40,7 @@ def celery_tasks_prometheus_exporter():
     )
 
     active_task_names = []
-    for task in tasks:
+    for task in active_tasks:
         try:
             metric.save_time(
                 {"task_name": task["task_name"]}, start_time=task["started_at"]

@@ -64,7 +64,7 @@ def get_celery_tasks(**kwargs) -> str:
                 continue
 
     ret = {
-        "celery_tasks": celery_tasks,
+        "active_tasks": celery_tasks,
         "registered_celery_tasks": registered_celery_tasks,
     }
     return json.dumps(ret)
