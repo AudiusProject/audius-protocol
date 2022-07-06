@@ -315,8 +315,6 @@ class ServiceRegistry {
       { logger, startTime: start },
       'ServiceRegistry || Initialized services that require server'
     )
-
-    console.log('done with everything god fucking', Object.keys(this))
   }
 
   logInfo(msg) {
