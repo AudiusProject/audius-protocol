@@ -30,7 +30,7 @@ def cache_trending(db, redis, strategy):
 def cache_trending_playlists(self):
     """Caches trending playlists for time period"""
 
-    db = cache_trending_playlists.db
+    db = cache_trending_playlists.db_read_replica
     redis = cache_trending_playlists.redis
 
     have_lock = False
