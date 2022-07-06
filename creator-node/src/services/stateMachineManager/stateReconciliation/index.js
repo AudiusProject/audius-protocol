@@ -58,8 +58,8 @@ class StateReconciliationManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await reconciliationQueue.obliterate({ force: true })
-    await manualSyncQueue.obliterate({ force: true })
+    await reconciliationQueue.clean({ force: true })
+    await manualSyncQueue.clean({ force: true })
 
     return {
       stateReconciliationQueue: reconciliationQueue,

@@ -57,8 +57,6 @@ class StateMachineManager {
       this.updateMapOnMapFetchJobComplete.bind(this)
     )
 
-    this.manualSyncQueue.bind(manualSyncQueue)
-
     return {
       stateMonitoringQueue,
       cNodeEndpointToSpIdMapQueue,
