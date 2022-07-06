@@ -32,6 +32,9 @@ const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRe
  */
 class ServiceRegistry {
   constructor() {
+    // TODO: this is redundant and we should just rely on the import, but this is too tightly coupled with existing logic
+    this.nodeConfig = config
+
     // Some services are initialized to `null` and will be initialized in helper functions
 
     this.redis = redisClient // Redis Client
