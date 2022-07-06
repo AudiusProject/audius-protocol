@@ -4,7 +4,7 @@ import { Base } from './base'
 import { timeRequests } from '../utils/network'
 import { CreatorNodeSelection } from '../services/creatorNode'
 
-import type { ServiceWithEndpoint } from '../utils/network'
+import type { Nullable, ServiceWithEndpoint } from '../utils'
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
@@ -36,8 +36,8 @@ class ServiceProvider extends Base {
    * Fetches healthy Content Nodes filtered down to a given whitelist and blacklist
    */
   async getSelectableCreatorNodes(
-    whitelist: Set<string> | null = null, // whether or not to include only specified nodes (default no whiltelist)
-    blacklist: Set<string> | null = null, // whether or not to exclude any nodes (default no blacklist)
+    whitelist: Nullable<Set<string>> = null, // whether or not to include only specified nodes (default no whiltelist)
+    blacklist: Nullable<Set<string>> = null, // whether or not to exclude any nodes (default no blacklist)
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   ) {
     let creatorNodes = await this.listCreatorNodes()
@@ -157,8 +157,7 @@ class ServiceProvider extends Base {
       [owner: string]: ServiceWithEndpoint[]
     }>((acc, curr) => {
       if (curr.owner in acc) {
-        // @ts-expect-error
-        acc[curr.owner].push(curr)
+        acc[curr.owner]?.push(curr)
       } else {
         acc[curr.owner] = [curr]
       }
