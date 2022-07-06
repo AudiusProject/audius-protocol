@@ -24,7 +24,7 @@ const Track = require('./api/track')
 const Playlist = require('./api/playlist')
 const File = require('./api/file')
 const Rewards = require('./api/rewards')
-const ServiceProvider = require('./api/serviceProvider')
+const ServiceProvider = require('./api/ServiceProvider')
 const Web3 = require('./web3')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 

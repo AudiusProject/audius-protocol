@@ -9,12 +9,12 @@ import {
 import {
   timeRequests,
   sortServiceTimings,
-  Service,
   ServiceName,
   Timing,
   Logger
 } from '../../utils'
 import { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } from './constants'
+import type { MonitoringCallbacks } from './CreatorNode'
 
 type Timeout = number | null
 
@@ -34,15 +34,14 @@ export function setSpIDForEndpoint(endpoint: string, spID?: number) {
 
 type CreatorNode = {
   getSyncStatus: (
-    service: Service,
+    service: ServiceName,
     timeout: Timeout
   ) => Promise<{ isBehind: boolean; isConfigured: boolean }>
-  passList?: Set<string>
-  blockList?: Set<string>
-  monitoringCallbacks: {
-    healthCheck?: (config: Record<string, unknown>) => Promise<AxiosResponse>
-  }
+  passList: Set<string> | null
+  blockList: Set<string> | null
+  monitoringCallbacks: MonitoringCallbacks
 }
+
 type CreatorNodeSelectionConfig = Omit<
   ServiceSelectionConfig,
   'getServices'
