@@ -33,7 +33,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
-      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "cd contracts/; node_modules/.bin/truffle migrate >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
       "echo 'Writing configs'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
@@ -43,7 +43,7 @@
   },
   "contracts-predeployed": {
     "up": [
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-7a65bc3a54d5f84e1be805892935e121574b0772",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",

@@ -1,3 +1,5 @@
+const fs = require('fs-extra')
+const path = require('path')
 const contractConfig = require('../contract-config.js')
 const abi = require('ethereumjs-abi')
 const AudiusData = artifacts.require('AudiusData')
@@ -40,5 +42,21 @@ module.exports = (deployer, network, accounts) => {
         )
         let audiusDataProxyAddress = deployedProxyTx.address
         console.log(`AudiusData Proxy Contract deployed at ${audiusDataProxyAddress}`)
+        process.env.dataContractsAudiusDataProxyAddress = audiusDataProxyAddress
+        const outputFilePath = path.join(__dirname, 'migration-output.json')
+        fs.removeSync(outputFilePath)
+        const registryAddress = process.env.dataContractsRegistryAddress
+        const ursmAddress = process.env.dataContractsUrsmAddress
+        const outputValues = {
+            audiusDataProxyAddress,
+            registryAddress,
+            ursmAddress
+        }
+        console.log(`Migration output values: ${JSON.stringify(outputValues)}`)
+        fs.writeFile(outputFilePath, JSON.stringify(outputValues), (err) => {
+        if (err != null) {
+            console.log(err)
+        }
+        })
     })
 }
