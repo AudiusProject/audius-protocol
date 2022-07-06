@@ -5,15 +5,21 @@ const {
   RECONCILIATION_QUEUE_HISTORY,
   QUEUE_NAMES,
   JOB_NAMES,
-  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
+  STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
+  MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS,
+  MANUAL_SYNC_QUEUE_HISTORY
 } = require('../stateMachineConstants')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
 const handleSyncRequestJobProcessor = require('./issueSyncRequest.jobProcessor')
 const updateReplicaSetJobProcessor = require('./updateReplicaSet.jobProcessor')
 
-const logger = createChildLogger(baseLogger, {
+const reconciliationLogger = createChildLogger(baseLogger, {
   queue: QUEUE_NAMES.STATE_RECONCILIATION
+})
+
+const manualSyncLogger = createChildLogger(baseLogger, {
+  queue: QUEUE_NAMES.MANUAL_SYNC
 })
 
 /**
@@ -23,10 +29,24 @@ const logger = createChildLogger(baseLogger, {
  */
 class StateReconciliationManager {
   async init(prometheusRegistry) {
-    const queue = this.makeQueue(
-      config.get('redisHost'),
-      config.get('redisPort')
-    )
+    const stateReconciliationQueue = this.makeQueue({
+      redisHost: config.get('redisHost'),
+      redisPort: config.get('redisPort'),
+      name: QUEUE_NAMES.STATE_RECONCILIATION,
+      removeOnComplete: RECONCILIATION_QUEUE_HISTORY,
+      removeOnFail: RECONCILIATION_QUEUE_HISTORY,
+      lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
+    })
+
+    const manualSyncQueue = this.makeQueue({
+      redisHost: config.get('redisHost'),
+      redisPort: config.get('redisPort'),
+      name: QUEUE_NAMES.MANUAL_SYNC,
+      removeOnComplete: MANUAL_SYNC_QUEUE_HISTORY,
+      removeOnFail: MANUAL_SYNC_QUEUE_HISTORY,
+      lockDuration: MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS,
+    })
+
     this.registerQueueEventHandlersAndJobProcessors({
       queue,
       processManualSync:
@@ -38,25 +58,36 @@ class StateReconciliationManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await queue.obliterate({ force: true })
+    await reconciliationQueue.obliterate({ force: true })
+    await manualSyncQueue.obliterate({ force: true })
 
-    return queue
+    return {
+      stateReconciliationQueue: reconciliationQueue,
+      manualSyncQueue: manualSyncQueue
+    }
   }
 
-  makeQueue(redisHost, redisPort) {
+  makeQueue({
+    redisHost, 
+    redisPort, 
+    name,
+    removeOnComplete,
+    removeOnFail,
+    lockDuration
+  }) {
     // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-    return new BullQueue(QUEUE_NAMES.STATE_RECONCILIATION, {
+    return new BullQueue(name, {
       redis: {
         host: redisHost,
         port: redisPort
       },
       defaultJobOptions: {
-        removeOnComplete: RECONCILIATION_QUEUE_HISTORY,
-        removeOnFail: RECONCILIATION_QUEUE_HISTORY
+        removeOnComplete: removeOnComplete,
+        removeOnFail: removeOnFail
       },
       settings: {
         // Should be sufficiently larger than expected job runtime
-        lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
+        lockDuration: lockDuration,
         // We never want to re-process stalled jobs
         maxStalledCount: 0
       }
@@ -80,45 +111,45 @@ class StateReconciliationManager {
   }) {
     // Add handlers for logging
     queue.on('global:waiting', (jobId) => {
-      logger.info(`Queue Job Waiting - ID ${jobId}`)
+      reconciliationLogger.info(`Queue Job Waiting - ID ${jobId}`)
     })
     queue.on('global:active', (jobId, jobPromise) => {
-      logger.info(`Queue Job Active - ID ${jobId}`)
+      reconciliationLogger.info(`Queue Job Active - ID ${jobId}`)
     })
     queue.on('global:lock-extension-failed', (jobId, err) => {
-      logger.error(
+      reconciliationLogger.error(
         `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
       )
     })
     queue.on('global:stalled', (jobId) => {
-      logger.error(`stateMachineQueue Job Stalled - ID ${jobId}`)
+      reconciliationLogger.error(`stateMachineQueue Job Stalled - ID ${jobId}`)
     })
     queue.on('global:error', (error) => {
-      logger.error(`Queue Job Error - ${error}`)
+      reconciliationLogger.error(`Queue Job Error - ${error}`)
     })
 
     // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
     queue.on('completed', (job, result) => {
-      logger.info(
+      reconciliationLogger.info(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
     })
     queue.on('failed', (job, err) => {
-      logger.error(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
+      reconciliationLogger.error(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
     })
 
     // Register the logic that gets executed to process each new job from the queue
-    queue.process(
+    manualSyncQueue.process(
       JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
       config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
-    queue.process(
+    reconciliationQueue.process(
       JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
-    queue.process(
+    reconciliationQueue.process(
       JOB_NAMES.UPDATE_REPLICA_SET,
       1 /** concurrency */,
       processUpdateReplicaSet
@@ -135,7 +166,7 @@ class StateReconciliationManager {
         JOB_NAMES.ISSUE_MANUAL_SYNC_REQUEST,
         job,
         handleSyncRequestJobProcessor,
-        logger,
+        manualSyncLogger,
         prometheusRegistry
       )
   }
@@ -146,7 +177,7 @@ class StateReconciliationManager {
         JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
         job,
         handleSyncRequestJobProcessor,
-        logger,
+        reconciliationLogger,
         prometheusRegistry
       )
   }
@@ -157,7 +188,7 @@ class StateReconciliationManager {
         JOB_NAMES.UPDATE_REPLICA_SET,
         job,
         updateReplicaSetJobProcessor,
-        logger,
+        reconciliationLogger,
         prometheusRegistry
       )
   }

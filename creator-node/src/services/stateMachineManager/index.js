@@ -29,7 +29,7 @@ class StateMachineManager {
         audiusLibs.discoveryProvider.discoveryProviderEndpoint,
         prometheusRegistry
       )
-    const stateReconciliationQueue = await stateReconciliationManager.init(
+    const { stateReconciliationQueue, manualSyncQueue } = await stateReconciliationManager.init(
       prometheusRegistry
     )
 
@@ -57,10 +57,13 @@ class StateMachineManager {
       this.updateMapOnMapFetchJobComplete.bind(this)
     )
 
+    this.manualSyncQueue.bind(manualSyncQueue)
+
     return {
       stateMonitoringQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue
+      stateReconciliationQueue,
+      manualSyncQueue
     }
   }
 
@@ -133,6 +136,76 @@ class StateMachineManager {
     this.highestEnabledReconfigMode = highestEnabledReconfigMode
     this.enabledReconfigModesSet = enabledReconfigModesSet
   }
+
+    /**
+   * Issues syncRequest for user against secondary, and polls for replication up to primary
+   * If secondary fails to sync within specified timeoutMs, will error
+   */
+     async issueSyncRequestsUntilSynced(
+      secondaryUrl,
+      wallet,
+      primaryClockVal,
+      timeoutMs
+    ) {
+      // Issue syncRequest before polling secondary for replication
+      this.manualSyncQueue.add(
+
+      )
+      /*
+      await this.enqueueSync({
+        userWallet: wallet,
+        secondaryEndpoint: secondaryUrl,
+        primaryEndpoint: this.endpoint,
+        syncType: SyncType.Manual,
+        immediate: true
+      })
+      */
+  
+      // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+      const start = Date.now()
+      while (Date.now() - start < timeoutMs) {
+        try {
+          // Retrieve secondary clock status for user
+          const secondaryClockStatusResp = await axios({
+            method: 'get',
+            baseURL: secondaryUrl,
+            url: `/users/clock_status/${wallet}`,
+            responseType: 'json',
+            timeout: 1000 // 1000ms = 1s
+          })
+          const { clockValue: secondaryClockVal, syncInProgress } =
+            secondaryClockStatusResp.data.data
+  
+          // If secondary is synced, return successfully
+          if (secondaryClockVal >= primaryClockVal) {
+            return
+  
+            // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
+          } else if (!syncInProgress) {
+
+      /*
+            await this.enqueueSync({
+              userWallet: wallet,
+              secondaryEndpoint: secondaryUrl,
+              primaryEndpoint: this.endpoint,
+              syncType: SyncType.Manual
+            })
+      */
+          }
+  
+          // Give secondary some time to process ongoing or newly enqueued sync
+          // NOTE - we might want to make this timeout longer
+          await Utils.timeout(500)
+        } catch (e) {
+          // do nothing and let while loop continue
+        }
+      }
+  
+      // This condition will only be hit if the secondary has failed to sync within timeoutMs
+      throw new Error(
+        `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
+      )
+    }
 }
 
 module.exports = StateMachineManager

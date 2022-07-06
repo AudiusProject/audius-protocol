@@ -121,12 +121,13 @@ class ServiceRegistry {
     app,
     stateMonitoringQueue,
     cNodeEndpointToSpIdMapQueue,
-    stateReconciliationQueue
+    stateReconciliationQueue,
+    manualSyncQueue
   ) {
     this.logInfo('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
-    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
+    const { stateMachineQueue, recurringSyncQueue } =
       this.snapbackSM
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
@@ -166,6 +167,7 @@ class ServiceRegistry {
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
+        manualSyncAdapter,
         new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
@@ -279,7 +281,8 @@ class ServiceRegistry {
     const {
       stateMonitoringQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue
+      stateReconciliationQueue,
+      manualSyncQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
 
     // SyncQueue construction (requires L1 identity)
@@ -304,7 +307,8 @@ class ServiceRegistry {
         app,
         stateMonitoringQueue,
         cNodeEndpointToSpIdMapQueue,
-        stateReconciliationQueue
+        stateReconciliationQueue,
+        manualSyncQueue
       )
     } catch (e) {
       this.logError(
