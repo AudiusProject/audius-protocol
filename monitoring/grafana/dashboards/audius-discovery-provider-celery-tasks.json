@@ -226,7 +226,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_dn_last_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}",
+            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}",
             "legendFormat": "{{func_name}}",
             "range": true,
             "refId": "A"
@@ -316,7 +316,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_dn_last_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"False\"}",
+            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"False\"}",
             "legendFormat": "{{func_name}}",
             "range": true,
             "refId": "A"
@@ -463,7 +463,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "max_over_time(audius_dn_last_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}[$__range])",
+            "expr": "max_over_time(audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}[$__range])",
             "legendFormat": "{{func_name}}",
             "range": true,
             "refId": "A"
@@ -651,7 +651,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "max_over_time(audius_dn_last_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"False\"}[$__range])",
+            "expr": "max_over_time(audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"False\"}[$__range])",
             "legendFormat": "{{func_name}}",
             "range": true,
             "refId": "A"
