@@ -136,7 +136,9 @@ def init_contracts():
         abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
-    audius_data_address = web3.toChecksumAddress(shared_config["contracts"]["data_address"])
+    audius_data_address = web3.toChecksumAddress(
+        shared_config["contracts"]["data_address"]
+    )
     audius_data_inst = web3.eth.contract(
         address=audius_data_address, abi=abi_values["AudiusData"]["abi"]
     )
