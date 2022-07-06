@@ -18,6 +18,7 @@ chai.use(require('chai-as-promised'))
 
 describe('test findReplicaSetUpdates job processor', function () {
   let server, sandbox, originalContentNodeEndpoint, logger
+
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
     await appInfo.app.get('redisClient').flushdb()
@@ -72,25 +73,25 @@ describe('test findReplicaSetUpdates job processor', function () {
     [secondary2]: secondary2SpID
   }
 
-  const DEFAULT_CLOCK_STATUSES_MAP = {
+  const DEFAULT_REPLICA_TO_USER_INFO_MAP = {
     [primary]: {
-      [wallet]: 10,
-      randomWallet: 10
+      [wallet]: { clock: 10, filesHash: '0xasdf' },
+      randomWallet: { clock: 10, filesHash: '0xasdf' }
     },
     [secondary1]: {
-      [wallet]: 10,
-      anotherWallet: 100
+      [wallet]: { clock: 10, filesHash: '0xasdf' },
+      anotherWallet: { clock: 100, filesHash: '0xnotasdf' }
     },
     [secondary2]: {
-      [wallet]: 10
+      [wallet]: { clock: 10, filesHash: '0xasdf' }
     },
     unusedNode: {}
   }
 
-  const CLOCK_STATUSES_MAP_FILTERED_TO_WALLET = {
-    [primary]: 10,
-    [secondary1]: 10,
-    [secondary2]: 10
+  const REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET = {
+    [primary]: { clock: 10, filesHash: '0xasdf' },
+    [secondary1]: { clock: 10, filesHash: '0xasdf' },
+    [secondary2]: { clock: 10, filesHash: '0xasdf' }
   }
 
   function getJobProcessorStub(
@@ -134,7 +135,7 @@ describe('test findReplicaSetUpdates job processor', function () {
       logger,
       users,
       unhealthyPeers,
-      replicaSetNodesToUserClockStatusesMap: DEFAULT_CLOCK_STATUSES_MAP,
+      replicaToUserInfoMap: DEFAULT_REPLICA_TO_USER_INFO_MAP,
       userSecondarySyncMetricsMap
     })
   }
@@ -161,8 +162,8 @@ describe('test findReplicaSetUpdates job processor', function () {
                   secondary1,
                   secondary2,
                   unhealthyReplicas: expectedUnhealthyReplicas,
-                  replicaSetNodesToUserClockStatusesMap:
-                    CLOCK_STATUSES_MAP_FILTERED_TO_WALLET
+                  replicaToUserInfoMap:
+                  REPLICA_TO_USER_INFO_MAP_FILTERED_TO_WALLET
                 }
               }
             ]
