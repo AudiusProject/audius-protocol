@@ -80,6 +80,9 @@ class ServiceRegistry {
     this.monitoringQueue.start()
     this.sessionExpirationQueue.start()
 
+    this.imageProcessingQueue = ImageProcessingQueue
+    this.transcodingQueue = TranscodingQueue
+
     this.servicesInitialized = true
   }
 
@@ -130,8 +133,8 @@ class ServiceRegistry {
       this.snapbackSM
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
-    const { queue: imageProcessingQueue } = ImageProcessingQueue
-    const { queue: transcodingQueue } = TranscodingQueue
+    const { queue: imageProcessingQueue } = this.imageProcessingQueue
+    const { queue: transcodingQueue } = this.transcodingQueue
     const { queue: monitoringQueue } = this.monitoringQueue
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
@@ -183,6 +186,20 @@ class ServiceRegistry {
 
     serverAdapter.setBasePath('/health/bull')
     app.use('/health/bull', serverAdapter.getRouter())
+  }
+
+  async wrapUpQueueJobs() {
+    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
+      this.snapbackSM
+    const { queue: syncProcessingQueue } = this.syncQueue
+    const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
+    const { queue: imageProcessingQueue } = ImageProcessingQueue
+    const { queue: transcodingQueue } = TranscodingQueue
+    const { queue: monitoringQueue } = this.monitoringQueue
+    const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
+    const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
+
+    // Make state mac
   }
 
   /**
@@ -281,6 +298,10 @@ class ServiceRegistry {
       cNodeEndpointToSpIdMapQueue,
       stateReconciliationQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+
+    this.stateMonitoringQueue = stateMonitoringQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
+    this.stateReconciliationQueue = stateReconciliationQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround

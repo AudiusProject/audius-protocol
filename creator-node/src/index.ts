@@ -130,7 +130,8 @@ const startApp = async () => {
 
     // Block further content upload
 
-    // Wrap up queues to some timeout (30s?)
+    // Wrap up queues to a timeout of 30s
+    await serviceRegistry.wrapUpQueueJobs()
 
     // kill app
     logger.info('Shutting down db and express app...', signal, error)

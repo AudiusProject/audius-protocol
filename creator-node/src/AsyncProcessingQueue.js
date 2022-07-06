@@ -1,7 +1,7 @@
-const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
-const config = require('./config')
 const redisClient = require('./redis')
+
+const BaseQueue = require('./BaseQueue')
 
 // Processing fns
 const {
@@ -34,18 +34,9 @@ const PROCESS_STATES = Object.freeze({
  * as part of the query params.
  */
 
-class AsyncProcessingQueue {
+class AsyncProcessingQueue extends BaseQueue {
   constructor(libs) {
-    this.queue = new Bull('asyncProcessing', {
-      redis: {
-        host: config.get('redisHost'),
-        port: config.get('redisPort')
-      },
-      defaultJobOptions: {
-        removeOnComplete: true,
-        removeOnFail: true
-      }
-    })
+    super('asyncProcessingQueue')
 
     this.libs = libs
 
@@ -56,9 +47,7 @@ class AsyncProcessingQueue {
     this.PROCESS_NAMES = PROCESS_NAMES
     this.PROCESS_STATES = PROCESS_STATES
 
-    this.getAsyncProcessingQueueJobs =
-      this.getAsyncProcessingQueueJobs.bind(this)
-    this.constructProcessKey = this.constructAsyncProcessingKey.bind(this)
+    this.getAsyncProcessingQueueJobs = this.getJobs.bind(this)
   }
 
   async processTask(job, done) {
@@ -271,23 +260,6 @@ class AsyncProcessingQueue {
     response.total = jobs.length
 
     return response
-  }
-
-  async getAsyncProcessingQueueJobs() {
-    const queue = this.queue
-    const [waiting, active, failed] = await Promise.all([
-      queue.getJobs(['waiting']),
-      queue.getJobs(['active']),
-      queue.getJobs(['failed'])
-    ])
-
-    const allTasks = {
-      waiting: this.getTasks(waiting),
-      active: this.getTasks(active),
-      failed: this.getTasks(failed)
-    }
-
-    return allTasks
   }
 
   constructAsyncProcessingKey(uuid) {
