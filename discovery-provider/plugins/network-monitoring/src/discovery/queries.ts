@@ -103,7 +103,10 @@ export const importUsers = async (run_id: number) => {
             run_id,
             primarySpID, 
             secondary1SpID, 
-            secondary2SpID
+            secondary2SpID,
+            primary_clock_value,
+            secondary1_clock_value,
+            secondary2_clock_value
         )
         SELECT 
             user_id, 
@@ -112,7 +115,10 @@ export const importUsers = async (run_id: number) => {
             :run_id,
             primary_id as primarySpID, 
             secondary_ids[1] as secondary1SpID,
-            secondary_ids[2] as secondary2SpID
+            secondary_ids[2] as secondary2SpID,
+            -2,
+            -2,
+            -2
         FROM users
         WHERE is_current = TRUE;
     `, {
