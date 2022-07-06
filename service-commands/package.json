@@ -36,7 +36,7 @@
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-standard": "4.0.1",
     "line-by-line": "0.1.6",
-    "moment": "2.29.1",
+    "moment": "2.29.4",
     "prettier": "2.0.5",
     "prettier-config-standard": "1.0.1",
     "qs": "6.10.1"
