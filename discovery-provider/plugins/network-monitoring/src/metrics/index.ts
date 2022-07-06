@@ -76,6 +76,7 @@ export const generateMetrics = async (run_id: number) => {
         fullySyncedUsersCount: fullySyncedUsersCount,
         partiallySyncedUsersCount: partiallySyncedUserCount,
         unsyncedUsersCount: unsyncedUsersCount,
+        usersWithNullPrimaryClock: usersWithNullPrimaryClock
     })
 
     try {
