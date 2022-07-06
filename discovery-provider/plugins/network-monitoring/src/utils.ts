@@ -196,11 +196,7 @@ export const getEnv = () => {
 
     const pushGatewayUrl = process.env['PUSH_GATEWAY_URL'] || 'http://localhost:9091'
 
-    const slack = {
-        token: process.env['SLACK_TOKEN'] || '',
-        url: process.env['SLACK_URL'] || '',
-        channelId: process.env['SLACK_CHANNEL_ID'] || ''
-    }
+    const slackUrl = process.env['SLACK_URL'] || ''
 
     return { 
         db, 
@@ -209,7 +205,7 @@ export const getEnv = () => {
         signatureSpID, 
         signatureSPDelegatePrivateKey, 
         pushGatewayUrl,
-        slack,
+        slackUrl,
     }
 }
 

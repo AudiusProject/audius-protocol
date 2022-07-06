@@ -93,13 +93,9 @@ export const generateMetrics = async (run_id: number) => {
 
 const publishSlackReport = async (metrics: Object) => {
 
-    const { slack } = getEnv()
+    const { slackUrl } = getEnv()
 
-    if (
-        slack.token === ''
-        || slack.url === ''
-        || slack.channelId === ''
-    ) {
+    if (slackUrl === '') {
         return
     }
 
@@ -108,7 +104,7 @@ const publishSlackReport = async (metrics: Object) => {
 
     try {
         await axios.post(
-            slack.url,
+            slackUrl,
             {
                 text: message,
             }, 
