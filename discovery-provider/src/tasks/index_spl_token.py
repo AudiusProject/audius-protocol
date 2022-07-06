@@ -31,6 +31,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_spl_token_db_key,
     latest_sol_spl_token_program_tx_key,
@@ -420,6 +421,7 @@ index_spl_token_lock = "spl_token_lock"
 
 
 @celery.task(name="index_spl_token", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_spl_token(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

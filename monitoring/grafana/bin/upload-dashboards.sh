@@ -2,6 +2,9 @@
 
 set -e
 
+# only accept the first argument in "manual" mode
+GRAFANA_DASHBOARD_DIR="${1:-grafana/dashboards/}"
+
 : "${BEARER_PATH:=grafana/bearer.env}"
 set -o allexport
 source ${BEARER_PATH}
@@ -14,9 +17,9 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
-: "${GRAFANA_DASHBOARD_DIR:=grafana/dashboards/}"
 
-for json_dashboard in `ls -p ${GRAFANA_DASHBOARD_DIR} | grep -v /`
+json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json')
+for json_dashboard in ${json_dashboards}
 do
     curl \
         -s \
@@ -25,7 +28,7 @@ do
         -X POST \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
-        -d "@${GRAFANA_DASHBOARD_DIR}${json_dashboard}" \
+        -d "@${json_dashboard}" \
         ${BASE_URL}/api/dashboards/import \
     | jq .
     echo "Uploaded: ${json_dashboard}"

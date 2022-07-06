@@ -23,6 +23,7 @@ from src.queries.get_balances import (
 from src.solana.solana_helpers import ASSOCIATED_TOKEN_PROGRAM_ID_PK, SPL_TOKEN_ID_PK
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
 from src.utils.session_manager import SessionManager
 from src.utils.spl_audio import to_wei
@@ -461,6 +462,7 @@ def get_audio_token(solana_client: Client):
 
 
 @celery.task(name="update_user_balances", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_user_balances_task(self):
     """Caches user Audio balances, in wei."""
 

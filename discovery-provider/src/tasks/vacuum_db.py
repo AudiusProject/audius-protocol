@@ -1,11 +1,13 @@
 import logging
 
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
 
 @celery.task(name="vacuum_db", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def vacuum_db(self):
     """Vacuum the db"""
 
