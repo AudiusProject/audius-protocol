@@ -69,6 +69,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
       - [Standard Options](#standard-options)
       - [Thresholds](#thresholds)
     - [Saving Dashboards](#saving-dashboards)
+      - [Saving Screenshots](#saving-screenshots)
       - [Saving Locally Developed Dashboards](#saving-locally-developed-dashboards)
       - [Saving Production Dashboards](#saving-production-dashboards)
         - [Saving Production Dashboards Within `prometheus-grafana-metrics`](#saving-production-dashboards-within-prometheus-grafana-metrics)
@@ -333,6 +334,12 @@ Modifications to production dashboards are internally tracked by Grafana in case
 * Click on `Versions` (from the left-sidebar)
 
 However, we track our dashboards via `git` as well since this allows us seemless local development of the same dashboards.
+
+#### Saving Screenshots
+
+Getting screenshots out of Grafana has [a long history of being tedious](https://github.com/grafana/grafana/issues/12607).
+
+However, we found good success when using the [GoFullPage Chrome extension](https://chrome.google.com/webstore/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl).
 
 #### Saving Locally Developed Dashboards
 
