@@ -26,13 +26,14 @@ module.exports = async function (
   const jobLogger = createChildLogger(parentLogger, { jobName, jobId })
   jobLogger.info(`New job: ${JSON.stringify(job)}`)
 
-  let result
   const jobDurationSecondsHistogram = prometheusRegistry.getMetric(
     prometheusRegistry.metricNames[
       `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
     ]
   )
   const metricEndTimerFn = jobDurationSecondsHistogram.startTimer()
+
+  let result
   try {
     await redis.set(`latestJobStart_${jobName}`, Date.now())
     result = await jobProcessor({ logger: jobLogger, ...jobData })

@@ -16,8 +16,10 @@ const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
 const {
   SYNC_MONITORING_RETRY_DELAY_MS,
-  QUEUE_NAMES
+  QUEUE_NAMES,
+  SYNC_MODES
 } = require('../stateMachineConstants')
+const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 
 const thisContentNodeEndpoint = config.get('creatorNodeEndpoint')
 const secondaryUserSyncDailyFailureCountThreshold = config.get(
@@ -37,8 +39,14 @@ const maxSyncMonitoringDurationInMs = config.get(
  * @param {string} param.syncType the type of sync (manual or recurring)
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  */
-module.exports = async function ({ logger, syncType, syncRequestParameters }) {
+module.exports = async function ({
+  logger,
+  syncType,
+  syncMode,
+  syncRequestParameters
+}) {
   _validateJobData(logger, syncType, syncRequestParameters)
+
   const isValidSyncJobData =
     'baseURL' in syncRequestParameters &&
     'url' in syncRequestParameters &&
@@ -69,7 +77,7 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryEndpoint = syncRequestParameters.baseURL
 
-  const logMsgString = `(${syncType}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
+  const logMsgString = `(${syncType})(${syncMode}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
 
   /**
    * Remove sync from SyncRequestDeDuplicator once it moves to Active status, before processing.
@@ -99,6 +107,16 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
     }
   }
 
+  if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    // TODO asyncretry?
+    const error = await primarySyncFromSecondary(secondaryEndpoint, userWallet)
+
+    // TODO logging
+
+    if (error) {
+    }
+  }
+
   // primaryClockValue is used in additionalSyncIsRequired() call below
   const primaryClockValue = (await _getUserPrimaryClockValues([userWallet]))[
     userWallet
@@ -108,9 +126,13 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
     `------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue}------------------`
   )
 
-  // Issue sync request to secondary
+  // Issue sync request to secondary with forceResync = true
   try {
-    await axios(syncRequestParameters)
+    const syncRequestParametersForceResync = {
+      ...syncRequestParameters,
+      data: { ...syncRequestParameters.data, forceResync: true }
+    }
+    await axios(syncRequestParametersForceResync)
   } catch (e) {
     // Axios request will throw on non-200 response -> swallow error to ensure below logic is executed
     logger.error(`${logMsgString} || Error issuing sync request: ${e.message}`)
@@ -126,6 +148,7 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
       primaryClockValue,
       secondaryEndpoint,
       syncType,
+      syncMode,
       logger
     )
   metricsToRecord.push(
@@ -147,7 +170,8 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
       userWallet,
       secondaryEndpoint,
       primaryEndpoint: thisContentNodeEndpoint,
-      syncType
+      syncType,
+      syncMode: SYNC_MODES.SyncSecondaryFromPrimary
     })
     if (duplicateSyncReq && !_.isEmpty(duplicateSyncReq)) {
       error = {
@@ -235,6 +259,7 @@ const _additionalSyncIsRequired = async (
   primaryClockValue = -1,
   secondaryUrl,
   syncType,
+  syncMode,
   logger
 ) => {
   const logMsgString = `additionalSyncIsRequired() (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
@@ -259,7 +284,9 @@ const _additionalSyncIsRequired = async (
       logger.info(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
       // Record starting and current clock values for secondary to determine future action
-      if (initialSecondaryClock === null) {
+      if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+        initialSecondaryClock = 0
+      } else if (initialSecondaryClock === null) {
         initialSecondaryClock = secondaryClockValue
       }
       finalSecondaryClock = secondaryClockValue

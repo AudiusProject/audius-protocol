@@ -15,6 +15,7 @@ const getNewOrExistingSyncReq = ({
   primaryEndpoint,
   secondaryEndpoint,
   syncType,
+  syncMode,
   immediate = false
 }) => {
   // If duplicate sync already exists, do not add and instead return existing sync job info
@@ -55,6 +56,7 @@ const getNewOrExistingSyncReq = ({
       : JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST
   const jobData = {
     syncType,
+    syncMode,
     syncRequestParameters
   }
   const syncReqToEnqueue = {

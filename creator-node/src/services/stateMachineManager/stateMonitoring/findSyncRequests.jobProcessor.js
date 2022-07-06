@@ -224,32 +224,29 @@ const _findSyncsForUser = async (
       continue
     }
 
-    if (syncMode === SYNC_MODES.SyncSecondaryFromPrimary) {
-      try {
-        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-          userWallet: wallet,
-          primaryEndpoint: thisContentNodeEndpoint,
-          secondaryEndpoint: secondary,
-          syncType: SyncType.Recurring
-        })
+    try {
+      const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+        userWallet: wallet,
+        primaryEndpoint: thisContentNodeEndpoint,
+        secondaryEndpoint: secondary,
+        syncType: SyncType.Recurring,
+        syncMode
+      })
 
-        if (!_.isEmpty(syncReqToEnqueue)) {
-          syncReqsToEnqueue.push(syncReqToEnqueue)
-        } else if (!_.isEmpty(duplicateSyncReq)) {
-          duplicateSyncReqs.push(duplicateSyncReq)
-        }
-      } catch (e) {
-        errors.push(
-          `Error getting new or existing sync request for user ${wallet} and secondary ${secondary} - ${e.message}`
-        )
-        continue
+      if (!_.isEmpty(syncReqToEnqueue)) {
+        syncReqsToEnqueue.push(syncReqToEnqueue)
+      } else if (!_.isEmpty(duplicateSyncReq)) {
+        duplicateSyncReqs.push(duplicateSyncReq)
       }
-    } else if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      /**
-       * TODO - currently just logs as placeholder
-       * 1. Primary will sync all content from secondary
-       * 2. Primary will force secondary to wipe its local state and resync all content
-       */
+    } catch (e) {
+      errors.push(
+        `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`
+      )
+      continue
+    }
+
+    // TODOSID
+    if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
       logger.info(
         `[findSyncRequests][_findSyncsForUser][MergePrimaryAndSecondary = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
       )

@@ -66,7 +66,6 @@ class ServiceRegistry {
    * Configure all services
    */
   async initServices() {
-    // init libs
     this.libs = await this._initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
@@ -81,6 +80,10 @@ class ServiceRegistry {
     this.sessionExpirationQueue.start()
 
     this.servicesInitialized = true
+  }
+
+  async initLibs() {
+    this.libs = this.libs || (await this._initAudiusLibs())
   }
 
   /**

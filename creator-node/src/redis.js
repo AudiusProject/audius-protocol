@@ -33,6 +33,10 @@ function getNodeSyncRedisKey(wallet) {
   return `NODESYNC.${wallet}`
 }
 
+function getRedisKeyForWallet(wallet) {
+  return `WALLET.${wallet}`
+}
+
 /**
  * Deletes keys of a pattern: https://stackoverflow.com/a/36006360
  * @param {Object} param
@@ -66,3 +70,4 @@ module.exports = redisClient
 module.exports.lock = RedisLock
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey
 module.exports.deleteKeyPatternInRedis = deleteKeyPatternInRedis
+module.exports.getRedisKeyForWallet = getRedisKeyForWallet

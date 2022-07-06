@@ -50,7 +50,7 @@ run_unit_tests () {
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha --require ts-node/register test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
+  ./node_modules/mocha/bin/mocha --require ts-node/register test/issueSyncRequest.jobProcessor.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
 ARG1=${@:$OPTIND:1}
@@ -124,7 +124,7 @@ export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 
 # tests
-run_unit_tests
+# run_unit_tests
 run_integration_tests
 
 rm -r $storagePath
