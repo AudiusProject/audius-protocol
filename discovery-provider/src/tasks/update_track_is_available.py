@@ -7,6 +7,7 @@ from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import PrometheusMetric
 from src.utils.redis_constants import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
@@ -228,7 +229,15 @@ def update_track_is_available(self) -> None:
 
     have_lock = update_lock.acquire(blocking=False)
     if have_lock:
+        metric = PrometheusMetric(
+            "update_track_is_available_duration_seconds",
+            "Runtimes for src.task.update_track_is_available:celery.task()",
+            ("task_name", "success"),
+        )
         try:
+            # TODO: we can deprecate this manual redis timestamp tracker once we confirm
+            # that prometheus works in tracking duration. Needs to be removed from
+            # the health check too
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
@@ -238,12 +247,20 @@ def update_track_is_available(self) -> None:
                 fetch_unavailable_track_ids_in_network(session, redis)
 
             update_tracks_is_available_status(db, redis)
+
+            metric.save_time(
+                {"task_name": "update_track_is_available", "success": "true"}
+            )
         except Exception as e:
+            metric.save_time(
+                {"task_name": "update_track_is_available", "success": "false"}
+            )
             logger.error(
                 "update_track_is_available.py | Fatal error in main loop", exc_info=True
             )
             raise e
         finally:
+            # TODO: see comment above about deprecation
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),

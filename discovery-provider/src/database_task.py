@@ -8,6 +8,7 @@ class DatabaseTask(Task):
     def __init__(
         self,
         db=None,
+        db_read_replica=None,
         web3=None,
         abi_values=None,
         eth_abi_values=None,
@@ -20,6 +21,7 @@ class DatabaseTask(Task):
         anchor_program_indexer=None,
     ):
         self._db = db
+        self._db_read_replica = db_read_replica
         self._web3_provider = web3
         self._abi_values = abi_values
         self._eth_abi_values = eth_abi_values
@@ -46,6 +48,10 @@ class DatabaseTask(Task):
     @property
     def db(self) -> SessionManager:
         return self._db
+
+    @property
+    def db_read_replica(self) -> SessionManager:
+        return self._db_read_replica
 
     @property
     def shared_config(self):

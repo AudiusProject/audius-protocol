@@ -469,7 +469,7 @@ export const getUserAccount = (wallet: string) => {
 }
 
 /**
- * @deprecated Migrate to using getTop
+ * @deprecated Migrate to using getTopFullPlaylists
  */
 export const getTopPlaylists = (
   type: 'playlist' | 'album',
@@ -489,7 +489,7 @@ export const getTopPlaylists = (
   }
 }
 
-export type GetTrendingPlaylistsParams = {
+export type GetTopFullPlaylistsParams = {
   type: 'playlist' | 'album'
   limit?: number
   mood?: string
@@ -497,13 +497,13 @@ export type GetTrendingPlaylistsParams = {
   withUsers?: boolean
 }
 
-export const getTrendingPlaylists = ({
+export const getTopFullPlaylists = ({
   type,
   limit,
   mood,
   filter,
   withUsers = false
-}: GetTrendingPlaylistsParams) => {
+}: GetTopFullPlaylistsParams) => {
   return {
     endpoint: `/v1/full/playlists/top`,
     queryParams: {

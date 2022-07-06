@@ -81,9 +81,10 @@ const MetricLabels = Object.freeze({
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
       'no_sync_sp_id_mismatch', // Sync not found because the secondary's spID mismatched what the chain reported
       'no_sync_success_rate_too_low', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
-      'no_sync_secondary_clock_gte_primary', // Sync not found because the secondary's clock value was greater than or equal to the primary's clock value
+      'no_sync_secondary_data_matches_primary', // Sync not found because the secondary's clock value and filesHash match primary's
       'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
-      'new_sync_request_enqueued', // Sync was found because all other conditions were met and primary clock value was greater than secondary
+      'new_sync_request_enqueued_primary_to_secondary', // Sync was found from primary->secondary because all other conditions were met and primary clock value was greater than secondary
+      'new_sync_request_enqueued_secondary_to_primary', // Sync was found from secondary->primary because all other conditions were met and primary clock value was greater than secondary
       'sync_request_already_enqueued', // Sync was found but a duplicate request has already been enqueued so no need to enqueue another
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]

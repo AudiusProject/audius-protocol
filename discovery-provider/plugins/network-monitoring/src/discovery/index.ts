@@ -2,6 +2,7 @@
 import { indexingDiscoveryDurationGauge } from "../prometheus"
 import {
     createNewRun,
+    deleteOldRunData,
     importCids,
     importContentNodes,
     importUsers
@@ -16,6 +17,9 @@ export const indexDiscovery = async (): Promise<number> => {
 
     // Create new run in table `network_monitoring_index_blocks`
     const run_id = await createNewRun()
+
+    // Delete old runs
+    await deleteOldRunData(run_id)
 
     // Pull Content Nodes list into table `network_monitoring_content_nodes`
     await importContentNodes(run_id)

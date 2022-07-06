@@ -49,6 +49,31 @@ export const createNewRun = async (): Promise<number> => {
     return run_id
 }
 
+// Delete old runs so the postgres DB doesn't hog disk space
+export const deleteOldRunData = async (run_id: number): Promise<void> => {
+    console.log(`[${run_id}] deleting old run data`)
+
+    // Number of runs to keep in the DB
+    const latestRunsToKeep = 3
+    const toDelete = run_id - latestRunsToKeep
+
+    if (toDelete <= 0) {
+        console.log("\t-> nothing to delete")
+        return
+    }
+
+    // Delete old runs
+    console.log("\t-> network_monitoring_index_blocks + cascading")
+    await sequelizeConn.query(`
+        DELETE FROM network_monitoring_index_blocks
+        WHERE run_id < :toDelete;
+    `, {
+        type: QueryTypes.DELETE,
+        replacements: { toDelete }
+    })
+
+}
+
 export const importContentNodes = async (run_id: number) => {
     console.log(`[${run_id}] importing content nodes`)
 

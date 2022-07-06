@@ -287,13 +287,17 @@ export const getUserCounts = async (run_id: number, spid: number): Promise<[numb
     })
 
     const userCounts = (userCountsResp as {
-        spid: number,
-        primary_count: number,
-        secondary1_count: number,
-        secondary2_count: number,
-    }[])[0] || { primary_count: 0, secondary1_count: 0, secondary2_count: 0 }
+        spid: string,
+        primary_count: string,
+        secondary1_count: string,
+        secondary2_count: string,
+    }[])[0] || { primary_count: '0', secondary1_count: '0', secondary2_count: '0' }
 
-    return [userCounts.primary_count, userCounts.secondary1_count, userCounts.secondary2_count]
+    return [
+        parseInt(userCounts.primary_count), 
+        parseInt(userCounts.secondary1_count), 
+        parseInt(userCounts.secondary2_count),
+    ]
 }
 
 // Fetch a batch of users with a specific content node as their primary from the table `network_monitoring_users`
@@ -308,6 +312,7 @@ export const getPrimaryWalletBatch = async (
         FROM network_monitoring_users
         WHERE run_id = :run_id
         AND primaryspid = :spid
+        ORDER BY user_id 
         OFFSET :offset
         LIMIT :limit;
     `, {
@@ -332,6 +337,7 @@ export const getSecondary1WalletBatch = async (
     FROM network_monitoring_users
     WHERE run_id = :run_id
     AND secondary1spid = :spid
+    ORDER BY user_id 
     OFFSET :offset
     LIMIT :limit;
     `, {
@@ -356,6 +362,7 @@ export const getSecondary2WalletBatch = async (
     FROM network_monitoring_users
     WHERE run_id = :run_id
     AND secondary2spid = :spid
+    ORDER BY user_id 
     OFFSET :offset
     LIMIT :limit;
     `, {
