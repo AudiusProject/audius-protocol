@@ -23,6 +23,7 @@ def audius_data_state_update(
     ipfs_metadata,  # prefix unused args with underscore to prevent pylint
     _blacklisted_cids,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
+    logger.info("asdf audius_data_state_update")
     num_total_changes = 0
 
     changed_entity_ids: Dict[str, Set[(int)]] = {}
@@ -100,6 +101,9 @@ def audius_data_state_update(
                         playlist_events_lookup[playlist_id]["events"].append(event_type)
                         playlist_ids.add(playlist_id)
                         processed_entries += 1
+                elif entity_type == "Playlist" and action == "Delete":
+                    logger.info("asdf got deletePlaylist tx")
+
             num_total_changes += processed_entries
 
     # Update changed entity dictionary

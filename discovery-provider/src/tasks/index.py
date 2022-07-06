@@ -503,6 +503,7 @@ def process_state_changes(
     tx_type_to_grouped_lists_map,
     block,
 ):
+    logger.info("asdf process_state_changes")
     block_number, block_hash, block_timestamp = itemgetter(
         "number", "hash", "timestamp"
     )(block)
