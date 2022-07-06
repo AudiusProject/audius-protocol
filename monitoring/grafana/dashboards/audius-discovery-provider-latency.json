@@ -725,7 +725,8 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
           },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
           "description": "",
@@ -748,7 +749,8 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
           },
           "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
