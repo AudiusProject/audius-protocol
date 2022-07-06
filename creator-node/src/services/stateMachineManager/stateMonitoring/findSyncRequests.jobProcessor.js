@@ -111,9 +111,6 @@ module.exports = function ({
       secondaryToResultCountMap
     )) {
       for (const [labelValue, metricValue] of Object.entries(resultCountMap)) {
-        logger.info(
-          `Incrementing gauge for metric ${MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE} from primary=${primary} to secondary=${secondary} with result=${labelValue}`
-        )
         metricsToRecord.push(
           makeGaugeIncToRecord(
             MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
@@ -121,6 +118,13 @@ module.exports = function ({
             { result: labelValue }
           )
         )
+
+        // Log so we can find the primary+secondary for each result, but don't spam logs with the default result
+        if (labelValue !== 'not_checked') {
+          logger.info(
+            `Incrementing gauge for metric ${MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE} from primary=${primary} to secondary=${secondary} with result=${labelValue}`
+          )
+        }
       }
     }
   }
