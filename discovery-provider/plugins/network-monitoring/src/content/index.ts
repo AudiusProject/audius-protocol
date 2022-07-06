@@ -14,7 +14,6 @@ import {
     saveSecondary2UserResults,
 } from "./queries"
 import {
-    // asyncSleep,
     getEnv,
     generateSPSignatureParams,
     makeRequest,
@@ -93,7 +92,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
 
     const { deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey } = getEnv()
 
-    const [ primaryCount, secondary1Count, secondary2Count ] = await getUserCounts(run_id, spid)
+    const [primaryCount, secondary1Count, secondary2Count] = await getUserCounts(run_id, spid)
 
     let missedUsers = 0
 
@@ -128,17 +127,18 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     )
                     console.log(`[getBatch:${offset}:${batchSize}:${count}]`)
 
-                    if (walletBatch.length === 0) { return }
+                    if (walletBatch.length === 0) { continue }
 
                     // Fetch the clock values for all the users in the batch from 
                     // the content nodes in their replica set
-                    const results = await getUserClockValues(
+                    const { canceledUsers, results } = await getUserClockValues(
                         endpoint,
                         walletBatch,
                         deregisteredCN,
                         signatureSpID,
                         signatureSPDelegatePrivateKey,
                     )
+                    missedUsers += canceledUsers
 
                     console.log(`[getUserClockValues ${run_id}:${spid}:${offset}] `)
 
@@ -158,6 +158,7 @@ const checkUsers = async (run_id: number, spid: number, endpoint: string) => {
                     }
                 } catch (e) {
                     console.log(`[checkUsers:${spid}] error - ${(e as Error).message}`)
+                    missedUsers += batchSize
                 }
             }
         })
@@ -300,7 +301,13 @@ const getUserClockValues = async (
     deregisteredCN: string[],
     signatureSpID: number | undefined,
     signatureSPDelegatePrivateKey: string | undefined,
-): Promise<{ walletPublicKey: string, clock: number }[]> => {
+): Promise<{
+    canceledUsers: number, 
+    results: {
+        walletPublicKey: string,
+        clock: number
+    }[],
+}> => {
 
     try {
         const axiosReqObj = {
@@ -326,25 +333,31 @@ const getUserClockValues = async (
         if (batchClockStatusResp.canceled) {
             console.log(`[getUsersClockValues canceled] - ${endpoint}`)
             // Return map of wallets to -1 clock (default value)
-            return walletPublicKeys.map(walletPublicKey => ({
-                walletPublicKey,
-                clock: -1
-            }))
+            return {
+                canceledUsers: walletPublicKeys.length,
+                results: walletPublicKeys.map(walletPublicKey => ({
+                    walletPublicKey,
+                    clock: -1
+                }))
+            }
         }
 
         const batchClockStatus = batchClockStatusResp.response!.data.data.users
         const batchClockStatusAttemptCount = batchClockStatusResp.attemptCount
 
         console.log(`[getUserClockValues Complete] ${endpoint} - reqAttemptCount ${batchClockStatusAttemptCount}`)
-        return batchClockStatus
+        return { canceledUsers: 0, results: batchClockStatus }
 
     } catch (e) {
         console.log(`[getUserClockValues Error] - ${endpoint} - ${(e as Error).message}`)
 
         // Return map of wallets to -1 clock (default value)
-        return walletPublicKeys.map(walletPublicKey => ({
-            walletPublicKey,
-            clock: -1
-        }))
+        return {
+            canceledUsers: walletPublicKeys.length,
+            results: walletPublicKeys.map(walletPublicKey => ({
+                walletPublicKey,
+                clock: -1
+            })),
+        }
     }
 }
