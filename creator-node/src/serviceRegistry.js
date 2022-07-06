@@ -8,7 +8,11 @@ const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
-const { logger, getStartTime, logInfoWithDuration } = require('./logging')
+const {
+  logger: genericLogger,
+  getStartTime,
+  logInfoWithDuration
+} = require('./logging')
 const utils = require('./utils')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -53,23 +57,29 @@ class ServiceRegistry {
     this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
 
-    // Flags that indicate whether specific services have been initialized
+    // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
     this.asynchronousServicesInitialized = false
     this.servicesThatRequireServerInitialized = false
   }
 
   /**
-   * Configure services that do not require the server and will not be initialized asynchronously
+   * Configure services that do not require the server and will be initialized synchronously
    */
   async initServices() {
-    // init libs
+    const start = getStartTime()
+
     this.libs = await this._initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
 
     this.synchronousServicesInitialized = true
+
+    logInfoWithDuration(
+      { logger: genericLogger, startTime: start },
+      'ServiceRegistry || Initialized synchronous services'
+    )
   }
 
   /**
@@ -99,7 +109,7 @@ class ServiceRegistry {
     this.asynchronousServicesInitialized = true
 
     logInfoWithDuration(
-      { logger, startTime: start },
+      { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized asynchronous services'
     )
   }
@@ -305,24 +315,16 @@ class ServiceRegistry {
       )
     } catch (e) {
       this.logError(
-        `Failed to initialize bull monitoring UI: ${e.message || e}`
+        `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
       )
     }
 
     this.servicesThatRequireServerInitialized = true
 
     logInfoWithDuration(
-      { logger, startTime: start },
+      { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized services that require server'
     )
-  }
-
-  logInfo(msg) {
-    logger.info(`ServiceRegistry || ${msg}`)
-  }
-
-  logError(msg) {
-    logger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 
   /**
@@ -519,11 +521,19 @@ class ServiceRegistry {
       isServer: true,
       preferHigherPatchForPrimary: true,
       preferHigherPatchForSecondaries: true,
-      logger
+      logger: genericLogger
     })
 
     await audiusLibs.init()
     return audiusLibs
+  }
+
+  logInfo(msg) {
+    genericLogger.info(`ServiceRegistry || ${msg}`)
+  }
+
+  logError(msg) {
+    genericLogger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 }
 
