@@ -46,6 +46,8 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
     - [Adding New Panels](#adding-new-panels)
       - [Common Patterns for Gauges](#common-patterns-for-gauges)
       - [Common Patterns for Histograms](#common-patterns-for-histograms)
+        - [Latency from Histograms](#latency-from-histograms)
+        - [Quantiles from Histograms](#quantiles-from-histograms)
     - [Configuring Panels](#configuring-panels)
       - [Query -> Code](#query-code)
         - [Metric Browser](#metric-browser)
@@ -169,6 +171,8 @@ Notice how we restrict the `environment` and `host` labels associated with the m
 
 #### Common Patterns for Histograms
 
+##### Latency from Histograms
+
 A common pattern for histograms is to display the average latency of a recorded metric like the example below:
 
 > `max by (route) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~"$env", host=~"$host"}[5m]) / rate(audius_dn_flask_route_latency_seconds_count{environment=~"$env", host=~"$host"}[5m]))`
@@ -178,6 +182,10 @@ The bulk of the query comes from official docs on [calculating averages from his
 The remaining part of the query, `max by (route) (...)`, uses an [Aggregation Operator](https://prometheus.io/docs/prometheus/latest/querying/operators/#aggregation-operators) which will return the `max` value of the metric after consolidating on the `route` label.
 
 In this specific query, `max by (route)` will display the longest latency across a single `$host`, or all `$host` values if the Dashboard Variable is set to `All`. We use `max` here since it's more important to know that a `route` is being non-performant, regardless of `$host`, since it may be indicative of early warning stress/latency that may soon be appearing on all hosts.
+
+##### Quantiles from Histograms
+
+Additionally, histogram metrics keep track of metric values within different statistical buckets. In order to [expose quantile information](https://prometheus.io/docs/practices/histograms/#quantiles), combine histogram `_bucket` metrics with `histogram_quantile()`.
 
 ### Configuring Panels
 
