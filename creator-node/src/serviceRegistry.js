@@ -47,11 +47,11 @@ class ServiceRegistry {
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchornously. Currently handles track upload and track hand off
-    this.stateMonitoringQueue = null // ask theo
-    this.stateReconciliationQueue = null // ask theo
-    this.stateMachineQueue = null // ask theo
-    this.manualSyncQueue = null // Handles manual syncs, e.g. on track upload, image upload, etc. triggers a sync to the users' replica sets
-    this.recurringSyncQueue = null // Handles syncs that occur on a cadence, e.g. every hour attempts to sync user data
+    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
+    this.recurringSyncQueue = null // Handles syncs that occur on a cadence, e.g. every hour
+    this.stateMonitoringQueue = null // // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
+    this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
 
     // Flags that indicate whether specific services have been initialized
     this.synchronousServicesInitialized = false
