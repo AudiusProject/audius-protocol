@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def save_duration_metric(metric_group):
+    # a decorator that takes the `metric_group` parameter to create:
+    # * a histogram for detecting duration and latency from a decorated function
+    # * a gauge for reporting the last task's duration (in seconds)
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -19,12 +23,14 @@ def save_duration_metric(metric_group):
             )
             gauge_metric = PrometheusMetric(
                 f"{metric_group}_last_duration_seconds",
-                f"How long a {metric_group} has been running",
+                f"How long the last {metric_group} ran",
                 ("func_name", "success"),
                 metric_type=PrometheusType.GAUGE,
             )
             try:
+                # safely return this result under all circumstances
                 result = func(*args, **kwargs)
+
                 try:
                     histogram_metric.save_time(
                         {"func_name": func.__name__, "success": True}
@@ -35,7 +41,10 @@ def save_duration_metric(metric_group):
                 except Exception as e:
                     logger.exception("Failed to save successful metrics", e)
                 finally:
+
+                    # safely return the result out of the decorator
                     return result
+
             except Exception as e:
                 try:
                     histogram_metric.save_time(
@@ -47,6 +56,8 @@ def save_duration_metric(metric_group):
                 except Exception as inner_e:
                     logger.exception("Failed to save unsuccessful metrics", inner_e)
                 finally:
+
+                    # safely raise the exception out of the decorator
                     raise e
 
         return wrapper
