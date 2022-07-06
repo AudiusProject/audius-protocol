@@ -95,6 +95,7 @@ export const importContentNodes = async (run_id: number) => {
 export const importUsers = async (run_id: number) => {
     console.log(`[${run_id}] importing users`)
 
+    // NOTE: Clock values of `-2` means the value hasn't been fetched by content node yet
     await sequelizeConn.query(`
         INSERT INTO network_monitoring_users (
             user_id, 
