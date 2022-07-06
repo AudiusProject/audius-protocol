@@ -191,7 +191,31 @@
           "x": 12,
           "y": 1
         },
-        "id": 25,
+        "id": 27,
+        "libraryPanel": {
+          "description": "",
+          "meta": {
+            "connectedDashboards": 2,
+            "created": "2022-07-06T21:10:51Z",
+            "createdBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            },
+            "folderName": "General",
+            "folderUid": "",
+            "updated": "2022-07-06T21:15:24Z",
+            "updatedBy": {
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
+            }
+          },
+          "name": "Celery Tasks (Last Successful Duration)",
+          "type": "bargauge",
+          "uid": "3en9tpenk",
+          "version": 4
+        },
         "options": {
           "displayMode": "gradient",
           "minVizHeight": 10,
@@ -214,14 +238,14 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}",
             "instant": false,
             "legendFormat": "{{func_name}}",
             "range": true,
             "refId": "A"
           }
         ],
-        "title": "Celery Tasks (Last Duration)",
+        "title": "Celery Tasks (Last Successful Duration)",
         "type": "bargauge"
       },
       {
