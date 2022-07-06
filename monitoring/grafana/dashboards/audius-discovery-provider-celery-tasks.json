@@ -135,7 +135,7 @@
             },
             "editorMode": "code",
             "exemplar": false,
-            "expr": "audius_dn_active_celery_task_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+            "expr": "audius_dn_celery_task_active_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
             "instant": false,
             "legendFormat": "{{task_name}}",
             "range": true,
