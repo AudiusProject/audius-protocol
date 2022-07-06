@@ -4,7 +4,13 @@ const _ = require('lodash')
 const config = require('../../../config')
 const models = require('../../../models')
 const Utils = require('../../../utils')
-const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
+const {
+  MetricNames
+} = require('../../prometheusMonitoring/prometheus.constants')
+const {
+  retrieveClockValueForUserFromReplica,
+  makeHistogramToRecord
+} = require('../stateMachineUtils')
 const { getNewOrExistingSyncReq } = require('./stateReconciliationUtils')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const SecondarySyncHealthTracker = require('./SecondarySyncHealthTracker')
@@ -110,13 +116,27 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
     logger.error(`${logMsgString} || Error issuing sync request: ${e.message}`)
   }
 
+  const metricsToRecord = []
+
   // Wait until has sync has completed (within time threshold)
-  const additionalSyncIsRequired = await _additionalSyncIsRequired(
-    userWallet,
-    primaryClockValue,
-    secondaryEndpoint,
-    syncType,
-    logger
+  const startWaitingForCompletion = Date.now()
+  const { additionalSyncIsRequired, reasonForAdditionalSync } =
+    await _additionalSyncIsRequired(
+      userWallet,
+      primaryClockValue,
+      secondaryEndpoint,
+      syncType,
+      logger
+    )
+  metricsToRecord.push(
+    makeHistogramToRecord(
+      MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
+      (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
+      {
+        syncType: _.snakeCase(syncType),
+        reason_for_additional_sync: reasonForAdditionalSync
+      }
+    )
   )
 
   // Re-enqueue sync if required
@@ -149,7 +169,8 @@ module.exports = async function ({ logger, syncType, syncRequestParameters }) {
       ? {}
       : {
           [QUEUE_NAMES.STATE_RECONCILIATION]: [additionalSyncReq]
-        }
+        },
+    metricsToRecord
   }
 }
 
@@ -206,7 +227,7 @@ const _getUserPrimaryClockValues = async (wallets) => {
 
 /**
  * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
- * Return boolean indicating if an additional sync is required
+ * Return boolean indicating if an additional sync is required and reason why (or 'none' if no additional sync is required)
  * Record SyncRequest outcomes to SecondarySyncHealthTracker
  */
 const _additionalSyncIsRequired = async (
@@ -267,6 +288,7 @@ const _additionalSyncIsRequired = async (
    * Also check whether additional sync is required
    */
   let additionalSyncIsRequired
+  let reasonForAdditionalSync = 'none'
   if (secondaryCaughtUpToPrimary) {
     await SecondarySyncHealthTracker.recordSuccess(
       secondaryUrl,
@@ -285,6 +307,7 @@ const _additionalSyncIsRequired = async (
       syncType
     )
     additionalSyncIsRequired = true
+    reasonForAdditionalSync = 'secondary_progressed_too_slow'
     logger.info(
       `${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`
     )
@@ -297,10 +320,11 @@ const _additionalSyncIsRequired = async (
       syncType
     )
     additionalSyncIsRequired = true
+    reasonForAdditionalSync = 'secondary_failed_to_progress'
     logger.error(
       `${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`
     )
   }
 
-  return additionalSyncIsRequired
+  return { additionalSyncIsRequired, reasonForAdditionalSync }
 }

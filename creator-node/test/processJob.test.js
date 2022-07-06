@@ -29,6 +29,9 @@ describe('test processJob() util function', function () {
       {
         '../../logging': {
           createChildLogger
+        },
+        '../../redis': {
+          set: sandbox.stub()
         }
       }
     )
@@ -39,10 +42,18 @@ describe('test processJob() util function', function () {
     const errorMsg = 'test error message'
     const jobProcessor = sandbox.stub().rejects(new Error(errorMsg))
     const parentLogger = {}
+    const startTimerStub = sandbox.stub().returns(() => {})
+    const getMetricStub = sandbox.stub().returns({
+      startTimer: startTimerStub
+    })
+    const prometheusRegistry = {
+      getMetric: getMetricStub,
+      metricNames: {}
+    }
 
     // Verify that errors are caught and logged when processing job
     return expect(
-      processJob(jobName, job, jobProcessor, parentLogger)
+      processJob(jobName, job, jobProcessor, parentLogger, prometheusRegistry)
     ).to.eventually.be.fulfilled.and.deep.equal({
       error: errorMsg
     })

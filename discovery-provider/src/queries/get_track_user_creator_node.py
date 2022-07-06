@@ -1,7 +1,8 @@
 import logging  # pylint: disable=C0302
 
 from sqlalchemy import and_
-from src.models import Track, User
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)

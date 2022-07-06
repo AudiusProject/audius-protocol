@@ -2,7 +2,7 @@ import logging  # pylint: disable=C0302
 from datetime import datetime
 
 from dateutil import parser
-from src.models import Playlist
+from src.models.playlists.playlist import Playlist
 from src.utils import helpers, redis_connection
 from src.utils.redis_cache import (
     get_all_json_cached_key,

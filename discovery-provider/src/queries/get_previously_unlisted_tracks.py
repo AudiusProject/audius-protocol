@@ -1,5 +1,5 @@
 from src import exceptions
-from src.models import Track
+from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
 
 

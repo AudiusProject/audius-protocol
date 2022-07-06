@@ -6,7 +6,9 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
-from src.models import Follow, Playlist, Repost, RepostType
+from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost, RepostType
 from src.tasks.index_related_artists import queue_related_artist_calculation
 from src.utils.indexing_errors import IndexingError
 

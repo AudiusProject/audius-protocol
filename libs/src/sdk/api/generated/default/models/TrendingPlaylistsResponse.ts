@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Playlist,
     PlaylistFromJSON,
@@ -33,32 +32,5 @@ export interface TrendingPlaylistsResponse {
      * @memberof TrendingPlaylistsResponse
      */
     data?: Array<Playlist>;
-}
-
-export function TrendingPlaylistsResponseFromJSON(json: any): TrendingPlaylistsResponse {
-    return TrendingPlaylistsResponseFromJSONTyped(json, false);
-}
-
-export function TrendingPlaylistsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrendingPlaylistsResponse {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(PlaylistFromJSON)),
-    };
-}
-
-export function TrendingPlaylistsResponseToJSON(value?: TrendingPlaylistsResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(PlaylistToJSON)),
-    };
 }
 

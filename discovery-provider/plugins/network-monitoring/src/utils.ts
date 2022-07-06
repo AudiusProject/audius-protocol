@@ -6,7 +6,6 @@ const dotenv = require('dotenv')
 
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
-import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 import retry from 'async-retry';
@@ -20,48 +19,6 @@ axios.defaults.httpAgent = new http.Agent({ timeout: 60000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized: false })
 
 let envInitialized = false
-
-
-export const getExternalRequestParams = (): {
-    deregisteredCN: string[],
-    signatureSpID?: number,
-    signatureSPDelegatePrivateKey?: string
-} => {
-    const devModeEnv: string = process.env['DEV_MODE'] || 'false'
-    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
-    const secretsFile: string = process.env['SECRETS_FILE'] || ''
-
-    // console.log(`devModeEnv: ${devModeEnv} \n deregisteredContentNodesEnv: ${deregisteredContentNodesEnv} \n secretsFile: ${secretsFile}`)
-
-    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
-    const devMode: boolean = devModeEnv in ['TRUE', 'True', 'true', '1', 't', 'T']
-
-    // Ensure global `signatureSpID` and `signatureSPDelegatePrivateKey` fields are set, if not in DEV_MODE
-    if (devMode) {
-        return {
-            deregisteredCN,
-        }
-    }
-
-
-    if (!fs.existsSync(secretsFile)) {
-        throw new Error('Missing required secrets file')
-    }
-    const secrets = JSON.parse(fs.readFileSync(secretsFile).toString())
-
-    const signatureSpID: number = secrets.signatureSpID
-    const signatureSPDelegatePrivateKey: string = secrets.signatureSPDelegatePrivateKey
-
-    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
-        throw new Error('Missing required signature configs')
-    }
-
-    return {
-        deregisteredCN,
-        signatureSpID,
-        signatureSPDelegatePrivateKey,
-    }
-}
 
 export const makeRequest = async (
     request: {
@@ -183,26 +140,13 @@ export const sortObj = (obj: Record<any, any>) => {
     }, {});
 }
 
-export const retryAsyncFunctionOrError = async <T>(maxTries: number, func: () => T): Promise<T> => {
-    for (let i = 0; i < maxTries; i++) {
-        try {
-            const returnValue = await func()
-            return returnValue
-        } catch (e) {
-            console.log(`[retryAsyncFunctionOrError:${func.toString()}] the function failed (${(e as Error).message}), lets try again`)
-            continue
-        }
-    }
-
-    throw new Error(`[${func}] it didnt work :(`)
-}
-
 export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
 export const getEnv = () => {
 
+    // Initialize ENV if not already initialized
     if (!envInitialized) {
         const nodeEnv = process.env['NODE_ENV']
 
@@ -222,6 +166,16 @@ export const getEnv = () => {
     }
 
 
+    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
+    const signatureSpID = parseInt(process.env['SIGNATURE_SPID'] || '0')
+    const signatureSPDelegatePrivateKey = process.env['SIGNATURE_SP_DELEGATE_PRIV_KEY'] || ''
+
+    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
+
+    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
+        throw new Error('Missing required signature configs')
+    }
+
     const db = {
         name: process.env['DB_NAME'] || '',
         host: process.env['DB_HOST'] || '',
@@ -239,5 +193,19 @@ export const getEnv = () => {
         password: process.env['FDB_PASSWORD'] || '',
     }
 
-    return { db, fdb }
+
+    const pushGatewayUrl = process.env['PUSH_GATEWAY_URL'] || 'http://localhost:9091'
+
+    const slackUrl = process.env['SLACK_URL'] || ''
+
+    return { 
+        db, 
+        fdb, 
+        deregisteredCN, 
+        signatureSpID, 
+        signatureSPDelegatePrivateKey, 
+        pushGatewayUrl,
+        slackUrl,
+    }
 }
+

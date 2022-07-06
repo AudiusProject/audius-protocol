@@ -41,7 +41,7 @@ export type TrackDoc = TrackRow & {
   saved_by: number[]
   routes: string[]
   permalink: string
-  tags: string // comma separated
+  tag_list: string[]
   repost_count: number
   favorite_count: number
   play_count: any // todo: is it a string or number?  pg returns string

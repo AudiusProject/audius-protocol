@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 from redis import Redis
-from src.models import SPLTokenTransaction
+from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.queries.get_sol_user_bank import SolTxHealthInfo
 from src.tasks.index_spl_token import cache_latest_spl_audio_db_tx
 from src.utils import helpers

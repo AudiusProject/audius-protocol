@@ -2,7 +2,7 @@
 
 set -e
 
-BEARER_PATH=grafana/bearer.env
+: "${BEARER_PATH:=grafana/bearer.env}"
 touch ${BEARER_PATH}
 set -o allexport
 source ${BEARER_PATH}

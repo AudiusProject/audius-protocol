@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from src.models.models import User
+from src.models.users.user import User
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

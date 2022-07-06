@@ -20,6 +20,7 @@ const { expect } = chai
 
 describe('test updateReplicaSet job processor', function () {
   let server, sandbox, originalContentNodeEndpoint, logger
+
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
     await appInfo.app.get('redisClient').flushdb()
@@ -130,11 +131,11 @@ describe('test updateReplicaSet job processor', function () {
     // Mark secondary1 as unhealthy and fourthHealthyNode as not having any user state
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
     const unhealthyReplicas = [secondary1]
-    const replicaSetNodesToUserClockStatusesMap = {
-      [primary]: 1,
-      [secondary1]: 1,
-      [secondary2]: 1,
-      [fourthHealthyNode]: -1
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 }
     }
 
     const updateReplicaSetJobProcessor = getJobProcessorStub({
@@ -153,7 +154,7 @@ describe('test updateReplicaSet job processor', function () {
         secondary1,
         secondary2,
         unhealthyReplicas,
-        replicaSetNodesToUserClockStatusesMap,
+        replicaToUserInfoMap,
         enabledReconfigModes: [RECONFIG_MODES.ONE_SECONDARY.key]
       })
     ).to.eventually.be.fulfilled.and.deep.equal({
@@ -202,11 +203,11 @@ describe('test updateReplicaSet job processor', function () {
     // Mark secondary1 as unhealthy and fourthHealthyNode as not having any user state
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
     const unhealthyReplicas = [secondary1]
-    const replicaSetNodesToUserClockStatusesMap = {
-      [primary]: 1,
-      [secondary1]: 1,
-      [secondary2]: 1,
-      [fourthHealthyNode]: -1
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 }
     }
 
     const updateReplicaSetJobProcessor = getJobProcessorStub({
@@ -225,7 +226,7 @@ describe('test updateReplicaSet job processor', function () {
         secondary1,
         secondary2,
         unhealthyReplicas,
-        replicaSetNodesToUserClockStatusesMap,
+        replicaToUserInfoMap,
         enabledReconfigModes: [RECONFIG_MODES.RECONFIG_DISABLED.key] // Disable reconfigs
       })
     ).to.eventually.be.fulfilled.and.deep.equal({
@@ -259,11 +260,11 @@ describe('test updateReplicaSet job processor', function () {
     // Mark all nodes in the replica set as unhealthy and fourthHealthyNode as not having any user state
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(-1)
     const unhealthyReplicas = [primary, secondary1, secondary2]
-    const replicaSetNodesToUserClockStatusesMap = {
-      [primary]: 1,
-      [secondary1]: 1,
-      [secondary2]: 1,
-      [fourthHealthyNode]: -1
+    const replicaToUserInfoMap = {
+      [primary]: { clock: 1 },
+      [secondary1]: { clock: 1 },
+      [secondary2]: { clock: 1 },
+      [fourthHealthyNode]: { clock: -1 }
     }
 
     const updateReplicaSetJobProcessor = getJobProcessorStub({
@@ -282,7 +283,7 @@ describe('test updateReplicaSet job processor', function () {
         secondary1,
         secondary2,
         unhealthyReplicas,
-        replicaSetNodesToUserClockStatusesMap,
+        replicaToUserInfoMap,
         enabledReconfigModes: [RECONFIG_MODES.ENTIRE_REPLICA_SET.key]
       })
     ).to.eventually.be.fulfilled.and.deep.equal({

@@ -4,7 +4,9 @@ import time
 from typing import Any, Iterable, Tuple, Type, TypedDict, Union
 
 from eth_abi.codec import ABICodec
-from src.models.models import AssociatedWallet, EthBlock, User
+from src.models.indexing.eth_block import EthBlock
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from web3 import Web3
 from web3._utils.events import get_event_data

@@ -8,7 +8,9 @@ chai.use(require('chai-as-promised'))
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
 const { CancelToken } = require('axios').default
+const assert = require('assert')
 
+const DBManager = require('../src/dbManager')
 const config = require('../src/config')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
@@ -16,10 +18,12 @@ const Utils = require('../src/utils')
 const {
   getLatestUserIdFromDiscovery,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap
+  computeUserSecondarySyncSuccessRatesMap,
+  computeSyncModeForUserAndReplica
 } = require('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils')
 const {
-  SyncType
+  SyncType,
+  SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
 const SecondarySyncHealthTracker = require('../src/snapbackSM/secondarySyncHealthTracker')
 
@@ -874,5 +878,196 @@ describe('test aggregateReconfigAndPotentialSyncOps()', function () {
       .to.have.nested.property('[0]')
       .that.has.property('endpoint')
       .that.equals('http://cnWithSpId2.co')
+  })
+})
+
+describe('Test computeSyncModeForUserAndReplica()', function () {
+  let primaryClock,
+    secondaryClock,
+    primaryFilesHash,
+    secondaryFilesHash,
+    primaryFilesHashMock
+
+  // Can be anything for test purposes
+  const wallet = 'wallet'
+
+  it('Throws if missing or invalid params', async function () {
+    primaryClock = 10
+    secondaryClock = 10
+    primaryFilesHash = undefined
+    secondaryFilesHash = undefined
+
+    try {
+      await computeSyncModeForUserAndReplica({
+        wallet,
+        primaryClock,
+        secondaryClock,
+        primaryFilesHash,
+        secondaryFilesHash
+      })
+    } catch (e) {
+      assert.strictEqual(
+        e.message,
+        '[computeSyncModeForUserAndReplica()] Error: Missing or invalid params'
+      )
+    }
+  })
+
+  it('Returns SYNC_MODES.None if clocks and filesHashes equal', async function () {
+    primaryClock = 10
+    secondaryClock = primaryClock
+    primaryFilesHash = '0x123'
+    secondaryFilesHash = primaryFilesHash
+
+    const syncMode = await computeSyncModeForUserAndReplica({
+      wallet,
+      primaryClock,
+      secondaryClock,
+      primaryFilesHash,
+      secondaryFilesHash
+    })
+
+    assert.strictEqual(syncMode, SYNC_MODES.None)
+  })
+
+  it('Returns SYNC_MODES.MergePrimaryAndSecondary if clocks equal and filesHashes unequal', async function () {
+    primaryClock = 10
+    secondaryClock = primaryClock
+    primaryFilesHash = '0x123'
+    secondaryFilesHash = '0x456'
+
+    const syncMode = await computeSyncModeForUserAndReplica({
+      wallet,
+      primaryClock,
+      secondaryClock,
+      primaryFilesHash,
+      secondaryFilesHash
+    })
+
+    assert.strictEqual(syncMode, SYNC_MODES.MergePrimaryAndSecondary)
+  })
+
+  it('Returns SYNC_MODES.MergePrimaryAndSecondary if primaryClock < secondaryClock', async function () {
+    primaryClock = 5
+    secondaryClock = 10
+    primaryFilesHash = '0x123'
+    secondaryFilesHash = '0x456'
+
+    const syncMode = await computeSyncModeForUserAndReplica({
+      wallet,
+      primaryClock,
+      secondaryClock,
+      primaryFilesHash,
+      secondaryFilesHash
+    })
+
+    assert.strictEqual(syncMode, SYNC_MODES.MergePrimaryAndSecondary)
+  })
+
+  it('Returns SYNC_MODES.SyncSecondaryFromPrimary if primaryClock > secondaryClock & secondaryFilesHash === null', async function () {
+    primaryClock = 10
+    secondaryClock = 5
+    primaryFilesHash = '0x123'
+    secondaryFilesHash = null
+
+    const syncMode = await computeSyncModeForUserAndReplica({
+      wallet,
+      primaryClock,
+      secondaryClock,
+      primaryFilesHash,
+      secondaryFilesHash
+    })
+
+    assert.strictEqual(syncMode, SYNC_MODES.SyncSecondaryFromPrimary)
+  })
+
+  describe('primaryClock > secondaryClock', function () {
+    it('Returns SYNC_MODES.SyncSecondaryFromPrimary if primaryFilesHashForRange = secondaryFilesHash', async function () {
+      primaryClock = 10
+      secondaryClock = 5
+      primaryFilesHash = '0x123'
+      secondaryFilesHash = '0x456'
+
+      // Mock DBManager.fetchFilesHashFromDB() to return `secondaryFilesHash` for clock range
+      const DBManagerMock = DBManager
+      DBManagerMock.fetchFilesHashFromDB = async () => {
+        return secondaryFilesHash
+      }
+      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
+        '../../../dbManager': DBManagerMock
+      })
+
+      const syncMode = await computeSyncModeForUserAndReplica({
+        wallet,
+        primaryClock,
+        secondaryClock,
+        primaryFilesHash,
+        secondaryFilesHash
+      })
+
+      assert.strictEqual(syncMode, SYNC_MODES.SyncSecondaryFromPrimary)
+    })
+
+    it('Returns SYNC_MODES.MergePrimaryAndSecondary if primaryFilesHashForRange != secondaryFilesHash', async function () {
+      primaryClock = 10
+      secondaryClock = 5
+      primaryFilesHash = '0x123'
+      secondaryFilesHash = '0x456'
+      primaryFilesHashMock = '0x789'
+
+      // Mock DBManager.fetchFilesHashFromDB() to return different filesHash for clock range
+      const DBManagerMock = DBManager
+      DBManagerMock.fetchFilesHashFromDB = async () => {
+        return primaryFilesHashMock
+      }
+      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
+        '../../../dbManager': DBManagerMock
+      })
+
+      const syncMode = await computeSyncModeForUserAndReplica({
+        wallet,
+        primaryClock,
+        secondaryClock,
+        primaryFilesHash,
+        secondaryFilesHash
+      })
+
+      assert.strictEqual(syncMode, SYNC_MODES.MergePrimaryAndSecondary)
+    })
+
+    it("Throws error primaryFilesHashForRange can't be retrieved", async function () {
+      // Increase mocha test timeout from default 2s to accommodate `async-retry` runtime
+      this.timeout(30000) // 30s
+
+      primaryClock = 10
+      secondaryClock = 5
+      primaryFilesHash = '0x123'
+      secondaryFilesHash = '0x456'
+
+      // Mock DBManager.fetchFilesHashFromDB() to throw error
+      const errorMsg = 'Mock - Failed to fetch filesHash'
+      const DBManagerMock = require('../src/dbManager')
+      DBManagerMock.fetchFilesHashFromDB = async () => {
+        throw new Error(errorMsg)
+      }
+      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
+        '../../../dbManager': DBManagerMock
+      })
+
+      try {
+        await computeSyncModeForUserAndReplica({
+          wallet,
+          primaryClock,
+          secondaryClock,
+          primaryFilesHash,
+          secondaryFilesHash
+        })
+      } catch (e) {
+        assert.strictEqual(
+          e.message,
+          `[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()] Error - ${errorMsg}`
+        )
+      }
+    })
   })
 })

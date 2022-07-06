@@ -1,7 +1,8 @@
 from sqlalchemy import desc, text
 from src import exceptions
-from src.models import Follow, Track
-from src.models.models import AggregateTrack
+from src.models.social.follow import Follow
+from src.models.tracks.aggregate_track import AggregateTrack
+from src.models.tracks.track import Track
 from src.queries.query_helpers import (
     get_users_by_id,
     get_users_ids,

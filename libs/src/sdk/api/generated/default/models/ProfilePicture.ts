@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -44,38 +43,5 @@ export interface ProfilePicture {
      * @memberof ProfilePicture
      */
     misc?: string;
-}
-
-export function ProfilePictureFromJSON(json: any): ProfilePicture {
-    return ProfilePictureFromJSONTyped(json, false);
-}
-
-export function ProfilePictureFromJSONTyped(json: any, ignoreDiscriminator: boolean): ProfilePicture {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        '_150x150': !exists(json, '150x150') ? undefined : json['150x150'],
-        '_480x480': !exists(json, '480x480') ? undefined : json['480x480'],
-        '_1000x1000': !exists(json, '1000x1000') ? undefined : json['1000x1000'],
-        'misc': !exists(json, 'misc') ? undefined : json['misc'],
-    };
-}
-
-export function ProfilePictureToJSON(value?: ProfilePicture | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        '150x150': value._150x150,
-        '480x480': value._480x480,
-        '1000x1000': value._1000x1000,
-        'misc': value.misc,
-    };
 }
 

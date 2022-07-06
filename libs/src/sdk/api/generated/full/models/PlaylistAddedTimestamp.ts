@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -32,34 +31,5 @@ export interface PlaylistAddedTimestamp {
      * @memberof PlaylistAddedTimestamp
      */
     track_id: string;
-}
-
-export function PlaylistAddedTimestampFromJSON(json: any): PlaylistAddedTimestamp {
-    return PlaylistAddedTimestampFromJSONTyped(json, false);
-}
-
-export function PlaylistAddedTimestampFromJSONTyped(json: any, ignoreDiscriminator: boolean): PlaylistAddedTimestamp {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'timestamp': json['timestamp'],
-        'track_id': json['track_id'],
-    };
-}
-
-export function PlaylistAddedTimestampToJSON(value?: PlaylistAddedTimestamp | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'timestamp': value.timestamp,
-        'track_id': value.track_id,
-    };
 }
 

@@ -2,7 +2,9 @@ import logging
 from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
-from src.models import AggregateIntervalPlay, TrackTrendingScore, TrendingParam
+from src.models.social.aggregate_interval_play import AggregateIntervalPlay
+from src.models.tracks.track_trending_score import TrackTrendingScore
+from src.models.tracks.trending_param import TrendingParam
 from src.trending_strategies.EJ57D_trending_tracks_strategy import (
     TrendingTracksStrategyEJ57D,
 )

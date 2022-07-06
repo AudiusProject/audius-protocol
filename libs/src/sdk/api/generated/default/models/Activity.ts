@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -38,36 +37,5 @@ export interface Activity {
      * @memberof Activity
      */
     item?: object;
-}
-
-export function ActivityFromJSON(json: any): Activity {
-    return ActivityFromJSONTyped(json, false);
-}
-
-export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): Activity {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'item_type': !exists(json, 'item_type') ? undefined : json['item_type'],
-        'item': !exists(json, 'item') ? undefined : json['item'],
-    };
-}
-
-export function ActivityToJSON(value?: Activity | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'timestamp': value.timestamp,
-        'item_type': value.item_type,
-        'item': value.item,
-    };
 }
 

@@ -5,8 +5,9 @@ from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
 
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
-from src.models import Challenge, UserChallenge
-from src.models.models import ChallengeType, User
+from src.models.rewards.challenge import Challenge, ChallengeType
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
 
 logger = logging.getLogger(__name__)
 

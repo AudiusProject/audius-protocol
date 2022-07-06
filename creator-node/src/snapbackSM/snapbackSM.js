@@ -286,16 +286,18 @@ class SnapbackSM {
       )
 
       // Initialize recurringSyncQueue job processor
-      this.recurringSyncQueue.process(
-        this.MaxRecurringRequestSyncJobConcurrency,
-        async (job) => {
-          try {
-            await this.processSyncOperation(job, SyncType.Recurring)
-          } catch (e) {
-            this.logError(`RecurringSyncQueue processing error ${e}`)
+      if (!this.nodeConfig.get('disableSnapback')) {
+        this.recurringSyncQueue.process(
+          this.MaxRecurringRequestSyncJobConcurrency,
+          async (job) => {
+            try {
+              await this.processSyncOperation(job, SyncType.Recurring)
+            } catch (e) {
+              this.logError(`RecurringSyncQueue processing error ${e}`)
+            }
           }
-        }
-      )
+        )
+      }
       this.inittedJobProcessors = true
     }
 

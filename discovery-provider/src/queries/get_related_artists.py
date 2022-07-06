@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session, aliased
 from sqlalchemy.sql.expression import column, desc, tablesample
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.selectable import FromClause
-from src.models import RelatedArtist
-from src.models.models import AggregateUser, Follow, User
+from src.models.social.follow import Follow
+from src.models.users.aggregate_user import AggregateUser
+from src.models.users.related_artist import RelatedArtist
+from src.models.users.user import User
 from src.queries.query_helpers import helpers, populate_user_metadata
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import time_method

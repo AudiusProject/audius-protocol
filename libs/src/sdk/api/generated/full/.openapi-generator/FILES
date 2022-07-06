@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
 apis/SearchApi.ts

@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     Activity,
     ActivityFromJSON,
@@ -33,32 +32,5 @@ export interface Reposts {
      * @memberof Reposts
      */
     data?: Array<Activity>;
-}
-
-export function RepostsFromJSON(json: any): Reposts {
-    return RepostsFromJSONTyped(json, false);
-}
-
-export function RepostsFromJSONTyped(json: any, ignoreDiscriminator: boolean): Reposts {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ActivityFromJSON)),
-    };
-}
-
-export function RepostsToJSON(value?: Reposts | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ActivityToJSON)),
-    };
 }
 

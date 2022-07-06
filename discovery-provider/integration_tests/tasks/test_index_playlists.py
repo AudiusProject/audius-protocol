@@ -7,7 +7,12 @@ from integration_tests.challenges.index_helpers import (
     UpdateTask,
 )
 from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.models import Block, Playlist, SkippedTransaction, SkippedTransactionLevel
+from src.models.indexing.block import Block
+from src.models.indexing.skipped_transaction import (
+    SkippedTransaction,
+    SkippedTransactionLevel,
+)
+from src.models.playlists.playlist import Playlist
 from src.tasks.playlists import (
     lookup_playlist_record,
     parse_playlist_event,

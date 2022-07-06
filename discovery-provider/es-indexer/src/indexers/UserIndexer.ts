@@ -1,6 +1,7 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
 import { groupBy, keyBy, merge } from 'lodash'
 import { dialPg } from '../conn'
+import { splitTags } from '../helpers/splitTags'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { UserDoc } from '../types/docs'
@@ -61,7 +62,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
           properties: {
             mood: { type: 'keyword' },
             genre: { type: 'keyword' },
-            tags: { type: 'keyword' },
+            tags: { type: 'keyword', normalizer: 'lower_asciifolding' },
           },
         },
       },
@@ -172,7 +173,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     `
     const allTracks = await pg.query(q)
     for (let t of allTracks.rows) {
-      t.tags = t.tags?.split(',').filter(Boolean)
+      t.tags = splitTags(t.tags)
     }
     const grouped = groupBy(allTracks.rows, 'owner_id')
     return grouped

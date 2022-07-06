@@ -9,8 +9,11 @@ from src.challenges.referral_challenge import (
     referred_challenge_manager,
     verified_referral_challenge_manager,
 )
-from src.models.models import Block, Challenge, User, UserChallenge
-from src.models.user_events import UserEvents
+from src.models.indexing.block import Block
+from src.models.rewards.challenge import Challenge
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
+from src.models.users.user_events import UserEvents
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 

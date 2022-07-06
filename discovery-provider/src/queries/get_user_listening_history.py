@@ -1,8 +1,8 @@
 from typing import TypedDict
 
 from sqlalchemy.orm.session import Session
-from src.models import Track
-from src.models.models import UserListeningHistory
+from src.models.tracks.track import Track
+from src.models.users.user_listening_history import UserListeningHistory
 from src.queries import response_name_constants
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.utils import helpers

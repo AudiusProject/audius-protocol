@@ -4,7 +4,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from src.models import AppNameMetrics, RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetrics
+from src.models.metrics.route_metrics import RouteMetrics
 from src.queries.update_historical_metrics import (
     update_historical_daily_app_metrics,
     update_historical_daily_route_metrics,

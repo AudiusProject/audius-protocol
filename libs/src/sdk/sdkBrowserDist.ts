@@ -1,3 +1,2 @@
 import { sdk } from './sdk'
-
-window.audiusSdk = sdk
+;(window as any).audiusSdk = sdk

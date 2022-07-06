@@ -2,9 +2,10 @@
 
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
-import { retryAsyncFunctionOrError } from "../utils"
+const retry = require('async-retry')
 
 
+// Fetch all content nodes from a specfic run
 export const getAllContentNodes = async (run_id: number): Promise<{ spid: number, endpoint: string }[]> => {
 
     const endpointsResp: unknown[] = await sequelizeConn.query(`
@@ -19,6 +20,7 @@ export const getAllContentNodes = async (run_id: number): Promise<{ spid: number
     return endpoints
 }
 
+// Create a table containing every content node (endpoint+spid) and the number of CIDs (non-image) that should be on that content node
 export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
     console.log(`[${run_id}] get endpoint => cidcount mapping`)
 
@@ -56,6 +58,7 @@ export const getEndpointToCIDCount = async (run_id: number): Promise<{ spid: num
     return endpointToCIDCount
 }
 
+// Create a table containing every content node (endpoint+spid) and the number of image CIDs that should be on that content node
 export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid: number, endpoint: string, cid_count: string }[]> => {
     console.log(`[${run_id}] get endpoint => imageCidcount mapping`)
 
@@ -92,6 +95,7 @@ export const getEndpointToImageCIDCount = async (run_id: number): Promise<{ spid
     return endpointToCIDCount
 }
 
+// Fetch a batch of CIDs (non-image) for a specific content node from the table `network_monitoring_cids_from_discovery`
 export const getCIDBatch = async (
     run_id: number,
     endpoint: string,
@@ -102,8 +106,9 @@ export const getCIDBatch = async (
 
     try {
 
-        const cidBatch: { cid: string, user_id: number }[] = await retryAsyncFunctionOrError(5, async (): Promise<{ cid: string, user_id: number }[]> => {
-            const cidBatchResp = await sequelizeConn.query(`
+        const cidBatch: { cid: string, user_id: number }[] = await retry(
+            async (): Promise<{ cid: string, user_id: number }[]> => {
+                const cidBatchResp = await sequelizeConn.query(`
             SELECT user_id, cid, endpoint 
             FROM (
                 SELECT cids_current_run.user_id as user_id, cid, unnest(string_to_array(replica_set, ',')) as endpoint
@@ -121,15 +126,17 @@ export const getCIDBatch = async (
             OFFSET :offset
             LIMIT :limit;
         `, {
-                replacements: { run_id, endpoint, offset, limit },
-                type: QueryTypes.SELECT,
-            })
+                    replacements: { run_id, endpoint, offset, limit },
+                    type: QueryTypes.SELECT,
+                })
 
-            const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
-                return { cid: reqObject.cid, user_id: reqObject.user_id }
-            })
+                const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
+                    return { cid: reqObject.cid, user_id: reqObject.user_id }
+                })
 
-            return cidBatch
+                return cidBatch
+            }, {
+            retries: 5,
         })
 
         return cidBatch
@@ -139,6 +146,7 @@ export const getCIDBatch = async (
     }
 }
 
+// Fetch a batch of image CIDs for a specific content node from the table `network_monitoring_cids_from_discovery`
 export const getImageCIDBatch = async (
     run_id: number,
     endpoint: string,
@@ -149,8 +157,9 @@ export const getImageCIDBatch = async (
 
     try {
 
-        const cidBatch: { cid: string, user_id: number }[] = await retryAsyncFunctionOrError(5, async (): Promise<{ cid: string, user_id: number }[]> => {
-            const cidBatchResp = await sequelizeConn.query(`
+        const cidBatch: { cid: string, user_id: number }[] = await retry(
+            async (): Promise<{ cid: string, user_id: number }[]> => {
+                const cidBatchResp = await sequelizeConn.query(`
                 SELECT user_id, cid, endpoint 
                 FROM (
                     SELECT cids_current_run.user_id as user_id, cid, unnest(string_to_array(replica_set, ',')) as endpoint
@@ -168,15 +177,17 @@ export const getImageCIDBatch = async (
                 OFFSET :offset
                 LIMIT :limit;
         `, {
-                replacements: { run_id, endpoint, offset, limit },
-                type: QueryTypes.SELECT,
-            })
+                    replacements: { run_id, endpoint, offset, limit },
+                    type: QueryTypes.SELECT,
+                })
 
-            const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
-                return { cid: reqObject.cid, user_id: reqObject.user_id }
-            })
+                const cidBatch = (cidBatchResp as { cid: string, user_id: number }[]).map(reqObject => {
+                    return { cid: reqObject.cid, user_id: reqObject.user_id }
+                })
 
-            return cidBatch
+                return cidBatch
+            }, {
+            retries: 5,
         })
 
         return cidBatch
@@ -186,6 +197,7 @@ export const getImageCIDBatch = async (
     }
 }
 
+// Save a batch of CIDs for a specfic content node into the table `network_monitoring_cids_from_content`
 export const saveCIDResults = async (
     run_id: number,
     spid: number,
@@ -235,6 +247,9 @@ export const saveCIDResults = async (
     }
 }
 
+// Create a table containing every content node 
+// and the number of users with that content node as their primary, secondary1, or secondary2
+// i.e. { spid: { primary_count, secondary1_count, secondary2_count } }[]
 export const getUserCounts = async (run_id: number, spid: number): Promise<[number, number, number]> => {
 
     console.log(`[${run_id}:${spid}] get user counts`)
@@ -272,15 +287,20 @@ export const getUserCounts = async (run_id: number, spid: number): Promise<[numb
     })
 
     const userCounts = (userCountsResp as {
-        spid: number,
-        primary_count: number,
-        secondary1_count: number,
-        secondary2_count: number,
-    }[])[0] || { primary_count: 0, secondary1_count: 0, secondary2_count: 0 }
+        spid: string,
+        primary_count: string,
+        secondary1_count: string,
+        secondary2_count: string,
+    }[])[0] || { primary_count: '0', secondary1_count: '0', secondary2_count: '0' }
 
-    return [userCounts.primary_count, userCounts.secondary1_count, userCounts.secondary2_count]
+    return [
+        parseInt(userCounts.primary_count), 
+        parseInt(userCounts.secondary1_count), 
+        parseInt(userCounts.secondary2_count),
+    ]
 }
 
+// Fetch a batch of users with a specific content node as their primary from the table `network_monitoring_users`
 export const getPrimaryWalletBatch = async (
     run_id: number,
     spid: number,
@@ -296,7 +316,7 @@ export const getPrimaryWalletBatch = async (
         LIMIT :limit;
     `, {
         type: QueryTypes.SELECT,
-        replacements: { run_id, spid, limit, offset }
+        replacements: { run_id, spid, offset, limit }
     })
 
     const walletBatch = (walletBatchResp as { wallet: string }[]).map(item => item.wallet)
@@ -304,6 +324,7 @@ export const getPrimaryWalletBatch = async (
     return walletBatch
 }
 
+// Fetch a batch of users with a specific content node as their secondary1 from the table `network_monitoring_users`
 export const getSecondary1WalletBatch = async (
     run_id: number,
     spid: number,
@@ -311,12 +332,12 @@ export const getSecondary1WalletBatch = async (
     limit: number,
 ): Promise<string[]> => {
     const walletBatchResp: unknown[] = await sequelizeConn.query(`
-        SELECT wallet 
-        FROM network_monitoring_users
-        WHERE run_id = :run_id
-        AND secondary1spid = :spid
-        OFFSET :offset
-        LIMIT :limit;
+    SELECT wallet 
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
+    AND secondary1spid = :spid
+    OFFSET :offset
+    LIMIT :limit;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id, spid, limit, offset }
@@ -327,6 +348,7 @@ export const getSecondary1WalletBatch = async (
     return walletBatch
 }
 
+// Fetch a batch of users with a specific content node as their secondary2 from the table `network_monitoring_users`
 export const getSecondary2WalletBatch = async (
     run_id: number,
     spid: number,
@@ -334,12 +356,12 @@ export const getSecondary2WalletBatch = async (
     limit: number,
 ): Promise<string[]> => {
     const walletBatchResp: unknown[] = await sequelizeConn.query(`
-        SELECT wallet 
-        FROM network_monitoring_users
-        WHERE run_id = :run_id
-        AND secondary2spid = :spid
-        OFFSET :offset
-        LIMIT :limit;
+    SELECT wallet 
+    FROM network_monitoring_users
+    WHERE run_id = :run_id
+    AND secondary2spid = :spid
+    OFFSET :offset
+    LIMIT :limit;
     `, {
         type: QueryTypes.SELECT,
         replacements: { run_id, spid, limit, offset }
@@ -350,89 +372,174 @@ export const getSecondary2WalletBatch = async (
     return walletBatch
 }
 
+// Save the clock value for batch of users with a specific content node as their primary from the table `network_monitoring_users`
 export const savePrimaryUserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
-    try {
-        await Promise.all(
-            results.map(async ({ walletPublicKey, clock }) => {
-                try {
-                    await sequelizeConn.query(`
-                        UPDATE network_monitoring_users
-                        SET primary_clock_value = :clock
-                        WHERE wallet = :walletPublicKey
-                        AND run_id = :run_id;
-                `, {
-                        type: QueryTypes.UPDATE,
-                        replacements: { run_id, walletPublicKey, clock }
-                    })
-                } catch (e) {
-                    console.log(`[${run_id}:${spid}] error saving clock value (${clock}) to ${walletPublicKey} - ${(e as Error).message}`)
-                    return
+): Promise<number> => {
+
+    const miniBatchSize = 500
+    const count = results.length
+
+    let missedUsers = 0
+
+    // Break the batch of clock value into smaller mini-batches 
+    // to cause less errors and make debugging easier
+    for (let offset = 0; offset < count; offset += miniBatchSize) {
+
+        const end = (offset + miniBatchSize) >= results.length ? results.length - 1 : (offset + miniBatchSize)
+
+        const miniBatch = results.slice(offset, end)
+
+        try {
+            const queryStr = `UPDATE network_monitoring_users as nm_users
+                    SET primary_clock_value = tmp.clock::text::int
+                    FROM (
+                        VALUES 
+                            ${formatUserValues(run_id, miniBatch)}
+                    ) AS tmp(run_id, wallet, clock)
+                    WHERE nm_users.wallet = tmp.wallet::text
+                    AND nm_users.run_id::text = tmp.run_id::text;`
+
+            await retry(
+                async () => {
+                    await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+                },
+                {
+                    retries: 3,
+                    factor: 2,
+                    randomize: true,
                 }
-            })
-        )
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return
+            )
+        } catch (e) {
+            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+            missedUsers += end - offset
+        }
     }
 
-    return
+    return missedUsers
 }
 
+// Save the clock value for batch of users with a specific content node as their secondary1 from the table `network_monitoring_users`
 export const saveSecondary1UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
-    try {
-        await Promise.all(
-            results.map(async ({ walletPublicKey, clock }) => {
-                await sequelizeConn.query(`
-                    UPDATE network_monitoring_users
-                    SET secondary1_clock_value = :clock
-                    WHERE wallet = :walletPublicKey
-                    AND run_id = :run_id;
-                `, {
-                    type: QueryTypes.UPDATE,
-                    replacements: { run_id, walletPublicKey, clock }
-                })
-            })
-        )
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return
+): Promise<number> => {
+
+    const miniBatchSize = 500
+    const count = results.length
+
+    let missedUsers = 0
+
+    // Break the batch of clock value into smaller mini-batches 
+    // to cause less errors and make debugging easier
+    for (let offset = 0; offset < count; offset += miniBatchSize) {
+
+        const end = (offset + miniBatchSize) >= results.length ? results.length - 1 : (offset + miniBatchSize)
+
+        const miniBatch = results.slice(offset, end)
+
+        try {
+            const queryStr = `UPDATE network_monitoring_users as nm_users
+                    SET secondary1_clock_value = tmp.clock::text::int
+                    FROM (
+                        VALUES 
+                            ${formatUserValues(run_id, miniBatch)}
+                    ) AS tmp(run_id, wallet, clock)
+                    WHERE nm_users.wallet = tmp.wallet::text
+                    AND nm_users.run_id::text = tmp.run_id::text;`
+
+            await retry(
+                async () => {
+                    await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+                },
+                {
+                    retries: 3,
+                    factor: 2,
+                    randomize: true,
+                }
+            )
+        } catch (e) {
+            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+            missedUsers += end - offset
+        }
     }
 
-    return
+    return missedUsers
 }
 
+// Save the clock value for batch of users with a specific content node as their secondary2 from the table `network_monitoring_users`
 export const saveSecondary2UserResults = async (
     run_id: number,
     spid: number,
     results: { walletPublicKey: string, clock: number }[],
-): Promise<void> => {
-    try {
-        await Promise.all(
-            results.map(async ({ walletPublicKey, clock }) => {
-                await sequelizeConn.query(`
-                    UPDATE network_monitoring_users
-                    SET secondary2_clock_value = :clock
-                    WHERE wallet = :walletPublicKey
-                    AND run_id = :run_id;
-                `, {
-                    type: QueryTypes.UPDATE,
-                    replacements: { run_id, walletPublicKey, clock }
-                })
-            })
-        )
-    } catch (e) {
-        console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
-        return
+): Promise<number> => {
+
+    const miniBatchSize = 500
+    const count = results.length
+
+    let missedUsers = 0
+
+    // Break the batch of clock value into smaller mini-batches 
+    // to cause less errors and make debugging easier
+    for (let offset = 0; offset < count; offset += miniBatchSize) {
+
+        const end = (offset + miniBatchSize) >= results.length ? results.length - 1 : (offset + miniBatchSize)
+
+        const miniBatch = results.slice(offset, end)
+
+        try {
+            const queryStr = `UPDATE network_monitoring_users as nm_users
+                    SET secondary2_clock_value = tmp.clock::text::int
+                    FROM (
+                        VALUES 
+                            ${formatUserValues(run_id, miniBatch)}
+                    ) AS tmp(run_id, wallet, clock)
+                    WHERE nm_users.wallet = tmp.wallet::text
+                    AND nm_users.run_id::text = tmp.run_id::text;`
+
+            await retry(
+                async () => {
+                    await sequelizeConn.query(queryStr, { type: QueryTypes.UPDATE })
+                },
+                {
+                    retries: 3,
+                    factor: 2,
+                    randomize: true,
+                }
+            )
+        } catch (e) {
+            console.log(`[${run_id}:${spid}:saveUserResults] error saving batch - ${(e as Error).message}`)
+            missedUsers += end - offset
+        }
     }
 
-    return
+    return missedUsers
 }
 
+// Helper function to format an array of clock values as a string to be injected into a SQL query string
+// i.e. 1, { walletPublicKey: '0x12345', clock: 1 } => '(1, '0x12345', 1)'
+const formatUserValues = (run_id: number, results: { walletPublicKey: string, clock: number }[]): string => {
+    let formattedStr = ''
+
+    results.forEach((result, i) => {
+        if (
+            result.walletPublicKey === undefined
+            || result.walletPublicKey === null
+            || result.clock === undefined
+            || result.clock === null
+        ) {
+            return
+        }
+
+        if (i === results.length - 1) {
+            formattedStr += `(${run_id}, '${result.walletPublicKey}', ${result.clock})\n`
+        } else {
+            formattedStr += `(${run_id}, '${result.walletPublicKey}', ${result.clock}),\n`
+        }
+    })
+
+    return formattedStr
+}

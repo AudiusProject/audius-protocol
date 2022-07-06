@@ -4,7 +4,7 @@ from typing import Dict, cast
 
 from flask_restx import reqparse
 from src import api_helpers
-from src.models import ChallengeType
+from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse

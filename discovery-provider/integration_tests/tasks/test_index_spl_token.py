@@ -1,7 +1,7 @@
 from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
-from src.models import SPLTokenTransaction
+from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.cache_user_balance import get_immediate_refresh_user_ids
 from src.tasks.index_spl_token import (

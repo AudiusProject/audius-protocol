@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -26,32 +25,5 @@ export interface EncodedUserId {
      * @memberof EncodedUserId
      */
     user_id?: string;
-}
-
-export function EncodedUserIdFromJSON(json: any): EncodedUserId {
-    return EncodedUserIdFromJSONTyped(json, false);
-}
-
-export function EncodedUserIdFromJSONTyped(json: any, ignoreDiscriminator: boolean): EncodedUserId {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'user_id': !exists(json, 'user_id') ? undefined : json['user_id'],
-    };
-}
-
-export function EncodedUserIdToJSON(value?: EncodedUserId | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'user_id': value.user_id,
-    };
 }
 

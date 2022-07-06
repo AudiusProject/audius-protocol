@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     User,
     UserFromJSON,
@@ -45,36 +44,5 @@ export interface Supporter {
      * @memberof Supporter
      */
     sender: User;
-}
-
-export function SupporterFromJSON(json: any): Supporter {
-    return SupporterFromJSONTyped(json, false);
-}
-
-export function SupporterFromJSONTyped(json: any, ignoreDiscriminator: boolean): Supporter {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'rank': json['rank'],
-        'amount': json['amount'],
-        'sender': UserFromJSON(json['sender']),
-    };
-}
-
-export function SupporterToJSON(value?: Supporter | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'rank': value.rank,
-        'amount': value.amount,
-        'sender': UserToJSON(value.sender),
-    };
 }
 

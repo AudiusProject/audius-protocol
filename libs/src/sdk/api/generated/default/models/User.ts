@@ -13,7 +13,6 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
 import {
     CoverPhoto,
     CoverPhotoFromJSON,
@@ -153,70 +152,5 @@ export interface User {
      * @memberof User
      */
     supporting_count: number;
-}
-
-export function UserFromJSON(json: any): User {
-    return UserFromJSONTyped(json, false);
-}
-
-export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return {
-        
-        'album_count': json['album_count'],
-        'bio': !exists(json, 'bio') ? undefined : json['bio'],
-        'cover_photo': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
-        'followee_count': json['followee_count'],
-        'follower_count': json['follower_count'],
-        'does_follow_current_user': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
-        'handle': json['handle'],
-        'id': json['id'],
-        'is_verified': json['is_verified'],
-        'location': !exists(json, 'location') ? undefined : json['location'],
-        'name': json['name'],
-        'playlist_count': json['playlist_count'],
-        'profile_picture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
-        'repost_count': json['repost_count'],
-        'track_count': json['track_count'],
-        'is_deactivated': json['is_deactivated'],
-        'erc_wallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
-        'spl_wallet': json['spl_wallet'],
-        'supporter_count': json['supporter_count'],
-        'supporting_count': json['supporting_count'],
-    };
-}
-
-export function UserToJSON(value?: User | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-    return {
-        
-        'album_count': value.album_count,
-        'bio': value.bio,
-        'cover_photo': CoverPhotoToJSON(value.cover_photo),
-        'followee_count': value.followee_count,
-        'follower_count': value.follower_count,
-        'does_follow_current_user': value.does_follow_current_user,
-        'handle': value.handle,
-        'id': value.id,
-        'is_verified': value.is_verified,
-        'location': value.location,
-        'name': value.name,
-        'playlist_count': value.playlist_count,
-        'profile_picture': ProfilePictureToJSON(value.profile_picture),
-        'repost_count': value.repost_count,
-        'track_count': value.track_count,
-        'is_deactivated': value.is_deactivated,
-        'erc_wallet': value.erc_wallet,
-        'spl_wallet': value.spl_wallet,
-        'supporter_count': value.supporter_count,
-        'supporting_count': value.supporting_count,
-    };
 }
 

@@ -8,7 +8,7 @@ import create_tables from './migrations/create_tables'
 
 const { db } = getEnv()
 
-const dbConnectionPoolMax: number = 100
+const dbConnectionPoolMax: number = 85
 
 export const sequelizeConn = new Sequelize(
   db.name,
@@ -19,11 +19,16 @@ export const sequelizeConn = new Sequelize(
     port: db.port,
     dialect: 'postgres',
     logging: false,
+    retry: {
+      match: [/Deadlock/i],
+      max: 1,
+    },
     pool: {
       max: dbConnectionPoolMax,
       min: 5,
-      acquire: 60000,
-      idle: 10000
+      // @note https://github.com/sequelize/sequelize/issues/8133#issuecomment-359993057
+      acquire: 1_000_000,
+      idle: 10_000,
     }
   })
 

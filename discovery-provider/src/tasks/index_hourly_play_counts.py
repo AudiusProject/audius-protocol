@@ -3,8 +3,8 @@ import time
 from typing import List
 
 from sqlalchemy import desc, func
-from src.models import Play
-from src.models.models import HourlyPlayCounts
+from src.models.social.hourly_play_counts import HourlyPlayCounts
+from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,

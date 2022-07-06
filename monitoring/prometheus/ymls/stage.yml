@@ -25,12 +25,12 @@
   #####################################################
 
   - job_name: 'stage-network-monitoring'
-    scheme: 'http'
+    scheme: 'https'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['35.202.199.159:9091']
+      - targets: ['monitoring.staging.audius.co']
         labels:
-          host: 'discoveryprovider2.staging.audius.co'
+          host: 'monitoring.staging.audius.co'
           environment: 'stage'
           service: 'audius'
           component: 'network-monitoring'

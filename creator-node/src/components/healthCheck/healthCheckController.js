@@ -19,11 +19,7 @@ const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
 
-const { recoverWallet } = require('../../apiSigning')
-const {
-  handleTrackContentUpload,
-  removeTrackFolder
-} = require('../../fileManager')
+const { ensureValidSPMiddleware } = require('../../middlewares')
 
 const config = require('../../config')
 
@@ -33,56 +29,14 @@ const router = express.Router()
 const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 const numberOfCPUs = os.cpus().length
 
-const SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
-  'snapbackMaxLastSuccessfulRunDelayMs'
+const MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
+  'monitorStateJobLastSuccessfulRunDelayMs'
 )
-
-// Helper Functions
-/**
- * Verifies that the request is made by the delegate Owner
- */
-const healthCheckVerifySignature = (req, res, next) => {
-  const { timestamp, randomBytes, signature } = req.query
-  if (!timestamp || !randomBytes || !signature) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest('Missing required query parameters')
-    )
-  }
-
-  const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
-  const recoveredPublicWallet = recoverWallet(
-    recoveryObject,
-    signature
-  ).toLowerCase()
-  const recoveredTimestampDate = new Date(timestamp)
-  const currentTimestampDate = new Date()
-  const requestAge = currentTimestampDate - recoveredTimestampDate
-  if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(
-        `Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`
-      )
-    )
-  }
-  const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
-  if (recoveredPublicWallet !== delegateOwnerWallet) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(
-        "Requester's public key does does not match Creator Node's delegate owner wallet."
-      )
-    )
-  }
-
-  next()
-}
-
-// Controllers
+const FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
+  'findSyncRequestsJobLastSuccessfulRunDelayMs'
+)
+const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
+  config.get('findReplicaSetUpdatesJobLastSuccessfulRunDelayMs')
 
 /**
  * Controller for `health_check` route, calls
@@ -111,16 +65,65 @@ const healthCheckController = async (req) => {
     randomBytesToSign
   )
 
-  const { stateMachineQueueLatestJobSuccess } = response
-  if (enforceStateMachineQueueHealth && stateMachineQueueLatestJobSuccess) {
-    response.snapbackMaxLastSuccessfulRunDelayMs =
-      SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-    const delta =
-      Date.now() - new Date(stateMachineQueueLatestJobSuccess).getTime()
-    if (delta > SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS) {
-      return errorResponseServerError(
-        `StateMachineQueue not healthy - last successful run ${delta}ms ago not within healthy threshold of ${SNAPBACK_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
-      )
+  if (enforceStateMachineQueueHealth) {
+    const { stateMachineJobs } = response
+    const {
+      latestMonitorStateJobSuccess,
+      latestFindSyncRequestsJobSuccess,
+      latestFindReplicaSetUpdatesJobSuccess
+    } = stateMachineJobs
+    const stateMachineErrors = []
+
+    // Enforce time since last successful monitor-state job
+    if (latestMonitorStateJobSuccess) {
+      response.stateMachineJobs.monitorStateJobLastSuccessfulRunDelayMs =
+        MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      const monitorStateDelta =
+        Date.now() - new Date(latestMonitorStateJobSuccess).getTime()
+      if (
+        monitorStateDelta > MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      ) {
+        stateMachineErrors.push(
+          `monitor-state job not healthy - last successful run ${monitorStateDelta}ms ago not within healthy threshold of ${MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
+        )
+      }
+    }
+
+    // Enforce time since last successful find-sync-requests job
+    if (latestFindSyncRequestsJobSuccess) {
+      response.stateMachineJobs.findSyncRequestsJobLastSuccessfulRunDelayMs =
+        FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      const findSyncRequestsDelta =
+        Date.now() - new Date(latestFindSyncRequestsJobSuccess).getTime()
+      if (
+        findSyncRequestsDelta >
+        FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      ) {
+        stateMachineErrors.push(
+          `find-sync-requests job not healthy - last successful run ${findSyncRequestsDelta}ms ago not within healthy threshold of ${FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
+        )
+      }
+    }
+
+    // Enforce time since last successful find-replica-set-updates job
+    if (latestFindReplicaSetUpdatesJobSuccess) {
+      response.stateMachineJobs.findReplicaSetUpdatesJobLastSuccessfulRunDelayMs =
+        FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      const findReplicaSetUpdatesDelta =
+        Date.now() - new Date(latestFindReplicaSetUpdatesJobSuccess).getTime()
+      if (
+        findReplicaSetUpdatesDelta >
+        FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
+      ) {
+        stateMachineErrors.push(
+          `find-replica-set-updates job not healthy - last successful run ${findReplicaSetUpdatesDelta}ms ago not within healthy threshold of ${FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
+        )
+      }
+    }
+
+    // Return errors
+    if (stateMachineErrors.length) {
+      return errorResponseServerError(JSON.stringify(stateMachineErrors))
     }
   }
 
@@ -191,45 +194,22 @@ const healthCheckVerboseController = async (req) => {
   })
 }
 
-/**
- * Controller for `health_check/fileupload` route *
- * Perform a file upload health check limited to configured delegateOwnerWallet.
- * This prunes the disc artifacts created by the process after.
- */
-const healthCheckFileUploadController = async (req) => {
-  const err =
-    req.fileFilterError ||
-    req.fileSizeError ||
-    (await removeTrackFolder(req, req.fileDir))
-  if (err) {
-    return errorResponseServerError(err)
-  }
-  return successResponse({ success: true })
-}
-
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get(
   '/health_check/duration',
-  healthCheckVerifySignature,
+  ensureValidSPMiddleware,
   handleResponse(healthCheckDurationController)
 )
 router.get(
   '/health_check/duration/heartbeat',
-  healthCheckVerifySignature,
+  ensureValidSPMiddleware,
   handleResponseWithHeartbeat(healthCheckDurationController)
 )
 router.get(
   '/health_check/verbose',
   handleResponse(healthCheckVerboseController)
 )
-router.post(
-  '/health_check/fileupload',
-  healthCheckVerifySignature,
-  handleTrackContentUpload,
-  handleResponseWithHeartbeat(healthCheckFileUploadController)
-)
-
 module.exports = router
