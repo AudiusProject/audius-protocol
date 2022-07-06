@@ -50,7 +50,7 @@ jobs:
 
             ${CHANGELOG}"
             npm i
-            npx lerna version patch --yes -m "${MESSAGE}"
+            npx lerna version patch --exact --yes -m "${MESSAGE}"
       - run:
           name: Create release branch
           command: |
