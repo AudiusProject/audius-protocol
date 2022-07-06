@@ -786,7 +786,7 @@ def index_blocks(self, db, blocks_list):
             sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
-        logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
+        logger.info(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
@@ -1260,7 +1260,7 @@ def update_task(self):
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:
-            logger.error(
+            logger.info(
                 f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
             )
     except Exception as e:
