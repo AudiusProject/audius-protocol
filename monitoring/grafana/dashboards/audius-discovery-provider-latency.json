@@ -30,7 +30,6 @@
     "liveNow": false,
     "panels": [
       {
-        "datasource": {},
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -134,10 +133,6 @@
         "type": "timeseries"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "r2_nnDL7z"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -210,10 +205,6 @@
         "type": "row"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "r2_nnDL7z"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -307,10 +298,6 @@
         "type": "timeseries"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "r2_nnDL7z"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -456,10 +443,6 @@
         "type": "timeseries"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "r2_nnDL7z"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -629,10 +612,6 @@
         "type": "timeseries"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "r2_nnDL7z"
-        },
         "fieldConfig": {
           "defaults": {
             "color": {
