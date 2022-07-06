@@ -93,7 +93,8 @@ class AudiusLibs {
     registryAddress,
     web3Provider,
     networkId,
-    walletOverride = null
+    walletOverride = null,
+    dataContractAddress = null
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
@@ -102,6 +103,7 @@ class AudiusLibs {
     const wallets = await web3Instance.eth.getAccounts()
     return {
       registryAddress,
+      dataContractAddress,
       useExternalWeb3: true,
       externalWeb3Config: {
         web3: web3Instance,
@@ -115,7 +117,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers, privateKey) {
+  static configInternalWeb3 (registryAddress, providers, privateKey, dataContractAddress = null) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -131,6 +133,7 @@ class AudiusLibs {
 
     return {
       registryAddress,
+      dataContractAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
         web3ProviderEndpoints: providerList,
@@ -461,6 +464,7 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
+        this.web3Config ? this.web3Config.dataContractAddress: null,
         this.isServer,
         this.logger
       )

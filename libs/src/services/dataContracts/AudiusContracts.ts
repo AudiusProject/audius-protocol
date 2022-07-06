@@ -65,6 +65,7 @@ export class AudiusContracts {
   constructor(
     web3Manager: Web3Manager,
     registryAddress: string,
+    dataAddress: string,
     isServer: boolean,
     logger = console
   ) {
