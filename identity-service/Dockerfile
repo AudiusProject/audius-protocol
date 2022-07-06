@@ -18,8 +18,6 @@ COPY . .
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
 RUN cp scripts/wait /usr/bin/wait && chmod +x /usr/bin/wait
 
-EXPOSE 7000
-
 ARG git_sha
 ARG audius_loggly_disable
 ARG audius_loggly_token
@@ -29,6 +27,8 @@ ENV GIT_SHA=$git_sha
 ENV logglyDisable=$audius_loggly_disable
 ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
+
+EXPOSE 7000
 
 HEALTHCHECK --interval=5s --timeout=5s \
     CMD curl -f http://localhost:7000/health_check || exit 1

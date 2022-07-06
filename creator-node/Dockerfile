@@ -80,8 +80,9 @@ ENV logglyToken=$audius_loggly_token
 ENV logglyTags=$audius_loggly_tags
 ENV port=4000
 
+EXPOSE 4000
+
 HEALTHCHECK --interval=5s --timeout=5s --start-period=5m --retries=12 \
     CMD curl -f http://localhost:${port}/health_check || exit 1
 
-# CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
 CMD ["bash", "scripts/start.sh"]
