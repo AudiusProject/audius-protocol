@@ -93,6 +93,6 @@
 		"type": "boolean",
 		"amount": 2,
 		"active": true,
-		"starting_block": 25346436
+		"starting_block": 28350000
 	}
 ]
