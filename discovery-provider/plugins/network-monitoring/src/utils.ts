@@ -196,6 +196,16 @@ export const getEnv = () => {
 
     const pushGatewayUrl = process.env['PUSH_GATEWAY_URL'] || 'http://localhost:9091'
 
-    return { db, fdb, deregisteredCN, signatureSpID, signatureSPDelegatePrivateKey, pushGatewayUrl }
+    const slackUrl = process.env['SLACK_URL'] || ''
+
+    return { 
+        db, 
+        fdb, 
+        deregisteredCN, 
+        signatureSpID, 
+        signatureSPDelegatePrivateKey, 
+        pushGatewayUrl,
+        slackUrl,
+    }
 }
 
