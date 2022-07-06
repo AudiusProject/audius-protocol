@@ -4,7 +4,7 @@ from typing import Any, Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
 from src.database_task import DatabaseTask
-from src.models.playlists import Playlist
+from src.models.playlists.playlist import Playlist
 from src.tasks.playlists import invalidate_old_playlist
 from src.utils import helpers
 from src.utils.user_event_constants import audius_data_event_types_arr
