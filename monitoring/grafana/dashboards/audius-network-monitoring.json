@@ -631,8 +631,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "purple",
-                  "value": null
+                  "color": "purple"
                 },
                 {
                   "color": "red",
@@ -770,8 +769,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -864,8 +862,7 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "green",
-                  "value": null
+                  "color": "green"
                 },
                 {
                   "color": "red",
@@ -920,27 +917,23 @@
     "templating": {
       "list": [
         {
-          "description": "network environment",
+          "allValue": ".*",
+          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
           "hide": 0,
-          "includeAll": false,
+          "includeAll": true,
+          "label": "Environment",
           "multi": false,
-          "name": "environment",
-          "options": [
-            {
-              "selected": true,
-              "text": "stage",
-              "value": "stage"
-            },
-            {
-              "selected": false,
-              "text": "prod",
-              "value": "prod"
-            }
-          ],
-          "query": "stage, prod",
-          "queryValue": "",
+          "name": "env",
+          "options": [],
+          "query": {
+            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
           "skipUrlSync": false,
-          "type": "custom"
+          "sort": 2,
+          "type": "query"
         }
       ]
     },
