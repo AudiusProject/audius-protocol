@@ -1,4 +1,3 @@
-import { logger } from 'ethers'
 import { Base, Services } from './base'
 
 export class AudiusData extends Base {
@@ -98,17 +97,17 @@ export class AudiusData extends Base {
   }
 
   /**
- * Delete a playlist using updated data contracts flow
- */
+   * Delete a playlist using updated data contracts flow
+   */
   async deletePlaylist({
     playlistId,
-    userId
+    userId,
+    logger = console
   }: {
     playlistId: number,
-    userId: number
+    userId: number,
+    logger: any
   }): Promise<{ blockHash: any; blockNumber: any; }> {
-    console.log(`asdf deleting from libs is this changing ${playlistId} ${userId}`)
-
     let respValues = {
       blockHash: null,
       blockNumber: null,
@@ -128,8 +127,7 @@ export class AudiusData extends Base {
         blockNumber: txReceipt.blockNumber,
       }
     } catch (e) {
-      console.log(`error delete playlist ${e}`)
-      logger.error(`Data create playlist: err ${e}`)
+      logger.error(`Data delete playlist: err ${e}`)
     }
     return respValues
   }
