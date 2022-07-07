@@ -847,7 +847,7 @@ async function ensureAppIsOnline(req, res, next) {
     return sendResponse(
       req,
       res,
-      errorResponseForbidden(`App shutdown in sequence`)
+      errorResponseForbidden('App shutdown in sequence')
     )
   }
 
