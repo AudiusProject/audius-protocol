@@ -8,6 +8,7 @@ const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
 const { RECONFIG_MODES } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
+const { getNewOrExistingSyncReq } = require('./stateReconciliation/stateReconciliationUtils')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -135,75 +136,93 @@ class StateMachineManager {
     this.enabledReconfigModesSet = enabledReconfigModesSet
   }
 
-    /**
-   * Issues syncRequest for user against secondary, and polls for replication up to primary
-   * If secondary fails to sync within specified timeoutMs, will error
-   */
-     async issueSyncRequestsUntilSynced(
-      secondaryUrl,
-      wallet,
-      primaryClockVal,
-      timeoutMs
-    ) {
-      // Issue syncRequest before polling secondary for replication
-      this.manualSyncQueue.add(
-
+  /**
+ * Issues syncRequest for user against secondary, and polls for replication up to primary
+ * If secondary fails to sync within specified timeoutMs, will error
+ */
+  async issueSyncRequestsUntilSynced(
+    secondaryUrl,
+    wallet,
+    primaryClockVal,
+    timeoutMs
+  ) {
+    // Issue syncRequest before polling secondary for replication
+    const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+      userWallet: wallet,
+      secondaryEndpoint: secondaryUrl,
+      primaryEndpoint: this.endpoint,
+      syncType: SyncType.Manual,
+      immediate: true
+    })
+    if (!_.isEmpty(duplicateSyncReq)) {
+      // Log duplicate and return 
+      baseLogger.warn(
+        `Duplicate sync request: ${duplicateSyncReq}`
       )
-      /*
-      await this.enqueueSync({
-        userWallet: wallet,
-        secondaryEndpoint: secondaryUrl,
-        primaryEndpoint: this.endpoint,
-        syncType: SyncType.Manual,
-        immediate: true
-      })
-      */
-  
-      // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
-      const start = Date.now()
-      while (Date.now() - start < timeoutMs) {
-        try {
-          // Retrieve secondary clock status for user
-          const secondaryClockStatusResp = await axios({
-            method: 'get',
-            baseURL: secondaryUrl,
-            url: `/users/clock_status/${wallet}`,
-            responseType: 'json',
-            timeout: 1000 // 1000ms = 1s
-          })
-          const { clockValue: secondaryClockVal, syncInProgress } =
-            secondaryClockStatusResp.data.data
-  
-          // If secondary is synced, return successfully
-          if (secondaryClockVal >= primaryClockVal) {
-            return
-  
-            // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
-          } else if (!syncInProgress) {
-
-      /*
-            await this.enqueueSync({
-              userWallet: wallet,
-              secondaryEndpoint: secondaryUrl,
-              primaryEndpoint: this.endpoint,
-              syncType: SyncType.Manual
-            })
-      */
-          }
-  
-          // Give secondary some time to process ongoing or newly enqueued sync
-          // NOTE - we might want to make this timeout longer
-          await Utils.timeout(500)
-        } catch (e) {
-          // do nothing and let while loop continue
-        }
-      }
-  
-      // This condition will only be hit if the secondary has failed to sync within timeoutMs
-      throw new Error(
-        `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
+      return
+    } else if (!_.isEmpty(syncReqToEnqueue)) {
+      const { jobName, jobData } = syncReqToEnqueue
+      await this.manualSyncQueue.add(jobName, jobData)
+    } else {
+      // Log error that the sync request couldn't be created and return 
+      baseLogger.error(
+        `Failed to create manual sync request: ${duplicateSyncReq}`
       )
+      return
     }
+
+    // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+    const start = Date.now()
+    while (Date.now() - start < timeoutMs) {
+      try {
+        // Retrieve secondary clock status for user
+        const secondaryClockStatusResp = await axios({
+          method: 'get',
+          baseURL: secondaryUrl,
+          url: `/users/clock_status/${wallet}`,
+          responseType: 'json',
+          timeout: 1000 // 1000ms = 1s
+        })
+        const { clockValue: secondaryClockVal, syncInProgress } =
+          secondaryClockStatusResp.data.data
+
+        // If secondary is synced, return successfully
+        if (secondaryClockVal >= primaryClockVal) {
+          return
+
+          // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
+        } else if (!syncInProgress) {
+
+          const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+            userWallet: wallet,
+            secondaryEndpoint: secondaryUrl,
+            primaryEndpoint: this.endpoint,
+            syncType: SyncType.Manual,
+          })
+          if (!_.isEmpty(duplicateSyncReq)) {
+            // TODO: Log duplicate and return or something
+          } else if (!_.isEmpty(syncReqToEnqueue)) {
+            const { jobName, jobData } = syncReqToEnqueue
+            await this.manualSyncQueue.add(jobName, jobData)
+          } else {
+            // TODO: Log error that the sync request couldn't be created and return or something
+          }
+
+        }
+
+        // Give secondary some time to process ongoing or newly enqueued sync
+        // NOTE - we might want to make this timeout longer
+        await Utils.timeout(500)
+      } catch (e) {
+        // do nothing and let while loop continue
+      }
+    }
+
+    // This condition will only be hit if the secondary has failed to sync within timeoutMs
+    throw new Error(
+      `Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`
+    )
+  }
 }
 
 module.exports = StateMachineManager
