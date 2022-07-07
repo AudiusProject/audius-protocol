@@ -464,7 +464,7 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.web3Config ? this.web3Config.dataContractAddress: null,
+        this.web3Config ? this.web3Config.dataContractAddress : null,
         this.isServer,
         this.logger
       )
