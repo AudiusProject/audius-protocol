@@ -133,7 +133,6 @@ const startApp = async () => {
     // Wrap up current queue jobs
     await serviceRegistry.wrapUpQueueJobs()
 
-    // kill app
     logger.info('Shutting down db and express app...', signal, error)
     sequelize.close()
     if (appInfo) {
