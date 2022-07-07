@@ -122,14 +122,15 @@ const startApp = async () => {
   serviceRegistry.initServicesThatRequireServer(appInfo.app)
 
   // when app terminates, close down any open DB connections gracefully
-  ON_DEATH((signal: any, error: any) => {
+  ON_DEATH(async (signal: any, error: any) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
 
     // Block further content upload
+    config.set('terminateApp', true)
 
-    // Wrap up queues to a timeout of 30s
+    // Wrap up current queue jobs
     await serviceRegistry.wrapUpQueueJobs()
 
     // kill app
