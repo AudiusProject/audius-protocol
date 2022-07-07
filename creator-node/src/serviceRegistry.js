@@ -50,13 +50,13 @@ class ServiceRegistry {
     this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
     this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
     this.imageProcessingQueue = ImageProcessingQueue // Resizes all images on Audius
-    this.transcodingQueue = TranscodingQueue // Transcodesa and segments all tracks
+    this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
-    this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchornously. Currently handles track upload and track hand off
+    this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
     this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
     this.recurringSyncQueue = null // Handles syncs that occur on a cadence, e.g. every hour
-    this.stateMonitoringQueue = null // // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
     this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
 
