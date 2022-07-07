@@ -2,7 +2,7 @@ const BullQueue = require('bull')
 
 const config = require('../../../config')
 const {
-  RECONCILIATION_QUEUE_HISTORY,
+  QUEUE_HISTORY,
   QUEUE_NAMES,
   JOB_NAMES,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,

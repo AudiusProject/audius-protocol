@@ -6,6 +6,9 @@
 A run monitoring up
 
 # A run monitoring down
+
+# optionally remove all grafana and prometheus data
+# sudo rm -rf ./data/
 ```
 
 Access Grafana by visiting:
@@ -43,6 +46,8 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
     - [Adding New Panels](#adding-new-panels)
       - [Common Patterns for Gauges](#common-patterns-for-gauges)
       - [Common Patterns for Histograms](#common-patterns-for-histograms)
+        - [Latency from Histograms](#latency-from-histograms)
+        - [Quantiles from Histograms](#quantiles-from-histograms)
     - [Configuring Panels](#configuring-panels)
       - [Query -> Code](#query-code)
         - [Metric Browser](#metric-browser)
@@ -64,6 +69,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
       - [Standard Options](#standard-options)
       - [Thresholds](#thresholds)
     - [Saving Dashboards](#saving-dashboards)
+      - [Saving Screenshots](#saving-screenshots)
       - [Saving Locally Developed Dashboards](#saving-locally-developed-dashboards)
       - [Saving Production Dashboards](#saving-production-dashboards)
         - [Saving Production Dashboards Within `prometheus-grafana-metrics`](#saving-production-dashboards-within-prometheus-grafana-metrics)
@@ -166,6 +172,8 @@ Notice how we restrict the `environment` and `host` labels associated with the m
 
 #### Common Patterns for Histograms
 
+##### Latency from Histograms
+
 A common pattern for histograms is to display the average latency of a recorded metric like the example below:
 
 > `max by (route) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~"$env", host=~"$host"}[5m]) / rate(audius_dn_flask_route_latency_seconds_count{environment=~"$env", host=~"$host"}[5m]))`
@@ -175,6 +183,10 @@ The bulk of the query comes from official docs on [calculating averages from his
 The remaining part of the query, `max by (route) (...)`, uses an [Aggregation Operator](https://prometheus.io/docs/prometheus/latest/querying/operators/#aggregation-operators) which will return the `max` value of the metric after consolidating on the `route` label.
 
 In this specific query, `max by (route)` will display the longest latency across a single `$host`, or all `$host` values if the Dashboard Variable is set to `All`. We use `max` here since it's more important to know that a `route` is being non-performant, regardless of `$host`, since it may be indicative of early warning stress/latency that may soon be appearing on all hosts.
+
+##### Quantiles from Histograms
+
+Additionally, histogram metrics keep track of metric values within different statistical buckets. In order to [expose quantile information](https://prometheus.io/docs/practices/histograms/#quantiles), combine histogram `_bucket` metrics with `histogram_quantile()`.
 
 ### Configuring Panels
 
@@ -305,6 +317,8 @@ Setting `Soft min` and `Soft max` is useful when displaying metrics that may occ
 
 `Unit` is perhaps the most important to set. Always ensure this is set.
 
+For large numbers, use the `short` `Unit`.
+
 The `Color Scheme` should remain set to `Classic Palette` to help standardize our visual experience, but sometimes `Green -> Red` or `Red -> Green` palettes are ideal.
 
 #### Thresholds
@@ -320,6 +334,12 @@ Modifications to production dashboards are internally tracked by Grafana in case
 * Click on `Versions` (from the left-sidebar)
 
 However, we track our dashboards via `git` as well since this allows us seemless local development of the same dashboards.
+
+#### Saving Screenshots
+
+Getting screenshots out of Grafana has [a long history of being tedious](https://github.com/grafana/grafana/issues/12607).
+
+However, we found good success when using the [GoFullPage Chrome extension](https://chrome.google.com/webstore/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl).
 
 #### Saving Locally Developed Dashboards
 
@@ -389,6 +409,9 @@ git pull
 
 # deploy the manual changes seen, as well as the new intended changes
 ./grafana/bin/upload-dashboards.sh
+
+# "manual mode" supports uploading one file at a time
+# ./grafana/bin/upload-dashboards.sh filename.json
 
 # return to the master branch prior to logging out
 # git checkout master

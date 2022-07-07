@@ -60,7 +60,6 @@ const services = [
 // The `additionalConfigs` is used for additional parameters for tests
 // * It is used to pass in `iterations` for the test_userReplicaSetNodes
 const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet, executeAllBatchSize = numUsers + 1, ...additionalConfigs }) => {
- logger.info(testFn)
  const wrappedTest = async ({ executeAll, executeOne }) => {
    try {
      const res = await testFn({

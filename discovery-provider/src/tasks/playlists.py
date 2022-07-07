@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
+from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
 from src.models.playlists.playlist import Playlist
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
@@ -35,6 +36,8 @@ def playlist_state_update(
     skipped_tx_count = 0
     # This stores the playlist_ids created or updated in the set of transactions
     playlist_ids: Set[int] = set()
+
+    challenge_bus = update_task.challenge_event_bus
 
     if not playlist_factory_txs:
         return num_total_changes, playlist_ids
@@ -109,6 +112,15 @@ def playlist_state_update(
         if value_obj["events"]:
             invalidate_old_playlist(session, playlist_id)
             session.add(value_obj["playlist"])
+            if (
+                playlist_event_types_lookup["playlist_track_added"]
+                in value_obj["events"]
+            ):
+                challenge_bus.dispatch(
+                    ChallengeEvent.first_playlist,
+                    value_obj["playlist"].blocknumber,
+                    value_obj["playlist"].playlist_owner_id,
+                )
 
     return num_total_changes, playlist_ids
 
