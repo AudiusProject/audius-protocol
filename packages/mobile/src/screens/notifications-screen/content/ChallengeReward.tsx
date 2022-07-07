@@ -59,7 +59,7 @@ const challengeInfoMap: Record<
     amount: 1
   },
   'send-first-tip': {
-    title: 'Send Your First Tip',
+    title: '🤑 Send Your First Tip',
     amount: 2
   }
 }
