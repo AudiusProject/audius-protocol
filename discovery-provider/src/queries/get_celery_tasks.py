@@ -3,11 +3,7 @@ from datetime import datetime
 
 import pytz
 from src.monitors import monitor_names, monitors
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    PrometheusRegistry,
-)
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -36,9 +32,7 @@ def celery_tasks_prometheus_exporter():
     active_tasks = all_tasks["active_tasks"]
     registered_tasks = all_tasks["registered_celery_tasks"]
 
-    metric = PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS]
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS)
 
     active_task_names = []
     for task in active_tasks:

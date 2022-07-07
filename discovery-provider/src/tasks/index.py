@@ -53,7 +53,6 @@ from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
-    PrometheusRegistry,
     save_duration_metric,
 )
 from src.utils.redis_cache import (
@@ -566,9 +565,7 @@ def index_blocks(self, db, blocks_list):
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
     changed_entity_ids_map = {}
-    metric = PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS]
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     for i in block_order_range:
         start_time = time.time()
         metric.reset_timer()

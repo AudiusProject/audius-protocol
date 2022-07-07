@@ -10,7 +10,6 @@ from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
-    PrometheusRegistry,
     save_duration_metric,
 )
 from src.utils.redis_constants import (
@@ -236,9 +235,7 @@ def update_track_is_available(self) -> None:
     have_lock = update_lock.acquire(blocking=False)
     if have_lock:
         metric = PrometheusMetric(
-            PrometheusRegistry[
-                PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS
-            ]
+            PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS
         )
         try:
             # TODO: we can deprecate this manual redis timestamp tracker once we confirm

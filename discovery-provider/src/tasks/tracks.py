@@ -18,11 +18,7 @@ from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    PrometheusRegistry,
-)
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.track_event_constants import (
     track_event_types_arr,
     track_event_types_lookup,
@@ -44,9 +40,7 @@ def track_state_update(
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
-    metric = PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS]
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS)
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0

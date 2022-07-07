@@ -23,7 +23,6 @@ from src.utils.config import shared_config
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
-    PrometheusRegistry,
     save_duration_metric,
 )
 from src.utils.redis_cache import set_json_cached_key
@@ -110,7 +109,7 @@ TRENDING_PARAMS = "trending_params"
 def update_view(session: Session, mat_view_name: str):
     start_time = time.time()
     metric = PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS]
+        PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS
     )
     session.execute(f"REFRESH MATERIALIZED VIEW {mat_view_name}")
     update_time = time.time() - start_time
@@ -128,9 +127,7 @@ def update_view(session: Session, mat_view_name: str):
 def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     logger.info("index_trending.py | starting indexing")
     update_start = time.time()
-    metric = PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS]
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS)
     with db.scoped_session() as session:
         genres = get_genres(session)
 

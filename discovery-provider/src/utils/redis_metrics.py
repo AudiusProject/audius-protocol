@@ -26,11 +26,7 @@ from src.models.metrics.aggregate_monthly_unique_users_metrics import (
 )
 from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    PrometheusRegistry,
-)
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.query_params import app_name_param, stringify_query_params
 from werkzeug.wrappers.response import Response as wResponse
 
@@ -656,9 +652,7 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        metric = PrometheusMetric(
-            PrometheusRegistry[PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS]
-        )
+        metric = PrometheusMetric(PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS)
 
         result = func(*args, **kwargs)
 

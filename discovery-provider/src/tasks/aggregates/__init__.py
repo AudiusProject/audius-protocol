@@ -7,11 +7,7 @@ from redis import Redis
 from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 from src.models.indexing.block import Block
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    PrometheusRegistry,
-)
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
     save_indexed_checkpoint,
@@ -79,7 +75,7 @@ def update_aggregate_table(
     current_checkpoint,
 ):
     metric = PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS]
+        PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS
     )
 
     # get name of the caller function

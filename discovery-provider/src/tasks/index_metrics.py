@@ -18,7 +18,6 @@ from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
-    PrometheusRegistry,
     save_duration_metric,
 )
 from src.utils.redis_metrics import (
@@ -419,7 +418,7 @@ def update_metrics(self):
                 f"index_metrics.py | update_metrics | {self.request.id} | Acquired update_metrics_lock"
             )
             metric = PrometheusMetric(
-                PrometheusRegistry[PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS]
+                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
             )
             sweep_metrics(db, redis)
             refresh_metrics_matviews(db)
@@ -461,7 +460,7 @@ def aggregate_metrics(self):
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
             )
             metric = PrometheusMetric(
-                PrometheusRegistry[PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS]
+                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
             )
             consolidate_metrics_from_other_nodes(self, db, redis)
             metric.save_time({"task_name": "aggregate_metrics"})
@@ -504,7 +503,7 @@ def synchronize_metrics(self):
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
             )
             metric = PrometheusMetric(
-                PrometheusRegistry[PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS]
+                PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
             )
             synchronize_all_node_metrics(self, db)
             metric.save_time({"task_name": "synchronize_metrics"})
