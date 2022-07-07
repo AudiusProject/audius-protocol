@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Integer, String, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class RouteMetrics(Base):
+class RouteMetrics(Base, RepresentableMixin):
     __tablename__ = "route_metrics"
 
     id = Column(Integer, primary_key=True)
@@ -16,14 +17,3 @@ class RouteMetrics(Base):
     updated_at = Column(
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
-
-    def __repr__(self):
-        return f"<RouteMetrics(\
-version={self.version},\
-route_path={self.route_path},\
-query_string={self.query_string},\
-count={self.count},\
-ip={self.ip},\
-timestamp={self.timestamp},\
-created_at={self.created_at},\
-updated_at={self.updated_at}"

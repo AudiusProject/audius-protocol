@@ -4,6 +4,7 @@ from typing import Union
 from redis import Redis
 from src.queries.get_related_artists import update_related_artist_scores_if_needed
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ def process_related_artists_queue(db: SessionManager, redis: Redis):
 
 
 @celery.task(name="index_related_artists", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_related_artists(self):
     redis = index_related_artists.redis
     db = index_related_artists.db

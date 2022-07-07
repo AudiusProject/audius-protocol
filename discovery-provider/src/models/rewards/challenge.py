@@ -2,6 +2,7 @@ import enum
 
 from sqlalchemy import Boolean, Column, Enum, Integer, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
 class ChallengeType(str, enum.Enum):
@@ -11,7 +12,7 @@ class ChallengeType(str, enum.Enum):
     trending = "trending"
 
 
-class Challenge(Base):
+class Challenge(Base, RepresentableMixin):
     """Represents a particular challenge type"""
 
     __tablename__ = "challenges"
@@ -30,13 +31,3 @@ class Challenge(Base):
     # if set, events emitted prior to the starting_block
     # will be ignord.
     starting_block = Column(Integer)
-
-    def __repr__(self):
-        return f"<Challenge(\
-id={self.id},\
-type={self.type},\
-amount={self.amount},\
-active={self.active},\
-step_count={self.step_count},\
-starting_block={self.starting_block},\
-"

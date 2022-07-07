@@ -1,8 +1,9 @@
 from sqlalchemy import Column, DateTime, Integer, String, func
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class AppNameMetrics(Base):
+class AppNameMetrics(Base, RepresentableMixin):
     __tablename__ = "app_name_metrics"
 
     id = Column(Integer, primary_key=True)
@@ -14,12 +15,3 @@ class AppNameMetrics(Base):
     updated_at = Column(
         DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
-
-    def __repr__(self):
-        return f"<AppNameMetrics(\
-application_name={self.application_name},\
-count={self.count},\
-ip={self.ip},\
-timestamp={self.timestamp},\
-created_at={self.created_at},\
-updated_at={self.updated_at}"

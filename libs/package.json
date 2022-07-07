@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "0.0.7",
+  "version": "0.0.11",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/types.d.ts",
@@ -74,7 +74,8 @@
     "secp256k1": "4.0.2",
     "semver": "6.3.0",
     "stream-browserify": "3.0.0",
-    "web3": "1.7.1"
+    "web3": "1.7.1",
+    "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.18.2",

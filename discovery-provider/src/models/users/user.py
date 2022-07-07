@@ -13,10 +13,14 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import validates
 from src.model_validator import ModelValidator
 from src.models.base import Base
-from src.models.model_utils import get_fields_to_validate, validate_field_helper
+from src.models.model_utils import (
+    RepresentableMixin,
+    get_fields_to_validate,
+    validate_field_helper,
+)
 
 
-class User(Base):
+class User(Base, RepresentableMixin):
     __tablename__ = "users"
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
@@ -64,30 +68,3 @@ class User(Base):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "User", getattr(User, field).type)
-
-    def __repr__(self):
-        return f"<User(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-txhash={self.txhash},\
-slot={self.slot},\
-user_storage_account={self.user_storage_account},\
-user_authority_account={self.user_authority_account},\
-user_id={self.user_id},\
-is_current={self.is_current},\
-handle={self.handle},\
-wallet={self.wallet},\
-is_creator={self.is_creator},\
-name={self.name},\
-profile_pic={self.profile_picture},\
-profile_pic_sizes={self.profile_picture_sizes},\
-cover_photo={self.cover_photo},\
-cover_photo_sizes={self.cover_photo_sizes},\
-bio={self.bio},\
-location={self.location},\
-metadata_multihash={self.metadata_multihash},\
-creator_node_endpoint={self.creator_node_endpoint},\
-primary_id={self.primary_id},\
-secondary_ids={self.secondary_ids},\
-replica_set_update_signer={self.replica_set_update_signer},\
-updated_at={self.updated_at},\
-created_at={self.created_at})>"

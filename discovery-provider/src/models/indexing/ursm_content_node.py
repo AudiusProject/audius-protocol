@@ -9,9 +9,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects import postgresql
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
-class URSMContentNode(Base):
+class URSMContentNode(Base, RepresentableMixin):
     __tablename__ = "ursm_content_nodes"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
@@ -29,18 +30,3 @@ class URSMContentNode(Base):
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, cnode_sp_id, txhash)
-
-    def __repr__(self):
-        return f"<URSMContentNode(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-slot={self.slot},\
-txhash={self.txhash},\
-is_current={self.is_current},\
-cnode_sp_id={self.cnode_sp_id},\
-delegate_owner_wallet={self.delegate_owner_wallet},\
-owner_wallet={self.owner_wallet},\
-proposer_sp_ids={self.proposer_sp_ids},\
-proposer_1_delegate_owner_wallet={self.proposer_1_delegate_owner_wallet},\
-proposer_2_delegate_owner_wallet={self.proposer_2_delegate_owner_wallet},\
-proposer_3_delegate_owner_wallet={self.proposer_3_delegate_owner_wallet},\
-endpoint={self.endpoint})>"

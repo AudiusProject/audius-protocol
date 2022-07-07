@@ -1,8 +1,10 @@
-const { sampleSize } = require('lodash')
+import { sampleSize } from 'lodash'
 
-const { Base } = require('./base')
-const { timeRequests } = require('../utils/network')
-const { CreatorNodeSelection } = require('../services/creatorNode')
+import { Base } from './base'
+import { timeRequests } from '../utils/network'
+import { CreatorNodeSelection } from '../services/creatorNode'
+
+import type { Nullable, ServiceWithEndpoint } from '../utils'
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
@@ -24,34 +26,36 @@ const CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA = 200
 class ServiceProvider extends Base {
   /* ------- Content Node  ------- */
 
-  async listCreatorNodes () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CONTENT_NODE_SERVICE_NAME)
+  async listCreatorNodes() {
+    return await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+      CONTENT_NODE_SERVICE_NAME
+    )
   }
 
   /**
    * Fetches healthy Content Nodes filtered down to a given whitelist and blacklist
-   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
-   * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
    */
-  async getSelectableCreatorNodes (
-    whitelist = null,
-    blacklist = null,
+  async getSelectableCreatorNodes(
+    whitelist: Nullable<Set<string>> = null, // whether or not to include only specified nodes (default no whiltelist)
+    blacklist: Nullable<Set<string>> = null, // whether or not to exclude any nodes (default no blacklist)
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   ) {
     let creatorNodes = await this.listCreatorNodes()
 
     // Filter whitelist
     if (whitelist) {
-      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
+      creatorNodes = creatorNodes.filter((node) => whitelist.has(node.endpoint))
     }
     // Filter blacklist
     if (blacklist) {
-      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
+      creatorNodes = creatorNodes.filter(
+        (node) => !blacklist.has(node.endpoint)
+      )
     }
 
     // Time requests and get version info
     const timings = await timeRequests({
-      requests: creatorNodes.map(node => ({
+      requests: creatorNodes.map((node) => ({
         id: node.endpoint,
         url: `${node.endpoint}/health_check/verbose`
       })),
@@ -59,9 +63,10 @@ class ServiceProvider extends Base {
       timeout
     })
 
-    const services = {}
-    timings.forEach(timing => {
-      if (timing.response) services[timing.request.id] = timing.response.data.data
+    const services: { [id: string]: any } = {}
+    timings.forEach((timing) => {
+      if (timing.response && timing.request.id)
+        services[timing.request.id] = timing.response.data.data
     })
 
     return services
@@ -80,7 +85,7 @@ class ServiceProvider extends Base {
    * // secondaries: string[]
    * // services: { creatorNodeEndpoint: healthCheckResponse }
    */
-  async autoSelectCreatorNodes ({
+  async autoSelectCreatorNodes({
     numberOfNodes = 3,
     whitelist = null,
     blacklist = null,
@@ -104,14 +109,17 @@ class ServiceProvider extends Base {
       preferHigherPatchForSecondaries
     })
 
-    const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck, log)
+    const { primary, secondaries, services } =
+      await creatorNodeSelection.select(performSyncCheck, log)
     return { primary, secondaries, services }
   }
 
   /* ------- Discovery Node ------ */
 
-  async listDiscoveryProviders () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_NODE_SERVICE_NAME)
+  async listDiscoveryProviders() {
+    return await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+      DISCOVERY_NODE_SERVICE_NAME
+    )
   }
 
   /**
@@ -119,27 +127,44 @@ class ServiceProvider extends Base {
    * unique service operators.
    * Throws if unable to find a large enough list.
    * @param {number} quorumSize
-   * @param {any[]} discoveryProviders the verbose list of discovery providers to select from
+   * @param {any[]} discoveryNodes the verbose list of discovery nodes to select from
    * @param {(node: { delegateOwnerWallet: string }) => boolean} filter an optional filter step to remove certain nodes
    */
-  async getUniquelyOwnedDiscoveryNodes (quorumSize, discoveryProviders = [], filter = (node) => true) {
-    if (!discoveryProviders || discoveryProviders.length === 0) {
-      discoveryProviders = await this.discoveryProvider.serviceSelector.findAll({ verbose: true })
+  async getUniquelyOwnedDiscoveryNodes({
+    quorumSize,
+    discoveryNodes = [],
+    filter = (_) => true,
+    useWhitelist = true
+  }: {
+    quorumSize: number
+    discoveryNodes?: ServiceWithEndpoint[]
+    filter: (node: ServiceWithEndpoint) => boolean
+    useWhitelist?: boolean
+  }) {
+    if (!discoveryNodes || discoveryNodes.length === 0) {
+      // Whitelist logic: if useWhitelist is false, pass in null to override internal whitelist logic; if true, pass in undefined
+      // so service selector uses internal whitelist
+      discoveryNodes = (await this.discoveryProvider.serviceSelector.findAll({
+        verbose: true,
+        whitelist: useWhitelist ? undefined : null
+      })) as ServiceWithEndpoint[]
     }
 
-    discoveryProviders.filter(filter)
+    discoveryNodes.filter(filter)
 
     // Group nodes by owner
-    const grouped = discoveryProviders.reduce((acc, curr) => {
+    const grouped = discoveryNodes.reduce<{
+      [owner: string]: ServiceWithEndpoint[]
+    }>((acc, curr) => {
       if (curr.owner in acc) {
-        acc[curr.owner].push(curr)
+        acc[curr.owner]?.push(curr)
       } else {
         acc[curr.owner] = [curr]
       }
       return acc
     }, {})
 
-    if (Object.keys(grouped) < quorumSize) {
+    if (Object.keys(grouped).length < quorumSize) {
       throw new Error('Not enough unique owners to choose from')
     }
 
@@ -147,7 +172,10 @@ class ServiceProvider extends Base {
     const owners = sampleSize(Object.keys(grouped), quorumSize)
 
     // Select 1 node from each owner selected
-    return owners.map(owner => sampleSize(grouped[owner], 1)[0].endpoint)
+    return owners.map(
+      (owner) =>
+        (sampleSize(grouped[owner], 1)[0] as ServiceWithEndpoint).endpoint
+    )
   }
 }
 

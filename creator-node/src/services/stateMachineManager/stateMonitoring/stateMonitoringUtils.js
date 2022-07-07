@@ -1,17 +1,23 @@
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
+const retry = require('async-retry')
 
 const config = require('../../../config')
 const Utils = require('../../../utils')
-const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const { logger } = require('../../../logging')
+
+const { isPrimaryHealthy } = require('../CNodeHealthManager')
 const SecondarySyncHealthTracker = require('../../../snapbackSM/secondarySyncHealthTracker')
+const DBManager = require('../../../dbManager')
+
 const {
   AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE,
   GET_NODE_USERS_TIMEOUT_MS,
   GET_NODE_USERS_CANCEL_TOKEN_MS,
-  GET_NODE_USERS_DEFAULT_PAGE_SIZE
+  GET_NODE_USERS_DEFAULT_PAGE_SIZE,
+  SYNC_MODES,
+  FETCH_FILES_HASH_NUM_RETRIES
 } = require('../stateMachineConstants')
 
 const MIN_FAILED_SYNC_REQUESTS_BEFORE_RECONFIG = config.get(
@@ -391,10 +397,106 @@ const _aggregateOps = async (
   return { requiredUpdateReplicaSetOps, potentialSyncRequests }
 }
 
+/**
+ * Given user state info, determines required sync mode for user and replica. This fn is called for each (primary, secondary) pair
+ *
+ * It is possible for filesHashes to diverge despite clock equality because clock equality can happen if different content with same number of clockRecords is uploaded to different replicas.
+ * This is an error condition and needs to be identified and rectified.
+ *
+ * @param {Object} param
+ * @param {string} param.wallet user wallet
+ * @param {number} param.primaryClock clock value on user's primary
+ * @param {number} param.secondaryClock clock value on user's secondary
+ * @param {string} param.primaryFilesHash filesHash on user's primary
+ * @param {string} param.secondaryFilesHash filesHash on user's secondary
+ * @returns {SYNC_MODES} syncMode one of None, SyncSecondaryFromPrimary, MergePrimaryAndSecondary
+ */
+const computeSyncModeForUserAndReplica = async ({
+  wallet,
+  primaryClock,
+  secondaryClock,
+  primaryFilesHash,
+  secondaryFilesHash
+}) => {
+  if (
+    !Number.isInteger(primaryClock) ||
+    !Number.isInteger(secondaryClock) ||
+    // `null` is a valid filesHash value; `undefined` is not
+    primaryFilesHash === undefined ||
+    secondaryFilesHash === undefined
+  ) {
+    throw new Error(
+      '[computeSyncModeForUserAndReplica()] Error: Missing or invalid params'
+    )
+  }
+
+  if (
+    primaryClock === secondaryClock &&
+    primaryFilesHash !== secondaryFilesHash
+  ) {
+    /**
+     * This is an error condition, indicating that primary and secondary states for user have diverged.
+     * To fix this issue, primary should sync content from secondary and then force secondary to resync its entire state from primary.
+     */
+    return SYNC_MODES.MergePrimaryAndSecondary
+  } else if (primaryClock < secondaryClock) {
+    /**
+     * Secondary has more data than primary -> primary must sync from secondary
+     */
+
+    return SYNC_MODES.MergePrimaryAndSecondary
+  } else if (primaryClock > secondaryClock && secondaryFilesHash === null) {
+    /**
+     * secondaryFilesHash will be null if secondary has no clockRecords for user -> secondary must sync from primary
+     */
+
+    return SYNC_MODES.SyncSecondaryFromPrimary
+  } else if (primaryClock > secondaryClock && secondaryFilesHash !== null) {
+    /**
+     * If primaryClock > secondaryClock, need to check that nodes have same content for each clock value. To do this, we compute filesHash from primary matching clock range from secondary.
+     */
+
+    let primaryFilesHashForRange
+    try {
+      // Throws error if fails after all retries
+      primaryFilesHashForRange = await Utils.asyncRetry({
+        asyncFn: async () =>
+          DBManager.fetchFilesHashFromDB({
+            lookupKey: { lookupWallet: wallet },
+            clockMin: 0,
+            clockMax: secondaryClock + 1
+          }),
+        options: { retries: FETCH_FILES_HASH_NUM_RETRIES },
+        logger,
+        logLabel:
+          '[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()]'
+      })
+    } catch (e) {
+      const errorMsg = `[computeSyncModeForUserAndReplica()] [DBManager.fetchFilesHashFromDB()] Error - ${e.message}`
+      logger.error(errorMsg)
+      throw new Error(errorMsg)
+    }
+
+    if (primaryFilesHashForRange === secondaryFilesHash) {
+      return SYNC_MODES.SyncSecondaryFromPrimary
+    } else {
+      return SYNC_MODES.MergePrimaryAndSecondary
+    }
+  } else {
+    /**
+     * primaryClock === secondaryClock && primaryFilesHash === secondaryFilesHash
+     * Nodes have identical data = healthy state -> no sync needed
+     */
+
+    return SYNC_MODES.None
+  }
+}
+
 module.exports = {
   getLatestUserIdFromDiscovery,
   getNodeUsers,
   buildReplicaSetNodesToUserWalletsMap,
   computeUserSecondarySyncSuccessRatesMap,
-  aggregateReconfigAndPotentialSyncOps
+  aggregateReconfigAndPotentialSyncOps,
+  computeSyncModeForUserAndReplica
 }

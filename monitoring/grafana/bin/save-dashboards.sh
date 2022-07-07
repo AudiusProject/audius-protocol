@@ -27,7 +27,8 @@ CLEAR_DASHBOARD_ID='.id = null'
 
 # CLEAR PROMETHEUS UID
 # clears prometheus uid since each deployment is unique
-CLEAR_PROM_UID='del(.panels[].targets[]?.datasource.uid)'
+CLEAR_PROM_TARGET_UID='del(.panels[].targets[]?.datasource.uid)'
+CLEAR_PROM_PANEL_UID='del(.panels[].datasource)'
 
 # RESET TIME WINDOW AND REFRESH TIMES
 # restrict time windows to avoid Prometheus pressure
@@ -46,7 +47,8 @@ RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
-for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | .uid')
+
+for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
 do
     response=$(curl \
         -s \
@@ -55,20 +57,25 @@ do
         -H 'Accept: application/json' \
         ${BASE_URL}/api/dashboards/uid/${uid})
 
-    slug=$(echo $response | jq -r '.meta.slug')
-    path=grafana/dashboards/$slug.json
-    echo $response \
+    # create local filepath using the .meta key
+    slug=$(echo ${response} | jq -r '.meta.slug')
+    path=grafana/dashboards
+    mkdir -p "${path}"
+    path=${path}/${slug}.json
+
+    echo ${response} \
         | jq "${CLEAR_METADATA}" \
         | jq "${CLEAR_ITERATION}" \
         | jq "${CLEAR_VERSION}" \
         | jq "${CLEAR_DASHBOARD_ID}" \
-        | jq "${CLEAR_PROM_UID}" \
+        | jq "${CLEAR_PROM_TARGET_UID}" \
+        | jq "${CLEAR_PROM_PANEL_UID}" \
         | jq "${SET_TIME_WINDOW_FROM}" \
         | jq "${SET_TIME_WINDOW_TO}" \
         | jq "${SET_REFRESH_INTERVAL}" \
         | jq "${SET_TIME_DELAY}" \
         | jq "${RESET_TEMPLATE_SELECTION}" \
         | jq "${PUSH_FORMATTING}" \
-        > ${path}
+        > "${path}"
     echo "Saved to: ${path}"
 done
