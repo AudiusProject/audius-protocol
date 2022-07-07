@@ -79,6 +79,7 @@ class PrometheusMetricNames:
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
+    TRACK_STATE_UPDATE_DURATION_SECONDS = "track_state_update_duration_seconds"
 
 
 PrometheusRegistry = {
@@ -136,6 +137,11 @@ PrometheusRegistry = {
     PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS}",
         "Runtimes for src.task.users:user_state_update()",
+        ("scope",),
+    ),
+    PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS}",
+        "Runtimes for src.task.tracks:track_state_update()",
         ("scope",),
     ),
 }
