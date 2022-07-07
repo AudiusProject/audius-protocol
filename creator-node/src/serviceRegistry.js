@@ -54,11 +54,12 @@ class ServiceRegistry {
     this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
-    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
-    this.recurringSyncQueue = null // Handles syncs that occur on a cadence, e.g. every hour
     this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.cNodeEndpointToSpIdMapQueue = null // HAndles jobs for updating CNodeEndpointToSpIdMap
     this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
+    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
+    this.recurringSyncQueue = null // DEPRECATED -- Handles syncs that occur on a cadence, e.g. every hour
 
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
@@ -129,15 +130,9 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
-  setupBullMonitoring(
-    app,
-    stateMonitoringQueue,
-    cNodeEndpointToSpIdMapQueue,
-    stateReconciliationQueue
-  ) {
+  _setupBullMonitoring(app) {
     this.logInfo('Setting up Bull queue monitoring...')
 
-    const serverAdapter = new ExpressAdapter()
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
     const { queue: imageProcessingQueue } = this.imageProcessingQueue
@@ -147,36 +142,39 @@ class ServiceRegistry {
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
     // Make state machine queues truncate long data (they have jobs with large inputs and outputs)
-    const stateMonitoringAdapter = new BullAdapter(stateMonitoringQueue, {
+    const stateMonitoringAdapter = new BullAdapter(this.stateMonitoringQueue, {
       readOnlyMode: true
     })
     const stateReconciliationAdapter = new BullAdapter(
-      stateReconciliationQueue,
+      this.stateReconciliationQueue,
       { readOnlyMode: true }
     )
 
     // These queues have very large inputs and outputs, so we truncate job
     // data and results that are nested >=5 levels or contain strings >=10,000 characters
-    stateMonitoringAdapter.setFormatter('data', this.truncateBull.bind(this))
+    stateMonitoringAdapter.setFormatter('data', this._truncateBull.bind(this))
     stateMonitoringAdapter.setFormatter(
       'returnValue',
-      this.truncateBull.bind(this)
+      this._truncateBull.bind(this)
     )
     stateReconciliationAdapter.setFormatter(
       'data',
-      this.truncateBull.bind(this)
+      this._truncateBull.bind(this)
     )
     stateReconciliationAdapter.setFormatter(
       'returnValue',
-      this.truncateBull.bind(this)
+      this._truncateBull.bind(this)
     )
 
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
+    const serverAdapter = new ExpressAdapter()
     createBullBoard({
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
-        new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
+        new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
+          readOnlyMode: true
+        }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
@@ -210,7 +208,7 @@ class ServiceRegistry {
    * - [Truncated array with <length> elements],
    * - [Truncated object with <length> keys]
    */
-  truncateBull(dataToTruncate, curDepth = 0) {
+  _truncateBull(dataToTruncate, curDepth = 0) {
     if (
       typeof dataToTruncate === 'object' &&
       dataToTruncate !== null &&
@@ -224,7 +222,7 @@ class ServiceRegistry {
           }
           const truncatedArr = []
           dataToTruncate.forEach((element) => {
-            truncatedArr.push(this.truncateBull(element, newDepth))
+            truncatedArr.push(this._truncateBull(element, newDepth))
           })
           return truncatedArr
         }
@@ -242,13 +240,13 @@ class ServiceRegistry {
                 json[key] =
                   value.length > 100
                     ? `[Truncated array with ${value.length} elements]`
-                    : this.truncateBull(value, newDepth)
+                    : this._truncateBull(value, newDepth)
               } else {
                 const length = Object.keys(value).length
                 json[key] =
                   length > 100
                     ? `[Truncated object with ${length} keys]`
-                    : this.truncateBull(value, newDepth)
+                    : this._truncateBull(value, newDepth)
               }
               break
             default:
@@ -275,7 +273,7 @@ class ServiceRegistry {
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
-  async initServicesThatRequireServer(app) {
+   async initServicesThatRequireServer(app) {
     const start = getStartTime()
 
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
@@ -285,12 +283,17 @@ class ServiceRegistry {
     // SnapbackSM init (requires L1 identity)
     // Retries indefinitely
     await this._initSnapbackSM()
+
+    // Init StateMachineManager
     this.stateMachineManager = new StateMachineManager()
     const {
       stateMonitoringQueue,
       cNodeEndpointToSpIdMapQueue,
       stateReconciliationQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
+    this.stateMonitoringQueue = stateMonitoringQueue
+    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
+    this.stateReconciliationQueue = stateReconciliationQueue
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
@@ -310,12 +313,7 @@ class ServiceRegistry {
     await this.skippedCIDsRetryQueue.init()
 
     try {
-      this.setupBullMonitoring(
-        app,
-        stateMonitoringQueue,
-        cNodeEndpointToSpIdMapQueue,
-        stateReconciliationQueue
-      )
+      this._setupBullMonitoring(app)
     } catch (e) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
