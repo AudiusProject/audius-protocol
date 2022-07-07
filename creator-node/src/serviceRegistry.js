@@ -55,7 +55,7 @@ class ServiceRegistry {
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
     this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
-    this.cNodeEndpointToSpIdMapQueue = null // HAndles jobs for updating CNodeEndpointToSpIdMap
+    this.cNodeEndpointToSpIdMapQueue = null // Handles jobs for updating CNodeEndpointToSpIdMap
     this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
     this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
     this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
