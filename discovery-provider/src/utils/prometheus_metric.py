@@ -17,15 +17,15 @@ def save_duration_metric(metric_group):
         @wraps(func)
         def wrapper(*args, **kwargs):
             histogram_metric = PrometheusMetric(
-                f"{metric_group}_completed_duration_seconds",
-                f"How long a {metric_group} took to complete",
-                ("func_name", "success"),
+                PrometheusRegistry[
+                    PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS
+                ]
             )
+
             gauge_metric = PrometheusMetric(
-                f"{metric_group}_last_duration_seconds",
-                f"How long the last {metric_group} ran",
-                ("func_name", "success"),
-                metric_type=PrometheusType.GAUGE,
+                PrometheusRegistry[
+                    PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
+                ]
             )
             try:
                 # safely return this result under all circumstances
@@ -70,42 +70,52 @@ class PrometheusType:
     GAUGE = "gauge"
 
 
+METRIC_PREFIX = "audius_dn"
+
+
+class PrometheusMetricNames:
+    FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
+    CELERY_TASK_COMPLETED_DURATION_SECONDS = "celery_task_completed_duration_seconds"
+    CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
+
+
+PrometheusRegistry = {
+    PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS}",
+        "Runtimes for flask routes",
+        (
+            "route",
+            "code",
+        ),
+    ),
+    PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS}",
+        "How long a celery_task took to complete",
+        (
+            "func_name",
+            "success",
+        ),
+    ),
+    PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS}",
+        "How long the last celery_task ran",
+        (
+            "func_name",
+            "success",
+        ),
+    ),
+}
+
+
 class PrometheusMetric:
-    histograms: Dict[str, Histogram] = {}
-    gauges: Dict[str, Gauge] = {}
     registered_collectors: Dict[str, Callable] = {}
 
-    def __init_metric(
-        self, name, description, labelnames, collection, prometheus_metric_cls
-    ):
-        if name not in collection:
-            collection[name] = prometheus_metric_cls(
-                name, description, labelnames=labelnames
-            )
-        self.metric = collection[name]
-
-    def __init__(
-        self, name, description, labelnames=(), metric_type=PrometheusType.HISTOGRAM
-    ):
+    def __init__(self, name):
         self.reset_timer()
 
-        # set metric prefix of audius_project_
-        name = f"audius_dn_{name}"
-
-        # CollectorRegistries must be uniquely named
-        # NOTE: we only set labelnames once.
-        # unsure if overloading is supported.
-        self.metric_type = metric_type
-        if self.metric_type == PrometheusType.HISTOGRAM:
-            self.__init_metric(
-                name, description, labelnames, PrometheusMetric.histograms, Histogram
-            )
-        elif self.metric_type == PrometheusType.GAUGE:
-            self.__init_metric(
-                name, description, labelnames, PrometheusMetric.gauges, Gauge
-            )
-        else:
-            raise TypeError(f"metric_type '{self.metric_type}' not found")
+        if name not in PrometheusRegistry:
+            raise TypeError(f"Metric name '{name}' not found")
+        self.metric = PrometheusRegistry[name]
 
     def reset_timer(self):
         self.start_time = time()
@@ -123,9 +133,9 @@ class PrometheusMetric:
         if labels:
             this_metric = this_metric.labels(**labels)
 
-        if self.metric_type == PrometheusType.HISTOGRAM:
+        if isinstance(self.metric, Histogram):
             this_metric.observe(value)
-        elif self.metric_type == PrometheusType.GAUGE:
+        elif isinstance(self.metric, Gauge):
             this_metric.set(value)
 
     @classmethod
