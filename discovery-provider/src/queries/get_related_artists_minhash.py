@@ -6,7 +6,11 @@ from sqlalchemy.orm import Session
 
 top_k = 100
 num_perm = 256
-MIN_FOLLOWER_REQUIREMENT = 200
+
+# was 200 before, but since mh.count() is aprox.
+# and we filter on >= 200 in get_related_artists query
+# set to 150 here
+MIN_FOLLOWER_REQUIREMENT = 150
 
 
 def build_minhash(session: Session):
