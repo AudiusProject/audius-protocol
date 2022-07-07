@@ -27,7 +27,7 @@ const reconfigNodeWhitelist = config.get('reconfigNodeWhitelist')
  * @param {number} param.secondary1 the current secondary1 endpoint of the user whose replica set will be reconfigured
  * @param {number} param.secondary2 the current secondary2 endpoint of the user whose replica set will be reconfigured
  * @param {string[]} param.unhealthyReplicas the endpoints of the user's replica set that are currently unhealthy
- * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of user's node endpoint strings to clock value of node for user whose replica set should be updated
+ * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  */
 module.exports = async function ({
@@ -38,7 +38,7 @@ module.exports = async function ({
   secondary1,
   secondary2,
   unhealthyReplicas,
-  replicaSetNodesToUserClockStatusesMap,
+  replicaToUserInfoMap,
   enabledReconfigModes
 }) {
   /**
@@ -70,7 +70,7 @@ module.exports = async function ({
     wallet,
     unhealthyReplicas,
     healthyNodes,
-    replicaSetNodesToUserClockStatusesMap,
+    replicaToUserInfoMap,
     enabledReconfigModes
   )
 
@@ -87,7 +87,7 @@ module.exports = async function ({
       secondary2,
       unhealthyReplicasSet: new Set(unhealthyReplicas || []),
       healthyNodes,
-      replicaSetNodesToUserClockStatusesMap,
+      replicaToUserInfoMap,
       enabledReconfigModes
     })
     ;({ errorMsg, issuedReconfig, syncJobsToEnqueue } =
@@ -145,6 +145,7 @@ module.exports = async function ({
  * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
  * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
  * @param {Object} param.replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
+ * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {string[]} param.enabledReconfigModes array of which reconfig modes are enabled
  * @returns {Object}
  * {
@@ -162,7 +163,7 @@ const _determineNewReplicaSet = async ({
   wallet,
   unhealthyReplicasSet = new Set(),
   healthyNodes,
-  replicaSetNodesToUserClockStatusesMap,
+  replicaToUserInfoMap,
   enabledReconfigModes
 }) => {
   const currentReplicaSet = [primary, secondary1, secondary2]
@@ -183,7 +184,7 @@ const _determineNewReplicaSet = async ({
       secondary1,
       secondary2,
       unhealthyReplicasSet,
-      replicaSetNodesToUserClockStatusesMap,
+      replicaToUserInfoMap,
       newReplicaNodes[0],
       enabledReconfigModes
     )
@@ -216,7 +217,7 @@ const _validateJobData = (
   wallet,
   unhealthyReplicas,
   healthyNodes,
-  replicaSetNodesToUserClockStatusesMap,
+  replicaToUserInfoMap,
   enabledReconfigModes
 ) => {
   if (typeof logger !== 'object') {
@@ -255,11 +256,11 @@ const _validateJobData = (
     )
   }
   if (
-    typeof replicaSetNodesToUserClockStatusesMap !== 'object' ||
-    replicaSetNodesToUserClockStatusesMap instanceof Array
+    typeof replicaToUserInfoMap !== 'object' ||
+    replicaToUserInfoMap instanceof Array
   ) {
     throw new Error(
-      `Invalid type ("${typeof replicaSetNodesToUserClockStatusesMap}") or value ("${replicaSetNodesToUserClockStatusesMap}") of replicaSetNodesToUserClockStatusesMap`
+      `Invalid type ("${typeof replicaToUserInfoMap}") or value ("${replicaToUserInfoMap}") of replicaToUserInfoMap`
     )
   }
   if (!(enabledReconfigModes instanceof Array)) {
@@ -275,7 +276,7 @@ const _validateJobData = (
  * @param {*} secondary1 user's current first secondary endpoint
  * @param {*} secondary2 user's current second secondary endpoint
  * @param {*} unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
- * @param {*} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to clock value of secondary for user whose replica set should be updated
+ * @param {Object} param.replicaToUserInfoMap map(secondary endpoint => { clock, filesHash }) map of user's node endpoint strings to user info on node for user whose replica set should be updated
  * @param {*} newReplicaNode endpoint of node that will replace the unhealthy node
  * @returns reconfig info to update the user's replica set to replace the 1 unhealthy node
  */
@@ -284,7 +285,7 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   secondary1,
   secondary2,
   unhealthyReplicasSet,
-  replicaSetNodesToUserClockStatusesMap,
+  replicaToUserInfoMap,
   newReplicaNode,
   enabledReconfigModes
 ) => {
@@ -292,8 +293,8 @@ const _determineNewReplicaSetWhenOneNodeIsUnhealthy = (
   // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
   if (unhealthyReplicasSet.has(primary)) {
     const [newPrimary, currentHealthySecondary] =
-      replicaSetNodesToUserClockStatusesMap[secondary1] >=
-      replicaSetNodesToUserClockStatusesMap[secondary2]
+      replicaToUserInfoMap[secondary1].clock >=
+      replicaToUserInfoMap[secondary2].clock
         ? [secondary1, secondary2]
         : [secondary2, secondary1]
     return {

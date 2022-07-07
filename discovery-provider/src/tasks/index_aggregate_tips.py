@@ -6,9 +6,11 @@ from typing import List, TypedDict
 from redis import Redis
 from sqlalchemy import func, text
 from sqlalchemy.orm.session import Session
-from src.models import SupporterRankUp, UserTip
+from src.models.users.supporter_rank_up import SupporterRankUp
+from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_aggregate_tips_slot_key,
     latest_sol_user_bank_slot_key,
@@ -218,6 +220,7 @@ def _update_aggregate_tips(session: Session, redis: Redis):
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_aggregate_tips", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_aggregate_tips(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

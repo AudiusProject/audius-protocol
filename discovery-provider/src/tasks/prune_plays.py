@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import text
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,7 @@ def _prune_plays(
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="prune_plays", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def prune_plays(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

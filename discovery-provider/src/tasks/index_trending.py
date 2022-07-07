@@ -5,7 +5,8 @@ from typing import List, Optional, Tuple
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from src.models import Block, Track
+from src.models.indexing.block import Block
+from src.models.tracks.track import Track
 from src.queries.get_trending_tracks import (
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
@@ -19,7 +20,7 @@ from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
@@ -263,6 +264,7 @@ def get_should_update_trending(
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_trending", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db

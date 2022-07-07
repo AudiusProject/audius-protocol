@@ -8,7 +8,9 @@ import sqlalchemy
 from flask import Blueprint, request
 from src import api_helpers, exceptions
 from src.api.v1.helpers import extend_search
-from src.models import Follow, RepostType, Save, SaveType
+from src.models.social.follow import Follow
+from src.models.social.repost import RepostType
+from src.models.social.save import Save, SaveType
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks

@@ -4,7 +4,7 @@ from typing import TypedDict
 
 from sqlalchemy import desc, func
 from sqlalchemy.orm.session import Session
-from src.models import HourlyPlayCounts
+from src.models.social.hourly_play_counts import HourlyPlayCounts
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

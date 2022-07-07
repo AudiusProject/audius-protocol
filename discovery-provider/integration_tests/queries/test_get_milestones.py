@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
-from src.models import Milestone, MilestoneName
+from src.models.notifications.milestone import Milestone, MilestoneName
 from src.queries.notifications import get_milestone_info
 from src.utils.db_session import get_db
 

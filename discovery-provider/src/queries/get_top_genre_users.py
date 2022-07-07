@@ -1,7 +1,9 @@
 import logging
 
 from sqlalchemy import asc, desc, func
-from src.models import Follow, Track, User
+from src.models.social.follow import Follow
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import paginate_query, populate_user_metadata
 from src.utils.db_session import get_db_read_replica

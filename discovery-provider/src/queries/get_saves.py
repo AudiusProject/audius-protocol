@@ -1,5 +1,7 @@
 from src import exceptions
-from src.models import Playlist, Save, SaveType, Track
+from src.models.playlists.playlist import Playlist
+from src.models.social.save import Save, SaveType
+from src.models.tracks.track import Track
 from src.queries.query_helpers import paginate_query
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica

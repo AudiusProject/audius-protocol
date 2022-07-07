@@ -12,8 +12,9 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models import User, UserBankAccount, UserBankTransaction
-from src.models.user_tip import UserTip
+from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount, UserBankTransaction
+from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
@@ -40,6 +41,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
@@ -547,6 +549,7 @@ def process_user_bank_txs():
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_user_bank", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_user_bank(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

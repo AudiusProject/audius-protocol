@@ -1,4 +1,4 @@
-from src.models import Block
+from src.models.indexing.block import Block
 from src.queries.get_block_confirmation import get_block_confirmation
 
 

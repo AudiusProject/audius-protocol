@@ -3,7 +3,11 @@ from typing import Optional, TypedDict, cast
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_, or_
-from src.models import Playlist, Repost, RepostType, SaveType, Track, User
+from src.models.playlists.playlist import Playlist
+from src.models.social.repost import Repost, RepostType
+from src.models.social.save import SaveType
+from src.models.tracks.track import Track
+from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.query_helpers import (
     add_query_pagination,

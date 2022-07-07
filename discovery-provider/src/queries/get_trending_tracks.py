@@ -2,7 +2,7 @@ from typing import Optional, TypedDict
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models import TrackTrendingScore
+from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     get_users_by_id,

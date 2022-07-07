@@ -7,7 +7,8 @@ from typing import Dict, Optional, Tuple, TypedDict, cast
 from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
-from src.models import Block, IPLDBlacklistBlock
+from src.models.indexing.block import Block
+from src.models.indexing.ipld_blacklist_block import IPLDBlacklistBlock
 from src.monitors import monitor_names, monitors
 from src.queries.get_balances import (
     IMMEDIATE_REFRESH_REDIS_PREFIX,

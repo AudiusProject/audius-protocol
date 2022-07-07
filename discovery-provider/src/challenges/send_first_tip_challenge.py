@@ -6,7 +6,7 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import UserChallenge
+from src.models.rewards.user_challenge import UserChallenge
 
 
 class SendFirstTipChallengeUpdater(ChallengeUpdater):

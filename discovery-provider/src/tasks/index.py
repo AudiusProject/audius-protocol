@@ -10,19 +10,17 @@ from typing import Any, Dict, Set, Tuple
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
-from src.models import (
-    AssociatedWallet,
-    Block,
-    Follow,
-    Playlist,
-    Repost,
-    Save,
-    Track,
-    TrackRoute,
-    URSMContentNode,
-    User,
-    UserEvents,
-)
+from src.models.indexing.block import Block
+from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.playlists.playlist import Playlist
+from src.models.social.follow import Follow
+from src.models.social.repost import Repost
+from src.models.social.save import Save
+from src.models.tracks.track import Track
+from src.models.tracks.track_route import TrackRoute
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
+from src.models.users.user_events import UserEvents
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
@@ -52,7 +50,7 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -788,7 +786,7 @@ def index_blocks(self, db, blocks_list):
             sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
-        logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
+        logger.info(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
@@ -1075,6 +1073,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 # CELERY TASKS
 @celery.task(name="update_discovery_provider", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
@@ -1262,7 +1261,7 @@ def update_task(self):
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:
-            logger.error(
+            logger.info(
                 f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
             )
     except Exception as e:

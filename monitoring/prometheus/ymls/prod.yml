@@ -43,12 +43,12 @@
   #####################################################
 
   - job_name: 'prod-network-monitoring'
-    scheme: 'http'
+    scheme: 'https'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['discoveryprovider2.audius.co:9091']
+      - targets: ['monitoring.audius.co']
         labels:
-          host: 'discoveryprovider2.audius.co'
+          host: 'monitoring.audius.co'
           environment: 'prod'
           service: 'audius'
-          component: 'network-monitoriong'
+          component: 'network-monitoring'

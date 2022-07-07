@@ -3,7 +3,10 @@ import logging
 from flask import Blueprint, request
 from sqlalchemy import func
 from src.api_helpers import error_response, success_response
-from src.models import SkippedTransaction, SkippedTransactionLevel
+from src.models.indexing.skipped_transaction import (
+    SkippedTransaction,
+    SkippedTransactionLevel,
+)
 from src.queries.get_skipped_transactions import (
     get_skipped_transactions,
     get_transaction_status,

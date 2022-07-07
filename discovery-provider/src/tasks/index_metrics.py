@@ -4,7 +4,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from src.models import AppNameMetrics, RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetrics
+from src.models.metrics.route_metrics import RouteMetrics
 from src.queries.update_historical_metrics import (
     update_historical_daily_app_metrics,
     update_historical_daily_route_metrics,
@@ -14,7 +15,7 @@ from src.queries.update_historical_metrics import (
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_metrics import (
     METRICS_INTERVAL,
     datetime_format_secondary,
@@ -392,6 +393,7 @@ def synchronize_all_node_metrics(self, db):
 
 
 @celery.task(name="update_metrics", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_metrics(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
@@ -435,6 +437,7 @@ def update_metrics(self):
 
 
 @celery.task(name="aggregate_metrics", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def aggregate_metrics(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
@@ -479,6 +482,7 @@ def aggregate_metrics(self):
 
 
 @celery.task(name="synchronize_metrics", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def synchronize_metrics(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

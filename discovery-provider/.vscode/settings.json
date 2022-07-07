@@ -8,10 +8,18 @@
   "python.linting.lintOnSave": true,
   "python.linting.mypyEnabled": true,
   "python.testing.nosetestsEnabled": false,
-  "python.testing.pytestArgs": ["src", "integration_tests", "flake8_plugins"],
+  "python.analysis.indexing": true,
+  "python.testing.pytestArgs": [
+    "src",
+    "integration_tests",
+    "flake8_plugins"
+  ],
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "python.sortImports.args": ["--profile", "black"],
+  "python.sortImports.args": [
+    "--profile",
+    "black"
+  ],
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true

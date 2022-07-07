@@ -6,13 +6,13 @@ from integration_tests.challenges.index_helpers import (
     UpdateTask,
 )
 from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.models import (
-    Block,
+from src.models.indexing.block import Block
+from src.models.indexing.skipped_transaction import (
     SkippedTransaction,
     SkippedTransactionLevel,
-    URSMContentNode,
-    User,
 )
+from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.users.user import User
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils.db_session import get_db
 from web3 import Web3

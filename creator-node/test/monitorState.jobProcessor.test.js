@@ -24,9 +24,10 @@ describe('test monitorState job processor', function () {
     getNodeUsersStub,
     getUnhealthyPeersStub,
     buildReplicaSetNodesToUserWalletsMapStub,
-    retrieveClockStatusesForUsersAcrossReplicaSetStub,
+    retrieveUserInfoFromReplicaSetStub,
     computeUserSecondarySyncSuccessRatesMapStub,
     getCNodeEndpointToSpIdMapStub
+
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
     await appInfo.app.get('redisClient').flushdb()
@@ -44,7 +45,7 @@ describe('test monitorState job processor', function () {
     getNodeUsersStub = null
     getUnhealthyPeersStub = null
     buildReplicaSetNodesToUserWalletsMapStub = null
-    retrieveClockStatusesForUsersAcrossReplicaSetStub = null
+    retrieveUserInfoFromReplicaSetStub = null
     computeUserSecondarySyncSuccessRatesMapStub = null
     getCNodeEndpointToSpIdMapStub = null
   })
@@ -59,13 +60,13 @@ describe('test monitorState job processor', function () {
   const REPLICA_SET_NODES_TO_USER_WALLETS_MAP = {
     'http://healthCn1.co': ['wallet1']
   }
-  const REPLICAS_TO_USER_CLOCK_STATUS_MAP = {
-    'http://healthCn1.co': { wallet1: 1 }
+  const REPLICA_TO_USER_INFO_MAP = {
+    'http://healthCn1.co': { wallet1: { clock: 1, filesHash: '0x1' } }
   }
-  const RETRIEVE_CLOCK_STATUS_EXTRA_UNHEALTHY_PEERS = new Set()
-  const RETRIEVE_CLOCK_STATUSES_FOR_USERS_ACROSS_REPLICA_SET_RESP = {
-    replicasToUserClockStatusMap: REPLICAS_TO_USER_CLOCK_STATUS_MAP,
-    unhealthyPeers: RETRIEVE_CLOCK_STATUS_EXTRA_UNHEALTHY_PEERS
+  const RETRIEVE_USER_INFO_EXTRA_UNHEALTHY_PEERS = new Set()
+  const RETRIEVE_USER_INFO_FROM_REPLICA_SET_RESP = {
+    replicaToUserInfoMap: REPLICA_TO_USER_INFO_MAP,
+    unhealthyPeers: RETRIEVE_USER_INFO_EXTRA_UNHEALTHY_PEERS
   }
   const USER_SECONDARY_SYNC_SUCCESS_RATES_MAP = { dummyMap: 'dummyMap' }
   const CNODE_ENDPOINT_TO_SP_ID_MAP = { dummyCNodeMap: 'dummyCNodeMap' }
@@ -76,7 +77,7 @@ describe('test monitorState job processor', function () {
     users = USERS,
     unhealthyPeers = UNHEALTHY_PEERS,
     replicaSetNodesToUserWalletsMap = REPLICA_SET_NODES_TO_USER_WALLETS_MAP,
-    retrieveClockStatusesForUsersAcrossReplicaSetResp = RETRIEVE_CLOCK_STATUSES_FOR_USERS_ACROSS_REPLICA_SET_RESP,
+    retrieveUserInfoFromReplicaSetResp = RETRIEVE_USER_INFO_FROM_REPLICA_SET_RESP,
     userSecondarySyncSuccessRatesMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP,
     cNodeEndpointToSpIdMap = CNODE_ENDPOINT_TO_SP_ID_MAP
   }) {
@@ -92,10 +93,10 @@ describe('test monitorState job processor', function () {
         .stub()
         .returns(replicaSetNodesToUserWalletsMap)
     }
-    if (!retrieveClockStatusesForUsersAcrossReplicaSetStub) {
-      retrieveClockStatusesForUsersAcrossReplicaSetStub = sandbox
+    if (!retrieveUserInfoFromReplicaSetStub) {
+      retrieveUserInfoFromReplicaSetStub = sandbox
         .stub()
-        .resolves(retrieveClockStatusesForUsersAcrossReplicaSetResp)
+        .resolves(retrieveUserInfoFromReplicaSetResp)
     }
     if (!computeUserSecondarySyncSuccessRatesMapStub) {
       computeUserSecondarySyncSuccessRatesMapStub = sandbox
@@ -127,8 +128,8 @@ describe('test monitorState job processor', function () {
           getCNodeEndpointToSpIdMap: getCNodeEndpointToSpIdMapStub
         },
         '../stateMachineUtils': {
-          retrieveClockStatusesForUsersAcrossReplicaSet:
-            retrieveClockStatusesForUsersAcrossReplicaSetStub
+          retrieveUserInfoFromReplicaSet:
+            retrieveUserInfoFromReplicaSetStub
         }
       }
     )
@@ -159,7 +160,7 @@ describe('test monitorState job processor', function () {
     lastProcessedUserId,
     users = USERS,
     unhealthyPeers = UNHEALTHY_PEERS,
-    replicaSetNodesToUserClockStatusesMap = REPLICAS_TO_USER_CLOCK_STATUS_MAP,
+    replicaToUserInfoMap = REPLICA_TO_USER_INFO_MAP,
     userSecondarySyncMetricsMap = USER_SECONDARY_SYNC_SUCCESS_RATES_MAP
   }) {
     const monitorJobs = jobResult.jobsToEnqueue[QUEUE_NAMES.STATE_MONITORING]
@@ -181,7 +182,7 @@ describe('test monitorState job processor', function () {
       jobData: {
         users,
         unhealthyPeers: Array.from(unhealthyPeers),
-        replicaSetNodesToUserClockStatusesMap,
+        replicaToUserInfoMap,
         userSecondarySyncMetricsMap
       }
     })
@@ -191,7 +192,7 @@ describe('test monitorState job processor', function () {
       jobData: {
         users,
         unhealthyPeers: Array.from(unhealthyPeers),
-        replicaSetNodesToUserClockStatusesMap,
+        replicaToUserInfoMap,
         userSecondarySyncMetricsMap
       }
     })
@@ -267,7 +268,7 @@ describe('test monitorState job processor', function () {
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
     expect(
-      retrieveClockStatusesForUsersAcrossReplicaSetStub
+      retrieveUserInfoFromReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
     expect(
       computeUserSecondarySyncSuccessRatesMapStub
@@ -297,7 +298,7 @@ describe('test monitorState job processor', function () {
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
     expect(
-      retrieveClockStatusesForUsersAcrossReplicaSetStub
+      retrieveUserInfoFromReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
     expect(
       computeUserSecondarySyncSuccessRatesMapStub
@@ -309,14 +310,14 @@ describe('test monitorState job processor', function () {
     })
   })
 
-  it('should return without throwing when retrieveClockStatusesForUsersAcrossReplicaSet throws an error', async function () {
-    // Run processStateMonitoringJob with each step succeeding except retrieveClockStatusesForUsersAcrossReplicaSetStub
-    retrieveClockStatusesForUsersAcrossReplicaSetStub = sandbox
+  it('should return without throwing when retrieveUserInfoFromReplicaSet throws an error', async function () {
+    // Run processStateMonitoringJob with each step succeeding except retrieveUserInfoFromReplicaSetStub
+    retrieveUserInfoFromReplicaSetStub = sandbox
       .stub()
       .rejects('test unexpected error')
     const jobResult = await processStateMonitoringJob({})
 
-    // Verify that retrieveClockStatusesForUsersAcrossReplicaSetStub fails and other steps succeed
+    // Verify that retrieveUserInfoFromReplicaSetStub fails and other steps succeed
     expect(getNodeUsersStub).to.have.been.calledOnceWithExactly(
       DISCOVERY_NODE_ENDPOINT,
       CONTENT_NODE_ENDPOINT,
@@ -328,13 +329,13 @@ describe('test monitorState job processor', function () {
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
     expect(
-      retrieveClockStatusesForUsersAcrossReplicaSetStub
+      retrieveUserInfoFromReplicaSetStub
     ).to.have.been.calledOnceWithExactly(REPLICA_SET_NODES_TO_USER_WALLETS_MAP)
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
-      replicaSetNodesToUserClockStatusesMap: {},
+      replicaToUserInfoMap: {},
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -357,13 +358,13 @@ describe('test monitorState job processor', function () {
     expect(
       buildReplicaSetNodesToUserWalletsMapStub
     ).to.have.been.calledOnceWithExactly(USERS)
-    expect(retrieveClockStatusesForUsersAcrossReplicaSetStub).to.not.have.been
+    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been
       .called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
-      replicaSetNodesToUserClockStatusesMap: {},
+      replicaToUserInfoMap: {},
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -382,14 +383,14 @@ describe('test monitorState job processor', function () {
     )
     expect(getUnhealthyPeersStub).to.have.been.calledOnceWithExactly(USERS)
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
-    expect(retrieveClockStatusesForUsersAcrossReplicaSetStub).to.not.have.been
+    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been
       .called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
       jobResult,
       lastProcessedUserId: USER_ID,
       unhealthyPeers: new Set(),
-      replicaSetNodesToUserClockStatusesMap: {},
+      replicaToUserInfoMap: {},
       userSecondarySyncMetricsMap: {}
     })
   })
@@ -408,7 +409,7 @@ describe('test monitorState job processor', function () {
     )
     expect(getUnhealthyPeersStub).to.not.have.been.called
     expect(buildReplicaSetNodesToUserWalletsMapStub).to.not.have.been.called
-    expect(retrieveClockStatusesForUsersAcrossReplicaSetStub).to.not.have.been
+    expect(retrieveUserInfoFromReplicaSetStub).to.not.have.been
       .called
     expect(computeUserSecondarySyncSuccessRatesMapStub).to.not.have.been.called
     verifyJobResult({
@@ -416,7 +417,7 @@ describe('test monitorState job processor', function () {
       lastProcessedUserId: LAST_PROCESSED_USER_ID,
       users: [{ user_id: LAST_PROCESSED_USER_ID }],
       unhealthyPeers: new Set(),
-      replicaSetNodesToUserClockStatusesMap: {},
+      replicaToUserInfoMap: {},
       userSecondarySyncMetricsMap: {}
     })
   })

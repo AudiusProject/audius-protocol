@@ -1,6 +1,8 @@
 from sqlalchemy import and_, asc, desc, or_
 from src import exceptions
-from src.models import Playlist, Save, SaveType, User
+from src.models.playlists.playlist import Playlist
+from src.models.social.save import Save, SaveType
+from src.models.users.user import User
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import populate_user_metadata
 from src.utils import helpers

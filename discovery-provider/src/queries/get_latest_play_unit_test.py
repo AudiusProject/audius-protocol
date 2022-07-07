@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.models import Play
+from src.models.social.play import Play
 from src.queries.get_latest_play import get_latest_play
 
 

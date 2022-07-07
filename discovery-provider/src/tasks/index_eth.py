@@ -6,6 +6,7 @@ from src.tasks.cache_user_balance import get_token_address
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.helpers import load_eth_abi_values
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import index_eth_last_completion_redis_key
 from web3 import Web3
 from web3.providers.rpc import HTTPProvider
@@ -82,6 +83,7 @@ def index_eth_transfer_events(db, redis_inst):
 
 
 @celery.task(name="index_eth", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_eth(self):
     # Index AUDIO Transfer events to update user balances
     db = index_eth.db

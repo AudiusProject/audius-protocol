@@ -7,13 +7,10 @@ from typing import List, Optional, Set, Tuple
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from src.models import (
-    AssociatedWallet,
-    SPLTokenTransaction,
-    User,
-    UserBankAccount,
-    WalletChain,
-)
+from src.models.indexing.spl_token_transaction import SPLTokenTransaction
+from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.user import User
+from src.models.users.user_bank import UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
@@ -34,6 +31,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_spl_token_db_key,
     latest_sol_spl_token_program_tx_key,
@@ -423,6 +421,7 @@ index_spl_token_lock = "spl_token_lock"
 
 
 @celery.task(name="index_spl_token", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_spl_token(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

@@ -7,7 +7,7 @@ from src.challenges.challenge import (
     FullEventMetadata,
     UserChallenge,
 )
-from src.models import User
+from src.models.users.user import User
 
 
 def generate_referral_specifier(user_id: int, extra: Dict) -> str:

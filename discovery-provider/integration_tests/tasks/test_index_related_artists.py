@@ -4,7 +4,7 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import desc
-from src.models.related_artist import RelatedArtist
+from src.models.users.related_artist import RelatedArtist
 from src.queries.get_related_artists_minhash import update_related_artist_minhash
 from src.utils.config import shared_config
 from src.utils.db_session import get_db

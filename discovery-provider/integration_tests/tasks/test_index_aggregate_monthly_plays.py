@@ -3,7 +3,8 @@ from datetime import date, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models import AggregateMonthlyPlays, IndexingCheckpoints
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
+from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlays
 from src.tasks.index_aggregate_monthly_plays import (
     AGGREGATE_MONTHLY_PLAYS_TABLE_NAME,
     _index_aggregate_monthly_plays,

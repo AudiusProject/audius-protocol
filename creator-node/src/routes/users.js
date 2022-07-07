@@ -173,8 +173,12 @@ module.exports = function (app) {
       const redisClient = req.app.get('redisClient')
 
       const walletPublicKey = req.params.walletPublicKey.toLowerCase()
-      const returnSkipInfo = !!req.query.returnSkipInfo // default false
-      const returnFilesHash = !!req.query.returnFilesHash // default false
+      const returnSkipInfo = req.query.returnSkipInfo === 'true' // default false
+      const returnFilesHash = req.query.returnFilesHash === 'true' // default false
+      const filesHashClockRangeMin =
+        parseInt(req.query.filesHashClockRangeMin) || null
+      const filesHashClockRangeMax =
+        parseInt(req.query.filesHashClockRangeMax) || null
 
       const response = {}
 
@@ -188,24 +192,29 @@ module.exports = function (app) {
       response.clockValue = clockValue
 
       async function fetchCIDSkipInfoIfRequested() {
-        if (returnSkipInfo && cnodeUserUUID) {
-          const countsQuery = (
-            await sequelize.query(
-              `
-          select
-            count(*) as "numCIDs",
-            count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
-          from "Files"
-          where "cnodeUserUUID" = :cnodeUserUUID
-        `,
-              { replacements: { cnodeUserUUID } }
-            )
-          )[0][0]
+        if (returnSkipInfo) {
+          // Set response to default values
+          response.CIDSkipInfo = { numCIDs: 0, numSkippedCIDs: 0 }
 
-          const numCIDs = parseInt(countsQuery.numCIDs)
-          const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
+          if (cnodeUserUUID) {
+            const countsQuery = (
+              await sequelize.query(
+                `
+            select
+              count(*) as "numCIDs",
+              count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
+            from "Files"
+            where "cnodeUserUUID" = :cnodeUserUUID
+          `,
+                { replacements: { cnodeUserUUID } }
+              )
+            )[0][0]
 
-          response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
+            const numCIDs = parseInt(countsQuery.numCIDs)
+            const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
+
+            response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
+          }
         }
       }
 
@@ -225,30 +234,29 @@ module.exports = function (app) {
       }
 
       async function fetchFilesHashIfRequested() {
-        if (returnFilesHash && cnodeUserUUID) {
-          const filesHash = await DBManager.fetchFilesHashFromDB({
-            lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }
-          })
-          response.filesHash = filesHash
-
-          const filesHashClockRangeMin =
-            req.query.filesHashClockRangeMin || null
-          const filesHashClockRangeMax =
-            req.query.filesHashClockRangeMax || null
-
-          if (filesHashClockRangeMin || filesHashClockRangeMax) {
-            const filesHashForClockRange = await DBManager.fetchFilesHashFromDB(
-              {
-                lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
-                clockMin: filesHashClockRangeMin,
-                clockMax: filesHashClockRangeMax
-              }
-            )
-            response.filesHashForClockRange = filesHashForClockRange
-          }
-        }
-        if (returnFilesHash && !cnodeUserUUID) {
+        if (returnFilesHash) {
+          // Set response to default values
           response.filesHash = null
+          if (filesHashClockRangeMin || filesHashClockRangeMax) {
+            response.filesHashForClockRange = null
+          }
+
+          if (cnodeUserUUID) {
+            const filesHash = await DBManager.fetchFilesHashFromDB({
+              lookupKey: { lookupCNodeUserUUID: cnodeUserUUID }
+            })
+            response.filesHash = filesHash
+
+            if (filesHashClockRangeMin || filesHashClockRangeMax) {
+              const filesHashForClockRange =
+                await DBManager.fetchFilesHashFromDB({
+                  lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
+                  clockMin: filesHashClockRangeMin,
+                  clockMax: filesHashClockRangeMax
+                })
+              response.filesHashForClockRange = filesHashForClockRange
+            }
+          }
         }
       }
 
@@ -263,12 +271,20 @@ module.exports = function (app) {
   )
 
   /**
-   * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
+   * Returns latest clock value for CNodeUser, or -1 if no entry found
+   * Optionally returns user filesHash, or null if no files found
    */
   app.post(
     '/users/batch_clock_status',
     handleResponse(async (req, res) => {
-      const { walletPublicKeys } = req.body
+      const { walletPublicKeys /* [walletPublicKey] */ } = req.body
+
+      if (walletPublicKeys == null) {
+        return errorResponseBadRequest(
+          'Must provide valid walletPublicKeys field in request body'
+        )
+      }
+
       const walletPublicKeysSet = new Set(walletPublicKeys)
 
       // Enforce max # of wallets to prevent high db query time
@@ -279,8 +295,22 @@ module.exports = function (app) {
         )
       }
 
-      const returnFilesHash = !!req.query.returnFilesHash // default false
+      const returnFilesHash = req.query.returnFilesHash === 'true' // default false
 
+      // Initialize users response object with default values
+      const users = {}
+      walletPublicKeys.forEach((wallet) => {
+        const user = {
+          walletPublicKey: wallet,
+          clock: -1
+        }
+        if (returnFilesHash) {
+          user.filesHash = null
+        }
+        users[wallet] = user
+      })
+
+      // Fetch all cnodeUsers for wallets
       const cnodeUsers = await models.CNodeUser.findAll({
         where: {
           walletPublicKey: {
@@ -289,40 +319,39 @@ module.exports = function (app) {
         }
       })
 
-      const users = await Promise.all(
-        cnodeUsers.map(async (cnodeUser) => {
-          walletPublicKeysSet.delete(cnodeUser.walletPublicKey)
-
-          const user = {
-            walletPublicKey: cnodeUser.walletPublicKey,
-            clock: cnodeUser.clock
-          }
-
-          if (returnFilesHash) {
-            const filesHash = await DBManager.fetchFilesHashFromDB({
-              lookupKey: { lookupCNodeUserUUID: cnodeUser.cnodeUserUUID }
-            })
-            user.filesHash = filesHash
-          }
-
-          return user
-        })
-      )
-
-      // Set default values for remaining users
-      const remainingWalletPublicKeys = Array.from(walletPublicKeysSet)
-      remainingWalletPublicKeys.forEach((wallet) => {
-        const user = {
-          walletPublicKey: wallet,
-          clock: -1
-        }
-        if (returnFilesHash) {
-          user.filesHash = null
-        }
-        users.push(user)
+      // Populate users response object with cnodeUsers data
+      cnodeUsers.forEach(({ walletPublicKey, clock }) => {
+        users[walletPublicKey].walletPublicKey = walletPublicKey
+        users[walletPublicKey].clock = clock
       })
 
-      return successResponse({ users })
+      // Fetch filesHashes if requested
+      if (returnFilesHash && cnodeUsers.length > 0) {
+        // Fetch filesHashes
+        const cnodeUserUUIDs = cnodeUsers.map(
+          (cnodeUser) => cnodeUser.cnodeUserUUID
+        )
+        const filesHashesByCNodeUserUUID =
+          await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs })
+
+        // Populate users response object with filesHash data
+        const cnodeUserUUIDToWalletMap = {}
+        cnodeUsers.forEach((cnodeUser) => {
+          cnodeUserUUIDToWalletMap[cnodeUser.cnodeUserUUID] =
+            cnodeUser.walletPublicKey
+        })
+        Object.entries(filesHashesByCNodeUserUUID).forEach(
+          ([cnodeUserUUID, filesHash]) => {
+            const wallet = cnodeUserUUIDToWalletMap[cnodeUserUUID]
+            users[wallet].filesHash = filesHash
+          }
+        )
+      }
+
+      // Convert response object from map(wallet => { info }) to [{ info }]
+      const usersResp = Object.values(users)
+
+      return successResponse({ users: usersResp })
     })
   )
 }

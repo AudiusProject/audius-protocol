@@ -8,12 +8,10 @@ import base58
 from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from src.models import (
-    ChallengeDisbursement,
-    RewardManagerTransaction,
-    User,
-    UserChallenge,
-)
+from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.models.rewards.reward_manager import RewardManagerTransaction
+from src.models.rewards.user_challenge import UserChallenge
+from src.models.users.user import User
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
@@ -38,6 +36,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,
     latest_sol_rewards_manager_program_tx_key,
@@ -545,6 +544,7 @@ def process_solana_rewards_manager(
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_rewards_manager", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_rewards_manager(self):
     redis = index_rewards_manager.redis
     solana_client_manager = index_rewards_manager.solana_client_manager

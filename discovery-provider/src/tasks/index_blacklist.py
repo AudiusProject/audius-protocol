@@ -1,9 +1,11 @@
 import logging
 
 from src.app import get_contract_addresses
-from src.models import BlacklistedIPLD, IPLDBlacklistBlock
+from src.models.indexing.blacklisted_ipld import BlacklistedIPLD
+from src.models.indexing.ipld_blacklist_block import IPLDBlacklistBlock
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     most_recent_indexed_ipld_block_hash_redis_key,
     most_recent_indexed_ipld_block_redis_key,
@@ -233,6 +235,7 @@ def revert_blocks(self, db, revert_blocks_list):
 
 
 @celery.task(name="update_ipld_blacklist", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_ipld_blacklist_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
