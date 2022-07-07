@@ -10,6 +10,7 @@ export class AudiusData extends Base {
   /**
    * Calculate an unoccupied playlist ID
    * Maximum value is postgres integer max (2147483647)
+   * Minimum value is artificially set to 400000
    */
   async getValidPlaylistId(): Promise<number> {
     let playlistId: number = 10

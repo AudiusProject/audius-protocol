@@ -5,6 +5,7 @@ import { Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
+  playlistSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
 import type { Web3Manager } from '../web3Manager'
@@ -27,6 +28,12 @@ type Metadata = {
 
 type PlaylistMetadata = {
   playlist_contents: unknown
+  playlist_id: number
+  playlist_name: string
+  playlist_image_sizes_multihash: string
+  description: string
+  is_album: boolean
+  is_private: boolean
 }
 
 type ProgressCB = (loaded: number, total: number) => void
@@ -412,7 +419,7 @@ export class CreatorNode {
    * @param metadata
    */
   async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
-    // TODO: Schema validation flow
+    this.schemas[playlistSchemaType].validate?.(metadata)
     const { data: body } = await this._makeRequest(
       {
         url: '/playlists/metadata',
