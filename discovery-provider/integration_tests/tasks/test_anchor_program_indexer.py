@@ -300,7 +300,7 @@ async def test_fetch_metadata(app, mocker):
         "tx_sig": "x4PCuQs3ncvhJ3Qz18CBzYg26KnG1tAD1QvZG9B6oBZbR8cJrat2MzcvCbjtMMn9Mkc4C8w23LHTFaLG4dJaXkV",
     }
     mock_parsed_transactions = [parsed_tx]
-    cid_metadata, blacklisted_cids = await anchor_program_indexer.fetch_cid_metadata(
+    cid_metadata = await anchor_program_indexer.fetch_cid_metadata(
         mock_parsed_transactions
     )
 

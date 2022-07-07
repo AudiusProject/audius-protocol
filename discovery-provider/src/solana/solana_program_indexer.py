@@ -174,9 +174,7 @@ class SolanaProgramIndexer(IndexerBase):
         parsed_transactions.reverse()
 
         # Fetch metadata in parallel
-        cid_metadata, blacklisted_cids = await self.fetch_cid_metadata(
-            parsed_transactions
-        )
+        cid_metadata = await self.fetch_cid_metadata(parsed_transactions)
 
         self.validate_and_save_parsed_tx_records(parsed_transactions, cid_metadata)
 
