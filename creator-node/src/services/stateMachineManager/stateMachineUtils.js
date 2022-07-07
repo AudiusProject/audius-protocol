@@ -4,6 +4,7 @@ const axios = require('axios')
 const retry = require('async-retry')
 
 const {
+  MetricRecordType,
   MetricNames,
   MetricLabels
 } = require('../../services/prometheusMonitoring/prometheus.constants')
@@ -140,13 +141,55 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
 
 /**
  * Returns an object that can be returned from any state machine job to record a histogram metric being observed.
- * Example: to call histogram.observe('response_time', { code: '200' }, 1000), you would call this function with:
+ * Example: to call responseTimeHistogram.observe({ code: '200' }, 1000), you would call this function with:
  * makeHistogramToRecord('response_time', 1000, { code: '200' })
  * @param {string} metricName the name of the metric from prometheus.constants
  * @param {number} metricValue the value to observe
  * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
  */
 const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
+  return makeMetricToRecord(
+    MetricRecordType.HISTOGRAM_OBSERVE,
+    metricName,
+    metricValue,
+    metricLabels
+  )
+}
+
+/**
+ * Returns an object that can be returned from any state machine job to record an increase in a gauge metric.
+ * Example: to call testGuage.inc({ status: 'success' }, 1), you would call this function with:
+ * makeGaugeIncToRecord('test_gauge', 1, { status: 'success' })
+ * @param {string} metricName the name of the metric from prometheus.constants
+ * @param {number} incBy the metric value to increment by in Metric#inc for the prometheus gauge
+ * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ */
+const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
+  return makeMetricToRecord(
+    MetricRecordType.GAUGE_INC,
+    metricName,
+    incBy,
+    metricLabels
+  )
+}
+
+/**
+ * Returns an object that can be returned from any state machine job to record a change in a metric.
+ * Validates the params to make sure the metric is valid.
+ * @param {string} metricType the type of metric being recorded -- HISTOGRAM or GAUGE_INC
+ * @param {string} metricName the name of the metric from prometheus.constants
+ * @param {number} metricValue the value to observe
+ * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
+ */
+const makeMetricToRecord = (
+  metricType,
+  metricName,
+  metricValue,
+  metricLabels = {}
+) => {
+  if (!Object.values(MetricRecordType).includes(metricType)) {
+    throw new Error(`Invalid metricType: ${metricType}`)
+  }
   if (!Object.values(MetricNames).includes(metricName)) {
     throw new Error(`Invalid metricName: ${metricName}`)
   }
@@ -156,17 +199,17 @@ const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
   const labelNames = Object.keys(MetricLabels[metricName])
   for (const [labelName, labelValue] of Object.entries(metricLabels)) {
     if (!labelNames?.includes(labelName)) {
-      throw new Error(`Metric label has invliad name: ${labelName}`)
+      throw new Error(`Metric label has invalid name: ${labelName}`)
     }
     const labelValues = MetricLabels[metricName][labelName]
-    if (!labelValues?.includes(labelValue)) {
+    if (!labelValues?.includes(labelValue) && labelValues?.length !== 0) {
       throw new Error(`Metric label has invalid value: ${labelValue}`)
     }
   }
 
   const metric = {
     metricName,
-    metricType: 'HISTOGRAM',
+    metricType,
     metricValue,
     metricLabels
   }
@@ -175,6 +218,7 @@ const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
 
 module.exports = {
   retrieveClockValueForUserFromReplica,
-  retrieveUserInfoFromReplicaSet,
-  makeHistogramToRecord
+  makeHistogramToRecord,
+  makeGaugeIncToRecord,
+  retrieveUserInfoFromReplicaSet
 }
