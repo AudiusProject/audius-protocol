@@ -164,6 +164,66 @@ def exec(protocol_dir, service, command, args):
 
 
 @cli.command()
+@click.pass_obj
+def ps(protocol_dir):
+    proc = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "--project-directory",
+            protocol_dir,
+            "ps",
+            "--format=json",
+        ],
+        capture_output=True,
+    )
+
+    if proc.returncode != 0:
+        raise click.ClickException(proc.stderr.decode())
+
+    services = json.loads(proc.stdout.decode())
+    services.sort(key=lambda x: x["Name"])
+
+    print(
+        "CONTAINER ID".ljust(13),
+        "NAME".ljust(25),
+        "STATUS".ljust(10),
+        "PORTS",
+    )
+
+    for service in services:
+        if service["Service"] == "proxy":
+            continue
+
+        name = service["Service"]
+        replica = int(service["Name"].split("-")[-1])
+        status = service["Health"] or service["State"]
+
+        ports = {}
+        if service["Publishers"]:
+            for publisher in service["Publishers"]:
+                if publisher["PublishedPort"]:
+                    ports[publisher["TargetPort"]] = publisher["PublishedPort"]
+
+        if service["Service"] == "creator-node":
+            name = f"{service['Service']}-{replica}"
+            ports[4000 + replica - 1] = 4000
+        if service["Service"] == "discovery-provider":
+            name = f"{service['Service']}-{replica}"
+            ports[5000 + replica - 1] = 5000
+
+        ports = sorted(ports.items())
+        ports = ", ".join(f"{target}->{published}" for target, published in ports)
+
+        print(
+            service["ID"][:12].ljust(13),
+            name.ljust(25),
+            status.ljust(10),
+            ports,
+        )
+
+
+@cli.command()
 @click.argument("service")
 @click.pass_obj
 def logs(protocol_dir, service):
