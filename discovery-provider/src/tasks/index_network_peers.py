@@ -1,6 +1,5 @@
 import logging
 
-from src.models.users.user import User
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 from src.utils.prometheus_metric import save_duration_metric
