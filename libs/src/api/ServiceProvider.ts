@@ -23,7 +23,7 @@ const CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA = 200
  *    - Discovery Node (index and make content queryable)
  * Retrieving lists of available services, etc. are found here.
  */
-class ServiceProvider extends Base {
+export class ServiceProvider extends Base {
   /* ------- Content Node  ------- */
 
   async listCreatorNodes() {
@@ -178,5 +178,3 @@ class ServiceProvider extends Base {
     )
   }
 }
-
-module.exports = ServiceProvider
