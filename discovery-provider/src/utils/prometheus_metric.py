@@ -1,10 +1,68 @@
 import logging
+from functools import wraps
 from time import time
 from typing import Callable, Dict
 
 from prometheus_client import Gauge, Histogram
 
 logger = logging.getLogger(__name__)
+
+
+def save_duration_metric(metric_group):
+    # a decorator that takes the `metric_group` parameter to create:
+    # * a histogram for detecting duration and latency from a decorated function
+    # * a gauge for reporting the last task's duration (in seconds)
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            histogram_metric = PrometheusMetric(
+                f"{metric_group}_completed_duration_seconds",
+                f"How long a {metric_group} took to complete",
+                ("func_name", "success"),
+            )
+            gauge_metric = PrometheusMetric(
+                f"{metric_group}_last_duration_seconds",
+                f"How long the last {metric_group} ran",
+                ("func_name", "success"),
+                metric_type=PrometheusType.GAUGE,
+            )
+            try:
+                # safely return this result under all circumstances
+                result = func(*args, **kwargs)
+
+                try:
+                    histogram_metric.save_time(
+                        {"func_name": func.__name__, "success": True}
+                    )
+                    gauge_metric.save_time(
+                        {"func_name": func.__name__, "success": True}
+                    )
+                except Exception as e:
+                    logger.exception("Failed to save successful metrics", e)
+                finally:
+
+                    # safely return the result out of the decorator
+                    return result
+
+            except Exception as e:
+                try:
+                    histogram_metric.save_time(
+                        {"func_name": func.__name__, "success": False}
+                    )
+                    gauge_metric.save_time(
+                        {"func_name": func.__name__, "success": False}
+                    )
+                except Exception as inner_e:
+                    logger.exception("Failed to save unsuccessful metrics", inner_e)
+                finally:
+
+                    # safely raise the exception out of the decorator
+                    raise e
+
+        return wrapper
+
+    return decorator
 
 
 class PrometheusType:

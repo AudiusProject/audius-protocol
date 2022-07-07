@@ -2,6 +2,7 @@ import logging
 import time
 
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import challenges_last_processed_event_redis_key
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ def index_challenges(event_bus, db, redis):
 
 
 @celery.task(name="index_challenges", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_challenges_task(self):
     db = index_challenges_task.db
     redis = index_challenges_task.redis

@@ -4,6 +4,7 @@ import time
 from src.monitors import monitor_names
 from src.monitors.monitors import MONITORS, get_monitor_redis_key
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ def refresh(redis, db, monitor):
 
 
 @celery.task(name="monitoring_queue", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def monitoring_queue_task(self):
     """
     A persistent cron-style queue that periodically monitors various
