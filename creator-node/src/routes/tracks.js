@@ -29,7 +29,8 @@ const {
   syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware,
-  ensureValidSPMiddleware
+  ensureValidSPMiddleware,
+  ensureAppIsOnline
 } = require('../middlewares')
 const { decode } = require('../hashids')
 const { getCID, streamFromFileSystem } = require('./files')
@@ -124,6 +125,7 @@ module.exports = function (app) {
    */
   app.post(
     '/transcode_and_segment',
+    ensureAppIsOnline,
     ensureValidSPMiddleware,
     ensureStorageMiddleware,
     handleTrackContentUpload,

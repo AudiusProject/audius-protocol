@@ -8,6 +8,7 @@ const { logger, loggingMiddleware } = require('./logging')
 const {
   readOnlyMiddleware
 } = require('./middlewares/readOnly/readOnlyMiddleware')
+const { ensureAppIsOnline } = require('./middlewares')
 const {
   userReqLimiter,
   trackReqLimiter,
@@ -42,6 +43,13 @@ app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
 app.use('/batch_cids_exist', batchCidsExistReqLimiter)
 app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
 app.use(getRateLimiterMiddleware())
+
+// Block content upload on these routes if app shutting down
+app.use('/track_content_async', ensureAppIsOnline)
+app.use('/tracks/metadata', ensureAppIsOnline)
+app.use('/tracks', ensureAppIsOnline)
+app.use('/image_upload', ensureAppIsOnline)
+// block creating users? creating playlists? these should not be heavy ops, besides the chain verification
 
 // import routes
 require('./routes')(app)

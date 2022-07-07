@@ -61,6 +61,8 @@ class ServiceRegistry {
     this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
     this.recurringSyncQueue = null // DEPRECATED -- Handles syncs that occur on a cadence, e.g. every hour
 
+    this.wrapUpQueueJobsMaxTime = 60000 /* Max time to wait for jobs to complete. 1 min in ms */
+
     // Flags that indicate whether categories of services have been initialized
     this.synchronousServicesInitialized = false
     this.asynchronousServicesInitialized = false
@@ -193,18 +195,70 @@ class ServiceRegistry {
     app.use('/health/bull', serverAdapter.getRouter())
   }
 
+  /**
+   * Wrap up current jobs in target queues under a max time. Used on death of app
+   */
   async wrapUpQueueJobs() {
-    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
-      this.snapbackSM
+    this.logInfo('Wrapping up jobs...')
+
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
-    const { queue: imageProcessingQueue } = ImageProcessingQueue
-    const { queue: transcodingQueue } = TranscodingQueue
-    const { queue: monitoringQueue } = this.monitoringQueue
-    const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
-    const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
+    const { queue: imageProcessingQueue } = this.imageProcessingQueue
+    const { queue: transcodingQueue } = this.transcodingQueue
 
-    // Make state mac
+    const queues = [
+      syncProcessingQueue,
+      asyncProcessingQueue,
+      imageProcessingQueue,
+      transcodingQueue,
+      this.manualSyncQueue,
+      this.recurringSyncQueue,
+      this.stateReconciliationQueue
+    ]
+
+    const wrapUpCurrentJobs = async () => {
+      const responses = await Promise.all(
+        queues.map(async (queue) => {
+          try {
+            // Returns a promise that resolves when all jobs currently being processed by this worker have finished.
+            // https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queuewhencurrentjobsfinished
+            await queue.whenCurrentJobsFinished()
+          } catch (e) {
+            this.logError(
+              `Error wrapping up jobs for ${queue.name}: ${e.message}`
+            )
+            return false
+          }
+
+          return true
+        })
+      )
+
+      for (const resp of responses) {
+        if (!resp) return false
+      }
+
+      return true
+    }
+
+    const maxTimeout = async () => {
+      await utils.timeout(this.wrapUpQueueJobsMaxTime, false)
+      return false
+    }
+
+    // Either all queues resolve their current jobs, or the max timeout resolves first.
+    const wrappedUpJobs = await Promise.race([
+      wrapUpCurrentJobs(),
+      maxTimeout()
+    ])
+
+    if (wrappedUpJobs) {
+      this.logInfo('Successfully wrapped up remainder of running jobs')
+    } else {
+      this.logError(
+        `Could not wrap up jobs within ${this.wrapUpQueueJobsMaxTime}ms. Discarding remainder jobs..`
+      )
+    }
   }
 
   /**
@@ -305,10 +359,6 @@ class ServiceRegistry {
       cNodeEndpointToSpIdMapQueue,
       stateReconciliationQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.stateMonitoringQueue = stateMonitoringQueue
-    this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
-    this.stateReconciliationQueue = stateReconciliationQueue
-
     this.stateMonitoringQueue = stateMonitoringQueue
     this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
     this.stateReconciliationQueue = stateReconciliationQueue

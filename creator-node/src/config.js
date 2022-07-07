@@ -695,6 +695,12 @@ const config = convict({
     format: Boolean,
     env: 'disableSnapback',
     default: true
+  },
+  terminateApp: {
+    doc: 'Flag that if set to true, then a termination signal was sent to shut down the Content Node application and the Content Node should not accept uploads.',
+    format: 'BooleanCustom',
+    env: 'terminateApp',
+    default: false
   }
   /**
    * unsupported options at the moment

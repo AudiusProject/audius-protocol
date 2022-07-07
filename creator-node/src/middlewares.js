@@ -5,7 +5,8 @@ const {
   errorResponse,
   errorResponseUnauthorized,
   errorResponseServerError,
-  errorResponseBadRequest
+  errorResponseBadRequest,
+  errorResponseForbidden
 } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
@@ -832,6 +833,27 @@ async function ensureValidSPMiddleware(req, res, next) {
   next()
 }
 
+/**
+ * If the app received a signal to shut down, do not enable any further content upload.
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @param {function} next next middleware or route logic in sequence to run
+ * @returns
+ */
+async function ensureAppIsOnline(req, res, next) {
+  const terminateApp = config.get('terminateApp')
+
+  if (terminateApp) {
+    return sendResponse(
+      req,
+      res,
+      errorResponseForbidden(`App shutdown in sequence`)
+    )
+  }
+
+  next()
+}
+
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
 function _isFQDN(url) {
   if (config.get('creatorNodeIsDebug')) return true
@@ -846,6 +868,7 @@ module.exports = {
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
+  ensureAppIsOnline,
   issueAndWaitForSecondarySyncRequests,
   syncLockMiddleware,
   getOwnEndpoint,
