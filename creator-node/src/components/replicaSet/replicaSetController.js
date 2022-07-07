@@ -12,7 +12,7 @@ const {
 } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
-const processSync = require('../../services/sync/processSync')
+const processSync = require('../../services/sync/secondarySyncFromPrimary')
 
 const router = express.Router()
 

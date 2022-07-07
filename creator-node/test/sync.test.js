@@ -23,7 +23,6 @@ const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const processSync = require('../src/services/sync/processSync')
 const { uploadTrack } = require('./lib/helpers')
-const primarySyncFromSecondary = require('../src/services/sync/primarySyncFromSecondary')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportDummyCIDPath = path.resolve(

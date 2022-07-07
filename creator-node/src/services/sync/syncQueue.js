@@ -1,7 +1,7 @@
 const Bull = require('bull')
 
 const { logger } = require('../../logging')
-const processSync = require('./processSync')
+const processSync = require('./secondarySyncFromPrimary')
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
