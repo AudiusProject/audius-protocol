@@ -297,6 +297,7 @@ class ServiceRegistry {
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(config, this.redis, this)
+    this.manualSyncQueue = manualSyncQueue
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
@@ -446,10 +447,8 @@ class ServiceRegistry {
    */
   async _initSnapbackSM() {
     this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
-      this.snapbackSM
+    const { stateMachineQueue, recurringSyncQueue } = this.snapbackSM
     this.stateMachineQueue = stateMachineQueue
-    this.manualSyncQueue = manualSyncQueue
     this.recurringSyncQueue = recurringSyncQueue
 
     let isInitialized = false

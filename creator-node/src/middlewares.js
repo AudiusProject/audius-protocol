@@ -269,7 +269,7 @@ async function ensureStorageMiddleware(req, res, next) {
  */
 async function issueAndWaitForSecondarySyncRequests(req) {
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { StateMachineManager } = serviceRegistry
+  const { StateMachineManager, manualSyncQueue } = serviceRegistry
 
   // Parse request headers
   const pollingDurationMs =
@@ -336,7 +336,8 @@ async function issueAndWaitForSecondarySyncRequests(req) {
           secondary,
           wallet,
           primaryClockVal,
-          pollingDurationMs
+          pollingDurationMs,
+          manualSyncQueue
         )
       })
 

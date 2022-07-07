@@ -77,7 +77,9 @@ describe('test StateReconciliationManager initialization, events, and job proces
       stateReconciliationManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const { stateReconciliationQueue } = await stateReconciliationManager.init(getPrometheusRegistry())
+    const { stateReconciliationQueue } = await stateReconciliationManager.init(
+      getPrometheusRegistry()
+    )
 
     // Verify that the stateReconciliationQueue was successfully initialized and that its event listeners were registered
     expect(stateReconciliationQueue).to.exist.and.to.be.instanceOf(BullQueue)

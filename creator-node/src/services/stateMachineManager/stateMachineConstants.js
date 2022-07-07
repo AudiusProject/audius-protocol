@@ -59,7 +59,9 @@ module.exports = {
     // Max number of completed/failed jobs to keep in redis for the cNodeEndpoint->spId map queue
     C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
     // Max number of completed/failed jobs to keep in redis for the state monitoring queue
-    STATE_RECONCILIATION: 300
+    STATE_RECONCILIATION: 300,
+    // MMax number of completed/failed jobs to keep in redis for the manual sync queue
+    MANUAL_SYNC: 300
   }),
 
   QUEUE_NAMES: Object.freeze({

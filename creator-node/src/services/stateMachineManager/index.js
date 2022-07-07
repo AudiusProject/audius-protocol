@@ -147,7 +147,8 @@ class StateMachineManager {
     secondaryUrl,
     wallet,
     primaryClockVal,
-    timeoutMs
+    timeoutMs,
+    queue
   ) {
     // Issue syncRequest before polling secondary for replication
     const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
@@ -163,7 +164,7 @@ class StateMachineManager {
       return
     } else if (!_.isEmpty(syncReqToEnqueue)) {
       const { jobName, jobData } = syncReqToEnqueue
-      await this.manualSyncQueue.add(jobName, jobData)
+      await queue.add(jobName, jobData)
     } else {
       // Log error that the sync request couldn't be created and return
       baseLogger.error(
@@ -201,12 +202,18 @@ class StateMachineManager {
               syncType: SyncType.Manual
             })
           if (!_.isEmpty(duplicateSyncReq)) {
-            // TODO: Log duplicate and return or something
+            // Log duplicate and return
+            baseLogger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
+            return
           } else if (!_.isEmpty(syncReqToEnqueue)) {
             const { jobName, jobData } = syncReqToEnqueue
-            await this.manualSyncQueue.add(jobName, jobData)
+            await queue.add(jobName, jobData)
           } else {
-            // TODO: Log error that the sync request couldn't be created and return or something
+            // Log error that the sync request couldn't be created and return
+            baseLogger.error(
+              `Failed to create manual sync request: ${duplicateSyncReq}`
+            )
+            return
           }
         }
 

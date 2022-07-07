@@ -6,8 +6,7 @@ const {
   QUEUE_NAMES,
   JOB_NAMES,
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS,
-  MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS,
-  MANUAL_SYNC_QUEUE_HISTORY
+  MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS
 } = require('../stateMachineConstants')
 const processJob = require('../processJob')
 const { logger: baseLogger, createChildLogger } = require('../../../logging')
@@ -33,8 +32,8 @@ class StateReconciliationManager {
       redisHost: config.get('redisHost'),
       redisPort: config.get('redisPort'),
       name: QUEUE_NAMES.STATE_RECONCILIATION,
-      removeOnComplete: RECONCILIATION_QUEUE_HISTORY,
-      removeOnFail: RECONCILIATION_QUEUE_HISTORY,
+      removeOnComplete: QUEUE_HISTORY.RECONCILIATION_QUEUE_HISTORY,
+      removeOnFail: QUEUE_HISTORY.RECONCILIATION_QUEUE_HISTORY,
       lockDuration: STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS
     })
 
@@ -42,8 +41,8 @@ class StateReconciliationManager {
       redisHost: config.get('redisHost'),
       redisPort: config.get('redisPort'),
       name: QUEUE_NAMES.MANUAL_SYNC,
-      removeOnComplete: MANUAL_SYNC_QUEUE_HISTORY,
-      removeOnFail: MANUAL_SYNC_QUEUE_HISTORY,
+      removeOnComplete: QUEUE_HISTORY.MANUAL_SYNC,
+      removeOnFail: QUEUE_HISTORY.MANUAL_SYNC,
       lockDuration: MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS
     })
 
