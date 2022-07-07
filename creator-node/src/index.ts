@@ -5,7 +5,6 @@ const EthereumWallet = require('ethereumjs-wallet')
 const { Keypair } = require('@solana/web3.js')
 
 const initializeApp = require('./app')
-const { setupBullMonitoring } = require('./app')
 const config = require('./config')
 const { sequelize } = require('./models')
 const { runMigrations } = require('./migrationManager')
