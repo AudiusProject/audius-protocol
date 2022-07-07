@@ -65,11 +65,6 @@ def save_duration_metric(metric_group):
     return decorator
 
 
-class PrometheusType:
-    HISTOGRAM = "histogram"
-    GAUGE = "gauge"
-
-
 METRIC_PREFIX = "audius_dn"
 
 
@@ -77,6 +72,13 @@ class PrometheusMetricNames:
     FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
     CELERY_TASK_COMPLETED_DURATION_SECONDS = "celery_task_completed_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
+    CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
+    HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT = "health_check_block_difference_current"
+    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT = "health_check_latest_indexed_block_num_current"
+    UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
+    INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
+    INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
+    USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
 
 
 PrometheusRegistry = {
@@ -103,6 +105,38 @@ PrometheusRegistry = {
             "func_name",
             "success",
         ),
+    ),
+    PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
+        "How long the currently running celery task has been running",
+        ("task_name",),
+    ),
+    PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT}",
+        "Difference between the latest block and the latest indexed block",
+    ),
+    PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT}",
+        "Latest indexed block number",
+    ),
+    PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS}",
+        "Runtimes for src.task.index_trending:update_view()",
+        ("mat_view_name",),
+    ),
+    PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS}",
+        "Runtimes for src.task.index_trending:index_trending()",
+    ),
+    PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS}",
+        "Runtimes for src.task.index_metrics:celery.task()",
+        ("task_name",),
+    ),
+    PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS}",
+        "Runtimes for src.task.users:user_state_update()",
+        ("scope",),
     ),
 }
 

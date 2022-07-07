@@ -24,7 +24,11 @@ from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    PrometheusRegistry,
+)
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
@@ -463,15 +467,11 @@ def health_check_prometheus_exporter():
     health_results, is_unhealthy = get_health({})
 
     PrometheusMetric(
-        "health_check_block_difference_current",
-        "Difference between the latest block and the latest indexed block",
-        metric_type=PrometheusType.GAUGE,
+        PrometheusRegistry[PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT]
     ).save(health_results["block_difference"])
 
     PrometheusMetric(
-        "health_check_latest_indexed_block_num_current",
-        "Latest indexed block number",
-        metric_type=PrometheusType.GAUGE,
+        PrometheusRegistry[PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT]
     ).save(health_results["web"]["blocknumber"])
 
 

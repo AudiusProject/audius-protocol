@@ -20,7 +20,11 @@ from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
-from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    PrometheusRegistry,
+)
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
@@ -105,9 +109,7 @@ TRENDING_PARAMS = "trending_params"
 def update_view(session: Session, mat_view_name: str):
     start_time = time.time()
     metric = PrometheusMetric(
-        "update_trending_view_duration_seconds",
-        "Runtimes for src.task.index_trending:update_view()",
-        ("mat_view_name",),
+        PrometheusRegistry[PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS]
     )
     session.execute(f"REFRESH MATERIALIZED VIEW {mat_view_name}")
     update_time = time.time() - start_time
@@ -126,8 +128,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     logger.info("index_trending.py | starting indexing")
     update_start = time.time()
     metric = PrometheusMetric(
-        "index_trending_duration_seconds",
-        "Runtimes for src.task.index_trending:index_trending()",
+        PrometheusRegistry[PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS]
     )
     with db.scoped_session() as session:
         genres = get_genres(session)

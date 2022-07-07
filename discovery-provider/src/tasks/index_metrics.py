@@ -15,7 +15,11 @@ from src.queries.update_historical_metrics import (
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    PrometheusRegistry,
+)
 from src.utils.redis_metrics import (
     METRICS_INTERVAL,
     datetime_format_secondary,
@@ -414,9 +418,7 @@ def update_metrics(self):
                 f"index_metrics.py | update_metrics | {self.request.id} | Acquired update_metrics_lock"
             )
             metric = PrometheusMetric(
-                "index_metrics_duration_seconds",
-                "Runtimes for src.task.index_metrics:celery.task()",
-                ("task_name",),
+                PrometheusRegistry[PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS]
             )
             sweep_metrics(db, redis)
             refresh_metrics_matviews(db)
@@ -458,9 +460,7 @@ def aggregate_metrics(self):
                 f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock"
             )
             metric = PrometheusMetric(
-                "index_metrics_duration_seconds",
-                "Runtimes for src.task.index_metrics:celery.task()",
-                ("task_name",),
+                PrometheusRegistry[PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS]
             )
             consolidate_metrics_from_other_nodes(self, db, redis)
             metric.save_time({"task_name": "aggregate_metrics"})
@@ -503,9 +503,7 @@ def synchronize_metrics(self):
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock"
             )
             metric = PrometheusMetric(
-                "index_metrics_duration_seconds",
-                "Runtimes for src.task.index_metrics:celery.task()",
-                ("task_name",),
+                PrometheusRegistry[PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS]
             )
             synchronize_all_node_metrics(self, db)
             metric.save_time({"task_name": "synchronize_metrics"})
