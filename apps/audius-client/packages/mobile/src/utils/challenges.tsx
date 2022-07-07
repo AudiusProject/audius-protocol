@@ -4,7 +4,8 @@ import {
 } from 'audius-client/src/common/models/AudioRewards'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
-  TRENDING_PAGE
+  TRENDING_PAGE,
+  EXPLORE_HEAVY_ROTATION_PAGE
 } from 'audius-client/src/utils/route'
 import { ImageSourcePropType } from 'react-native'
 
@@ -13,12 +14,12 @@ import Headphone from 'app/assets/images/emojis/headphone.png'
 import IncomingEnvelope from 'app/assets/images/emojis/incoming-envelope.png'
 import LoveLetter from 'app/assets/images/emojis/love-letter.png'
 import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arrow.png'
+import MoneyMouthFace from 'app/assets/images/emojis/money-mouth-face.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import NerdFace from 'app/assets/images/emojis/nerd-face.png'
 import WhiteHeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
-import IconTip from 'app/assets/images/iconTip.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 
 // TODO: These should be programmatic based on amount, but historically have not been
@@ -86,12 +87,23 @@ export const challenges = {
   trackUploadDescription: 'Upload 3 tracks to your profile',
   trackUploadShortDescription: 'Upload 3 tracks to your profile',
   trackUploadProgressLabel: '%0/%1 Uploaded',
-  trackUploadButton: 'Upload Tracks'
+  trackUploadButton: 'Upload Tracks',
+
+  // Send First Tip
+  sendFirstTipTitle: 'Send Your First Tip',
+  sendFirstTipDescription:
+    'Show some love to your favorite artist and send them a tip',
+  sendFirstTipShortDescription:
+    'Show some love to your favorite artist and send them a tip',
+  sendFirstTipProgressLabel: 'Not Earned',
+  sendFirstTipButton: 'Find Someone To Tip'
 }
 
 export type ChallengesParamList = {
   trending: undefined
   AccountVerificationScreen: undefined
+  explore: undefined
+  params: { screen: string }
 }
 
 export type ChallengeConfig = {
@@ -209,15 +221,17 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     }
   },
   'send-first-tip': {
-    icon: MultipleMusicalNotes,
-    title: 'Send Your First Tip',
-    description: 'Show some love to your favorite artist and send them a tip',
-    shortDescription: 'Earn 2 $AUDIO',
-    progressLabel: 'Not Earned',
+    icon: MoneyMouthFace,
+    title: challenges.sendFirstTipTitle,
+    description: challenges.sendFirstTipDescription,
+    shortDescription: challenges.sendFirstTipShortDescription,
+    progressLabel: challenges.sendFirstTipProgressLabel,
     buttonInfo: {
-      label: 'Find Someone to Tip',
-      renderIcon: color => <IconTip fill={color} />,
-      iconPosition: 'right'
+      label: challenges.sendFirstTipButton,
+      navigation: {
+        native: { screen: 'explore', params: { screen: 'HeavyRotation' } },
+        web: { route: EXPLORE_HEAVY_ROTATION_PAGE }
+      }
     }
   }
 }
