@@ -273,7 +273,7 @@ class ServiceRegistry {
    *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    *  - create bull queue monitoring dashboard, which needs other server-dependent services to be running
    */
-   async initServicesThatRequireServer(app) {
+  async initServicesThatRequireServer(app) {
     const start = getStartTime()
 
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
