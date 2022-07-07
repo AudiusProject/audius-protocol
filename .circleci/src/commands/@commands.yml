@@ -1,0 +1,9 @@
+create_concatenated_package_lock:
+  description: "Concatenate all package-lock.json files recognized by lerna.js into single file. File is used as checksum source for part of caching key."
+  parameters:
+    filename:
+      type: string
+  steps:
+    - run:
+        name: Combine package-lock.json files to single file
+        command: ls -d -- packages/*/*-lock.json | awk -F packages '{printf "\"packages%s\" ", $2}' | xargs cat > << parameters.filename >>
