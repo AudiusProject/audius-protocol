@@ -44,7 +44,7 @@ def test_index_related_artists(app):
     with db.scoped_session() as session:
         update_related_artist_minhash(session)
 
-        results: List[RelatedArtist] = (
+        results: List[RelatedArtist] = list(
             session.query(RelatedArtist)
             .filter(RelatedArtist.user_id == 0)
             .order_by(desc(RelatedArtist.score))
@@ -52,10 +52,11 @@ def test_index_related_artists(app):
         )
 
         expectations = [
-            (1, 0.265625),
-            (2, 0.1953125),
-            (6, 0.1328125),
-            (3, 0.0859375),
+            (1, 0.26171875),
+            (2, 0.20703125),
+            (6, 0.171875),
+            (3, 0.1015625),
+            (5, 0.078125),
         ]
 
         compare_results_to_expectations(results, expectations)
@@ -83,11 +84,11 @@ def test_index_related_artists(app):
         )
 
         expectations = [
-            (2, 0.4609375),
+            (2, 0.41796875),
             (6, 0.328125),
-            (1, 0.1953125),
-            (5, 0.1875),
-            (3, 0.171875),
+            (1, 0.20703125),
+            (5, 0.1640625),
+            (3, 0.15625),
         ]
 
         compare_results_to_expectations(results, expectations)
