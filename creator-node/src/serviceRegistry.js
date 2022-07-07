@@ -127,8 +127,7 @@ class ServiceRegistry {
     this.logInfo('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
-    const { stateMachineQueue, recurringSyncQueue } =
-      this.snapbackSM
+    const { stateMachineQueue, recurringSyncQueue } = this.snapbackSM
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
     const { queue: imageProcessingQueue } = ImageProcessingQueue
@@ -167,7 +166,6 @@ class ServiceRegistry {
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
-        manualSyncAdapter,
         new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
         new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(manualSyncQueue, { readOnlyMode: true }),

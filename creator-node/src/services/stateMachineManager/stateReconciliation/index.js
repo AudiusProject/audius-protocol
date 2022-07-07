@@ -44,11 +44,12 @@ class StateReconciliationManager {
       name: QUEUE_NAMES.MANUAL_SYNC,
       removeOnComplete: MANUAL_SYNC_QUEUE_HISTORY,
       removeOnFail: MANUAL_SYNC_QUEUE_HISTORY,
-      lockDuration: MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS,
+      lockDuration: MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS
     })
 
     this.registerQueueEventHandlersAndJobProcessors({
-      queue,
+      stateReconciliationQueue,
+      manualSyncQueue,
       processManualSync:
         this.makeProcessManualSyncJob(prometheusRegistry).bind(this),
       processRecurringSync:
@@ -58,18 +59,18 @@ class StateReconciliationManager {
     })
 
     // Clear any old state if redis was running but the rest of the server restarted
-    await reconciliationQueue.clean({ force: true })
+    await stateReconciliationQueue.clean({ force: true })
     await manualSyncQueue.clean({ force: true })
 
     return {
-      stateReconciliationQueue: reconciliationQueue,
-      manualSyncQueue: manualSyncQueue
+      stateReconciliationQueue,
+      manualSyncQueue
     }
   }
 
   makeQueue({
-    redisHost, 
-    redisPort, 
+    redisHost,
+    redisPort,
     name,
     removeOnComplete,
     removeOnFail,
@@ -104,38 +105,44 @@ class StateReconciliationManager {
    * @param {Function<job>} params.processUpdateReplicaSet the function to call when processing an update-replica-set job from the queue
    */
   registerQueueEventHandlersAndJobProcessors({
-    queue,
+    stateReconciliationQueue,
+    manualSyncQueue,
     processManualSync,
     processRecurringSync,
     processUpdateReplicaSet
   }) {
     // Add handlers for logging
-    queue.on('global:waiting', (jobId) => {
+    stateReconciliationQueue.on('global:waiting', (jobId) => {
       reconciliationLogger.info(`Queue Job Waiting - ID ${jobId}`)
     })
-    queue.on('global:active', (jobId, jobPromise) => {
+    stateReconciliationQueue.on('global:active', (jobId, jobPromise) => {
       reconciliationLogger.info(`Queue Job Active - ID ${jobId}`)
     })
-    queue.on('global:lock-extension-failed', (jobId, err) => {
-      reconciliationLogger.error(
-        `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
-      )
-    })
-    queue.on('global:stalled', (jobId) => {
+    stateReconciliationQueue.on(
+      'global:lock-extension-failed',
+      (jobId, err) => {
+        reconciliationLogger.error(
+          `Queue Job Lock Extension Failed - ID ${jobId} - Error ${err}`
+        )
+      }
+    )
+    stateReconciliationQueue.on('global:stalled', (jobId) => {
       reconciliationLogger.error(`stateMachineQueue Job Stalled - ID ${jobId}`)
     })
-    queue.on('global:error', (error) => {
+    stateReconciliationQueue.on('global:error', (error) => {
       reconciliationLogger.error(`Queue Job Error - ${error}`)
     })
 
     // Add handlers for when a job fails to complete (or completes with an error) or successfully completes
-    queue.on('completed', (job, result) => {
+    stateReconciliationQueue.on('completed', (job, result) => {
       reconciliationLogger.info(
         `Queue Job Completed - ID ${job?.id} - Result ${JSON.stringify(result)}`
       )
     })
-    queue.on('failed', (job, err) => {
-      reconciliationLogger.error(`Queue Job Failed - ID ${job?.id} - Error ${err}`)
+    stateReconciliationQueue.on('failed', (job, err) => {
+      reconciliationLogger.error(
+        `Queue Job Failed - ID ${job?.id} - Error ${err}`
+      )
     })
 
     // Register the logic that gets executed to process each new job from the queue
@@ -144,12 +151,12 @@ class StateReconciliationManager {
       config.get('maxManualRequestSyncJobConcurrency'),
       processManualSync
     )
-    reconciliationQueue.process(
+    stateReconciliationQueue.process(
       JOB_NAMES.ISSUE_RECURRING_SYNC_REQUEST,
       config.get('maxRecurringRequestSyncJobConcurrency'),
       processRecurringSync
     )
-    reconciliationQueue.process(
+    stateReconciliationQueue.process(
       JOB_NAMES.UPDATE_REPLICA_SET,
       1 /** concurrency */,
       processUpdateReplicaSet

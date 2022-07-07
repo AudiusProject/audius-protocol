@@ -1,14 +1,18 @@
 const _ = require('lodash')
+const axios = require('axios')
 
+const Utils = require('../utils')
 const config = require('../../config')
 const { logger: baseLogger } = require('../../logging')
 const StateMonitoringManager = require('./stateMonitoring')
 const StateReconciliationManager = require('./stateReconciliation')
 const NodeToSpIdManager = require('./CNodeToSpIdMapManager')
-const { RECONFIG_MODES } = require('./stateMachineConstants')
+const { RECONFIG_MODES, SyncType } = require('./stateMachineConstants')
 const QueueInterfacer = require('./QueueInterfacer')
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
-const { getNewOrExistingSyncReq } = require('./stateReconciliation/stateReconciliationUtils')
+const {
+  getNewOrExistingSyncReq
+} = require('./stateReconciliation/stateReconciliationUtils')
 
 /**
  * Manages the queue for monitoring the state of Content Nodes and
@@ -30,9 +34,8 @@ class StateMachineManager {
         audiusLibs.discoveryProvider.discoveryProviderEndpoint,
         prometheusRegistry
       )
-    const { stateReconciliationQueue, manualSyncQueue } = await stateReconciliationManager.init(
-      prometheusRegistry
-    )
+    const { stateReconciliationQueue, manualSyncQueue } =
+      await stateReconciliationManager.init(prometheusRegistry)
 
     // Upon completion, make jobs record metrics and enqueue other jobs as necessary
     stateMonitoringQueue.on(
@@ -137,9 +140,9 @@ class StateMachineManager {
   }
 
   /**
- * Issues syncRequest for user against secondary, and polls for replication up to primary
- * If secondary fails to sync within specified timeoutMs, will error
- */
+   * Issues syncRequest for user against secondary, and polls for replication up to primary
+   * If secondary fails to sync within specified timeoutMs, will error
+   */
   async issueSyncRequestsUntilSynced(
     secondaryUrl,
     wallet,
@@ -155,16 +158,14 @@ class StateMachineManager {
       immediate: true
     })
     if (!_.isEmpty(duplicateSyncReq)) {
-      // Log duplicate and return 
-      baseLogger.warn(
-        `Duplicate sync request: ${duplicateSyncReq}`
-      )
+      // Log duplicate and return
+      baseLogger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
       return
     } else if (!_.isEmpty(syncReqToEnqueue)) {
       const { jobName, jobData } = syncReqToEnqueue
       await this.manualSyncQueue.add(jobName, jobData)
     } else {
-      // Log error that the sync request couldn't be created and return 
+      // Log error that the sync request couldn't be created and return
       baseLogger.error(
         `Failed to create manual sync request: ${duplicateSyncReq}`
       )
@@ -192,13 +193,13 @@ class StateMachineManager {
 
           // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
         } else if (!syncInProgress) {
-
-          const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-            userWallet: wallet,
-            secondaryEndpoint: secondaryUrl,
-            primaryEndpoint: this.endpoint,
-            syncType: SyncType.Manual,
-          })
+          const { duplicateSyncReq, syncReqToEnqueue } =
+            getNewOrExistingSyncReq({
+              userWallet: wallet,
+              secondaryEndpoint: secondaryUrl,
+              primaryEndpoint: this.endpoint,
+              syncType: SyncType.Manual
+            })
           if (!_.isEmpty(duplicateSyncReq)) {
             // TODO: Log duplicate and return or something
           } else if (!_.isEmpty(syncReqToEnqueue)) {
@@ -207,7 +208,6 @@ class StateMachineManager {
           } else {
             // TODO: Log error that the sync request couldn't be created and return or something
           }
-
         }
 
         // Give secondary some time to process ongoing or newly enqueued sync
