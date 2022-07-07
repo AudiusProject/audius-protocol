@@ -29,29 +29,6 @@ def retrieve_peers_from_eth_contracts(self):
     )
 
 
-# Determine the known set of distinct peers currently within a user replica set
-# This function differs from the above as we are not interacting with eth-contracts,
-#   instead we are pulling local db state and retrieving the relevant information
-def retrieve_peers_from_db(self):
-    db = update_network_peers.db
-    cnode_endpoints_set = set()
-    with db.scoped_session() as session:
-        db_cnode_endpts = (
-            session.query(User.creator_node_endpoint)
-            .filter(User.creator_node_endpoint != None, User.is_current == True)
-            .distinct()
-        )
-        # Generate dictionary of unique creator node endpoints
-        for entry in db_cnode_endpts:
-            for cnode_user_set in entry:
-                cnode_entries = cnode_user_set.split(",")
-                for cnode_url in cnode_entries:
-                    if cnode_url == "''":
-                        continue
-                    cnode_endpoints_set.add(cnode_url)
-    return cnode_endpoints_set
-
-
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_network_peers", bind=True)
 @save_duration_metric(metric_group="celery_task")
@@ -74,12 +51,8 @@ def update_network_peers(self):
             logger.info(
                 f"index_network_peers.py | Peers from eth-contracts: {peers_from_ethereum}"
             )
-            # An object returned from local database queries
-            peers_from_local = retrieve_peers_from_db(self)
-            logger.info(f"index_network_peers.py | Peers from db : {peers_from_local}")
             # Combine the set of known peers from ethereum and within local database
             all_peers = peers_from_ethereum
-            all_peers.update(peers_from_local)
 
             # Legacy user metadata node is always added to set of known peers
             user_metadata_url = update_network_peers.shared_config["discprov"][
