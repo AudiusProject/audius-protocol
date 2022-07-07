@@ -169,7 +169,7 @@ class AggregateHistoricalMetrics(Resource):
 
 
 @ns.route("/aggregates/routes/trailing/month", doc=False)
-class Aggregatet_route_metrics_trailing_month(Resource):
+class AggregateRouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self):
         """Gets aggregated route metrics for the last trailing 30 days"""
@@ -292,7 +292,7 @@ metrics_app_name_list_parser.add_argument(
 
 
 @ns.route("/routes/trailing/month", doc=False)
-class t_route_metrics_trailing_month(Resource):
+class RouteMetricsTrailingMOnth(Resource):
     @ns.marshal_with(route_metrics_trailing_month_response)
     @cache(ttl_sec=30 * 60)
     def get(self):

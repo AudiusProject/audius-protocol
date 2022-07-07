@@ -93,7 +93,7 @@ class FullTrendingPlaylists(Resource):
 
 doc_false_example = """
 @ns.route(\"/aggregates/routes/trailing/month\", doc=False)
-class Aggregatet_route_metrics_trailing_month(Resource):
+class AggregateRouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=30 * 60)
     @record_metrics
     @ns.doc({\"params\": {\"foo\": \"bar\"}})
