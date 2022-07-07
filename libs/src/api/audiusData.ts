@@ -1,7 +1,7 @@
-import { Base, Services } from './base'
+import { Base, BaseConstructorArgs, Services } from './base'
 
 export class AudiusData extends Base {
-  constructor(...args: any[]) {
+  constructor(...args: BaseConstructorArgs) {
     super(...args)
     this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
     this.createPlaylist = this.createPlaylist.bind(this)
@@ -53,7 +53,7 @@ export class AudiusData extends Base {
       playlistId: 0
     }
     try {
-      const ownerId: number = this.userStateManager.getCurrentUserId()
+      const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
       const action = 'Create'
       const entityType = 'Playlist'
       const entityId = await this.getValidPlaylistId()
