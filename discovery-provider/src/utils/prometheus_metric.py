@@ -74,7 +74,9 @@ class PrometheusMetricNames:
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
     CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
     HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT = "health_check_block_difference_current"
-    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT = "health_check_latest_indexed_block_num_current"
+    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT = (
+        "health_check_latest_indexed_block_num_current"
+    )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"

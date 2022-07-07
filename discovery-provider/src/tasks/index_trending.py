@@ -24,6 +24,7 @@ from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
     PrometheusRegistry,
+    save_duration_metric,
 )
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key

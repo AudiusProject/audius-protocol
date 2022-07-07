@@ -471,7 +471,9 @@ def health_check_prometheus_exporter():
     ).save(health_results["block_difference"])
 
     PrometheusMetric(
-        PrometheusRegistry[PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT]
+        PrometheusRegistry[
+            PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT
+        ]
     ).save(health_results["web"]["blocknumber"])
 
 

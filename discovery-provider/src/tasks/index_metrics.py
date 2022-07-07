@@ -19,6 +19,7 @@ from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
     PrometheusRegistry,
+    save_duration_metric,
 )
 from src.utils.redis_metrics import (
     METRICS_INTERVAL,
