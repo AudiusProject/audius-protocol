@@ -87,5 +87,12 @@
 		"amount": 2,
 		"active": true,
 		"starting_block": 0
+	},
+	{
+		"id": "first-playlist",
+		"type": "boolean",
+		"amount": 2,
+		"active": true,
+		"starting_block": 28350000
 	}
 ]

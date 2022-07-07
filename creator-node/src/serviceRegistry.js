@@ -8,7 +8,11 @@ const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
-const { logger, getStartTime, logInfoWithDuration } = require('./logging')
+const {
+  logger: genericLogger,
+  getStartTime,
+  logInfoWithDuration
+} = require('./logging')
 const utils = require('./utils')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const SyncQueue = require('./services/sync/syncQueue')
@@ -25,65 +29,60 @@ const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRe
  * `ServiceRegistry` is a container responsible for exposing various
  * services for use throughout CreatorNode.
  *
- * Services:
- *  - `nodeConfig`: exposes config object
- *  - `redis`: Redis Client
- *  - `blackListManager`: responsible for handling blacklisted content
- *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
- *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
- *  - `asyncProcessingQueue`: queue that processes jobs asynchronously and adds job responses into redis
- *
- *  - `libs`: an instance of Audius Libs
- *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
- *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
- *
- * `initServices` must be called prior to consuming services from the registry.
  */
 class ServiceRegistry {
   constructor() {
+    // TODO: this is redundant and we should just rely on the import, but this is too tightly coupled with existing logic
     this.nodeConfig = config
-    this.redis = redisClient
-    this.blacklistManager = BlacklistManager
-    this.monitoringQueue = new MonitoringQueue()
-    this.sessionExpirationQueue = new SessionExpirationQueue()
-    this.prometheusRegistry = new PrometheusRegistry()
 
-    // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
-    this.libs = null
-    this.stateMachineManager = null
-    this.snapbackSM = null
-    this.URSMRegistrationManager = null
-    this.syncQueue = null
-    this.skippedCIDsRetryQueue = null
-    this.trustedNotifierManager = null
+    // Some services are initialized to `null` and will be initialized in helper functions
 
-    this.servicesInitialized = false
+    this.redis = redisClient // Redis Client
+    this.prometheusRegistry = new PrometheusRegistry() // Service that tracks metrics
+    this.libs = null // instance of Audius Libs
+    this.blacklistManager = BlacklistManager // Service that handles blacklisted content
+    this.stateMachineManager = null // Service that manages user states
+    this.snapbackSM = null // Responsible for recurring sync and reconfig operations
+    this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
+    this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
+
+    // Queues
+    this.monitoringQueue = new MonitoringQueue() // Recurring job to monitor node state & performance metrics
+    this.sessionExpirationQueue = new SessionExpirationQueue() // Recurring job to clear expired session tokens from Redis and DB
+    this.imageProcessingQueue = ImageProcessingQueue // Resizes all images on Audius
+    this.transcodingQueue = TranscodingQueue // Transcodes and segments all tracks
+    this.skippedCIDsRetryQueue = null // Retries syncing CIDs that were unable to sync on first try
+    this.syncQueue = null // Handles syncing data to users' replica sets
+    this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
+    this.manualSyncQueue = null // Handles sync jobs triggered by client actions, e.g. track upload
+    this.recurringSyncQueue = null // Handles syncs that occur on a cadence, e.g. every hour
+    this.stateMonitoringQueue = null // Handles jobs for finding replica set updates and syncs for one slice of users at a time
+    this.stateReconciliationQueue = null // Handles jobs for issuing sync requests and updating users' replica sets
+    this.stateMachineQueue = null // DEPRECATED -- being removed very soon. Handles sync jobs based on user state
+
+    // Flags that indicate whether categories of services have been initialized
+    this.synchronousServicesInitialized = false
     this.asynchronousServicesInitialized = false
     this.servicesThatRequireServerInitialized = false
   }
 
   /**
-   * Configure all services
+   * Configure services that do not require the server and will be initialized synchronously
    */
   async initServices() {
-    // init libs
+    const start = getStartTime()
+
     this.libs = await this._initAudiusLibs()
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(this.libs)
 
-    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
-    // do not await on this, if we cannot fetch the notifier from chain, it will stop the content node from coming up
-    this.trustedNotifierManager.init()
+    this.synchronousServicesInitialized = true
 
-    // Intentionally not awaitted
-    this.monitoringQueue.start()
-    this.sessionExpirationQueue.start()
-
-    this.imageProcessingQueue = ImageProcessingQueue
-    this.transcodingQueue = TranscodingQueue
-
-    this.servicesInitialized = true
+    logInfoWithDuration(
+      { logger: genericLogger, startTime: start },
+      'ServiceRegistry || Initialized synchronous services'
+    )
   }
 
   /**
@@ -92,9 +91,19 @@ class ServiceRegistry {
   async initServicesAsynchronously() {
     const start = getStartTime()
 
-    // Initialize BlacklistManager. If error occurs, do not continue with app start up.
+    // If error occurs in initializing these services, do not continue with app start up.
     try {
       await this.blacklistManager.init()
+
+      this.trustedNotifierManager = new TrustedNotifierManager(
+        config,
+        this.libs
+      )
+
+      await this.trustedNotifierManager.init()
+
+      await this.monitoringQueue.start()
+      await this.sessionExpirationQueue.start()
     } catch (e) {
       this.logError(e.message)
       process.exit(1)
@@ -103,7 +112,7 @@ class ServiceRegistry {
     this.asynchronousServicesInitialized = true
 
     logInfoWithDuration(
-      { logger, startTime: start },
+      { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized asynchronous services'
     )
   }
@@ -129,8 +138,6 @@ class ServiceRegistry {
     this.logInfo('Setting up Bull queue monitoring...')
 
     const serverAdapter = new ExpressAdapter()
-    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
-      this.snapbackSM
     const { queue: syncProcessingQueue } = this.syncQueue
     const { queue: asyncProcessingQueue } = this.asyncProcessingQueue
     const { queue: imageProcessingQueue } = this.imageProcessingQueue
@@ -170,9 +177,9 @@ class ServiceRegistry {
         stateMonitoringAdapter, // stateMonitoringQueue
         stateReconciliationAdapter, // stateReconciliationQueue
         new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
-        new BullAdapter(stateMachineQueue, { readOnlyMode: true }),
-        new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
-        new BullAdapter(recurringSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
+        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
@@ -305,7 +312,7 @@ class ServiceRegistry {
 
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
-    this.syncQueue = new SyncQueue(this.nodeConfig, this.redis, this)
+    this.syncQueue = new SyncQueue(config, this.redis, this)
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
@@ -314,7 +321,7 @@ class ServiceRegistry {
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(
-      this.nodeConfig,
+      config,
       this.libs,
       this
     )
@@ -329,24 +336,16 @@ class ServiceRegistry {
       )
     } catch (e) {
       this.logError(
-        `Failed to initialize bull monitoring UI: ${e.message || e}`
+        `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
       )
     }
 
     this.servicesThatRequireServerInitialized = true
 
     logInfoWithDuration(
-      { logger, startTime: start },
+      { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized services that require server'
     )
-  }
-
-  logInfo(msg) {
-    logger.info(`ServiceRegistry || ${msg}`)
-  }
-
-  logError(msg) {
-    logger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 
   /**
@@ -370,7 +369,7 @@ class ServiceRegistry {
           )
 
         if (spID !== 0) {
-          this.nodeConfig.set('spID', spID)
+          config.set('spID', spID)
 
           isInitialized = true
           // Short circuit earlier instead of waiting for another timeout and loop iteration
@@ -386,7 +385,7 @@ class ServiceRegistry {
     }
 
     this.logInfo(
-      `Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID = ${this.nodeConfig.get(
+      `Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID = ${config.get(
         'spID'
       )}`
     )
@@ -398,7 +397,7 @@ class ServiceRegistry {
    */
   async _registerNodeOnL2URSM() {
     // Wait until URSM contract has been deployed (for backwards-compatibility)
-    let retryTimeoutMs = this.nodeConfig.get('devMode')
+    let retryTimeoutMs = config.get('devMode')
       ? 10000 /** 10sec */
       : 600000 /* 10min */
 
@@ -425,7 +424,7 @@ class ServiceRegistry {
     }
 
     this.URSMRegistrationManager = new URSMRegistrationManager(
-      this.nodeConfig,
+      config,
       this.libs
     )
 
@@ -461,7 +460,12 @@ class ServiceRegistry {
    * Requires L1 identity
    */
   async _initSnapbackSM() {
-    this.snapbackSM = new SnapbackSM(this.nodeConfig, this.libs)
+    this.snapbackSM = new SnapbackSM(config, this.libs)
+    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
+      this.snapbackSM
+    this.stateMachineQueue = stateMachineQueue
+    this.manualSyncQueue = manualSyncQueue
+    this.recurringSyncQueue = recurringSyncQueue
 
     let isInitialized = false
     const retryTimeoutMs = 10000 // ms
@@ -538,11 +542,19 @@ class ServiceRegistry {
       isServer: true,
       preferHigherPatchForPrimary: true,
       preferHigherPatchForSecondaries: true,
-      logger
+      logger: genericLogger
     })
 
     await audiusLibs.init()
     return audiusLibs
+  }
+
+  logInfo(msg) {
+    genericLogger.info(`ServiceRegistry || ${msg}`)
+  }
+
+  logError(msg) {
+    genericLogger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 }
 
