@@ -39,7 +39,7 @@ class BaseQueue {
       try {
         await this.getQueue.whenCurrentJobsFinished()
       } catch (e) {
-        this.logWarn(`Could not wrap up jobs: ${e.message}`)
+        this.logWarn(`Error wrapping up jobs: ${e.message}`)
         return false
       }
 
