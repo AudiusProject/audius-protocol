@@ -82,6 +82,11 @@ class PrometheusMetricNames:
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
     TRACK_STATE_UPDATE_DURATION_SECONDS = "track_state_update_duration_seconds"
+    INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
+    UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS = (
+        "update_track_is_available_duration_seconds"
+    )
+    UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS = "update_aggregate_table_latency_seconds"
 
 
 PrometheusRegistry = {
@@ -145,6 +150,21 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS}",
         "Runtimes for src.task.tracks:track_state_update()",
         ("scope",),
+    ),
+    PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
+        "Runtimes for src.task.index:index_blocks()",
+        ("scope",),
+    ),
+    PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS}",
+        "Runtimes for src.task.update_track_is_available:celery.task()",
+        ("task_name", "success"),
+    ),
+    PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS}",
+        "Runtimes for src.task.aggregates:update_aggregate_table()",
+        ("table_name", "task_name"),
     ),
 }
 

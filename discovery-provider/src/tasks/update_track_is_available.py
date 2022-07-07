@@ -7,7 +7,12 @@ from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
-from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    PrometheusRegistry,
+    save_duration_metric,
+)
 from src.utils.redis_constants import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
@@ -231,9 +236,9 @@ def update_track_is_available(self) -> None:
     have_lock = update_lock.acquire(blocking=False)
     if have_lock:
         metric = PrometheusMetric(
-            "update_track_is_available_duration_seconds",
-            "Runtimes for src.task.update_track_is_available:celery.task()",
-            ("task_name", "success"),
+            PrometheusRegistry[
+                PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS
+            ]
         )
         try:
             # TODO: we can deprecate this manual redis timestamp tracker once we confirm
