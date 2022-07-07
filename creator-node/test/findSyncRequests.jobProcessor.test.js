@@ -41,6 +41,7 @@ describe('test findSyncRequests job processor', function () {
     config.set('creatorNodeEndpoint', originalContentNodeEndpoint)
   })
 
+
   const primary = 'http://primary_cn.co'
   const secondary1 = 'http://secondary_to_sync_to.co'
   const secondary2 = 'http://secondary_already_synced.co'
@@ -61,6 +62,8 @@ describe('test findSyncRequests job processor', function () {
       secondary2SpID
     }
   ]
+  const syncType = SyncType.Recurring
+  const syncMode = SYNC_MODES.SyncSecondaryFromPrimary
 
   function getJobProcessorStub(
     getNewOrExistingSyncReqStub,
@@ -161,7 +164,8 @@ describe('test findSyncRequests job processor', function () {
         userWallet: wallet,
         primaryEndpoint: primary,
         secondaryEndpoint: secondary1,
-        syncType: SyncType.Recurring
+        syncType,
+        syncMode
       },
       /**
        * note - this value can be anything as it's outside scope of this integration test suite
@@ -274,7 +278,8 @@ describe('test findSyncRequests job processor', function () {
         userWallet: wallet,
         primaryEndpoint: primary,
         secondaryEndpoint: secondary1,
-        syncType: SyncType.Recurring
+        syncType,
+        syncMode
       },
       output: { duplicateSyncReq: expectedDuplicateSyncReq }
     }]
@@ -646,7 +651,8 @@ describe('test findSyncRequests job processor', function () {
       userWallet: wallet,
       primaryEndpoint: primary,
       secondaryEndpoint: secondary1,
-      syncType: SyncType.Recurring
+      syncType,
+      syncMode
     }
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error(expectedErrorMsg)
@@ -692,7 +698,7 @@ describe('test findSyncRequests job processor', function () {
     const expectedOutput = {
       duplicateSyncReqs: [],
       errors: [
-        `Error getting new or existing sync request for user ${wallet} and secondary ${secondary1} - ${expectedErrorMsg}`
+        `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary1} - ${expectedErrorMsg}`
       ],
       jobsToEnqueue: {}
     }

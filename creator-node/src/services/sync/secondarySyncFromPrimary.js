@@ -20,7 +20,7 @@ const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-module.exports = async function processSync(
+module.exports = async function secondarySyncFromPrimary(
   serviceRegistry,
   walletPublicKeys,
   creatorNodeEndpoint,
@@ -567,4 +567,3 @@ module.exports = async function processSync(
 
   return errorObj
 }
-

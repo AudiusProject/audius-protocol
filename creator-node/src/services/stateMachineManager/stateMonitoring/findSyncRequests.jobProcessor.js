@@ -146,8 +146,7 @@ const _findSyncsForUser = async (
   userSecondarySyncMetricsMap,
   minSecondaryUserSyncSuccessPercent,
   minFailedSyncRequestsBeforeReconfig,
-  replicaToUserInfoMap,
-  logger
+  replicaToUserInfoMap
 ) => {
   const syncReqsToEnqueue = []
   const duplicateSyncReqs = []
@@ -224,32 +223,30 @@ const _findSyncsForUser = async (
       continue
     }
 
-    try {
-      const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
-        userWallet: wallet,
-        primaryEndpoint: thisContentNodeEndpoint,
-        secondaryEndpoint: secondary,
-        syncType: SyncType.Recurring,
-        syncMode
-      })
+    if (
+      syncMode === SYNC_MODES.SyncSecondaryFromPrimary ||
+      syncMode === SYNC_MODES.MergePrimaryAndSecondary
+    ) {
+      try {
+        const { duplicateSyncReq, syncReqToEnqueue } = getNewOrExistingSyncReq({
+          userWallet: wallet,
+          primaryEndpoint: thisContentNodeEndpoint,
+          secondaryEndpoint: secondary,
+          syncType: SyncType.Recurring,
+          syncMode
+        })
 
-      if (!_.isEmpty(syncReqToEnqueue)) {
-        syncReqsToEnqueue.push(syncReqToEnqueue)
-      } else if (!_.isEmpty(duplicateSyncReq)) {
-        duplicateSyncReqs.push(duplicateSyncReq)
+        if (!_.isEmpty(syncReqToEnqueue)) {
+          syncReqsToEnqueue.push(syncReqToEnqueue)
+        } else if (!_.isEmpty(duplicateSyncReq)) {
+          duplicateSyncReqs.push(duplicateSyncReq)
+        }
+      } catch (e) {
+        errors.push(
+          `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`
+        )
+        continue
       }
-    } catch (e) {
-      errors.push(
-        `Error getting new or existing sync request for syncMode ${syncMode}, user ${wallet} and secondary ${secondary} - ${e.message}`
-      )
-      continue
-    }
-
-    // TODOSID
-    if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-      logger.info(
-        `[findSyncRequests][_findSyncsForUser][MergePrimaryAndSecondary = true][SyncType = ${SyncType.Recurring}] wallet ${wallet} secondary ${secondary} Clocks: [${primaryClock},${secondaryClock}] Files hashes: [${primaryFilesHash},${secondaryFilesHash}]`
-      )
     }
   }
 

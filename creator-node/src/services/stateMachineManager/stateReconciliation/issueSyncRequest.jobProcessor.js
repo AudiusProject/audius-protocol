@@ -108,12 +108,10 @@ module.exports = async function ({
   }
 
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-    // TODO asyncretry?
     const error = await primarySyncFromSecondary(secondaryEndpoint, userWallet)
 
-    // TODO logging
-
     if (error) {
+      
     }
   }
 
@@ -138,8 +136,6 @@ module.exports = async function ({
     logger.error(`${logMsgString} || Error issuing sync request: ${e.message}`)
   }
 
-  const metricsToRecord = []
-
   // Wait until has sync has completed (within time threshold)
   const startWaitingForCompletion = Date.now()
   const { additionalSyncIsRequired, reasonForAdditionalSync } =
@@ -151,16 +147,15 @@ module.exports = async function ({
       syncMode,
       logger
     )
-  metricsToRecord.push(
-    makeHistogramToRecord(
-      MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
-      (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
-      {
-        syncType: _.snakeCase(syncType),
-        reason_for_additional_sync: reasonForAdditionalSync
-      }
-    )
-  )
+
+  const metricsToRecord = [makeHistogramToRecord(
+    MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
+    (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
+    {
+      syncType: _.snakeCase(syncType),
+      reason_for_additional_sync: reasonForAdditionalSync
+    }
+  )]
 
   // Re-enqueue sync if required
   let error = {}
@@ -187,6 +182,7 @@ module.exports = async function ({
   logger.info(
     `------------------END Process SYNC | ${logMsgString}------------------`
   )
+
   return {
     error,
     jobsToEnqueue: _.isEmpty(additionalSyncReq)

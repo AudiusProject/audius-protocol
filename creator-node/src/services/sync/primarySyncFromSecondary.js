@@ -14,6 +14,7 @@ const { serviceRegistry } = require('../../serviceRegistry')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
+const USER_WRITE_LOCK_TIMEOUT_MS = 1800000 // 30min
 const DEFAULT_LOG_CONTEXT = {}
 
 /**
@@ -40,9 +41,6 @@ module.exports = async function primarySyncFromSecondary({
   try {
     await acquireUserRedisLock({ redis, wallet })
 
-    /**
-     * Fetch user replica set for use in `saveExportedData()`
-     */
     const userReplicaSet = await getUserReplicaSet({
       wallet,
       selfEndpoint,
@@ -74,7 +72,7 @@ module.exports = async function primarySyncFromSecondary({
         logPrefix
       })
 
-      // While-loop termination
+      // Keep going until data for full clock range has been retrieved
       const clockInfo = fetchedCNodeUser.clockInfo
       if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
         completed = true
@@ -98,9 +96,6 @@ module.exports = async function primarySyncFromSecondary({
     } else {
       logger.info(`${logPrefix} Complete [Duration: ${Date.now() - start}ms]`)
     }
-
-    // TODO logging
-    console.log(`SIDTEST DONE WITH PRIMARYSYNCFROMSECONDARY`)
   }
 
   return errorObj
@@ -110,12 +105,8 @@ async function fetchExportFromSecondary({
   secondary,
   wallet,
   clockRangeMin,
-  selfEndpoint,
-  logPrefix,
-  logger
+  selfEndpoint
 }) {
-  logPrefix = `${logPrefix} [fetchExportFromSecondary]`
-
   const exportQueryParams = {
     wallet_public_key: [wallet], // export requires a wallet array
     clock_range_min: clockRangeMin,
@@ -139,33 +130,33 @@ async function fetchExportFromSecondary({
       }
     )
 
-    // TODO do we need all of this, or is there a cleaner way to compare schema
+    // Validate export response
     if (
       !_.has(exportResp, 'data.data') ||
       !_.has(exportResp.data.data, 'cnodeUsers') ||
-      !_.has(exportResp.data.data, 'ipfsIDObj') ||
       Object.keys(exportResp.data.data.cnodeUsers).length !== 1
     ) {
       throw new Error('Malformatted export response data')
     }
 
-    const { cnodeUsers, ipfsIDObj } = exportResp.data.data
+    const { cnodeUsers } = exportResp.data.data
 
     const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
+
     if (fetchedCNodeUser.walletPublicKey !== wallet) {
-      throw new Error('NO BAD NO')
+      throw new Error('Wallet mismatch')
     }
 
-    return { fetchedCNodeUser, ipfsIDObj }
+    return fetchedCNodeUser
   } catch (e) {
-    throw new Error(`${logPrefix} ERROR: ${e.message}`)
+    throw new Error(`[fetchExportFromSecondary] ERROR: ${e.message}`)
   }
 }
 
 /**
  * Fetch data for all files & save to disk
  *
- * - These ops are performed before DB ops to minimize DB TX lifespan
+ * - These ops are performed before DB ops to minimize DB TX duration
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
@@ -193,7 +184,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
      */
     await Promise.all(
       trackFilesSlice.map(async (trackFile) => {
-        const status = await saveFileForMultihashToFS(
+        const succeeded = await saveFileForMultihashToFS(
           serviceRegistry,
           logger,
           trackFile.multihash,
@@ -202,9 +193,11 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
-        console.log(
-          `SIDTEST SFFM MULTIHASH ${trackFile.multihash} STATUS ${status}`
-        )
+        if (!succeeded) {
+          throw new Error(
+            `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
+          )
+        }
       })
     )
   }
@@ -222,43 +215,42 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
       nonTrackFilesSlice.map(async (nonTrackFile) => {
         // Skip over directories since there's no actual content to sync
         // The files inside the directory are synced separately
-        if (nonTrackFile.type !== 'dir') {
-          const multihash = nonTrackFile.multihash
+        if (nonTrackFile.type === 'dir') {
+          return
+        }
 
-          let success
+        const multihash = nonTrackFile.multihash
 
-          // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-          // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-          if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-            success = await saveFileForMultihashToFS(
-              serviceRegistry,
-              logger,
-              multihash,
-              nonTrackFile.storagePath,
-              userReplicaSet,
-              nonTrackFile.fileName
-            )
-          } else {
-            success = await saveFileForMultihashToFS(
-              serviceRegistry,
-              logger,
-              multihash,
-              nonTrackFile.storagePath,
-              userReplicaSet
-            )
-          }
+        // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+        // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+        let succeeded
+        if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+          succeeded = await saveFileForMultihashToFS(
+            serviceRegistry,
+            logger,
+            multihash,
+            nonTrackFile.storagePath,
+            userReplicaSet,
+            nonTrackFile.fileName
+          )
+        } else {
+          succeeded = await saveFileForMultihashToFS(
+            serviceRegistry,
+            logger,
+            multihash,
+            nonTrackFile.storagePath,
+            userReplicaSet
+          )
+        }
 
-          // If saveFile op failed, record CID for later processing
-          // if (!success) {
-          //   CIDsThatFailedSaveFileOp.add(multihash)
-          // }
-          console.log(`SIDTEST SFFM MULTIHASH ${multihash} STATUS ${success}`)
+        if (!succeeded) {
+          throw new Error(
+            `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
+          )
         }
       })
     )
   }
-
-  console.log(`SIDTEST SFFM ALL DONE, starting DB`)
 }
 
 async function filterOutAlreadyPresentDBEntries({
@@ -273,20 +265,12 @@ async function filterOutAlreadyPresentDBEntries({
     transaction
   })
 
-  console.log(`FETCHEDENTRIES: ${JSON.stringify(fetchedEntries)}`)
-  console.log(`localEntries: ${JSON.stringify(localEntries)}`)
-
   const filteredEntries = fetchedEntries.filter((fetchedEntry) => {
     let alreadyPresent = false
     localEntries.forEach((localEntry) => {
       const obj1 = _.pick(fetchedEntry, comparisonFields)
       const obj2 = _.pick(localEntry, comparisonFields)
       const isEqual = _.isEqual(obj1, obj2)
-      console.log(
-        `SIDTEST COMPARE: ${JSON.stringify(obj1)} - ${JSON.stringify(
-          obj2
-        )} - isequal: ${isEqual}`
-      )
       if (isEqual) {
         alreadyPresent = true
       }
@@ -294,20 +278,12 @@ async function filterOutAlreadyPresentDBEntries({
     return !alreadyPresent
   })
 
-  console.log(
-    `FILTEROUTALREADYPRESENT FOUND ${
-      fetchedEntries.length - filteredEntries.length
-    } DUPES`
-  )
   return filteredEntries
 }
 
 /**
- * TODO doc
- *
- * fetch all Files, diff all against local DB
- * write data for all diffed files to disk
- * write all DB state in TX
+ * Saves all entries to DB
+ * De-dupes entries before insert
  */
 async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
   let {
@@ -331,7 +307,9 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
 
   let cnodeUserUUID
   if (localCNodeUser) {
-    console.log('SIDTEST LOCALCNODEUSER already present')
+    /**
+     * If local CNodeUser exists, filter out any received entries that are already present in DB
+     */
 
     cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
@@ -381,11 +359,9 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
       _.omit({ ...fetchedCNodeUser, clock: 0 }, ['cnodeUserUUID']),
       { returning: true, transaction }
     )
-    console.log(`SIDTEST CREATED CNODEUSER`)
 
     cnodeUserUUID = localCNodeUser.cnodeUserUUID
   }
-  console.log(`SIDTEST LOCALCNODEUSER: ${JSON.stringify(localCNodeUser)}`)
 
   // Aggregate all entries into single array, sorted by clock asc to preserve original insert order
   let allEntries = _.concat(
@@ -402,24 +378,19 @@ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
   )
   allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
-  console.log(
-    `SIDTEST SAVEEXPORTEDDATA num entries to insert: ${allEntries.length}`
-  )
   for await (const { tableInstance, entry } of allEntries) {
-    const dataValues = await DBManager.createNewDataRecord(
+    await DBManager.createNewDataRecord(
       _.omit(entry, ['cnodeUserUUID']),
       cnodeUserUUID,
       tableInstance,
       transaction
     )
-    console.log(`newly created data value: ${JSON.stringify(dataValues)}`)
   }
 
   await transaction.commit()
-  console.log(`SIDTEST DONE WITH saveexportedata`)
 }
 
-async function getUserReplicaSet({ wallet, selfEndpoint, logger, logPrefix }) {
+async function getUserReplicaSet({ wallet, selfEndpoint, logger }) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
       serviceRegistry,
@@ -438,39 +409,29 @@ async function getUserReplicaSet({ wallet, selfEndpoint, logger, logPrefix }) {
 
     return userReplicaSet
   } catch (e) {
-    // TODO ERROR
-    // logger.error(
-    //   logPrefix,
-    //   `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`
-    // )
+    throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
   }
 }
 
-/**
- * TODO abstract
- * TODO ensure lock timeout?
- */
 async function acquireUserRedisLock({ redis, wallet }) {
   const errorMsgPrefix = `[primarySyncFromSecondary:acquireUserRedisLock] [Wallet: ${wallet}] ERROR:`
-  try {
-    const redisLock = redis.lock
-    const redisKey = redis.getRedisKeyForWallet(wallet)
-    const lockHeld = await redisLock.getLock(redisKey)
-    if (lockHeld) {
-      throw new Error(`Failed to acquire lock - already held.`)
-    }
-    await redisLock.setLock(redisKey)
-  } catch (e) {
-    throw new Error(`${errorMsgPrefix} ${e.message}`)
+
+  const redisLock = redis.lock
+  const redisKey = redis.getRedisKeyForWallet(wallet)
+
+  const acquired = await redisLock.acquireLock(
+    redisKey,
+    USER_WRITE_LOCK_TIMEOUT_MS
+  )
+  if (!acquired) {
+    throw new Error(`${errorMsgPrefix} Failed to acquire lock - already held.`)
   }
 }
 
-/**
- * TODO abstract
- * TODO what if lock not held?
- */
 async function releaseUserRedisLock({ redis, wallet }) {
   const redisLock = redis.lock
   const redisKey = redis.getRedisKeyForWallet(wallet)
+
+  // Succeeds even if no lock exists for key
   await redisLock.removeLock(redisKey)
 }

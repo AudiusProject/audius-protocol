@@ -17,6 +17,7 @@ class RedisLock {
     return redisClient.get(key)
   }
 
+  // Acquire lock if not already held; return true if acquired, false if not
   static async acquireLock(key, expiration = EXPIRATION) {
     genericLogger.info(`SETTING LOCK IF NOT EXISTS ${key}`)
     const response = await redisClient.set(key, true, 'NX', 'EX', expiration)
