@@ -38,7 +38,7 @@ type PlaylistMetadata = {
 
 type ProgressCB = (loaded: number, total: number) => void
 
-type MonitoringCallbacks = {
+export type MonitoringCallbacks = {
   request?: Function
   healthCheck?: Function
 }

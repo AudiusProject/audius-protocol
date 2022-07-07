@@ -312,6 +312,7 @@ export const getPrimaryWalletBatch = async (
         FROM network_monitoring_users
         WHERE run_id = :run_id
         AND primaryspid = :spid
+        ORDER BY user_id 
         OFFSET :offset
         LIMIT :limit;
     `, {
@@ -336,6 +337,7 @@ export const getSecondary1WalletBatch = async (
     FROM network_monitoring_users
     WHERE run_id = :run_id
     AND secondary1spid = :spid
+    ORDER BY user_id 
     OFFSET :offset
     LIMIT :limit;
     `, {
@@ -360,6 +362,7 @@ export const getSecondary2WalletBatch = async (
     FROM network_monitoring_users
     WHERE run_id = :run_id
     AND secondary2spid = :spid
+    ORDER BY user_id 
     OFFSET :offset
     LIMIT :limit;
     `, {

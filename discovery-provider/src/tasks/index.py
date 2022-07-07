@@ -51,7 +51,7 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -815,7 +815,7 @@ def index_blocks(self, db, blocks_list):
             sweep_old_add_indexed_block_to_db_ms(redis, 30)
 
     if num_blocks > 0:
-        logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
+        logger.info(f"index.py | index_blocks | Indexed {num_blocks} blocks")
 
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
@@ -1102,6 +1102,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 
 # CELERY TASKS
 @celery.task(name="update_discovery_provider", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
@@ -1295,7 +1296,7 @@ def update_task(self):
                 f"index.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:
-            logger.error(
+            logger.info(
                 f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
             )
     except Exception as e:

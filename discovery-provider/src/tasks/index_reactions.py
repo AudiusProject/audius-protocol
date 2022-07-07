@@ -10,6 +10,7 @@ from src.models.social.reaction import Reaction
 from src.tasks.aggregates import init_task_and_acquire_lock
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
@@ -104,6 +105,7 @@ def index_identity_reactions(session: Session, redis: Redis):
 
 
 @celery.task(name="index_reactions", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_reactions(self):
     db: SessionManager = index_reactions.db
     redis: Redis = index_reactions.redis

@@ -114,7 +114,7 @@ export class AudiusData extends Base {
     metadataMultihash: string
   }): Promise<{ txReceipt: {}; error: any }> {
     let error: string = ''
-    let resp
+    let resp: any
     try {
       resp = await this.contracts.AudiusDataClient.manageEntity(
         userId,

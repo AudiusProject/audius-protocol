@@ -35,8 +35,8 @@ const audiusSdk = sdk({ appName: 'Name of your app goes here' })
 #### 3. Make your first API call using the SDK!
 
 ```js
-const tracks = await audiusSdk.discoveryNode.getTracks()
-console.log(tracks, 'Tracks fetched!')
+const track = await audiusSdk.track.getTrack({ trackId: 'D7KyD' })
+console.log(track, 'Track fetched!')
 ```
 
 #### Full example
@@ -50,8 +50,8 @@ window.Web3 = Web3
 
 const audiusSdk = sdk({ appName: 'My Example App' })
 
-const tracks = await audiusSdk.discoveryNode.getTracks()
-console.log(tracks, 'Tracks fetched!')
+const track = await audiusSdk.track.getTrack({ trackId: 'D7KyD' })
+console.log(track, 'Track fetched!')
 ```
 
 ### HTML + JS
@@ -74,7 +74,7 @@ const audiusSdk = window.audiusSdk({ appName: 'Name of your app goes here' })
 #### 3. Make your first API call using the SDK!
 
 ```js
-const tracks = await audiusSdk.discoveryNode.getTracks()
+const track = await audiusSdk.track.getTrack({ trackId: 'D7KyD' })
 ```
 
 #### Full example
@@ -86,11 +86,14 @@ const tracks = await audiusSdk.discoveryNode.getTracks()
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@audius/sdk@latest/dist/sdk.min.js"></script>
     <script>
-      const audiusSdk = window.audiusSdk({
-        appName: "My Example App",
-      });
-      const tracks = await audiusSdk.discoveryNode.getTracks();
-      console.log(tracks, "Tracks fetched!");
+    	const fn = async () => {
+        const audiusSdk = window.audiusSdk({
+          appName: "My Example App",
+        });
+        const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' });
+        console.log(track, "Track fetched!");
+      }
+      fn()
     </script>
   </head>
   <body>
