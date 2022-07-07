@@ -21,7 +21,7 @@ def index_related_artists(self):
     redis = index_related_artists.redis
     db = index_related_artists.db
     have_lock = False
-    update_lock = redis.lock("related_artists_lock", timeout=600)
+    update_lock = redis.lock("related_artists_lock", timeout=3600)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
