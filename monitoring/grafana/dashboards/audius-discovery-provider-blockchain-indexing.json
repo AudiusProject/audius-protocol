@@ -371,19 +371,19 @@
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T06:41:55Z",
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T06:41:55Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "POA Indexing",
@@ -526,19 +526,19 @@
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T06:41:58Z",
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T06:41:58Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "Solana Plays Indexing",
