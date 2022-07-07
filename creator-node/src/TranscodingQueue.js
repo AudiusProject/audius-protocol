@@ -1,6 +1,5 @@
+const Bull = require('bull')
 const os = require('os')
-
-const BaseQueue = require('./BaseQueue')
 
 const config = require('./config')
 const ffmpeg = require('./ffmpeg')
@@ -22,10 +21,18 @@ const PROCESS_NAMES = Object.freeze({
   transcode320: 'transcode_320'
 })
 
-class TranscodingQueue extends BaseQueue {
+class TranscodingQueue {
   constructor() {
-    super('transcoding-queue')
-
+    this.queue = new Bull('transcoding-queue', {
+      redis: {
+        port: config.get('redisPort'),
+        host: config.get('redisHost')
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true
+      }
+    })
     this.logStatus('Initialized TranscodingQueue')
 
     // NOTE: Specifying max concurrency here dictates the max concurrency for
