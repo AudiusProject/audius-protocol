@@ -17,15 +17,11 @@ def save_duration_metric(metric_group):
         @wraps(func)
         def wrapper(*args, **kwargs):
             histogram_metric = PrometheusMetric(
-                PrometheusRegistry[
-                    PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS
-                ]
+                PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS
             )
 
             gauge_metric = PrometheusMetric(
-                PrometheusRegistry[
-                    PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
-                ]
+                PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
             )
             try:
                 # safely return this result under all circumstances
