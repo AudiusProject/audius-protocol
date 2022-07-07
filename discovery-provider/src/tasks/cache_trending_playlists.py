@@ -8,6 +8,7 @@ from src.queries.get_trending_playlists import (
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_playlists_last_completion_redis_key
 
@@ -27,10 +28,11 @@ def cache_trending(db, redis, strategy):
 
 
 @celery.task(name="cache_trending_playlists", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def cache_trending_playlists(self):
     """Caches trending playlists for time period"""
 
-    db = cache_trending_playlists.db
+    db = cache_trending_playlists.db_read_replica
     redis = cache_trending_playlists.redis
 
     have_lock = False

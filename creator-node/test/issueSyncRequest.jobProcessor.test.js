@@ -221,11 +221,12 @@ describe('test issueSyncRequest job processor', function () {
       'audius_cn_issue_sync_request_monitoring_duration_seconds'
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      syncType: 'manual',
       reason_for_additional_sync: 'none'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',
-      'HISTOGRAM'
+      'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.not.have.been.called
@@ -331,11 +332,12 @@ describe('test issueSyncRequest job processor', function () {
       'audius_cn_issue_sync_request_monitoring_duration_seconds'
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      syncType: 'manual',
       reason_for_additional_sync: 'secondary_progressed_too_slow'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',
-      'HISTOGRAM'
+      'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({
@@ -413,11 +415,12 @@ describe('test issueSyncRequest job processor', function () {
       'audius_cn_issue_sync_request_monitoring_duration_seconds'
     )
     expect(result.metricsToRecord[0]).to.have.deep.property('metricLabels', {
+      syncType: 'manual',
       reason_for_additional_sync: 'secondary_failed_to_progress'
     })
     expect(result.metricsToRecord[0]).to.have.deep.property(
       'metricType',
-      'HISTOGRAM'
+      'HISTOGRAM_OBSERVE'
     )
     expect(result.metricsToRecord[0].metricValue).to.be.a('number')
     expect(getNewOrExistingSyncReqStub).to.have.been.calledOnceWithExactly({

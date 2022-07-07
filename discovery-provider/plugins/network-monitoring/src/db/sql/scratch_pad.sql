@@ -253,3 +253,16 @@ SELECT primary_group.spid as spid, primary_count, secondary1_count, secondary2_c
                     SET secondary1_clock_value = 1
                     WHERE wallet = '0xfa605045d2b861b1869b4f8939a8a81f9343bc8b'
                     AND run_id = 1;
+
+ SELECT wallet 
+        FROM network_monitoring_users
+        WHERE run_id = 45
+        AND primaryspid = 6
+        AND wallet > '0x1234567'
+        ORDER BY wallet
+        LIMIT 5000;
+
+UPDATE network_monitoring_users
+SET primary_clock_value = :clock
+WHERE wallet = :walletPublicKey
+AND run_id = :run_id;

@@ -4,6 +4,7 @@ from typing import List
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.helpers import load_eth_abi_values
+from src.utils.prometheus_metric import save_duration_metric
 from web3 import HTTPProvider, Web3
 
 logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ def get_oracle_addresses_from_chain(redis) -> List[str]:
 
 
 @celery.task(name="index_oracles", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_oracles_task(self):
     redis = index_oracles_task.redis
     have_lock = False

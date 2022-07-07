@@ -7,6 +7,7 @@ from src.models.social.play import Play
 from src.models.users.user_listening_history import UserListeningHistory
 from src.tasks.celery_app import celery
 from src.tasks.user_listening_history.listen_history import ListenHistory
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
     save_indexed_checkpoint,
@@ -106,6 +107,7 @@ def _index_user_listening_history(session):
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_user_listening_history", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_user_listening_history(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
