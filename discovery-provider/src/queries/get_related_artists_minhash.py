@@ -27,7 +27,6 @@ def build_minhash(session: Session):
             from follows
             join aggregate_user on followee_user_id = aggregate_user.user_id
             where is_current and not is_delete
-            and followee_user_id != 51
             and track_count > 0
             group by 1
             """
@@ -69,9 +68,9 @@ def update_related_artist_minhash(session: Session):
             if mh.count() < MIN_FOLLOWER_REQUIREMENT:
                 continue
 
-            # 2x overfetch with rescore to improve accuracy:
+            # overfetch with rescore to improve accuracy:
             # http://ekzhu.com/datasketch/lshforest.html#tips-for-improving-accuracy
-            similar = forest.query(mh, top_k * 2)
+            similar = forest.query(mh, top_k * 5)
             created_at = datetime.datetime.now()
 
             rows = []
@@ -79,7 +78,16 @@ def update_related_artist_minhash(session: Session):
                 if other_id == user_id:
                     continue
                 mh2 = user_mh[other_id]
-                score = mh.jaccard(mh2)
+
+                # default datasketch score would come from jaccard estimation
+                # score = mh.jaccard(mh2)
+
+                # this attempts to match previous formula
+                # https://github.com/AudiusProject/audius-protocol/blob/ddda462014ecdfd588f2834d07bf0a6066c56487/discovery-provider/src/queries/get_related_artists.py#L95-L98
+                union = MinHash.union(mh, mh2)
+                intersection_size = mh.count() + mh2.count() - union.count()
+                score = intersection_size * intersection_size / mh2.count()
+
                 rows.append((user_id, other_id, score, created_at))
 
             rows = sorted(rows, key=lambda x: x[2], reverse=True)[:top_k]

@@ -52,11 +52,11 @@ def test_index_related_artists(app):
         )
 
         expectations = [
-            (1, 0.26171875),
-            (2, 0.20703125),
-            (6, 0.171875),
-            (3, 0.1015625),
-            (5, 0.078125),
+            (1, 49),
+            (2, 25),
+            (6, 18),
+            (3, 9),
+            (5, 1),
         ]
 
         compare_results_to_expectations(results, expectations)
@@ -84,24 +84,16 @@ def test_index_related_artists(app):
         )
 
         expectations = [
-            (2, 0.41796875),
-            (6, 0.328125),
-            (1, 0.20703125),
-            (5, 0.1640625),
-            (3, 0.15625),
+            (2, 100),
+            (6, 60),
+            (1, 49),
+            (3, 39),
+            (5, 11),
         ]
 
         compare_results_to_expectations(results, expectations)
 
 
 def compare_results_to_expectations(results, expectations):
-    assert len(results) == len(expectations)
-    for idx, row in enumerate(results):
-        print(f"position {idx} row is {row}")
-
-        (other_user_id, score) = expectations[idx]
-        msg = f"at position {idx} expected user {other_user_id} got {row.related_artist_user_id}"
-        assert row.related_artist_user_id == other_user_id, msg
-
-        msg = f"at position {idx} expected score {score} got {row.score}"
-        assert math.isclose(row.score, score), msg
+    got = [(row.related_artist_user_id, math.floor(row.score)) for row in results]
+    assert got == expectations
