@@ -159,6 +159,7 @@ function formatAddTrackToPlaylist (notification, metadata) {
 function formatReaction (notification, metadata) {
   const userId = notification.initiator
   const user = metadata.users[userId]
+  console.log(`CONSOLE LOG formatReaction userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.Reaction,
     reactingUser: user,
@@ -169,6 +170,7 @@ function formatReaction (notification, metadata) {
 function formatTipReceive (notification, metadata) {
   const userId = notification.metadata.entity_id
   const user = metadata.users[userId]
+  console.log(`CONSOLE LOG formatTipReceive userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.TipReceive,
     sendingUser: user,
@@ -180,6 +182,7 @@ function formatSupporterRankUp (notification, metadata) {
   // Sending user
   const userId = notification.metadata.entity_id
   const user = metadata.users[userId]
+  console.log(`CONSOLE LOG formatSupporterRankUp userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.SupporterRankUp,
     rank: notification.metadata.rank,
@@ -191,6 +194,7 @@ function formatSupportingRankUp (notification, metadata) {
   // Receiving user
   const userId = notification.initiator
   const user = metadata.users[userId]
+  console.log(`CONSOLE LOG formatSupportingRankUp userId ${userId} user ${JSON.stringify(user, null, 2)} notification ${JSON.stringify(notification, null, 2)} metadata ${JSON.stringify(metadata, null, 2)}`)
   return {
     type: NotificationType.SupportingRankUp,
     rank: notification.metadata.rank,
@@ -347,8 +351,10 @@ const notificationResponseTitleMap = {
 }
 
 function formatNotificationProps (notifications, metadata) {
+  console.log(`CONSOLE LOG WORKS`)
   const emailNotificationProps = notifications.map(notification => {
     const mapNotification = notificationResponseMap[notification.type]
+    console.log(`CONSOLE LOG mapNotification ${mapNotification} notification.type ${notification.type}`)
     return mapNotification(notification, metadata)
   })
   return emailNotificationProps

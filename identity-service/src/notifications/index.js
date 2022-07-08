@@ -233,10 +233,12 @@ class NotificationProcessor {
       logger.info('processEmailNotifications')
       let error = null
       try {
+        logger.info('SALIOU')
         await processEmailNotifications(expressApp, audiusLibs)
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
+        logger.info('SALIOU catch email queue error')
         logger.error(`processEmailNotifications - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }

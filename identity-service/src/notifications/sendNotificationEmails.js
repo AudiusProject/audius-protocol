@@ -72,6 +72,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       attributes: ['userId'],
       where: { emailFrequency: EmailFrequency.LIVE }
     }).map(x => x.userId)
+    logger.info(`SALIOU liveEmailUsers ${liveEmailUsers}`)
 
     let dailyEmailUsers = await models.UserNotificationSettings.findAll({
       attributes: ['userId'],
@@ -200,6 +201,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
 
     // All users with notifications, including announcements
     let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
+    logger.info(`SALIOU allUsersWithUnseenNotifications ${allUsersWithUnseenNotifications}`)
 
     const userInfo = await models.User.findAll({
       where: {
@@ -222,6 +224,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       acc[setting.userId] = setting.emailFrequency
       return acc
     }, {})
+    logger.info(`SALIOU userFrequencyMapping ${JSON.stringify(userFrequencyMapping, null, 2)}`)
 
     const timeBeforeUserEmailLoop = Date.now()
     logger.info(loggingContext, `processEmailNotifications | time before looping over users to send notification email | ${timeBeforeUserEmailLoop} | ${userInfo.length} users`)
@@ -340,6 +343,7 @@ async function renderAndSendNotificationEmail (
       announcements,
       startTime,
       5)
+    logger.info(`SALIOU notificationCount ${notificationCount} notificationProps ${JSON.stringify(notificationProps, null, 2)}`)
     const timeAfterEmailNotifications = Date.now()
     const getEmailDuration = (timeAfterEmailNotifications - timeBeforeEmailNotifications) / 1000
     logger.info(`renderAndSendNotificationEmail | time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${getEmailDuration} | ${notificationCount} unread notifications`)
@@ -381,6 +385,7 @@ async function renderAndSendNotificationEmail (
     }
 
     renderProps['subject'] = subject
+    logger.info(`SALIOU renderProps ${JSON.stringify(renderProps)}`)
     const notifHtml = renderEmail(renderProps)
 
     const emailParams = {
@@ -390,8 +395,10 @@ async function renderAndSendNotificationEmail (
       html: notifHtml,
       subject: emailSubject
     }
+    logger.info({ job: 'renderAndSendNotificationEmail' }, `emailParams.to | ${emailParams.to}`)
 
     // Send email
+    logger.info(`SALIOU emailParams ${JSON.stringify(emailParams)}`)
     await sendEmail(emailParams)
 
     // Cache on file system

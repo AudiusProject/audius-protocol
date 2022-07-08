@@ -159,6 +159,7 @@ var SNIPPET_ELLIPSIS_LENGTH = 90;
 
 var getSnippet = function getSnippet(notifications) {
   var snippet = notifications.slice(0, 3).map(function (notification) {
+    console.log(`CONSOLE LOG notification ${JSON.stringify(notification, null, 2)} snippetMap[notification.type] ${snippetMap[notification.type]} body.js`)
     return snippetMap[notification.type](notification);
   }).join(', ');
   if (snippet.length <= SNIPPET_ELLIPSIS_LENGTH) return snippet;

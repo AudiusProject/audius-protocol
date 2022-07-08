@@ -112,6 +112,9 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       group: ['SolanaNotification.id']
     })
     logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | length of solanaNotifCountQuery is ${solanaNotifCountQuery.length}`)
+    if (solanaNotifCountQuery.length > 0) {
+      logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | solanaNotifications: ${JSON.stringify(solanaNotifications, null, 2)}, length: ${solanaNotifCountQuery.length}`)
+    }
 
     const notificationCount = notifCountQuery.length + solanaNotifCountQuery.length
     const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
@@ -146,9 +149,16 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
 
     const fethNotificationsTime = Date.now()
     const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
+    if (solanaNotifCountQuery.length > 0) {
+      logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | metadata: ${JSON.stringify(metadata, null, 2)}`)
+    }
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
     logger.info({ job: 'fetchNotificationMetdata', duration: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
+    logger.info(`SALIOU finalUserNotifications ${JSON.stringify(finalUserNotifications)} metadata ${JSON.stringify(metadata)}`)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
+    if (solanaNotifCountQuery.length > 0) {
+      logger.info({ job: 'fetchNotificationMetdata' }, `fetchNotificationMetdata | notificationsEmailProps: ${JSON.stringify(notificationsEmailProps, null, 2)}, totalLength: ${notificationCount + unreadAnnouncementCount}`)
+    }
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
     logger.error(err)
