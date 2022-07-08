@@ -127,8 +127,8 @@ Try to keep the number of personal dashboards low to maintain navigability.
 
 Our dashboards use common set of Variables (Dashboard `Settings` -> `Variables`):
 
-* `env`: `label_values(audius_dn_flask_route_latency_seconds_count, environment)`
-* `host`: `label_values(audius_dn_flask_route_latency_seconds_count{environment=~"$env"}, host)`
+* `env`: `label_values(audius_dn_flask_route_duration_seconds_count, environment)`
+* `host`: `label_values(audius_dn_flask_route_duration_seconds_count{environment=~"$env"}, host)`
 
 To simplify the process of setting up dashboards each time, we can navigate to the `Audius - Boilerplate` dashboard's `Settings` -> `Save As...` dialog to copy the boilerplate.
 
@@ -176,7 +176,7 @@ Notice how we restrict the `environment` and `host` labels associated with the m
 
 A common pattern for histograms is to display the average latency of a recorded metric like the example below:
 
-> `max by (route) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~"$env", host=~"$host"}[5m]) / rate(audius_dn_flask_route_latency_seconds_count{environment=~"$env", host=~"$host"}[5m]))`
+> `max by (route) (rate(audius_dn_flask_route_duration_seconds_sum{environment=~"$env", host=~"$host"}[5m]) / rate(audius_dn_flask_route_duration_seconds_count{environment=~"$env", host=~"$host"}[5m]))`
 
 The bulk of the query comes from official docs on [calculating averages from histograms](https://prometheus.io/docs/practices/histograms/#count-and-sum-of-observations) while including PromQL filters for `environment` and `host`.
 

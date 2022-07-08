@@ -189,7 +189,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -198,7 +198,7 @@
           "name": "env",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -213,7 +213,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -222,7 +222,7 @@
           "name": "host",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,

@@ -652,7 +652,7 @@ def record_metrics(func):
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
 
-        metric = PrometheusMetric(PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS)
+        metric = PrometheusMetric(PrometheusMetricNames.FLASK_ROUTE_DURATION_SECONDS)
 
         result = func(*args, **kwargs)
 

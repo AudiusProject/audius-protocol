@@ -70,7 +70,7 @@ class PrometheusMetricNames:
     CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
     CELERY_TASK_DURATION_SECONDS = "celery_task_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
-    FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
+    FLASK_ROUTE_DURATION_SECONDS = "flask_route_duration_seconds"
     HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE = "health_check_latest_block_difference"
     HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM = "health_check_latest_indexed_block_num"
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
@@ -107,8 +107,8 @@ PrometheusRegistry = {
             "success",
         ),
     ),
-    PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS}",
+    PrometheusMetricNames.FLASK_ROUTE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.FLASK_ROUTE_DURATION_SECONDS}",
         "Runtimes for flask routes",
         (
             "code",
