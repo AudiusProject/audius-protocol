@@ -1,6 +1,11 @@
 import { Base, BaseConstructorArgs, Services } from './base'
 
-export class AudiusData extends Base {
+/*
+  API surface for updated data contract interactions.
+  Provides simplified entity management in a generic fashion
+  Handles metadata + file upload etc. for entities such as Playlist/Track/User
+*/
+export class EntityManager extends Base {
   constructor(...args: BaseConstructorArgs) {
     super(...args)
     this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
@@ -154,7 +159,7 @@ export class AudiusData extends Base {
     let error: string = ''
     let resp: any
     try {
-      resp = await this.contracts.AudiusDataClient.manageEntity(
+      resp = await this.contracts.EntityManagerClient.manageEntity(
         userId,
         entityType,
         entityId,

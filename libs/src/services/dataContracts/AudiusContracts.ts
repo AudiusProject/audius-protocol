@@ -9,7 +9,7 @@ import { PlaylistFactoryClient } from './PlaylistFactoryClient'
 import { UserLibraryFactoryClient } from './UserLibraryFactoryClient'
 import { IPLDBlacklistFactoryClient } from './IPLDBlacklistFactoryClient'
 import { UserReplicaSetManagerClient } from './UserReplicaSetManagerClient'
-import { AudiusDataClient } from './AudiusDataClient'
+import { EntityManagerClient } from './EntityManagerClient'
 import type { Web3Manager } from '../web3Manager'
 import type { ContractClient } from '../contracts/ContractClient'
 
@@ -57,7 +57,7 @@ export class AudiusContracts {
   PlaylistFactoryClient: PlaylistFactoryClient
   UserLibraryFactoryClient: UserLibraryFactoryClient
   IPLDBlacklistFactoryClient: IPLDBlacklistFactoryClient
-  AudiusDataClient: AudiusDataClient
+  EntityManagerClient: EntityManagerClient
   contractClients: ContractClient[]
   UserReplicaSetManagerClient: UserReplicaSetManagerClient | undefined | null
   contracts: Record<string, string> | undefined
@@ -132,7 +132,7 @@ export class AudiusContracts {
       this.logger
     )
 
-    this.AudiusDataClient = new AudiusDataClient(
+    this.EntityManagerClient = new EntityManagerClient(
       this.web3Manager,
       AudiusDataABI,
       'AudiusData',
@@ -148,7 +148,7 @@ export class AudiusContracts {
       this.PlaylistFactoryClient,
       this.UserLibraryFactoryClient,
       this.IPLDBlacklistFactoryClient,
-      this.AudiusDataClient
+      this.EntityManagerClient
     ]
   }
 

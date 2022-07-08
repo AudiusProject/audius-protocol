@@ -2,7 +2,7 @@ import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import type { Web3Manager } from '../web3Manager'
 
-export class AudiusDataClient extends ContractClient {
+export class EntityManagerClient extends ContractClient {
   override web3Manager!: Web3Manager
 
   async manageEntity(

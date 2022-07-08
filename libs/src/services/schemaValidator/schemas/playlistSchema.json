@@ -28,11 +28,11 @@
                     "default": null
                 },
                 "is_album": {
-                    "type": ["string", "null"],
+                    "type": "boolean",
                     "default": null
                 },
                 "is_private": {
-                    "type": ["string", "null"],
+                    "type": "boolean",
                     "default": null
                 }
             },
