@@ -113,6 +113,34 @@ class PrometheusMetricNames:
     USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
 
 
+"""
+Metric Types:
+
+* Prometheus Gauges: Prometheus Gauges (not to be confused with the Grafana Panel Type
+  which is a UI element which looks like a speedometer) will export a single metric
+  which is useful for point-in-time collection.
+* Prometheus Histograms: Histograms are far more common, especially when timing how long
+  code runs, since a single metric endpoint will be exploded to create 11 additional
+  metrics (sum, count, and 9 statistical buckets).
+    * When looking at the raw /prometheus_metrics endpoint for
+      `audius_dn_update_aggregate_table_latency_seconds_bucket`, you can see how a
+      single metric explodes into multiple statistical helpers.
+
+Labels:
+
+Only use labels when labeling across **low-cardinality** of options.
+
+As a general guideline, try to keep the cardinality of your metrics below 10, and for
+metrics that exceed that, aim to limit them to a handful across your whole system.
+The vast majority of your metrics should have no labels.
+
+A few example labels:
+
+* `scope` is used when measuring a larger unit of work that may have subtasks we want to
+  measure runtimes for.
+    * `{scope=”full”}` is reserved for the larger base unit of work
+* `task_name` when similar CeleryTasks use the same helper code from different callers
+"""
 PrometheusRegistry = {
     PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS: Gauge(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
