@@ -1,4 +1,7 @@
+import { ComponentType } from 'react'
+
 import Client from 'common/models/Client'
+import type { Modals as ModalTypes } from 'common/store/ui/modals/slice'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
 import BrowserPushConfirmationModal from 'components/browser-push-confirmation-modal/BrowserPushConfirmationModal'
@@ -24,9 +27,17 @@ import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/Audi
 import RewardsModals from 'pages/audio-rewards-page/components/modals/RewardsModals'
 import { getClient } from 'utils/clientUtil'
 
+import { AppModal } from './AppModal'
+
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const NATIVE_NAVIGATION_ENABLED =
   process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
+
+const appModalsMap = {
+  Share: ShareModal
+}
+
+const appModals = Object.entries(appModalsMap) as [ModalTypes, ComponentType][]
 
 const Modals = () => {
   const client = getClient()
@@ -36,13 +47,15 @@ const Modals = () => {
 
   return (
     <>
+      {appModals.map(([modalName, Modal]) => {
+        return <AppModal key={modalName} name={modalName} modal={Modal} />
+      })}
       <ServiceSelectionModal />
       <EditTrackModal />
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />
       <RewardsModals />
-      <ShareModal />
       <ShareSoundToTikTokModal />
       {/* Enable and use this audio breakdown modal until we get
       the feature flags to work for native mobile */}

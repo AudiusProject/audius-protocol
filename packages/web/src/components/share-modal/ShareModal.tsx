@@ -1,8 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import { useModalState } from 'common/hooks/useModalState'
 import { Name } from 'common/models/Analytics'
 import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
@@ -16,9 +15,11 @@ import { getShareState } from 'common/store/ui/share-modal/selectors'
 import { requestOpen as requestOpenTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { useModalState } from 'pages/modals/useModalState'
 import { make, useRecord } from 'store/analytics/actions'
 import { isMobile } from 'utils/clientUtil'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
+import { useSelector } from 'utils/reducer'
 import { openTwitterLink } from 'utils/tweet'
 
 import { ShareDialog } from './components/ShareDialog'
@@ -26,10 +27,8 @@ import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
 import { getTwitterShareText } from './utils'
 
-const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
-
 export const ShareModal = () => {
-  const [isOpen, setIsOpen] = useModalState('Share')
+  const { isOpen, onClose, onClosed } = useModalState('Share')
 
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
@@ -44,10 +43,6 @@ export const ShareModal = () => {
   const isOwner =
     content?.type === 'track' && account?.user_id === content.artist.user_id
 
-  const handleClose = useCallback(() => {
-    setIsOpen(false)
-  }, [setIsOpen])
-
   const handleShareToTwitter = useCallback(() => {
     if (!source || !content) return
     const isPlaylistOwner =
@@ -59,17 +54,17 @@ export const ShareModal = () => {
     )
     openTwitterLink(link, twitterText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
-    handleClose()
-  }, [source, content, account, record, handleClose])
+    onClose()
+  }, [source, content, account, record, onClose])
 
   const handleShareToTikTok = useCallback(() => {
     if (content?.type === 'track') {
       dispatch(requestOpenTikTokModal({ id: content.track.track_id }))
-      handleClose()
+      onClose()
     } else {
       console.error('Tried to share sound to TikTok but track was missing')
     }
-  }, [content, dispatch, handleClose])
+  }, [content, dispatch, onClose])
 
   const handleCopyLink = useCallback(() => {
     if (!source || !content) return
@@ -91,8 +86,8 @@ export const ShareModal = () => {
         break
     }
     toast(messages.toast(content.type), SHARE_TOAST_TIMEOUT_MILLIS)
-    handleClose()
-  }, [dispatch, toast, content, source, handleClose])
+    onClose()
+  }, [dispatch, toast, content, source, onClose])
 
   const shareProps = {
     isOpen,
@@ -100,7 +95,8 @@ export const ShareModal = () => {
     onShareToTwitter: handleShareToTwitter,
     onShareToTikTok: handleShareToTikTok,
     onCopyLink: handleCopyLink,
-    onClose: handleClose,
+    onClose,
+    onClosed,
     showTikTokShareAction: Boolean(
       content?.type === 'track' &&
         isShareSoundToTikTokEnabled &&
@@ -111,7 +107,6 @@ export const ShareModal = () => {
     shareType: content?.type ?? 'track'
   }
 
-  if (IS_NATIVE_MOBILE) return null
   if (isMobile()) return <ShareDrawer {...shareProps} />
   return <ShareDialog {...shareProps} />
 }

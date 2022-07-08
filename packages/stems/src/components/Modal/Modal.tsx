@@ -11,6 +11,7 @@ import cn from 'classnames'
 import uniqueId from 'lodash/uniqueId'
 import ReactDOM from 'react-dom'
 import { animated, useTransition } from 'react-spring'
+import { useEffectOnce } from 'react-use'
 
 import { IconRemove } from 'components/Icons'
 import { useClickOutside } from 'hooks/useClickOutside'
@@ -98,6 +99,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     modalKey,
     children,
     onClose,
+    onClosed,
     isOpen,
     wrapperClassName,
     bodyClassName,
@@ -118,7 +120,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   },
   ref
 ) {
-  useEffect(() => {
+  useEffectOnce(() => {
     if (process.env.NODE_ENV !== 'production') {
       if (
         subtitle ||
@@ -138,16 +140,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
         console.warn('`allowScroll` prop of `Modal` has been deprecated.')
       }
     }
-  }, [
-    allowScroll,
-    headerContainerClassName,
-    showDismissButton,
-    showTitleHeader,
-    subtitle,
-    subtitleClassName,
-    title,
-    titleClassName
-  ])
+  })
+
   const id = useMemo(() => modalKey || uniqueId('modal-'), [modalKey])
   const titleId = `${id}-title` || ariaLabelledbyProp
   const subtitleId = `${id}-subtitle` || ariaDescribedbyProp
@@ -164,9 +158,9 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   const [modalRoot, bgModal] = useModalRoot(id, zIndex)
   const [isDestroyed, setIsDestroyed] = useState(isOpen)
-
   const { incrementScrollCount, decrementScrollCount } = useModalScrollCount()
   useScrollLock(isDestroyed, incrementScrollCount, decrementScrollCount)
+
   useEffect(() => {
     if (isOpen) setIsDestroyed(true)
   }, [isOpen])
@@ -197,7 +191,12 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     unique: true,
     config: standard,
     onDestroyed: () => {
-      if (!isOpen) setIsDestroyed(false)
+      if (!isOpen) {
+        setIsDestroyed(false)
+        if (onClosed) {
+          onClosed()
+        }
+      }
     }
   })
 
@@ -271,6 +270,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   })
 
   const [height, setHeight] = useState(window.innerHeight)
+
   useEffect(() => {
     const onResize = () => {
       setHeight(window.innerHeight)
