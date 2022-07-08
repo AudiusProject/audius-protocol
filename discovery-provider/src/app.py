@@ -478,7 +478,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_related_artists": {
                 "task": "index_related_artists",
-                "schedule": timedelta(seconds=60),
+                "schedule": timedelta(hours=12),
             },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
