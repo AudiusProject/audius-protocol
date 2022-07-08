@@ -5,7 +5,10 @@ import {
   IconLink,
   IconShare,
   IconTwitterBird,
-  Modal
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle
 } from '@audius/stems'
 import cn from 'classnames'
 
@@ -45,6 +48,7 @@ export const ShareDialog = ({
   onCopyLink,
   isOpen,
   onClose,
+  onClosed,
   showTikTokShareAction,
   shareType
 }: ShareDialogProps) => {
@@ -56,51 +60,52 @@ export const ShareDialog = ({
       headerContainerClassName={styles.headerContainer}
       isOpen={isOpen}
       onClose={onClose}
-      showTitleHeader
-      showDismissButton
-      title={
-        <div className={styles.titleContainer}>
-          <IconShare className={styles.titleIcon} />
-          <h2 className={styles.title}>{messages.modalTitle(shareType)}</h2>
-        </div>
-      }
+      onClosed={onClosed}
     >
-      <div className={styles.modalContent}>
-        <p className={styles.description}>
-          Spread the word! Share with your friends and fans!
-        </p>
-        <ul className={styles.actionList}>
-          <ShareActionListItem
-            leftIcon={<IconTwitterBird {...iconProps} />}
-            text={messages.twitter}
-            onClick={onShareToTwitter}
-            iconClassName={styles.twitterIcon}
-            textClassName={styles.twitterActionLabel}
-          />
-          {showTikTokShareAction ? (
+      <ModalHeader onClose={onClose}>
+        <ModalTitle
+          icon={<IconShare className={styles.titleIcon} />}
+          title={messages.modalTitle(shareType)}
+        />
+      </ModalHeader>
+      <ModalContent>
+        <div className={styles.modalContent}>
+          <p className={styles.description}>
+            Spread the word! Share with your friends and fans!
+          </p>
+          <ul className={styles.actionList}>
             <ShareActionListItem
-              leftIcon={<IconTikTok {...iconProps} />}
-              text={messages.tikTok}
-              iconClassName={
-                isLightMode ? styles.tikTokIcon : styles.tikTokIconDark
-              }
-              textClassName={
-                isLightMode
-                  ? styles.tikTokActionLabel
-                  : styles.tikTokActionLabelDark
-              }
-              onClick={onShareToTikTok}
+              leftIcon={<IconTwitterBird {...iconProps} />}
+              text={messages.twitter}
+              onClick={onShareToTwitter}
+              iconClassName={styles.twitterIcon}
+              textClassName={styles.twitterActionLabel}
             />
-          ) : null}
-          <ShareActionListItem
-            leftIcon={<IconLink {...iconProps} />}
-            iconClassName={styles.shareIcon}
-            text={messages.copyLink(shareType)}
-            textClassName={styles.shareActionLabel}
-            onClick={onCopyLink}
-          />
-        </ul>
-      </div>
+            {showTikTokShareAction ? (
+              <ShareActionListItem
+                leftIcon={<IconTikTok {...iconProps} />}
+                text={messages.tikTok}
+                iconClassName={
+                  isLightMode ? styles.tikTokIcon : styles.tikTokIconDark
+                }
+                textClassName={
+                  isLightMode
+                    ? styles.tikTokActionLabel
+                    : styles.tikTokActionLabelDark
+                }
+                onClick={onShareToTikTok}
+              />
+            ) : null}
+            <ShareActionListItem
+              leftIcon={<IconLink {...iconProps} />}
+              iconClassName={styles.shareIcon}
+              text={messages.copyLink(shareType)}
+              textClassName={styles.shareActionLabel}
+              onClick={onCopyLink}
+            />
+          </ul>
+        </div>
+      </ModalContent>
     </Modal>
   )
 }
