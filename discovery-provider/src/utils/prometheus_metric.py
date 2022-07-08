@@ -65,34 +65,31 @@ METRIC_PREFIX = "audius_dn"
 
 
 class PrometheusMetricNames:
-    FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
+    CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
     CELERY_TASK_COMPLETED_DURATION_SECONDS = "celery_task_completed_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
-    CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
+    FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
     HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT = "health_check_block_difference_current"
     HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT = (
         "health_check_latest_indexed_block_num_current"
     )
-    UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
-    INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
-    INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
-    USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
-    TRACK_STATE_UPDATE_DURATION_SECONDS = "track_state_update_duration_seconds"
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
+    INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
+    INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
+    TRACK_STATE_UPDATE_DURATION_SECONDS = "track_state_update_duration_seconds"
+    UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS = "update_aggregate_table_latency_seconds"
     UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS = (
         "update_track_is_available_duration_seconds"
     )
-    UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS = "update_aggregate_table_latency_seconds"
+    UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
+    USER_STATE_UPDATE_DURATION_SECONDS = "user_state_update_duration_seconds"
 
 
 PrometheusRegistry = {
-    PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS}",
-        "Runtimes for flask routes",
-        (
-            "route",
-            "code",
-        ),
+    PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
+        "How long the currently running celery task has been running",
+        ("task_name",),
     ),
     PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS}",
@@ -110,10 +107,13 @@ PrometheusRegistry = {
             "success",
         ),
     ),
-    PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS}",
-        "How long the currently running celery task has been running",
-        ("task_name",),
+    PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS}",
+        "Runtimes for flask routes",
+        (
+            "route",
+            "code",
+        ),
     ),
     PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT: Gauge(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT}",
@@ -123,44 +123,44 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT}",
         "Latest indexed block number",
     ),
-    PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS}",
-        "Runtimes for src.task.index_trending:update_view()",
-        ("mat_view_name",),
-    ),
-    PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS}",
-        "Runtimes for src.task.index_trending:index_trending()",
+    PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
+        "Runtimes for src.task.index:index_blocks()",
+        ("scope",),
     ),
     PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS}",
         "Runtimes for src.task.index_metrics:celery.task()",
         ("task_name",),
     ),
-    PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS}",
-        "Runtimes for src.task.users:user_state_update()",
-        ("scope",),
+    PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS}",
+        "Runtimes for src.task.index_trending:index_trending()",
     ),
     PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS}",
         "Runtimes for src.task.tracks:track_state_update()",
         ("scope",),
     ),
-    PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS}",
-        "Runtimes for src.task.index:index_blocks()",
-        ("scope",),
+    PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS}",
+        "Runtimes for src.task.aggregates:update_aggregate_table()",
+        ("table_name", "task_name"),
     ),
     PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS}",
         "Runtimes for src.task.update_track_is_available:celery.task()",
         ("task_name", "success"),
     ),
-    PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS}",
-        "Runtimes for src.task.aggregates:update_aggregate_table()",
-        ("table_name", "task_name"),
+    PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS}",
+        "Runtimes for src.task.index_trending:update_view()",
+        ("mat_view_name",),
+    ),
+    PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS}",
+        "Runtimes for src.task.users:user_state_update()",
+        ("scope",),
     ),
 }
 
