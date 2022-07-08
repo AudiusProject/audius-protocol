@@ -71,8 +71,6 @@ def test_index_related_artists(app):
         block_offset=100000,
     )
 
-    # queue_related_artist_calculation(redis_conn, 0)
-    # process_related_artists_queue(db, redis_conn)
     with db.scoped_session() as session:
         update_related_artist_minhash(session)
 
