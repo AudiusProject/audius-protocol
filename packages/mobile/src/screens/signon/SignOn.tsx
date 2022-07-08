@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import * as signOnActionsWeb from 'audius-client/src/pages/sign-on/store/actions.js'
+import * as signOnActionsWeb from 'audius-client/src/pages/sign-on/store/actions'
 import querystring from 'query-string'
 import {
   Animated,
@@ -427,7 +427,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
       const contents = await Clipboard.getString()
       if (contents) {
         const parsed = querystring.parseUrl(contents)
-        const handle = parsed.query?.ref
+        const handle = parsed.query?.ref as string
         if (handle) {
           dispatchWeb(signOnActionsWeb.fetchReferrer(handle))
         }
