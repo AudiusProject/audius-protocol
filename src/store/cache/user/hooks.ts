@@ -33,7 +33,7 @@ import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
 } from './graph/hooks'
-import getUserProfile from 'services/3box'
+import { getUserProfile } from 'services/SelfId'
 
 type UseUsersProp = {
   sortBy?: SortUser
