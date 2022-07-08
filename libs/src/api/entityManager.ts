@@ -113,7 +113,7 @@ export class EntityManager extends Base {
     playlistId: number
     userId: number
     logger: any
-  }): Promise<{ blockHash: any; blockNumber: any; }> {
+  }): Promise<{ blockHash: any; blockNumber: any }> {
     let respValues = {
       blockHash: null,
       blockNumber: null
@@ -130,14 +130,13 @@ export class EntityManager extends Base {
       const txReceipt = resp.txReceipt
       respValues = {
         blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
+        blockNumber: txReceipt.blockNumber
       }
     } catch (e) {
       logger.error(`Data delete playlist: err ${e}`)
     }
     return respValues
   }
-
 
   /**
    * Manage an entity with the updated data contract flow
