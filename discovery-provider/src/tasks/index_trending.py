@@ -20,7 +20,7 @@ from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
@@ -264,6 +264,7 @@ def get_should_update_trending(
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_trending", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db

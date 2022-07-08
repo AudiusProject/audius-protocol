@@ -4,7 +4,8 @@ const config = require('../../config')
 const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
   JOB_NAMES: STATE_MACHINE_JOB_NAMES,
-  SyncType
+  SyncType,
+  SYNC_MODES
 } = require('../stateMachineManager/stateMachineConstants')
 
 /**
@@ -24,12 +25,21 @@ const MetricTypes = Object.freeze({
   // SUMMARY: promClient.Summary
 })
 
+/**
+ * Types for recording a metric value.
+ */
+const MetricRecordType = Object.freeze({
+  GAUGE_INC: 'GAUGE_INC',
+  HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
+})
+
 let MetricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds',
   ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM:
-    'issue_sync_request_monitoring_duration_seconds'
+    'issue_sync_request_monitoring_duration_seconds',
+  FIND_SYNC_REQUEST_COUNTS_GAUGE: 'find_sync_request_counts'
 }
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
@@ -64,6 +74,22 @@ const MetricLabels = Object.freeze({
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
       'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes,
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
+    ]
+  },
+  [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
+    sync_mode: Object.values(SYNC_MODES).map(_.snakeCase),
+    result: [
+      'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
+      'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
+      'no_sync_sp_id_mismatch', // Sync not found because the secondary's spID mismatched what the chain reported
+      'no_sync_success_rate_too_low', // Sync not found because the success rate of syncing to this secondary is below the acceptable threshold
+      'no_sync_error_computing_sync_mode', // Sync not found because of failure to compute sync mode
+      'no_sync_secondary_data_matches_primary', // Sync not found because the secondary's clock value and filesHash match primary's
+      'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
+      'new_sync_request_enqueued_primary_to_secondary', // Sync was found from primary->secondary because all other conditions were met and primary clock value was greater than secondary
+      'new_sync_request_enqueued_secondary_to_primary', // Sync was found from secondary->primary because all other conditions were met and secondary clock value was greater than primary
+      'sync_request_already_enqueued', // Sync was found but a duplicate request has already been enqueued so no need to enqueue another
+      'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]
   }
 })
@@ -137,11 +163,20 @@ const Metrics = Object.freeze({
         }
       }
     ])
-  )
+  ),
+  [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
+    metricType: MetricTypes.GAUGE,
+    metricConfig: {
+      name: MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
+      help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
+      labelNames: MetricLabelNames[MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]
+    }
+  }
 })
 
 module.exports.NamespacePrefix = NamespacePrefix
 module.exports.MetricTypes = MetricTypes
 module.exports.MetricNames = MetricNames
 module.exports.MetricLabels = MetricLabels
+module.exports.MetricRecordType = MetricRecordType
 module.exports.Metrics = Metrics

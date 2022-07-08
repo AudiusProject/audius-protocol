@@ -3,6 +3,7 @@ import logging
 from src.models.users.user import User
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
+from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ def retrieve_peers_from_db(self):
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_network_peers", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_network_peers(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

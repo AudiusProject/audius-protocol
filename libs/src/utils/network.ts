@@ -12,6 +12,7 @@ export type ServiceName = string
 export interface ServiceWithEndpoint {
   endpoint: string
   spID?: string
+  owner: string
 }
 export type Service = ServiceName | ServiceWithEndpoint
 

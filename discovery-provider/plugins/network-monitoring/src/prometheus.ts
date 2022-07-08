@@ -36,6 +36,12 @@ export const unsyncedUsersCountGauge = new client.Gauge({
     labelNames: ['run_id']
 })
 
+export const nullPrimaryUsersCountGauge = new client.Gauge({
+    name: 'audius_nm_no_primary_user_count',
+    help: 'the number of users whose primary is null',
+    labelNames: ['run_id']
+})
+
 export const missedUsersCountGauge = new client.Gauge({
     name: 'audius_nm_missed_users_count',
     help: 'the number of users that got skipped while indexing content nodes',

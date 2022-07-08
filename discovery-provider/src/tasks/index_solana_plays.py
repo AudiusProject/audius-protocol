@@ -22,6 +22,7 @@ from src.utils.cache_solana_program import (
 )
 from src.utils.config import shared_config
 from src.utils.helpers import split_list
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
@@ -669,6 +670,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 
 
 @celery.task(name="index_solana_plays", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_solana_plays(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

@@ -6,6 +6,7 @@ from sqlalchemy import desc, func
 from src.models.social.hourly_play_counts import HourlyPlayCounts
 from src.models.social.play import Play
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.update_indexing_checkpoints import (
     get_last_indexed_checkpoint,
     save_indexed_checkpoint,
@@ -68,6 +69,7 @@ def _index_hourly_play_counts(session):
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="index_hourly_play_counts", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def index_hourly_play_counts(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki

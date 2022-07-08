@@ -111,7 +111,6 @@ module.exports = async function ({
     const error = await primarySyncFromSecondary(secondaryEndpoint, userWallet)
 
     if (error) {
-      
     }
   }
 
@@ -148,14 +147,16 @@ module.exports = async function ({
       logger
     )
 
-  const metricsToRecord = [makeHistogramToRecord(
-    MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
-    (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
-    {
-      syncType: _.snakeCase(syncType),
-      reason_for_additional_sync: reasonForAdditionalSync
-    }
-  )]
+  const metricsToRecord = [
+    makeHistogramToRecord(
+      MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
+      (Date.now() - startWaitingForCompletion) / 1000, // Metric is in seconds
+      {
+        syncType: _.snakeCase(syncType),
+        reason_for_additional_sync: reasonForAdditionalSync
+      }
+    )
+  ]
 
   // Re-enqueue sync if required
   let error = {}
