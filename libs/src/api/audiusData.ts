@@ -63,6 +63,7 @@ export class AudiusData extends Base {
         coverArt,
         true // square
       )
+
       const dirCID = updatedPlaylistImage.dirCID
       const metadata = {
         action,
@@ -102,13 +103,14 @@ export class AudiusData extends Base {
    */
   async deletePlaylist({
     playlistId,
-    userId,
     logger = console
   }: {
     playlistId: number,
     userId: number,
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any; }> {
+    const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+
     let respValues = {
       blockHash: null,
       blockNumber: null,
@@ -133,6 +135,77 @@ export class AudiusData extends Base {
     return respValues
   }
 
+  /**
+   * Update a playlist using updated data contracts flow
+   */
+  async updatePlaylist({
+    playlistId,
+    playlistName,
+    trackIds,
+    description,
+    isAlbum,
+    isPrivate,
+    coverArt,
+    logger = console
+  }: {
+    playlistId: number
+    playlistName: string
+    trackIds: number[]
+    description: string
+    isAlbum: boolean
+    isPrivate: boolean
+    coverArt: any
+    logger: any
+  }): Promise<{ blockHash: any; blockNumber: any; playlistId: number }> {
+    let respValues = {
+      blockHash: null,
+      blockNumber: null,
+      playlistId: 0
+    }
+    try {
+      const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+      const action = 'Update'
+      const entityType = 'Playlist'
+      const entityId = await this.getValidPlaylistId()
+      this.REQUIRES(Services.CREATOR_NODE)
+      const updatedPlaylistImage = await this.creatorNode.uploadImage(
+        coverArt,
+        true // square
+      )
+
+      const dirCID = updatedPlaylistImage.dirCID
+      const metadata = {
+        action,
+        entity_type: entityType,
+        playlist_id: entityId,
+        playlist_contents: trackIds,
+        playlist_name: playlistName,
+        playlist_image_sizes_multihash: dirCID,
+        description,
+        is_album: isAlbum,
+        is_private: isPrivate
+      }
+      const { metadataMultihash } =
+        await this.creatorNode.uploadPlaylistMetadata(metadata)
+      const resp = await this.manageEntity({
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadataMultihash
+      })
+      logger.info(`UpdatePlaylistData - ${JSON.stringify(resp)}`)
+      const txReceipt = resp.txReceipt
+      respValues = {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber,
+        playlistId: entityId
+      }
+    } catch (e) {
+      logger.error(`Data update playlist: err ${e}`)
+    }
+    return respValues
+  }
 
   /**
    * Manage an entity with the updated data contract flow
