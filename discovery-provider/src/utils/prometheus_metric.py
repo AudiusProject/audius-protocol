@@ -72,9 +72,7 @@ class PrometheusMetricNames:
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
     FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
     HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE = "health_check_latest_block_difference"
-    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM = (
-        "health_check_latest_indexed_block_num"
-    )
+    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM = "health_check_latest_indexed_block_num"
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
