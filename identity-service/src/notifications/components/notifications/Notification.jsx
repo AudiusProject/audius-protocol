@@ -11,6 +11,7 @@ import {
 } from './Icons'
 
 import { notificationTypes as NotificationType } from '../../constants'
+import { capitalize } from '../../processNotifications/utils'
 
 const challengeRewardsConfig = {
   referred: {
@@ -243,6 +244,47 @@ const notificationMap = {
       </span>
     )
   },
+  [NotificationType.Reaction] (notification) {
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={capitalize(notification.reactingUser.name)} />
+        <BodyText text={` reacted to your tip of `} />
+        <HighlightText text={notification.amount} />
+        <BodyText text={` $AUDIO`} />
+      </span>
+    )
+  },
+  [NotificationType.SupporterRankUp] (notification) {
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={capitalize(notification.sendingUser.name)} />
+        <BodyText text={` became your `} />
+        <HighlightText text={`#${notification.rank}`} />
+        <BodyText text={` Top Supporter!`} />
+      </span>
+    )
+  },
+  [NotificationType.SupportingRankUp] (notification) {
+    return (
+      <span className={'notificationText'}>
+        <BodyText text={`You're now `} />
+        <HighlightText text={capitalize(notification.receivingUser.name)} />
+        <BodyText text={`'s `} />
+        <HighlightText text={`#${notification.rank}`} />
+        <BodyText text={` Top Supporter!`} />
+      </span>
+    )
+  },
+  [NotificationType.TipReceive] (notification) {
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={capitalize(notification.sendingUser.name)} />
+        <BodyText text={` sent you a tip of `} />
+        <HighlightText text={notification.amount} />
+        <BodyText text={` $AUDIO`} />
+      </span>
+    )
+  }
 }
 
 const getMessage = (notification) => {
