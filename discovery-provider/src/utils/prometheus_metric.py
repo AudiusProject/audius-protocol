@@ -67,6 +67,32 @@ METRIC_PREFIX = "audius_dn"
 
 
 class PrometheusMetricNames:
+    """
+    Attempt to group metrics with high_level prefixes like:
+    * `flask_`
+    * `celery_task_`
+
+    Antepenultimate Suffixes:
+    * `_active` when measuring runtimes of actively running processes that are yet to be
+      completed
+    * `_last` when the last completed runtime is needed (duration in seconds)
+    * (default: do not use) `_completed` is always implied if the other two are missing.
+      Used when measuring runtimes of completed processes.
+
+    Penultimate Suffixes:
+    * `_duration` when measuring task duration or runtimes
+
+    Ultimate Suffixes:
+    * `_seconds` always the base unit (never microseconds, milliseconds, etc)
+    * `_latest` when looking at a snapshot of unit-less data
+    * `_total`, when accumulating a count, in addition to the unit if applicable
+    * `_info` for a pseudo-metric that provides metadata about the running binary
+
+    See the following resources for related information:
+    * [Creator Node's docs](https://github.com/AudiusProject/audius-protocol/blob/master/creator-node/src/services/prometheusMonitoring/README.md)
+    * [Official docs](https://prometheus.io/docs/practices/naming)
+    """
+
     CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
     CELERY_TASK_DURATION_SECONDS = "celery_task_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
