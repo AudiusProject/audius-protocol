@@ -47,7 +47,7 @@ const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 export class AudiusContracts {
   web3Manager: Web3Manager
   registryAddress: string
-  dataAddress: string
+  entityManagerAddress: string
   isServer: boolean
   logger: Logger
   RegistryClient: RegistryClient
@@ -66,13 +66,13 @@ export class AudiusContracts {
   constructor(
     web3Manager: Web3Manager,
     registryAddress: string,
-    dataAddress: string,
+    entityManagerAddress: string,
     isServer: boolean,
     logger = console
   ) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
-    this.dataAddress = dataAddress
+    this.entityManagerAddress = entityManagerAddress
     this.isServer = isServer
     this.logger = logger
 
@@ -132,14 +132,16 @@ export class AudiusContracts {
       this.logger
     )
 
-    this.EntityManagerClient = new EntityManagerClient(
-      this.web3Manager,
-      AudiusDataABI,
-      'AudiusData',
-      this.getRegistryAddressForContract,
-      this.logger,
-      this.dataAddress
-    )
+    if (this.entityManagerAddress) {
+      this.EntityManagerClient = new EntityManagerClient(
+        this.web3Manager,
+        AudiusDataABI,
+        'AudiusData',
+        this.getRegistryAddressForContract,
+        this.logger,
+        this.entityManagerAddress
+      )
+    }
 
     this.contractClients = [
       this.UserFactoryClient,
