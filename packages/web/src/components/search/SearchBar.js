@@ -383,14 +383,12 @@ class SearchBar extends Component {
           })}
           dropdownMatchSelectWidth={false}
           options={options}
-          optionLabelProp='label'
           onFocus={this.onFocus}
           onBlur={this.onBlur}
           onSelect={this.onSelect}
           onSearch={this.onSearch}
           onChange={this.onChange}
           open={showAutocomplete}
-          size='small'
           value={this.state.value}
           // Mount the dropdown inside the searchbar div (otherwise it just gets dumped at root).
           getPopupContainer={trigger => trigger.parentNode}
