@@ -45,17 +45,12 @@
   right: 0;
   bottom: 0;
   top: 0;
-  opacity: 0;
   background-color: rgba(25, 29, 45, 0.5);
   transition: all 0.25s ease-in-out;
 }
 
 .overlay > div {
   width: 56px !important;
-}
-
-.overlay.processing {
-  opacity: 1;
 }
 
 .toast {
