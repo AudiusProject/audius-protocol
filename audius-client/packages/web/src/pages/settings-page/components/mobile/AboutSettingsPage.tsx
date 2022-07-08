@@ -13,11 +13,13 @@ import Page from 'components/page/Page'
 import { GetVersion } from 'services/native-mobile-interface/version'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 
-import { version } from '../../../../../package.json'
+import packageInfo from '../../../../../package.json'
 
 import styles from './AboutSettingsPage.module.css'
 import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
+
+const { version } = packageInfo
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

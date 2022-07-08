@@ -372,9 +372,9 @@ class AudioStream {
     // Normally canplaythrough should be required to set currentTime, but in the case
     // of setting curtingTime to zero, pushing to the end of the event loop works.
     // This fixes issues in Firefox, in particular `the operation was aborted`
-    setImmediate(() => {
+    setTimeout(() => {
       this.audio.currentTime = 0
-    })
+    }, 0)
   }
 
   isPlaying = () => {

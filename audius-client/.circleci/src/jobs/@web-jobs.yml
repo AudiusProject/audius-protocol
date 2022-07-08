@@ -26,13 +26,6 @@ web-init:
           cd packages/web
           npm run lint
 
-    # Run tests
-    - run:
-        name: test
-        command: |
-          cd packages/web
-          npm test
-
     - persist_to_workspace:
         root: ./
         paths:
