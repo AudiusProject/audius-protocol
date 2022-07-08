@@ -20,9 +20,6 @@ module.exports = {
   // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
 
-  // Max millis to run a ManualSyncQueue job for before marking it as stalled (1 hour)
-  MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
-
   // Millis to timeout request for getting users who have a node as their primary/secondary (60 seconds)
   GET_NODE_USERS_TIMEOUT_MS: 1000 * 60,
 
@@ -60,7 +57,7 @@ module.exports = {
     C_NODE_ENDPOINT_TO_SP_ID_MAP: 100,
     // Max number of completed/failed jobs to keep in redis for the state monitoring queue
     STATE_RECONCILIATION: 300,
-    // MMax number of completed/failed jobs to keep in redis for the manual sync queue
+    // Max number of completed/failed jobs to keep in redis for the manual sync queue
     MANUAL_SYNC: 300
   }),
 
