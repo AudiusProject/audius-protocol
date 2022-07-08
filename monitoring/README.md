@@ -159,7 +159,7 @@ When additional complexity is required, visit the [official Prometheus documenta
 
 Gauges are the easiest pattern since they simply display the value of a metric that was displayed at scrape time:
 
-> `audius_dn_health_check_latest_block_difference{environment=~"$env", host=~"$host"}`
+> `audius_dn_health_check_block_difference_latest{environment=~"$env", host=~"$host"}`
 
 Notice how we restrict the `environment` and `host` labels associated with the metric to match the Dashboard Variables discussed in the previous section.
 

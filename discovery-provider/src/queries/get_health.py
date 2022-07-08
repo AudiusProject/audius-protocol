@@ -462,11 +462,11 @@ def get_elasticsearch_health_info(
 def health_check_prometheus_exporter():
     health_results, is_unhealthy = get_health({})
 
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE).save(
+    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST).save(
         health_results["block_difference"]
     )
 
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM).save(
+    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST).save(
         health_results["web"]["blocknumber"]
     )
 
