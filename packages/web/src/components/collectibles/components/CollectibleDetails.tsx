@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { useModalState } from 'common/hooks/useModalState'
+import { Chain } from 'common/models/Chain'
 import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
 import { getProfileUserHandle } from 'common/store/pages/profile/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
@@ -77,6 +79,16 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
     onClick()
   }, [collectible, handle, dispatch, setIsModalOpen, onClick])
 
+  const collectibleChainElement = (
+    <div className={styles.chain}>
+      {collectible.chain === Chain.Eth ? (
+        <LogoEth height={18} />
+      ) : (
+        <LogoSol height={16} />
+      )}
+    </div>
+  )
+
   return (
     <div className={styles.detailsContainer}>
       <PerspectiveCard
@@ -113,6 +125,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                       </span>
                     )}
                   </div>
+                  {collectibleChainElement}
                 </div>
               )}
               {mediaType === CollectibleMediaType.VIDEO && !frame && videoUrl && (
@@ -133,6 +146,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                       </span>
                     )}
                   </div>
+                  {collectibleChainElement}
                 </div>
               )}
               {(mediaType === CollectibleMediaType.IMAGE ||
@@ -155,6 +169,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
                       </span>
                     )}
                   </div>
+                  {collectibleChainElement}
                 </div>
               )}
             </>
