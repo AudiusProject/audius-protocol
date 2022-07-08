@@ -5,6 +5,7 @@ export class AudiusData extends Base {
     super(...args)
     this.getValidPlaylistId = this.getValidPlaylistId.bind(this)
     this.createPlaylist = this.createPlaylist.bind(this)
+    this.deletePlaylist = this.deletePlaylist.bind(this)
   }
 
   /**
@@ -95,6 +96,43 @@ export class AudiusData extends Base {
     }
     return respValues
   }
+
+  /**
+   * Delete a playlist using updated data contracts flow
+   */
+  async deletePlaylist({
+    playlistId,
+    userId,
+    logger = console
+  }: {
+    playlistId: number,
+    userId: number,
+    logger: any
+  }): Promise<{ blockHash: any; blockNumber: any; }> {
+    let respValues = {
+      blockHash: null,
+      blockNumber: null,
+    }
+    try {
+      let resp = await this.manageEntity({
+        userId,
+        entityType: 'Playlist',
+        entityId: playlistId,
+        action: 'Delete',
+        metadataMultihash: ''
+      })
+      logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
+      let txReceipt = resp.txReceipt
+      respValues = {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber,
+      }
+    } catch (e) {
+      logger.error(`Data delete playlist: err ${e}`)
+    }
+    return respValues
+  }
+
 
   /**
    * Manage an entity with the updated data contract flow
