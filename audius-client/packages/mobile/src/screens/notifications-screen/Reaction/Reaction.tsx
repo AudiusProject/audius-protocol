@@ -74,27 +74,19 @@ export const Reaction = (props: ReactionProps) => {
       }).start()
       light()
     } else if (previousStatus !== 'selected' && status === 'selected') {
-      if (status === 'selected') {
-        Animated.sequence([
-          Animated.timing(scale, {
-            toValue: 0.9,
-            duration: 100,
-            useNativeDriver: true
-          }),
-          Animated.timing(scale, {
-            toValue: 1.3,
-            duration: 100,
-            useNativeDriver: true
-          })
-        ]).start()
-        medium()
-      } else {
+      Animated.sequence([
         Animated.timing(scale, {
-          toValue: 1,
-          duration: 70,
+          toValue: 0.9,
+          duration: 100,
           useNativeDriver: true
-        }).start()
-      }
+        }),
+        Animated.timing(scale, {
+          toValue: 1.3,
+          duration: 100,
+          useNativeDriver: true
+        })
+      ]).start()
+      medium()
     } else if (previousStatus !== status && status !== 'selected') {
       Animated.timing(scale, {
         toValue: 1,
