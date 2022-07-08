@@ -211,7 +211,6 @@ PrometheusRegistry = {
         "Runtimes for src.task.update_track_is_available:celery.task()",
         (
             "success",
-            "task_name",
         ),
     ),
     PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(
