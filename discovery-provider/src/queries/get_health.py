@@ -467,7 +467,7 @@ def health_check_prometheus_exporter():
     )
 
     PrometheusMetric(
-        PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT
+        PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM
     ).save(health_results["web"]["blocknumber"])
 
 

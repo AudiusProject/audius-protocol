@@ -18,7 +18,7 @@ def save_duration_metric(metric_group):
         def wrapper(*args, **kwargs):
             if metric_group == "celery_task":
                 histogram_metric = PrometheusMetric(
-                    PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS
+                    PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS
                 )
                 gauge_metric = PrometheusMetric(
                     PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
@@ -68,12 +68,12 @@ METRIC_PREFIX = "audius_dn"
 
 class PrometheusMetricNames:
     CELERY_TASK_ACTIVE_DURATION_SECONDS = "celery_task_active_duration_seconds"
-    CELERY_TASK_COMPLETED_DURATION_SECONDS = "celery_task_completed_duration_seconds"
+    CELERY_TASK_DURATION_SECONDS = "celery_task_duration_seconds"
     CELERY_TASK_LAST_DURATION_SECONDS = "celery_task_last_duration_seconds"
     FLASK_ROUTE_LATENCY_SECONDS = "flask_route_latency_seconds"
-    HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT = "health_check_block_difference_current"
-    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT = (
-        "health_check_latest_indexed_block_num_current"
+    HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE = "health_check_latest_block_difference"
+    HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM = (
+        "health_check_latest_indexed_block_num"
     )
     INDEX_BLOCKS_DURATION_SECONDS = "index_blocks_duration_seconds"
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
@@ -93,8 +93,8 @@ PrometheusRegistry = {
         "How long the currently running celery task has been running",
         ("task_name",),
     ),
-    PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS}",
+    PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.CELERY_TASK_DURATION_SECONDS}",
         "How long a celery_task took to complete",
         (
             "func_name",
@@ -118,11 +118,11 @@ PrometheusRegistry = {
         ),
     ),
     PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT}",
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE}",
         "Difference between the latest block and the latest indexed block",
     ),
-    PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT: Gauge(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM_CURRENT}",
+    PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM: Gauge(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_LATEST_INDEXED_BLOCK_NUM}",
         "Latest indexed block number",
     ),
     PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS: Histogram(
