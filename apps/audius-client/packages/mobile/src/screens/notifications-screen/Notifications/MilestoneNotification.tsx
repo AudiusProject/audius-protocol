@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { User } from 'audius-client/src/common/models/User'
 import {
   getNotificationEntity,
   getNotificationUser
@@ -53,8 +54,12 @@ Check it out!`
   }
 }
 
-const getTwitterShareData = (notification: Milestone, entity: EntityType) => {
-  const { achievement, user, value } = notification
+const getTwitterShareData = (
+  notification: Milestone,
+  entity: EntityType,
+  user: User
+) => {
+  const { achievement, value } = notification
   switch (achievement) {
     case Achievement.Followers: {
       const link = fullProfilePage(user.handle)
@@ -133,7 +138,9 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     }
   }
 
-  const { link, text } = getTwitterShareData(notification, entity)
+  if (!user || !entity) return null
+
+  const { link, text } = getTwitterShareData(notification, entity, user)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
