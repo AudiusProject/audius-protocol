@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Collectible } from 'audius-client/src/common/models/Collectible'
 import { ID } from 'audius-client/src/common/models/Identifiers'
@@ -7,11 +7,13 @@ import { setCollectible } from 'audius-client/src/common/store/ui/collectible-de
 import { setVisibility } from 'audius-client/src/common/store/ui/modals/slice'
 import { ImageBackground, StyleProp, Text, View, ViewStyle } from 'react-native'
 
+import LogoEth from 'app/assets/images/logoEth.svg'
+import LogoSol from 'app/assets/images/logoSol.svg'
 import IconPlay from 'app/assets/images/pbIconPlay.svg'
 import { Tile } from 'app/components/core'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
-import { makeStyles } from 'app/styles'
+import { makeStyles, shadow } from 'app/styles'
 
 const messages = {
   ownedStamp: 'owned',
@@ -48,6 +50,20 @@ const useStyles = makeStyles(
       justifyContent: 'center',
       alignItems: 'center'
     },
+    chain: {
+      position: 'absolute',
+      bottom: spacing(3),
+      right: spacing(3),
+      height: spacing(6),
+      width: spacing(6),
+      borderRadius: 30,
+      borderWidth: 1,
+      borderColor: palette.neutralLight7,
+      backgroundColor: palette.staticWhite,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...shadow()
+    },
     stamp: {
       position: 'absolute',
       bottom: spacing(3),
@@ -75,8 +91,11 @@ type CollectiblesCardProps = {
 
 export const CollectiblesCard = (props: CollectiblesCardProps) => {
   const { collectible, style, ownerId } = props
-  const { name, frameUrl, isOwned, mediaType, gifUrl } = collectible
-  const styles = useStyles({ isOwned })
+  const { name, frameUrl, isOwned, mediaType, gifUrl, chain } = collectible
+
+  const stylesConfig = useMemo(() => ({ isOwned }), [isOwned])
+  const styles = useStyles(stylesConfig)
+
   const dispatchWeb = useDispatchWeb()
   const accountId = useSelectorWeb(getUserId)
 
@@ -114,6 +133,13 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
             <Text style={styles.stamp}>
               {isOwned ? messages.ownedStamp : messages.createdStamp}
             </Text>
+            <View style={styles.chain}>
+              {chain !== 'eth' ? (
+                <LogoEth height={18} />
+              ) : (
+                <LogoSol height={16} />
+              )}
+            </View>
           </ImageBackground>
         </View>
       ) : null}
