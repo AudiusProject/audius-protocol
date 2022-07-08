@@ -22,10 +22,15 @@ export type ModalProps = {
   children: ReactNode
 
   /**
-   * Callback to fire when the modal is closed
+   * Callback fired when the modal is closed
    * Should set isOpen accordingly
    */
   onClose: () => void
+
+  /**
+   * Callback fired when the modal children are removed from the dom.
+   */
+  onClosed?: () => void
 
   /**
    * Whether or not the modal is open

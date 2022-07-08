@@ -31,7 +31,6 @@
 
 .modalContent {
   display: flex;
-  padding: 0px var(--unit-8) var(--unit-6);
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -41,7 +40,7 @@
 }
 
 .description {
-  margin: var(--unit-6) 0px;
+  margin-bottom: var(--unit-6);
   font-weight: var(--font-demi-bold);
 }
 

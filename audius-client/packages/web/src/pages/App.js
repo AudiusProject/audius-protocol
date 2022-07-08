@@ -179,7 +179,7 @@ const UploadPage = lazyWithPreload(
   () => import('pages/upload-page/UploadPage'),
   0
 )
-const Modals = lazyWithPreload(() => import('./Modals'), 0)
+const Modals = lazyWithPreload(() => import('./modals/Modals'), 0)
 const ConnectedMusicConfetti = lazyWithPreload(
   () => import('components/music-confetti/ConnectedMusicConfetti'),
   0
