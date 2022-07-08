@@ -1,65 +1,108 @@
 import path from 'path'
-
-import { addBeforeLoader, loaderByName, when } from '@craco/craco'
-import { Configuration } from 'webpack'
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
+import { Configuration, ProvidePlugin, ResolvePluginInstance } from 'webpack'
 
 const isNative = process.env.REACT_APP_NATIVE_NAVIGATION_ENABLED === 'true'
 
+type ModuleScopePlugin = ResolvePluginInstance & {
+  allowedPaths: string[]
+}
+
+// This ensures we can use the resolve.alias for react/react-dom
+function addReactToModuleScopePlugin(plugin: ModuleScopePlugin) {
+  const reactLibs = ['react', 'react-dom']
+  const reactPaths = reactLibs.map(reactLib =>
+    path.resolve(__dirname, 'node_modules', reactLib)
+  )
+  plugin.allowedPaths = [...plugin.allowedPaths, ...reactPaths]
+}
+
 export default {
-  babel: {
-    plugins: [
-      'lodash',
-      ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
-    ]
-  },
   webpack: {
-    plugins: when(process.env.BUNDLE_ANALYZE === 'true', () => [
-      new BundleAnalyzerPlugin()
-    ]),
-    configure: (webpackConfig: Configuration) => {
-      // react-nil, our mobile-web renderer, requires react16
-      if (isNative && webpackConfig?.resolve?.alias) {
-        webpackConfig.resolve.alias.react = path.resolve(
-          './node_modules/react16'
-        )
+    configure: (config: Configuration) => {
+      if (config.resolve?.plugins) {
+        const [moduleScopePlugin] = config.resolve?.plugins
+        addReactToModuleScopePlugin(moduleScopePlugin as ModuleScopePlugin)
       }
 
-      // this prevents symlinked packages from using their own react
-      // https://github.com/facebook/react/issues/13991#issuecomment-435587809
-      if (!isNative && webpackConfig.resolve?.alias) {
-        webpackConfig.resolve.alias.react = path.resolve('./node_modules/react')
-      }
-
-      const wasmExtensionRegExp = /\.wasm$/
-      webpackConfig.resolve?.extensions?.push('.wasm')
-
-      webpackConfig.module?.rules.forEach(rule => {
-        rule.oneOf?.forEach(oneOf => {
-          if (
-            typeof oneOf.loader === 'string' &&
-            oneOf.loader.indexOf('file-loader') >= 0
-          ) {
-            if (Array.isArray(oneOf.exclude)) {
-              oneOf.exclude.push(wasmExtensionRegExp)
+      return {
+        ...config,
+        module: {
+          ...config.module,
+          rules: [
+            ...(config.module?.rules ?? []),
+            {
+              test: /\.js$/,
+              enforce: 'pre',
+              use: ['source-map-loader']
+            },
+            {
+              test: /\.wasm$/,
+              type: 'webassembly/async'
+            },
+            {
+              test: /\.(glsl|vs|fs|vert|frag)$/,
+              exclude: /node_modules/,
+              use: ['raw-loader', 'glslify-loader'],
+              type: 'javascript/auto'
             }
+          ]
+        },
+        plugins: [
+          ...(config.plugins ?? []),
+          new ProvidePlugin({
+            process: 'process/browser',
+            Buffer: ['buffer', 'Buffer']
+          })
+        ],
+        experiments: {
+          ...config.experiments,
+          asyncWebAssembly: true
+        },
+        resolve: {
+          ...config.resolve,
+          fallback: {
+            ...config.resolve?.fallback,
+            assert: require.resolve('assert'),
+            constants: require.resolve('constants-browserify'),
+            child_process: false,
+            crypto: require.resolve('crypto-browserify'),
+            fs: false,
+            http: require.resolve('stream-http'),
+            https: require.resolve('https-browserify'),
+            net: false,
+            os: require.resolve('os-browserify'),
+            path: require.resolve('path-browserify'),
+            stream: require.resolve('stream-browserify'),
+            url: require.resolve('url'),
+            zlib: require.resolve('browserify-zlib')
+          },
+          alias: {
+            ...config.resolve?.alias,
+            ...(isNative
+              ? { react: 'react16' }
+              : {
+                  react: path.resolve('./node_modules/react'),
+                  'react-dom': path.resolve('./node_modules/react-dom')
+                })
           }
-        })
-      })
-
-      const wasmLoader = {
-        test: /\.wasm$/,
-        include: /node_modules\/(bridge|token-bridge)/,
-        loaders: ['wasm-loader']
+        },
+        ignoreWarnings: [
+          function ignoreSourcemapsloaderWarnings(warning: any) {
+            return (
+              warning.module &&
+              warning.module.resource.includes('node_modules') &&
+              warning.details &&
+              warning.details.includes('source-map-loader')
+            )
+          }
+        ]
       }
-
-      addBeforeLoader(webpackConfig, loaderByName('file-loader'), wasmLoader)
-
-      return webpackConfig
     }
   },
-  // Disabling for now while we upgrade eslint and improve our config
   eslint: {
     enable: false
+  },
+  typescript: {
+    enableTypeChecking: false
   }
 }
