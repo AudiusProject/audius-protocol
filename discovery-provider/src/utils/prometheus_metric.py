@@ -117,7 +117,7 @@ PrometheusRegistry = {
             "route",
         ),
     ),
-    PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT: Gauge(
+    PrometheusMetricNames.HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE: Gauge(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.HEALTH_CHECK_LATEST_BLOCK_DIFFERENCE}",
         "Difference between the latest block and the latest indexed block",
     ),
