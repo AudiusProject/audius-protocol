@@ -12,7 +12,11 @@ const noRedirectSet = new Set([
   signOnActions.SIGN_IN_FAILED
 ])
 
-function* handleSignOnError(action) {
+function* handleSignOnError(
+  action: ReturnType<
+    typeof signOnActions.signUpFailed | typeof signOnActions.signInFailed
+  >
+) {
   const SIGN_UP_ERROR_PREFIX = 'SIGN_ON/SIGN_UP_ERROR_'
   const SIGN_IN_ERROR_PREFIX = 'SIGN_ON/SIGN_IN_ERROR_'
 
@@ -38,7 +42,7 @@ function* handleSignOnError(action) {
     }
   })()
 
-  const message = 'message' in action ? action.message : errorType
+  const message = 'message' in action ? action.message ?? errorType : errorType
 
   yield put(
     errorActions.handleError({

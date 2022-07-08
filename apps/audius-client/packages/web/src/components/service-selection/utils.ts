@@ -1,3 +1,5 @@
+import { Nullable } from 'common/utils/typeUtils'
+
 // Country code regex
 const CC_REGEX = /^[a-z]{2}$/i
 // Offset ascii -> unicode flag
@@ -255,7 +257,12 @@ const ISO_ALPHA_2 = {
   ZW: `Zimbabwe`
 }
 
-export const trimServiceName = (name, maxLength = null) => {
+type CountryCode = keyof typeof ISO_ALPHA_2
+
+export const trimServiceName = (
+  name: string,
+  maxLength: Nullable<number> = null
+) => {
   let trimmedName = name.replace('https://', '').replace('http://', '')
   if (maxLength && trimmedName.length > maxLength) {
     trimmedName = trimmedName.slice(0, maxLength)
@@ -264,10 +271,11 @@ export const trimServiceName = (name, maxLength = null) => {
   return trimmedName
 }
 
-export const getCountry = isoAlpha2 => ISO_ALPHA_2[isoAlpha2]
+export const getCountry = (isoAlpha2: CountryCode) => ISO_ALPHA_2[isoAlpha2]
 
-export const countryCodeToFlag = code => {
+export const countryCodeToFlag = (code: string) => {
   if (!code || !CC_REGEX.test(code)) return `🏳`
+  // @ts-expect-error charCodeAt expects a number
   const chars = [...code.toUpperCase()].map(c => c.charCodeAt() + OFFSET)
   return String.fromCodePoint(...chars)
 }

@@ -1,3 +1,8 @@
+import { ID } from 'common/models/Identifiers'
+import { User } from 'common/models/User'
+
+import { FollowArtistsCategory } from './types'
+
 export const SET_FIELD = 'SIGN_ON/SET_FIELD'
 export const SET_VALUE_FIELD = 'SIGN_ON/SET_VALUE_FIELD'
 export const RESET_SIGN_ON = 'SIGN_ON/RESET_SIGN_ON'
@@ -60,68 +65,70 @@ export const FETCH_REFERRER = 'SIGN_ON/FETCH_REFERRER'
 export const SET_REFERRER = 'SIGN_ON/SET_REFERRER'
 
 /**
- * Sets athe value for a field in the sign on state
- * @param {string} field the field to be set
- * @param {any} value the value to be set
+ * Sets the value for a field in the sign on state
+ * @param field the field to be set
+ * @param value the value to be set
  */
-export function setValueField(field, value) {
+export function setValueField(field: string, value: string) {
   return { type: SET_VALUE_FIELD, field, value }
 }
 
 /**
  * Sets the value for a field in the sign on state
- * @param {string} field the field to be set
- * @param {any} value the value to be set
+ * @param field the field to be set
+ * @param value the value to be set
  */
-export function setField(field, value) {
+export function setField(field: string, value: string) {
   return { type: SET_FIELD, field, value }
 }
 
 /**
- * Sets a field in the signin flow
- * @param {string} field the field to be set
- * @param {any} value the value to be set
+ * Resets a field in the signin flow
  */
 export function resetSignOn() {
   return { type: RESET_SIGN_ON }
 }
 
-export function checkEmail(email) {
+export function checkEmail(email: string) {
   return { type: CHECK_EMAIL, email }
 }
 
 /**
  * Requests the backend to check if email is valid
- * @param {string} email the email to check
+ * @param email the email to check
  */
-export function validateEmail(email) {
+export function validateEmail(email: string) {
   return { type: VALIDATE_EMAIL, email }
 }
 
-export function validateEmailInUse(email) {
+export function validateEmailInUse(email: string) {
   return { type: VALIDATE_EMAIL_IN_USE, email }
 }
 
-export function validateEmailSucceeded(available) {
+export function validateEmailSucceeded(available: boolean) {
   return { type: VALIDATE_EMAIL_SUCCEEDED, available }
 }
 
 /**
  * Email is not valid
- * @param {string} error The reason the email is not vallid
+ * @param error The reason the email is not vallid
  */
-export function validateEmailFailed(error) {
+export function validateEmailFailed(error: string) {
   return { type: VALIDATE_EMAIL_FAILED, error }
 }
 
 /**
  * Requests the backend to check if handle is valid
- * @param {string} handle the handle to check
- * @param {boolean} isOauthVerified whether or not the user is verified via oauth
- * @param {((error: boolean) => void) | undefined} onValidate
+ * @param handle the handle to check
+ * @param isOauthVerified whether or not the user is verified via oauth
+ * @param onValidate
  *  callback to fire on successful validation
  */
-export function validateHandle(handle, isOauthVerified, onValidate) {
+export function validateHandle(
+  handle: string,
+  isOauthVerified: boolean,
+  onValidate?: (error: boolean) => void
+) {
   return { type: VALIDATE_HANDLE, handle, isOauthVerified, onValidate }
 }
 
@@ -131,9 +138,9 @@ export function validateHandleSucceeded() {
 
 /**
  * handle is not valid
- * @param {string} error The reason the handle is not valid
+ * @param error The reason the handle is not valid
  */
-export function validateHandleFailed(error) {
+export function validateHandleFailed(error: string) {
   return { type: VALIDATE_HANDLE_FAILED, error }
 }
 
@@ -146,9 +153,20 @@ export function signUp() {
 }
 
 export const signUpSucceeded = () => ({ type: SIGN_UP_SUCCEEDED })
-export function signUpSucceededWithId(userId) {
+
+export function signUpSucceededWithId(userId: ID) {
   return { type: SIGN_UP_SUCCEEDED_WITH_ID, userId }
 }
+
+type SignUpFailedParams = {
+  error: string
+  phase: string
+  redirectRoute: string
+  shouldReport: boolean
+  shouldToast: boolean
+  message?: string
+}
+
 export const signUpFailed = ({
   error,
   phase,
@@ -156,7 +174,7 @@ export const signUpFailed = ({
   shouldReport,
   shouldToast,
   message
-}) => ({
+}: SignUpFailedParams) => ({
   type: SIGN_UP_FAILED,
   error,
   phase,
@@ -168,15 +186,19 @@ export const signUpFailed = ({
 
 /**
  * Attemp sign-in to the account
- * @param {string} email account email
- * @param {string} password account password
+ * @param email account email
+ * @param password account password
  */
-export function signIn(email, password) {
+export function signIn(email: string, password: string) {
   return { type: SIGN_IN, email, password }
 }
 
 export const signInSucceeded = () => ({ type: SIGN_IN_SUCCEEDED })
-export const signInFailed = (error, phase, shouldReport = true) => ({
+export const signInFailed = (
+  error: string,
+  phase: string,
+  shouldReport = true
+) => ({
   type: SIGN_IN_FAILED,
   error,
   phase,
@@ -200,40 +222,43 @@ export function getUsersToFollow() {
 /**
  * Requests all the users from which to pick suggested followed artists
  */
-export function setUsersToFollow(users) {
+export function setUsersToFollow(users: User[]) {
   return { type: SET_USERS_TO_FOLLOW, users }
 }
 
 /**
  * Set the user ids for the follow artists category
- * @param {artistFollowCatgory} category The genre category to set the user ids for
- * @param {Array<ID>} userIds The top user ids for a category
+ * @param category The genre category to set the user ids for
+ * @param userIds The top user ids for a category
  */
-export function fetchFollowArtistsSucceeded(category, userIds) {
+export function fetchFollowArtistsSucceeded(
+  category: FollowArtistsCategory,
+  userIds: ID[]
+) {
   return { type: FETCH_FOLLOW_ARTISTS_SUCCEEDED, category, userIds }
 }
 
 /**
  * Sets the Follow artist category
- * @param {artistFollowCatgory} category The genre category to display to the user
+ * @param category The genre category to display to the user
  */
-export function setFollowAristsCategory(category) {
+export function setFollowAristsCategory(category: FollowArtistsCategory) {
   return { type: SET_FOLLOW_ARTIST_CATEGORY, category }
 }
 
 /**
  * error response
- * @param {string} error The error for fetch follow artists
+ * @param error The error for fetch follow artists
  */
-export function fetchFollowArtistsFailed(error) {
+export function fetchFollowArtistsFailed(error: string) {
   return { type: FETCH_FOLLOW_ARTISTS_FAILED, error }
 }
 
 export function setTwitterProfile(
-  twitterId,
-  profile,
-  profileImage,
-  coverPhoto
+  twitterId: string,
+  profile: string,
+  profileImage: string,
+  coverPhoto: string
 ) {
   return {
     type: SET_TWITTER_PROFILE,
@@ -244,11 +269,15 @@ export function setTwitterProfile(
   }
 }
 
-export function setTwitterProfileError(error) {
+export function setTwitterProfileError(error: string) {
   return { type: SET_TWITTER_PROFILE_ERROR, error }
 }
 
-export function setInstagramProfile(instagramId, profile, profileImage) {
+export function setInstagramProfile(
+  instagramId: string,
+  profile: string,
+  profileImage: string
+) {
   return {
     type: SET_INSTAGRAM_PROFILE,
     instagramId,
@@ -257,30 +286,26 @@ export function setInstagramProfile(instagramId, profile, profileImage) {
   }
 }
 
-export function setInstagramProfileError(error) {
+export function setInstagramProfileError(error: string) {
   return { type: SET_INSTAGRAM_PROFILE_ERROR, error }
 }
 
 /**
  * Follows users in signup flow after user is created
- * @param {arrayOf(string)} userIds array of userIds to follow
+ * @param userIds array of userIds to follow
  */
-export function followArtists(userIds) {
+export function followArtists(userIds: ID[]) {
   return { type: FOLLOW_ARTISTS, userIds }
 }
 
 /**
  * Sets the status of the signon flow 'loading' or 'editing'
- * @param {string} status Status: 'loading' or 'editing'
+ * @param status Status: 'loading' or 'editing'
  */
-export function setStatus(status) {
+export function setStatus(status: 'loading' | 'editing') {
   return { type: SET_STATUS, status }
 }
 
-/**
- * Sets the status of the signon flow 'loading' or 'editing'
- * @param {string} status Status: 'loading' or 'editing'
- */
 export function configureMetaMask() {
   return { type: CONFIGURE_META_MASK }
 }
@@ -294,24 +319,24 @@ export function setAccountReady() {
 
 /**
  * Adds the user ids to be followed on account completion
- * @param {Array<ID>} userIds The user ids to add as selected and follow
+ * @param userIds The user ids to add as selected and follow
  */
-export function addFollowArtists(userIds) {
+export function addFollowArtists(userIds: ID[]) {
   return { type: ADD_FOLLOW_ARTISTS, userIds }
 }
 
 /**
  * Removes the user ids from the selected userIds array
- * @param {Array<ID>} userIds The user ids to remove from selected
+ * @param userIds The user ids to remove from selected
  */
-export function removeFollowArtists(userIds) {
+export function removeFollowArtists(userIds: ID[]) {
   return { type: REMOVE_FOLLOW_ARTISTS, userIds }
 }
 
 /**
  * Sets a toast appearing over signon
  */
-export const showToast = text => ({
+export const showToast = (text: string) => ({
   type: SET_TOAST,
   text
 })
@@ -331,48 +356,50 @@ export const showRequiresAccountModal = () => ({
 
 /**
  * Opens the signin/up modal in mobile and routes to the page on desktop
- * @param {boolean} signIn Determines if the SignIn or SignUp flow is displayed
- * @param {string} page optional page to open sign on to
- * @param {object} fields optional fields to set in the sign in state when opening
+ * @param signIn Determines if the SignIn or SignUp flow is displayed
+ * @param page optional page to open sign on to
+ * @param fields optional fields to set in the sign in state when opening
  */
-export const openSignOn = (signIn = false, page = null, fields = {}) => {
+export const openSignOn = (
+  signIn = false,
+  page: string | null = null,
+  fields: Record<string, unknown> = {}
+) => {
   return { type: OPEN_SIGN_ON, signIn, page, fields }
 }
 
-export const nextPage = isMobile => ({ type: NEXT_PAGE, isMobile })
+export const nextPage = (isMobile: boolean) => ({ type: NEXT_PAGE, isMobile })
 export const previousPage = () => ({ type: PREVIOUS_PAGE })
-export const goToPage = page => ({ type: GO_TO_PAGE, page })
+export const goToPage = (page: number) => ({ type: GO_TO_PAGE, page })
 
 export const signUpTimeout = () => ({ type: SIGN_UP_TIMEOUT })
-export const updateRouteOnCompletion = route => ({
+export const updateRouteOnCompletion = (route: string) => ({
   type: UPDATE_ROUTE_ON_COMPLETION,
   route
 })
-export const updateRouteOnExit = route => ({
+export const updateRouteOnExit = (route: string) => ({
   type: UPDATE_ROUTE_ON_EXIT,
   route
 })
 
-export const sendWelcomeEmail = name => ({
+export const sendWelcomeEmail = (name: string) => ({
   type: SEND_WELCOME_EMAIL,
   name
 })
 
 /**
  * Fetches the referring user given their handle
- * @param {string} handle
- *  the handle captured by the ?ref=<handle> search param
+ * @param handle the handle captured by the ?ref=<handle> search param
  */
-export const fetchReferrer = handle => ({
+export const fetchReferrer = (handle: string) => ({
   type: FETCH_REFERRER,
   handle
 })
 
 /**
  * Sets the user id of the referrer who invited this user signing up
- * @param {ID} userId
  */
-export const setReferrer = userId => ({
+export const setReferrer = (userId: ID) => ({
   type: SET_REFERRER,
   userId
 })
