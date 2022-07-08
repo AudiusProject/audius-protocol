@@ -82,11 +82,13 @@ class PrometheusMetricNames:
     Penultimate Suffixes:
     * `_duration` when measuring task duration or runtimes
 
-    Ultimate Suffixes:
+    Suffixes:
     * `_seconds` always the base unit (never microseconds, milliseconds, etc)
     * `_latest` when looking at a snapshot of unit-less data
-    * `_total`, when accumulating a count, in addition to the unit if applicable
     * `_info` for a pseudo-metric that provides metadata about the running binary
+
+    Ultimate Suffixes:
+    * `_total`, when accumulating a count, in addition to above suffixes if applicable
 
     See the following resources for related information:
     * [Creator Node's docs](https://github.com/AudiusProject/audius-protocol/blob/master/creator-node/src/services/prometheusMonitoring/README.md)
