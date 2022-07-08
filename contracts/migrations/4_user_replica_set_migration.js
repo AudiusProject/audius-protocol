@@ -20,13 +20,8 @@ module.exports = (deployer, network, accounts) => {
     let registry
     let registryAddress
     if (network === 'test_local' || network === 'development') {
-      if (!config.registryAddress) {
-        registry = await Registry.deployed()
-        registryAddress = registry.address
-      } else {
-        registryAddress = config.registryAddress
-        registry = await Registry.at(registryAddress)
-      }
+      registryAddress = process.env.dataContractsRegistryAddress
+      registry = await Registry.at(registryAddress)
     } else {
       if (!config.registryAddress) {
         throw new Error('Invalid configuration, expected registry address to be configured')
@@ -107,5 +102,6 @@ module.exports = (deployer, network, accounts) => {
     )
     seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
     console.log(`Seed complete: ${seedComplete}`)
+    process.env.dataContractsUrsmAddress = deployedProxyTx.address
   })
 }
