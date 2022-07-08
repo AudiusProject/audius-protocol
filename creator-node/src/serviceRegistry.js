@@ -177,9 +177,9 @@ class ServiceRegistry {
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
+        new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
-        new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
