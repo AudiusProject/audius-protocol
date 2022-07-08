@@ -71,7 +71,7 @@ const MetricLabels = Object.freeze({
     reconfigType: [
       'one_secondary', // Only one secondary was replaced in the user's replica set
       'multiple_secondaries', // Both secondaries were replaced in the user's replica set
-      'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes,
+      'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   },

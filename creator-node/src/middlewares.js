@@ -266,8 +266,12 @@ async function ensureStorageMiddleware(req, res, next) {
 /**
  * Issue SyncRequests to both secondaries, and wait for at least one to sync before returning
  * @dev TODO - move out of middlewares layer
+ * @param ignoreWriteQuorum true if write quorum should not be enforced (don't fail the request if write quorum fails)
  */
-async function issueAndWaitForSecondarySyncRequests(req) {
+async function issueAndWaitForSecondarySyncRequests(
+  req,
+  ignoreWriteQuorum = false
+) {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { snapbackSM } = serviceRegistry
 
@@ -275,9 +279,16 @@ async function issueAndWaitForSecondarySyncRequests(req) {
   const pollingDurationMs =
     req.header('Polling-Duration-ms') ||
     config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
+  // Write quorum header always takes precedence over env var if explicitly defined
+  // Empty/undefined header means enforceWriteQuorum decides if write quorum is enabled
+  const writeQuorumHeaderTrue = !!req.header('Enforce-Write-Quorum')
+  const writeQuorumHeaderFalse = req.header('Enforce-Write-Quorum') === false
   const enforceWriteQuorum =
-    req.header('Enforce-Write-Quorum') || config.get('enforceWriteQuorum')
+    !ignoreWriteQuorum &&
+    (writeQuorumHeaderTrue ||
+      (!writeQuorumHeaderFalse && config.get('enforceWriteQuorum')))
 
+  // TODO: Test case 5
   if (config.get('manualSyncsDisabled')) {
     req.logger.info(
       `issueAndWaitForSecondarySyncRequests - Cannot proceed due to manualSyncsDisabled ${config.get(
@@ -287,6 +298,7 @@ async function issueAndWaitForSecondarySyncRequests(req) {
     return
   }
 
+  // TODO: Test case 6
   if (!req.session || !req.session.wallet) {
     req.logger.error(
       `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
@@ -295,6 +307,7 @@ async function issueAndWaitForSecondarySyncRequests(req) {
   }
   const wallet = req.session.wallet
 
+  // TODO: Test case 7
   try {
     if (
       !req.session.nodeIsPrimary ||
