@@ -16,13 +16,15 @@ def save_duration_metric(metric_group):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            histogram_metric = PrometheusMetric(
-                PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS
-            )
-
-            gauge_metric = PrometheusMetric(
-                PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
-            )
+            if metric_group == "celery_task":
+                histogram_metric = PrometheusMetric(
+                    PrometheusMetricNames.CELERY_TASK_COMPLETED_DURATION_SECONDS
+                )
+                gauge_metric = PrometheusMetric(
+                    PrometheusMetricNames.CELERY_TASK_LAST_DURATION_SECONDS
+                )
+            else:
+                raise NameError(f"Metric Group '{metric_group}' not found.")
             try:
                 # safely return this result under all circumstances
                 result = func(*args, **kwargs)
