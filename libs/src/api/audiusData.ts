@@ -63,7 +63,6 @@ export class AudiusData extends Base {
         coverArt,
         true // square
       )
-
       const dirCID = updatedPlaylistImage.dirCID
       const metadata = {
         action,
@@ -103,13 +102,14 @@ export class AudiusData extends Base {
    */
   async deletePlaylist({
     playlistId,
+    userId,
     logger = console
   }: {
     playlistId: number,
     userId: number,
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any; }> {
-    const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+    // const userId: number = parseInt(this.userStateManager.getCurrentUserId())
 
     let respValues = {
       blockHash: null,
@@ -121,7 +121,7 @@ export class AudiusData extends Base {
         entityType: 'Playlist',
         entityId: playlistId,
         action: 'Delete',
-        metadataMultihash: ''
+        metadataMultihash: '' 
       })
       logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
       let txReceipt = resp.txReceipt
@@ -137,7 +137,6 @@ export class AudiusData extends Base {
 
   /**
    * Update a playlist using updated data contracts flow
-   */
   async updatePlaylist({
     playlistId,
     playlistName,
@@ -166,21 +165,24 @@ export class AudiusData extends Base {
       const userId: number = parseInt(this.userStateManager.getCurrentUserId())
       const action = 'Update'
       const entityType = 'Playlist'
-      const entityId = await this.getValidPlaylistId()
       this.REQUIRES(Services.CREATOR_NODE)
-      const updatedPlaylistImage = await this.creatorNode.uploadImage(
-        coverArt,
-        true // square
-      )
+      if (coverArt) {
+        const updatedPlaylistImageDirCid = await this.creatorNode.uploadImage(
+          coverArt,
+          true // square
+        ).dirCID
+        const updatedPlaylistImageMultihashDigest = Utils.formatOptionalMultihash(updatedPlaylistImageDirCid)
+      }
 
-      const dirCID = updatedPlaylistImage.dirCID
+      const playlistResp = await this.discoveryProvider.getPlaylists(1, 0, [playlistId])
+      console.log(`asdf playlistResp ${JSON.stringify(playlistResp)}`)
       const metadata = {
-        action,
-        entity_type: entityType,
-        playlist_id: entityId,
+        action, // why include action here?
+        entityType,
+        playlist_id: playlistId,
         playlist_contents: trackIds,
         playlist_name: playlistName,
-        playlist_image_sizes_multihash: dirCID,
+        playlist_image_sizes_multihash: updatedPlaylistImageDirCid,
         description,
         is_album: isAlbum,
         is_private: isPrivate
@@ -206,6 +208,7 @@ export class AudiusData extends Base {
     }
     return respValues
   }
+   */
 
   /**
    * Manage an entity with the updated data contract flow

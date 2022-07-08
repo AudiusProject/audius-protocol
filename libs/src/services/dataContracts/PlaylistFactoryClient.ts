@@ -299,6 +299,7 @@ export class PlaylistFactoryClient extends ContractClient {
     )
   }
 
+
   async updatePlaylistDescription(
     playlistId: number,
     updatedPlaylistDescription: string
