@@ -1,8 +1,6 @@
 // Required to do this in order to play with webpack & create-react-app without ejecting
-/* eslint import/no-webpack-loader-syntax: off */
-import * as vertexShader from '!raw-loader!glslify-loader!./shaders/visualizer-1.vert'
-/* eslint import/no-webpack-loader-syntax: off */
-import * as fragmentShader from '!raw-loader!glslify-loader!./shaders/visualizer-1.frag'
+import vertexShader from './shaders/visualizer-1.vert'
+import fragmentShader from './shaders/visualizer-1.frag'
 
 import createLine from './gl-line-3d'
 import vignette from './gl-vignette-background'
@@ -17,12 +15,12 @@ const setIdentity = require('gl-mat4/identity')
 const newArray = require('array-range')
 const lerp = require('lerp')
 const hexRgbByte = require('hex-rgb')
-const hexRgb = (str) => hexRgbByte(str).map(x => x / 255)
+const hexRgb = str => hexRgbByte(str).map(x => x / 255)
 
 let settings = {
   opacity: 0.5,
   additive: false,
-  gradient: [ '#FFFFFF', '#4F4F4F' ],
+  gradient: ['#FFFFFF', '#4F4F4F'],
   color: '#000',
   useHue: true
 }
@@ -48,19 +46,16 @@ let Visualizer1 = (function () {
   const background = vignette(gl)
   background.style({
     aspect: 1,
-    smoothing: [ -0.5, 1.0 ],
+    smoothing: [-0.5, 1.0],
     noiseAlpha: 0.1,
-    offset: [ -0.05, -0.15 ]
+    offset: [-0.05, -0.15]
   })
 
   const identity = setIdentity([])
-  const shader = createShader(gl,
-    vertexShader,
-    fragmentShader
-  )
+  const shader = createShader(gl, vertexShader, fragmentShader)
 
   const camera = createCamera({
-    fov: 50 * Math.PI / 180,
+    fov: (50 * Math.PI) / 180,
     position: [0, 0, 1],
     near: 0.0001,
     far: 10000
@@ -99,7 +94,7 @@ let Visualizer1 = (function () {
     background.style({
       color1: hexRgb(settings.gradient[0]),
       color2: hexRgb(settings.gradient[1]),
-      scale: [ 1 / width * size, 1 / height * size ]
+      scale: [(1 / width) * size, (1 / height) * size]
     })
     background.draw()
 
@@ -133,48 +128,49 @@ let Visualizer1 = (function () {
     })
   })
 
-  function createSegment () {
+  function createSegment() {
     return newArray(steps).map((i, _, list) => {
       const x = lerp(-1, 1, i / (list.length - 1))
-      return [ x, 0, 0 ]
+      return [x, 0, 0]
     })
   }
 
   let analyser = null
   setDominantColors()
 
-  function show (darkMode) {
+  function show(darkMode) {
     if (darkMode) {
-      settings.gradient = [ '#323232', '#111111' ]
+      settings.gradient = ['#323232', '#111111']
       settings.color = '#FFF'
     } else {
-      settings.gradient = [ '#FFFFFF', '#4F4F4F' ]
+      settings.gradient = ['#FFFFFF', '#4F4F4F']
       settings.color = '#000'
     }
-    window.addEventListener('resize'
-      , require('canvas-fit')(canvas, window)
-      , false
+    window.addEventListener(
+      'resize',
+      require('canvas-fit')(canvas, window),
+      false
     )
     const visWrapper = document.querySelector('.visualizer')
-    if(visWrapper && !visWrapper.hasChildNodes()) {
+    if (visWrapper && !visWrapper.hasChildNodes()) {
       visWrapper.appendChild(canvas)
     }
     app.start()
   }
 
   /** Binds the visualizer to an AudioStream element. */
-  function bind (audio) {
+  function bind(audio) {
     analyser = new GLAudioAnalyser(gl, audio.source, audio.audioCtx)
   }
 
-  function hide () {
+  function hide() {
     const visWrapper = document.querySelector('.visualizer')
-    if(visWrapper && visWrapper.hasChildNodes()) {
+    if (visWrapper && visWrapper.hasChildNodes()) {
       visWrapper.removeChild(canvas)
     }
   }
 
-  function stop () {
+  function stop() {
     app.stop()
   }
 

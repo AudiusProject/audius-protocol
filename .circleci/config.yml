@@ -56,7 +56,6 @@ jobs:
       - restore_cache:
           keys:
             - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-package-lock.txt" }}
-            - cache-
 
       - run:
           name: Install dependencies

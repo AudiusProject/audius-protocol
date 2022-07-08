@@ -63,7 +63,7 @@
     "audius-client": "1.1.12",
     "babel-plugin-transform-remove-console": "6.9.4",
     "bn.js": "5.2.0",
-    "color": "4.2.1",
+    "color": "3.2.1",
     "expo-crypto": "9.2.0",
     "formik": "2.2.9",
     "fxa-common-password-list": "0.0.4",

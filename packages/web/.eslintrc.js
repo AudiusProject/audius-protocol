@@ -7,7 +7,6 @@ module.exports = {
     'standard',
     'plugin:@typescript-eslint/recommended',
     'plugin:jest/recommended',
-    'plugin:react/recommended',
     'prettier',
     'prettier-standard/prettier-file'
   ],
@@ -23,7 +22,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest', 'import'],
+  plugins: ['react-hooks', '@typescript-eslint', 'jest', 'import'],
   settings: {
     // Only modules resolved from these folders will be considered "external".
     // If you are `npm link`ing from a directory not listed here you may run

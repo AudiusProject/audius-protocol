@@ -6,10 +6,11 @@ import {
 } from 'services/native-mobile-interface/analytics'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
-import { version } from '../../../../package.json'
+import packageInfo from '../../../../package.json'
 
 import * as amplitude from './amplitude'
 import * as segment from './segment'
+const { version } = packageInfo
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'

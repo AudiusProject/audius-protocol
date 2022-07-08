@@ -36,12 +36,13 @@ import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { signOut } from 'utils/signOut'
 
-import { version } from '../../../../../package.json'
+import packageInfo from '../../../../../package.json'
 
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
+const { version } = packageInfo
 
 const SIGN_OUT_MODAL_TEXT = `
   Are you sure you want to sign out?
