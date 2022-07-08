@@ -172,7 +172,7 @@ class PrometheusMetric:
         self.reset_timer()
 
         if name not in PrometheusRegistry:
-            raise TypeError(f"Metric name '{name}' not found")
+            raise NameError(f"Metric name '{name}' not found")
         self.metric = PrometheusRegistry[name]
 
     def reset_timer(self):
@@ -191,9 +191,9 @@ class PrometheusMetric:
         if labels:
             this_metric = this_metric.labels(**labels)
 
-        if isinstance(self.metric, Histogram):
+        if isinstance(this_metric, Histogram):
             this_metric.observe(value)
-        elif isinstance(self.metric, Gauge):
+        elif isinstance(this_metric, Gauge):
             this_metric.set(value)
 
     @classmethod
