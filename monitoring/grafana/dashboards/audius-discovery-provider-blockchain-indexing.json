@@ -202,7 +202,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"}",
+            "expr": "audius_dn_health_check_latest_block_difference{environment=~\"$env\", host=~\"$host\"}",
             "legendFormat": "{{host}}",
             "range": true,
             "refId": "A"
@@ -263,7 +263,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "max(audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"})",
+            "expr": "max(audius_dn_health_check_latest_block_difference{environment=~\"$env\", host=~\"$host\"})",
             "legendFormat": "Max",
             "range": true,
             "refId": "A"
@@ -273,7 +273,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "avg(audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"})",
+            "expr": "avg(audius_dn_health_check_latest_block_difference{environment=~\"$env\", host=~\"$host\"})",
             "hide": false,
             "legendFormat": "Average",
             "range": true,
@@ -284,7 +284,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "min(audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"})",
+            "expr": "min(audius_dn_health_check_latest_block_difference{environment=~\"$env\", host=~\"$host\"})",
             "hide": false,
             "legendFormat": "Min",
             "range": true,
