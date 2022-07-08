@@ -34,7 +34,7 @@ const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
 const { Reactions } = require('./api/reactions')
-const { EntityManager } = require('./api/audiusData')
+const { EntityManager } = require('./api/entityManager')
 
 class AudiusLibs {
   /**

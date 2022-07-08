@@ -110,16 +110,16 @@ export class EntityManager extends Base {
     userId,
     logger = console
   }: {
-    playlistId: number,
-    userId: number,
+    playlistId: number
+    userId: number
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any; }> {
     let respValues = {
       blockHash: null,
-      blockNumber: null,
+      blockNumber: null
     }
     try {
-      let resp = await this.manageEntity({
+      const resp = await this.manageEntity({
         userId,
         entityType: 'Playlist',
         entityId: playlistId,
@@ -127,7 +127,7 @@ export class EntityManager extends Base {
         metadataMultihash: ''
       })
       logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
-      let txReceipt = resp.txReceipt
+      const txReceipt = resp.txReceipt
       respValues = {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber,
