@@ -7,14 +7,17 @@ import { animated, Transition } from 'react-spring/renderprops'
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { useSelectTierInfo } from 'common/hooks/wallet'
+import { ChallengeRewardID } from 'common/models/AudioRewards'
 import { BadgeTier } from 'common/models/BadgeTier'
 import { BNWei } from 'common/models/Wallet'
+import { StringKeys } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getOptimisticUserChallenges } from 'common/store/challenges/selectors/optimistic-challenges'
 import { getAccountTotalBalance } from 'common/store/wallet/selectors'
 import { formatWei } from 'common/utils/wallet'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import { AUDIO_PAGE } from 'utils/route'
 
@@ -25,6 +28,27 @@ type BubbleType = 'none' | 'claim' | 'earn'
 const messages = {
   earnAudio: 'EARN $AUDIO',
   claimRewards: 'Claim Rewards'
+}
+
+const validRewardIds: Set<ChallengeRewardID> = new Set([
+  'track-upload',
+  'referrals',
+  'ref-v',
+  'mobile-install',
+  'connect-verified',
+  'listen-streak',
+  'profile-completion',
+  'referred',
+  'send-first-tip'
+])
+
+/** Pulls rewards from remoteconfig */
+const useActiveRewardIds = () => {
+  const rewardsString = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
+  if (rewardsString === null) return []
+  const rewards = rewardsString.split(',') as ChallengeRewardID[]
+  const activeRewards = rewards.filter(reward => validRewardIds.has(reward))
+  return activeRewards
 }
 
 const NavAudio = () => {
@@ -43,9 +67,13 @@ const NavAudio = () => {
   const { tier } = useSelectTierInfo(account?.user_id ?? 0)
   const audioBadge = audioTierMapPng[tier as BadgeTier]
 
-  const userChallenges = useSelector(getOptimisticUserChallenges)
-  const hasClaimableTokens = Object.values(userChallenges).some(
-    challenge => challenge && challenge.claimableAmount > 0
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
+  const activeRewardIds = useActiveRewardIds()
+  const activeUserChallenges = Object.values(
+    optimisticUserChallenges
+  ).filter(challenge => activeRewardIds.includes(challenge.challenge_id))
+  const hasClaimableTokens = activeUserChallenges.some(
+    challenge => challenge.claimableAmount > 0
   )
 
   const [bubbleType, setBubbleType] = useState<BubbleType>('none')
