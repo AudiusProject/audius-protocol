@@ -1002,7 +1002,7 @@
                   "type": "prometheus"
                 },
                 "exemplar": true,
-                "expr": "audius_dn_update_aggregate_table_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}",
+                "expr": "audius_dn_update_aggregate_table_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}",
                 "format": "time_series",
                 "interval": "",
                 "intervalFactor": 2,
@@ -1094,7 +1094,7 @@
             "pluginVersion": "8.4.1",
             "targets": [
               {
-                "expr": "rate(audius_dn_update_aggregate_table_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_update_aggregate_table_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m])",
+                "expr": "rate(audius_dn_update_aggregate_table_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_update_aggregate_table_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m])",
                 "format": "time_series",
                 "intervalFactor": 2,
                 "legendFormat": "{{table_name}}",

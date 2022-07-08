@@ -75,7 +75,7 @@ def update_aggregate_table(
     current_checkpoint,
 ):
     metric = PrometheusMetric(
-        PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS
+        PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_DURATION_SECONDS
     )
 
     # get name of the caller function
