@@ -22,8 +22,6 @@ export type DynamicImageProps = {
   // Whether or not the image is a full URL. This can be set to false
   // and the image prop is treated as the entire style.backgroundImage
   isUrl?: boolean
-  // If no image is not present, what should we fade it in from?
-  initialOpacity?: number
   // Classes to apply to the wrapper
   wrapperClassName?: string
   // Styles to apply to the image itself

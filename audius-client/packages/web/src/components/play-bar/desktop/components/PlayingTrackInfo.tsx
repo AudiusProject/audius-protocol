@@ -85,8 +85,6 @@ const PlayingTrackInfo = ({
             [styles.isDefault]: !!trackId
           })}
           imageStyle={boxShadowStyle}
-          initialOpacity={0.6}
-          immediatelyLeave
           usePlaceholder={false}
         />
       </div>

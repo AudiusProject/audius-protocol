@@ -100,7 +100,6 @@ const CurrentlyPlaying = ({
       >
         <DynamicImage
           image={artworkLink ?? image}
-          initialOpacity={newTrack ? 0.6 : 0}
           immediate={newTrack}
           className={styles.artwork}
           imageStyle={artworkStyle}

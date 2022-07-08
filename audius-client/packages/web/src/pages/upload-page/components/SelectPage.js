@@ -4,7 +4,7 @@ import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import SelectedServices from 'components/service-selection/SelectedServices'
+import { SelectedServices } from 'components/service-selection'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 

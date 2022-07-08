@@ -604,7 +604,7 @@ class AudiusBackend {
 
   static getSolanaAudiusDataConfig() {
     if (!REACT_APP_ANCHOR_PROGRAM_ID || !REACT_APP_ANCHOR_ADMIN_ACCOUNT) {
-      console.error('Missing solana audius data config')
+      console.warn('Missing solana audius data config')
       return {
         error: true
       }
