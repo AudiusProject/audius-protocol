@@ -93,7 +93,7 @@
           "description": "",
           "meta": {
             "connectedDashboards": 3,
-            "created": "2022-07-06T20:04:10Z",
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -101,7 +101,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -196,25 +196,25 @@
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T21:10:51Z",
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T21:15:24Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "Celery Tasks (Last Successful Duration)",
           "type": "bargauge",
           "uid": "3en9tpenk",
-          "version": 4
+          "version": 1
         },
         "options": {
           "displayMode": "gradient",
@@ -688,7 +688,7 @@
           "description": "",
           "meta": {
             "connectedDashboards": 1,
-            "created": "2022-07-06T20:04:10Z",
+            "created": "2022-07-06T23:41:27Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -696,7 +696,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:27Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -801,8 +801,8 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 1,
-            "created": "2022-07-06T20:04:10Z",
+            "connectedDashboards": 2,
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -810,7 +810,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -956,8 +956,8 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 1,
-            "created": "2022-07-06T20:04:10Z",
+            "connectedDashboards": 2,
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -965,7 +965,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
