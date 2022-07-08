@@ -105,7 +105,10 @@ const main = async () => {
     `docker cp audius_ganache_cli:/app/contracts-ganache-accounts.json ${tmpDataContracts}/contracts-ganache-accounts.json`,
     { stdio: 'inherit' }
   )
-
+  execSync(
+    `cp -r ${process.env.PROTOCOL_DIR}/contracts/migrations/migration-output.json ${tmpDataContracts}`,
+    { stdio: 'inherit' }
+  )
   execSync(
     `cp -r ${process.env.PROTOCOL_DIR}/contracts/build ${tmpDataContracts}`,
     { stdio: 'inherit' }
@@ -159,6 +162,8 @@ const main = async () => {
   )
 
   // TODO: Deploy to docker registry (dockerhub)
+  // Be sure to run 'A network up' to create local docker network before running this file
+  // Ex. After local tag - docker push audius/ganache:data-contracts-predeployed-7a65bc3a54d5f84e1be805892935e121574b0772
   console.log('Be sure to publish the docker file if using externally')
   console.log(
     'ie. "docker push audius/ganache:data-contracts-predeployed-latest"'
