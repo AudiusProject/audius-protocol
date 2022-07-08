@@ -20,7 +20,7 @@ module.exports = {
   // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
   STATE_RECONCILIATION_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
 
-  // Max millis to run a StateReconciliationQueue job for before marking it as stalled (1 hour)
+  // Max millis to run a ManualSyncQueue job for before marking it as stalled (1 hour)
   MANUAL_SYNC_QUEUE_MAX_JOB_RUNTIME_MS: 1000 * 60 * 60,
 
   // Millis to timeout request for getting users who have a node as their primary/secondary (60 seconds)
