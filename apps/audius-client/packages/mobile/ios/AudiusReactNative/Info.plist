@@ -89,6 +89,10 @@
   <true/>
   <key>LSSupportsOpeningDocumentsInPlace</key>
   <true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>itms-apps</string>
+	</array>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_googlecast._tcp</string>

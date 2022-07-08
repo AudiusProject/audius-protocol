@@ -255,7 +255,10 @@ export enum StringKeys {
   ORACLE_ENDPOINT = 'ORACLE_ENDPOINT',
 
   /** Endpoints to use for rewards attestations */
-  REWARDS_ATTESTATION_ENDPOINTS = 'REWARDS_ATTESTATION_ENDPOINTS'
+  REWARDS_ATTESTATION_ENDPOINTS = 'REWARDS_ATTESTATION_ENDPOINTS',
+
+  /** Minimum required version for the app */
+  MIN_APP_VERSION = 'MIN_APP_VERSION'
 }
 
 export type AllRemoteConfigKeys =
