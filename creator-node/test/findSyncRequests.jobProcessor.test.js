@@ -229,7 +229,7 @@ describe('test findSyncRequests job processor', function () {
         {
           metricLabels: {
             sync_mode: _.snakeCase(SYNC_MODES.SyncSecondaryFromPrimary),
-            result: 'new_sync_request_enqueued_primary_to_secondary'
+            result: 'new_sync_request_enqueued'
           },
           metricName,
           metricType,
@@ -895,7 +895,38 @@ describe('test findSyncRequests job processor', function () {
       )
   })
 
-  it.skip('test for when _findSyncsforUser returns syncReqsToEnqueue and duplicateSyncReqs')
+  it.skip('test for when _findSyncsforUser returns syncReqsToEnqueue and duplicateSyncReqs', async function () {
+    /**
+     * Define all input variables
+     */
+
+    // spIds in mapping must match those in the `users` variable
+    const cNodeEndpointToSpIdMap = {
+      [primary]: primarySpID,
+      [secondary1]: secondary1SpID,
+      [secondary2]: secondary2SpID
+    }
+
+    const unhealthyPeers = []
+
+    // Since secondary1.wallet.clock < primary.wallet.clock, we will sync from primary to secondary1
+    const replicaToUserInfoMap = {
+      [primary]: {
+        [wallet]: { clock: 10, filesHash: '0xabc' }
+      },
+      [secondary1]: {
+        [wallet]: { clock: 9, filesHash: '0xnotabc' }
+      },
+      [secondary2]: {
+        [wallet]: { clock: 10, filesHash: '0xabc' }
+      }
+    }
+
+    const userSecondarySyncMetricsMap = {}
+
+    // This node must be the primary in order to sync
+    config.set('creatorNodeEndpoint', primary)
+  })
 
   it.skip('test for when _findSyncsforUser returns syncReqsToEnqueue and errors')
 

@@ -299,7 +299,7 @@ async function _findSyncsForUser(
         })
 
         if (!_.isEmpty(syncReqToEnqueue)) {
-          result = 'new_sync_request_enqueued_primary_to_secondary'
+          result = 'new_sync_request'
           syncReqsToEnqueue.push(syncReqToEnqueue)
         } else if (!_.isEmpty(duplicateSyncReq)) {
           result = 'sync_request_already_enqueued'

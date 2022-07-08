@@ -86,7 +86,7 @@ const MetricLabels = Object.freeze({
       'no_sync_error_computing_sync_mode', // Sync not found because of failure to compute sync mode
       'no_sync_secondary_data_matches_primary', // Sync not found because the secondary's clock value and filesHash match primary's
       'no_sync_unexpected_error', // Sync not found because some uncaught error was thrown
-      'new_sync_request_enqueued_primary_to_secondary', // Sync was found from primary->secondary because all other conditions were met and primary clock value was greater than secondary
+      'new_sync_request_enqueued', // Sync found because all other conditions were met
       'sync_request_already_enqueued', // Sync was found but a duplicate request has already been enqueued so no need to enqueue another
       'new_sync_request_unable_to_enqueue' // Sync was found but something prevented a new request from being created
     ]

@@ -504,7 +504,7 @@ describe.only('test issueSyncRequest job processor', function () {
       })
       expect(result.metricsToRecord[0]).to.have.deep.property(
         'metricType',
-        'HISTOGRAM'
+        'HISTOGRAM_OBSERVE'
       )
       expect(result.metricsToRecord[0].metricValue).to.be.a('number')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
