@@ -113,8 +113,8 @@ PrometheusRegistry = {
         f"{METRIC_PREFIX}_{PrometheusMetricNames.FLASK_ROUTE_LATENCY_SECONDS}",
         "Runtimes for flask routes",
         (
-            "route",
             "code",
+            "route",
         ),
     ),
     PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_CURRENT: Gauge(
@@ -147,12 +147,18 @@ PrometheusRegistry = {
     PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_AGGREGATE_TABLE_LATENCY_SECONDS}",
         "Runtimes for src.task.aggregates:update_aggregate_table()",
-        ("table_name", "task_name"),
+        (
+            "table_name",
+            "task_name",
+        ),
     ),
     PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS}",
         "Runtimes for src.task.update_track_is_available:celery.task()",
-        ("task_name", "success"),
+        (
+            "success",
+            "task_name",
+        ),
     ),
     PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS}",
