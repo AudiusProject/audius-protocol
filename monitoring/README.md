@@ -40,6 +40,8 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
     - [Notes](#notes)
   - [Prometheus](#prometheus)
     - [Adding New Targets](#adding-new-targets)
+    - [Adding New Third-Party Exporters](#adding-new-third-party-exporters)
+      - [Locally](#locally)
     - [Release Auto-Generated Targets to Production](#release-auto-generated-targets-to-production)
   - [Grafana](#grafana)
     - [Adding New Dashboards](#adding-new-dashboards)
@@ -93,6 +95,16 @@ For local development, start by modifying `./prometheus/ymls/local.yml`.
 To add new static targets for production, use the stubs within `./prometheus/ymls/`.
 
 To add new dynamically generated targets, modification of `./prometheus/generateProm.js::generateEnv()` may be required.
+
+### Adding New Third-Party Exporters
+
+Exporters allow Prometheus to scrape data from [various sources](https://prometheus.io/docs/instrumenting/exporters/). Many official and community exporters exist for common technologies like Postgres and Redis as well as common APIs like AWS and GCP. Each exporter is a self-contained microservice, typically run within a Docker container, that simply translates metrics into Prometheus-style `/metrics` endpoints.
+
+#### Locally
+
+To add new exporters locally, update `monitoring/docker-compose.yml` and add new exporter sidecars. These additional sidecars will launch when running `A run monitoring up`.
+
+For Prometheus to scrape these new exporters, modify `monitoring/prometheus/ymls/local.yml` using `local-exporters-postgres-*` jobs as good examples. Note that the included `metric_relabel_configs` definition is designed to add a prefix onto all metrics in an effort to keep our exporters' metrics grouped together. Grouping metrics together by common prefixes helps navigating for related metrics within Grafana.
 
 ### Release Auto-Generated Targets to Production
 
