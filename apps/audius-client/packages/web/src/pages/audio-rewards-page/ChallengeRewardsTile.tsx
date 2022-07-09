@@ -145,7 +145,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'listen-streak',
   'profile-completion',
   'referred',
-  'send-first-tip'
+  'send-first-tip',
+  'first-playlist'
 ])
 
 /** Pulls rewards from remoteconfig */

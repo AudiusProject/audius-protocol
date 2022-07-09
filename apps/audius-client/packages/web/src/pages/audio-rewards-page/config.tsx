@@ -16,7 +16,8 @@ import {
   SETTINGS_PAGE,
   TRENDING_PAGE,
   UPLOAD_PAGE,
-  EXPLORE_HEAVY_ROTATION_PAGE
+  EXPLORE_HEAVY_ROTATION_PAGE,
+  FAVORITES_PAGE
 } from 'utils/route'
 
 type LinkButtonType =
@@ -25,6 +26,7 @@ type LinkButtonType =
   | 'verifyAccount'
   | 'trendingTracks'
   | 'sendFirstTip'
+  | 'firstPlaylist'
 type LinkButtonInfo = {
   label: string
   leftIcon: ReactNode | null
@@ -72,6 +74,12 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     leftIcon: null,
     rightIcon: <GoldBadgeIconImage />,
     link: () => EXPLORE_HEAVY_ROTATION_PAGE
+  },
+  firstPlaylist: {
+    label: 'Create Your First Playlist',
+    leftIcon: null,
+    rightIcon: <IconArrow />,
+    link: () => FAVORITES_PAGE
   }
 }
 
@@ -245,6 +253,21 @@ export const challengeRewardsConfig: Record<
       incomplete: linkButtonMap.sendFirstTip,
       inProgress: linkButtonMap.sendFirstTip,
       complete: linkButtonMap.sendFirstTip
+    }
+  },
+  'first-playlist': {
+    id: 'first-playlist' as ChallengeRewardID,
+    title: 'Create Your First Playlist',
+    icon: <i className='emoji large sparkles' />,
+    description: challenge => `Earn ${challenge?.amount} $AUDIO`,
+    fullDescription: () => 'Create your first playlist & add a track to it',
+    progressLabel: 'Not Earned',
+    amount: amounts['first-playlist'],
+    panelButtonText: 'Create Your First Playlist',
+    modalButtonInfo: {
+      incomplete: linkButtonMap.firstPlaylist,
+      inProgress: linkButtonMap.firstPlaylist,
+      complete: linkButtonMap.firstPlaylist
     }
   }
 }

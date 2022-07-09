@@ -25,6 +25,7 @@ export type ChallengeRewardID =
   | 'listen-streak'
   | 'profile-completion'
   | 'send-first-tip'
+  | 'first-playlist'
 
 export type TrendingRewardID =
   | 'trending-track'
@@ -113,7 +114,8 @@ export const amounts: Record<ChallengeRewardID, number> = {
   'mobile-install': 1,
   'profile-completion': 1,
   'track-upload': 1,
-  'send-first-tip': 2
+  'send-first-tip': 2,
+  'first-playlist': 2
 }
 
 /**

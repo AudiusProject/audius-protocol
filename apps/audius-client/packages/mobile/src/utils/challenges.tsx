@@ -5,7 +5,8 @@ import {
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
   TRENDING_PAGE,
-  EXPLORE_HEAVY_ROTATION_PAGE
+  EXPLORE_HEAVY_ROTATION_PAGE,
+  FAVORITES_PAGE
 } from 'audius-client/src/utils/route'
 import { ImageSourcePropType } from 'react-native'
 
@@ -17,6 +18,7 @@ import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arr
 import MoneyMouthFace from 'app/assets/images/emojis/money-mouth-face.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
 import NerdFace from 'app/assets/images/emojis/nerd-face.png'
+import Sparkles from 'app/assets/images/emojis/sparkles.png'
 import WhiteHeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -96,13 +98,21 @@ export const challenges = {
   sendFirstTipShortDescription:
     'Show some love to your favorite artist and send them a tip',
   sendFirstTipProgressLabel: 'Not Earned',
-  sendFirstTipButton: 'Find Someone To Tip'
+  sendFirstTipButton: 'Find Someone To Tip',
+
+  firstPlaylistTitle: 'Create Your First Playlist',
+  firstPlaylistDescription: 'Create your first playlist & add a track to it',
+  firstPlaylistShortDescription:
+    'Create your first playlist & add a track to it',
+  firstPlaylistProgressLabel: 'Not Earned',
+  firstPlaylistButton: 'Create Your First Playlist'
 }
 
 export type ChallengesParamList = {
   trending: undefined
   AccountVerificationScreen: undefined
   explore: undefined
+  favorites: undefined
   params: { screen: string }
 }
 
@@ -231,6 +241,20 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
       navigation: {
         native: { screen: 'explore', params: { screen: 'HeavyRotation' } },
         web: { route: EXPLORE_HEAVY_ROTATION_PAGE }
+      }
+    }
+  },
+  'first-playlist': {
+    icon: Sparkles,
+    title: challenges.firstPlaylistTitle,
+    description: challenges.firstPlaylistDescription,
+    shortDescription: challenges.firstPlaylistShortDescription,
+    progressLabel: challenges.firstPlaylistProgressLabel,
+    buttonInfo: {
+      label: challenges.firstPlaylistButton,
+      navigation: {
+        native: { screen: 'favorites' },
+        web: { route: FAVORITES_PAGE }
       }
     }
   }
