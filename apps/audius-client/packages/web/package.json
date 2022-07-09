@@ -230,7 +230,7 @@
     "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
     "electron": "12.0.9",
-    "electron-builder": "22.10.5",
+    "electron-builder": "23.0.3",
     "electron-notarize": "0.1.1",
     "env-cmd": "8.0.2",
     "eslint": "7.26.0",
