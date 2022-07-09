@@ -37,6 +37,8 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         py3-wheel=0.36.2-r2 \
         python3-dev=3.9.7-r4 \
         python3=3.9.7-r4 \
+        py3-numpy \
+        py3-scipy \
         redis=6.2.7-r0 \
         rsyslog \
         sudo=1.9.8_p2-r1 && \

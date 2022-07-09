@@ -45,7 +45,7 @@ export type DiscoveryProviderConfig = {
 }
 
 export type UserProfile = {
-  userId: number
+  userId: string
   email: string
   name: string
   handle: string

@@ -13,16 +13,13 @@ const fs = require('fs-extra')
 const path = require('path')
 const os = require('os');
 
-const Registry = artifacts.require('Registry')
 const truffle_dev_config = artifacts.options['_values']['networks']['development']
 
 const AudiusLibs = 'libs'
 const AudiusDiscoveryNode = 'discovery-provider'
 const AudiusIdentityService = 'identity-service'
 const AudiusCreatorNode = 'creator-node'
-
-let registry
-
+const AudiusDataContracts = 'contracts'
 
 const getDefaultAccount = async () => {
   let accounts = await web3.eth.getAccounts()
@@ -77,9 +74,12 @@ const copySignatureSchemas = (outputPath) => {
 
 const outputJsonConfigFile = async (outputPath) => {
   try{
-    registry = await Registry.deployed()
+    let migrationOutputPath = path.join(getDirectoryRoot(AudiusDataContracts), 'migrations', 'migration-output.json')
+    let addressInfo = require(migrationOutputPath)
     let outputDictionary = {}
-    outputDictionary['registryAddress'] = registry.address
+    outputDictionary['registryAddress'] = addressInfo.registryAddress
+    outputDictionary['audiusDataAddress'] = addressInfo.audiusDataProxyAddress
+    outputDictionary['ursmAddress'] = addressInfo.ursmAddress
     outputDictionary['ownerWallet'] = await getDefaultAccount()
     outputDictionary['allWallets'] = await web3.eth.getAccounts()
 
@@ -100,10 +100,12 @@ const outputJsonConfigFile = async (outputPath) => {
  */
 const outputFlaskConfigFile = async (outputPath) => {
   try {
-    registry = await Registry.deployed()
+    // registry = await Registry.deployed()
 
+    let migrationOutputPath = path.join(getDirectoryRoot(AudiusDataContracts), 'migrations', 'migration-output.json')
+    let addressInfo = require(migrationOutputPath)
     let configFileContents = '[contracts]\n'
-    configFileContents += 'registry = ' + registry.address + '\n'
+    configFileContents += 'registry = ' + addressInfo.registryAddress + '\n'
 
     configFileContents += '\n'
 

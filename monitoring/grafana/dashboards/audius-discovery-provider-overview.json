@@ -93,7 +93,7 @@
           "description": "",
           "meta": {
             "connectedDashboards": 3,
-            "created": "2022-07-06T20:04:10Z",
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -101,7 +101,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -196,25 +196,25 @@
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T21:10:51Z",
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T21:15:24Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
-              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-              "id": 1,
-              "name": "admin"
+              "avatarUrl": "",
+              "id": 0,
+              "name": ""
             }
           },
           "name": "Celery Tasks (Last Successful Duration)",
           "type": "bargauge",
           "uid": "3en9tpenk",
-          "version": 4
+          "version": 1
         },
         "options": {
           "displayMode": "gradient",
@@ -344,7 +344,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "sum(rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "sum(rate(audius_dn_flask_route_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "legendFormat": "average",
             "range": true,
             "refId": "A"
@@ -354,7 +354,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "max by (route) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "max by (route) (rate(audius_dn_flask_route_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m]) / rate(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "hide": false,
             "legendFormat": "{{route}}",
             "range": true,
@@ -416,7 +416,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "sum(rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
+            "expr": "sum(rate(audius_dn_flask_route_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])) / sum(rate(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\", host=~\"$host\"}[5m]))",
             "legendFormat": "average",
             "range": true,
             "refId": "A"
@@ -521,7 +521,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "(sum by (code) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])))",
+            "expr": "(sum by (code) (rate(audius_dn_flask_route_duration_seconds_sum{environment=~\"$env\", host=~\"$host\"}[5m])))",
             "hide": false,
             "legendFormat": "__auto",
             "range": true,
@@ -688,7 +688,7 @@
           "description": "",
           "meta": {
             "connectedDashboards": 1,
-            "created": "2022-07-06T20:04:10Z",
+            "created": "2022-07-06T23:41:27Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -696,7 +696,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:27Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -729,7 +729,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "audius_dn_health_check_block_difference_current{environment=~\"$env\", host=~\"$host\"}",
+            "expr": "audius_dn_health_check_block_difference_latest{environment=~\"$env\", host=~\"$host\"}",
             "legendFormat": "{{host}}",
             "range": true,
             "refId": "A"
@@ -801,8 +801,8 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 1,
-            "created": "2022-07-06T20:04:10Z",
+            "connectedDashboards": 2,
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -810,7 +810,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -839,7 +839,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p50",
             "range": true,
@@ -850,7 +850,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p90",
             "range": true,
@@ -861,7 +861,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p95",
             "range": true,
@@ -872,7 +872,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p99",
             "range": true,
@@ -883,7 +883,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"update_task\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p999",
             "range": true,
@@ -956,8 +956,8 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 1,
-            "created": "2022-07-06T20:04:10Z",
+            "connectedDashboards": 2,
+            "created": "2022-07-06T23:41:26Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -965,7 +965,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T20:04:10Z",
+            "updated": "2022-07-06T23:41:26Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -994,7 +994,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.5, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p50",
             "range": true,
@@ -1005,7 +1005,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.90, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p90",
             "range": true,
@@ -1016,7 +1016,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.95, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p95",
             "range": true,
@@ -1027,7 +1027,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.99, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p99",
             "range": true,
@@ -1038,7 +1038,7 @@
               "type": "prometheus"
             },
             "editorMode": "code",
-            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_completed_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
+            "expr": "histogram_quantile(0.999, sum(rate(audius_dn_celery_task_duration_seconds_bucket{environment=~\"$env\", host=~\"$host\",func_name=\"index_solana_plays\"}[5m])) by (le))",
             "hide": false,
             "legendFormat": "p999",
             "range": true,
@@ -1061,7 +1061,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -1070,7 +1070,7 @@
           "name": "env",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -1085,7 +1085,7 @@
             "type": "prometheus",
             "uid": "r2_nnDL7z"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -1094,7 +1094,7 @@
           "name": "host",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
