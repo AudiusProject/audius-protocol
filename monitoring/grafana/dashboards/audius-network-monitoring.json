@@ -918,7 +918,7 @@
       "list": [
         {
           "allValue": ".*",
-          "definition": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
+          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
           "hide": 0,
           "includeAll": true,
           "label": "Environment",
@@ -926,7 +926,7 @@
           "name": "env",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
+            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
