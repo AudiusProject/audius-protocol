@@ -164,7 +164,7 @@
             },
             "editorMode": "builder",
             "exemplar": false,
-            "expr": "audius_cn_route_post_tracks_duration_seconds_bucket{environment=\"$env\", code=\"200\", host=~\"$host\"}",
+            "expr": "audius_cn_route_post_tracks_duration_seconds_bucket{environment=~\"$env\", code=\"200\", host=~\"$host\"}",
             "format": "heatmap",
             "instant": true,
             "interval": "",
@@ -180,17 +180,35 @@
         "fieldConfig": {
           "defaults": {
             "color": {
-              "mode": "thresholds"
+              "mode": "palette-classic"
             },
             "custom": {
-              "fillOpacity": 80,
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
               "gradientMode": "none",
               "hideFrom": {
                 "legend": false,
                 "tooltip": false,
                 "viz": false
               },
-              "lineWidth": 1
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
             },
             "mappings": [],
             "thresholds": {
@@ -199,6 +217,10 @@
                 {
                   "color": "green",
                   "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
                 }
               ]
             }
@@ -212,14 +234,20 @@
           "y": 8
         },
         "id": 2,
+        "interval": "30m",
         "options": {
-          "bucketOffset": 0,
           "legend": {
             "calcs": [
               "lastNotNull"
             ],
             "displayMode": "table",
-            "placement": "bottom"
+            "placement": "bottom",
+            "sortBy": "Last *",
+            "sortDesc": false
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
           }
         },
         "pluginVersion": "9.0.1",
@@ -230,17 +258,17 @@
             },
             "editorMode": "builder",
             "exemplar": false,
-            "expr": "audius_cn_route_post_tracks_duration_seconds_bucket{environment=\"stage\", code=\"200\"}",
+            "expr": "sum by(le) (audius_cn_route_post_tracks_duration_seconds_bucket{environment=~\"$env\", code=\"200\", host=~\"$host\"})",
             "format": "time_series",
             "instant": false,
             "interval": "",
-            "legendFormat": "__auto",
+            "legendFormat": "{{le}}",
             "range": true,
             "refId": "A"
           }
         ],
         "title": "Panel Title",
-        "type": "histogram"
+        "type": "timeseries"
       },
       {
         "description": "How long the Tracks route takes to respond for each bucket",
@@ -319,13 +347,28 @@
             },
             "editorMode": "builder",
             "exemplar": false,
-            "expr": "max(audius_cn_route_post_tracks_duration_seconds_bucket{environment=\"$env\", host=~\"$host\"})",
+            "expr": "max(audius_cn_route_post_tracks_duration_seconds_bucket{environment=\"$env\", host=~\"$host\", code=\"200\"})",
             "format": "time_series",
             "instant": false,
             "interval": "",
             "legendFormat": "__auto",
             "range": true,
             "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "builder",
+            "exemplar": false,
+            "expr": "max(audius_cn_route_post_tracks_duration_seconds_bucket{environment=\"$env\", host=~\"$host\", code=\"500\"})",
+            "format": "time_series",
+            "hide": false,
+            "instant": false,
+            "interval": "",
+            "legendFormat": "__auto",
+            "range": true,
+            "refId": "B"
           }
         ],
         "title": "Tracks /POST duration breakdown (s)",
