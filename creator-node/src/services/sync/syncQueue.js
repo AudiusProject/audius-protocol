@@ -1,7 +1,7 @@
 const Bull = require('bull')
 
 const { logger } = require('../../logging')
-const processSync = require('./secondarySyncFromPrimary')
+const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
@@ -44,7 +44,7 @@ class SyncQueue {
       const { walletPublicKeys, creatorNodeEndpoint, forceResync } = job.data
 
       try {
-        await processSync(
+        await secondarySyncFromPrimary(
           this.serviceRegistry,
           walletPublicKeys,
           creatorNodeEndpoint,
@@ -53,7 +53,7 @@ class SyncQueue {
         )
       } catch (e) {
         logger.error(
-          `processSync failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
+          `secondarySyncFromPrimary failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`,
           e.message
         )
       }

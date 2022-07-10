@@ -51,13 +51,11 @@ module.exports = async function primarySyncFromSecondary({
     let completed = false
     let exportClockRangeMin = 0
     while (!completed) {
-      const { fetchedCNodeUser } = await fetchExportFromSecondary({
+      const fetchedCNodeUser = await fetchExportFromSecondary({
         secondary,
         wallet,
         exportClockRangeMin,
-        selfEndpoint,
-        logger,
-        logPrefix
+        selfEndpoint
       })
 
       await saveFilesToDisk({
@@ -260,23 +258,39 @@ async function filterOutAlreadyPresentDBEntries({
   transaction,
   comparisonFields
 }) {
-  const localEntries = await tableInstance.findAll({
-    where: { cnodeUserUUID },
-    transaction
-  })
+  let filteredEntries = fetchedEntries
 
-  const filteredEntries = fetchedEntries.filter((fetchedEntry) => {
-    let alreadyPresent = false
-    localEntries.forEach((localEntry) => {
-      const obj1 = _.pick(fetchedEntry, comparisonFields)
-      const obj2 = _.pick(localEntry, comparisonFields)
-      const isEqual = _.isEqual(obj1, obj2)
-      if (isEqual) {
-        alreadyPresent = true
-      }
+  const limit = 5
+  let offset = 0
+  let complete = false
+  while (!complete) {
+    const localEntries = await tableInstance.findAll({
+      where: { cnodeUserUUID },
+      limit,
+      offset,
+      order: [['clock', 'ASC']],
+      transaction
     })
-    return !alreadyPresent
-  })
+
+    filteredEntries = filteredEntries.filter((fetchedEntry) => {
+      let alreadyPresent = false
+      localEntries.forEach((localEntry) => {
+        const obj1 = _.pick(fetchedEntry, comparisonFields)
+        const obj2 = _.pick(localEntry, comparisonFields)
+        const isEqual = _.isEqual(obj1, obj2)
+        if (isEqual) {
+          alreadyPresent = true
+        }
+      })
+      return !alreadyPresent
+    })
+
+    offset += limit
+
+    if (localEntries.length < limit) {
+      complete = true
+    }
+  }
 
   return filteredEntries
 }

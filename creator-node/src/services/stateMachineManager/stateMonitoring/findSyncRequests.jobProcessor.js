@@ -77,8 +77,7 @@ module.exports = async function ({
       userSecondarySyncMetrics,
       minSecondaryUserSyncSuccessPercent,
       minFailedSyncRequestsBeforeReconfig,
-      replicaToUserInfoMap,
-      logger
+      replicaToUserInfoMap
     )
 
     if (userSyncReqsToEnqueue?.length) {
@@ -319,7 +318,6 @@ async function _findSyncsForUser(
       syncMode,
       result
     }
-    continue
   }
 
   return {
