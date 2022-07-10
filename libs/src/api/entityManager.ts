@@ -137,6 +137,84 @@ export class EntityManager extends Base {
     }
     return respValues
   }
+  /**
+   * Update a playlist using updated data contracts flow
+   **/
+  async updatePlaylist({
+    playlistId,
+    playlistName,
+    trackIds,
+    description,
+    isAlbum,
+    isPrivate,
+    coverArt,
+    logger = console
+  }: {
+    playlistId: number
+    playlistName: string
+    trackIds: number[]
+    description: string
+    isAlbum: boolean
+    isPrivate: boolean
+    coverArt: any
+    logger: any
+  }): Promise<{ blockHash: any; blockNumber: any; playlistId: number }> {
+    let respValues = {
+      blockHash: null,
+      blockNumber: null,
+      playlistId: 0
+    }
+    try {
+      const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+      const action = 'Update'
+      const entityType = 'Playlist'
+      this.REQUIRES(Services.CREATOR_NODE)
+      // if (playlistName){
+
+      // }
+      let dirCID;
+      if (coverArt) {
+        const updatedPlaylistImage = await this.creatorNode.uploadImage(
+          coverArt,
+          true // square
+        )
+        dirCID = updatedPlaylistImage.dirCID
+      }
+
+      const playlist = (await this.discoveryProvider.getPlaylists(1, 0, [playlistId]))[0]
+
+      const metadata = {
+        action, // why include action here?
+        entityType,
+        playlist_id: playlistId,
+        playlist_contents: trackIds || playlist.playlist_contents,
+        playlist_name: playlistName || playlist.playlist_name,
+        playlist_image_sizes_multihash: dirCID || playlist.playlist_image_sizes_multihash,
+        description: description || playlist.description,
+        is_album: isAlbum || playlist.is_album,
+        is_private: isPrivate || playlist.is_private
+      }
+      const { metadataMultihash } = await this.creatorNode.uploadPlaylistMetadata(metadata)
+
+      const resp = await this.manageEntity({
+        userId,
+        entityType,
+        entityId: playlistId,
+        action,
+        metadataMultihash
+      })
+      logger.info(`UpdatePlaylistData - ${JSON.stringify(resp)}`)
+      const txReceipt = resp.txReceipt
+      respValues = {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber,
+        playlistId: entityId
+      }
+    } catch (e) {
+      logger.error(`Data update playlist: err ${e}`)
+    }
+    return respValues
+  }
 
   /**
    * Manage an entity with the updated data contract flow

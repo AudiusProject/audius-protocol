@@ -56,7 +56,7 @@ def audius_data_state_update(
                     else None
                 )
                 logger.info(
-                    f"index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}"
+                    f"asdf index.py | AudiusData state update: {user_id}, entity_id={entity_id}, entity_type={entity_type}, action={action}, metadata_cid={metadata_cid}, metadata={metadata} signer={signer}"
                 )
 
                 # Handle playlist creation
@@ -77,8 +77,9 @@ def audius_data_state_update(
                             txhash,
                         )
 
-                    if action == "Create":
-                        playlist_id = entity_id
+                    if action == "Create" or action == "Update":
+                        logger.info("asdf update")
+
                         playlist_record = parse_playlist_create_data_event(
                             update_task,
                             entry,
