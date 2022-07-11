@@ -11,15 +11,20 @@ declare module '@audius/hedgehog' {
   type GetFn = (params: {
     lookupKey: string
     username: string
-  }) => Promise<{ iv: string; cipherText: string }>
+  }) =>
+    | Promise<{ iv: string; cipherText: string }>
+    | { iv: string; cipherText: string }
 
   type SetAuthFn = (params: {
     iv: string
     cipherText: string
     lookupKey: string
-  }) => void
+  }) => void | Promise<void>
 
-  type SetUserFn = (params: { walletAddress: string; username: string }) => void
+  type SetUserFn = (params: {
+    walletAddress: string
+    username: string
+  }) => void | Promise<void>
 
   export class Hedgehog {
     wallet: Wallet
