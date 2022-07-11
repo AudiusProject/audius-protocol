@@ -50,7 +50,11 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    save_duration_metric,
+)
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -561,11 +565,7 @@ def index_blocks(self, db, blocks_list):
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
     changed_entity_ids_map = {}
-    metric = PrometheusMetric(
-        "index_blocks_duration_seconds",
-        "Runtimes for src.task.index:index_blocks()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     for i in block_order_range:
         start_time = time.time()
         metric.reset_timer()

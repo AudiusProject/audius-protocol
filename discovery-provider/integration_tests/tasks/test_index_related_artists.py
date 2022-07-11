@@ -1,16 +1,11 @@
 import logging
 import math
-from datetime import datetime, timedelta
 from typing import List
 
-import redis
 from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import desc
 from src.models.users.related_artist import RelatedArtist
-from src.tasks.index_related_artists import (
-    process_related_artists_queue,
-    queue_related_artist_calculation,
-)
+from src.queries.get_related_artists_minhash import update_related_artist_minhash
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
@@ -20,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 def test_index_related_artists(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
     with app.app_context():
         db = get_db()
 
@@ -41,41 +35,32 @@ def test_index_related_artists(app):
         + [{"follower_user_id": i, "followee_user_id": 4} for i in range(197, 202)]
         # 50 mutual followers between user_5 & user_0 make up 10% of user_5 followers = score 5
         + [{"follower_user_id": i, "followee_user_id": 5} for i in range(151, 651)]
-        # 60 mutual followers between user_5 & user_0 make up 30% of user_6 followers = score 18
+        # 60 mutual followers between user_6 & user_0 make up 30% of user_6 followers = score 18
         + [{"follower_user_id": i, "followee_user_id": 6} for i in range(141, 341)],
         "tracks": [{"owner_id": i} for i in range(0, 7)],
     }
     populate_mock_db(db, entities)
-    queue_related_artist_calculation(redis_conn, 0)
-    process_related_artists_queue(db, redis_conn)
+
     with db.scoped_session() as session:
-        session.query(RelatedArtist).update(
-            {RelatedArtist.created_at: datetime.utcnow() - timedelta(weeks=5)}
-        )
-        results: List[RelatedArtist] = (
+        update_related_artist_minhash(session)
+
+        results: List[RelatedArtist] = list(
             session.query(RelatedArtist)
             .filter(RelatedArtist.user_id == 0)
             .order_by(desc(RelatedArtist.score))
             .all()
         )
-        assert results[0].related_artist_user_id == 1 and math.isclose(
-            results[0].score, 50, abs_tol=0.001
-        )
-        assert results[1].related_artist_user_id == 2 and math.isclose(
-            results[1].score, 25, abs_tol=0.001
-        )
-        assert results[2].related_artist_user_id == 6 and math.isclose(
-            results[2].score, 18, abs_tol=0.001
-        )
-        assert results[3].related_artist_user_id == 3 and math.isclose(
-            results[3].score, 10, abs_tol=0.001
-        )
-        assert results[4].related_artist_user_id == 5 and math.isclose(
-            results[4].score, 5, abs_tol=0.001
-        )
-        assert results[5].related_artist_user_id == 4 and math.isclose(
-            results[5].score, 3.2, abs_tol=0.001
-        )
+
+        expectations = [
+            (1, 49),
+            (2, 25),
+            (6, 18),
+            (3, 9),
+            (5, 1),
+        ]
+
+        compare_results_to_expectations(results, expectations)
+
     populate_mock_db(
         db,
         {
@@ -86,30 +71,27 @@ def test_index_related_artists(app):
         block_offset=100000,
     )
 
-    queue_related_artist_calculation(redis_conn, 0)
-    process_related_artists_queue(db, redis_conn)
     with db.scoped_session() as session:
+        update_related_artist_minhash(session)
+
         results: List[RelatedArtist] = (
             session.query(RelatedArtist)
             .filter(RelatedArtist.user_id == 0)
             .order_by(desc(RelatedArtist.score))
             .all()
         )
-        assert results[0].related_artist_user_id == 2 and math.isclose(
-            results[0].score, 100, abs_tol=0.001
-        )
-        assert results[1].related_artist_user_id == 6 and math.isclose(
-            results[1].score, 60.5, abs_tol=0.001
-        )
-        assert results[2].related_artist_user_id == 1 and math.isclose(
-            results[2].score, 50, abs_tol=0.001
-        )
-        assert results[3].related_artist_user_id == 3 and math.isclose(
-            results[3].score, 40, abs_tol=0.001
-        )
-        assert results[4].related_artist_user_id == 5 and math.isclose(
-            results[4].score, 20, abs_tol=0.001
-        )
-        assert results[5].related_artist_user_id == 4 and math.isclose(
-            results[5].score, 5, abs_tol=0.001
-        )
+
+        expectations = [
+            (2, 100),
+            (6, 60),
+            (1, 49),
+            (3, 39),
+            (5, 11),
+        ]
+
+        compare_results_to_expectations(results, expectations)
+
+
+def compare_results_to_expectations(results, expectations):
+    got = [(row.related_artist_user_id, math.floor(row.score)) for row in results]
+    assert got == expectations

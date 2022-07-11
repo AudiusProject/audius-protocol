@@ -70,17 +70,19 @@ describe('test StateReconciliationManager initialization, events, and job proces
     return { processJobMock, loggerStub }
   }
 
-  it('creates the queue and registers its event handlers', async function () {
+  it('creates the stateReconciliationQueue and registers its event handlers', async function () {
     // Initialize StateReconciliationManager and spy on its registerQueueEventHandlersAndJobProcessors function
     const stateReconciliationManager = new StateReconciliationManager()
     sandbox.spy(
       stateReconciliationManager,
       'registerQueueEventHandlersAndJobProcessors'
     )
-    const queue = await stateReconciliationManager.init(getPrometheusRegistry())
+    const { stateReconciliationQueue } = await stateReconciliationManager.init(
+      getPrometheusRegistry()
+    )
 
-    // Verify that the queue was successfully initialized and that its event listeners were registered
-    expect(queue).to.exist.and.to.be.instanceOf(BullQueue)
+    // Verify that the stateReconciliationQueue was successfully initialized and that its event listeners were registered
+    expect(stateReconciliationQueue).to.exist.and.to.be.instanceOf(BullQueue)
     expect(
       stateReconciliationManager.registerQueueEventHandlersAndJobProcessors
     ).to.have.been.calledOnce
@@ -89,7 +91,7 @@ describe('test StateReconciliationManager initialization, events, and job proces
         0
       ).args[0]
     )
-      .to.have.property('queue')
+      .to.have.property('stateReconciliationQueue')
       .that.has.deep.property('name', QUEUE_NAMES.STATE_RECONCILIATION)
   })
 
