@@ -4,6 +4,7 @@ import {
   createDrawerNavigator,
   DrawerContentComponentProps
 } from '@react-navigation/drawer'
+// eslint-disable-next-line import/no-unresolved
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import { NavigatorScreenParams, useNavigation } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'

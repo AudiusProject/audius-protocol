@@ -1,5 +1,6 @@
 import { createContext, ReactNode } from 'react'
 
+// eslint-disable-next-line import/no-unresolved
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import {
   DrawerNavigationState,

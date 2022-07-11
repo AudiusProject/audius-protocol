@@ -55,7 +55,7 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({
       setInputValue(value)
       if (onChange) onChange(value)
     },
-    [setInputValue, onChange, isNumeric]
+    [setInputValue, onChange, isNumeric, isWhole]
   )
 
   let displayValue
