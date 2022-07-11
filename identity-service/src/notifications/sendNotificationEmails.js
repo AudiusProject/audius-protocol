@@ -205,7 +205,8 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       where: {
         blockchainUserId: {
           [models.Sequelize.Op.in]: allUsersWithUnseenNotifications
-        }
+        },
+        isEmailDeliverable: true
       }
     })
 
