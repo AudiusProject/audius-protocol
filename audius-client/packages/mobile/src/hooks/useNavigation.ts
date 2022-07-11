@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+// eslint-disable-next-line import/no-unresolved
 import { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
 import {
   ParamListBase,

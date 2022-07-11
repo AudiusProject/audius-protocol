@@ -7,8 +7,7 @@ import {
   Repost
 } from 'audius-client/src/common/store/notifications/types'
 import { setNotificationId } from 'audius-client/src/common/store/user-list/notifications/actions'
-import { NOTIFICATION_PAGE, profilePage } from 'audius-client/src/utils/route'
-import { push } from 'connected-react-router'
+import { NOTIFICATION_PAGE } from 'audius-client/src/utils/route'
 
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { getUserRoute } from 'app/utils/routes'
@@ -56,7 +55,6 @@ export const useSocialActionHandler = (
         },
         web: { route: getUserRoute(firstUser), fromPage: NOTIFICATION_PAGE }
       })
-      dispatchWeb(push(profilePage(firstUser.handle)))
     }
   }, [
     isMultiUser,
