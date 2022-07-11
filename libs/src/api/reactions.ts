@@ -1,7 +1,7 @@
-import { Base } from './base'
+import { Base, BaseConstructorArgs } from './base'
 
 export class Reactions extends Base {
-  constructor(...args: any[]) {
+  constructor(...args: BaseConstructorArgs) {
     super(...args)
     this.submitReaction = this.submitReaction.bind(this)
   }
@@ -20,7 +20,7 @@ export class Reactions extends Base {
     logger: any
   }): Promise<{ success: boolean; error: string | null }> {
     try {
-      await this['identityService'].submitReaction({
+      await this.identityService.submitReaction({
         reactedTo,
         reactionValue
       })

@@ -33,7 +33,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
-      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "cd contracts/; node_modules/.bin/truffle migrate >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
       "echo 'Writing configs'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
     ],
@@ -43,7 +43,7 @@
   },
   "contracts-predeployed": {
     "up": [
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-a25931b955adce92676cec029661533f80013908",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
       "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
@@ -52,7 +52,8 @@
       "docker cp audius_ganache_cli:/app/contract_config.ini $PROTOCOL_DIR/discovery-provider/contract_config.ini",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/discovery-provider/build/contracts",
       "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/data-contracts/ABIs",
-      "docker cp audius_ganache_cli:/app/build/contracts/. $PROTOCOL_DIR/contracts/build"
+      "docker cp audius_ganache_cli:/app/build/contracts/. $PROTOCOL_DIR/contracts/build",
+      "docker cp audius_ganache_cli:/app/migration-output.json $PROTOCOL_DIR/contracts/migrations/migration-output.json"
     ],
     "protocol": "http",
     "host": "localhost",
@@ -325,5 +326,9 @@
     "down": [
       "cd monitoring; scripts/down.sh"
     ]
+  },
+  "logging": {
+    "up": ["./logging/bin/start.sh"],
+    "down": ["./logging/bin/stop.sh"]
   }
 }

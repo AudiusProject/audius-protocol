@@ -11,6 +11,7 @@ from sqlalchemy import (
     String,
 )
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
 
 class SaveType(str, enum.Enum):
@@ -19,7 +20,7 @@ class SaveType(str, enum.Enum):
     album = "album"
 
 
-class Save(Base):
+class Save(Base, RepresentableMixin):
     __tablename__ = "saves"
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
@@ -34,15 +35,3 @@ class Save(Base):
     is_delete = Column(Boolean, nullable=False)
 
     PrimaryKeyConstraint(is_current, user_id, save_item_id, save_type, txhash)
-
-    def __repr__(self):
-        return f"<Save(blockhash={self.blockhash},\
-blocknumber={self.blocknumber},\
-txhash={self.txhash},\
-slot={self.slot},\
-user_id={self.user_id},\
-save_item_id={self.save_item_id},\
-created_at={self.created_at},\
-save_type={self.save_type},\
-is_current={self.is_current},\
-is_delete={self.is_delete})>"

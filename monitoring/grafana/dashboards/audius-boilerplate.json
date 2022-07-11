@@ -38,10 +38,9 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus",
-            "uid": "r2_nnDL7z"
+            "type": "prometheus"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -50,7 +49,7 @@
           "name": "env",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count, environment)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count, environment)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -62,10 +61,9 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus",
-            "uid": "r2_nnDL7z"
+            "type": "prometheus"
           },
-          "definition": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+          "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
           "description": "",
           "hide": 0,
           "includeAll": true,
@@ -74,7 +72,7 @@
           "name": "host",
           "options": [],
           "query": {
-            "query": "label_values(audius_dn_flask_route_latency_seconds_count{environment=~\"$env\"}, host)",
+            "query": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
             "refId": "StandardVariableQuery"
           },
           "refresh": 1,
@@ -92,16 +90,11 @@
     "timepicker": {
       "nowDelay": "1m",
       "refresh_intervals": [
-        "5s",
-        "10s",
         "30s",
         "1m",
         "5m",
         "15m",
-        "30m",
-        "1h",
-        "2h",
-        "1d"
+        "30m"
       ],
       "time_options": [
         "5m",

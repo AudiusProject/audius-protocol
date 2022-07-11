@@ -165,7 +165,8 @@ const Service = Object.freeze({
   AAO: 'aao',
   TN: 'tn',
   LIBS: 'libs',
-  MONITORING: 'monitoring'
+  MONITORING: 'monitoring',
+  LOGGING: 'logging'
 })
 
 // gets a service command, interpolating service names
@@ -848,9 +849,6 @@ const allUp = async ({
     console.log('Registering services'.info)
     await runInSequence(nodeRegisterCommands.flat())
   }
-
-  // URSM has to up after Creator Nodes are registered
-  await runInSequence([[Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]])
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`All services brought up in ${durationSeconds}s`.happy)

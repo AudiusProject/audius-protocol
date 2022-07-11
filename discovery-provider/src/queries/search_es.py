@@ -32,6 +32,7 @@ def search_es_full(args: dict):
     offset = args.get("offset", 0)
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
+    is_auto_complete = args.get("is_auto_complete")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -157,7 +158,9 @@ def search_es_full(args: dict):
         if current_user_id:
             response["saved_albums"] = pluck_hits(mfound["responses"].pop(0))
 
-    finalize_response(response, limit, current_user_id)
+    finalize_response(
+        response, limit, current_user_id, is_auto_complete=is_auto_complete
+    )
     return response
 
 
@@ -234,7 +237,11 @@ def mdsl_limit_offset(mdsl, limit, offset):
 
 
 def finalize_response(
-    response: Dict, limit: int, current_user_id: Optional[int], legacy_mode=False
+    response: Dict,
+    limit: int,
+    current_user_id: Optional[int],
+    legacy_mode=False,
+    is_auto_complete=False,
 ):
     """Hydrates users and contextualizes results for current user (if applicable).
     Also removes extra indexed fields so as to match the fieldset from postgres.
@@ -274,15 +281,17 @@ def finalize_response(
 
     # fetch followed saves + reposts
     # TODO: instead of limit param (20) should do an agg to get 3 saves / reposts per item_key
-    (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
-        current_user_id, item_keys, 20
-    )
+    if not is_auto_complete:
+        (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
+            current_user_id, item_keys, 20
+        )
 
     # tracks: finalize
     for k in ["tracks", "saved_tracks"]:
         tracks = response[k]
         hydrate_user(tracks, users_by_id)
-        hydrate_saves_reposts(tracks, follow_saves, follow_reposts, legacy_mode)
+        if not is_auto_complete:
+            hydrate_saves_reposts(tracks, follow_saves, follow_reposts, legacy_mode)
         response[k] = [map_track(track, current_user, legacy_mode) for track in tracks]
 
     # users: finalize
@@ -296,7 +305,8 @@ def finalize_response(
         if k not in response:
             continue
         playlists = response[k]
-        hydrate_saves_reposts(playlists, follow_saves, follow_reposts, legacy_mode)
+        if not is_auto_complete:
+            hydrate_saves_reposts(playlists, follow_saves, follow_reposts, legacy_mode)
         hydrate_user(playlists, users_by_id)
         response[k] = [
             map_playlist(playlist, current_user, legacy_mode) for playlist in playlists

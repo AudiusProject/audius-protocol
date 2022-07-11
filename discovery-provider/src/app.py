@@ -352,12 +352,15 @@ def delete_last_scanned_eth_block_redis(redis_inst):
 
 def configure_celery(celery, test_config=None):
     database_url = shared_config["db"]["url"]
+    database_url_read_replica = shared_config["db"]["url_read_replica"]
     redis_url = shared_config["redis"]["url"]
 
     if test_config is not None:
         if "db" in test_config:
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
+            if "url_read_replica" in test_config["db"]:
+                database_url_read_replica = test_config["db"]["url_read_replica"]
 
     ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
     # default is 5 seconds
@@ -475,7 +478,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_related_artists": {
                 "task": "index_related_artists",
-                "schedule": timedelta(seconds=60),
+                "schedule": timedelta(hours=12),
             },
             "index_user_listening_history": {
                 "task": "index_user_listening_history",
@@ -522,6 +525,10 @@ def configure_celery(celery, test_config=None):
     # Initialize DB object for celery task context
     db = SessionManager(
         database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
+    )
+    db_read_replica = SessionManager(
+        database_url_read_replica,
+        ast.literal_eval(shared_config["db"]["engine_args_literal"]),
     )
     logger.info("Database instance initialized!")
 
@@ -582,6 +589,7 @@ def configure_celery(celery, test_config=None):
             DatabaseTask.__init__(
                 self,
                 db=db,
+                db_read_replica=db_read_replica,
                 web3=web3,
                 abi_values=abi_values,
                 eth_abi_values=eth_abi_values,

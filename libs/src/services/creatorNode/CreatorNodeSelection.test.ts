@@ -39,7 +39,9 @@ const mockCreatorNode = {
       isConfigured: true
     }
   },
-  monitoringCallbacks: {}
+  monitoringCallbacks: {},
+  passList: null,
+  blockList: null
 }
 
 // Add fields as necessary

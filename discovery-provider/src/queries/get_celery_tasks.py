@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pytz
 from src.monitors import monitor_names, monitors
-from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -28,23 +28,26 @@ def convert_epoch_to_datetime(epoch):
 
 
 def celery_tasks_prometheus_exporter():
+    all_tasks = get_celery_tasks()["celery_tasks"]
+    active_tasks = all_tasks["active_tasks"]
+    registered_tasks = all_tasks["registered_celery_tasks"]
 
-    tasks = get_celery_tasks()["celery_tasks"]
+    metric = PrometheusMetric(PrometheusMetricNames.CELERY_TASK_ACTIVE_DURATION_SECONDS)
 
-    metric = PrometheusMetric(
-        "celery_running_tasks",
-        "The currently running celery tasks",
-        labelnames=["task_name"],
-        metric_type=PrometheusType.GAUGE,
-    )
-
-    for task in tasks:
+    active_task_names = []
+    for task in active_tasks:
         try:
             metric.save_time(
                 {"task_name": task["task_name"]}, start_time=task["started_at"]
             )
+            active_task_names.append(task["task_name"])
         except:
             logger.exception(f"Processing failed for task: {task}")
+
+    # send 0 values for inactive tasks
+    for task in registered_tasks:
+        if task["task_name"] not in active_task_names:
+            metric.save(0, {"task_name": task["task_name"]})
 
 
 PrometheusMetric.register_collector(

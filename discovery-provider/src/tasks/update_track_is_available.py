@@ -7,6 +7,11 @@ from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    save_duration_metric,
+)
 from src.utils.redis_constants import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
@@ -214,6 +219,7 @@ def get_unavailable_tracks_redis_key(spID: int) -> str:
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="update_track_is_available", bind=True)
+@save_duration_metric(metric_group="celery_task")
 def update_track_is_available(self) -> None:
     """Recurring task that updates whether tracks are available on the network"""
 
@@ -226,9 +232,15 @@ def update_track_is_available(self) -> None:
         timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
     )
 
-    try:
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
+    have_lock = update_lock.acquire(blocking=False)
+    if have_lock:
+        metric = PrometheusMetric(
+            PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS
+        )
+        try:
+            # TODO: we can deprecate this manual redis timestamp tracker once we confirm
+            # that prometheus works in tracking duration. Needs to be removed from
+            # the health check too
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
@@ -238,21 +250,24 @@ def update_track_is_available(self) -> None:
                 fetch_unavailable_track_ids_in_network(session, redis)
 
             update_tracks_is_available_status(db, redis)
-        else:
-            logger.warning(
-                "update_track_is_available.py | Lock not acquired",
-                exc_info=True,
-            )
 
-    except Exception as e:
-        logger.error(
-            "update_track_is_available.py | Fatal error in main loop", exc_info=True
-        )
-        raise e
-    finally:
-        if have_lock:
-            update_lock.release()
+            metric.save_time({"success": "true"})
+        except Exception as e:
+            metric.save_time({"success": "false"})
+            logger.error(
+                "update_track_is_available.py | Fatal error in main loop", exc_info=True
+            )
+            raise e
+        finally:
+            # TODO: see comment above about deprecation
             redis.set(
                 UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
                 datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f %Z"),
             )
+            if have_lock:
+                update_lock.release()
+    else:
+        logger.warning(
+            "update_track_is_available.py | Lock not acquired",
+            exc_info=True,
+        )

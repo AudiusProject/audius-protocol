@@ -905,13 +905,18 @@ def notifications():
         # Loop over notifications and populate their metadata
         for notification in track_added_to_playlist_notifications:
             track_id = notification[const.notification_metadata][const.track_id]
-            track_owner_id = track_owner_map[track_id]
-            if track_owner_id != notification[const.notification_initiator]:
-                # add tracks that don't belong to the playlist owner
-                notification[const.notification_metadata][
-                    const.track_owner_id
-                ] = track_owner_id
-                created_notifications.append(notification)
+            if track_id not in track_owner_map:
+                # Note: if track_id not in track_owner_map, it's because the track is either deleted, unlisted, or doesn't exist
+                # In that case, it should not trigger a notification
+                continue
+            else:
+                track_owner_id = track_owner_map[track_id]
+                if track_owner_id != notification[const.notification_initiator]:
+                    # add tracks that don't belong to the playlist owner
+                    notification[const.notification_metadata][
+                        const.track_owner_id
+                    ] = track_owner_id
+                    created_notifications.append(notification)
 
         notifications_unsorted.extend(created_notifications)
 
@@ -1023,6 +1028,8 @@ def notifications():
             f"notifications.py | all playlist updates at {datetime.now() - start_time}"
         )
 
+        milestone_info = get_milestone_info(session, min_block_number, max_block_number)
+
     # Final sort - TODO: can we sort by timestamp?
     sorted_notifications = sorted(
         notifications_unsorted,
@@ -1033,8 +1040,6 @@ def notifications():
     logger.info(
         f"notifications.py | sorted notifications {datetime.now() - start_time}"
     )
-
-    milestone_info = get_milestone_info(session, min_block_number, max_block_number)
 
     return api_helpers.success_response(
         {

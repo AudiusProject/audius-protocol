@@ -46,7 +46,7 @@ export type DiscoveryProviderConfig = {
 >
 
 export type UserProfile = {
-  userId: number
+  userId: string
   email: string
   name: string
   handle: string
@@ -721,8 +721,11 @@ export class DiscoveryProvider {
     return await this._makeRequest<CurrentUser>(req)
   }
 
+  /**
+   * @deprecated Migrate to using getTrendingPlaylists
+   */
   async getTopPlaylists(
-    type: string,
+    type: 'playlist' | 'album',
     limit: number,
     mood: string,
     filter: string,
@@ -732,6 +735,26 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getTopFullPlaylists({
+    type,
+    limit,
+    mood,
+    filter,
+    withUsers = false
+  }: Requests.GetTopFullPlaylistsParams) {
+    const req = Requests.getTopFullPlaylists({
+      type,
+      limit,
+      mood,
+      filter,
+      withUsers
+    })
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * @deprecated Migrate to using getBestNewReleases
+   */
   async getTopFolloweeWindowed(
     type: string,
     window: string,
@@ -742,8 +765,35 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getBestNewReleases(
+    encodedUserId: string,
+    window: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getBestNewReleases(
+      window,
+      limit,
+      encodedUserId,
+      withUsers
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * @deprecated Migrate to using getMostLovedTracks
+   */
   async getTopFolloweeSaves(type: string, limit: string, withUsers = false) {
     const req = Requests.getTopFolloweeSaves(type, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getMostLovedTracks(
+    encodedUserId: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getMostLovedTracks(encodedUserId, limit, withUsers)
     return await this._makeRequest(req)
   }
 

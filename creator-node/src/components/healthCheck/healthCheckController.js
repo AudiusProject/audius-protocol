@@ -19,11 +19,7 @@ const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
 
-const { recoverWallet } = require('../../apiSigning')
-const {
-  handleTrackContentUpload,
-  removeTrackFolder
-} = require('../../fileManager')
+const { ensureValidSPMiddleware } = require('../../middlewares')
 
 const config = require('../../config')
 
@@ -41,53 +37,6 @@ const FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
 )
 const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
   config.get('findReplicaSetUpdatesJobLastSuccessfulRunDelayMs')
-
-// Helper Functions
-/**
- * Verifies that the request is made by the delegate Owner
- */
-const healthCheckVerifySignature = (req, res, next) => {
-  const { timestamp, randomBytes, signature } = req.query
-  if (!timestamp || !randomBytes || !signature) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest('Missing required query parameters')
-    )
-  }
-
-  const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
-  const recoveredPublicWallet = recoverWallet(
-    recoveryObject,
-    signature
-  ).toLowerCase()
-  const recoveredTimestampDate = new Date(timestamp)
-  const currentTimestampDate = new Date()
-  const requestAge = currentTimestampDate - recoveredTimestampDate
-  if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(
-        `Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`
-      )
-    )
-  }
-  const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
-  if (recoveredPublicWallet !== delegateOwnerWallet) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseBadRequest(
-        "Requester's public key does does not match Creator Node's delegate owner wallet."
-      )
-    )
-  }
-
-  next()
-}
-
-// Controllers
 
 /**
  * Controller for `health_check` route, calls
@@ -245,45 +194,22 @@ const healthCheckVerboseController = async (req) => {
   })
 }
 
-/**
- * Controller for `health_check/fileupload` route *
- * Perform a file upload health check limited to configured delegateOwnerWallet.
- * This prunes the disc artifacts created by the process after.
- */
-const healthCheckFileUploadController = async (req) => {
-  const err =
-    req.fileFilterError ||
-    req.fileSizeError ||
-    (await removeTrackFolder(req, req.fileDir))
-  if (err) {
-    return errorResponseServerError(err)
-  }
-  return successResponse({ success: true })
-}
-
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get(
   '/health_check/duration',
-  healthCheckVerifySignature,
+  ensureValidSPMiddleware,
   handleResponse(healthCheckDurationController)
 )
 router.get(
   '/health_check/duration/heartbeat',
-  healthCheckVerifySignature,
+  ensureValidSPMiddleware,
   handleResponseWithHeartbeat(healthCheckDurationController)
 )
 router.get(
   '/health_check/verbose',
   handleResponse(healthCheckVerboseController)
 )
-router.post(
-  '/health_check/fileupload',
-  healthCheckVerifySignature,
-  handleTrackContentUpload,
-  handleResponseWithHeartbeat(healthCheckFileUploadController)
-)
-
 module.exports = router

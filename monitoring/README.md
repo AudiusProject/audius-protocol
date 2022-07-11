@@ -6,6 +6,9 @@
 A run monitoring up
 
 # A run monitoring down
+
+# optionally remove all grafana and prometheus data
+# sudo rm -rf ./data/
 ```
 
 Access Grafana by visiting:
@@ -37,12 +40,16 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
     - [Notes](#notes)
   - [Prometheus](#prometheus)
     - [Adding New Targets](#adding-new-targets)
+    - [Adding New Third-Party Exporters](#adding-new-third-party-exporters)
+      - [Locally](#locally)
     - [Release Auto-Generated Targets to Production](#release-auto-generated-targets-to-production)
   - [Grafana](#grafana)
     - [Adding New Dashboards](#adding-new-dashboards)
     - [Adding New Panels](#adding-new-panels)
       - [Common Patterns for Gauges](#common-patterns-for-gauges)
       - [Common Patterns for Histograms](#common-patterns-for-histograms)
+        - [Latency from Histograms](#latency-from-histograms)
+        - [Quantiles from Histograms](#quantiles-from-histograms)
     - [Configuring Panels](#configuring-panels)
       - [Query -> Code](#query-code)
         - [Metric Browser](#metric-browser)
@@ -64,6 +71,7 @@ echo "export GRAFANA_PASS=${GRAFANA_PASS}" >> ~/.profile
       - [Standard Options](#standard-options)
       - [Thresholds](#thresholds)
     - [Saving Dashboards](#saving-dashboards)
+      - [Saving Screenshots](#saving-screenshots)
       - [Saving Locally Developed Dashboards](#saving-locally-developed-dashboards)
       - [Saving Production Dashboards](#saving-production-dashboards)
         - [Saving Production Dashboards Within `prometheus-grafana-metrics`](#saving-production-dashboards-within-prometheus-grafana-metrics)
@@ -87,6 +95,16 @@ For local development, start by modifying `./prometheus/ymls/local.yml`.
 To add new static targets for production, use the stubs within `./prometheus/ymls/`.
 
 To add new dynamically generated targets, modification of `./prometheus/generateProm.js::generateEnv()` may be required.
+
+### Adding New Third-Party Exporters
+
+Exporters allow Prometheus to scrape data from [various sources](https://prometheus.io/docs/instrumenting/exporters/). Many official and community exporters exist for common technologies like Postgres and Redis as well as common APIs like AWS and GCP. Each exporter is a self-contained microservice, typically run within a Docker container, that simply translates metrics into Prometheus-style `/metrics` endpoints.
+
+#### Locally
+
+To add new exporters locally, update `monitoring/docker-compose.yml` and add new exporter sidecars. These additional sidecars will launch when running `A run monitoring up`.
+
+For Prometheus to scrape these new exporters, modify `monitoring/prometheus/ymls/local.yml` using `local-exporters-postgres-*` jobs as good examples. Note that the included `metric_relabel_configs` definition is designed to add a prefix onto all metrics in an effort to keep our exporters' metrics grouped together. Grouping metrics together by common prefixes helps navigating for related metrics within Grafana.
 
 ### Release Auto-Generated Targets to Production
 
@@ -121,8 +139,8 @@ Try to keep the number of personal dashboards low to maintain navigability.
 
 Our dashboards use common set of Variables (Dashboard `Settings` -> `Variables`):
 
-* `env`: `label_values(audius_dn_flask_route_latency_seconds_count, environment)`
-* `host`: `label_values(audius_dn_flask_route_latency_seconds_count{environment=~"$env"}, host)`
+* `env`: `label_values(audius_dn_flask_route_duration_seconds_count, environment)`
+* `host`: `label_values(audius_dn_flask_route_duration_seconds_count{environment=~"$env"}, host)`
 
 To simplify the process of setting up dashboards each time, we can navigate to the `Audius - Boilerplate` dashboard's `Settings` -> `Save As...` dialog to copy the boilerplate.
 
@@ -153,7 +171,7 @@ When additional complexity is required, visit the [official Prometheus documenta
 
 Gauges are the easiest pattern since they simply display the value of a metric that was displayed at scrape time:
 
-> `audius_dn_health_check_block_difference_current{environment=~"$env", host=~"$host"}`
+> `audius_dn_health_check_block_difference_latest{environment=~"$env", host=~"$host"}`
 
 Notice how we restrict the `environment` and `host` labels associated with the metric to match the Dashboard Variables discussed in the previous section.
 
@@ -166,15 +184,21 @@ Notice how we restrict the `environment` and `host` labels associated with the m
 
 #### Common Patterns for Histograms
 
+##### Latency from Histograms
+
 A common pattern for histograms is to display the average latency of a recorded metric like the example below:
 
-> `max by (route) (rate(audius_dn_flask_route_latency_seconds_sum{environment=~"$env", host=~"$host"}[5m]) / rate(audius_dn_flask_route_latency_seconds_count{environment=~"$env", host=~"$host"}[5m]))`
+> `max by (route) (rate(audius_dn_flask_route_duration_seconds_sum{environment=~"$env", host=~"$host"}[5m]) / rate(audius_dn_flask_route_duration_seconds_count{environment=~"$env", host=~"$host"}[5m]))`
 
 The bulk of the query comes from official docs on [calculating averages from histograms](https://prometheus.io/docs/practices/histograms/#count-and-sum-of-observations) while including PromQL filters for `environment` and `host`.
 
 The remaining part of the query, `max by (route) (...)`, uses an [Aggregation Operator](https://prometheus.io/docs/prometheus/latest/querying/operators/#aggregation-operators) which will return the `max` value of the metric after consolidating on the `route` label.
 
 In this specific query, `max by (route)` will display the longest latency across a single `$host`, or all `$host` values if the Dashboard Variable is set to `All`. We use `max` here since it's more important to know that a `route` is being non-performant, regardless of `$host`, since it may be indicative of early warning stress/latency that may soon be appearing on all hosts.
+
+##### Quantiles from Histograms
+
+Additionally, histogram metrics keep track of metric values within different statistical buckets. In order to [expose quantile information](https://prometheus.io/docs/practices/histograms/#quantiles), combine histogram `_bucket` metrics with `histogram_quantile()`.
 
 ### Configuring Panels
 
@@ -305,6 +329,8 @@ Setting `Soft min` and `Soft max` is useful when displaying metrics that may occ
 
 `Unit` is perhaps the most important to set. Always ensure this is set.
 
+For large numbers, use the `short` `Unit`.
+
 The `Color Scheme` should remain set to `Classic Palette` to help standardize our visual experience, but sometimes `Green -> Red` or `Red -> Green` palettes are ideal.
 
 #### Thresholds
@@ -320,6 +346,12 @@ Modifications to production dashboards are internally tracked by Grafana in case
 * Click on `Versions` (from the left-sidebar)
 
 However, we track our dashboards via `git` as well since this allows us seemless local development of the same dashboards.
+
+#### Saving Screenshots
+
+Getting screenshots out of Grafana has [a long history of being tedious](https://github.com/grafana/grafana/issues/12607).
+
+However, we found good success when using the [GoFullPage Chrome extension](https://chrome.google.com/webstore/detail/gofullpage-full-page-scre/fdpohaocaechififmbbbbbknoalclacl).
 
 #### Saving Locally Developed Dashboards
 
@@ -389,6 +421,9 @@ git pull
 
 # deploy the manual changes seen, as well as the new intended changes
 ./grafana/bin/upload-dashboards.sh
+
+# "manual mode" supports uploading one file at a time
+# ./grafana/bin/upload-dashboards.sh filename.json
 
 # return to the master branch prior to logging out
 # git checkout master
