@@ -78,6 +78,9 @@ jobs:
       - image: circleci/node:14.18
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "a4:99:2e:fa:80:31:dc:23:25:7b:a5:70:3f:08:5f:fa"
       - run:
           name: Bump version
           command: |
@@ -88,7 +91,7 @@ jobs:
             MESSAGE="%s
 
             ${CHANGELOG}"
-            npm i
+            npm i --ignore-scripts
             npx lerna version patch --exact --yes -m "${MESSAGE}"
       - run:
           name: Create release branch
