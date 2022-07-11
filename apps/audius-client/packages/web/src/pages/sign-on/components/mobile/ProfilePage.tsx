@@ -2,7 +2,11 @@ import { useState, useCallback, useEffect, KeyboardEvent } from 'react'
 
 import cn from 'classnames'
 
-import { InstagramProfile } from 'common/store/account/reducer'
+import {
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile
+} from 'common/store/account/reducer'
 import { MAIN_CONTENT_ID } from 'pages/App'
 import ProfileForm from 'pages/sign-on/components/ProfileForm'
 import TwitterOverlay from 'pages/sign-on/components/mobile/TwitterOverlay'
@@ -18,7 +22,7 @@ const messages = {
 }
 
 type ProfilePageProps = {
-  profileImage?: { file: any; url: string }
+  profileImage?: AccountImage
   twitterId: any
   isVerified: boolean
   name: { value: any; status: any; error: any }
@@ -26,20 +30,20 @@ type ProfilePageProps = {
   onNextPage: () => void
   setTwitterProfile: (
     uuid: string,
-    profile: any,
-    profileImg?: { url: string; file: any },
-    coverBannerImg?: { url: string; file: any },
+    profile: TwitterProfile,
+    profileImg?: AccountImage,
+    coverBannerImg?: AccountImage,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: { url: string; file: any },
+    profileImg?: AccountImage,
     skipEdit?: boolean
   ) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
-  setProfileImage: (img: { url: string; file: any }) => void
+  setProfileImage: (img: AccountImage) => void
   recordTwitterStart: () => void
   recordInstagramStart: () => void
   validateHandle: (
