@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -8,9 +8,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: true
       }
+    )
   },
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.removeColumn('Users', 'isEmailDeliverable')
   }
-};
+}

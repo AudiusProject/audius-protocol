@@ -3,7 +3,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
-const { default: Axios } = require('axios')
+const config = require('../config')
 
 module.exports = function (app) {
   /**
@@ -37,7 +37,7 @@ module.exports = function (app) {
               username: 'api', password: config.get('mailgunApiKey')
             }
           })
-          isEmailDeliverable = checkEmailResponse.data.result == 'deliverable' || checkEmailResponse.data.result == 'unknown'
+          isEmailDeliverable = checkEmailResponse.data.result === 'deliverable' || checkEmailResponse.data.result === 'unknown'
         } catch (err) {
           req.logger.error(`Unable to fetch validate email from mailgun for ${email}`, err)
         }
