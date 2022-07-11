@@ -110,7 +110,6 @@ if [ "$audius_db_run_migrations" != false ]; then
     echo "Finished running migrations"
 fi
 
-
 # start es-indexer
 if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" ]]; then
     # npm run catchup creates triggers + populate indexes - this blocks server / celery start
@@ -125,7 +124,7 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     audius_service=server ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
-        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
+        sleep 5 && audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t beat) &
     fi
 else
     audius_service=server ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
