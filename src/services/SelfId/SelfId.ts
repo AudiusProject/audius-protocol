@@ -14,10 +14,6 @@ type User = {
   image: string
 }
 
-type UserWithCache = User & {
-  noCache?: boolean
-}
-
 const transformIdxUser = (user: IdxUser): User => {
   const imageSrc = user?.image?.original?.src
   let image = ''
@@ -28,28 +24,41 @@ const transformIdxUser = (user: IdxUser): User => {
   return { ...user, image }
 }
 
-export const getSelfIdProfile = async (
-  wallet: Address
-): Promise<UserWithCache> => {
+const getSelfIdUser = async (wallet: string) => {
+  const idxUser: IdxUser | null = await core.get(
+    'basicProfile',
+    `eip155:1:${wallet}`
+  )
+  if (idxUser) {
+    return transformIdxUser(idxUser)
+  }
+  return null
+}
+
+const get3BoxUser = async (wallet: string) => {
+  const threeBoxUser: IdxUser | null = await getLegacy3BoxProfileAsBasicProfile(
+    wallet
+  )
+  if (threeBoxUser) {
+    return transformIdxUser(threeBoxUser)
+  }
+  return null
+}
+
+export const getSelfIdProfile = async (wallet: Address): Promise<User> => {
   let profile: User | null = null
 
   try {
-    let idxUser: IdxUser | null = await core.get(
-      'basicProfile',
-      `eip155:1:${wallet}`
-    )
-    if (idxUser) {
-      profile = transformIdxUser(idxUser)
-    } else {
-      profile = await getLegacy3BoxProfileAsBasicProfile(wallet)
+    profile = await getSelfIdUser(wallet)
+    if (!profile) {
+      profile = await get3BoxUser(wallet)
     }
   } catch (e) {
-    profile = await getLegacy3BoxProfileAsBasicProfile(wallet)
+    profile = await get3BoxUser(wallet)
   }
 
   if (!profile) {
-    const image = getRandomDefaultImage(wallet)
-    profile = { image }
+    profile = { image: getRandomDefaultImage(wallet) }
   }
 
   return profile
