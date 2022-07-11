@@ -11,6 +11,7 @@ import Client from 'common/models/Client'
 import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import Status from 'common/models/Status'
 import Theme from 'common/models/Theme'
+import { StringKeys } from 'common/services/remote-config'
 import {
   getHasAccount,
   getAccountStatus,
@@ -72,6 +73,7 @@ import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergro
 import UploadType from 'pages/upload-page/components/uploadType'
 import Visualizer from 'pages/visualizer/Visualizer'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { make } from 'store/analytics/actions'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
@@ -204,6 +206,7 @@ class App extends Component {
     showUpdateAppBanner: false,
     showWebUpdateBanner: false,
     showRequiresUpdate: false,
+    showRequiresWebUpdate: false,
     isUpdating: false,
 
     initialPage: true,
@@ -258,9 +261,19 @@ class App extends Component {
       })
 
       // This is for patch updates so that only the web assets are updated
-      this.ipc.on('webUpdateAvailable', (event, arg) => {
+      this.ipc.on('webUpdateAvailable', async (event, arg) => {
         console.info('webUpdateAvailable', event, arg)
-        this.setState({ showWebUpdate: true })
+        const { currentVersion } = arg
+        await remoteConfigInstance.waitForRemoteConfig()
+        const minAppVersion = remoteConfigInstance.getRemoteVar(
+          StringKeys.MIN_APP_VERSION
+        )
+
+        if (semver.lt(currentVersion, minAppVersion)) {
+          this.setState({ showRequiresWebUpdate: true })
+        } else {
+          this.setState({ showWebUpdate: true })
+        }
       })
 
       // There is an update available, the user should update if it's
@@ -268,7 +281,10 @@ class App extends Component {
       this.ipc.on('updateAvailable', (event, arg) => {
         console.info('updateAvailable', event, arg)
         const { version, currentVersion } = arg
-        if (semver.minor(currentVersion) < semver.minor(version)) {
+        if (
+          semver.major(currentVersion) < semver.major(version) ||
+          semver.minor(currentVersion) < semver.minor(version)
+        ) {
           this.setState({ showRequiresUpdate: true })
         }
       })
@@ -423,7 +439,11 @@ class App extends Component {
   }
 
   acceptWebUpdate = () => {
-    if (this.state.showWebUpdateBanner) this.dismissUpdateWebAppBanner()
+    if (this.state.showWebUpdateBanner) {
+      this.dismissUpdateWebAppBanner()
+    } else if (this.state.showRequiresWebUpdate) {
+      this.dismissRequiresWebUpdate()
+    }
     this.setState({ isUpdating: true })
     this.ipc.send('web-update')
   }
@@ -434,6 +454,10 @@ class App extends Component {
 
   dismissUpdateWebAppBanner = () => {
     this.setState({ showWebUpdateBanner: false })
+  }
+
+  dismissRequiresWebUpdate = () => {
+    this.setState({ showRequiresWebUpdate: false })
   }
 
   showDownloadAppModal = () => {
@@ -462,6 +486,7 @@ class App extends Component {
       showWeb3ErrorBanner,
       isUpdating,
       showRequiresUpdate,
+      showRequiresWebUpdate,
       initialPage
     } = this.state
     const client = getClient()
@@ -473,6 +498,15 @@ class App extends Component {
           theme={theme}
           isUpdating={isUpdating}
           onUpdate={this.acceptUpdateApp}
+        />
+      )
+
+    if (showRequiresWebUpdate)
+      return (
+        <RequiresUpdate
+          theme={theme}
+          isUpdating={isUpdating}
+          onUpdate={this.acceptWebUpdate}
         />
       )
 

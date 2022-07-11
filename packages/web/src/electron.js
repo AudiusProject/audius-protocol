@@ -136,7 +136,7 @@ const registerBuild = directory => {
   })
 }
 
-const downloadWebUpdateAndNotify = async () => {
+const downloadWebUpdateAndNotify = async newVersion => {
   const newBuildPath = path.resolve(app.getAppPath(), `${buildName}.tar.gz`)
   const webUpdateDir = path.resolve(app.getAppPath(), `web-update`)
   const fileStream = fs.createWriteStream(newBuildPath)
@@ -159,7 +159,10 @@ const downloadWebUpdateAndNotify = async () => {
   })
 
   // Notify the user of the update
-  mainWindow.webContents.send('webUpdateAvailable')
+  mainWindow.webContents.send('webUpdateAvailable', {
+    version: newVersion,
+    currentVersion: appVersion
+  })
 }
 
 const checkForWebUpdate = () => {
@@ -194,7 +197,7 @@ const checkForWebUpdate = () => {
       semver.patch(currentVersion) < semver.patch(newVersion)
     ) {
       clearInterval(webUpdateInterval)
-      downloadWebUpdateAndNotify()
+      downloadWebUpdateAndNotify(newVersion)
     }
   }, POLL_FOR_WEB_UPDATES_INTERVAL_MS)
 }
