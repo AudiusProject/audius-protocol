@@ -262,7 +262,11 @@ export class CreatorNode {
    * @param [blockNumber]
    * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async uploadCreatorContent(metadata: Metadata, blockNumber = null, writeQuorumEnabled = null) {
+  async uploadCreatorContent(
+    metadata: Metadata,
+    blockNumber = null,
+    writeQuorumEnabled = null
+  ) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -373,7 +377,11 @@ export class CreatorNode {
     }
     // Creates new track entity on creator node, making track's metadata available
     // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
-    const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile, writeQuorumEnabled)
+    const metadataResp = await this.uploadTrackMetadata(
+      metadata,
+      sourceFile,
+      writeQuorumEnabled
+    )
     return { ...metadataResp, ...trackContentResp }
   }
 
@@ -385,7 +393,11 @@ export class CreatorNode {
    * @param sourceFile
    * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async uploadTrackMetadata(metadata: Metadata, sourceFile: string, writeQuorumEnabled: boolean | null) {
+  async uploadTrackMetadata(
+    metadata: Metadata,
+    sourceFile: string,
+    writeQuorumEnabled: boolean | null
+  ) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
