@@ -14,7 +14,12 @@ import { Dispatch } from 'redux'
 import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
-import { showPushNotificationConfirmation } from 'common/store/account/reducer'
+import {
+  InstagramProfile,
+  AccountImage,
+  showPushNotificationConfirmation,
+  TwitterProfile
+} from 'common/store/account/reducer'
 import { getHasAccount } from 'common/store/account/selectors'
 import { Pages, FollowArtistsCategory } from 'pages/sign-on/store/types'
 import { make, TrackEvent } from 'store/analytics/actions'
@@ -330,9 +335,9 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 
   setTwitterProfile = (
     twitterId: string,
-    profile: { screen_name?: string; verified?: boolean },
-    profileImg?: { url: string; file: any },
-    coverBannerImg?: { url: string; file: any },
+    profile: TwitterProfile,
+    profileImg?: AccountImage,
+    coverBannerImg?: AccountImage,
     skipEdit?: boolean
   ) => {
     const {
@@ -361,8 +366,8 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 
   setInstagramProfile = (
     instagramId: string,
-    profile: { username?: string; is_verified?: boolean },
-    profileImg?: { url: string; file: any },
+    profile: InstagramProfile,
+    profileImg?: AccountImage,
     skipEdit?: boolean
   ) => {
     const {
@@ -481,9 +486,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     signUp: () => dispatch(signOnAction.signUp()),
     setTwitterProfile: (
       twitterId: string,
-      profile: object,
-      profileImage?: { url: string; file: any },
-      coverPhoto?: { url: string; file: any }
+      profile: TwitterProfile,
+      profileImage?: AccountImage,
+      coverPhoto?: AccountImage
     ) =>
       dispatch(
         signOnAction.setTwitterProfile(
@@ -495,8 +500,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     setInstagramProfile: (
       instagramId: string,
-      profile: object,
-      profileImage?: object
+      profile: InstagramProfile,
+      profileImage?: AccountImage
     ) =>
       dispatch(
         signOnAction.setInstagramProfile(instagramId, profile, profileImage)

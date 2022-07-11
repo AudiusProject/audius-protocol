@@ -1,3 +1,9 @@
+import {
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile
+} from 'audius-client/src/common/store/account/reducer'
+
 import { Message } from 'app/message'
 
 import { Provider } from './reducer'
@@ -42,9 +48,9 @@ type ClosePopupAction = {
 type SetTwitterInfoAction = {
   type: typeof SET_TWITTER_INFO
   uuid: any
-  profile: any
-  profileImage: any
-  profileBanner: any
+  profile: TwitterProfile
+  profileImage: AccountImage
+  profileBanner: AccountImage
   requiresUserReview: any
 }
 type SetTwitterErrorAction = {
@@ -55,8 +61,8 @@ type SetTwitterErrorAction = {
 type SetInstagramInfoAction = {
   type: typeof SET_INSTAGRAM_INFO
   uuid: any
-  profile: any
-  profileImage: any
+  profile: InstagramProfile
+  profileImage: AccountImage
   requiresUserReview: any
 }
 type SetInstagramErrorAction = {
@@ -120,9 +126,9 @@ export const closePopup = (): ClosePopupAction => ({
 
 export const setTwitterInfo = (
   uuid: string,
-  profile: any,
-  profileImage: { url: string; file: any },
-  profileBanner: { url: string; file: any },
+  profile: TwitterProfile,
+  profileImage: AccountImage,
+  profileBanner: AccountImage,
   requiresUserReview: boolean
 ): SetTwitterInfoAction => ({
   type: SET_TWITTER_INFO,
@@ -139,8 +145,8 @@ export const setTwitterError = (error: any): SetTwitterErrorAction => ({
 
 export const setInstagramInfo = (
   uuid: string,
-  profile: any,
-  profileImage: { url: string; file: any },
+  profile: InstagramProfile,
+  profileImage: AccountImage,
   requiresUserReview: boolean
 ): SetInstagramInfoAction => ({
   type: SET_INSTAGRAM_INFO,

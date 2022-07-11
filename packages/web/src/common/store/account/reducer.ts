@@ -63,6 +63,8 @@ export type TwitterProfile = {
   profile_banner_url?: string
 }
 
+export type AccountImage = { url: string; file: any }
+
 const slice = createSlice({
   name: 'account',
   initialState,

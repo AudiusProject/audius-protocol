@@ -1,7 +1,12 @@
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
+import {
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile
+} from 'common/store/account/reducer'
 
-import { FollowArtistsCategory } from './types'
+import { FollowArtistsCategory, Pages } from './types'
 
 export const SET_FIELD = 'SIGN_ON/SET_FIELD'
 export const SET_VALUE_FIELD = 'SIGN_ON/SET_VALUE_FIELD'
@@ -78,7 +83,7 @@ export function setValueField(field: string, value: string) {
  * @param field the field to be set
  * @param value the value to be set
  */
-export function setField(field: string, value: string) {
+export function setField(field: string, value: unknown) {
   return { type: SET_FIELD, field, value }
 }
 
@@ -105,7 +110,7 @@ export function validateEmailInUse(email: string) {
   return { type: VALIDATE_EMAIL_IN_USE, email }
 }
 
-export function validateEmailSucceeded(available: boolean) {
+export function validateEmailSucceeded(available?: boolean) {
   return { type: VALIDATE_EMAIL_SUCCEEDED, available }
 }
 
@@ -256,9 +261,9 @@ export function fetchFollowArtistsFailed(error: string) {
 
 export function setTwitterProfile(
   twitterId: string,
-  profile: string,
-  profileImage: string,
-  coverPhoto: string
+  profile: TwitterProfile,
+  profileImage?: AccountImage,
+  coverPhoto?: AccountImage
 ) {
   return {
     type: SET_TWITTER_PROFILE,
@@ -275,8 +280,8 @@ export function setTwitterProfileError(error: string) {
 
 export function setInstagramProfile(
   instagramId: string,
-  profile: string,
-  profileImage: string
+  profile: InstagramProfile,
+  profileImage?: AccountImage
 ) {
   return {
     type: SET_INSTAGRAM_PROFILE,
@@ -370,7 +375,7 @@ export const openSignOn = (
 
 export const nextPage = (isMobile: boolean) => ({ type: NEXT_PAGE, isMobile })
 export const previousPage = () => ({ type: PREVIOUS_PAGE })
-export const goToPage = (page: number) => ({ type: GO_TO_PAGE, page })
+export const goToPage = (page: Pages) => ({ type: GO_TO_PAGE, page })
 
 export const signUpTimeout = () => ({ type: SIGN_UP_TIMEOUT })
 export const updateRouteOnCompletion = (route: string) => ({

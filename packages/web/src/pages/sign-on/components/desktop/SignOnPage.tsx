@@ -13,7 +13,11 @@ import CTAImage from 'assets/img/signUpCTA.png'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
-import { InstagramProfile } from 'common/store/account/reducer'
+import {
+  AccountImage,
+  InstagramProfile,
+  TwitterProfile
+} from 'common/store/account/reducer'
 import { getAccountStatus } from 'common/store/account/selectors'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import Page from 'components/page/Page'
@@ -72,15 +76,15 @@ export type SignOnProps = {
   onSetProfileImage: (img: any) => void
   setTwitterProfile: (
     uuid: string,
-    profile: any,
-    profileImg?: { url: string; file: any },
-    coverBannerImg?: { url: string; file: any },
+    profile: TwitterProfile,
+    profileImg?: AccountImage,
+    coverBannerImg?: AccountImage,
     skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: { url: string; file: any },
+    profileImg?: AccountImage,
     skipEdit?: boolean
   ) => void
   validateHandle: (
