@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, Set, Tuple
 
 from sqlalchemy.orm.session import Session, make_transient
@@ -10,6 +11,16 @@ from src.utils import helpers
 from src.utils.user_event_constants import audius_data_event_types_arr
 
 logger = logging.getLogger(__name__)
+
+
+class Action(Enum):
+    CREATE = "Create"
+    UPDATE = "Update"
+    DELETE = "Delete"
+
+
+class EntityType(Enum):
+    PLAYLIST = "Playlist"
 
 
 def audius_data_state_update(
@@ -60,7 +71,7 @@ def audius_data_state_update(
                 )
 
                 # Handle playlist creation
-                if entity_type == "Playlist":
+                if entity_type == EntityType.PLAYLIST:
                     playlist_id = entity_id
                     # look up or populate existing record
                     if playlist_id in playlist_events_lookup:
@@ -77,7 +88,7 @@ def audius_data_state_update(
                             txhash,
                         )
 
-                    if action == "Create" or action == "Update":
+                    if action == Action.CREATE or Action.UPDATE:
                         playlist_record = parse_playlist_create_data_event(
                             update_task,
                             entry,
@@ -88,7 +99,7 @@ def audius_data_state_update(
                             session,
                         )
 
-                    elif action == "Delete":
+                    elif Action.DELETE:
                         existing_playlist_record.is_delete = True
                         playlist_record = existing_playlist_record
 
