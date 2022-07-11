@@ -896,6 +896,8 @@ def notifications():
             session.query(Track.owner_id, Track.track_id)
             .filter(
                 Track.track_id.in_(track_ids),
+                Track.is_unlisted == False,
+                Track.is_delete == False,
                 Track.is_current == True,
             )
             .all()
