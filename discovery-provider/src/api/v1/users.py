@@ -76,7 +76,7 @@ from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
-from src.utils.helpers import encode_int_id
+from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -1425,7 +1425,10 @@ class GetTokenVerification(Resource):
             ns.abort(400, "JWT payload could not be decoded.")
 
         wallet_user_id = get_user_with_wallet(wallet)
-        if not wallet_user_id or wallet_user_id != payload["userId"]:
+        if not wallet_user_id or (
+            wallet_user_id != payload["userId"]
+            and wallet_user_id != decode_string_id(payload["userId"])
+        ):
             ns.abort(
                 404,
                 "The JWT signature is invalid - the wallet does not match the user.",
