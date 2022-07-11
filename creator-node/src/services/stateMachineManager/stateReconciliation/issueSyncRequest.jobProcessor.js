@@ -30,13 +30,13 @@ const maxSyncMonitoringDurationInMs = config.get(
 )
 
 /**
- * Processes a job to issue a request to perform a manual or recurring sync (determined by syncType param).
- * The sync request syncs a user's data from this node (the user's primary)
- * to another node (one of the user's secondaries).
+ * Processes a job to issue a sync request from a user's primary (this node) to a user's secondary with syncType and syncMode
+ * Secondary is specified in param.syncRequestParameters
  *
  * @param {Object} param job data
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {string} param.syncType the type of sync (manual or recurring)
+ * * @param {string} param.syncMode SyncSecondaryFromPrimary or MergePrimaryAndSecondary
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  */
 module.exports = async function ({
@@ -73,6 +73,13 @@ module.exports = async function ({
       }
     }
   }
+  // TODO test coverage
+  if (
+    syncMode !== SYNC_MODES.SyncSecondaryFromPrimary ||
+    syncMode !== SYNC_MODES.MergePrimaryAndSecondary
+  ) {
+    return {}
+  }
 
   const userWallet = syncRequestParameters.data.wallet[0]
   const secondaryEndpoint = syncRequestParameters.baseURL
@@ -108,9 +115,22 @@ module.exports = async function ({
   }
 
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    /**
+     * For now, if primarySyncFromSecondary fails, we just log & error without any retries
+     * Eventually should make this more robust, but proceeding with caution
+     */
+
+    // Sync primary content from secondary and set secondary sync flag to forceResync before proceeding
     const error = await primarySyncFromSecondary(secondaryEndpoint, userWallet)
 
     if (error) {
+      return {
+        error: {
+          message: `primarySyncFromSecondary failed with error: ${error.message}`
+        },
+        jobsToEnqueue: {}
+      }
+    } else {
     }
   }
 
@@ -123,13 +143,22 @@ module.exports = async function ({
     `------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue}------------------`
   )
 
-  // Issue sync request to secondary with forceResync = true
+  /**
+   * Issue sync request to secondary
+   * - If SyncMode = MergePrimaryAndSecondary - issue sync request with forceResync = true
+   *    - above call to primarySyncFromSecondary must have succeeded to get here
+   *    - Only apply forceResync flag to this initial sync request, any future syncs proceed as usual
+   */
   try {
-    const syncRequestParametersForceResync = {
-      ...syncRequestParameters,
-      data: { ...syncRequestParameters.data, forceResync: true }
+    if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+      const syncRequestParametersForceResync = {
+        ...syncRequestParameters,
+        data: { ...syncRequestParameters.data, forceResync: true }
+      }
+      await axios(syncRequestParametersForceResync)
+    } else {
+      await axios(syncRequestParameters)
     }
-    await axios(syncRequestParametersForceResync)
   } catch (e) {
     // Axios request will throw on non-200 response -> swallow error to ensure below logic is executed
     logger.error(`${logMsgString} || Error issuing sync request: ${e.message}`)

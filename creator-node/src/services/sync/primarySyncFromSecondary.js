@@ -19,6 +19,7 @@ const DEFAULT_LOG_CONTEXT = {}
 
 /**
  * Export data for user from secondary and save locally, until complete
+ * Should never error, instead return errorObj, else null
  */
 module.exports = async function primarySyncFromSecondary({
   secondary,
@@ -36,7 +37,7 @@ module.exports = async function primarySyncFromSecondary({
   const start = Date.now()
 
   // object to track if the function errored, returned at the end of the function
-  const errorObj = null
+  let error = null
 
   try {
     await acquireUserRedisLock({ redis, wallet })
@@ -79,15 +80,17 @@ module.exports = async function primarySyncFromSecondary({
       }
     }
   } catch (e) {
+    error = e
+
     logger.error(`${logPrefix} Sync error ${e.message}`)
 
     await SyncHistoryAggregator.recordSyncFail(wallet)
   } finally {
     await releaseUserRedisLock({ redis, wallet })
 
-    if (errorObj) {
+    if (error) {
       logger.error(
-        `${logPrefix} Error ${errorObj.message} [Duration: ${
+        `${logPrefix} Error ${error.message} [Duration: ${
           Date.now() - start
         }ms]`
       )
@@ -96,7 +99,7 @@ module.exports = async function primarySyncFromSecondary({
     }
   }
 
-  return errorObj
+  return error
 }
 
 async function fetchExportFromSecondary({
@@ -251,6 +254,12 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
   }
 }
 
+/**
+ * Given fetchedEntries, filters out entries already present in local DB
+ *
+ *
+ * @returns filtered version of fetchedEntries
+ */
 async function filterOutAlreadyPresentDBEntries({
   cnodeUserUUID,
   tableInstance,
@@ -260,7 +269,7 @@ async function filterOutAlreadyPresentDBEntries({
 }) {
   let filteredEntries = fetchedEntries
 
-  const limit = 5
+  const limit = 10000
   let offset = 0
   let complete = false
   while (!complete) {
