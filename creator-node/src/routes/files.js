@@ -26,7 +26,8 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
-  syncLockMiddleware,
+  acquireWalletWriteLock,
+  releaseWalletWriteLock,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
@@ -638,7 +639,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     uploadTempDiskStorage.single('file'),
     handleResponseWithHeartbeat(async (req, res) => {
       if (
@@ -745,7 +746,8 @@ module.exports = function (app) {
       await issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({ dirCID })
-    })
+    }),
+    releaseWalletWriteLock
   )
 
   /**

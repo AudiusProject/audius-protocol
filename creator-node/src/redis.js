@@ -1,3 +1,7 @@
+/**
+ * Exports a Singleton Redis client instance, with custom wallet write locking logic
+ */
+
 const Redis = require('ioredis')
 
 const config = require('./config.js')
@@ -6,71 +10,85 @@ const { asyncRetry } = require('./utils')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
-const EXPIRATION_SEC = 60 * 60 * 2 // 2 hours in seconds
-
-// NOTE - only interact with this class in a static context, don't create an instance
-class RedisLock {
-  static async setLock(key, expirationSec = EXPIRATION_SEC) {
-    genericLogger.info(`[Redis][setLock] ${key}`)
-    // 'EX' = set expiration in seconds
-    return redisClient.set(key, true, 'EX', expirationSec)
-  }
-
-  static async getLock(key) {
-    genericLogger.info(`[Redis][getLock] ${key}`)
-    return redisClient.get(key)
-  }
-
-  // Acquire lock if not already held; return true if acquired, false if not
-  static async acquireLock(key, expirationSec = EXPIRATION_SEC) {
-    genericLogger.info(`[Redis][acquireLock] ${key}`)
-    // NX = set if not exists; 'EX' = set expiration in seconds
-    const response = await redisClient.set(key, true, 'NX', 'EX', expirationSec)
-    return !!response
-  }
-
-  static async removeLock(key) {
-    genericLogger.info(`[Redis][removeLock] ${key}`)
-    return redisClient.del(key)
-  }
-}
-
-function getNodeSyncRedisKey(wallet) {
-  return `NODESYNC.${wallet}`
-}
-
 const WalletWriteLock = {
   WALLET_WRITE_LOCK_EXPIRATION_SEC: 1800, // 30 min in sec
+
+  VALID_ACQUIRERS: {
+    UserWrite: 'userWrite',
+    SecondarySyncFromPrimary: 'secondarySyncFromPrimary',
+    PrimarySyncFromSecondary: 'primarySyncFromSecondary'
+  },
 
   getKey: function (wallet) {
     return `WRITE.WALLET.${wallet}`
   },
 
   /**
-   * Return boolean indicating if lock is already held
+   * Return lock holder, if held; else null
+   */
+  getCurrentHolder: async function (wallet) {
+    const key = this.getKey(wallet)
+    const holder = await redisClient.get(key)
+    return holder
+  },
+
+  /** Returns true if lock is held by sync, else false */
+  syncIsInProgress: async function (wallet) {
+    const holder = await this.getCurrentHolder(wallet)
+
+    return (
+      holder === this.VALID_ACQUIRERS.PrimarySyncFromSecondary ||
+      holder === this.VALID_ACQUIRERS.SecondarySyncFromPrimary
+    )
+  },
+
+  /**
+   * Return true if lock is held, else false
    */
   isHeld: async function (wallet) {
     const key = this.getKey(wallet)
-    const isHeld = await RedisLock.getLock(key)
-    return !!isHeld
+    const holder = await redisClient.get(key)
+    return !!holder
+  },
+
+  ttl: async function (wallet) {
+    const key = this.getKey(wallet)
+    const ttl = await redisClient.ttl(key)
+    return ttl
   },
 
   /**
    * Attempt to acquire write lock for wallet
    * Throws error on call failure or acquisition failure
+   * Does not return any value on success
+   * @param wallet
+   * @param acquirer
+   * @param expirationSec
    */
   acquire: async function (
     wallet,
-    expiration = this.WALLET_WRITE_LOCK_EXPIRATION_SEC
+    acquirer,
+    expirationSec = this.WALLET_WRITE_LOCK_EXPIRATION_SEC
   ) {
+    // Ensure `acquirer` is valid
+    if (!Object.values(this.VALID_ACQUIRERS).includes(acquirer)) {
+      throw new Error(`Must provide valid acquirer`)
+    }
+
     const key = this.getKey(wallet)
 
     let acquired = false
 
     await asyncRetry({
       asyncFn: async function () {
-        // Returns boolean indicating acquired; throws error on call failure
-        acquired = await RedisLock.acquireLock(key, expiration)
+        const response = await redisClient.set(
+          key,
+          acquirer, // value
+          'NX', // set if not exists
+          'EX', // set expiration in seconds
+          expirationSec
+        )
+        acquired = !!response
       },
       logger: genericLogger,
       log: false
@@ -86,6 +104,7 @@ const WalletWriteLock = {
   /**
    * Attempt to release write lock for wallet
    * Throws error on call failure
+   * Does not return any value on success
    */
   release: async function (wallet) {
     const key = this.getKey(wallet)
@@ -93,7 +112,7 @@ const WalletWriteLock = {
     await asyncRetry({
       asyncFn: async function () {
         // Succeeds if removed or if no lock exists; throws error on call failure
-        await RedisLock.removeLock(key)
+        await redisClient.del(key)
       },
       logger: genericLogger,
       log: false
@@ -107,7 +126,10 @@ const WalletWriteLock = {
  * @param {string} param.keyPattern the redis key pattern that matches keys to remove
  * @param {Object} param.logger the logger instance
  */
-function deleteKeyPatternInRedis({ keyPattern, logger = genericLogger }) {
+const deleteKeyPatternInRedis = function ({
+  keyPattern,
+  logger = genericLogger
+}) {
   // Create a readable stream (object mode)
   const stream = redisClient.scanStream({
     match: keyPattern
@@ -131,7 +153,5 @@ function deleteKeyPatternInRedis({ keyPattern, logger = genericLogger }) {
 }
 
 module.exports = redisClient
-module.exports.lock = RedisLock
-module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey
-module.exports.deleteKeyPatternInRedis = deleteKeyPatternInRedis
 module.exports.WalletWriteLock = WalletWriteLock
+module.exports.deleteKeyPatternInRedis = deleteKeyPatternInRedis

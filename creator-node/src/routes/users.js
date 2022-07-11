@@ -10,7 +10,8 @@ const models = require('../models')
 const sequelize = models.sequelize
 const {
   authMiddleware,
-  syncLockMiddleware,
+  acquireWalletWriteLock,
+  releaseWalletWriteLock,
   ensureStorageMiddleware
 } = require('../middlewares')
 const {
@@ -152,13 +153,14 @@ module.exports = function (app) {
   app.post(
     '/users/logout',
     authMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     handleResponse(async (req, res, next) => {
       await sessionManager.deleteSession(
         req.get(sessionManager.sessionTokenHeader)
       )
       return successResponse()
-    })
+    }),
+    releaseWalletWriteLock
   )
 
   /**
@@ -221,15 +223,13 @@ module.exports = function (app) {
       async function isSyncInProgress() {
         let syncInProgress = false
         try {
-          const lockHeld = await redisClient.lock.getLock(
-            redisClient.getNodeSyncRedisKey(walletPublicKey)
+          syncInProgress = await redisClient.WalletWriteLock.syncIsInProgress(
+            walletPublicKey
           )
-          if (lockHeld) {
-            syncInProgress = true
-          }
         } catch (e) {
           // Swallow error, leave syncInProgress unset
         }
+
         response.syncInProgress = syncInProgress
       }
 

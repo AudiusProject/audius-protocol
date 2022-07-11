@@ -22,35 +22,59 @@ describe('test Redis client', function () {
 
   it('Confirms user write locking works', async function() {
     const wallet = 'wallet'
-    const key = WalletWriteLock.getKey(wallet)
     const defaultExpirationSec = WalletWriteLock.WALLET_WRITE_LOCK_EXPIRATION_SEC
+    const validAcquirers = WalletWriteLock.VALID_ACQUIRERS
+
+    // Confirm expected initial state
     
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
 
-    assert.doesNotReject(WalletWriteLock.acquire(wallet))
+    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), null)
 
-    assert.equal(await redis.ttl(key), defaultExpirationSec)
+    // Acquire lock + confirm expected state
+
+    assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.UserWrite))
+
+    assert.equal(await WalletWriteLock.ttl(wallet), defaultExpirationSec)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), true)
 
-    assert.rejects(WalletWriteLock.acquire(wallet), {
+    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), validAcquirers.UserWrite)
+
+    assert.equal(await WalletWriteLock.syncIsInProgress(wallet), false)
+
+    // Confirm acquisition fails when already held
+
+    assert.rejects(WalletWriteLock.acquire(wallet, validAcquirers.PrimarySyncFromSecondary), {
       name: 'Error',
       message: `[acquireWriteLockForWallet][Wallet: ${wallet}] Error: Failed to acquire lock - already held.`
     })
+
+    // Release lock + confirm expected state
 
     assert.doesNotReject(WalletWriteLock.release(wallet))
 
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
 
-    /** Test custom expiration + lock expires without manual release */
+    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), null)
+
+    assert.equal(await WalletWriteLock.syncIsInProgress(wallet), false)
+
+    // Acquire lock with custom expiration + confirm expected state
 
     const expirationSec = 3
 
-    assert.doesNotReject(WalletWriteLock.acquire(wallet, expirationSec))
+    assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.SecondarySyncFromPrimary, expirationSec))
 
-    assert.equal(await redis.ttl(key), expirationSec)
+    assert.equal(await WalletWriteLock.ttl(wallet), expirationSec)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), true)
+
+    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), validAcquirers.SecondarySyncFromPrimary)
+
+    assert.equal(await WalletWriteLock.syncIsInProgress(wallet), true)
+
+    // Confirm lock auto-expired after expected expiration time
     
     await utils.timeout(expirationSec * 1000)
 

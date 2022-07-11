@@ -14,7 +14,8 @@ const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const validateMetadata = require('../utils/validateAudiusUserMetadata')
 const {
   authMiddleware,
-  syncLockMiddleware,
+  acquireWalletWriteLock,
+  releaseWalletWriteLock,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   issueAndWaitForSecondarySyncRequests
@@ -32,7 +33,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     handleResponse(async (req, res) => {
       const metadataJSON = req.body.metadata
       const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -84,7 +85,8 @@ module.exports = function (app) {
         metadataMultihash: multihash,
         metadataFileUUID: fileUUID
       })
-    })
+    }),
+    releaseWalletWriteLock
   )
 
   /**
@@ -96,7 +98,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     handleResponse(async (req, res) => {
       const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
 
@@ -183,6 +185,7 @@ module.exports = function (app) {
         await transaction.rollback()
         return errorResponseServerError(e.message)
       }
-    })
+    }),
+    releaseWalletWriteLock
   )
 }

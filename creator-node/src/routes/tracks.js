@@ -26,7 +26,8 @@ const {
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
-  syncLockMiddleware,
+  acquireWalletWriteLock,
+  releaseWalletWriteLock,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware,
   ensureValidSPMiddleware
@@ -50,7 +51,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
       if (req.fileSizeError || req.fileFilterError) {
@@ -91,7 +92,8 @@ module.exports = function (app) {
       }
 
       return successResponse({ uuid: req.logContext.requestID })
-    })
+    }),
+    releaseWalletWriteLock
   )
 
   /**
@@ -202,7 +204,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     handleResponse(async (req, res) => {
       const metadataJSON = req.body.metadata
 
@@ -304,7 +306,8 @@ module.exports = function (app) {
         metadataMultihash: multihash,
         metadataFileUUID: fileUUID
       })
-    })
+    }),
+    releaseWalletWriteLock
   )
 
   /**
@@ -316,7 +319,7 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
+    acquireWalletWriteLock,
     handleResponse(async (req, res) => {
       const {
         blockchainTrackId,
@@ -586,7 +589,8 @@ module.exports = function (app) {
         metricEndTimerFn({ code: 500 })
         return errorResponseServerError(e.message)
       }
-    })
+    }),
+    releaseWalletWriteLock
   )
 
   /** Returns download status of track and 320kbps CID if ready + downloadable. */

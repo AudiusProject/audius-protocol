@@ -45,19 +45,22 @@ async function processSync(
 
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
+   * @notice - there's a bug where redisKey is set to the last element of `walletPublicKeys` - this code only works when `walletPublicKeys.length === 1` 🤦‍♂️
    */
-  const redisLock = redis.lock
   let redisKey
   for (const wallet of walletPublicKeys) {
-    redisKey = redis.getNodeSyncRedisKey(wallet)
-    const lockHeld = await redisLock.getLock(redisKey)
-    if (lockHeld) {
+    redisKey = redis.WalletWriteLock.getKey(wallet)
+    try {
+      await redis.WalletWriteLock.acquire(
+        wallet,
+        redis.WalletWriteLock.VALID_ACQUIRERS.SecondarySyncFromPrimary
+      )
+    } catch (e) {
       errorObj = new Error(
         `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
       )
       return errorObj
     }
-    await redisLock.setLock(redisKey)
   }
 
   /**
@@ -510,7 +513,6 @@ async function processSync(
         logger.info(redisKey, 'Saved all AudiusUser entries to DB')
 
         await transaction.commit()
-        await redisLock.removeLock(redisKey)
 
         logger.info(
           redisKey,
@@ -527,7 +529,6 @@ async function processSync(
         )
 
         await transaction.rollback()
-        await redisLock.removeLock(redisKey)
 
         throw new Error(e)
       }
@@ -541,11 +542,17 @@ async function processSync(
   } finally {
     // Release all redis locks
     for (const wallet of walletPublicKeys) {
-      const redisKey = redis.getNodeSyncRedisKey(wallet)
-      await redisLock.removeLock(redisKey)
+      try {
+        await redis.WalletWriteLock.release(wallet)
+      } catch (e) {
+        logger.warn(
+          redisKey,
+          `Failure to release write lock for ${wallet} with error ${e.message}`
+        )
+      }
     }
 
-    if (errorObj)
+    if (errorObj) {
       logger.error(
         redisKey,
         `Sync complete for wallets: ${walletPublicKeys.join(
@@ -554,7 +561,7 @@ async function processSync(
           Date.now() - start
         }. From endpoint ${creatorNodeEndpoint}.`
       )
-    else
+    } else {
       logger.info(
         redisKey,
         `Sync complete for wallets: ${walletPublicKeys.join(
@@ -563,6 +570,7 @@ async function processSync(
           Date.now() - start
         }. From endpoint ${creatorNodeEndpoint}.`
       )
+    }
   }
 
   return errorObj

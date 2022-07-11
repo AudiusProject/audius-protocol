@@ -89,24 +89,55 @@ async function authMiddleware(req, res, next) {
   next()
 }
 
-/** Ensure resource write access */
-async function syncLockMiddleware(req, res, next) {
+/**
+ * Acquire wallet write lock; return 423 error if already held
+ */
+async function acquireWalletWriteLock(req, res, next) {
+  const redisClient = req.app.get('redisClient')
+
   if (req.session && req.session.wallet) {
-    const redisClient = req.app.get('redisClient')
-    const redisKey = redisClient.getNodeSyncRedisKey(req.session.wallet)
-    const lockHeld = await redisClient.lock.getLock(redisKey)
-    if (lockHeld) {
+    const wallet = req.session.wallet
+
+    try {
+      await redisClient.WalletWriteLock.acquire(
+        wallet,
+        redisClient.WalletWriteLock.VALID_ACQUIRERS.UserWrite
+      )
+    } catch (e) {
       return sendResponse(
         req,
         res,
         errorResponse(
           423,
-          `Cannot change state of wallet ${req.session.wallet}. Node sync currently in progress.`
+          `Cannot change state of wallet ${wallet}. Another write in progress.`
         )
       )
     }
   }
-  req.logger.info(`syncLockMiddleware succeeded`)
+
+  req.logger.debug(`acquireWalletWriteLock succeeded`)
+  next()
+}
+
+/**
+ * Release wallet write lock
+ */
+async function releaseWalletWriteLock(req, res, next) {
+  const redisClient = req.app.get('redisClient')
+
+  if (req.session && req.session.wallet) {
+    const wallet = req.session.wallet
+
+    try {
+      await redisClient.WalletWriteLock.release(wallet)
+    } catch (e) {
+      req.logger.warn(
+        `releaseWalletWriteLock Failure for wallet ${wallet} - ${e.message}`
+      )
+    }
+  }
+
+  req.logger.debug(`acquireWalletWriteLock succeeded`)
   next()
 }
 
@@ -852,7 +883,8 @@ module.exports = {
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  syncLockMiddleware,
+  acquireWalletWriteLock,
+  releaseWalletWriteLock,
   getOwnEndpoint,
   getCreatorNodeEndpoints
 }
