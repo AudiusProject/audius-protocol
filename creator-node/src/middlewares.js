@@ -268,7 +268,7 @@ async function ensureStorageMiddleware(req, res, next) {
 
 /**
  * Issue SyncRequests to both secondaries, and wait for at least one to sync before returning
- * @dev TODO - move out of middlewares layer
+ * @dev TODO - move out of middlewares layer because it's not used as middleware -- just as a function some routes call
  * @param ignoreWriteQuorum true if write quorum should not be enforced (don't fail the request if write quorum fails)
  */
 async function issueAndWaitForSecondarySyncRequests(
@@ -282,14 +282,30 @@ async function issueAndWaitForSecondarySyncRequests(
   const pollingDurationMs =
     req.header('Polling-Duration-ms') ||
     config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
-  // Write quorum header always takes precedence over env var if explicitly defined
-  // Empty/undefined header means enforceWriteQuorum decides if write quorum is enabled
+  req.logger.info(
+    `theo req.header('Enforce-Write-Quorum'): ${req.header(
+      'Enforce-Write-Quorum'
+    )}`
+  )
+  req.logger.info(
+    `theo config.get('enforceWriteQuorum'): ${config.get('enforceWriteQuorum')}`
+  )
+  // Enforce-Write-Quorum header always takes precedence over env var if explicitly defined
+  // Empty/undefined header means enforceWriteQuorum env var decides if write quorum is enabled
   const writeQuorumHeaderTrue = !!req.header('Enforce-Write-Quorum')
   const writeQuorumHeaderFalse = req.header('Enforce-Write-Quorum') === false
-  const enforceWriteQuorum =
-    !ignoreWriteQuorum &&
-    (writeQuorumHeaderTrue ||
-      (!writeQuorumHeaderFalse && config.get('enforceWriteQuorum')))
+  const writeQuorumHeaderEmpty = !writeQuorumHeaderFalse
+  let enforceWriteQuorum = false
+
+  if (!ignoreWriteQuorum) {
+    if (writeQuorumHeaderTrue) enforceWriteQuorum = true
+    // writeQuorumHeaderEmpty is for undefined/null/empty values where it's not explicitly false
+    else if (writeQuorumHeaderEmpty && config.get('enforceWriteQuorum')) {
+      enforceWriteQuorum = true
+    }
+  }
+  // TODO: Search logs for failure message
+  // Make sure it's observable
 
   // TODO: Test case 5
   if (config.get('manualSyncsDisabled')) {
@@ -301,7 +317,7 @@ async function issueAndWaitForSecondarySyncRequests(
     return
   }
 
-  // TODO: Test case 6
+  // TODO: Test case 6 (should've been set in auth middleware)
   if (!req.session || !req.session.wallet) {
     req.logger.error(
       `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
@@ -345,6 +361,7 @@ async function issueAndWaitForSecondarySyncRequests(
     }
     const primaryClockVal = cnodeUser.clock
 
+    // TODO: Tail both logs. Should see secondary perform/finish sync BEFORE primary returns 200
     const replicationStart = Date.now()
     try {
       const secondaryPromises = secondaries.map((secondary) => {

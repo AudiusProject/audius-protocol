@@ -16,12 +16,13 @@ class SanityChecks {
   /**
    * Runs sanity checks
    * @param {Set<string>} creatorNodeWhitelist
+   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async run (creatorNodeWhitelist = null) {
+  async run (creatorNodeWhitelist = null, writeQuorumEnabled = null) {
     await isCreator(this.libs)
     await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
-    await assignReplicaSetIfNecessary(this.libs)
+    await assignReplicaSetIfNecessary(this.libs, writeQuorumEnabled)
     await syncNodes(this.libs)
     if (!this.options.skipRollover) await rolloverNodes(this.libs, creatorNodeWhitelist)
     await recoveryEmail(this.libs)

@@ -286,12 +286,14 @@ class Track extends Base {
    * @param {File} coverArtFile ReadableStream from server, or File handle on client
    * @param {Object} metadata json of the track metadata with all fields, missing fields will error
    * @param {function} onProgress callback fired with (loaded, total) on byte upload progress
+   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
   async uploadTrack (
     trackFile,
     coverArtFile,
     metadata,
-    onProgress
+    onProgress,
+    writeQuorumEnabled = null
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
@@ -334,7 +336,8 @@ class Track extends Base {
           trackFile,
           coverArtFile,
           metadata,
-          onProgress
+          onProgress,
+          writeQuorumEnabled
         )
       }, {
         // Retry function 3x
@@ -383,12 +386,14 @@ class Track extends Base {
    * false.
    * WARNING: Uploads file to creator node, but does not call contracts
    * Please pair this with the addTracksToChainAndCnode
+   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
   async uploadTrackContentToCreatorNode (
     trackFile,
     coverArtFile,
     metadata,
-    onProgress
+    onProgress,
+    writeQuorumEnabled = null
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
@@ -411,7 +416,8 @@ class Track extends Base {
         trackFile,
         coverArtFile,
         metadata,
-        onProgress
+        onProgress,
+        writeQuorumEnabled
       )
     }, {
     // Retry function 3x

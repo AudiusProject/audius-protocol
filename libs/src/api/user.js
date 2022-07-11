@@ -212,9 +212,11 @@ class Users extends Base {
    * This creates a record for that user on the connected creator node.
    * @param {Object} param
    * @param {number} param.userId
+   * @param {boolean | null} [param.writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
   async assignReplicaSet ({
-    userId
+    userId,
+    writeQuorumEnabled = null
   }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
@@ -271,7 +273,8 @@ class Users extends Base {
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
       await this.updateAndUploadMetadata({
         newMetadata,
-        userId
+        userId,
+        writeQuorumEnabled
       })
       console.log(`${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${Date.now() - startMs}ms`)
 
@@ -379,8 +382,9 @@ class Users extends Base {
    * Updates a creator (updates their data on the creator node)
    * @param {number} userId
    * @param {Object} metadata
+   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async updateCreator (userId, metadata) {
+  async updateCreator (userId, metadata, writeQuorumEnabled = null) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
@@ -421,7 +425,7 @@ class Users extends Base {
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber, writeQuorumEnabled)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -451,8 +455,9 @@ class Users extends Base {
    * This creates a record for that user on the connected creator node.
    * @param {string} existingEndpoint
    * @param {string} newCreatorNodeEndpoint comma delineated
+   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
+  async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint, writeQuorumEnabled = null) {
     this.REQUIRES(Services.CREATOR_NODE)
 
     // Error if libs instance does not already have existing user state
@@ -524,7 +529,7 @@ class Users extends Base {
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber, writeQuorumEnabled)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -586,8 +591,9 @@ class Users extends Base {
    * @param {Object} param
    * @param {Object} param.newMetadata new metadata object
    * @param {number} param.userId
+   * @param {boolean | null} [param.writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async updateAndUploadMetadata ({ newMetadata, userId }) {
+  async updateAndUploadMetadata ({ newMetadata, userId, writeQuorumEnabled = null }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
     const phases = {
@@ -623,7 +629,7 @@ class Users extends Base {
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
-      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, null, writeQuorumEnabled)
       console.log(`${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${Date.now() - startMs}ms`)
       startMs = Date.now()
 
@@ -662,7 +668,7 @@ class Users extends Base {
    * If a user's creator_node_endpoint is null, assign a replica set.
    * Used during the sanity check and in uploadImage() in files.js
    */
-  async assignReplicaSetIfNecessary () {
+  async assignReplicaSetIfNecessary (writeQuorumEnabled = null) {
     const user = this.userStateManager.getCurrentUser()
 
     // If no user is logged in, or a creator node endpoint is already assigned,
@@ -671,7 +677,7 @@ class Users extends Base {
 
     // Generate a replica set and assign to user
     try {
-      await this.assignReplicaSet({ userId: user.user_id })
+      await this.assignReplicaSet({ userId: user.user_id, writeQuorumEnabled })
     } catch (e) {
       throw new Error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
     }
