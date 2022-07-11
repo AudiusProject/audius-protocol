@@ -15,6 +15,9 @@ const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
 const BlacklistManager = require('./blacklistManager')
+const {
+  issueSyncRequestsUntilSynced
+} = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -269,7 +272,7 @@ async function ensureStorageMiddleware(req, res, next) {
  */
 async function issueAndWaitForSecondarySyncRequests(req) {
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { snapbackSM } = serviceRegistry
+  const { manualSyncQueue } = serviceRegistry
 
   // Parse request headers
   const pollingDurationMs =
@@ -332,11 +335,13 @@ async function issueAndWaitForSecondarySyncRequests(req) {
     const replicationStart = Date.now()
     try {
       const secondaryPromises = secondaries.map((secondary) => {
-        return snapbackSM.issueSyncRequestsUntilSynced(
+        return issueSyncRequestsUntilSynced(
+          primary,
           secondary,
           wallet,
           primaryClockVal,
-          pollingDurationMs
+          pollingDurationMs,
+          manualSyncQueue
         )
       })
 
