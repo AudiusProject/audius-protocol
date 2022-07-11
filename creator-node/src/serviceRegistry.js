@@ -130,13 +130,7 @@ class ServiceRegistry {
     return this.blacklistManager
   }
 
-  setupBullMonitoring(
-    app,
-    stateMonitoringQueue,
-    cNodeEndpointToSpIdMapQueue,
-    stateReconciliationQueue,
-    manualSyncQueue
-  ) {
+  _setupBullMonitoring(app) {
     this.logInfo('Setting up Bull queue monitoring...')
 
     const { queue: syncProcessingQueue } = this.syncQueue
@@ -178,8 +172,8 @@ class ServiceRegistry {
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
-        new BullAdapter(manualSyncQueue, { readOnlyMode: true }),
-        new BullAdapter(cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
+        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
+        new BullAdapter(this.cNodeEndpointToSpIdMapQueue, { readOnlyMode: true }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
@@ -319,13 +313,7 @@ class ServiceRegistry {
     await this.skippedCIDsRetryQueue.init()
 
     try {
-      this.setupBullMonitoring(
-        app,
-        stateMonitoringQueue,
-        cNodeEndpointToSpIdMapQueue,
-        stateReconciliationQueue,
-        manualSyncQueue
-      )
+      this._setupBullMonitoring(app)
     } catch (e) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
