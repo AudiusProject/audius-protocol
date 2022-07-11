@@ -6,7 +6,7 @@ const models = require('../../../models')
 const Utils = require('../../../utils')
 const {
   MetricNames
-} = require('../../prometheusMonitoring/prometheus.constants')
+} = require('../../prometheusMonitoring/constants/prometheus.constants')
 const {
   retrieveClockValueForUserFromReplica,
   makeHistogramToRecord

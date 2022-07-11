@@ -1,11 +1,11 @@
 const promClient = require('prom-client')
 const _ = require('lodash')
-const config = require('../../config')
-const { exponentialBucketsRange } = require('./prometheusUtils')
+const config = require('../../../config')
+const { exponentialBucketsRange } = require('../prometheusUtils')
 const {
   JOB_NAMES: STATE_MACHINE_JOB_NAMES,
   SyncType
-} = require('../stateMachineManager/stateMachineConstants')
+} = require('../../stateMachineManager/stateMachineConstants')
 
 /**
  * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`

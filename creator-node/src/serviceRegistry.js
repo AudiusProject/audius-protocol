@@ -1,6 +1,7 @@
 const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
+const _ = require('lodash')
 
 const { libs: AudiusLibs } = require('@audius/sdk')
 const redisClient = require('./redis')
@@ -24,6 +25,9 @@ const ImageProcessingQueue = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
 const PrometheusRegistry = require('./services/prometheusMonitoring/prometheusRegistry')
+const {
+  MetricTypes
+} = require('./services/prometheusMonitoring/constants/prometheus.constants')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -191,6 +195,55 @@ class ServiceRegistry {
 
     serverAdapter.setBasePath('/health/bull')
     app.use('/health/bull', serverAdapter.getRouter())
+  }
+
+  _setupMetricsTracking(app) {
+    // Get all routes on Content Node
+    let routes = app._router.stack
+      .filter((element) => element.route && element.route.path)
+      .map((element) => element.route.path)
+    routes = _.flatten(routes)
+
+    // Add duration + status code trackers to all routes
+    const metrics = {}
+
+    // Parses route to proper key format
+    function parseRoute(route) {
+      // route example: "/sync_status/:walletPublicKey"
+
+      // "sync_status/:walletPublicKey"
+      route = route.substring(1)
+
+      // "sync_status_:walletPublicKey"
+      route = route.replace('/', '_')
+
+      // "sync_status_walletPublicKey"
+      route = route.replace(':', '')
+    }
+
+    routes.forEach((route) => {
+      const parsedRoute = parseRoute(route)
+
+      // // example: SYNC_STATUS_WALLETPUBLICKEY_SECONDS_HISTOGRAM : sync_status_walletpublickey_seconds
+      // metricNames[parsedRoute.toUpperCase() + '_SECONDS_HISTOGRAM'] =
+      //   parsedRoute + '_seconds'
+      const key = parsedRoute + '_seconds'
+      metrics[key] = {
+        metricType: MetricTypes.HISTOGRAM,
+        metricConfig: {
+          name: key,
+          help: `Duration for ${route} `
+        }
+      }
+    })
+
+    // Add to prometheus.constants.js somehow.. with some refactoring
+
+    // add middleware to all routes using app.use() to match on the route + key in metric name
+
+    // in hadndle response, end duration track + status code. see the tracks example
+
+    // tODO: remove the manual duration tracker
   }
 
   /**

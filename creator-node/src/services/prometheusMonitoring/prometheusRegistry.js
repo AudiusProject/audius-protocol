@@ -4,7 +4,7 @@ const {
   NamespacePrefix,
   Metrics,
   MetricNames
-} = require('./prometheus.constants')
+} = require('./constants/prometheus.constants')
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
