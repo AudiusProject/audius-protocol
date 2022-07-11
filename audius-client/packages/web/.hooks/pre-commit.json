@@ -2,7 +2,7 @@
   "steps": [
     {
       "name": "lint",
-      "command": "npm run lint && npm run stylelint"
+      "command": "npm run lint"
     },
     {
       "name": "style lint",
