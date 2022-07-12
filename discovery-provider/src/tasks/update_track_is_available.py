@@ -251,13 +251,9 @@ def update_track_is_available(self) -> None:
 
             update_tracks_is_available_status(db, redis)
 
-            metric.save_time(
-                {"task_name": "update_track_is_available", "success": "true"}
-            )
+            metric.save_time({"success": "true"})
         except Exception as e:
-            metric.save_time(
-                {"task_name": "update_track_is_available", "success": "false"}
-            )
+            metric.save_time({"success": "false"})
             logger.error(
                 "update_track_is_available.py | Fatal error in main loop", exc_info=True
             )
