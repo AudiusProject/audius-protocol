@@ -1,7 +1,9 @@
+const axios = require('axios')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
+const config = require('../config')
 
 module.exports = function (app) {
   /**
@@ -27,12 +29,26 @@ module.exports = function (app) {
       const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
       try {
+        let isEmailDeliverable = true
+        try {
+          const checkValidEmailUrl = `https://api.mailgun.net/v4/address/validate?address=${encodeURIComponent(email)}`
+          const checkEmailResponse = await axios.get(checkValidEmailUrl, {
+            auth: {
+              username: 'api', password: config.get('mailgunApiKey')
+            }
+          })
+          isEmailDeliverable = checkEmailResponse.data.result === 'deliverable' || checkEmailResponse.data.result === 'unknown'
+        } catch (err) {
+          req.logger.error(`Unable to fetch validate email from mailgun for ${email}`, err)
+        }
+
         await models.User.create({
           email,
           // Store non checksummed wallet address
           walletAddress: body.walletAddress.toLowerCase(),
           lastSeenDate: Date.now(),
-          IP
+          IP,
+          isEmailDeliverable
         })
 
         return successResponse()
