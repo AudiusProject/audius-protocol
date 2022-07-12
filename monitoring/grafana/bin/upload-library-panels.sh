@@ -17,6 +17,7 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
+# upload all library panels
 cat grafana/dashboards/library.json \
     | jq -cr '.[]' \
     | while read -r panel;
