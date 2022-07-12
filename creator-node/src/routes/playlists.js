@@ -13,7 +13,6 @@ const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const { validateMetadata } = require('../utils/index.js')
 const {
   authMiddleware,
-  syncLockMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   issueAndWaitForSecondarySyncRequests
@@ -31,7 +30,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const metadataJSON = req.body.metadata
       const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -97,7 +95,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const { blockchainId, blockNumber, metadataFileUUID } = req.body
 
