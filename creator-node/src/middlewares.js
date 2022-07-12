@@ -89,27 +89,6 @@ async function authMiddleware(req, res, next) {
   next()
 }
 
-/** Ensure resource write access */
-async function syncLockMiddleware(req, res, next) {
-  if (req.session && req.session.wallet) {
-    const redisClient = req.app.get('redisClient')
-    const redisKey = redisClient.getNodeSyncRedisKey(req.session.wallet)
-    const lockHeld = await redisClient.lock.getLock(redisKey)
-    if (lockHeld) {
-      return sendResponse(
-        req,
-        res,
-        errorResponse(
-          423,
-          `Cannot change state of wallet ${req.session.wallet}. Node sync currently in progress.`
-        )
-      )
-    }
-  }
-  req.logger.info(`syncLockMiddleware succeeded`)
-  next()
-}
-
 /**
  * Blocks writes if node is not the primary for audiusUser associated with wallet
  */
@@ -889,7 +868,6 @@ module.exports = {
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  syncLockMiddleware,
   getOwnEndpoint,
   getCreatorNodeEndpoints
 }

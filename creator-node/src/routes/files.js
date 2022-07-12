@@ -26,7 +26,6 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
-  syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
@@ -638,7 +637,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     uploadTempDiskStorage.single('file'),
     handleResponseWithHeartbeat(async (req, res) => {
       if (
