@@ -335,7 +335,7 @@ const _additionalSyncIsRequired = async (
 
       // Record starting and current clock values for secondary to determine future action
       if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
-        initialSecondaryClock = 0
+        initialSecondaryClock = -1
       } else if (initialSecondaryClock === null) {
         initialSecondaryClock = secondaryClockValue
       }
