@@ -66,7 +66,7 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
                 + to_wei(user_balance.associated_sol_wallets_balance)
-                + to_wei(user_balance.waudio)
+                + (to_wei(user_balance.waudio) if user_balance.waudio else 0)
             ),
         }
         for user_balance in query
@@ -88,7 +88,9 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
         }
         for user_id in needs_balance_set
     }
-    result.update(no_balance_dict)
+
+    # https://github.com/python/mypy/issues/1430
+    result.update(no_balance_dict)  # type: ignore
 
     # Get old balances that need refresh
     needs_refresh = [

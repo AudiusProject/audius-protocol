@@ -14,7 +14,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvents
+from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
@@ -581,7 +581,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict, total=False):
+class UserEventMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -589,7 +589,7 @@ class UserEventsMetadata(TypedDict, total=False):
 def update_user_events(
     session: Session,
     user_record: User,
-    events: UserEventsMetadata,
+    events: UserEventMetadata,
     bus: ChallengeEventBus,
 ) -> None:
     """Updates the user events table"""
@@ -598,9 +598,9 @@ def update_user_events(
             # There is something wrong with events, don't process it
             return
 
-        # Get existing UserEvents entry
+        # Get existing UserEvent entry
         existing_user_events = (
-            session.query(UserEvents)
+            session.query(UserEvent)
             .filter_by(user_id=user_record.user_id, is_current=True)
             .one_or_none()
         )
@@ -610,7 +610,7 @@ def update_user_events(
         existing_mobile_user = (
             existing_user_events.is_mobile_user if existing_user_events else False
         )
-        user_events = UserEvents(
+        user_events = UserEvent(
             user_id=user_record.user_id,
             is_current=True,
             blocknumber=user_record.blocknumber,
@@ -655,8 +655,8 @@ def update_user_events(
             or user_events.is_mobile_user != existing_mobile_user
             or user_events.referrer != existing_referrer
         ):
-            # Mark existing UserEvents entries as not current
-            session.query(UserEvents).filter_by(
+            # Mark existing UserEvent entries as not current
+            session.query(UserEvent).filter_by(
                 user_id=user_record.user_id, is_current=True
             ).update({"is_current": False})
             session.add(user_events)
