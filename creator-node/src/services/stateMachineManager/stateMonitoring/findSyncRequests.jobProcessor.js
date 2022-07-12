@@ -3,7 +3,7 @@ const _ = require('lodash')
 const config = require('../../../config')
 const {
   MetricNames
-} = require('../../prometheusMonitoring/constants/prometheus.constants')
+} = require('../../prometheusMonitoring/prometheus.constants')
 const CNodeToSpIdMapManager = require('../CNodeToSpIdMapManager')
 const { makeGaugeIncToRecord } = require('../stateMachineUtils')
 const {

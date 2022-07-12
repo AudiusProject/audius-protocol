@@ -1,23 +1,23 @@
 const promClient = require('prom-client')
 const _ = require('lodash')
-const config = require('../../../config')
-const { exponentialBucketsRange } = require('../prometheusUtils')
+const config = require('../../config')
+const { exponentialBucketsRange } = require('./prometheusUtils')
 const {
   JOB_NAMES: STATE_MACHINE_JOB_NAMES,
   SyncType
-} = require('../../stateMachineManager/stateMachineConstants')
+} = require('../stateMachineManager/stateMachineConstants')
 
 /**
  * For explanation of Metrics, and instructions on how to add a new metric, please see `prometheusMonitoring/README.md`
  */
 
 // We add a namespace prefix to differentiate internal metrics from those exported by different exporters from the same host
-const NamespacePrefix = 'audius_cn_'
+const NAMESPACE_PREFIX = 'audius_cn'
 
 /**
  * @notice Counter and Summary metric types are currently disabled, see README for details.
  */
-const MetricTypes = Object.freeze({
+const METRIC_TYPES = Object.freeze({
   GAUGE: promClient.Gauge,
   HISTOGRAM: promClient.Histogram
   // COUNTER: promClient.Counter,
@@ -27,12 +27,12 @@ const MetricTypes = Object.freeze({
 /**
  * Types for recording a metric value.
  */
-const MetricRecordType = Object.freeze({
+const METRIC_RECORD_TYPE = Object.freeze({
   GAUGE_INC: 'GAUGE_INC',
   HISTOGRAM_OBSERVE: 'HISTOGRAM_OBSERVE'
 })
 
-let MetricNames = {
+const metricNames = {
   SYNC_QUEUE_JOBS_TOTAL_GAUGE: 'sync_queue_jobs_total',
   ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM:
     'route_post_tracks_duration_seconds',
@@ -43,16 +43,16 @@ let MetricNames = {
 // Add a histogram for each job in the state machine queues.
 // Some have custom labels below, and all of them use the label: uncaughtError=true/false
 for (const jobName of Object.values(STATE_MACHINE_JOB_NAMES)) {
-  MetricNames[
+  metricNames[
     `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
   ] = `state_machine_${_.snakeCase(jobName)}_job_duration_seconds`
 }
-MetricNames = Object.freeze(
-  _.mapValues(MetricNames, (metricName) => NamespacePrefix + metricName)
+const METRIC_NAMES = Object.freeze(
+  _.mapValues(metricNames, (metricName) => `${NAMESPACE_PREFIX}_${metricName}`)
 )
 
-const MetricLabels = Object.freeze({
-  [MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
+const METRIC_LABELS = Object.freeze({
+  [METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
     // The type of sync issued -- manual or recurring
     syncType: [_.snakeCase(SyncType.Manual), _.snakeCase(SyncType.Recurring)],
     // The reason another sync is needed
@@ -62,7 +62,7 @@ const MetricLabels = Object.freeze({
       'none' // No additional sync is required -- the first sync was successful
     ]
   },
-  [MetricNames[
+  [METRIC_NAMES[
     `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
   ]]: {
     // Whether or not the user's replica set was updated during this job
@@ -75,7 +75,7 @@ const MetricLabels = Object.freeze({
       'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
     ]
   },
-  [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
+  [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
     result: [
       'not_checked', // Default value -- means the logic short-circuited before checking if the primary should sync to the secondary. This can be expected if this node wasn't the user's primary
       'no_sync_already_marked_unhealthy', // Sync not found because the secondary was marked unhealthy before being passed to the find-sync-requests job
@@ -92,40 +92,40 @@ const MetricLabels = Object.freeze({
 })
 const MetricLabelNames = Object.freeze(
   Object.fromEntries(
-    Object.entries(MetricLabels).map(([metric, metricLabels]) => [
+    Object.entries(METRIC_LABELS).map(([metric, metricLabels]) => [
       metric,
       Object.keys(metricLabels)
     ])
   )
 )
 
-const Metrics = Object.freeze({
-  [MetricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
-    metricType: MetricTypes.GAUGE,
+const METRICS = Object.freeze({
+  [METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
-      name: MetricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
+      name: METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
       help: 'Current job counts for SyncQueue by status',
       labelNames: ['status']
     }
   },
   /** @notice This metric will eventually be replaced by an express route metrics middleware */
-  [MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
-    metricType: MetricTypes.HISTOGRAM,
+  [METRIC_NAMES.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: MetricNames.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
+      name: METRIC_NAMES.ROUTE_POST_TRACKS_DURATION_SECONDS_HISTOGRAM,
       help: 'Duration for POST /tracks route',
       labelNames: ['code'],
       buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
     }
   },
-  [MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
-    metricType: MetricTypes.HISTOGRAM,
+  [METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM]: {
+    metricType: METRIC_TYPES.HISTOGRAM,
     metricConfig: {
-      name: MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
+      name: METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM,
       help: 'Seconds spent monitoring an outgoing sync request issued by this node to be completed (successfully or not)',
       labelNames:
         MetricLabelNames[
-          MetricNames.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM
+          METRIC_NAMES.ISSUE_SYNC_REQUEST_MONITORING_DURATION_SECONDS_HISTOGRAM
         ],
       // 5 buckets in the range of 1 second to max seconds before timing out a sync request
       buckets: exponentialBucketsRange(
@@ -138,11 +138,11 @@ const Metrics = Object.freeze({
   // Add histogram for each job in the state machine queues
   ...Object.fromEntries(
     Object.values(STATE_MACHINE_JOB_NAMES).map((jobName) => [
-      MetricNames[`STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`],
+      METRIC_NAMES[`STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`],
       {
-        metricType: MetricTypes.HISTOGRAM,
+        metricType: METRIC_TYPES.HISTOGRAM,
         metricConfig: {
-          name: MetricNames[
+          name: METRIC_NAMES[
             `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
           ],
           help: `Duration in seconds for a ${jobName} job to complete`,
@@ -151,7 +151,7 @@ const Metrics = Object.freeze({
             'uncaughtError',
             // Label names, if any, that are specific to this job type
             ...(MetricLabelNames[
-              MetricNames[
+              METRIC_NAMES[
                 `STATE_MACHINE_${jobName}_JOB_DURATION_SECONDS_HISTOGRAM`
               ]
             ] || [])
@@ -161,19 +161,21 @@ const Metrics = Object.freeze({
       }
     ])
   ),
-  [MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
-    metricType: MetricTypes.GAUGE,
+  [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
+    metricType: METRIC_TYPES.GAUGE,
     metricConfig: {
-      name: MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE,
+      name: METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE,
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
-      labelNames: MetricLabelNames[MetricNames.FIND_SYNC_REQUEST_COUNTS_GAUGE]
+      labelNames: MetricLabelNames[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   }
 })
 
-module.exports.NamespacePrefix = NamespacePrefix
-module.exports.MetricTypes = MetricTypes
-module.exports.MetricNames = MetricNames
-module.exports.MetricLabels = MetricLabels
-module.exports.MetricRecordType = MetricRecordType
-module.exports.Metrics = Metrics
+module.exports = {
+  NAMESPACE_PREFIX,
+  METRIC_TYPES,
+  METRIC_NAMES,
+  METRIC_LABELS,
+  METRIC_RECORD_TYPE,
+  METRICS
+}

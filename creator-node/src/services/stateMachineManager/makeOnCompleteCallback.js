@@ -2,7 +2,7 @@ const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { QUEUE_NAMES, JOB_NAMES } = require('./stateMachineConstants')
 const {
   MetricRecordType
-} = require('../prometheusMonitoring/constants/prometheus.constants')
+} = require('../prometheusMonitoring/prometheus.constants')
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take

@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('buffer')
 const { promisify } = require('util')
+const _ = require('lodash')
 
 const config = require('../config')
 const models = require('../models')
@@ -53,16 +54,32 @@ module.exports = function (app) {
       //   }
       // })
 
-      const resp = app._router.stack
-        .filter((element) => element.route && element.route.path)
-        .map((element) => {
-          return {
-            path: element.route.path,
-            method: Object.keys(element.route.method.methods)
-          }
-        })
+      let resp
+      try {
+        const routes = []
+        app._router.stack
+          .filter((element) => element.route && element.route.path)
+          .forEach((element) => {
+            const path = element.route.path
+            const method = Object.keys(element.route.methods)[0]
+
+            if (Array.isArray(path)) {
+              path.forEach((p) => {
+                routes.push({ path: p, method })
+              })
+            } else {
+              routes.push({ path, method })
+            }
+          })
+
+        resp = routes
+      } catch (e) {
+        console.log(e)
+        resp = e.message
+      }
 
       return successResponse({
+        num_routes: resp.length,
         resp
       })
     })

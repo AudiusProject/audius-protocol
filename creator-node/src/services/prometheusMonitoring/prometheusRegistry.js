@@ -1,32 +1,70 @@
 const PrometheusClient = require('prom-client')
 
 const {
-  NamespacePrefix,
-  Metrics,
-  MetricNames
-} = require('./constants/prometheus.constants')
+  NAMESPACE_PREFIX,
+  METRICS,
+  METRIC_NAMES
+} = require('./prometheus.constants')
 
 /**
  * See `prometheusMonitoring/README.md` for usage details
  */
 
-module.exports = class PrometheusRegistry {
+class PrometheusRegistry {
   constructor() {
     // Use default global registry to register metrics
     this.registry = PrometheusClient.register
 
     // Expose metric names from class for access throughout application
-    this.metricNames = MetricNames
+    this.metricNames = { ...METRIC_NAMES }
 
     // Ensure clean state for registry
     this.registry.clear()
 
     // Enable collection of default metrics (e.g. heap, cpu, event loop)
     PrometheusClient.collectDefaultMetrics({
-      prefix: NamespacePrefix + 'default_'
+      prefix: NAMESPACE_PREFIX + '_default_'
     })
 
-    createAllCustomMetrics(this.registry)
+    this.init()
+  }
+
+  // Instantiates PrometheusRegistry with the imported custom metrics
+  init() {
+    for (const { metricType: MetricType, metricConfig } of Object.values(
+      METRICS
+    )) {
+      // Create and register instance of MetricType, with provided metricConfig
+      const metric = new MetricType(metricConfig)
+      this.registry.registerMetric(metric)
+    }
+  }
+
+  addMetricName({ key, value }) {
+    this.metricNames[key] = value
+  }
+
+  /**
+   * Create a basic histogram metric and register it
+   * @param {Object} config
+   * @param {string} config.name the name of the metric
+   * @param {string} config.doc english documentation explaining metric
+   * @param {string[]} config.labels custom labels of other things to monitor; e.g. a particular cid
+   */
+  addBasicHistogramMetric({ name, doc: help, labels = [] }) {
+    // If name or help is null, or name has special characters, do not attempt
+    if (!name || !help || name.match(/[^A-Za-z_0-9]/)) {
+      throw new Error(`Improper inputs: name=${name} doc=${help}`)
+    }
+
+    const metric = new PrometheusClient.Histogram({
+      name: `${NAMESPACE_PREFIX}_api_${name}`,
+      help,
+      labelNames: ['code' /* status code of route */, ...labels],
+      buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10] // 0.1 to 10 seconds
+    })
+
+    this.registry.registerMetric(metric)
   }
 
   /** Getters */
@@ -42,15 +80,4 @@ module.exports = class PrometheusRegistry {
   }
 }
 
-/**
- * Creates and registers every custom metric, for use throughout application
- */
-const createAllCustomMetrics = function (registry) {
-  for (const { metricType: MetricType, metricConfig } of Object.values(
-    Metrics
-  )) {
-    // Create and register instance of MetricType, with provided metricConfig
-    const metric = new MetricType(metricConfig)
-    registry.registerMetric(metric)
-  }
-}
+module.exports = PrometheusRegistry
