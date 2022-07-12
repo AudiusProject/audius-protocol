@@ -1,6 +1,8 @@
 import { Client } from '@elastic/elasticsearch'
 import { ApolloServer, gql } from 'apollo-server'
 import bodybuilder from 'bodybuilder'
+import * as ed from '@noble/ed25519'
+import { base64 } from '@scure/base'
 
 let url = 'http://localhost:9200'
 const esc = new Client({ node: url })
@@ -16,6 +18,11 @@ const typeDefs = gql`
     title: String!
   }
 
+  input TrackInput {
+    id: String!
+    title: String!
+  }
+
   type User {
     id: String!
     handle: String!
@@ -24,6 +31,10 @@ const typeDefs = gql`
 
   type Query {
     users(handle: String): [User]
+  }
+
+  type Mutation {
+    updateTrack(track: TrackInput!): Track!
   }
 `
 
@@ -38,18 +49,6 @@ const resolvers = {
       const got = await esc.mget({ index: indexNames.tracks, ids })
       const tracks = got.docs.map((doc: any) => doc._source)
       return tracks
-
-      // but could also do a search on the tracks index?
-      return esc
-        .search({
-          index: indexNames.tracks,
-          query: {
-            term: {
-              owner_id: parent.user_id,
-            },
-          },
-        })
-        .then((r) => r.hits.hits.map((h) => h._source))
     },
   },
   Query: {
@@ -63,6 +62,12 @@ const resolvers = {
         .then((r) => r.hits.hits.map((h) => h._source))
     },
   },
+  Mutation: {
+    updateTrack: async (parent: any, args: any) => {
+      console.log('update track', args)
+      return args.track
+    },
+  },
 }
 
 const server = new ApolloServer({
@@ -70,6 +75,29 @@ const server = new ApolloServer({
   resolvers,
   csrfPrevention: true,
   cache: 'bounded',
+  context: async ({ req }) => {
+    if (req.body.operationName !== 'IntrospectionQuery') {
+      const pubkey = req.headers['x-pubkey'] as string
+      const sig = req.headers['x-sig'] as string
+
+      // apollo-server uses apollo-server-express by default
+      // which will automatically JSON parse the POST payload
+      // so we have to re-serialize it here to verify signature
+      // which is kinda gross...
+      // either apollo-server-micro or some custom express middleware could probably run before the body parser
+      const reconstructedPayload = JSON.stringify(req.body)
+      const payloadBytes = new TextEncoder().encode(reconstructedPayload)
+
+      if (pubkey && sig) {
+        const isValid = await ed.verify(
+          base64.decode(sig),
+          payloadBytes,
+          base64.decode(pubkey)
+        )
+        console.log({ isValid })
+      }
+    }
+  },
 })
 
 server.listen().then(({ url }) => {
