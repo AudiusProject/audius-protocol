@@ -31,7 +31,7 @@ function* fetchReactionValuesAsync({
   const toUpdate = reactions
     .filter(removeNullable)
     .map(({ reactedTo, reactionValue }) => ({
-      reaction: getReactionFromRawValue(reactionValue) || 'heart', // this shouldn't happen, default to heart
+      reaction: getReactionFromRawValue(reactionValue), // this may be null if reaction state is 0 (unsent)
       entityId: reactedTo
     }))
 
