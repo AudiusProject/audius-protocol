@@ -12,11 +12,12 @@ WORKDIR /usr/src/app
 RUN apk update && apk add rsyslog python3 python3-dev py3-pip curl bash
 
 COPY --from=builder /app/node_modules ./node_modules
-COPY . .
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
-RUN cp scripts/wait /usr/bin/wait && chmod +x /usr/bin/wait
+COPY scripts/wait /usr/bin/wait
+
+COPY . .
 
 ARG git_sha
 ARG audius_loggly_disable
