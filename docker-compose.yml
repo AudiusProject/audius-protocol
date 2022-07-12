@@ -1,5 +1,12 @@
 version: "3.9"
 
+x-logging:
+  &default-logging
+  options:
+    max-size: "50m"
+    max-file: "3"
+  driver: json-file
+
 services:
   # contracts
 
@@ -15,6 +22,7 @@ services:
       - poa-contracts-abis:/usr/src/app/build/contracts
     ports:
       - "8545:8545"
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -27,6 +35,7 @@ services:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -47,6 +56,7 @@ services:
         condition: service_healthy
       poa-ganache:
         condition: service_healthy
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -63,6 +73,7 @@ services:
       - eth-contracts-abis:/usr/src/app/build/contracts
     ports:
       - "8546:8545"
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -75,6 +86,7 @@ services:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -95,6 +107,7 @@ services:
         condition: service_healthy
       eth-ganache:
         condition: service_healthy
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -124,6 +137,7 @@ services:
       - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
       - "8899:8899"
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -137,6 +151,7 @@ services:
       - poa-contracts-abis:/usr/src/app/data-contracts/ABIs
       - eth-contracts-abis:/usr/src/app/eth-contracts/ABIs
       - ./libs/src:/usr/src/app/src
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -149,6 +164,7 @@ services:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -158,6 +174,7 @@ services:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -226,6 +243,7 @@ services:
         condition: service_healthy
       build-audius-libs:
         condition: service_started
+    logging: *default-logging
     deploy:
       mode: global
 
@@ -269,6 +287,7 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
+    logging: *default-logging
     deploy:
       mode: replicated
 
@@ -313,6 +332,7 @@ services:
         condition: service_healthy
       build-audius-libs:
         condition: service_started
+    logging: *default-logging
     deploy:
       mode: replicated
 
@@ -324,6 +344,9 @@ services:
       - "5000-5010:5000-5010"
     volumes:
       - ./dev:/tmp/dev
+    logging: *default-logging
+    deploy:
+      mode: global
 
 volumes:
   poa-contracts-abis:
