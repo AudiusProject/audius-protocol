@@ -10,24 +10,23 @@ const { asyncRetry } = require('./utils')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
+const _getWalletWriteLockKey = function (wallet) {
+  return `WRITE.WALLET.${wallet}`
+}
+
 const WalletWriteLock = {
   WALLET_WRITE_LOCK_EXPIRATION_SEC: 1800, // 30 min in sec
 
   VALID_ACQUIRERS: {
-    UserWrite: 'userWrite',
     SecondarySyncFromPrimary: 'secondarySyncFromPrimary',
     PrimarySyncFromSecondary: 'primarySyncFromSecondary'
-  },
-
-  getKey: function (wallet) {
-    return `WRITE.WALLET.${wallet}`
   },
 
   /**
    * Return lock holder, if held; else null
    */
   getCurrentHolder: async function (wallet) {
-    const key = this.getKey(wallet)
+    const key = _getWalletWriteLockKey(wallet)
     const holder = await redisClient.get(key)
     return holder
   },
@@ -46,13 +45,13 @@ const WalletWriteLock = {
    * Return true if lock is held, else false
    */
   isHeld: async function (wallet) {
-    const key = this.getKey(wallet)
+    const key = _getWalletWriteLockKey(wallet)
     const holder = await redisClient.get(key)
     return !!holder
   },
 
   ttl: async function (wallet) {
-    const key = this.getKey(wallet)
+    const key = _getWalletWriteLockKey(wallet)
     const ttl = await redisClient.ttl(key)
     return ttl
   },
@@ -75,7 +74,7 @@ const WalletWriteLock = {
       throw new Error(`Must provide valid acquirer`)
     }
 
-    const key = this.getKey(wallet)
+    const key = _getWalletWriteLockKey(wallet)
 
     let acquired = false
 
@@ -107,7 +106,7 @@ const WalletWriteLock = {
    * Does not return any value on success
    */
   release: async function (wallet) {
-    const key = this.getKey(wallet)
+    const key = _getWalletWriteLockKey(wallet)
 
     await asyncRetry({
       asyncFn: async function () {

@@ -33,15 +33,15 @@ describe('test Redis client', function () {
 
     // Acquire lock + confirm expected state
 
-    assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.UserWrite))
+    assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.PrimarySyncFromSecondary))
 
     assert.equal(await WalletWriteLock.ttl(wallet), defaultExpirationSec)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), true)
 
-    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), validAcquirers.UserWrite)
+    assert.equal(await WalletWriteLock.getCurrentHolder(wallet), validAcquirers.PrimarySyncFromSecondary)
 
-    assert.equal(await WalletWriteLock.syncIsInProgress(wallet), false)
+    assert.equal(await WalletWriteLock.syncIsInProgress(wallet), true)
 
     // Confirm acquisition fails when already held
 
@@ -62,7 +62,7 @@ describe('test Redis client', function () {
 
     // Acquire lock with custom expiration + confirm expected state
 
-    const expirationSec = 3
+    const expirationSec = 1
 
     assert.doesNotReject(WalletWriteLock.acquire(wallet, validAcquirers.SecondarySyncFromPrimary, expirationSec))
 
