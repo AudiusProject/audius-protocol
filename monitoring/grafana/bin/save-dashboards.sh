@@ -43,11 +43,21 @@ SET_TIME_DELAY='.timepicker.nowDelay = "1m"'
 # clear current selection
 RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 
+# SANITIZE LIBRARY PANELS
+# when a panel is a library panel, only keep the libraryPanel and gridPos keys
+# since everything else is ignored at upload time
+SANITIZE_LIBRARY_PANELS='.panels |= map(if .libraryPanel != null then {libraryPanel, gridPos} else . end)'
+
 # REQUIRED FOR PUSHING JSON-BACKED DASHBOARDS VIA THE API
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
+# save all library panels into a single file
+curl -s "${PASS_URL}/api/library-elements?perPage=100" \
+    | jq .result.elements \
+    > grafana/dashboards/library.json
 
+# save dashboards into separate json files
 for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
 do
     response=$(curl \
@@ -75,6 +85,7 @@ do
         | jq "${SET_REFRESH_INTERVAL}" \
         | jq "${SET_TIME_DELAY}" \
         | jq "${RESET_TEMPLATE_SELECTION}" \
+        | jq "${SANITIZE_LIBRARY_PANELS}" \
         | jq "${PUSH_FORMATTING}" \
         > "${path}"
     echo "Saved to: ${path}"

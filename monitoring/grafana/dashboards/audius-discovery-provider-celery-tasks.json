@@ -43,57 +43,11 @@
         "type": "row"
       },
       {
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [
-              {
-                "options": {
-                  "0": {
-                    "color": "transparent",
-                    "index": 0
-                  }
-                },
-                "type": "value"
-              }
-            ],
-            "max": 1,
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 1
-                },
-                {
-                  "color": "red",
-                  "value": 60
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 8,
-          "w": 24,
-          "x": 0,
-          "y": 1
-        },
-        "id": 20,
         "libraryPanel": {
           "description": "",
           "meta": {
             "connectedDashboards": 3,
-            "created": "2022-07-06T23:41:26Z",
+            "created": "2022-07-12T08:37:51Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -101,7 +55,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T23:41:26Z",
+            "updated": "2022-07-12T08:37:51Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -113,90 +67,19 @@
           "uid": "ilGck637k",
           "version": 1
         },
-        "options": {
-          "displayMode": "gradient",
-          "minVizHeight": 10,
-          "minVizWidth": 0,
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [
-              "last"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "showUnfilled": true
-        },
-        "pluginVersion": "9.0.2",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "audius_dn_celery_task_active_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
-            "instant": false,
-            "legendFormat": "{{task_name}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Celery Tasks (Active)",
-        "type": "bargauge"
-      },
-      {
-        "description": "",
-        "fieldConfig": {
-          "defaults": {
-            "color": {
-              "mode": "thresholds"
-            },
-            "mappings": [
-              {
-                "options": {
-                  "0": {
-                    "color": "transparent",
-                    "index": 0
-                  }
-                },
-                "type": "value"
-              }
-            ],
-            "max": 1,
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {
-                  "color": "green",
-                  "value": null
-                },
-                {
-                  "color": "#EAB839",
-                  "value": 1
-                },
-                {
-                  "color": "red",
-                  "value": 60
-                }
-              ]
-            },
-            "unit": "s"
-          },
-          "overrides": []
-        },
         "gridPos": {
           "h": 8,
-          "w": 12,
+          "w": 24,
           "x": 0,
-          "y": 9
-        },
-        "id": 22,
+          "y": 1
+        }
+      },
+      {
         "libraryPanel": {
           "description": "",
           "meta": {
             "connectedDashboards": 2,
-            "created": "2022-07-06T23:41:26Z",
+            "created": "2022-07-12T08:37:51Z",
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -204,7 +87,7 @@
             },
             "folderName": "General",
             "folderUid": "",
-            "updated": "2022-07-06T23:41:26Z",
+            "updated": "2022-07-12T08:37:51Z",
             "updatedBy": {
               "avatarUrl": "",
               "id": 0,
@@ -216,37 +99,12 @@
           "uid": "3en9tpenk",
           "version": 1
         },
-        "options": {
-          "displayMode": "gradient",
-          "minVizHeight": 10,
-          "minVizWidth": 0,
-          "orientation": "horizontal",
-          "reduceOptions": {
-            "calcs": [
-              "last"
-            ],
-            "fields": "",
-            "values": false
-          },
-          "showUnfilled": true
-        },
-        "pluginVersion": "9.0.2",
-        "targets": [
-          {
-            "datasource": {
-              "type": "prometheus"
-            },
-            "editorMode": "code",
-            "exemplar": false,
-            "expr": "audius_dn_celery_task_last_duration_seconds{environment=~\"$env\", host=~\"$host\", success=\"True\"}",
-            "instant": false,
-            "legendFormat": "{{func_name}}",
-            "range": true,
-            "refId": "A"
-          }
-        ],
-        "title": "Celery Tasks (Last Successful Duration)",
-        "type": "bargauge"
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 9
+        }
       },
       {
         "description": "",
