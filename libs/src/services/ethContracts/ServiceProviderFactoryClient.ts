@@ -114,7 +114,12 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     }
   }
 
-  async register(serviceType: string, endpoint: string, amount: BN, performHealthCheck: boolean = true) {
+  async register(
+    serviceType: string,
+    endpoint: string,
+    amount: BN,
+    performHealthCheck: boolean = true
+  ) {
     return await this.registerWithDelegate(
       serviceType,
       endpoint,
