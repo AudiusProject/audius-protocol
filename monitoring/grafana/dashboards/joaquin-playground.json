@@ -178,7 +178,7 @@
                 },
                 "folderName": "General",
                 "folderUid": "",
-                "updated": "2022-07-09T01:43:48Z",
+                "updated": "2022-07-12T23:16:36Z",
                 "updatedBy": {
                   "avatarUrl": "",
                   "id": 0,
@@ -188,7 +188,7 @@
               "name": "Celery Tasks (Active)",
               "type": "bargauge",
               "uid": "ilGck637k",
-              "version": 1
+              "version": 2
             },
             "options": {
               "displayMode": "gradient",
