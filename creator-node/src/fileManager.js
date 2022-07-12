@@ -45,9 +45,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
     const fileIsEmpty = fileSize === 0
     // there is one case where an empty file could be valid, check for that CID explicitly
     if (fileIsEmpty && cid !== EMPTY_FILE_CID) {
-      throw new Error(
-        `File has no content, content length is 0: ${cid}`
-      )
+      throw new Error(`File has no content, content length is 0: ${cid}`)
     }
 
     const expectedCid = await LibsUtils.fileHasher.generateNonImageCid(
@@ -63,11 +61,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
   } catch (e) {
     await removeFile(dstPath)
     if (numRetries > 0) {
-      return saveFileFromBufferToDisk(
-        req,
-        buffer,
-        numRetries - 1
-      )
+      return saveFileFromBufferToDisk(req, buffer, numRetries - 1)
     }
     throw new Error(
       `saveFileFromBufferToDisk - Error during content verification for cid ${cid} ${e.message}`
