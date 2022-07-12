@@ -290,11 +290,18 @@ async function issueAndWaitForSecondarySyncRequests(
   req.logger.info(
     `theo config.get('enforceWriteQuorum'): ${config.get('enforceWriteQuorum')}`
   )
-  // Enforce-Write-Quorum header always takes precedence over env var if explicitly defined
+  // Enforce-Write-Quorum header always takes precedence over env var if explicitly defined.
   // Empty/undefined header means enforceWriteQuorum env var decides if write quorum is enabled
-  const writeQuorumHeaderTrue = !!req.header('Enforce-Write-Quorum')
-  const writeQuorumHeaderFalse = req.header('Enforce-Write-Quorum') === false
-  const writeQuorumHeaderEmpty = !writeQuorumHeaderFalse
+  // We have to support string and boolean until libs updates axios to v0.20.0 because axios has a
+  // bug where it converts null into an object, so we send the value as a string.
+  // See: https://github.com/axios/axios/issues/2223
+  const enforceWriteQuorumHeader = req.header('Enforce-Write-Quorum')
+  const writeQuorumHeaderTrue =
+    enforceWriteQuorumHeader === true || enforceWriteQuorumHeader === 'true'
+  const writeQuorumHeaderFalse =
+    enforceWriteQuorumHeader === false || enforceWriteQuorumHeader === 'false'
+  const writeQuorumHeaderEmpty =
+    !writeQuorumHeaderFalse || enforceWriteQuorumHeader === 'null'
   let enforceWriteQuorum = false
 
   if (!ignoreWriteQuorum) {

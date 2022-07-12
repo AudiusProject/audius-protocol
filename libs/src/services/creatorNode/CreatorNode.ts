@@ -279,7 +279,8 @@ export class CreatorNode {
           metadata,
           blockNumber
         },
-        headers: { 'Enforce-Write-Quorum': writeQuorumEnabled }
+        // Using a string because of axios bug (fixed in axios v0.20.0): https://github.com/axios/axios/issues/2223
+        headers: { 'Enforce-Write-Quorum': String(writeQuorumEnabled) }
       }
 
       const { data: body } = await this._makeRequest(requestObj)
@@ -414,7 +415,8 @@ export class CreatorNode {
           metadata,
           sourceFile
         },
-        headers: { 'Enforce-Write-Quorum': writeQuorumEnabled }
+        // Using a string because of axios bug (fixed in axios v0.20.0): https://github.com/axios/axios/issues/2223
+        headers: { 'Enforce-Write-Quorum': String(writeQuorumEnabled) }
       },
       true
     )
