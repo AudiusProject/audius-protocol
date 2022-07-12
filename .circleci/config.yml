@@ -756,7 +756,7 @@ workflows:
           name: build-discovery-provider
           repo: discovery-provider
 
-      - docker-build-and-push-updated:
+      - docker-build-and-push:
           name: build-network-monitoring
           repo: discovery-provider/plugins/network-monitoring
 
