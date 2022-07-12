@@ -16,6 +16,7 @@ import { ProfilePicture } from './components/ProfilePicture'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
+import { useGoToProfile } from './useGoToProfile'
 
 const messages = {
   title: 'Your Tip Was Sent!',
@@ -34,6 +35,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { user, amount, timeLabel, isViewed } = notification
   const uiAmount = useUIAudio(amount)
 
+  const handleClick = useGoToProfile(user)
+
   const handleShare = useCallback(
     (senderHandle: string) => {
       const shareText = messages.twitterShare(senderHandle, uiAmount)
@@ -48,7 +51,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   )
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconTip />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
