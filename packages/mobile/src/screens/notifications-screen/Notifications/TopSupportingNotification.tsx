@@ -10,6 +10,7 @@ import { make } from 'app/utils/analytics'
 import { NotificationTile, NotificationTwitterButton } from '../Notification'
 
 import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
+import { useGoToProfile } from './useGoToProfile'
 
 const messages = {
   title: 'Top Supporter',
@@ -34,6 +35,8 @@ export const TopSupportingNotification = (
     isEqual
   )
 
+  const handlePress = useGoToProfile(user)
+
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.twitterShare(handle, rank)
@@ -52,7 +55,7 @@ export const TopSupportingNotification = (
   if (!user) return null
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onPress={handlePress}>
       <SupporterAndSupportingNotificationContent
         title={`#${rank} ${messages.title}`}
         body={`${messages.supporterChange} #${rank} ${messages.supporter}`}

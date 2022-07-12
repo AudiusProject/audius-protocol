@@ -21,6 +21,8 @@ import {
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
 
+import { useGoToProfile } from './useGoToProfile'
+
 const messages = {
   title: 'Your Tip Was Sent!',
   sent: 'You successfully sent a tip of',
@@ -44,6 +46,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
     isEqual
   )
 
+  const handlePress = useGoToProfile(user)
+
   const handleTwitterShare = useCallback(
     (senderHandle: string) => {
       const shareText = messages.twitterShare(senderHandle, uiAmount)
@@ -61,7 +65,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   if (!user) return null
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconTip}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>

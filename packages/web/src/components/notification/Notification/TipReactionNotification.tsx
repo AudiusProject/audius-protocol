@@ -18,6 +18,7 @@ import { reactionMap } from './components/Reaction'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
+import { useGoToProfile } from './useGoToProfile'
 
 const messages = {
   reacted: 'reacted',
@@ -44,6 +45,8 @@ export const TipReactionNotification = (
 
   const uiAmount = useUIAudio(amount)
 
+  const handleClick = useGoToProfile(user)
+
   const handleShare = useCallback((twitterHandle: string) => {
     const shareText = messages.twitterShare(twitterHandle)
     const analytics = make(
@@ -66,7 +69,7 @@ export const TipReactionNotification = (
   const Reaction = reactionMap[reactionType]
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconTip />}>
         <NotificationTitle>
           {userLinkElement} {messages.reacted}

@@ -15,6 +15,7 @@ import { ProfilePicture } from './components/ProfilePicture'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
+import { useGoToProfile } from './useGoToProfile'
 
 const messages = {
   title: 'Top Supporter',
@@ -34,6 +35,8 @@ export const TopSupporterNotification = (
   const { notification } = props
   const { user, rank, timeLabel, isViewed } = notification
 
+  const handleClick = useGoToProfile(user)
+
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.twitterShare(handle, rank)
@@ -49,7 +52,7 @@ export const TopSupporterNotification = (
   )
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconTip />}>
         <NotificationTitle>
           #{rank} {messages.title}
