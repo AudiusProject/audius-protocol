@@ -61,7 +61,8 @@ module.exports = async function ({
     return {
       error: {
         message: errorMsg
-      }
+      },
+      jobsToEnqueue: {}
     }
   }
   if (
@@ -120,7 +121,9 @@ module.exports = async function ({
 
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
     if (!mergePrimaryAndSecondaryEnabled) {
-      logger.info(`${logMsgString} || Sync mode is disabled - Will not issue sync request`)
+      logger.info(
+        `${logMsgString} || Sync mode is disabled - Will not issue sync request`
+      )
       return {
         error: {},
         jobsToEnqueue: {}

@@ -75,7 +75,8 @@ describe('test issueSyncRequest job processor param validation', function () {
     ).to.eventually.be.fulfilled.and.deep.equal({
       error: {
         message: expectedErrorMessage
-      }
+      },
+      "jobsToEnqueue": {}
     })
     expect(logger.error).to.have.been.calledOnceWithExactly(
       expectedErrorMessage
@@ -108,7 +109,8 @@ describe('test issueSyncRequest job processor param validation', function () {
     ).to.eventually.be.fulfilled.and.deep.equal({
       error: {
         message: expectedErrorMessage
-      }
+      },
+      "jobsToEnqueue": {}
     })
     expect(logger.error).to.have.been.calledOnceWithExactly(
       expectedErrorMessage
@@ -116,7 +118,7 @@ describe('test issueSyncRequest job processor param validation', function () {
   })
 })
 
-describe.only('test issueSyncRequest job processor', async function () {
+describe('test issueSyncRequest job processor', async function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,
@@ -477,6 +479,8 @@ describe.only('test issueSyncRequest job processor', async function () {
     expect(recordSuccessStub).to.have.not.been.called
   })
 
+  it.skip('SyncMode.None')
+
   describe('test SYNC_MODES.MergePrimaryAndSecondary', async function () {
     syncMode = SYNC_MODES.MergePrimaryAndSecondary
 
@@ -528,5 +532,7 @@ describe.only('test issueSyncRequest job processor', async function () {
       expect(result.metricsToRecord[0].metricValue).to.be.a('number')
       expect(getNewOrExistingSyncReqStub).to.not.have.been.called
     })
+
+    it.skip('mergePrimaryAndSecondaryEnabled = false')
   })
 })
