@@ -758,7 +758,7 @@ workflows:
 
       - docker-build-and-push-updated:
           name: build-network-monitoring
-          repo: disovery-provider/plugins/network-monitoring
+          repo: discovery-provider/plugins/network-monitoring
 
       - test-identity-service:
           name: test-identity-service
