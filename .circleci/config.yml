@@ -41,6 +41,7 @@ jobs:
           command: |
             # cleanup code setup before starting actual execution
             cleanup() {
+              echo "inside trap cleanup"
               # Delete GCP box
               gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
@@ -77,8 +78,10 @@ jobs:
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
               # fail on error
               set -e;
+
               # on error, run this function
               exit_ssh() {
+                echo "inside trap exit_ssh"
                 echo $?
               }
               trap exit_ssh EXIT
@@ -88,8 +91,6 @@ jobs:
               A up;
               A run monitoring up;
               A down;
-              pwd;
-              ls;
               cd audius-protocol/;
               git checkout -f;
               exit;
