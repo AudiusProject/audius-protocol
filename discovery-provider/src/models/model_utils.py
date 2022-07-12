@@ -8,7 +8,6 @@ from sqlalchemy import (
     Unicode,
     UnicodeText,
     event,
-    inspect,
 )
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import null
@@ -28,22 +27,19 @@ class RepresentableMixin:
     """
 
     def __repr__(self):
-        state = inspect(self)
-
-        # Ensure that we do not print deferred/lazy-loaded
-        # attributes. These could be relationships and printing them
-        # will trigger them to be fetched.
-        # https://stackoverflow.com/a/50330608
-        def ga(attr):
-            return (
-                repr(getattr(self, attr))
-                if attr not in state.unloaded
-                else "<deferred>"
-            )
-
-        attrs = " ".join([f"{attr.key}={ga(attr.key)}" for attr in state.attrs])
         name = self.__class__.__name__
-        return f"<{name}({attrs})>"
+        attrs = self.__dict__.items()
+        strings = [f"<{name}("]
+        for i, (k, v) in enumerate(attrs):
+            if k[0] == "_":
+                continue
+            raw = f"{k}={v}"
+            if i != len(attrs) - 1:
+                raw = f"{raw}, "
+            else:
+                raw = f"{raw})>"
+            strings.append(raw)
+        return "".join(strings)
 
 
 # Listen for instrumentation of attributes on the base class

@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
-from src.models.indexing.ipld_blacklist_block import IpldBlacklistBlock
+from src.models.indexing.ipld_blacklist_block import IPLDBlacklistBlock
 from src.monitors import monitor_names, monitors
 from src.queries.get_balances import (
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -114,8 +114,8 @@ def _get_db_ipld_block_state():
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         db_ipld_block_query = (
-            session.query(IpldBlacklistBlock)
-            .filter(IpldBlacklistBlock.is_current == True)
+            session.query(IPLDBlacklistBlock)
+            .filter(IPLDBlacklistBlock.is_current == True)
             .all()
         )
         assert (

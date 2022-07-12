@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from src.models.metrics.app_name_metrics import AppNameMetric
+from src.models.metrics.app_name_metrics import AppNameMetrics
 from src.queries.get_app_name_metrics import _get_app_name_metrics
 from src.utils.db_session import get_db
 
@@ -44,7 +44,7 @@ def populate_mock_db(db, date1, date2):
     # Set up db state
     with db.scoped_session() as session:
         app_name_rows = [
-            AppNameMetric(
+            AppNameMetrics(
                 application_name=app_name["application_name"],
                 ip=app_name["ip"],
                 count=app_name["count"],

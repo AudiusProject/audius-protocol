@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple, TypedDict
 
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
-from src.models.users.aggregate_user_tips import AggregateUserTip
+from src.models.users.aggregate_user_tips import AggregateUserTips
 from src.queries.query_helpers import get_users_by_id, paginate_query
 from src.utils.db_session import get_db_read_replica
 
@@ -87,29 +87,29 @@ def get_support_received_by_user(args) -> List[SupportResponse]:
     db = get_db_read_replica()
     with db.scoped_session() as session:
         query = session.query(
-            func.rank().over(order_by=AggregateUserTip.amount.desc()).label("rank"),
-            AggregateUserTip,
-        ).filter(AggregateUserTip.receiver_user_id == receiver_user_id)
+            func.rank().over(order_by=AggregateUserTips.amount.desc()).label("rank"),
+            AggregateUserTips,
+        ).filter(AggregateUserTips.receiver_user_id == receiver_user_id)
 
         # Filter to supporter we care about after ranking
         if supporter_user_id is not None:
             rankings = query.cte(name="rankings")
-            RankingsAggregateUserTip = aliased(
-                AggregateUserTip, rankings, name="aliased_rankings_tips"
+            RankingsAggregateUserTips = aliased(
+                AggregateUserTips, rankings, name="aliased_rankings_tips"
             )
             query = (
-                session.query(rankings.c.rank, RankingsAggregateUserTip)
+                session.query(rankings.c.rank, RankingsAggregateUserTips)
                 .select_from(rankings)
-                .filter(RankingsAggregateUserTip.sender_user_id == supporter_user_id)
+                .filter(RankingsAggregateUserTips.sender_user_id == supporter_user_id)
             )
         # Only paginate if not looking for single supporter
         else:
             query = query.order_by(
-                AggregateUserTip.amount.desc(), AggregateUserTip.sender_user_id.asc()
+                AggregateUserTips.amount.desc(), AggregateUserTips.sender_user_id.asc()
             )
             query = paginate_query(query)
 
-        rows: List[Tuple[int, AggregateUserTip]] = query.all()
+        rows: List[Tuple[int, AggregateUserTips]] = query.all()
         user_ids = [row[1].sender_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)
 
@@ -189,48 +189,51 @@ def get_support_sent_by_user(args) -> List[SupportResponse]:
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        AggregateUserTipB = aliased(AggregateUserTip, name="joined_aggregate_tips")
+        AggregateUserTipsB = aliased(AggregateUserTips, name="joined_aggregate_tips")
         query = (
             session.query(
                 func.rank()
                 .over(
-                    partition_by=AggregateUserTipB.receiver_user_id,
-                    order_by=AggregateUserTipB.amount.desc(),
+                    partition_by=AggregateUserTipsB.receiver_user_id,
+                    order_by=AggregateUserTipsB.amount.desc(),
                 )
                 .label("rank"),
-                AggregateUserTipB,
+                AggregateUserTipsB,
             )
-            .select_from(AggregateUserTip)
+            .select_from(AggregateUserTips)
             .join(
-                AggregateUserTipB,
-                AggregateUserTipB.receiver_user_id == AggregateUserTip.receiver_user_id,
+                AggregateUserTipsB,
+                AggregateUserTipsB.receiver_user_id
+                == AggregateUserTips.receiver_user_id,
             )
-            .filter(AggregateUserTip.sender_user_id == sender_user_id)
+            .filter(AggregateUserTips.sender_user_id == sender_user_id)
         )
 
         # Filter to the receiver we care about early
         if supported_user_id is not None:
-            query = query.filter(AggregateUserTip.receiver_user_id == supported_user_id)
+            query = query.filter(
+                AggregateUserTips.receiver_user_id == supported_user_id
+            )
 
         subquery = query.subquery(name="rankings")
-        AggregateUserTipAlias = aliased(
-            AggregateUserTip, subquery, name="aggregate_user_tips_alias"
+        AggregateUserTipsAlias = aliased(
+            AggregateUserTips, subquery, name="aggregate_user_tips_alias"
         )
         query = (
-            session.query(subquery.c.rank, AggregateUserTipAlias)
+            session.query(subquery.c.rank, AggregateUserTipsAlias)
             .select_from(subquery)
-            .filter(AggregateUserTipAlias.sender_user_id == sender_user_id)
+            .filter(AggregateUserTipsAlias.sender_user_id == sender_user_id)
         )
 
         # Only paginate if not looking for single supporting
         if supported_user_id is None:
             query = query.order_by(
-                AggregateUserTipAlias.amount.desc(),
-                AggregateUserTipAlias.receiver_user_id.asc(),
+                AggregateUserTipsAlias.amount.desc(),
+                AggregateUserTipsAlias.receiver_user_id.asc(),
             )
             query = paginate_query(query)
 
-        rows: List[Tuple[int, AggregateUserTip]] = query.all()
+        rows: List[Tuple[int, AggregateUserTips]] = query.all()
         user_ids = [row[1].receiver_user_id for row in rows]
         users = get_users_by_id(session, user_ids, current_user_id)
 

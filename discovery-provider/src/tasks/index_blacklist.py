@@ -1,8 +1,8 @@
 import logging
 
 from src.app import get_contract_addresses
-from src.models.indexing.ipld_blacklist import IpldBlacklist
-from src.models.indexing.ipld_blacklist_block import IpldBlacklistBlock
+from src.models.indexing.blacklisted_ipld import BlacklistedIPLD
+from src.models.indexing.ipld_blacklist_block import IPLDBlacklistBlock
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
 from src.utils.prometheus_metric import save_duration_metric
@@ -30,15 +30,15 @@ def initialize_blacklist_blocks_table_if_necessary(db):
     ]
     target_block = update_ipld_blacklist_task.web3.eth.get_block(target_blockhash, True)
     with db.scoped_session() as session:
-        current_block_query_result = session.query(IpldBlacklistBlock).filter_by(
+        current_block_query_result = session.query(IPLDBlacklistBlock).filter_by(
             is_current=True
         )
         if current_block_query_result.count() == 0:
-            blocks_query_result = session.query(IpldBlacklistBlock)
+            blocks_query_result = session.query(IPLDBlacklistBlock)
             assert (
                 blocks_query_result.count() == 0
             ), "Corrupted DB State - Expect single row marked as current"
-            block_model = IpldBlacklistBlock(
+            block_model = IPLDBlacklistBlock(
                 blockhash=target_blockhash,
                 number=target_block.number,
                 parenthash=target_blockhash,
@@ -68,7 +68,7 @@ def get_latest_blacklist_block(db):
         ]
     )
     with db.scoped_session() as session:
-        current_block_query = session.query(IpldBlacklistBlock).filter_by(
+        current_block_query = session.query(IPLDBlacklistBlock).filter_by(
             is_current=True
         )
         assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
@@ -116,11 +116,11 @@ def index_blocks(self, db, blocks_list):
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
-            current_block_query = session.query(IpldBlacklistBlock).filter_by(
+            current_block_query = session.query(IPLDBlacklistBlock).filter_by(
                 is_current=True
             )
 
-            block_model = IpldBlacklistBlock(
+            block_model = IPLDBlacklistBlock(
                 blockhash=update_ipld_blacklist_task.web3.toHex(block.hash),
                 parenthash=update_ipld_blacklist_task.web3.toHex(block.parentHash),
                 number=block.number,
@@ -196,26 +196,26 @@ def revert_blocks(self, db, revert_blocks_list):
                 parent_hash = default_config_start_hash
 
             # Update newly current block row and outdated row (indicated by current block's parent hash)
-            session.query(IpldBlacklistBlock).filter(
-                IpldBlacklistBlock.blockhash == parent_hash
+            session.query(IPLDBlacklistBlock).filter(
+                IPLDBlacklistBlock.blockhash == parent_hash
             ).update({"is_current": True})
-            session.query(IpldBlacklistBlock).filter(
-                IpldBlacklistBlock.blockhash == revert_hash
+            session.query(IPLDBlacklistBlock).filter(
+                IPLDBlacklistBlock.blockhash == revert_hash
             ).update({"is_current": False})
 
             revert_ipld_blacklist_entries = (
-                session.query(IpldBlacklist)
-                .filter(IpldBlacklist.blockhash == revert_hash)
+                session.query(BlacklistedIPLD)
+                .filter(BlacklistedIPLD.blockhash == revert_hash)
                 .all()
             )
 
             for ipld_blacklist_to_revert in revert_ipld_blacklist_entries:
                 metadata_multihash = ipld_blacklist_to_revert.metadata_multihash
                 previous_ipld_blacklist_entry = (
-                    session.query(IpldBlacklist)
-                    .filter(IpldBlacklist.ipld == metadata_multihash)
-                    .filter(IpldBlacklist.blocknumber < revert_block_number)
-                    .order_by(IpldBlacklist.blocknumber.desc())
+                    session.query(BlacklistedIPLD)
+                    .filter(BlacklistedIPLD.ipld == metadata_multihash)
+                    .filter(BlacklistedIPLD.blocknumber < revert_block_number)
+                    .order_by(BlacklistedIPLD.blocknumber.desc())
                     .first()
                 )
                 if previous_ipld_blacklist_entry:
@@ -226,8 +226,8 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.delete(ipld_blacklist_to_revert)
 
             # Remove outdated block entry
-            session.query(IpldBlacklistBlock).filter(
-                IpldBlacklistBlock.blockhash == revert_hash
+            session.query(IPLDBlacklistBlock).filter(
+                IPLDBlacklistBlock.blockhash == revert_hash
             ).delete()
 
 
@@ -271,10 +271,10 @@ def update_ipld_blacklist_task(self):
                     current_hash = web3.toHex(latest_block.hash)
                     parent_hash = web3.toHex(latest_block.parentHash)
 
-                    latest_block_db_query = session.query(IpldBlacklistBlock).filter(
-                        IpldBlacklistBlock.blockhash == current_hash
-                        and IpldBlacklistBlock.parenthash == parent_hash
-                        and IpldBlacklistBlock.is_current == True
+                    latest_block_db_query = session.query(IPLDBlacklistBlock).filter(
+                        IPLDBlacklistBlock.blockhash == current_hash
+                        and IPLDBlacklistBlock.parenthash == parent_hash
+                        and IPLDBlacklistBlock.is_current == True
                     )
 
                     # Exit loop if we are up to date
@@ -285,8 +285,8 @@ def update_ipld_blacklist_task(self):
 
                     index_blocks_list.append(latest_block)
 
-                    parent_block_query = session.query(IpldBlacklistBlock).filter(
-                        IpldBlacklistBlock.blockhash == parent_hash
+                    parent_block_query = session.query(IPLDBlacklistBlock).filter(
+                        IPLDBlacklistBlock.blockhash == parent_hash
                     )
 
                     # Intersection is considered found if current block parenthash is
@@ -311,8 +311,8 @@ def update_ipld_blacklist_task(self):
                 # Determine whether current indexed data (is_current == True) matches the
                 # intersection block hash
                 # Important when determining whether undo operations are necessary
-                base_query = session.query(IpldBlacklistBlock)
-                base_query = base_query.filter(IpldBlacklistBlock.is_current == True)
+                base_query = session.query(IPLDBlacklistBlock)
+                base_query = base_query.filter(IPLDBlacklistBlock.is_current == True)
                 db_block_query = base_query.all()
 
                 assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
@@ -338,8 +338,8 @@ def update_ipld_blacklist_task(self):
                 # valid intersect block
                 while traverse_block.blockhash != intersect_block_hash:
                     revert_blocks_list.append(traverse_block)
-                    parent_query = session.query(IpldBlacklistBlock).filter(
-                        IpldBlacklistBlock.blockhash == traverse_block.parenthash
+                    parent_query = session.query(IPLDBlacklistBlock).filter(
+                        IPLDBlacklistBlock.blockhash == traverse_block.parenthash
                     )
 
                     if parent_query.count() == 0:

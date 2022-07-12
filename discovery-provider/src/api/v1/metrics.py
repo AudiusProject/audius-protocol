@@ -234,7 +234,7 @@ class AggregateAppMetricsTrailing(Resource):
 
 
 @ns.route("/routes", doc=False)
-class RouteMetric(Resource):
+class RouteMetrics(Resource):
     @ns.expect(metrics_route_parser)
     @ns.doc(
         id="""Route Metrics""",
@@ -292,7 +292,7 @@ metrics_app_name_list_parser.add_argument(
 
 
 @ns.route("/routes/trailing/month", doc=False)
-class RouteMetricsTrailingMOnth(Resource):
+class RouteMetricsTrailingMonth(Resource):
     @ns.marshal_with(route_metrics_trailing_month_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
@@ -353,7 +353,7 @@ trailing_app_name_parser.add_argument(
 
 @ns.route("/app_name/trailing/<string:time_range>", doc=False)
 @ns.expect(trailing_app_name_parser)
-class TrailingAppNameMetric(Resource):
+class TrailingAppNameMetrics(Resource):
     @ns.doc(
         id="""Get Trailing App Name Metrics""",
         description="""Gets the trailing app name metrics""",
@@ -375,7 +375,7 @@ metrics_app_name_parser.add_argument("bucket_size", required=False)
 
 
 @ns.route("/app_name/<string:app_name>", doc=False)
-class AppNameMetric(Resource):
+class AppNameMetrics(Resource):
     @ns.doc(
         id="""Get Metrics by App Name""",
         params={
