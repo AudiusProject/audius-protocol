@@ -16,6 +16,33 @@ const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
 const BlacklistManager = require('./blacklistManager')
 
+async function durationTrackingMiddleware(req, res, next) {
+  req.logger.info(`sadljfaoisjf ${req.route.path}`)
+  const path = req.route.path
+  const method = Object.keys(req.route.methods)[0]
+
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+
+  try {
+    let metricName = prometheusRegistry.getDurationTrackingMetricName(path)
+    let metric = prometheusRegistry.getMetric(metricName)
+
+    if (!metric) {
+      metricName = prometheusRegistry.getDurationTrackingMetricNameWithMethod(
+        path,
+        method
+      )
+      metric = prometheusRegistry.getMetric(metricName)
+    }
+
+    req.routeDurationStopTimer = metric.startTimer()
+  } catch (e) {
+    req.logger.warn(`Could not create timer for ${path}`)
+  }
+
+  next()
+}
+
 /**
  * Ensure valid cnodeUser and session exist for provided session token
  */
@@ -849,5 +876,6 @@ module.exports = {
   issueAndWaitForSecondarySyncRequests,
   syncLockMiddleware,
   getOwnEndpoint,
-  getCreatorNodeEndpoints
+  getCreatorNodeEndpoints,
+  durationTrackingMiddleware
 }

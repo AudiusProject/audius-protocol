@@ -30,7 +30,8 @@ const {
   syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware,
-  ensureValidSPMiddleware
+  ensureValidSPMiddleware,
+  durationTrackingMiddleware
 } = require('../middlewares')
 const { decode } = require('../hashids')
 const { getCID, streamFromFileSystem } = require('./files')
@@ -43,45 +44,18 @@ const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
   app.get(
-    '/vicky',
+    '/vicky/:poo/:sigh',
+    durationTrackingMiddleware,
     handleResponse(async (req, res) => {
-      req.logger.info(req.app._router.stack)
-      req.logger.info(req.app.stack)
-
-      // app._router.stack.map(function(r){
-      //   if (r.route && r.route.path){
-      //     console.log(r.route.path)
-      //   }
-      // })
-
-      let resp
       try {
-        const routes = []
-        app._router.stack
-          .filter((element) => element.route && element.route.path)
-          .forEach((element) => {
-            const path = element.route.path
-            const method = Object.keys(element.route.methods)[0]
-
-            if (Array.isArray(path)) {
-              path.forEach((p) => {
-                routes.push({ path: p, method })
-              })
-            } else {
-              routes.push({ path, method })
-            }
-          })
-
-        resp = routes
+        req.routeDurationStopTimer({ code: 200 })
+        return successResponse({
+          done: 'done'
+        })
       } catch (e) {
-        console.log(e)
-        resp = e.message
+        req.routeDurationStopTimer({ code: 500 })
+        return errorResponseServerError('bad')
       }
-
-      return successResponse({
-        num_routes: resp.length,
-        resp
-      })
     })
   )
   /**

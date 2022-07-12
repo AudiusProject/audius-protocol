@@ -194,20 +194,6 @@ class ServiceRegistry {
     app.use('/health/bull', serverAdapter.getRouter())
   }
 
-  /**
-   * Add duration + status code trackers to all routes
-   *
-   * example:
-   *  metric name:
-   *    SYNC_STATUS_WALLETPUBLICKEY_SECONDS_HISTOGRAM : sync_status_walletpublickey_seconds
-   *  metric config: {
-   *    name: 'sync_status_walletpublickey_seconds',
-   *    help: 'Duration for /sync_status_:walletpublickey',
-   *    labelNames: ['code', 'walletpublickey']
-   *  }
-   *
-   * @param {Object} app
-   */
   _setupRouteDurationTracking(app) {
     // Get all routes on Content Node
     const routes = app._router.stack
@@ -219,68 +205,7 @@ class ServiceRegistry {
         return { path, method }
       })
 
-    // Sets used to help create metrics with same paths but different methods
-    // Example: '/transcode_and_segment' has 'get' and 'post' method
-    const uniquePaths = new Set()
-    const overloadedPaths = new Set()
-    routes.forEach(({ path, method }) => {
-      if (uniquePaths.has(path)) {
-        overloadedPaths.add(path)
-      }
-
-      uniquePaths.add(path)
-    })
-
-    // Parses route to proper key format
-    // Example:  "/sync_status/:walletPublicKey" -> "sync_status_walletPublicKey"
-    function parsePath(path) {
-      return _.snakeCase(path)
-    }
-
-    // Returns route params if any exist, i.e. ':cid' in the path '/ipfs/:cid'
-    function getLabels(path) {
-      const pathArr = path.split('/')
-      return pathArr
-        .filter((part) => part.includes(':'))
-        .map((part) => part.replace(/:/g, ''))
-    }
-
-    function addDurationTracking({ registry, path, method }) {
-      let name = `${parsePath(path)}_seconds`
-      if (overloadedPaths.has(path)) {
-        name = `${method}_${name}`
-      }
-      const labels = getLabels(path)
-      registry.addBasicHistogramMetric({
-        name,
-        doc: `Duration for ${path}`,
-        labels
-      })
-      registry.addMetricName({
-        key: `${name}_HISTOGRAM`.toUpperCase(),
-        value: name
-      })
-    }
-
-    routes.forEach((route) => {
-      const { path, method } = route
-
-      // Create metrics to track duration and status code for ever                                                                    y route
-      if (Array.isArray(path)) {
-        // For routes with the same path but different methods
-        // Example: '/ipfs/:cid' and '/content/:cid'
-        path.forEach((p) => {
-          addDurationTracking({
-            registry: this.prometheusRegistry,
-            path: p,
-            method
-          })
-        })
-      } else {
-        addDurationTracking({ registry: this.prometheusRegistry, path, method })
-      }
-    })
-
+    this.prometheusRegistry.addRoutesDurationTracking(routes)
     // add middleware to all routes using app.use() to match on the route + key in metric name
 
     // in hadndle response, end duration track + status code. see the tracks example
