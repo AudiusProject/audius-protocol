@@ -241,7 +241,7 @@
           "description": "",
           "hide": 0,
           "includeAll": true,
-          "label": "Host",
+          "label": "Task Name",
           "multi": false,
           "name": "task_name",
           "options": [],

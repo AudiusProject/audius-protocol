@@ -47,15 +47,19 @@ RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 # when a panel is a library panel, only keep the libraryPanel and gridPos keys
 # since everything else is ignored at upload time
 SANITIZE_LIBRARY_PANELS='.panels |= map(if .libraryPanel != null then {libraryPanel, gridPos} else . end)'
+CLEAR_LIBRARY_PANEL_CREATED='del(.panels[].libraryPanel.meta.created)'
+CLEAR_LIBRARY_PANEL_UPDATED='del(.panels[].libraryPanel.meta.updated)'
 
 # REQUIRED FOR PUSHING JSON-BACKED DASHBOARDS VIA THE API
 # wrap the final output in a different format and use overwrite: true, to avoid .id and .version collisions
 PUSH_FORMATTING='{dashboard: ., overwrite: true}'
 
+path=grafana/dashboards/library.json
 # save all library panels into a single file
 curl -s "${PASS_URL}/api/library-elements?perPage=100" \
     | jq .result.elements \
-    > grafana/dashboards/library.json
+    > ${path}
+echo "Saved to: ${path}"
 
 # save dashboards into separate json files
 for uid in $(curl -s ${PASS_URL}/api/search | jq -rc '.[] | select(.uri != "db/prometheus-stats") | select(.type != "dash-folder") | .uid')
