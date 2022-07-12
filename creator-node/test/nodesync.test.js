@@ -20,7 +20,7 @@ const BlacklistManager = require('../src/blacklistManager')
 
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
-const processSync = require('../src/services/sync/processSync')
+const secondarySyncFromPrimary = require('../src/services/sync/secondarySyncFromPrimary')
 const { uploadTrack } = require('./lib/helpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
@@ -687,7 +687,7 @@ describe('test nodesync', async function () {
     })
   })
 
-  describe('Test processSync function', async function () {
+  describe('Test secondarySyncFromPrimary function', async function () {
     let serviceRegistryMock
 
     const TEST_ENDPOINT = 'http://test-cn.co'
@@ -944,8 +944,8 @@ describe('test nodesync', async function () {
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
 
-      // Call processSync
-      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      // Call secondarySyncFromPrimary
+      await secondarySyncFromPrimary(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
       const newCNodeUserUUID = await verifyLocalCNodeUserStateForUser(
         exportedCnodeUser
@@ -985,8 +985,8 @@ describe('test nodesync', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // Call processSync
-      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      // Call secondarySyncFromPrimary
+      await secondarySyncFromPrimary(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
       await verifyLocalCNodeUserStateForUser(exportedCnodeUser)
 
@@ -1024,8 +1024,8 @@ describe('test nodesync', async function () {
       })
       assert.strictEqual(localCNodeUserCount, 1)
 
-      // Call processSync with `forceResync` = true
-      await processSync(
+      // Call secondarySyncFromPrimary with `forceResync` = true
+      await secondarySyncFromPrimary(
         serviceRegistryMock,
         userWallets,
         TEST_ENDPOINT,
