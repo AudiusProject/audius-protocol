@@ -69,10 +69,7 @@ export class Hedgehog {
         hedgehog.wallet = walletObj
 
         // set entropy in localStorage
-        await WalletManager.setEntropyInLocalStorage(
-          entropy,
-          hedgehog.localStorage
-        )
+        await WalletManager.setEntropyInLocalStorage(entropy, localStorage)
         return walletObj
       } else {
         throw new Error('No account record for user')
@@ -84,7 +81,7 @@ export class Hedgehog {
      */
     hedgehog.generateRecoveryInfo = async () => {
       const entropy = await WalletManager.getEntropyFromLocalStorage(
-        hedgehog.localStorage
+        localStorage
       )
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
