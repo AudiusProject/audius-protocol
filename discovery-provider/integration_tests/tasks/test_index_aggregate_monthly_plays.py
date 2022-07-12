@@ -3,8 +3,8 @@ from datetime import date, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
-from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
+from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlays
 from src.tasks.index_aggregate_monthly_plays import (
     AGGREGATE_MONTHLY_PLAYS_TABLE_NAME,
     _index_aggregate_monthly_plays,
@@ -51,11 +51,11 @@ def test_index_aggregate_monthly_plays_populate(app):
     with db.scoped_session() as session:
         _index_aggregate_monthly_plays(session)
 
-        results: List[AggregateMonthlyPlay] = (
-            session.query(AggregateMonthlyPlay)
+        results: List[AggregateMonthlyPlays] = (
+            session.query(AggregateMonthlyPlays)
             .order_by(
-                AggregateMonthlyPlay.timestamp,
-                AggregateMonthlyPlay.play_item_id,
+                AggregateMonthlyPlays.timestamp,
+                AggregateMonthlyPlays.play_item_id,
             )
             .all()
         )
@@ -77,9 +77,9 @@ def test_index_aggregate_monthly_plays_populate(app):
         assert results[4].timestamp == CURRENT_TIMESTAMP.replace(day=1)
         assert results[4].count == 1
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == AGGREGATE_MONTHLY_PLAYS_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == AGGREGATE_MONTHLY_PLAYS_TABLE_NAME)
             .scalar()
         )
         assert new_checkpoint == 6
@@ -137,11 +137,11 @@ def test_index_aggregate_monthly_plays_update(app):
     with db.scoped_session() as session:
         _index_aggregate_monthly_plays(session)
 
-        results: List[AggregateMonthlyPlay] = (
-            session.query(AggregateMonthlyPlay)
+        results: List[AggregateMonthlyPlays] = (
+            session.query(AggregateMonthlyPlays)
             .order_by(
-                AggregateMonthlyPlay.timestamp,
-                AggregateMonthlyPlay.play_item_id,
+                AggregateMonthlyPlays.timestamp,
+                AggregateMonthlyPlays.play_item_id,
             )
             .all()
         )
@@ -166,9 +166,9 @@ def test_index_aggregate_monthly_plays_update(app):
         assert results[5].timestamp == CURRENT_TIMESTAMP.replace(day=1)
         assert results[5].count == 1
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == AGGREGATE_MONTHLY_PLAYS_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == AGGREGATE_MONTHLY_PLAYS_TABLE_NAME)
             .scalar()
         )
         assert new_checkpoint == 9
@@ -218,17 +218,17 @@ def test_index_aggregate_monthly_plays_same_checkpoint(app):
     with db.scoped_session() as session:
         _index_aggregate_monthly_plays(session)
 
-    results: List[AggregateMonthlyPlay] = (
-        session.query(AggregateMonthlyPlay)
-        .order_by(AggregateMonthlyPlay.play_item_id)
+    results: List[AggregateMonthlyPlays] = (
+        session.query(AggregateMonthlyPlays)
+        .order_by(AggregateMonthlyPlays.play_item_id)
         .all()
     )
 
     assert len(results) == 2
 
-    new_checkpoint: IndexingCheckpoint = (
-        session.query(IndexingCheckpoint.last_checkpoint)
-        .filter(IndexingCheckpoint.tablename == AGGREGATE_MONTHLY_PLAYS_TABLE_NAME)
+    new_checkpoint: IndexingCheckpoints = (
+        session.query(IndexingCheckpoints.last_checkpoint)
+        .filter(IndexingCheckpoints.tablename == AGGREGATE_MONTHLY_PLAYS_TABLE_NAME)
         .scalar()
     )
     assert new_checkpoint == 9

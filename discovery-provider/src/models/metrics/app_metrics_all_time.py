@@ -1,10 +1,10 @@
-from sqlalchemy import BigInteger, Column, String, Table
+from sqlalchemy import Column, Integer, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
-# Materialized view
-t_app_name_metrics_all_time = Table(
-    "app_name_metrics_all_time",
-    Base.metadata,
-    Column("name", String),
-    Column("count", BigInteger),
-)
+
+class AppMetricsAllTime(Base, RepresentableMixin):
+    __tablename__ = "app_name_metrics_all_time"
+
+    count = Column(Integer, nullable=False)
+    name = Column(String, nullable=False, primary_key=True)

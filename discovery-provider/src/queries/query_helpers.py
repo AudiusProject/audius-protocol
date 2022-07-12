@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import or_
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
-from src.models.social.aggregate_plays import AggregatePlay
+from src.models.social.aggregate_plays import AggregatePlays
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
@@ -990,7 +990,9 @@ def get_track_play_counts(db, track_ids):
         return track_listen_counts
 
     track_plays = (
-        db.query(AggregatePlay).filter(AggregatePlay.play_item_id.in_(track_ids)).all()
+        db.query(AggregatePlays)
+        .filter(AggregatePlays.play_item_id.in_(track_ids))
+        .all()
     )
 
     for track_play in track_plays:
@@ -1012,7 +1014,7 @@ def get_sum_aggregate_plays(db):
         int of total play count
     """
 
-    plays = db.query(func.sum(AggregatePlay.count)).scalar()
+    plays = db.query(func.sum(AggregatePlays.count)).scalar()
 
     return int(plays)
 

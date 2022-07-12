@@ -1,12 +1,13 @@
-from sqlalchemy import Column, Index, Integer, Table, Text
+from sqlalchemy import Column, Integer, PrimaryKeyConstraint, String
 from src.models.base import Base
+from src.models.model_utils import RepresentableMixin
 
-# Materialized view
-t_tag_track_user = Table(
-    "tag_track_user",
-    Base.metadata,
-    Column("tag", Text, index=True),
-    Column("track_id", Integer),
-    Column("owner_id", Integer),
-    Index("tag_track_user_idx", "tag", "track_id", "owner_id", unique=True),
-)
+
+class TagTrackUserMatview(Base, RepresentableMixin):
+    __tablename__ = "tag_track_user"
+
+    tag = Column(String, nullable=False)
+    track_id = Column(Integer, nullable=False)
+    owner_id = Column(Integer, nullable=False)
+
+    PrimaryKeyConstraint(tag, track_id, owner_id)

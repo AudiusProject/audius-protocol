@@ -1,6 +1,14 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+)
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import validates
 from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin, validate_field_helper
@@ -8,38 +16,27 @@ from src.models.model_utils import RepresentableMixin, validate_field_helper
 
 class Playlist(Base, RepresentableMixin):
     __tablename__ = "playlists"
-
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
-    playlist_id = Column(Integer, primary_key=True, nullable=False)
-    playlist_owner_id = Column(Integer, nullable=False, index=True)
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
+    slot = Column(Integer, nullable=True)
+    txhash = Column(String, default="", nullable=False)
+    playlist_id = Column(Integer, nullable=False)
+    playlist_owner_id = Column(Integer, nullable=False)
     is_album = Column(Boolean, nullable=False)
     is_private = Column(Boolean, nullable=False)
     playlist_name = Column(String)
-    playlist_contents = Column(JSONB(), nullable=False)
+    playlist_contents = Column(JSONB, nullable=False)
     playlist_image_multihash = Column(String)
-    is_current = Column(Boolean, primary_key=True, nullable=False)
-    is_delete = Column(Boolean, nullable=False)
-    description = Column(String)
-    created_at = Column(DateTime, nullable=False, index=True)
-    upc = Column(String)
-    updated_at = Column(DateTime, nullable=False)
     playlist_image_sizes_multihash = Column(String)
-    txhash = Column(
-        String,
-        primary_key=True,
-        nullable=False,
-        server_default=text("''::character varying"),
-    )
-    last_added_to = Column(DateTime)
-    slot = Column(Integer)
+    description = Column(String)
+    upc = Column(String)
+    is_current = Column(Boolean, nullable=False)
+    is_delete = Column(Boolean, nullable=False)
+    last_added_to = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Playlist.blockhash == Block.blockhash"
-    )
-    block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Playlist.blocknumber == Block.number"
-    )
+    PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, txhash)
 
     ModelValidator.init_model_schemas("Playlist")
     fields = ["playlist_name", "description"]

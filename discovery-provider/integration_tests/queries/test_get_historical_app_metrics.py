@@ -1,10 +1,10 @@
 from datetime import date, timedelta
 
 from src.models.metrics.aggregate_daily_app_name_metrics import (
-    AggregateDailyAppNameMetric,
+    AggregateDailyAppNameMetrics,
 )
 from src.models.metrics.aggregate_monthly_app_name_metrics import (
-    AggregateMonthlyAppNameMetric,
+    AggregateMonthlyAppNameMetrics,
 )
 from src.queries.get_app_name_metrics import _get_historical_app_metrics
 from src.utils.db_session import get_db
@@ -23,39 +23,39 @@ def test_get_historical_app_metrics(app):
     with db_mock.scoped_session() as session:
         session.bulk_save_objects(
             [
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app",
                     count=1,
                     timestamp=thirty_days_ago - timedelta(days=1),
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app", count=2, timestamp=thirty_days_ago
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=1, timestamp=thirty_days_ago
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=3, timestamp=yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=4, timestamp=today
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="top-app",
                     count=2,
                     timestamp=today - timedelta(days=367),
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="best-app",
                     count=4,
                     timestamp=today - timedelta(days=100),
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="other-app",
                     count=5,
                     timestamp=today - timedelta(days=100),
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="top-app", count=6, timestamp=today
                 ),
             ]
@@ -90,21 +90,21 @@ def test_get_historical_app_metrics_with_min_count(app):
     with db_mock.scoped_session() as session:
         session.bulk_save_objects(
             [
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=4, timestamp=yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="best-app", count=3, timestamp=day_before_yesterday
                 ),
-                AggregateDailyAppNameMetric(
+                AggregateDailyAppNameMetrics(
                     application_name="top-app", count=6, timestamp=day_before_yesterday
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="other-app",
                     count=3,
                     timestamp=today - timedelta(days=100),
                 ),
-                AggregateMonthlyAppNameMetric(
+                AggregateMonthlyAppNameMetrics(
                     application_name="top-app",
                     count=6,
                     timestamp=today - timedelta(days=100),
