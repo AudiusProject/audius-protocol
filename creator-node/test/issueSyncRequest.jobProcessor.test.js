@@ -9,11 +9,12 @@ const { getLibsMock } = require('./lib/libsMock')
 
 const models = require('../src/models')
 const config = require('../src/config')
+const stateMachineConstants = require('../src/services/stateMachineManager/stateMachineConstants')
 const {
   SyncType,
   QUEUE_NAMES,
   SYNC_MODES
-} = require('../src/services/stateMachineManager/stateMachineConstants')
+} = stateMachineConstants
 const issueSyncRequestJobProcessor = require('../src/services/stateMachineManager/stateReconciliation/issueSyncRequest.jobProcessor')
 
 chai.use(require('sinon-chai'))
@@ -141,18 +142,16 @@ describe.only('test issueSyncRequest job processor', async function () {
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
     config.set('creatorNodeEndpoint', primary)
     logger = {
-      info: (msg) => console.log(msg),
-      warn: (msg) => console.log(msg),
-      error: (msg) => console.log(msg)
+      info: sandbox.stub(),
+      warn: sandbox.stub(),
+      error: sandbox.stub()
     }
     recordSuccessStub = sandbox.stub().resolves()
     recordFailureStub = sandbox.stub().resolves()
     nock.disableNetConnect()
-    console.log(`SIDTEST SYNCMODE 0: ${syncMode}`)
 
     syncType = SyncType.Manual
     syncMode = SYNC_MODES.SyncSecondaryFromPrimary
-    console.log(`SIDTEST SYNCMODE 2: ${syncMode}`)
     primary = 'http://primary_cn.co'
     wallet = '0x123456789'
 
@@ -200,7 +199,8 @@ describe.only('test issueSyncRequest job processor', async function () {
           retrieveClockValueForUserFromReplicaStub
       },
       '../stateMachineConstants': {
-        SYNC_MONITORING_RETRY_DELAY_MS: 1
+        ...stateMachineConstants,
+        SYNC_MONITORING_RETRY_DELAY_MS: 1,
       }
     }
 
@@ -215,7 +215,6 @@ describe.only('test issueSyncRequest job processor', async function () {
   }
 
   it('issues correct sync when no additional sync is required', async function () {
-    console.log(`SIDTEST SYNCMODE 3: ${syncMode}`)
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error('getNewOrExistingSyncReq was not expected to be called')
     })
@@ -237,8 +236,6 @@ describe.only('test issueSyncRequest job processor', async function () {
       retrieveClockValueForUserFromReplicaStub,
       primarySyncFromSecondaryStub
     })
-
-    console.log(`SIDTEST SYNCMODE 3: ${syncMode}`)
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
     const result = await issueSyncRequestJobProcessor({

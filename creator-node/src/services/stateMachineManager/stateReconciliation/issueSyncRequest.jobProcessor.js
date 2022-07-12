@@ -73,10 +73,7 @@ module.exports = async function ({
       }
     }
   }
-  if (
-    syncMode !== SYNC_MODES.SyncSecondaryFromPrimary ||
-    syncMode !== SYNC_MODES.MergePrimaryAndSecondary
-  ) {
+  if (syncMode === SYNC_MODES.None) {
     return {
       error: {}
     }
