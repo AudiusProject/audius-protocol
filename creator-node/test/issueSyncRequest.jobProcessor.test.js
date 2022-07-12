@@ -23,6 +23,8 @@ const { expect } = chai
 describe('test issueSyncRequest job processor param validation', function () {
   let server, sandbox, originalContentNodeEndpoint, logger
 
+  let syncMode = SYNC_MODES.SyncSecondaryFromPrimary
+
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
     await appInfo.app.get('redisClient').flushdb()
@@ -66,6 +68,7 @@ describe('test issueSyncRequest job processor param validation', function () {
       issueSyncRequestJobProcessor({
         logger,
         syncType: 'anyDummyType',
+        syncMode,
         syncRequestParameters
       })
     ).to.eventually.be.fulfilled.and.deep.equal({
@@ -98,6 +101,7 @@ describe('test issueSyncRequest job processor param validation', function () {
       issueSyncRequestJobProcessor({
         logger,
         syncType: 'anyDummyType',
+        syncMode,
         syncRequestParameters
       })
     ).to.eventually.be.fulfilled.and.deep.equal({
@@ -111,13 +115,22 @@ describe('test issueSyncRequest job processor param validation', function () {
   })
 })
 
-describe.only('test issueSyncRequest job processor', function () {
+describe.only('test issueSyncRequest job processor', async function () {
   let server,
     sandbox,
     originalContentNodeEndpoint,
     logger,
     recordSuccessStub,
-    recordFailureStub
+    recordFailureStub,
+    syncType,
+    syncMode,
+    primary,
+    wallet,
+    baseURL,
+    url,
+    method,
+    data,
+    syncRequestParameters
 
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -128,13 +141,31 @@ describe.only('test issueSyncRequest job processor', function () {
     originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
     config.set('creatorNodeEndpoint', primary)
     logger = {
-      info: sandbox.stub(),
-      warn: sandbox.stub(),
-      error: sandbox.stub()
+      info: (msg) => console.log(msg),
+      warn: (msg) => console.log(msg),
+      error: (msg) => console.log(msg)
     }
     recordSuccessStub = sandbox.stub().resolves()
     recordFailureStub = sandbox.stub().resolves()
     nock.disableNetConnect()
+    console.log(`SIDTEST SYNCMODE 0: ${syncMode}`)
+
+    syncType = SyncType.Manual
+    syncMode = SYNC_MODES.SyncSecondaryFromPrimary
+    console.log(`SIDTEST SYNCMODE 2: ${syncMode}`)
+    primary = 'http://primary_cn.co'
+    wallet = '0x123456789'
+
+    baseURL = 'http://some_cn.co'
+    url = '/sync'
+    method = 'post'
+    data = { wallet: [wallet] }
+    syncRequestParameters = {
+      baseURL,
+      url,
+      method,
+      data
+    }
   })
 
   afterEach(async function () {
@@ -146,27 +177,11 @@ describe.only('test issueSyncRequest job processor', function () {
     nock.enableNetConnect()
   })
 
-  const syncType = SyncType.Manual
-  let syncMode = SYNC_MODES.SyncSecondaryFromPrimary
-  const primary = 'http://primary_cn.co'
-  const wallet = '0x123456789'
-
-  const baseURL = 'http://some_cn.co'
-  const url = '/sync'
-  const method = 'post'
-  const data = { wallet: [wallet] }
-  const syncRequestParameters = {
-    baseURL,
-    url,
-    method,
-    data
-  }
-
   function getJobProcessorStub({
     getNewOrExistingSyncReqStub,
     getSecondaryUserSyncFailureCountForTodayStub,
     retrieveClockValueForUserFromReplicaStub,
-    primarySyncFromSecondaryStub = null
+    primarySyncFromSecondaryStub
   }) {
 
     const stubs = {
@@ -199,7 +214,8 @@ describe.only('test issueSyncRequest job processor', function () {
     )
   }
 
-  it.only('issues correct sync when no additional sync is required', async function () {
+  it('issues correct sync when no additional sync is required', async function () {
+    console.log(`SIDTEST SYNCMODE 3: ${syncMode}`)
     const getNewOrExistingSyncReqStub = sandbox.stub().callsFake((args) => {
       throw new Error('getNewOrExistingSyncReq was not expected to be called')
     })
@@ -210,14 +226,19 @@ describe.only('test issueSyncRequest job processor', function () {
 
     const retrieveClockValueForUserFromReplicaStub = sandbox.stub().resolves(1)
 
-    const issueSyncRequestJobProcessor = getJobProcessorStub({
-      getNewOrExistingSyncReqStub,
-      getSecondaryUserSyncFailureCountForTodayStub,
-      retrieveClockValueForUserFromReplicaStub
-    })
+    const primarySyncFromSecondaryStub = sandbox.stub().returns(null)
 
     // Make the axios request succeed
     nock(baseURL).post('/sync', data).reply(200)
+
+    const issueSyncRequestJobProcessor = getJobProcessorStub({
+      getNewOrExistingSyncReqStub,
+      getSecondaryUserSyncFailureCountForTodayStub,
+      retrieveClockValueForUserFromReplicaStub,
+      primarySyncFromSecondaryStub
+    })
+
+    console.log(`SIDTEST SYNCMODE 3: ${syncMode}`)
 
     // Verify job outputs the correct results: no sync issued (nock will error if the wrong network req was made)
     const result = await issueSyncRequestJobProcessor({
@@ -226,6 +247,7 @@ describe.only('test issueSyncRequest job processor', function () {
       syncMode,
       syncRequestParameters
     })
+    console.log(`SIDTEST RESULT: ${JSON.stringify(result)}`)
     expect(result).to.have.deep.property('error', {})
     expect(result).to.have.deep.property('jobsToEnqueue', {})
     expect(result.metricsToRecord).to.have.lengthOf(1)
@@ -457,8 +479,6 @@ describe.only('test issueSyncRequest job processor', function () {
     )
     expect(recordSuccessStub).to.have.not.been.called
   })
-
-  it.skip('SyncMode.None')
 
   describe('test SYNC_MODES.MergePrimaryAndSecondary', async function () {
     syncMode = SYNC_MODES.MergePrimaryAndSecondary

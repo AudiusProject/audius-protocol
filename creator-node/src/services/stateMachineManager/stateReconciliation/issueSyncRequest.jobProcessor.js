@@ -36,7 +36,7 @@ const maxSyncMonitoringDurationInMs = config.get(
  * @param {Object} param job data
  * @param {Object} param.logger the logger that can be filtered by jobName and jobId
  * @param {string} param.syncType the type of sync (manual or recurring)
- * * @param {string} param.syncMode SyncSecondaryFromPrimary or MergePrimaryAndSecondary
+ * * @param {string} param.syncMode from SYNC_MODES object
  * @param {Object} param.syncRequestParameters axios params to make the sync request. Shape: { baseURL, url, method, data }
  */
 module.exports = async function ({
@@ -45,7 +45,7 @@ module.exports = async function ({
   syncMode,
   syncRequestParameters
 }) {
-  _validateJobData(logger, syncType, syncRequestParameters)
+  _validateJobData(logger, syncType, syncMode, syncRequestParameters)
 
   const isValidSyncJobData =
     'baseURL' in syncRequestParameters &&
@@ -77,7 +77,9 @@ module.exports = async function ({
     syncMode !== SYNC_MODES.SyncSecondaryFromPrimary ||
     syncMode !== SYNC_MODES.MergePrimaryAndSecondary
   ) {
-    return {}
+    return {
+      error: {}
+    }
   }
 
   const userWallet = syncRequestParameters.data.wallet[0]
@@ -223,7 +225,12 @@ module.exports = async function ({
   }
 }
 
-const _validateJobData = (logger, syncType, syncRequestParameters) => {
+const _validateJobData = (
+  logger,
+  syncType,
+  syncMode,
+  syncRequestParameters
+) => {
   if (typeof logger !== 'object') {
     throw new Error(
       `Invalid type ("${typeof logger}") or value ("${logger}") of logger param`
@@ -232,6 +239,11 @@ const _validateJobData = (logger, syncType, syncRequestParameters) => {
   if (typeof syncType !== 'string') {
     throw new Error(
       `Invalid type ("${typeof syncType}") or value ("${syncType}") of syncType param`
+    )
+  }
+  if (typeof syncMode !== 'string') {
+    throw new Error(
+      `Invalid type ("${typeof syncMode}") or value ("${syncMode}") of syncMode param`
     )
   }
   if (
