@@ -90,6 +90,8 @@ do
         | jq "${SET_TIME_DELAY}" \
         | jq "${RESET_TEMPLATE_SELECTION}" \
         | jq "${SANITIZE_LIBRARY_PANELS}" \
+        | jq "${CLEAR_LIBRARY_PANEL_CREATED}" \
+        | jq "${CLEAR_LIBRARY_PANEL_UPDATED}" \
         | jq "${PUSH_FORMATTING}" \
         > "${path}"
     echo "Saved to: ${path}"
