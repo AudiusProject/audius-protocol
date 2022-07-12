@@ -152,14 +152,13 @@ class File extends Base {
   /**
    * Uploads an image to the connected Content Node.
    * @param {File} file
-   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async uploadImage (file, square, timeoutMs = null, writeQuorumEnabled = null) {
+  async uploadImage (file, square, timeoutMs = null) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
 
     // Assign a creator_node_endpoint to the user if necessary
-    await this.User.assignReplicaSetIfNecessary(writeQuorumEnabled)
+    await this.User.assignReplicaSetIfNecessary()
 
     const resp = await this.creatorNode.uploadImage(file, square, /* onProgress */ undefined, timeoutMs)
     return resp

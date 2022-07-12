@@ -148,6 +148,7 @@ export class CreatorNode {
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
+  writeQuorumEnabled: boolean | null
   connected: boolean
   connecting: boolean
   authToken: null
@@ -164,6 +165,7 @@ export class CreatorNode {
    * @param passList whether or not to include only specified nodes (default null)
    * @param blockList whether or not to exclude any nodes (default null)
    * @param monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   * @param writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
    */
   constructor(
     web3Manager: Web3Manager,
@@ -174,7 +176,8 @@ export class CreatorNode {
     schemas: Schemas,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
-    monitoringCallbacks: MonitoringCallbacks = {}
+    monitoringCallbacks: MonitoringCallbacks = {},
+    writeQuorumEnabled = null
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -192,6 +195,7 @@ export class CreatorNode {
     this.passList = passList
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
+    this.writeQuorumEnabled = writeQuorumEnabled
   }
 
   async init() {
@@ -260,13 +264,8 @@ export class CreatorNode {
    * Uploads creator content to a creator node
    * @param metadata the creator metadata
    * @param [blockNumber]
-   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async uploadCreatorContent(
-    metadata: Metadata,
-    blockNumber = null,
-    writeQuorumEnabled = null
-  ) {
+  async uploadCreatorContent(metadata: Metadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -278,9 +277,7 @@ export class CreatorNode {
         data: {
           metadata,
           blockNumber
-        },
-        // Using a string because of axios bug (fixed in axios v0.20.0): https://github.com/axios/axios/issues/2223
-        headers: { 'Enforce-Write-Quorum': String(writeQuorumEnabled) }
+        }
       }
 
       const { data: body } = await this._makeRequest(requestObj)
@@ -319,14 +316,12 @@ export class CreatorNode {
    * @param coverArtFile the image content
    * @param metadata the metadata for the track
    * @param onProgress an optional on progress callback
-   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
   async uploadTrackContent(
     trackFile: File,
     coverArtFile: File,
     metadata: Metadata,
-    onProgress: ProgressCB = () => {},
-    writeQuorumEnabled = null
+    onProgress: ProgressCB = () => {}
   ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
@@ -378,11 +373,7 @@ export class CreatorNode {
     }
     // Creates new track entity on creator node, making track's metadata available
     // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
-    const metadataResp = await this.uploadTrackMetadata(
-      metadata,
-      sourceFile,
-      writeQuorumEnabled
-    )
+    const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
     return { ...metadataResp, ...trackContentResp }
   }
 
@@ -392,13 +383,8 @@ export class CreatorNode {
    * source file must be provided (returned from uploading track content).
    * @param metadata
    * @param sourceFile
-   * @param {boolean | null} [writeQuorumEnabled] true if metadata should be replicated to a secondary before returning a success response (default to null to allow Content Node to decide)
    */
-  async uploadTrackMetadata(
-    metadata: Metadata,
-    sourceFile: string,
-    writeQuorumEnabled: boolean | null
-  ) {
+  async uploadTrackMetadata(metadata: Metadata, sourceFile: string) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -414,9 +400,7 @@ export class CreatorNode {
         data: {
           metadata,
           sourceFile
-        },
-        // Using a string because of axios bug (fixed in axios v0.20.0): https://github.com/axios/axios/issues/2223
-        headers: { 'Enforce-Write-Quorum': String(writeQuorumEnabled) }
+        }
       },
       true
     )
@@ -785,6 +769,11 @@ export class CreatorNode {
       }
 
       axiosRequestObj.headers = axiosRequestObj.headers || {}
+
+      // Stringify `writeQuorumEnabled` to work around axios bug (fixed in axios v0.20.0): https://github.com/axios/axios/issues/2223
+      axiosRequestObj.headers['Enforce-Write-Quorum'] = String(
+        this.writeQuorumEnabled
+      )
 
       if (this.authToken) {
         axiosRequestObj.headers['X-Session-ID'] = this.authToken
