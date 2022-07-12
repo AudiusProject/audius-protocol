@@ -268,7 +268,7 @@ cat >solana-program-config.json <<EOF
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$valid_signer_eth_private_key",
     "splToken": "$(solana address -k "$token_keypair")",
-    "claimableTokenAddress": "$(solana address -k target/deploy/claimable_token-keypair.json)",
+    "claimableTokenAddress": "$(solana address -k target/deploy/claimable_tokens-keypair.json)",
     "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
     "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",
     "rewardsManagerTokenAccount": "$(solana address -k "$reward_manager_token_pda_keypair")"
