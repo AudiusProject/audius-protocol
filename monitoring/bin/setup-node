@@ -70,8 +70,8 @@ function start_grafana() {
         docker-compose up -d grafana prometheus
         sleep 10
         ./grafana/bin/create-data-sources.sh
-        ./grafana/bin/upload-library-panels.sh
         ./grafana/bin/upload-dashboards.sh
+        ./grafana/bin/upload-library-panels.sh
     )
 }
 

@@ -419,12 +419,12 @@ git pull
 # git checkout -b grafana-$(date "+%F-%H-%M-%S")
 # git add grafana/dashboards/
 
+# deploy the manual changes seen, as well as the new intended changes
+./grafana/bin/upload-dashboards.sh
+
 # deploy library panel updates
 # ONLY WHEN CHANGED to avoid version bumps
 ./grafana/bin/upload-library-panels.sh
-
-# deploy the manual changes seen, as well as the new intended changes
-./grafana/bin/upload-dashboards.sh
 
 # "manual mode" supports uploading one file at a time
 # ./grafana/bin/upload-dashboards.sh filename.json
