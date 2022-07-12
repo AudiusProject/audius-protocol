@@ -1,8 +1,6 @@
 
 import Web3 from 'web3';
 const web3 = new Web3()
-const dotenv = require('dotenv')
-
 
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
@@ -145,26 +143,6 @@ export const asyncSleep = (milliseconds: number) => {
 }
 
 export const getEnv = () => {
-
-    // Initialize ENV if not already initialized
-    if (!envInitialized) {
-        const nodeEnv = process.env['NODE_ENV']
-
-        if (nodeEnv === "production") {
-            console.log('[+] running in production (.env.prod)')
-            dotenv.config({ path: '.env.prod' })
-        } else if (nodeEnv === "staging") {
-            console.log('[+] running in staging (.env.stage)')
-            dotenv.config({ path: '.env.stage' })
-        } else {
-            console.log('[+] running locally (.env.local)')
-            dotenv.config({ path: '.env.local' })
-
-        }
-
-        envInitialized = true
-    }
-
 
     const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
     const signatureSpID = parseInt(process.env['SIGNATURE_SPID'] || '0')
