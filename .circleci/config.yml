@@ -75,6 +75,14 @@ jobs:
             # Run A up on remote box
             GCLOUD_IP_ADDRESS=$(gcloud compute instances describe $GCLOUD_VM_NAME --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
             ssh -o "StrictHostKeyChecking no" -i ~/.ssh/google_compute_engine -tt ubuntu@$GCLOUD_IP_ADDRESS \<< EOF
+              # fail on error
+              set -e;
+              # on error, run this function
+              exit_ssh() {
+                echo $?
+              }
+              trap exit_ssh EXIT
+
               # commands to prime the VM for the bake
               A run init-repos up;
               A up;
