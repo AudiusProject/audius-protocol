@@ -850,7 +850,7 @@ const allUp = async ({
     console.log('Provisioning services in sequence.'.info)
     await runInSequence(nodeUpCommands.flat())
     console.log('Health checking services'.info)
-    await runInSequence(nodehealthcheckcommands.flat())
+    await runInSequence(nodeHealthCheckCommands.flat())
   }
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
