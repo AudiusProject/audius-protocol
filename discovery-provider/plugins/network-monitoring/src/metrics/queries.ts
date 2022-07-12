@@ -2,17 +2,6 @@
 import { QueryTypes } from "sequelize"
 import { sequelizeConn } from "../db"
 
-/* 
-- he number of CID on each CN that have been replicated at least once
-- The number of CID on each CN that have ***NOT*** been replicated at least once
-- [ex 1] **The number of users with a specific CN as their primary**
-- The number of users with a specific CN in their replica set
-- CID replication across the CNs
-- CID replication factor
-- The number of users with their data syncs across 0, 1, 2, or 3 CNs
-*/
-
-
 export const getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
     const cidsListResp = await sequelizeConn.query(`
