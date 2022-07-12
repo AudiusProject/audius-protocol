@@ -48,14 +48,14 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
       throw new Error(`File has no content, content length is 0: ${cid}`)
     }
 
-    const expectedCid = await LibsUtils.fileHasher.generateNonImageCid(
+    const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
       dstPath,
       genericLogger.child(req.logContext)
     )
-    if (cid !== expectedCid) {
+    if (cid !== expectedCID) {
       // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
       throw new Error(
-        `File contents don't their expected CID. CID: ${cid} expected CID: ${expectedCid}`
+        `File contents don't their expected CID. CID: ${cid} expected CID: ${expectedCID}`
       )
     }
   } catch (e) {
@@ -64,7 +64,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
       return saveFileFromBufferToDisk(req, buffer, numRetries - 1)
     }
     throw new Error(
-      `saveFileFromBufferToDisk - Error during content verification for cid ${cid} ${e.message}`
+      `saveFileFromBufferToDisk - Error during content verification for multihash ${cid} ${e.message}`
     )
   }
 
