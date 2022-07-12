@@ -123,16 +123,17 @@ async function fetchExportFromSecondary({
   }
 
   try {
-    await asyncRetry({
+    const exportResp = await asyncRetry({
       // Throws on any non-200 response code
-      asyncFn: () => axios({
-        method: 'get',
-        baseURL: secondary,
-        url: '/export',
-        responseType: 'json',
-        params: exportQueryParams,
-        timeout: EXPORT_REQ_TIMEOUT_MS
-      }),
+      asyncFn: () =>
+        axios({
+          method: 'get',
+          baseURL: secondary,
+          url: '/export',
+          responseType: 'json',
+          params: exportQueryParams,
+          timeout: EXPORT_REQ_TIMEOUT_MS
+        }),
       retries: EXPORT_REQ_MAX_RETRIES,
       log: false
     })
@@ -266,7 +267,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
 /**
  * Saves all entries to DB that don't already exist in DB
  */
- async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
+async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
   const transaction = await models.sequelize.transaction()
 
   try {
@@ -276,25 +277,25 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
       tracks: fetchedTracks,
       files: fetchedFiles
     } = fetchedCNodeUser
-  
+
     logger.info(
       logPrefix,
       `beginning add ops for cnodeUser wallet ${walletPublicKey}`
     )
-  
+
     let localCNodeUser = await models.CNodeUser.findOne({
       where: { walletPublicKey },
       transaction
     })
-  
+
     let cnodeUserUUID
     if (localCNodeUser) {
       /**
        * If local CNodeUser exists, filter out any received entries that are already present in DB
        */
-  
+
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
-  
+
       const audiusUserComparisonFields = [
         'blockchainId',
         'metadataFileUUID',
@@ -309,7 +310,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
         transaction,
         comparisonFields: audiusUserComparisonFields
       })
-  
+
       const trackComparisonFields = [
         'blockchainId',
         'metadataFileUUID',
@@ -323,7 +324,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
         transaction,
         comparisonFields: trackComparisonFields
       })
-  
+
       const fileComparisonFields = ['fileUUID']
       fetchedFiles = await filterOutAlreadyPresentDBEntries({
         cnodeUserUUID,
@@ -341,10 +342,10 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
         _.omit({ ...fetchedCNodeUser, clock: 0 }, ['cnodeUserUUID']),
         { returning: true, transaction }
       )
-  
+
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
     }
-  
+
     // Aggregate all entries into single array
     let allEntries = _.concat(
       [],
@@ -358,10 +359,10 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
       })),
       fetchedFiles.map((file) => ({ tableInstance: models.File, entry: file }))
     )
-  
+
     // Sort by clock asc to preserve original insert order
     allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
-  
+
     // Write all entries to DB
     for await (const { tableInstance, entry } of allEntries) {
       await DBManager.createNewDataRecord(
@@ -371,7 +372,7 @@ async function saveFilesToDisk({ files, userReplicaSet, logger }) {
         transaction
       )
     }
-  
+
     await transaction.commit()
   } catch (e) {
     await transaction.rollback()
