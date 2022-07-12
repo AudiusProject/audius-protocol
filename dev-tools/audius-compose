@@ -12,8 +12,8 @@ import solana.keypair
 
 def generate_env(protocol_dir, creator_node_replicas):
     config = {}
-    if (protocol_dir / "dev/config.json").exists():
-        config = json.load((protocol_dir / "dev/config.json").open())
+    if (protocol_dir / "dev-tools/config.json").exists():
+        config = json.load((protocol_dir / "dev-tools/config.json").open())
 
     env = {}
 

@@ -251,7 +251,7 @@ services:
 
   discovery-provider:
     build: discovery-provider
-    command: sh -c ". /tmp/dev/startup/startup.sh && scripts/start.sh"
+    command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache
@@ -279,7 +279,7 @@ services:
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
-      - ./dev:/tmp/dev
+      - ./dev-tools:/tmp/dev-tools
     depends_on:
       poa-ganache:
         condition: service_healthy
@@ -295,7 +295,7 @@ services:
 
   creator-node:
     build: creator-node
-    command: sh -c ". /tmp/dev/startup/startup.sh && scripts/start.sh"
+    command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
       logLevel: "debug"
@@ -322,7 +322,7 @@ services:
     volumes:
       - ./creator-node/src:/usr/src/app/src
       - audius-libs:/usr/src/audius-libs
-      - ./dev:/tmp/dev
+      - ./dev-tools:/tmp/dev-tools
     depends_on:
       poa-ganache:
         condition: service_healthy
@@ -338,12 +338,12 @@ services:
 
   proxy:
     image: alpine:3.16.0
-    command: sh /tmp/dev/startup/proxy.sh
+    command: sh /tmp/dev-tools/startup/proxy.sh
     ports:
       - "4000-4010:4000-4010"
       - "5000-5010:5000-5010"
     volumes:
-      - ./dev:/tmp/dev
+      - ./dev-tools:/tmp/dev-tools
     logging: *default-logging
     deploy:
       mode: global

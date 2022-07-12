@@ -52,12 +52,12 @@ else
     export PROTOCOL_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
 fi
 
-python3 -m pip install -r $PROTOCOL_DIR/dev/requirements.txt
+python3 -m pip install -r $PROTOCOL_DIR/dev-tools/requirements.txt
 
 mkdir -p "$HOME/.local/bin"
 
-ln -sf "$PROTOCOL_DIR/dev/audius-compose" "$HOME/.local/bin/audius-compose"
-# ln -sf "$PROTOCOL_DIR/dev/audius-cloud" "$HOME/.local/bin/audius-cloud"
+ln -sf "$PROTOCOL_DIR/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose"
+# ln -sf "$PROTOCOL_DIR/dev-tools/audius-cloud" "$HOME/.local/bin/audius-cloud"
 
 echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.bashrc
 echo "export PATH=$HOME/.local/bin:$PATH" >>~/.bashrc

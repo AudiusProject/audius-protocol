@@ -7,14 +7,14 @@ while sleep 1; do
   for ip in $(dig +short discovery-provider); do
     # check if a file exists with the name of the ip (this file serves as a lock)
     if [ ! -e "$ip" ]; then
-      name=$(nslookup $ip | grep -o "discovery-provider-[0-9]\+") # find hostname of the ip
-      replica=$(echo $name | grep -o "[0-9]\+")                   # extract replia number from hostname
+      name=$(nslookup $ip | grep -o "discovery-provider-[0-9]\+")  # find hostname of the ip
+      replica=$(echo $name | grep -o "[0-9]\+")  # extract replia number from hostname
 
       # forward traffic on port 5000 + replica - 1 to the ip
       # see https://unix.stackexchange.com/questions/10428/simple-way-to-create-a-tunnel-from-one-local-port-to-another/101906#comment777872_101906 for more details
       nc -v -lk -p $((5000 + $replica - 1)) -e nc $ip 5000 &
 
-      touch $ip # create a file with the name of the ip (this file serves as a lock)
+      touch $ip  # create a file with the name of the ip (this file serves as a lock)
     fi
   done
 
