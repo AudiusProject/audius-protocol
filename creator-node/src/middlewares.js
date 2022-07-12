@@ -90,58 +90,6 @@ async function authMiddleware(req, res, next) {
 }
 
 /**
- * Acquire wallet write lock; return 423 error if already held
- */
-async function acquireWalletWriteLock(req, res, next) {
-  const redisClient = req.app.get('redisClient')
-
-  if (req.session && req.session.wallet) {
-    const wallet = req.session.wallet
-
-    try {
-      await redisClient.WalletWriteLock.acquire(
-        wallet,
-        redisClient.WalletWriteLock.VALID_ACQUIRERS.UserWrite
-      )
-    } catch (e) {
-      return sendResponse(
-        req,
-        res,
-        errorResponse(
-          423,
-          `Cannot change state of wallet ${wallet}. Another write in progress.`
-        )
-      )
-    }
-  }
-
-  req.logger.debug(`acquireWalletWriteLock succeeded`)
-  next()
-}
-
-/**
- * Release wallet write lock
- */
-async function releaseWalletWriteLock(req, res, next) {
-  const redisClient = req.app.get('redisClient')
-
-  if (req.session && req.session.wallet) {
-    const wallet = req.session.wallet
-
-    try {
-      await redisClient.WalletWriteLock.release(wallet)
-    } catch (e) {
-      req.logger.warn(
-        `releaseWalletWriteLock Failure for wallet ${wallet} - ${e.message}`
-      )
-    }
-  }
-
-  req.logger.debug(`acquireWalletWriteLock succeeded`)
-  next()
-}
-
-/**
  * Blocks writes if node is not the primary for audiusUser associated with wallet
  */
 async function ensurePrimaryMiddleware(req, res, next) {
@@ -883,8 +831,6 @@ module.exports = {
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  acquireWalletWriteLock,
-  releaseWalletWriteLock,
   getOwnEndpoint,
   getCreatorNodeEndpoints
 }

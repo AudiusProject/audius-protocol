@@ -8,12 +8,7 @@ const _ = require('lodash')
 const config = require('../config')
 const models = require('../models')
 const sequelize = models.sequelize
-const {
-  authMiddleware,
-  acquireWalletWriteLock,
-  releaseWalletWriteLock,
-  ensureStorageMiddleware
-} = require('../middlewares')
+const { authMiddleware, ensureStorageMiddleware } = require('../middlewares')
 const {
   handleResponse,
   successResponse,
@@ -153,14 +148,12 @@ module.exports = function (app) {
   app.post(
     '/users/logout',
     authMiddleware,
-    acquireWalletWriteLock,
     handleResponse(async (req, res, next) => {
       await sessionManager.deleteSession(
         req.get(sessionManager.sessionTokenHeader)
       )
       return successResponse()
-    }),
-    releaseWalletWriteLock
+    })
   )
 
   /**
