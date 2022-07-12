@@ -1,9 +1,9 @@
 const axios = require('axios')
-const retry = require('async-retry')
 const _ = require('lodash')
 
 const config = require('../../config')
 const redis = require('../../redis')
+const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
@@ -11,10 +11,10 @@ const { getCreatorNodeEndpoints } = require('../../middlewares')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const { serviceRegistry } = require('../../serviceRegistry')
+const { asyncRetry } = require('../../utils')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
-const USER_WRITE_LOCK_TIMEOUT_MS = 1800000 // 30min
 const DEFAULT_LOG_CONTEXT = {}
 
 /**
@@ -22,8 +22,8 @@ const DEFAULT_LOG_CONTEXT = {}
  * Should never error, instead return errorObj, else null
  */
 module.exports = async function primarySyncFromSecondary({
-  secondary,
   wallet,
+  secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
   await serviceRegistry.initLibs()
@@ -40,8 +40,12 @@ module.exports = async function primarySyncFromSecondary({
   let error = null
 
   try {
-    await acquireUserRedisLock({ redis, wallet })
+    await WalletWriteLock.acquire(
+      wallet,
+      WalletWriteLock.VALID_ACQUIRERS.PrimarySyncFromSecondary
+    )
 
+    // TODO should be able to pass this through from StateMachine / caller
     const userReplicaSet = await getUserReplicaSet({
       wallet,
       selfEndpoint,
@@ -49,6 +53,7 @@ module.exports = async function primarySyncFromSecondary({
       logPrefix
     })
 
+    // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
     let exportClockRangeMin = 0
     while (!completed) {
@@ -59,6 +64,7 @@ module.exports = async function primarySyncFromSecondary({
         selfEndpoint
       })
 
+      // Save all files to disk separately from DB writes to minimize DB transaction duration
       await saveFilesToDisk({
         files: fetchedCNodeUser.files,
         userReplicaSet,
@@ -71,7 +77,6 @@ module.exports = async function primarySyncFromSecondary({
         logPrefix
       })
 
-      // Keep going until data for full clock range has been retrieved
       const clockInfo = fetchedCNodeUser.clockInfo
       if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
         completed = true
@@ -86,7 +91,7 @@ module.exports = async function primarySyncFromSecondary({
 
     await SyncHistoryAggregator.recordSyncFail(wallet)
   } finally {
-    await releaseUserRedisLock({ redis, wallet })
+    await WalletWriteLock.release(wallet)
 
     if (error) {
       logger.error(
@@ -102,9 +107,12 @@ module.exports = async function primarySyncFromSecondary({
   return error
 }
 
+/**
+ * Fetch export for wallet from secondary for max clock range, starting at clockRangeMin
+ */
 async function fetchExportFromSecondary({
-  secondary,
   wallet,
+  secondary,
   clockRangeMin,
   selfEndpoint
 }) {
@@ -115,21 +123,19 @@ async function fetchExportFromSecondary({
   }
 
   try {
-    const exportResp = await retry(
+    await asyncRetry({
       // Throws on any non-200 response code
-      async () =>
-        axios({
-          method: 'get',
-          baseURL: secondary,
-          url: '/export',
-          responseType: 'json',
-          params: exportQueryParams,
-          timeout: EXPORT_REQ_TIMEOUT_MS
-        }),
-      {
-        retries: EXPORT_REQ_MAX_RETRIES
-      }
-    )
+      asyncFn: () => axios({
+        method: 'get',
+        baseURL: secondary,
+        url: '/export',
+        responseType: 'json',
+        params: exportQueryParams,
+        timeout: EXPORT_REQ_TIMEOUT_MS
+      }),
+      retries: EXPORT_REQ_MAX_RETRIES,
+      log: false
+    })
 
     // Validate export response
     if (
@@ -157,108 +163,235 @@ async function fetchExportFromSecondary({
 /**
  * Fetch data for all files & save to disk
  *
- * - These ops are performed before DB ops to minimize DB TX duration
  * - `saveFileForMultihashToFS` will exit early if files already exist on disk
  * - Performed in batches to limit concurrent load
  */
 async function saveFilesToDisk({ files, userReplicaSet, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
-  const trackFiles = files.filter((file) =>
-    models.File.TrackTypes.includes(file.type)
-  )
-  const nonTrackFiles = files.filter((file) =>
-    models.File.NonTrackTypes.includes(file.type)
-  )
-
-  /**
-   * Save all Track files to disk
-   */
-  for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
-    const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
+  try {
+    const trackFiles = files.filter((file) =>
+      models.File.TrackTypes.includes(file.type)
+    )
+    const nonTrackFiles = files.filter((file) =>
+      models.File.NonTrackTypes.includes(file.type)
+    )
 
     /**
-     * Fetch content for each CID + save to FS
-     * Record any CIDs that failed retrieval/saving for later use
-     *
-     * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+     * Save all Track files to disk
      */
-    await Promise.all(
-      trackFilesSlice.map(async (trackFile) => {
-        const succeeded = await saveFileForMultihashToFS(
-          serviceRegistry,
-          logger,
-          trackFile.multihash,
-          trackFile.storagePath,
-          userReplicaSet,
-          null, // fileNameForImage
-          trackFile.trackBlockchainId
-        )
-        if (!succeeded) {
-          throw new Error(
-            `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
-          )
-        }
-      })
-    )
-  }
+    for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
+      const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
 
-  /**
-   * Save all non-Track files to disk
-   */
-  for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
-    const nonTrackFilesSlice = nonTrackFiles.slice(
-      i,
-      i + FileSaveMaxConcurrency
-    )
-
-    await Promise.all(
-      nonTrackFilesSlice.map(async (nonTrackFile) => {
-        // Skip over directories since there's no actual content to sync
-        // The files inside the directory are synced separately
-        if (nonTrackFile.type === 'dir') {
-          return
-        }
-
-        const multihash = nonTrackFile.multihash
-
-        // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-        // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-        let succeeded
-        if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-          succeeded = await saveFileForMultihashToFS(
+      /**
+       * Fetch content for each CID + save to FS
+       * Record any CIDs that failed retrieval/saving for later use
+       *
+       * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+       */
+      await Promise.all(
+        trackFilesSlice.map(async (trackFile) => {
+          const succeeded = await saveFileForMultihashToFS(
             serviceRegistry,
             logger,
-            multihash,
-            nonTrackFile.storagePath,
+            trackFile.multihash,
+            trackFile.storagePath,
             userReplicaSet,
-            nonTrackFile.fileName
+            null, // fileNameForImage
+            trackFile.trackBlockchainId
           )
-        } else {
-          succeeded = await saveFileForMultihashToFS(
-            serviceRegistry,
-            logger,
-            multihash,
-            nonTrackFile.storagePath,
-            userReplicaSet
-          )
-        }
+          if (!succeeded) {
+            throw new Error(
+              `[saveFileForMultihashToFS] Failed for multihash ${trackFile.multihash}`
+            )
+          }
+        })
+      )
+    }
 
-        if (!succeeded) {
-          throw new Error(
-            `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
-          )
-        }
-      })
+    /**
+     * Save all non-Track files to disk
+     */
+    for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
+      const nonTrackFilesSlice = nonTrackFiles.slice(
+        i,
+        i + FileSaveMaxConcurrency
+      )
+
+      await Promise.all(
+        nonTrackFilesSlice.map(async (nonTrackFile) => {
+          // Skip over directories since there's no actual content to sync
+          // The files inside the directory are synced separately
+          if (nonTrackFile.type === 'dir') {
+            return
+          }
+
+          const multihash = nonTrackFile.multihash
+
+          // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+          // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+          let succeeded
+          if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+            succeeded = await saveFileForMultihashToFS(
+              serviceRegistry,
+              logger,
+              multihash,
+              nonTrackFile.storagePath,
+              userReplicaSet,
+              nonTrackFile.fileName
+            )
+          } else {
+            succeeded = await saveFileForMultihashToFS(
+              serviceRegistry,
+              logger,
+              multihash,
+              nonTrackFile.storagePath,
+              userReplicaSet
+            )
+          }
+
+          if (!succeeded) {
+            throw new Error(
+              `[saveFileForMultihashToFS] Failed for multihash ${multihash}`
+            )
+          }
+        })
+      )
+    }
+  } catch (e) {
+    throw new Error(`[saveFilesToDisk] ERROR: ${e.message}`)
+  }
+}
+
+/**
+ * Saves all entries to DB that don't already exist in DB
+ */
+ async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
+  const transaction = await models.sequelize.transaction()
+
+  try {
+    let {
+      walletPublicKey,
+      audiusUsers: fetchedAudiusUsers,
+      tracks: fetchedTracks,
+      files: fetchedFiles
+    } = fetchedCNodeUser
+  
+    logger.info(
+      logPrefix,
+      `beginning add ops for cnodeUser wallet ${walletPublicKey}`
     )
+  
+    let localCNodeUser = await models.CNodeUser.findOne({
+      where: { walletPublicKey },
+      transaction
+    })
+  
+    let cnodeUserUUID
+    if (localCNodeUser) {
+      /**
+       * If local CNodeUser exists, filter out any received entries that are already present in DB
+       */
+  
+      cnodeUserUUID = localCNodeUser.cnodeUserUUID
+  
+      const audiusUserComparisonFields = [
+        'blockchainId',
+        'metadataFileUUID',
+        'metadataJSON',
+        'coverArtFileUUID',
+        'profilePicFileUUID'
+      ]
+      fetchedAudiusUsers = await filterOutAlreadyPresentDBEntries({
+        cnodeUserUUID,
+        tableInstance: models.AudiusUser,
+        fetchedEntries: fetchedAudiusUsers,
+        transaction,
+        comparisonFields: audiusUserComparisonFields
+      })
+  
+      const trackComparisonFields = [
+        'blockchainId',
+        'metadataFileUUID',
+        'metadataJSON',
+        'coverArtFileUUID'
+      ]
+      fetchedTracks = await filterOutAlreadyPresentDBEntries({
+        cnodeUserUUID,
+        tableInstance: models.Track,
+        fetchedEntries: fetchedTracks,
+        transaction,
+        comparisonFields: trackComparisonFields
+      })
+  
+      const fileComparisonFields = ['fileUUID']
+      fetchedFiles = await filterOutAlreadyPresentDBEntries({
+        cnodeUserUUID,
+        tableInstance: models.File,
+        fetchedEntries: fetchedFiles,
+        transaction,
+        comparisonFields: fileComparisonFields
+      })
+    } else {
+      /**
+       * Create CNodeUser DB record if not already present
+       * Omit `cnodeUserUUID` since it will be auto-generated on DB insert
+       */
+      localCNodeUser = await models.CNodeUser.create(
+        _.omit({ ...fetchedCNodeUser, clock: 0 }, ['cnodeUserUUID']),
+        { returning: true, transaction }
+      )
+  
+      cnodeUserUUID = localCNodeUser.cnodeUserUUID
+    }
+  
+    // Aggregate all entries into single array
+    let allEntries = _.concat(
+      [],
+      fetchedAudiusUsers.map((audiusUser) => ({
+        tableInstance: models.AudiusUser,
+        entry: audiusUser
+      })),
+      fetchedTracks.map((track) => ({
+        tableInstance: models.Track,
+        entry: track
+      })),
+      fetchedFiles.map((file) => ({ tableInstance: models.File, entry: file }))
+    )
+  
+    // Sort by clock asc to preserve original insert order
+    allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
+  
+    // Write all entries to DB
+    for await (const { tableInstance, entry } of allEntries) {
+      await DBManager.createNewDataRecord(
+        _.omit(entry, ['cnodeUserUUID']),
+        cnodeUserUUID,
+        tableInstance,
+        transaction
+      )
+    }
+  
+    await transaction.commit()
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`[saveEntriesToDB] ERROR: ${e.message}`)
   }
 }
 
 /**
  * Given fetchedEntries, filters out entries already present in local DB
  *
+ * @notice This function could potentially take a long time as it fetches every single row in `tableInstance` for `cnodeUserUUID`
+ *    Memory consumption is minimized by batching this call, but it can still take a long time for users with lots of data
  *
- * @returns filtered version of fetchedEntries
+ * @param {Object} param
+ * @param {string} param.cnodeUserUUID
+ * @param {*} param.tableInstance Sequelize model instance to query
+ * @param {Object[]} param.fetchedEntries array of entry objects to filter out
+ * @param {*} param.transaction Sequelize transaction
+ * @param {string[]} comparisonFields fields to use for equality comparison
+ * @returns {Object[]} filteredEntries filtered version of fetchedEntries
  */
 async function filterOutAlreadyPresentDBEntries({
   cnodeUserUUID,
@@ -281,6 +414,7 @@ async function filterOutAlreadyPresentDBEntries({
       transaction
     })
 
+    // filter out everything in `localEntries` from `filteredEntries
     filteredEntries = filteredEntries.filter((fetchedEntry) => {
       let alreadyPresent = false
       localEntries.forEach((localEntry) => {
@@ -304,115 +438,6 @@ async function filterOutAlreadyPresentDBEntries({
   return filteredEntries
 }
 
-/**
- * Saves all entries to DB
- * De-dupes entries before insert
- */
-async function saveEntriesToDB({ fetchedCNodeUser, logger, logPrefix }) {
-  let {
-    walletPublicKey,
-    audiusUsers: fetchedAudiusUsers,
-    tracks: fetchedTracks,
-    files: fetchedFiles
-  } = fetchedCNodeUser
-
-  const transaction = await models.sequelize.transaction()
-
-  logger.info(
-    logPrefix,
-    `beginning add ops for cnodeUser wallet ${walletPublicKey}`
-  )
-
-  let localCNodeUser = await models.CNodeUser.findOne({
-    where: { walletPublicKey },
-    transaction
-  })
-
-  let cnodeUserUUID
-  if (localCNodeUser) {
-    /**
-     * If local CNodeUser exists, filter out any received entries that are already present in DB
-     */
-
-    cnodeUserUUID = localCNodeUser.cnodeUserUUID
-
-    const audiusUserComparisonFields = [
-      'blockchainId',
-      'metadataFileUUID',
-      'metadataJSON',
-      'coverArtFileUUID',
-      'profilePicFileUUID'
-    ]
-    fetchedAudiusUsers = await filterOutAlreadyPresentDBEntries({
-      cnodeUserUUID,
-      tableInstance: models.AudiusUser,
-      fetchedEntries: fetchedAudiusUsers,
-      transaction,
-      comparisonFields: audiusUserComparisonFields
-    })
-
-    const trackComparisonFields = [
-      'blockchainId',
-      'metadataFileUUID',
-      'metadataJSON',
-      'coverArtFileUUID'
-    ]
-    fetchedTracks = await filterOutAlreadyPresentDBEntries({
-      cnodeUserUUID,
-      tableInstance: models.Track,
-      fetchedEntries: fetchedTracks,
-      transaction,
-      comparisonFields: trackComparisonFields
-    })
-
-    const fileComparisonFields = ['fileUUID']
-    fetchedFiles = await filterOutAlreadyPresentDBEntries({
-      cnodeUserUUID,
-      tableInstance: models.File,
-      fetchedEntries: fetchedFiles,
-      transaction,
-      comparisonFields: fileComparisonFields
-    })
-  } else {
-    /**
-     * Create CNodeUser DB record if not already present
-     * Omit `cnodeUserUUID` since it will be auto-generated on DB insert
-     */
-    localCNodeUser = await models.CNodeUser.create(
-      _.omit({ ...fetchedCNodeUser, clock: 0 }, ['cnodeUserUUID']),
-      { returning: true, transaction }
-    )
-
-    cnodeUserUUID = localCNodeUser.cnodeUserUUID
-  }
-
-  // Aggregate all entries into single array, sorted by clock asc to preserve original insert order
-  let allEntries = _.concat(
-    [],
-    fetchedAudiusUsers.map((audiusUser) => ({
-      tableInstance: models.AudiusUser,
-      entry: audiusUser
-    })),
-    fetchedTracks.map((track) => ({
-      tableInstance: models.Track,
-      entry: track
-    })),
-    fetchedFiles.map((file) => ({ tableInstance: models.File, entry: file }))
-  )
-  allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
-
-  for await (const { tableInstance, entry } of allEntries) {
-    await DBManager.createNewDataRecord(
-      _.omit(entry, ['cnodeUserUUID']),
-      cnodeUserUUID,
-      tableInstance,
-      transaction
-    )
-  }
-
-  await transaction.commit()
-}
-
 async function getUserReplicaSet({ wallet, selfEndpoint, logger }) {
   try {
     let userReplicaSet = await getCreatorNodeEndpoints({
@@ -434,27 +459,4 @@ async function getUserReplicaSet({ wallet, selfEndpoint, logger }) {
   } catch (e) {
     throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
   }
-}
-
-async function acquireUserRedisLock({ redis, wallet }) {
-  const errorMsgPrefix = `[primarySyncFromSecondary:acquireUserRedisLock] [Wallet: ${wallet}] ERROR:`
-
-  const redisLock = redis.lock
-  const redisKey = redis.getRedisKeyForWallet(wallet)
-
-  const acquired = await redisLock.acquireLock(
-    redisKey,
-    USER_WRITE_LOCK_TIMEOUT_MS
-  )
-  if (!acquired) {
-    throw new Error(`${errorMsgPrefix} Failed to acquire lock - already held.`)
-  }
-}
-
-async function releaseUserRedisLock({ redis, wallet }) {
-  const redisLock = redis.lock
-  const redisKey = redis.getRedisKeyForWallet(wallet)
-
-  // Succeeds even if no lock exists for key
-  await redisLock.removeLock(redisKey)
 }
