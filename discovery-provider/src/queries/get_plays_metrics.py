@@ -4,7 +4,7 @@ from typing import TypedDict
 
 from sqlalchemy import desc, func
 from sqlalchemy.orm.session import Session
-from src.models.social.hourly_play_counts import HourlyPlayCount
+from src.models.social.hourly_play_counts import HourlyPlayCounts
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -40,13 +40,13 @@ def _get_plays_metrics(session: Session, args: GetPlayMetricsArgs):
     metrics_query = (
         session.query(
             func.date_trunc(
-                args.get("bucket_size"), HourlyPlayCount.hourly_timestamp
+                args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp
             ).label("timestamp"),
-            func.sum(HourlyPlayCount.play_count).label("count"),
+            func.sum(HourlyPlayCounts.play_count).label("count"),
         )
-        .filter(HourlyPlayCount.hourly_timestamp > args.get("start_time"))
+        .filter(HourlyPlayCounts.hourly_timestamp > args.get("start_time"))
         .group_by(
-            func.date_trunc(args.get("bucket_size"), HourlyPlayCount.hourly_timestamp)
+            func.date_trunc(args.get("bucket_size"), HourlyPlayCounts.hourly_timestamp)
         )
         .order_by(desc("timestamp"))
         .limit(args.get("limit"))

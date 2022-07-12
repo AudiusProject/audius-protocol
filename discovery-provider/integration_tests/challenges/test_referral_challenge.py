@@ -13,7 +13,7 @@ from src.models.indexing.block import Block
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.models.users.user_events import UserEvent
+from src.models.users.user_events import UserEvents
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
@@ -39,14 +39,13 @@ def create_user(offset: int) -> User:
     )
 
 
-def create_user_referral(referrer: int, referred_user_id: int) -> UserEvent:
-    return UserEvent(
+def create_user_referral(referrer: int, referred_user_id: int) -> UserEvents:
+    return UserEvents(
         user_id=referred_user_id,
         is_current=True,
         blocknumber=BLOCK_NUMBER,
         blockhash="0x1",
         referrer=referrer,
-        is_mobile_user=False,
     )
 
 

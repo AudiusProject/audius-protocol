@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 from typing import List
 
 from sqlalchemy import desc
-from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
-from src.models.social.hourly_play_counts import HourlyPlayCount
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
+from src.models.social.hourly_play_counts import HourlyPlayCounts
 from src.tasks.index_hourly_play_counts import (
     HOURLY_PLAY_COUNTS_TABLE_NAME,
     _index_hourly_play_counts,
@@ -60,9 +60,9 @@ def test_index_hourly_play_counts_populate(app):
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
 
-        results: List[HourlyPlayCount] = (
-            session.query(HourlyPlayCount)
-            .order_by(desc(HourlyPlayCount.hourly_timestamp))
+        results: List[HourlyPlayCounts] = (
+            session.query(HourlyPlayCounts)
+            .order_by(desc(HourlyPlayCounts.hourly_timestamp))
             .all()
         )
 
@@ -78,9 +78,9 @@ def test_index_hourly_play_counts_populate(app):
         assert results[4].hourly_timestamp == TIMESTAMP - timedelta(hours=8)
         assert results[4].play_count == 1
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
             .scalar()
         )
         assert new_checkpoint == 13
@@ -137,9 +137,9 @@ def test_index_hourly_play_counts_single_update(app):
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
 
-        results: List[HourlyPlayCount] = (
-            session.query(HourlyPlayCount)
-            .order_by(desc(HourlyPlayCount.hourly_timestamp))
+        results: List[HourlyPlayCounts] = (
+            session.query(HourlyPlayCounts)
+            .order_by(desc(HourlyPlayCounts.hourly_timestamp))
             .all()
         )
         assert len(results) == 6
@@ -156,9 +156,9 @@ def test_index_hourly_play_counts_single_update(app):
         assert results[5].hourly_timestamp == TIMESTAMP - timedelta(hours=4)
         assert results[5].play_count == 1
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
             .scalar()
         )
         assert new_checkpoint == 16
@@ -217,9 +217,9 @@ def test_index_hourly_play_counts_idempotent(app):
         _index_hourly_play_counts(session)
         _index_hourly_play_counts(session)
 
-        results: List[HourlyPlayCount] = (
-            session.query(HourlyPlayCount)
-            .order_by(desc(HourlyPlayCount.hourly_timestamp))
+        results: List[HourlyPlayCounts] = (
+            session.query(HourlyPlayCounts)
+            .order_by(desc(HourlyPlayCounts.hourly_timestamp))
             .all()
         )
         assert len(results) == 6
@@ -236,9 +236,9 @@ def test_index_hourly_play_counts_idempotent(app):
         assert results[5].hourly_timestamp == TIMESTAMP - timedelta(hours=4)
         assert results[5].play_count == 1
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
             .scalar()
         )
         assert new_checkpoint == 16
@@ -291,9 +291,9 @@ def test_index_hourly_play_counts_no_change(app):
     with db.scoped_session() as session:
         _index_hourly_play_counts(session)
 
-        results: List[HourlyPlayCount] = (
-            session.query(HourlyPlayCount)
-            .order_by(desc(HourlyPlayCount.hourly_timestamp))
+        results: List[HourlyPlayCounts] = (
+            session.query(HourlyPlayCounts)
+            .order_by(desc(HourlyPlayCounts.hourly_timestamp))
             .all()
         )
 
@@ -309,9 +309,9 @@ def test_index_hourly_play_counts_no_change(app):
         assert results[4].hourly_timestamp == TIMESTAMP - timedelta(hours=8)
         assert results[4].play_count == 1
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == HOURLY_PLAY_COUNTS_TABLE_NAME)
             .scalar()
         )
         assert new_checkpoint == 13

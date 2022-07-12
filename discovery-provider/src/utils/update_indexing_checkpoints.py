@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
 
 UPDATE_INDEXING_CHECKPOINTS_QUERY = """
     INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
@@ -21,8 +21,8 @@ def save_indexed_checkpoint(session, tablename, checkpoint):
 
 def get_last_indexed_checkpoint(session, tablename):
     last_seen = (
-        session.query(IndexingCheckpoint.last_checkpoint).filter(
-            IndexingCheckpoint.tablename == tablename
+        session.query(IndexingCheckpoints.last_checkpoint).filter(
+            IndexingCheckpoints.tablename == tablename
         )
     ).scalar()
 

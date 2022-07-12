@@ -6,12 +6,10 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
-    Index,
     Integer,
+    PrimaryKeyConstraint,
     String,
-    text,
 )
-from sqlalchemy.orm import relationship
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
@@ -24,34 +22,16 @@ class SaveType(str, enum.Enum):
 
 class Save(Base, RepresentableMixin):
     __tablename__ = "saves"
-    __table_args__ = (
-        Index("save_item_id_idx", "save_item_id", "save_type"),
-        Index("save_user_id_idx", "user_id", "save_type"),
-    )
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
-    user_id = Column(Integer, primary_key=True, nullable=False)
-    save_item_id = Column(Integer, primary_key=True, nullable=False)
-    save_type = Column(
-        Enum(SaveType),
-        primary_key=True,
-        nullable=False,
-    )
-    is_current = Column(Boolean, primary_key=True, nullable=False)
-    is_delete = Column(Boolean, nullable=False)
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
+    slot = Column(Integer, nullable=True)
+    txhash = Column(String, default="", nullable=False)
+    user_id = Column(Integer, nullable=False)
+    save_item_id = Column(Integer, nullable=False)
+    save_type = Column(Enum(SaveType), nullable=False)
     created_at = Column(DateTime, nullable=False)
-    txhash = Column(
-        String,
-        primary_key=True,
-        nullable=False,
-        server_default=text("''::character varying"),
-    )
-    slot = Column(Integer)
+    is_current = Column(Boolean, nullable=False)
+    is_delete = Column(Boolean, nullable=False)
 
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Save.blockhash == Block.blockhash"
-    )
-    block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Save.blocknumber == Block.number"
-    )
+    PrimaryKeyConstraint(is_current, user_id, save_item_id, save_type, txhash)

@@ -7,7 +7,7 @@ import redis
 from flask import Response as fResponse
 from flask.globals import request
 from src.models.metrics.aggregate_daily_app_name_metrics import (
-    AggregateDailyAppNameMetric,
+    AggregateDailyAppNameMetrics,
 )
 from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,
@@ -16,13 +16,13 @@ from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
 )
 from src.models.metrics.aggregate_monthly_app_name_metrics import (
-    AggregateMonthlyAppNameMetric,
+    AggregateMonthlyAppNameMetrics,
 )
 from src.models.metrics.aggregate_monthly_total_users_metrics import (
-    AggregateMonthlyTotalUsersMetric,
+    AggregateMonthlyTotalUsersMetrics,
 )
 from src.models.metrics.aggregate_monthly_unique_users_metrics import (
-    AggregateMonthlyUniqueUsersMetric,
+    AggregateMonthlyUniqueUsersMetrics,
 )
 from src.utils.config import shared_config
 from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
@@ -134,8 +134,8 @@ def persist_summed_unique_counts(
             session.add(day_unique_record)
 
         month_unique_record = (
-            session.query(AggregateMonthlyUniqueUsersMetric)
-            .filter(AggregateMonthlyUniqueUsersMetric.timestamp == month)
+            session.query(AggregateMonthlyUniqueUsersMetrics)
+            .filter(AggregateMonthlyUniqueUsersMetrics.timestamp == month)
             .first()
         )
         if month_unique_record:
@@ -206,8 +206,8 @@ def persist_route_metrics(
         session.add(day_total_record)
 
         month_unique_record = (
-            session.query(AggregateMonthlyUniqueUsersMetric)
-            .filter(AggregateMonthlyUniqueUsersMetric.timestamp == month)
+            session.query(AggregateMonthlyUniqueUsersMetrics)
+            .filter(AggregateMonthlyUniqueUsersMetrics.timestamp == month)
             .first()
         )
         if month_unique_record:
@@ -221,7 +221,7 @@ def persist_route_metrics(
                 {unique_monthly_count}: {month_unique_record.count}"
             )
         else:
-            month_unique_record = AggregateMonthlyUniqueUsersMetric(
+            month_unique_record = AggregateMonthlyUniqueUsersMetrics(
                 timestamp=month, count=unique_monthly_count
             )
             logger.info(
@@ -231,8 +231,8 @@ def persist_route_metrics(
         session.add(month_unique_record)
 
         month_total_record = (
-            session.query(AggregateMonthlyTotalUsersMetric)
-            .filter(AggregateMonthlyTotalUsersMetric.timestamp == month)
+            session.query(AggregateMonthlyTotalUsersMetrics)
+            .filter(AggregateMonthlyTotalUsersMetrics.timestamp == month)
             .first()
         )
         if month_total_record:
@@ -246,7 +246,7 @@ def persist_route_metrics(
                 {count}: {month_total_record.count}"
             )
         else:
-            month_total_record = AggregateMonthlyTotalUsersMetric(
+            month_total_record = AggregateMonthlyTotalUsersMetrics(
                 timestamp=month, count=count
             )
             logger.info(
@@ -259,10 +259,10 @@ def persist_app_metrics(db, day, month, app_count):
     with db.scoped_session() as session:
         for application_name, count in app_count.items():
             day_record = (
-                session.query(AggregateDailyAppNameMetric)
-                .filter(AggregateDailyAppNameMetric.timestamp == day)
+                session.query(AggregateDailyAppNameMetrics)
+                .filter(AggregateDailyAppNameMetrics.timestamp == day)
                 .filter(
-                    AggregateDailyAppNameMetric.application_name == application_name
+                    AggregateDailyAppNameMetrics.application_name == application_name
                 )
                 .first()
             )
@@ -277,7 +277,7 @@ def persist_app_metrics(db, day, month, app_count):
                     after adding new count {count}: {day_record.count}"
                 )
             else:
-                day_record = AggregateDailyAppNameMetric(
+                day_record = AggregateDailyAppNameMetrics(
                     timestamp=day, application_name=application_name, count=count
                 )
                 logger.info(
@@ -287,10 +287,10 @@ def persist_app_metrics(db, day, month, app_count):
             session.add(day_record)
 
             month_record = (
-                session.query(AggregateMonthlyAppNameMetric)
-                .filter(AggregateMonthlyAppNameMetric.timestamp == month)
+                session.query(AggregateMonthlyAppNameMetrics)
+                .filter(AggregateMonthlyAppNameMetrics.timestamp == month)
                 .filter(
-                    AggregateMonthlyAppNameMetric.application_name == application_name
+                    AggregateMonthlyAppNameMetrics.application_name == application_name
                 )
                 .first()
             )
@@ -305,7 +305,7 @@ def persist_app_metrics(db, day, month, app_count):
                     after adding new count {count}: {month_record.count}"
                 )
             else:
-                month_record = AggregateMonthlyAppNameMetric(
+                month_record = AggregateMonthlyAppNameMetrics(
                     timestamp=month, application_name=application_name, count=count
                 )
                 logger.info(

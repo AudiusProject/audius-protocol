@@ -8,14 +8,14 @@ from src.challenges.challenge import (
     FullEventMetadata,
 )
 from src.challenges.challenge_event import ChallengeEvent
-from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
+from src.models.rewards.listen_streak_challenge import ListenStreakChallenge
 from src.models.rewards.user_challenge import UserChallenge
 
 
 def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
     user_listen_challenge = (
-        session.query(ChallengeListenStreak)
-        .filter(ChallengeListenStreak.user_id == user_id)
+        session.query(ListenStreakChallenge)
+        .filter(ListenStreakChallenge.user_id == user_id)
         .first()
     )
 
@@ -29,7 +29,7 @@ def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
     return None
 
 
-class ChallengeListenStreakUpdater(ChallengeUpdater):
+class ListenStreakChallengeUpdater(ChallengeUpdater):
     """Listening streak challenge"""
 
     def update_user_challenges(
@@ -65,7 +65,7 @@ class ChallengeListenStreakUpdater(ChallengeUpdater):
         self, session: Session, metadatas: List[FullEventMetadata]
     ):
         listen_streak_challenges = [
-            ChallengeListenStreak(
+            ListenStreakChallenge(
                 user_id=metadata["user_id"],
                 last_listen_date=None,
                 listen_streak=0,
@@ -77,7 +77,7 @@ class ChallengeListenStreakUpdater(ChallengeUpdater):
     # Helpers
     def _handle_track_listens(
         self,
-        partial_completions: List[ChallengeListenStreak],
+        partial_completions: List[ListenStreakChallenge],
         event_metadatas: List[FullEventMetadata],
     ):
         for idx, partial_completion in enumerate(partial_completions):
@@ -106,16 +106,16 @@ class ChallengeListenStreakUpdater(ChallengeUpdater):
 
 
 listen_streak_challenge_manager = ChallengeManager(
-    "listen-streak", ChallengeListenStreakUpdater()
+    "listen-streak", ListenStreakChallengeUpdater()
 )
 
 
 # Accessors
 def get_listen_streak_challenges(
     session: Session, user_ids: List[int]
-) -> List[ChallengeListenStreak]:
+) -> List[ListenStreakChallenge]:
     return (
-        session.query(ChallengeListenStreak)
-        .filter(ChallengeListenStreak.user_id.in_(user_ids))
+        session.query(ListenStreakChallenge)
+        .filter(ListenStreakChallenge.user_id.in_(user_ids))
         .all()
     )

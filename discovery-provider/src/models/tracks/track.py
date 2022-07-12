@@ -7,9 +7,8 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Text,
-    text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, validates
 from src.model_validator import ModelValidator
 from src.models.base import Base
@@ -25,52 +24,40 @@ from src.models.users.user import User
 class Track(Base, RepresentableMixin):
     __tablename__ = "tracks"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    track_id = Column(Integer, primary_key=True, nullable=False)
-    is_current = Column(Boolean, primary_key=True, nullable=False)
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
+    slot = Column(Integer, nullable=True)
+    txhash = Column(String, default="", nullable=False)
+    track_id = Column(Integer, nullable=False)
+    is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
-    owner_id = Column(Integer, nullable=False, index=True)
-    title = Column(Text)
-    length = Column(Integer)
-    cover_art = Column(String)
-    tags = Column(String)
-    genre = Column(String)
-    mood = Column(String)
-    credits_splits = Column(String)
-    create_date = Column(String)
-    release_date = Column(String)
-    file_type = Column(String)
-    metadata_multihash = Column(String)
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
-    track_segments = Column(JSONB(), nullable=False)
-    created_at = Column(DateTime, nullable=False, index=True)
-    description = Column(String)
-    isrc = Column(String)
-    iswc = Column(String)
-    license = Column(String)
+    owner_id = Column(Integer, nullable=False)
+    route_id = Column(String, nullable=False)
+    title = Column(Text, nullable=True)
+    length = Column(Integer, nullable=True)
+    cover_art = Column(String, nullable=True)
+    cover_art_sizes = Column(String, nullable=True)
+    tags = Column(String, nullable=True)
+    genre = Column(String, nullable=True)
+    mood = Column(String, nullable=True)
+    credits_splits = Column(String, nullable=True)
+    remix_of = Column(postgresql.JSONB, nullable=True)
+    create_date = Column(String, nullable=True)
+    release_date = Column(String, nullable=True)
+    file_type = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    license = Column(String, nullable=True)
+    isrc = Column(String, nullable=True)
+    iswc = Column(String, nullable=True)
+    track_segments = Column(postgresql.JSONB, nullable=False)
+    metadata_multihash = Column(String, nullable=True)
+    download = Column(postgresql.JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False)
-    cover_art_sizes = Column(String)
-    download = Column(JSONB())
-    is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
-    field_visibility = Column(JSONB())
-    route_id = Column(String)
-    stem_of = Column(JSONB())
-    remix_of = Column(JSONB())
-    txhash = Column(
-        String,
-        primary_key=True,
-        nullable=False,
-        server_default=text("''::character varying"),
-    )
-    slot = Column(Integer)
-    is_available = Column(Boolean, nullable=False, server_default=text("true"))
-
-    block = relationship(  # type: ignore
-        "Block", primaryjoin="Track.blockhash == Block.blockhash"
-    )
-    block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Track.blocknumber == Block.number"
-    )
+    created_at = Column(DateTime, nullable=False)
+    is_unlisted = Column(Boolean, nullable=False)
+    field_visibility = Column(postgresql.JSONB, nullable=True)
+    stem_of = Column(postgresql.JSONB, nullable=True)
+    is_available = Column(Boolean, default=True, nullable=False)
 
     _routes = relationship(  # type: ignore
         TrackRoute,
