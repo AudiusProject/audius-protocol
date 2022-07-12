@@ -55,7 +55,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
     if (cid !== expectedCID) {
       // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
       throw new Error(
-        `File contents don't their expected CID. CID: ${cid} expected CID: ${expectedCID}`
+        `File contents don't match their expected CID. CID: ${cid} expected CID: ${expectedCID}`
       )
     }
   } catch (e) {
@@ -387,7 +387,7 @@ async function saveFileForMultihashToFS(
         })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
         throw new Error(
-          `File contents don't their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
+          `File contents don't match their expected CID. CID: ${multihash} expected CID: ${expectedCid}`
         )
       }
       decisionTree.push({
