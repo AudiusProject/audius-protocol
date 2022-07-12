@@ -183,13 +183,13 @@
       "title": "Blockdiff",
       "type": "timeseries"
     },
-    "version": 1,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 1,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -295,13 +295,13 @@
       "title": "Celery Tasks (Active)",
       "type": "bargauge"
     },
-    "version": 1,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 3,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -407,13 +407,13 @@
       "title": "Celery Tasks (Last Successful Duration)",
       "type": "bargauge"
     },
-    "version": 1,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -571,13 +571,13 @@
       "title": "POA Indexing",
       "type": "timeseries"
     },
-    "version": 1,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",
@@ -735,13 +735,13 @@
       "title": "Solana Plays Indexing",
       "type": "timeseries"
     },
-    "version": 1,
+    "version": 2,
     "meta": {
       "folderName": "General",
       "folderUid": "",
       "connectedDashboards": 2,
       "created": "2022-07-09T01:43:48Z",
-      "updated": "2022-07-09T01:43:48Z",
+      "updated": "2022-07-12T23:16:36Z",
       "createdBy": {
         "id": 0,
         "name": "",

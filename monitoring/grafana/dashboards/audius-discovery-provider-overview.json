@@ -63,7 +63,7 @@
           "name": "Celery Tasks (Active)",
           "type": "bargauge",
           "uid": "ilGck637k",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,
@@ -93,7 +93,7 @@
           "name": "Celery Tasks (Last Successful Duration)",
           "type": "bargauge",
           "uid": "3en9tpenk",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,
@@ -419,7 +419,7 @@
           "name": "Blockdiff",
           "type": "timeseries",
           "uid": "hhRZ9K67k",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,
@@ -449,7 +449,7 @@
           "name": "POA Indexing",
           "type": "timeseries",
           "uid": "erW7rK6nk",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,
@@ -479,7 +479,7 @@
           "name": "Solana Plays Indexing",
           "type": "timeseries",
           "uid": "0aIn9F6nk",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,

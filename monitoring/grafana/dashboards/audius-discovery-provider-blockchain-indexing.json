@@ -328,7 +328,7 @@
           "name": "POA Indexing",
           "type": "timeseries",
           "uid": "erW7rK6nk",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,
@@ -358,7 +358,7 @@
           "name": "Solana Plays Indexing",
           "type": "timeseries",
           "uid": "0aIn9F6nk",
-          "version": 1
+          "version": 2
         },
         "gridPos": {
           "h": 8,
