@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import unquote
 
 from sqlalchemy import desc, func
-from src.models.social.aggregate_plays import AggregatePlay
+from src.models.social.aggregate_plays import AggregatePlays
 from src.models.social.follow import Follow
 from src.models.social.play import Play
 from src.models.social.repost import RepostType
@@ -77,10 +77,10 @@ def get_listen_counts(session, time, genre, limit, offset, net_multiplier=1):
     else:
         # Otherwise, it's safe to just query over the aggregate plays table (all time)
         base_query = session.query(
-            AggregatePlay.play_item_id.label("id"),
-            AggregatePlay.count.label("count"),
+            AggregatePlays.play_item_id.label("id"),
+            AggregatePlays.count.label("count"),
             Track.created_at,
-        ).join(Track, Track.track_id == AggregatePlay.play_item_id)
+        ).join(Track, Track.track_id == AggregatePlays.play_item_id)
 
     base_query = base_query.filter(
         Track.is_current == True,

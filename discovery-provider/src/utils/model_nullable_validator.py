@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 def all_required_fields_present(model, instance):
     table = model.__table__  # type: ignore
     required_fields = [
-        col.name
-        for col in table.columns
-        if not col.nullable and not col.default and not col.server_default
+        col.name for col in table.columns if not col.nullable and not col.default
     ]
     missing_fields = []
     for field in required_fields:

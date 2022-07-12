@@ -1,21 +1,17 @@
-from sqlalchemy import Column, DateTime, Integer, String, text
+from sqlalchemy import Column, DateTime, Integer, String, func
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class AppNameMetric(Base, RepresentableMixin):
+class AppNameMetrics(Base, RepresentableMixin):
     __tablename__ = "app_name_metrics"
 
+    id = Column(Integer, primary_key=True)
     application_name = Column(String, nullable=False)
     count = Column(Integer, nullable=False)
-    timestamp = Column(
-        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
-    )
-    created_at = Column(
-        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
-    )
+    ip = Column(String, nullable=True)
+    timestamp = Column(DateTime, nullable=False, default=func.now())
+    created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(
-        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
     )
-    id = Column(Integer, primary_key=True)
-    ip = Column(String)

@@ -10,18 +10,12 @@ from src.models.metrics.aggregate_daily_total_users_metrics import (
 from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
 )
-from src.models.metrics.app_metrics_all_time import t_app_name_metrics_all_time
-from src.models.metrics.app_metrics_trailing_month import (
-    t_app_name_metrics_trailing_month,
-)
-from src.models.metrics.app_metrics_trailing_week import (
-    t_app_name_metrics_trailing_week,
-)
-from src.models.metrics.route_metrics_all_time import t_route_metrics_all_time
-from src.models.metrics.route_metrics_trailing_month import (
-    t_route_metrics_trailing_month,
-)
-from src.models.metrics.route_metrics_trailing_week import t_route_metrics_trailing_week
+from src.models.metrics.app_metrics_all_time import AppMetricsAllTime
+from src.models.metrics.app_metrics_trailing_month import AppMetricsTrailingMonth
+from src.models.metrics.app_metrics_trailing_week import AppMetricsTrailingWeek
+from src.models.metrics.route_metrics_all_time import RouteMetricsAllTime
+from src.models.metrics.route_metrics_trailing_month import RouteMetricsTrailingMonth
+from src.models.metrics.route_metrics_trailing_week import RouteMetricsTrailingWeek
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -73,14 +67,14 @@ def _get_aggregate_route_metrics_trailing_month(session):
 def get_monthly_trailing_route_metrics():
     """
     Returns trailing count and unique count for all routes in the last month,
-    calculated from the t_route_metrics_trailing_month matview.
+    calculated from the RouteMetricsTrailingMonth matview.
 
     Returns:
         { count, unique_count }
     """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        metrics = session.query(t_route_metrics_trailing_month).all()
+        metrics = session.query(RouteMetricsTrailingMonth).all()
         return {"count": metrics[0].count, "unique_count": metrics[0].unique_count}
 
 
@@ -104,14 +98,14 @@ def _get_trailing_app_metrics(session, args):
     limit, time_range = args.get("limit"), args.get("time_range")
 
     if time_range == "week":
-        query = session.query(t_app_name_metrics_trailing_week)
-        route_query = session.query(t_route_metrics_trailing_week)
+        query = session.query(AppMetricsTrailingWeek)
+        route_query = session.query(RouteMetricsTrailingWeek)
     elif time_range == "month":
-        query = session.query(t_app_name_metrics_trailing_month)
-        route_query = session.query(t_route_metrics_trailing_month)
+        query = session.query(AppMetricsTrailingMonth)
+        route_query = session.query(RouteMetricsTrailingMonth)
     elif time_range == "all_time":
-        query = session.query(t_app_name_metrics_all_time)
-        route_query = session.query(t_route_metrics_all_time)
+        query = session.query(AppMetricsAllTime)
+        route_query = session.query(RouteMetricsAllTime)
     else:
         raise exceptions.ArgumentError("Invalid time_range")
 

@@ -5,6 +5,5 @@ from src.models.model_utils import RepresentableMixin
 
 class AudiusDataTx(Base, RepresentableMixin):
     __tablename__ = "audius_data_txs"
-
-    signature = Column(String, primary_key=True)
+    signature = Column(String, primary_key=True, nullable=False)
     slot = Column(Integer, nullable=False)

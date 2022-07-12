@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
 from src.models.users.user_listening_history import UserListeningHistory
 from src.tasks.user_listening_history.index_user_listening_history import (
     USER_LISTENING_HISTORY_TABLE_NAME,
@@ -87,9 +87,9 @@ def test_index_user_listening_history_populate(app):
         assert results[2].listening_history[2]["track_id"] == 2
         assert results[2].listening_history[2]["timestamp"] == str(TIMESTAMP_1)
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == USER_LISTENING_HISTORY_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == USER_LISTENING_HISTORY_TABLE_NAME)
             .scalar()
         )
 
@@ -217,9 +217,9 @@ def test_index_user_listening_history_update(app):
                 datetime.fromisoformat("2014-06-26 07:00:00") - timedelta(hours=i)
             )
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == USER_LISTENING_HISTORY_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == USER_LISTENING_HISTORY_TABLE_NAME)
             .scalar()
         )
 
@@ -320,9 +320,9 @@ def test_index_user_listening_history_no_update(app):
         assert results[2].listening_history[2]["track_id"] == 2
         assert results[2].listening_history[2]["timestamp"] == str(TIMESTAMP_1)
 
-        new_checkpoint: IndexingCheckpoint = (
-            session.query(IndexingCheckpoint.last_checkpoint)
-            .filter(IndexingCheckpoint.tablename == USER_LISTENING_HISTORY_TABLE_NAME)
+        new_checkpoint: IndexingCheckpoints = (
+            session.query(IndexingCheckpoints.last_checkpoint)
+            .filter(IndexingCheckpoints.tablename == USER_LISTENING_HISTORY_TABLE_NAME)
             .scalar()
         )
 

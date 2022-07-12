@@ -1,15 +1,15 @@
 from datetime import datetime
 
 from src.models.indexing.block import Block
-from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
-from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.indexing.indexing_checkpoints import IndexingCheckpoints
+from src.models.indexing.ursm_content_node import URSMContentNode
 from src.models.playlists.playlist import Playlist
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.user_challenge import UserChallenge
-from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
-from src.models.social.aggregate_plays import AggregatePlay
+from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlays
+from src.models.social.aggregate_plays import AggregatePlays
 from src.models.social.follow import Follow
-from src.models.social.hourly_play_counts import HourlyPlayCount
+from src.models.social.hourly_play_counts import HourlyPlayCounts
 from src.models.social.play import Play
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -196,7 +196,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 txhash=user_meta.get("txhash", str(i + block_offset)),
                 user_id=user_meta.get("user_id", i),
                 is_current=user_meta.get("is_current", True),
-                is_creator=user_meta.get("is_creator", True),
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
                 wallet=user_meta.get("wallet", str(i)),
@@ -272,7 +271,7 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(play)
 
         for i, aggregate_play_meta in enumerate(aggregate_plays):
-            aggregate_play = AggregatePlay(
+            aggregate_play = AggregatePlays(
                 play_item_id=aggregate_play_meta.get("play_item_id", i),
                 count=aggregate_play_meta.get("count", 0),
             )
@@ -287,7 +286,7 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(aggregate_track)
 
         for i, aggregate_monthly_play_meta in enumerate(aggregate_monthly_plays):
-            aggregate_monthly_play = AggregateMonthlyPlay(
+            aggregate_monthly_play = AggregateMonthlyPlays(
                 play_item_id=aggregate_monthly_play_meta.get("play_item_id", i),
                 timestamp=aggregate_monthly_play_meta.get("timestamp", i),
                 count=aggregate_monthly_play_meta.get("count", 0),
@@ -317,7 +316,7 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(user_listening_history)
 
         for i, hourly_play_count_meta in enumerate(hourly_play_counts):
-            hourly_play_count = HourlyPlayCount(
+            hourly_play_count = HourlyPlayCounts(
                 hourly_timestamp=hourly_play_count_meta.get(
                     "hourly_timestamp", datetime.now()
                 ),
@@ -330,7 +329,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 "TRUNCATE TABLE indexing_checkpoints"
             )  # clear primary keys before adding
             for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
-                indexing_checkpoint = IndexingCheckpoint(
+                indexing_checkpoint = IndexingCheckpoints(
                     tablename=indexing_checkpoint_meta.get("tablename", None),
                     last_checkpoint=indexing_checkpoint_meta.get("last_checkpoint", 0),
                 )
@@ -405,7 +404,7 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(wallet)
         for i, ursm_content_node in enumerate(ursm_content_nodes):
-            node = UrsmContentNode(
+            node = URSMContentNode(
                 blockhash=ursm_content_node.get("blockhash", hex(i + block_offset)),
                 blocknumber=ursm_content_node.get("blocknumber", i + block_offset),
                 slot=ursm_content_node.get("slot", i + 1),

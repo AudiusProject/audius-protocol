@@ -13,7 +13,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.users.user import User
-from src.models.users.user_bank import UserBankAccount, UserBankTx
+from src.models.users.user_bank import UserBankAccount, UserBankTransaction
 from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
@@ -83,7 +83,9 @@ def parse_eth_address_from_msg(msg: str):
 # Return highest user bank slot that has been processed
 def get_highest_user_bank_tx_slot(session: Session):
     slot = MIN_SLOT
-    tx_query = (session.query(UserBankTx.slot).order_by(desc(UserBankTx.slot))).first()
+    tx_query = (
+        session.query(UserBankTransaction.slot).order_by(desc(UserBankTransaction.slot))
+    ).first()
     if tx_query:
         slot = tx_query[0]
     return slot
@@ -99,7 +101,9 @@ def cache_latest_sol_user_bank_db_tx(redis: Redis, tx):
 def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     exists = False
     tx_sig_db_count = (
-        session.query(UserBankTx).filter(UserBankTx.signature == tx_sig)
+        session.query(UserBankTransaction).filter(
+            UserBankTransaction.signature == tx_sig
+        )
     ).count()
     exists = tx_sig_db_count > 0
     # logger.info(f"index_user_bank.py | {tx_sig} exists={exists}")
@@ -384,7 +388,9 @@ def parse_user_bank_transaction(
     process_user_bank_tx_details(
         session, redis, tx_info, tx_sig, parsed_timestamp, challenge_event_bus
     )
-    session.add(UserBankTx(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp))
+    session.add(
+        UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
+    )
     return (tx_info["result"], tx_sig)
 
 
