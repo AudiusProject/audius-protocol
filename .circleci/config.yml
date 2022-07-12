@@ -83,6 +83,7 @@ jobs:
               exit_ssh() {
                 echo "inside trap exit_ssh"
                 echo $?
+                exit $?
               }
               trap exit_ssh EXIT
 
@@ -95,6 +96,8 @@ jobs:
               git checkout -f;
               exit;
             EOF
+
+            echo "got status code from ssh agent" $?
 
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
