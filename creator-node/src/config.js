@@ -695,6 +695,12 @@ const config = convict({
     format: Boolean,
     env: 'disableSnapback',
     default: true
+  },
+  mergePrimaryAndSecondaryEnabled: {
+    doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
+    format: Boolean,
+    env: 'mergePrimaryAndSecondaryEnabled',
+    default: false
   }
   /**
    * unsupported options at the moment

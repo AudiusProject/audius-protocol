@@ -28,6 +28,9 @@ const secondaryUserSyncDailyFailureCountThreshold = config.get(
 const maxSyncMonitoringDurationInMs = config.get(
   'maxSyncMonitoringDurationInMs'
 )
+const mergePrimaryAndSecondaryEnabled = config.get(
+  'mergePrimaryAndSecondaryEnabled'
+)
 
 /**
  * Processes a job to issue a sync request from a user's primary (this node) to a user's secondary with syncType and syncMode
@@ -70,12 +73,14 @@ module.exports = async function ({
     return {
       error: {
         message: errorMsg
-      }
+      },
+      jobsToEnqueue: {}
     }
   }
   if (syncMode === SYNC_MODES.None) {
     return {
-      error: {}
+      error: {},
+      jobsToEnqueue: {}
     }
   }
 
@@ -108,11 +113,19 @@ module.exports = async function ({
     return {
       error: {
         message: errorMsg
-      }
+      },
+      jobsToEnqueue: {}
     }
   }
 
   if (syncMode === SYNC_MODES.MergePrimaryAndSecondary) {
+    if (!mergePrimaryAndSecondaryEnabled) {
+      logger.info(`${logMsgString} || Sync mode is disabled - Will not issue sync request`)
+      return {
+        error: {},
+        jobsToEnqueue: {}
+      }
+    }
     /**
      * For now, if primarySyncFromSecondary fails, we just log & error without any retries
      * Eventually should make this more robust, but proceeding with caution
