@@ -307,20 +307,12 @@ function* connectPhantomWallet(solana: any) {
   const disconnect = async () => {
     await solana.disconnect()
   }
-  yield connectSPLWallet(connectingWallet, solana.signMessage, disconnect)
+  yield connectSPLWallet(connectingWallet, solana, disconnect)
 }
-
-type SolanaSignMessage = (
-  encodedMessage: Uint8Array,
-  encoding: string
-) => Promise<{
-  publicKey: any
-  signature: any
-}>
 
 function* connectSPLWallet(
   connectingWallet: string,
-  solanaSignMessage: SolanaSignMessage,
+  solana: any,
   disconnect: () => Promise<void>
 ) {
   try {
@@ -377,7 +369,7 @@ function* connectSPLWallet(
     const signedResponse: {
       publicKey: any
       signature: any
-    } = yield solanaSignMessage(encodedMessage, 'utf8')
+    } = yield solana.signMessage(encodedMessage, 'utf8')
 
     const publicKey = signedResponse.publicKey.toString()
     const signature = signedResponse.signature.toString('hex')
