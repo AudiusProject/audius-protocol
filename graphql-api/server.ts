@@ -1,8 +1,8 @@
 import { Client } from '@elastic/elasticsearch'
 import { ApolloServer, gql } from 'apollo-server'
 import bodybuilder from 'bodybuilder'
-import * as ed from '@noble/ed25519'
 import { base64 } from '@scure/base'
+import { makeKeypair, sign, verify } from './sigTools'
 
 let url = 'http://localhost:9200'
 const esc = new Client({ node: url })
@@ -76,7 +76,8 @@ const server = new ApolloServer({
   csrfPrevention: true,
   cache: 'bounded',
   context: async ({ req }) => {
-    if (req.body.operationName !== 'IntrospectionQuery') {
+    // when called from executeOperation `req` will be null
+    if (req?.body && req.body.operationName !== 'IntrospectionQuery') {
       const pubkey = req.headers['x-pubkey'] as string
       const sig = req.headers['x-sig'] as string
 
@@ -86,20 +87,61 @@ const server = new ApolloServer({
       // which is kinda gross...
       // either apollo-server-micro or some custom express middleware could probably run before the body parser
       const reconstructedPayload = JSON.stringify(req.body)
-      const payloadBytes = new TextEncoder().encode(reconstructedPayload)
 
       if (pubkey && sig) {
-        const isValid = await ed.verify(
-          base64.decode(sig),
-          payloadBytes,
-          base64.decode(pubkey)
-        )
+        const isValid = await verify(sig, reconstructedPayload, pubkey)
         console.log({ isValid })
       }
     }
   },
 })
 
+async function simulateMessageFromEventLog() {
+  // mutation:
+  const event = {
+    query: `mutation ($track: TrackInput!) {
+      updateTrack(track: $track) {
+        title
+      }
+    }`,
+    variables: {
+      track: {
+        id: '123',
+        title: 'abc',
+      },
+    },
+  }
+
+  // stringify + sign
+  const keypair = await makeKeypair()
+  const eventJson = JSON.stringify(event)
+  const eventSignature = await sign(keypair, eventJson)
+
+  // the event that would come thru our event log would be a tuple of (pubkey, signature, graphql_mutation)
+  // here we serialize as JSON, but it could be some byte offset structure to avoid the JSON-in-JSON
+  const eventTuple = [
+    base64.encode(keypair.publicKey),
+    base64.encode(eventSignature),
+    eventJson,
+  ]
+  const eventTupleJson = JSON.stringify(eventTuple)
+
+  // ------------
+  // OK: so eventTupleJson is what we would get from the "event log"
+  // let's verify it and process it
+  {
+    const [pubkey, sig, json] = JSON.parse(eventTupleJson)
+    const isValid = await verify(sig, json, pubkey)
+    console.log({ isValid, json })
+    if (isValid) {
+      const result = await server.executeOperation(JSON.parse(json))
+      console.log('processed valid event from log:', result.data!.updateTrack)
+    }
+  }
+}
+
 server.listen().then(({ url }) => {
   console.log(`🚀  Server ready at ${url}`)
+
+  simulateMessageFromEventLog()
 })

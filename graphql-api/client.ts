@@ -7,22 +7,24 @@ import {
 import { gql } from 'apollo-server'
 import * as ed from '@noble/ed25519'
 import { base64 } from '@scure/base'
+import { sign } from './sigTools'
 
 const customFetch: HttpOptions['fetch'] = async (uri, options) => {
   if (options?.body && options.headers) {
     const keypair = await makeKeypair()
-    const payloadBytes = new TextEncoder().encode(options.body.toString())
-    const sig = await ed.sign(payloadBytes, keypair.privateKey)
+    const signature = await sign(keypair, options.body.toString())
 
     const headers: any = options.headers
     headers['x-pubkey'] = base64.encode(keypair.publicKey)
-    headers['x-sig'] = base64.encode(sig)
+    headers['x-sig'] = base64.encode(signature)
 
-    // verify it locally... in reality this would happen on server
+    // for fun verify locally here
     {
-      const pubkey = base64.decode(headers['x-pubkey'])
-      const sig = base64.decode(headers['x-sig'])
-      const isValid = await ed.verify(sig, payloadBytes, pubkey)
+      const isValid = await ed.verify(
+        headers['x-sig'],
+        options.body.toString(),
+        headers['x-pubkey']
+      )
       console.log('is valid???', isValid)
     }
   }
