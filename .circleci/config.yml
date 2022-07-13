@@ -338,8 +338,8 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - diff-if-necessary:
-          service: creator-node
+      # - diff-if-necessary:
+      #     service: creator-node
       # Download and cache dependencies
       # - restore_cache:
       #     keys:
@@ -363,7 +363,7 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            npm run test:coverage:ci
+            npm run test:ci
       # - coveralls/upload:
       #     path_to_lcov: ./creator-node/coverage/lcov.info
 
