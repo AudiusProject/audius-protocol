@@ -42,7 +42,7 @@ const useAsyncPoll = ({
 
   const fun = useCallback(
     async () =>
-      new Promise<void>(resolve => {
+      new Promise<void>((resolve) => {
         // Short circuit if they're already equal
         if (variable === value) resolve()
 

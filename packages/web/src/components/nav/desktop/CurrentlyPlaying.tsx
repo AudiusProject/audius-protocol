@@ -89,30 +89,25 @@ const CurrentlyPlaying = ({
       kind='track'
       id={trackId}
       isOwner={isOwner}
-      link={draggableLink}
-    >
+      link={draggableLink}>
       <div
         className={cn(styles.artworkWrapper, {
           [styles.playing]: !!trackId
         })}
         style={wrapperStyle}
-        onClick={onClick}
-      >
+        onClick={onClick}>
         <DynamicImage
           image={artworkLink ?? image}
           immediate={newTrack}
           className={styles.artwork}
-          imageStyle={artworkStyle}
-        >
+          imageStyle={artworkStyle}>
           <div
             className={cn(styles.bottomRightContainer, {
               [styles.hide]: !trackId
-            })}
-          >
+            })}>
             <div
-              onClick={e => onShowVisualizer(e)}
-              className={styles.visualizerIconContainer}
-            >
+              onClick={(e) => onShowVisualizer(e)}
+              className={styles.visualizerIconContainer}>
               <IconVisualizer className={styles.visualizerIcon} />
             </div>
           </div>

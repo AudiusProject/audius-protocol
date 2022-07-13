@@ -39,10 +39,10 @@ export const ToastContextProvider = memo((props: { children: ReactNode }) => {
       type: ToastType
     }) => {
       const key = Math.random().toString()
-      setToasts(toasts => [...toasts, { content, key, type }])
+      setToasts((toasts) => [...toasts, { content, key, type }])
       setTimeout(
         () => {
-          setToasts(toasts => toasts.slice(1))
+          setToasts((toasts) => toasts.slice(1))
         },
         // One second longer timeout to account for animation of toast leaving
         timeout + 1000
@@ -58,9 +58,8 @@ export const ToastContextProvider = memo((props: { children: ReactNode }) => {
       value={{
         clear,
         toast
-      }}
-    >
-      {toasts.map(toast => (
+      }}>
+      {toasts.map((toast) => (
         <ToastView
           key={toast.key}
           content={toast.content}

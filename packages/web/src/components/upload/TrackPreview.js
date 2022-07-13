@@ -22,7 +22,7 @@ const supportsPreview = new Set([
 ])
 
 class TrackPreview extends Component {
-  fileTypeIcon = type => {
+  fileTypeIcon = (type) => {
     switch (type) {
       case 'audio/mpeg':
       case 'audio/mp3':

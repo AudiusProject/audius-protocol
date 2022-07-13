@@ -115,8 +115,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
         onClose={handleToggleNotificationPanel}
         position={PopupPosition.BOTTOM_RIGHT}
         wrapperClassName={styles.popupWrapper}
-        zIndex={zIndex.NAVIGATOR_POPUP}
-      >
+        zIndex={zIndex.NAVIGATOR_POPUP}>
         <div className={styles.panelContainer} ref={panelRef}>
           <div className={styles.header}>
             <IconNotification className={styles.iconNotification} />
@@ -142,8 +141,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
                 useWindow={false}
                 initialLoad={false}
                 threshold={SCROLL_THRESHOLD}
-                getScrollParent={getScrollParent}
-              >
+                getScrollParent={getScrollParent}>
                 <div className={styles.content}>
                   {notifications
                     .filter(({ isHidden }: any) => !isHidden)

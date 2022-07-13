@@ -188,8 +188,8 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
 
   if (shouldMoveToNextTab) {
     getRangesToDisable(trendingTimeRange)
-      .map(r => getTimeGenreCacheKey(r, trendingGenre))
-      .forEach(k => {
+      .map((r) => getTimeGenreCacheKey(r, trendingGenre))
+      .forEach((k) => {
         emptyTimeGenreSet.current.add(k)
       })
 
@@ -356,8 +356,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         title={trendingTitle}
         description={trendingDescription}
         size='large'
-        header={header}
-      >
+        header={header}>
         {body}
       </Page>
       <GenreSelectionModal

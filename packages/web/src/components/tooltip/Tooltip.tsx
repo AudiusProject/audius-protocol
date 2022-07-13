@@ -62,8 +62,7 @@ export const Tooltip = ({
       })}
       mouseEnterDelay={mouseEnterDelay}
       mouseLeaveDelay={mouseLeaveDelay}
-      onClick={() => shouldDismissOnClick && setHideTooltip(true)}
-    >
+      onClick={() => shouldDismissOnClick && setHideTooltip(true)}>
       {children}
     </AntTooltip>
   )

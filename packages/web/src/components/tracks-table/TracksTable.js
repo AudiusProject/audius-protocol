@@ -50,7 +50,7 @@ const favoriteButtonCell = (val, record, props) => {
           className={cn(styles.favoriteButtonFormatting, {
             [styles.deleted]: deleted
           })}
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation()
             props.onClickFavorite(record)
           }}
@@ -66,11 +66,10 @@ const trackNameCell = (val, record, props) => {
   return (
     <div
       className={styles.textContainer}
-      onClick={e => {
+      onClick={(e) => {
         e.stopPropagation()
         if (!deleted) props.onClickTrackName(record)
-      }}
-    >
+      }}>
       <div className={cn(styles.textCell, { [styles.trackName]: !deleted })}>
         {val}
         {deleted ? ` [Deleted By Artist]` : ''}
@@ -87,11 +86,10 @@ const artistNameCell = (val, record, props) => {
     <ArtistPopover handle={record.handle}>
       <div
         className={styles.textContainer}
-        onClick={e => {
+        onClick={(e) => {
           e.stopPropagation()
           props.onClickArtistName(record)
-        }}
-      >
+        }}>
         <div className={cn(styles.textCell, styles.artistName)}>{val}</div>
         <UserBadges
           userId={record.owner_id}
@@ -111,7 +109,7 @@ const repostButtonCell = (val, record, props) => {
     <Tooltip text={record.has_current_user_reposted ? 'Unrepost' : 'Repost'}>
       <div>
         <TableRepostButton
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation()
             props.onClickRepost(record)
           }}
@@ -127,7 +125,7 @@ const optionsButtonCell = (val, record, index, props) => {
   return (
     <TableOptionsButton
       className={styles.optionsButtonFormatting}
-      onClick={e => {
+      onClick={(e) => {
         e.stopPropagation()
       }}
       isDeleted={deleted}
@@ -150,11 +148,11 @@ const optionsButtonCell = (val, record, index, props) => {
   )
 }
 
-const dragHandleCell = props => {
+const dragHandleCell = (props) => {
   return <TableDragHandle {...props} />
 }
 
-const ShowLimitTab = props => {
+const ShowLimitTab = (props) => {
   return (
     <div className={styles.showMoreContainer} onClick={props.onClick}>
       <span className={styles.showMoreText}>
@@ -169,11 +167,11 @@ const ShowLimitTab = props => {
   )
 }
 
-const Loading = props => {
+const Loading = (props) => {
   return <div className={styles.skeleton} />
 }
 
-const DraggableRow = props => {
+const DraggableRow = (props) => {
   const {
     'data-row-key': dataRowKey,
     children,
@@ -211,8 +209,7 @@ const DraggableRow = props => {
         link={link}
         isOwner={record.isOwner}
         isDisabled={record.is_unlisted}
-        {...otherProps}
-      >
+        {...otherProps}>
         {children}
       </Draggable>
     )
@@ -220,7 +217,7 @@ const DraggableRow = props => {
   return null
 }
 
-const ReorderableRow = props => {
+const ReorderableRow = (props) => {
   const { 'data-row-key': dataRowKey, index } = props
 
   return (
@@ -243,7 +240,7 @@ const ReorderableRow = props => {
   )
 }
 
-const ReorderableBody = props => {
+const ReorderableBody = (props) => {
   return (
     <RbdDroppable droppableId='tracks-table-droppable' type='TABLE'>
       {(provided, snapshot) => (
@@ -317,7 +314,7 @@ class TracksTable extends Component {
     window.removeEventListener('resize', this.checkDropColumn)
   }
 
-  onSetTableRef = ref => {
+  onSetTableRef = (ref) => {
     this.tableRef = ref
     this.checkDropColumn()
   }
@@ -345,7 +342,7 @@ class TracksTable extends Component {
       } else {
         // If some columns are not displayed, check min size of existing columns to see if
         // adding back removed columns would fit
-        if (columnsToDrop.some(col => !this.state.displayedColumns[col])) {
+        if (columnsToDrop.some((col) => !this.state.displayedColumns[col])) {
           let startWidth =
             minWidthReducedColumns +
             (this.props.allowReordering ? tableDragHandleWidth : 0)
@@ -396,7 +393,7 @@ class TracksTable extends Component {
     }
   }
 
-  getColumns = loading => {
+  getColumns = (loading) => {
     const columns =
       this.props.columns ||
       [
@@ -453,7 +450,8 @@ class TracksTable extends Component {
           dataIndex: 'date',
           key: 'date',
           className: 'colDate',
-          render: val => (loading ? <Loading /> : moment(val).format('M/D/YY')),
+          render: (val) =>
+            loading ? <Loading /> : moment(val).format('M/D/YY'),
           sorter: loading ? null : (a, b) => moment(a.date) - moment(b.date)
         },
         this.state.displayedColumns.colTime && {
@@ -462,7 +460,7 @@ class TracksTable extends Component {
           key: 'time',
           className: 'colTime',
           sorter: loading ? null : (a, b) => a.time - b.time,
-          render: val => (loading ? <Loading /> : formatSeconds(val))
+          render: (val) => (loading ? <Loading /> : formatSeconds(val))
         },
         this.state.displayedColumns.colPlays && {
           title: <Tooltip text='Total Plays'>{'Plays'}</Tooltip>,
@@ -470,7 +468,7 @@ class TracksTable extends Component {
           key: 'plays',
           className: 'colPlays',
           sorter: loading ? null : (a, b) => a.plays - b.plays,
-          render: val => (loading ? <Loading /> : formatCount(val))
+          render: (val) => (loading ? <Loading /> : formatCount(val))
         },
         {
           title: '',
@@ -527,7 +525,7 @@ class TracksTable extends Component {
     this.props.onSortTracks(sorters)
   }
 
-  onDragEnd = result => {
+  onDragEnd = (result) => {
     const { source, destination } = result
 
     if (!source || !destination) return
@@ -549,7 +547,7 @@ class TracksTable extends Component {
       animateTransitions
     } = this.props
 
-    let dataSource = this.props.dataSource.map(record => ({
+    let dataSource = this.props.dataSource.map((record) => ({
       ...record,
       isOwner: record.owner_id === this.props.userId
     }))
@@ -573,8 +571,7 @@ class TracksTable extends Component {
         className={cn(styles.tracksTableContainer, {
           [styles.loading]: loading
         })}
-        ref={this.onSetTableRef}
-      >
+        ref={this.onSetTableRef}>
         <DragDropContext onDragEnd={this.onDragEnd}>
           <Table
             showSorterTooltip={false}

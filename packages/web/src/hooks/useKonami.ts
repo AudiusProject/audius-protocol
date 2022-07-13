@@ -35,9 +35,8 @@ const keycodeMap: { [keyCode: number]: KonamiKey } = {
 
 export const useKonami = () => {
   const [isKonami, setIsKonami] = useState(false)
-  const [getRemainingCode, setRemainingCode] = useInstanceVar<KonamiKey[]>(
-    KONAMI
-  )
+  const [getRemainingCode, setRemainingCode] =
+    useInstanceVar<KonamiKey[]>(KONAMI)
 
   const keydownListener = useCallback(
     ({ keyCode }: KeyboardEvent) => {

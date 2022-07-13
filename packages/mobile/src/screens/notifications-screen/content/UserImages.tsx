@@ -75,8 +75,7 @@ const UserImage = ({
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      onPress={allowPress ? handlePress : undefined}
-    >
+      onPress={allowPress ? handlePress : undefined}>
       <DynamicImage styles={{ root: imageStyle }} uri={profilePicture} />
     </TouchableOpacity>
   )
@@ -110,7 +109,7 @@ const UserImages = ({ notification, users }: UserImagesProps) => {
 
   const renderUsers = () => (
     <View style={styles.container}>
-      {users.map(user => {
+      {users.map((user) => {
         return (
           <UserImage allowPress={!isMultiUser} user={user} key={user.user_id} />
         )
@@ -122,8 +121,7 @@ const UserImages = ({ notification, users }: UserImagesProps) => {
     <TouchableOpacity
       style={styles.touchable}
       activeOpacity={0.7}
-      onPress={handlePress}
-    >
+      onPress={handlePress}>
       {renderUsers()}
     </TouchableOpacity>
   ) : (

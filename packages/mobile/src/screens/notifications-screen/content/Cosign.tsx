@@ -37,7 +37,7 @@ const Cosign = ({ notification }: CosignProps) => {
 
   const user = notification.user
   const entity = notification.entities.find(
-    track => track?.owner_id === notification.parentTrackUserId
+    (track) => track?.owner_id === notification.parentTrackUserId
   )
 
   return (

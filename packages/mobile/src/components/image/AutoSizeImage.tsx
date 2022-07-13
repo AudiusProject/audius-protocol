@@ -7,10 +7,9 @@ const AutoSizeImage = (props: ImageProps) => {
 
   return (
     <View
-      onLayout={e => {
+      onLayout={(e) => {
         setSize(e.nativeEvent.layout.width)
-      }}
-    >
+      }}>
       <Image {...props} style={[props.style, { width: size, height: size }]} />
     </View>
   )

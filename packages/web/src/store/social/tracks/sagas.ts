@@ -367,7 +367,7 @@ export function* saveTrackAsync(
     const handle = yield* select(getUserHandle)
     const coSignIndicatorEvent = make(Name.REMIX_COSIGN_INDICATOR, {
       id: action.trackId,
-      handle: handle,
+      handle,
       original_track_id: parentTrack?.track_id,
       original_track_title: parentTrack?.title,
       action: 'favorited'
@@ -377,7 +377,7 @@ export function* saveTrackAsync(
     if (!hasAlreadyCoSigned) {
       const coSignEvent = make(Name.REMIX_COSIGN, {
         id: action.trackId,
-        handle: handle,
+        handle,
         original_track_id: parentTrack?.track_id,
         original_track_title: parentTrack?.title,
         action: 'favorited'
@@ -522,23 +522,24 @@ export function* confirmUnsaveTrack(trackId: ID) {
 }
 
 export function* watchSetArtistPick() {
-  yield* takeEvery(socialActions.SET_ARTIST_PICK, function* (
-    action: ReturnType<typeof socialActions.setArtistPick>
-  ) {
-    const userId = yield* select(getUserId)
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: { _artist_pick: action.trackId }
-        }
-      ])
-    )
-    yield* call(AudiusBackend.setArtistPick, action.trackId)
+  yield* takeEvery(
+    socialActions.SET_ARTIST_PICK,
+    function* (action: ReturnType<typeof socialActions.setArtistPick>) {
+      const userId = yield* select(getUserId)
+      yield* put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: userId,
+            metadata: { _artist_pick: action.trackId }
+          }
+        ])
+      )
+      yield* call(AudiusBackend.setArtistPick, action.trackId)
 
-    const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
-    yield* put(event)
-  })
+      const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
+      yield* put(event)
+    }
+  )
 }
 
 export function* watchUnsetArtistPick() {
@@ -562,118 +563,126 @@ export function* watchUnsetArtistPick() {
 /* RECORD LISTEN */
 
 export function* watchRecordListen() {
-  yield* takeEvery(socialActions.RECORD_LISTEN, function* (
-    action: ReturnType<typeof socialActions.recordListen>
-  ) {
-    if (NATIVE_MOBILE) return
-    console.debug('Listen recorded for track', action.trackId)
+  yield* takeEvery(
+    socialActions.RECORD_LISTEN,
+    function* (action: ReturnType<typeof socialActions.recordListen>) {
+      if (NATIVE_MOBILE) return
+      console.debug('Listen recorded for track', action.trackId)
 
-    const userId = yield* select(getUserId)
-    const track = yield* select(getTrack, { id: action.trackId })
-    if (!userId || !track) return
+      const userId = yield* select(getUserId)
+      const track = yield* select(getTrack, { id: action.trackId })
+      if (!userId || !track) return
 
-    if (userId !== track.owner_id || track.play_count < 10) {
-      yield* call(AudiusBackend.recordTrackListen, action.trackId)
+      if (userId !== track.owner_id || track.play_count < 10) {
+        yield* call(AudiusBackend.recordTrackListen, action.trackId)
+      }
+
+      // Record track listen analytics event
+      const event = make(Name.LISTEN, { trackId: action.trackId })
+      yield* put(event)
+
+      // Optimistically update the listen streak if applicable
+      yield* put(updateOptimisticListenStreak())
     }
-
-    // Record track listen analytics event
-    const event = make(Name.LISTEN, { trackId: action.trackId })
-    yield* put(event)
-
-    // Optimistically update the listen streak if applicable
-    yield* put(updateOptimisticListenStreak())
-  })
+  )
 }
 
 /* DOWNLOAD TRACK */
 
 function* watchDownloadTrack() {
-  yield* takeEvery(socialActions.DOWNLOAD_TRACK, function* (
-    action: ReturnType<typeof socialActions.downloadTrack>
-  ) {
-    yield* call(waitForBackendSetup)
+  yield* takeEvery(
+    socialActions.DOWNLOAD_TRACK,
+    function* (action: ReturnType<typeof socialActions.downloadTrack>) {
+      yield* call(waitForBackendSetup)
 
-    // Check if there is a logged in account and if not,
-    // wait for one so we can trigger the download immediately after
-    // logging in.
-    const accountUserId = yield* select(getUserId)
-    if (!accountUserId) {
-      yield* call(waitForValue, getUserId)
+      // Check if there is a logged in account and if not,
+      // wait for one so we can trigger the download immediately after
+      // logging in.
+      const accountUserId = yield* select(getUserId)
+      if (!accountUserId) {
+        yield* call(waitForValue, getUserId)
+      }
+
+      const track = yield* select(getTrack, { id: action.trackId })
+      if (!track) return
+
+      const userId = track.owner_id
+      const user = yield* select(getUser, { id: userId })
+      if (!user) return
+
+      let filename
+      // Determine if this track requires a follow to download.
+      // In the case of a stem, check the parent track
+      let requiresFollow =
+        track.download?.requires_follow && userId !== accountUserId
+      if (track.stem_of?.parent_track_id) {
+        const parentTrack = yield* select(getTrack, {
+          id: track.stem_of?.parent_track_id
+        })
+        requiresFollow =
+          requiresFollow ||
+          (parentTrack?.download?.requires_follow && userId !== accountUserId)
+
+        filename = `${parentTrack?.title} - ${action.stemName} - ${user.name} (Audius).mp3`
+      } else {
+        filename = `${track.title} - ${user.name} (Audius).mp3`
+      }
+
+      // If a follow is required and the current user is not following
+      // bail out of downloading.
+      if (requiresFollow && !user.does_current_user_follow) {
+        return
+      }
+
+      const endpoints = action.creatorNodeEndpoints
+        .split(',')
+        .map((endpoint) => `${endpoint}/ipfs/`)
+
+      if (NATIVE_MOBILE) {
+        yield* call(
+          TrackDownload.downloadTrackMobile,
+          action.cid,
+          endpoints,
+          filename
+        )
+      } else {
+        yield* call(
+          TrackDownload.downloadTrack,
+          action.cid,
+          endpoints,
+          filename
+        )
+      }
     }
-
-    const track = yield* select(getTrack, { id: action.trackId })
-    if (!track) return
-
-    const userId = track.owner_id
-    const user = yield* select(getUser, { id: userId })
-    if (!user) return
-
-    let filename
-    // Determine if this track requires a follow to download.
-    // In the case of a stem, check the parent track
-    let requiresFollow =
-      track.download?.requires_follow && userId !== accountUserId
-    if (track.stem_of?.parent_track_id) {
-      const parentTrack = yield* select(getTrack, {
-        id: track.stem_of?.parent_track_id
-      })
-      requiresFollow =
-        requiresFollow ||
-        (parentTrack?.download?.requires_follow && userId !== accountUserId)
-
-      filename = `${parentTrack?.title} - ${action.stemName} - ${user.name} (Audius).mp3`
-    } else {
-      filename = `${track.title} - ${user.name} (Audius).mp3`
-    }
-
-    // If a follow is required and the current user is not following
-    // bail out of downloading.
-    if (requiresFollow && !user.does_current_user_follow) {
-      return
-    }
-
-    const endpoints = action.creatorNodeEndpoints
-      .split(',')
-      .map(endpoint => `${endpoint}/ipfs/`)
-
-    if (NATIVE_MOBILE) {
-      yield* call(
-        TrackDownload.downloadTrackMobile,
-        action.cid,
-        endpoints,
-        filename
-      )
-    } else {
-      yield* call(TrackDownload.downloadTrack, action.cid, endpoints, filename)
-    }
-  })
+  )
 }
 
 /* SHARE */
 
 function* watchShareTrack() {
-  yield* takeEvery(socialActions.SHARE_TRACK, function* (
-    action: ReturnType<typeof socialActions.shareTrack>
-  ) {
-    const { trackId } = action
+  yield* takeEvery(
+    socialActions.SHARE_TRACK,
+    function* (action: ReturnType<typeof socialActions.shareTrack>) {
+      const { trackId } = action
 
-    const track = yield* select(getTrack, { id: trackId })
-    if (!track) return
+      const track = yield* select(getTrack, { id: trackId })
+      if (!track) return
 
-    const user = yield* select(getUser, { id: track.owner_id })
-    if (!user) return
+      const user = yield* select(getUser, { id: track.owner_id })
+      if (!user) return
 
-    const link = track.permalink
-    share(link, formatShareText(track.title, user.name))
+      const link = track.permalink
+      share(link, formatShareText(track.title, user.name))
 
-    const event = make(Name.SHARE, {
-      kind: 'track',
-      source: action.source,
-      id: trackId,
-      url: link
-    })
-    yield* put(event)
-  })
+      const event = make(Name.SHARE, {
+        kind: 'track',
+        source: action.source,
+        id: trackId,
+        url: link
+      })
+      yield* put(event)
+    }
+  )
 }
 
 const sagas = () => {

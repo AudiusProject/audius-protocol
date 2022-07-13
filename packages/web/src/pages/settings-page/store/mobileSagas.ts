@@ -48,51 +48,55 @@ export async function disablePushNotifications() {
 }
 
 function* watchUpdatePushNotificationSettings() {
-  yield* takeEvery(actions.TOGGLE_PUSH_NOTIFICATION_SETTING, function* (
-    action: actions.TogglePushNotificationSetting
-  ) {
-    let isOn = action.isOn
+  yield* takeEvery(
+    actions.TOGGLE_PUSH_NOTIFICATION_SETTING,
+    function* (action: actions.TogglePushNotificationSetting) {
+      let isOn = action.isOn
 
-    try {
-      if (action.notificationType === PushNotificationSetting.MobilePush) {
-        if (isOn) {
-          // Enabling push notifications should enable all of the notification types
-          const message = new EnablePushNotificationsMessage()
-          message.send()
-          const { token, os } = yield* call(async () => message.receive())
+      try {
+        if (action.notificationType === PushNotificationSetting.MobilePush) {
+          if (isOn) {
+            // Enabling push notifications should enable all of the notification types
+            const message = new EnablePushNotificationsMessage()
+            message.send()
+            const { token, os } = yield* call(async () => message.receive())
 
-          const newSettings = { ...initialState.pushNotifications }
-          yield* put(actions.setPushNotificationSettings(newSettings))
+            const newSettings = { ...initialState.pushNotifications }
+            yield* put(actions.setPushNotificationSettings(newSettings))
 
-          // We need a user for this to work (and in the case of sign up, we might not
-          // have one right away when this function is called)
-          // @ts-ignore: remove this ignore when waitForValue is typed
-          yield* call(waitForValue, getAccountUser)
-          yield* call(AudiusBackend.updatePushNotificationSettings, newSettings)
-          yield* call(AudiusBackend.registerDeviceToken, token, os)
+            // We need a user for this to work (and in the case of sign up, we might not
+            // have one right away when this function is called)
+            // @ts-ignore: remove this ignore when waitForValue is typed
+            yield* call(waitForValue, getAccountUser)
+            yield* call(
+              AudiusBackend.updatePushNotificationSettings,
+              newSettings
+            )
+            yield* call(AudiusBackend.registerDeviceToken, token, os)
+          } else {
+            yield* call(disablePushNotifications)
+          }
         } else {
-          yield* call(disablePushNotifications)
+          if (isOn === undefined) {
+            const pushNotificationSettings = yield* select(
+              getPushNotificationSettings
+            )
+            isOn = !pushNotificationSettings[action.notificationType]
+          }
+          yield* call(AudiusBackend.updatePushNotificationSettings, {
+            [action.notificationType]: isOn
+          })
         }
-      } else {
-        if (isOn === undefined) {
-          const pushNotificationSettings = yield* select(
-            getPushNotificationSettings
+      } catch (e) {
+        yield* put(
+          actions.togglePushNotificationSettingFailed(
+            action.notificationType,
+            action.isOn
           )
-          isOn = !pushNotificationSettings[action.notificationType]
-        }
-        yield* call(AudiusBackend.updatePushNotificationSettings, {
-          [action.notificationType]: isOn
-        })
-      }
-    } catch (e) {
-      yield* put(
-        actions.togglePushNotificationSettingFailed(
-          action.notificationType,
-          action.isOn
         )
-      )
+      }
     }
-  })
+  )
 }
 
 export default function sagas() {

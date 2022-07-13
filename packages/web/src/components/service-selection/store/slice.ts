@@ -72,7 +72,7 @@ const slice = createSlice({
   name: 'service-selection',
   initialState,
   reducers: {
-    fetchServices: state => {
+    fetchServices: (state) => {
       state.services = {}
       state.status = Status.LOADING
     },
@@ -86,7 +86,7 @@ const slice = createSlice({
       state.secondaries = secondaries
       state.status = Status.SUCCESS
     },
-    fetchServicesFailed: state => {
+    fetchServicesFailed: (state) => {
       state.status = Status.ERROR
     },
     setSelected: (state, action: PayloadAction<SetSelectedPayload>) => {},
@@ -110,10 +110,10 @@ const slice = createSlice({
       const { service, isSyncing } = action.payload
       state.services[service].isSyncing = isSyncing
     },
-    openModal: state => {
+    openModal: (state) => {
       state.showModal = true
     },
-    closeModal: state => {
+    closeModal: (state) => {
       state.showModal = false
     }
   }

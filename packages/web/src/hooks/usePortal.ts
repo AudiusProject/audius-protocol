@@ -37,8 +37,9 @@ export const usePortal = ({ container }: { container?: HTMLDivElement }) => {
   // Export the portal component memoized based on the portal container.
   // Users of Portal may wish to write their own effects with [Portal] in the dep array.
   const Portal = useMemo(
-    () => ({ children }: { children: ReactNode }) =>
-      portalContainer ? createPortal(children, portalContainer!) : null,
+    () =>
+      ({ children }: { children: ReactNode }) =>
+        portalContainer ? createPortal(children, portalContainer!) : null,
     [portalContainer]
   )
   return Portal

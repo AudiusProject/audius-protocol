@@ -26,9 +26,7 @@ export interface TrendingPageContentProps {
   goToGenreSelection: () => void
   setTrendingInView: (inView: boolean) => void
   switchView: () => void
-  getLineupProps: (
-    lineup: Lineup<any>
-  ) => {
+  getLineupProps: (lineup: Lineup<any>) => {
     lineup: Lineup<any>
     playingUid: UID
     playingSource: string
@@ -57,9 +55,7 @@ export interface TrendingPageContentProps {
   ) => (overwrite: boolean) => void
   makeResetTrending: (timeRange: TimeRange) => () => void
 
-  getLineupForRange: (
-    timeRange: TimeRange
-  ) => {
+  getLineupForRange: (timeRange: TimeRange) => {
     playingUid: UID
     lineup: Lineup<Track>
     playingSource: any

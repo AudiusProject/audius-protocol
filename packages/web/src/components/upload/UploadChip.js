@@ -51,8 +51,7 @@ const UploadChip = ({ type, variant, isArtist = false, isFirst, onClick }) => {
         [styles.card]: variant === 'card',
         [styles.tile]: variant === 'tile'
       })}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       <div className={styles.icon}>{icon}</div>
       <div className={styles.text}>{text}</div>
     </div>

@@ -25,9 +25,6 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
   "standard": {
     "parser": "babel-eslint"
   },
@@ -67,16 +64,15 @@
     "classnames": "2.2.6",
     "cross-env": "^5.2.1",
     "css-loader": "^3.2.0",
-    "eslint": "7.26.0",
+    "eslint": "8.19.0",
     "eslint-config-audius": "0.0.0",
-    "eslint-plugin-storybook": "^0.5.7",
+    "eslint-plugin-storybook": "^0.6.1",
     "gh-pages": "^2.1.1",
     "jest": "^24.9.0",
     "lodash": "4.17.20",
     "moment": "2.24.0",
     "postcss-custom-properties": "^9.0.2",
-    "prettier": "^2.0.5",
-    "prettier-config-standard": "^1.0.1",
+    "prettier": "2.7.1",
     "react": "17.0.2",
     "react-docgen-typescript-loader": "^3.7.0",
     "react-dom": "17.0.2",

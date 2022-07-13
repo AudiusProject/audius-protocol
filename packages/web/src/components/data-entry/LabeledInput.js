@@ -15,8 +15,7 @@ class LabeledInput extends Component {
         className={cn(styles.input, {
           [styles.horizontal]: layout === 'horizontal',
           [styles.vertical]: layout === 'vertical'
-        })}
-      >
+        })}>
         <div className={cn(styles.label, labelStyle)}>{label}</div>
         <Input {...this.props} />
       </div>

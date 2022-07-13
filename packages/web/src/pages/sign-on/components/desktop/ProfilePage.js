@@ -57,20 +57,16 @@ export class ProfilePage extends Component {
     this.setState({ isLoading: false })
   }
 
-  onTwitterLogin = async twitterProfileRes => {
+  onTwitterLogin = async (twitterProfileRes) => {
     const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
-      const {
-        profile,
-        profileImage,
-        profileBanner,
-        requiresUserReview
-      } = await formatTwitterProfile(twitterProfile)
+      const { profile, profileImage, profileBanner, requiresUserReview } =
+        await formatTwitterProfile(twitterProfile)
 
       this.props.validateHandle(
         profile.screen_name,
         profile.verified,
-        error => {
+        (error) => {
           this.props.setTwitterProfile(
             uuid,
             profile,
@@ -97,15 +93,12 @@ export class ProfilePage extends Component {
 
   onInstagramLogin = async (uuid, instagramProfile) => {
     try {
-      const {
-        profile,
-        profileImage,
-        requiresUserReview
-      } = await formatInstagramProfile(instagramProfile)
+      const { profile, profileImage, requiresUserReview } =
+        await formatInstagramProfile(instagramProfile)
       this.props.validateHandle(
         profile.username,
         profile.is_verified,
-        error => {
+        (error) => {
           this.props.setInstagramProfile(
             uuid,
             profile,
@@ -128,7 +121,7 @@ export class ProfilePage extends Component {
     }
   }
 
-  onHandleKeyDown = e => {
+  onHandleKeyDown = (e) => {
     if (e.keyCode === 13 /** enter */) {
       this.onContinue()
     }
@@ -160,8 +153,7 @@ export class ProfilePage extends Component {
       <div
         className={cn(styles.container, {
           [styles.isMobile]: isMobile
-        })}
-      >
+        })}>
         {isMobile ? null : (
           <>
             <h2 className={styles.header}>{messages.header}</h2>

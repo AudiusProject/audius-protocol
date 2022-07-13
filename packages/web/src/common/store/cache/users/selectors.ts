@@ -42,7 +42,7 @@ export const getUsers = (
 ) => {
   if (props && props.ids) {
     const users: { [id: number]: User } = {}
-    props.ids.forEach(id => {
+    props.ids.forEach((id) => {
       const user = getUser(state, { id })
       if (user) {
         users[id] = user
@@ -51,7 +51,7 @@ export const getUsers = (
     return users
   } else if (props && props.uids) {
     const users: { [id: number]: User } = {}
-    props.uids.forEach(uid => {
+    props.uids.forEach((uid) => {
       const user = getUser(state, { uid })
       if (user) {
         users[user.user_id] = user
@@ -60,7 +60,7 @@ export const getUsers = (
     return users
   } else if (props && props.handles) {
     const users: { [handle: string]: User } = {}
-    props.handles.forEach(handle => {
+    props.handles.forEach((handle) => {
       const { id } =
         getUserByHandle(state, { handle: handle.toLowerCase() }) || {}
       if (id) {
@@ -109,7 +109,7 @@ export const getUserTimestamps = (
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   const statuses: { [id: number]: Status } = {}
-  props.ids.forEach(id => {
+  props.ids.forEach((id) => {
     const status = getStatus(state, { id })
     if (status) {
       statuses[id] = status

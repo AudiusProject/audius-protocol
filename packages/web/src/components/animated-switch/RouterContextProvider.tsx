@@ -42,8 +42,7 @@ export const RouterContextProvider = memo(
             setStackReset,
             slideDirection,
             setSlideDirection
-          }}
-        >
+          }}>
           {props.children}
         </RouterContext.Provider>
       )

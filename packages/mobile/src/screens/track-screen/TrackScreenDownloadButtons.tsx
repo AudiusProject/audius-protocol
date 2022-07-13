@@ -133,7 +133,7 @@ export const TrackScreenDownloadButtons = ({
 
   return (
     <View style={{ marginBottom: 12 }}>
-      {buttons.map(props => (
+      {buttons.map((props) => (
         <DownloadButton {...props} key={props.label} />
       ))}
     </View>

@@ -27,12 +27,12 @@ function* watchFetchCognitoFlowUrl() {
 }
 
 function* watchUpdateHCaptchaScore() {
-  yield takeEvery(MessageType.UPDATE_HCAPTCHA_SCORE, function* (action: {
-    type: string
-    token: string
-  }) {
-    yield put(updateHCaptchaScore({ token: action.token }))
-  })
+  yield takeEvery(
+    MessageType.UPDATE_HCAPTCHA_SCORE,
+    function* (action: { type: string; token: string }) {
+      yield put(updateHCaptchaScore({ token: action.token }))
+    }
+  )
 }
 
 const sagas = () => {

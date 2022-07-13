@@ -22,7 +22,7 @@ const removeLocalStorageItems = () => {
     BADGE_LOCAL_STORAGE_KEY,
     IS_MOBILE_USER_KEY
   ]
-  items.map(k => localStorage.removeItem(k))
+  items.map((k) => localStorage.removeItem(k))
 }
 
 export const signOut = () => {

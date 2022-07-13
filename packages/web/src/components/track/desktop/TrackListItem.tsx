@@ -54,8 +54,7 @@ const TrackListItem = ({
         className={cn(styles.playlistTrack, {
           [styles.large]: size === TrackTileSize.LARGE,
           [styles.small]: size === TrackTileSize.SMALL
-        })}
-      >
+        })}>
         <Skeleton className={styles.skeleton} width='96%' height='80%' />
       </div>
     )
@@ -123,8 +122,7 @@ const TrackListItem = ({
         [styles.disabled]: disableActions || deleted,
         [styles.noBorder]: isLoading
       })}
-      onClick={onPlayTrack}
-    >
+      onClick={onPlayTrack}>
       {isLoading && (
         <Skeleton className={styles.skeleton} width='96%' height='80%' />
       )}

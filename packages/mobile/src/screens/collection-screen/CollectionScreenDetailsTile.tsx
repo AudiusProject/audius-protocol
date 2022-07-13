@@ -109,7 +109,9 @@ export const CollectionScreenDetailsTile = ({
   const playingTrack = useSelector(getTrack)
   const trackId = playingTrack?.trackId
 
-  const isQueued = tracksLineup.entries.some(entry => playingUid === entry.uid)
+  const isQueued = tracksLineup.entries.some(
+    (entry) => playingUid === entry.uid
+  )
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {

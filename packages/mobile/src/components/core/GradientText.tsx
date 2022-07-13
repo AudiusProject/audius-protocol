@@ -14,10 +14,8 @@ export type GradientTextProps = TextProps &
  * Diagonal gradient text in the Audius colors
  */
 export const GradientText = (props: GradientTextProps) => {
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
+    useThemeColors()
   const {
     style,
     children,
@@ -31,19 +29,16 @@ export const GradientText = (props: GradientTextProps) => {
         <Text style={style} weight='heavy' {...other}>
           {children}
         </Text>
-      }
-    >
+      }>
       <LinearGradient
         colors={colors}
         start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 0 }}
-      >
+        end={{ x: 0, y: 0 }}>
         <Text
           style={[style, { opacity: 0 }]}
           weight='heavy'
           {...other}
-          accessibilityElementsHidden
-        >
+          accessibilityElementsHidden>
           {children}
         </Text>
       </LinearGradient>

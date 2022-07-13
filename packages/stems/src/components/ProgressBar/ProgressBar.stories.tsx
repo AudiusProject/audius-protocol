@@ -9,7 +9,7 @@ export default {
   argTypes: {}
 }
 
-const Template: Story<ProgressBarProps> = args => <ProgressBar {...args} />
+const Template: Story<ProgressBarProps> = (args) => <ProgressBar {...args} />
 const baseProps: ProgressBarProps = {
   min: 0,
   max: 10,

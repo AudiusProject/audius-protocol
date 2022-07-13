@@ -45,7 +45,7 @@ const Airplay = () => {
     AirplayEvent.startScan()
     listenerRef.current = airplayEventListener.addListener(
       'deviceConnected',
-      device => {
+      (device) => {
         console.info(`Connected to device ${JSON.stringify(device)}`)
         if (
           device &&

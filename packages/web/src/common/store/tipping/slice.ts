@@ -117,26 +117,26 @@ const slice = createSlice({
       state.send.status = 'CONFIRM'
       state.send.amount = action.payload.amount
     },
-    confirmSendTip: state => {
+    confirmSendTip: (state) => {
       if (state.send.status !== 'CONFIRM' && state.send.status !== 'ERROR') {
         return
       }
       state.send.status = 'SENDING'
     },
-    convert: state => {
+    convert: (state) => {
       if (state.send.status !== 'SENDING') {
         return
       }
       state.send.status = 'CONVERTING'
     },
-    sendTipSucceeded: state => {
+    sendTipSucceeded: (state) => {
       state.send.status = 'SUCCESS'
     },
     sendTipFailed: (state, action: PayloadAction<{ error: string }>) => {
       state.send.status = 'ERROR'
       state.send.error = action.payload.error
     },
-    resetSend: state => {
+    resetSend: (state) => {
       state.send.status = null
       state.send.user = null
       state.send.amount = '0'
@@ -168,7 +168,7 @@ const slice = createSlice({
     ) => {
       state.tipToDisplay = action.payload.tipToDisplay
     },
-    hideTip: state => {
+    hideTip: (state) => {
       state.showTip = false
     }
   }

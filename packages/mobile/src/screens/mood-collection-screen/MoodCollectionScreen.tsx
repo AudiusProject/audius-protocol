@@ -19,11 +19,12 @@ type MoodCollectionScreenProps = {
 export const MoodCollectionScreen = ({
   collection
 }: MoodCollectionScreenProps) => {
-  const status = useSelectorWeb(state =>
+  const status = useSelectorWeb((state) =>
     getStatus(state, { variant: ExploreCollectionsVariant.MOOD })
   )
   const exploreData = useSelectorWeb(
-    state => getCollections(state, { variant: ExploreCollectionsVariant.MOOD }),
+    (state) =>
+      getCollections(state, { variant: ExploreCollectionsVariant.MOOD }),
     isEqual
   )
 

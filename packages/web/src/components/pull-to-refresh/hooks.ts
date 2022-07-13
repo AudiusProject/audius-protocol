@@ -98,7 +98,7 @@ export const useHasReachedTopPoint = ({
         setHasFetched(true)
         await Promise.all([
           fetchContent(),
-          new Promise(resolve => setTimeout(resolve, 1000))
+          new Promise((resolve) => setTimeout(resolve, 1000))
         ])
         setSpringProps({
           to: {

@@ -175,14 +175,12 @@ export const Slider = ({
         [styles.showHandle]: showHandle
       })}
       onMouseDown={onMouseDown}
-      onTouchStart={onTouchStart}
-    >
+      onTouchStart={onTouchStart}>
       <div ref={railRef} className={styles.rail}>
         <div
           ref={trackRef}
           className={styles.trackWrapper}
-          style={transformStyles}
-        >
+          style={transformStyles}>
           <div ref={trackRef} className={styles.track} />
         </div>
       </div>
@@ -190,8 +188,7 @@ export const Slider = ({
         <div
           ref={handleRef}
           className={styles.handleWrapper}
-          style={transformStyles}
-        >
+          style={transformStyles}>
           <div ref={handleRef} className={styles.handle} />
         </div>
       ) : null}

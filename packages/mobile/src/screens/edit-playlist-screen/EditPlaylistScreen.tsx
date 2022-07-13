@@ -133,7 +133,7 @@ export const EditPlaylistScreen = () => {
           )
         }
         dispatchWeb(
-          editPlaylist(playlist.playlist_id, (values as unknown) as Collection)
+          editPlaylist(playlist.playlist_id, values as unknown as Collection)
         )
         dispatchWeb(tracksActions.fetchLineupMetadatas())
       }

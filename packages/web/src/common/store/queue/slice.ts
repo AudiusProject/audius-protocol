@@ -197,7 +197,9 @@ const slice = createSlice({
     reorder: (state, action: PayloadAction<ReorderPayload>) => {
       const { orderedUids } = action.payload
 
-      const newOrder = orderedUids.map(uid => state.order[state.positions[uid]])
+      const newOrder = orderedUids.map(
+        (uid) => state.order[state.positions[uid]]
+      )
 
       const newPositions = orderedUids.reduce((m, uid, i) => {
         m[uid] = i
@@ -248,7 +250,7 @@ const slice = createSlice({
     remove: (state, action: PayloadAction<RemovePayload>) => {
       const { uid: uidToRemove } = action.payload
 
-      const newOrder = state.order.filter(o => o.uid !== uidToRemove)
+      const newOrder = state.order.filter((o) => o.uid !== uidToRemove)
 
       const removedIndex = state.positions[uidToRemove]
       const newPositions = Object.keys(state.positions).reduce(

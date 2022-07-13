@@ -14,18 +14,18 @@ export default () => {
     Jimp.read({
       url: imageUrl
     })
-      .then(img => {
+      .then((img) => {
         // eslint-disable-next-line
         self.console.log(imageUrl, img)
         const mimeType = 'image/jpeg'
-        img.getBufferAsync(mimeType).then(buffer => {
+        img.getBufferAsync(mimeType).then((buffer) => {
           // eslint-disable-next-line
           let convertedBlob = new self.Blob([buffer], { type: mimeType })
           // eslint-disable-next-line
           postMessage({key, result: convertedBlob})
         })
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(imageUrl, err)
         // eslint-disable-next-line
         postMessage({key, result: new Blob()})

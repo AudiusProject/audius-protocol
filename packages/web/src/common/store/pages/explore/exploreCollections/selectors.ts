@@ -24,7 +24,7 @@ export const getCollections = (
   const collectionIds = baseState ? baseState.collectionIds : []
   const collections = getCachedCollections(state, { ids: collectionIds })
 
-  const collectionsList = collectionIds.map(id => collections[id])
+  const collectionsList = collectionIds.map((id) => collections[id])
 
   const userIds = collectionsList.map((c: Collection) => c.playlist_owner_id)
   const users = getUsers(state, { ids: userIds })
@@ -34,5 +34,5 @@ export const getCollections = (
     user: users[c.playlist_owner_id]
   }))
 
-  return userCollections.filter(playlist => !playlist.user.is_deactivated)
+  return userCollections.filter((playlist) => !playlist.user.is_deactivated)
 }

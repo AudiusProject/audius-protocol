@@ -59,7 +59,9 @@ const useSearchHistory = () => {
       if (!query) return
       const trimmedQuery = query.trim()
       if (trimmedQuery === '') return
-      const filteredSearch = searchHistory.filter(term => term !== trimmedQuery)
+      const filteredSearch = searchHistory.filter(
+        (term) => term !== trimmedQuery
+      )
       const updatedHistory = [trimmedQuery, ...filteredSearch]
       dispatch(searchActions.setSearchHistory(updatedHistory))
       await setSearchHistory(updatedHistory)

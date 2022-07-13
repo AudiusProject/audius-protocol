@@ -74,13 +74,8 @@ type UserListItemProps = {
 
 export const UserListItem = (props: UserListItemProps) => {
   const { tag, user } = props
-  const {
-    user_id,
-    handle,
-    name,
-    follower_count,
-    does_follow_current_user
-  } = user
+  const { user_id, handle, name, follower_count, does_follow_current_user } =
+    user
   const currentUserId = useSelectorWeb(getUserId)
   const styles = useStyles()
   const navigation = useNavigation()
@@ -103,8 +98,7 @@ export const UserListItem = (props: UserListItemProps) => {
         style={styles.root}
         onPress={handlePress}
         onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-      >
+        onPressOut={handlePressOut}>
         <View style={styles.infoRoot}>
           <ProfilePicture profile={user} style={styles.photo} />
           <View style={styles.userInfo}>

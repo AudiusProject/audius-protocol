@@ -15,14 +15,14 @@ class Dropdown extends Component {
     focused: false
   }
 
-  onVisibleChange = visible => {
+  onVisibleChange = (visible) => {
     this.setState({
       focused: visible
     })
   }
 
   onClick = (index, callback) => {
-    this.setState({ index: index, focused: false })
+    this.setState({ index, focused: false })
     if (callback) callback()
     this.props.onSelect(this.props.menu.items[index].text)
     this.props.onSelectIndex(index)
@@ -60,8 +60,7 @@ class Dropdown extends Component {
               onClick={() => {
                 this.onClick(i, item.onClick)
               }}
-              className={cn(textClassName)}
-            >
+              className={cn(textClassName)}>
               {item.text}
             </div>
           </AntMenu.Item>
@@ -81,8 +80,7 @@ class Dropdown extends Component {
             disabled={disabled}
             onVisibleChange={this.onVisibleChange}
             // Mount the dropdown inside the dropdown div.
-            getPopupContainer={trigger => trigger.parentNode}
-          >
+            getPopupContainer={(trigger) => trigger.parentNode}>
             <div className={styles.selector}>
               <div className={cn(styles.selectorText, textClassName)}>
                 {selection}

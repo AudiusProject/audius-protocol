@@ -58,11 +58,11 @@ export const CollectionScreen = () => {
   // params is incorrectly typed and can sometimes be undefined
   const { id, searchCollection } = params ?? {}
 
-  const cachedCollection = useSelectorWeb(state =>
+  const cachedCollection = useSelectorWeb((state) =>
     getCollection(state, { id })
   ) as Collection
 
-  const cachedUser = useSelectorWeb(state =>
+  const cachedUser = useSelectorWeb((state) =>
     getUser(state, { id: cachedCollection?.playlist_owner_id })
   )
 
@@ -216,8 +216,7 @@ const CollectionScreenComponent = ({
     <Screen>
       <VirtualizedScrollView
         listKey={`playlist-${collection.playlist_id}`}
-        style={styles.root}
-      >
+        style={styles.root}>
         <CollectionScreenDetailsTile
           description={description ?? ''}
           extraDetails={extraDetails}

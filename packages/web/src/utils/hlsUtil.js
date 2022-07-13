@@ -61,7 +61,7 @@ export const generateM3U8Variants = (
   prefetchedSegments = [],
   gateways
 ) => {
-  const variants = gateways.map(gateway => {
+  const variants = gateways.map((gateway) => {
     const variant = generateM3U8(
       segments,
       [],
@@ -75,7 +75,7 @@ export const generateM3U8Variants = (
 
   const lines = [FORMAT, VERSION]
 
-  variants.forEach(variant => {
+  variants.forEach((variant) => {
     lines.push(STREAM_VARIANT_65K)
     lines.push(variant)
   })

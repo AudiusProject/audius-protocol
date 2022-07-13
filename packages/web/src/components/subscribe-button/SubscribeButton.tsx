@@ -44,8 +44,7 @@ const SubscribeButton = ({
       })}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {(isHovering && isSubscribed && !isHoveringClicked) ||
       (isHovering && !isSubscribed && isHoveringClicked) ? (
         <IconNotificationOff className={styles.icon} />

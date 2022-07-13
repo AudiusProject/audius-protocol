@@ -54,8 +54,7 @@ const DesktopDownloadButton = ({ os }: { os: OS }) => {
     <div className={styles.downloadLinkWrapper}>
       <button
         onClick={() => DownloadApp.start(os)}
-        className={styles.downloadLink}
-      >
+        className={styles.downloadLink}>
         {messages.getFor}{' '}
         <span className={styles.platformName}>
           <IconDownload className={styles.platformIcon} />
@@ -112,7 +111,7 @@ const DownloadPage = (props: DownloadPageProps) => {
   }, [downloadDesktopApp, start_download])
   const [showCookieBanner, setShowCookieBanner] = useState(false)
   useEffect(() => {
-    shouldShowCookieBanner().then(show => {
+    shouldShowCookieBanner().then((show) => {
       setShowCookieBanner(show)
     })
   }, [])
@@ -126,8 +125,7 @@ const DownloadPage = (props: DownloadPageProps) => {
     <ParallaxProvider>
       <div
         id='downloadPage'
-        className={cn(styles.container, { [styles.isMobile]: props.isMobile })}
-      >
+        className={cn(styles.container, { [styles.isMobile]: props.isMobile })}>
         {showCookieBanner && (
           <CookieBanner
             isMobile={props.isMobile}

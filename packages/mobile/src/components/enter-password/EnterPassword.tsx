@@ -173,7 +173,7 @@ export const EnterPassword = ({
   }
 
   const fulfillsRequirements = () =>
-    Object.keys(requirements).every(req => requirements[req] === 'valid')
+    Object.keys(requirements).every((req) => requirements[req] === 'valid')
 
   const handleSubmit = () => {
     if (fulfillsRequirements()) {
@@ -188,7 +188,7 @@ export const EnterPassword = ({
     { status: requirements.match, label: messages.checks.match }
   ]
   const isValid = Object.keys(requirements).every(
-    req => requirements[req] === 'valid'
+    (req) => requirements[req] === 'valid'
   )
 
   return (

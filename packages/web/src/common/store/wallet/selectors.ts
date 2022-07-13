@@ -14,8 +14,9 @@ import { stringWeiToBN } from 'common/utils/wallet'
 const getAccountBalanceStr = (state: CommonState): Nullable<StringWei> => {
   return state.wallet.balance ?? null
 }
-export const getAccountBalance = createSelector(getAccountBalanceStr, balance =>
-  balance ? stringWeiToBN(balance) : null
+export const getAccountBalance = createSelector(
+  getAccountBalanceStr,
+  (balance) => (balance ? stringWeiToBN(balance) : null)
 )
 
 const getAccountTotalBalanceStr = (state: CommonState): Nullable<StringWei> => {
@@ -23,7 +24,7 @@ const getAccountTotalBalanceStr = (state: CommonState): Nullable<StringWei> => {
 }
 export const getAccountTotalBalance = createSelector(
   getAccountTotalBalanceStr,
-  totalBalance => (totalBalance ? stringWeiToBN(totalBalance) : null)
+  (totalBalance) => (totalBalance ? stringWeiToBN(totalBalance) : null)
 )
 
 export const getLocalBalanceDidChange = (state: CommonState): boolean => {

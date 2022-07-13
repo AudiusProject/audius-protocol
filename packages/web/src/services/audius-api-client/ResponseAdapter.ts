@@ -39,7 +39,8 @@ export const makeUser = (
   }
 
   const balance = user.balance as StringWei
-  const associated_wallets_balance = user.associated_wallets_balance as StringWei
+  const associated_wallets_balance =
+    user.associated_wallets_balance as StringWei
   const album_count = 'album_count' in user ? user.album_count : 0
   const followee_count = 'followee_count' in user ? user.followee_count : 0
   const follower_count = 'follower_count' in user ? user.follower_count : 0
@@ -304,7 +305,7 @@ export const makePlaylist = (
 
   const playlistContents = {
     track_ids: playlist.added_timestamps
-      .map(ts => {
+      .map((ts) => {
         const decoded = decodeHashId(ts.track_id)
         if (decoded) {
           return {
@@ -320,7 +321,7 @@ export const makePlaylist = (
   const tracks =
     'tracks' in playlist
       ? playlist.tracks
-          ?.map(track => makeTrack(track))
+          ?.map((track) => makeTrack(track))
           .filter(removeNullable) ?? []
       : []
 

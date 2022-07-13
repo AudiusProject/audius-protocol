@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import styles from './EmptyTable.module.css'
 
-const EmptyTable = props => {
+const EmptyTable = (props) => {
   return (
     <div className={styles.emptySectionContainer}>
       <div className={styles.emptySectionText}>

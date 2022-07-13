@@ -51,7 +51,7 @@ export function* foregroundPollingDaemon(
 
 function createVisibilityChangeChannel() {
   if (NATIVE_MOBILE) {
-    return eventChannel(emitter => {
+    return eventChannel((emitter) => {
       // The focus and visibitychange events are wonky on native mobile webviews,
       // so poll for visiblity change instead
       let lastHidden = true
@@ -66,7 +66,7 @@ function createVisibilityChangeChannel() {
       }
     })
   }
-  return eventChannel(emitter => {
+  return eventChannel((emitter) => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         emitter(true)

@@ -6,9 +6,8 @@ import { Nullable } from 'common/utils/typeUtils'
 type ShareStatus = 'idle' | 'loading' | 'success'
 
 export const useTwitterButtonStatus = (user: Nullable<User>) => {
-  const [shareTwitterStatus, setShareTwitterStatus] = useState<ShareStatus>(
-    'idle'
-  )
+  const [shareTwitterStatus, setShareTwitterStatus] =
+    useState<ShareStatus>('idle')
 
   const userName = user?.name
   const twitterHandle = user ? user.twitter_handle : null

@@ -165,7 +165,7 @@ const ConnectedTrackTile = memo(
     const renderOverflowMenu = () => {
       const menu: Omit<TrackMenuProps, 'children'> = {
         extraMenuItems: [],
-        handle: handle,
+        handle,
         includeAddToPlaylist: true,
         includeArtistPick: handle === userHandle && !isUnlisted,
         includeEdit: handle === userHandle,
@@ -174,12 +174,12 @@ const ConnectedTrackTile = memo(
         includeRepost: false,
         includeShare: false,
         includeTrackPage: true,
-        isArtistPick: isArtistPick,
+        isArtistPick,
         isDeleted: is_delete || isOwnerDeactivated,
         isFavorited,
         isOwner,
         isReposted,
-        trackId: trackId,
+        trackId,
         trackTitle: title,
         trackPermalink: permalink,
         type: 'track'
@@ -194,8 +194,7 @@ const ConnectedTrackTile = memo(
                   [styles.small]: size === TrackTileSize.SMALL,
                   [styles.large]: size === TrackTileSize.LARGE
                 })}
-                onClick={triggerPopup}
-              >
+                onClick={triggerPopup}>
                 <IconKebabHorizontal
                   className={cn(styles.iconKebabHorizontal)}
                   ref={ref}
@@ -208,7 +207,7 @@ const ConnectedTrackTile = memo(
     }
 
     const onClickArtistName = useCallback(
-      e => {
+      (e) => {
         e.stopPropagation()
         if (goToRoute) goToRoute(profilePage(handle))
       },
@@ -216,7 +215,7 @@ const ConnectedTrackTile = memo(
     )
 
     const onClickTitle = useCallback(
-      e => {
+      (e) => {
         e.stopPropagation()
         if (goToRoute) goToRoute(permalink)
       },
@@ -231,8 +230,7 @@ const ConnectedTrackTile = memo(
               className={cn(styles.name, {
                 [styles.artistNameLink]: onClickArtistName
               })}
-              onClick={onClickArtistName}
-            >
+              onClick={onClickArtistName}>
               {name}
             </span>
           </ArtistPopover>
@@ -313,8 +311,7 @@ const ConnectedTrackTile = memo(
         id={trackId}
         isOwner={isOwner}
         isDisabled={disableActions || showSkeleton}
-        link={fullTrackPage(permalink)}
-      >
+        link={fullTrackPage(permalink)}>
         <TrackTile
           size={size}
           order={order}

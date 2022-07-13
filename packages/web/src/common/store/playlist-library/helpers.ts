@@ -145,7 +145,7 @@ export const constructPlaylistFolder = (
     id: uuid(),
     type: 'folder',
     name,
-    contents: contents
+    contents
   }
 }
 
@@ -188,7 +188,7 @@ export const addPlaylistToFolder = (
   folderId: string
 ): PlaylistLibrary => {
   if (!library.contents) return library
-  let folderIndex = library.contents.findIndex(item => {
+  let folderIndex = library.contents.findIndex((item) => {
     return item.type === 'folder' && item.id === folderId
   })
   if (folderIndex < 0) return library
@@ -215,7 +215,7 @@ export const addPlaylistToFolder = (
     entry = playlistIdToPlaylistLibraryIdentifier(playlistId)
   } else {
     // If playlist was removed the folder index might be different now.
-    folderIndex = newLibrary.contents.findIndex(item => {
+    folderIndex = newLibrary.contents.findIndex((item) => {
       return item.type === 'folder' && item.id === folderId
     })
   }
@@ -250,7 +250,7 @@ export const renamePlaylistFolderInLibrary = (
   newName: string
 ): PlaylistLibrary => {
   if (!library.contents) return library
-  const folderIndex = library.contents.findIndex(item => {
+  const folderIndex = library.contents.findIndex((item) => {
     return item.type === 'folder' && item.id === folderId
   })
   if (folderIndex < 0) return library
@@ -279,12 +279,12 @@ export const removePlaylistFolderInLibrary = (
   folderId: string
 ): PlaylistLibrary => {
   if (!library.contents) return library
-  const folder = library.contents.find(item => {
+  const folder = library.contents.find((item) => {
     return item.type === 'folder' && item.id === folderId
     // Need to cast here because TS doesn't know that the result has to be a folder or undefined due to `item.type === 'folder'`
   }) as PlaylistLibraryFolder | undefined
   if (!folder) return library
-  const folderIndex = library.contents.findIndex(item => {
+  const folderIndex = library.contents.findIndex((item) => {
     return item.type === 'folder' && item.id === folderId
   })
   const newContents = [...library.contents]
@@ -538,7 +538,7 @@ export const replaceTempWithResolvedPlaylists = <
   tempPlaylistIdToResolvedPlaylist: Record<string, PlaylistLibraryIdentifier>
 ): T => {
   if (isEmpty(library.contents)) return library
-  const newContents = library.contents.map(c => {
+  const newContents = library.contents.map((c) => {
     if (c.type === 'folder') {
       return replaceTempWithResolvedPlaylists(
         c,
@@ -564,7 +564,7 @@ export const getPlaylistsNotInLibrary = (
   const helpComputePlaylistsNotInLibrary = (
     libraryContentsLevel: PlaylistLibrary['contents']
   ) => {
-    libraryContentsLevel.forEach(content => {
+    libraryContentsLevel.forEach((content) => {
       if (content.type === 'temp_playlist' || content.type === 'playlist') {
         const playlist = playlists[Number(content.playlist_id)]
         if (playlist) {

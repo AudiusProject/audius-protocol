@@ -48,7 +48,7 @@ function* getTracks({
   const params: GetSocialFeedArgs = {
     offset: 0,
     limit: offset + limit,
-    filter: filter,
+    filter,
     with_users: true,
     current_user_id: currentUser.user_id
   }
@@ -65,23 +65,19 @@ function* getTracks({
     }
   }
 
-  const feed: (
-    | UserTrackMetadata
-    | UserCollectionMetadata
-  )[] = yield apiClient.getSocialFeed(params)
+  const feed: (UserTrackMetadata | UserCollectionMetadata)[] =
+    yield apiClient.getSocialFeed(params)
   if (!feed.length) return []
-  const filteredFeed = feed.filter(record => !record.user.is_deactivated)
+  const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
-  const trackIds = tracks.map(t => t.track_id)
+  const trackIds = tracks.map((t) => t.track_id)
 
   // Process (e.g. cache and remove entries)
-  const [processedTracks, processedCollections]: [
-    LineupTrack[],
-    Collection[]
-  ] = yield all([
-    processAndCacheTracks(tracks),
-    processAndCacheCollections(collections, true, trackIds)
-  ])
+  const [processedTracks, processedCollections]: [LineupTrack[], Collection[]] =
+    yield all([
+      processAndCacheTracks(tracks),
+      processAndCacheCollections(collections, true, trackIds)
+    ])
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),
     {}
@@ -89,7 +85,7 @@ function* getTracks({
   const processedCollectionsMap = processedCollections.reduce<
     Record<ID, Collection>
   >((acc, cur) => ({ ...acc, [cur.playlist_id]: cur }), {})
-  const processedFeed: FeedItem[] = filteredFeed.map(m =>
+  const processedFeed: FeedItem[] = filteredFeed.map((m) =>
     (m as LineupTrack).track_id
       ? processedTracksMap[(m as LineupTrack).track_id]
       : processedCollectionsMap[(m as UserCollectionMetadata).playlist_id]

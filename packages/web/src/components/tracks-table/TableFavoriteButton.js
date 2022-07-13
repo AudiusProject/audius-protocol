@@ -19,8 +19,7 @@ class TableFavoriteButton extends Component {
           className,
           'tableFavoriteButton',
           { [styles.notFavorited]: !favorited }
-        )}
-      >
+        )}>
         <FavoriteButton
           isActive={favorited}
           className={styles.icon}

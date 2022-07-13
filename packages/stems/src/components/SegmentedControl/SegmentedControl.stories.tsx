@@ -9,7 +9,7 @@ export default {
   argTypes: {}
 }
 
-const Template: Story<SegmentedControlProps> = args => (
+const Template: Story<SegmentedControlProps> = (args) => (
   <SegmentedControl {...args} />
 )
 

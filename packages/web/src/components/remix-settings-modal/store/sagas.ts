@@ -29,29 +29,30 @@ const getHandleAndSlug = (url: string) => {
 }
 
 function* watchFetchTrack() {
-  yield takeLatest(fetchTrack.type, function* (
-    action: ReturnType<typeof fetchTrack>
-  ) {
-    const { url } = action.payload
-    const params = getHandleAndSlug(url)
-    if (params) {
-      const { handle, slug, trackId } = params
-      let track: TrackMetadata | null = null
-      if (handle && slug) {
-        track = yield call(retrieveTrackByHandleAndSlug, {
-          handle,
-          slug
-        })
-      } else if (trackId) {
-        track = yield call(retrieveTracks, { trackIds: [trackId] })
+  yield takeLatest(
+    fetchTrack.type,
+    function* (action: ReturnType<typeof fetchTrack>) {
+      const { url } = action.payload
+      const params = getHandleAndSlug(url)
+      if (params) {
+        const { handle, slug, trackId } = params
+        let track: TrackMetadata | null = null
+        if (handle && slug) {
+          track = yield call(retrieveTrackByHandleAndSlug, {
+            handle,
+            slug
+          })
+        } else if (trackId) {
+          track = yield call(retrieveTracks, { trackIds: [trackId] })
+        }
+        if (track) {
+          yield put(fetchTrackSucceeded({ trackId: track.track_id }))
+          return
+        }
       }
-      if (track) {
-        yield put(fetchTrackSucceeded({ trackId: track.track_id }))
-        return
-      }
+      yield put(fetchTrackFailed())
     }
-    yield put(fetchTrackFailed())
-  })
+  )
 }
 
 export default function sagas() {

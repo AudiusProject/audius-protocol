@@ -8,7 +8,7 @@ import { makeUid } from 'common/utils/uid'
 import { reformat } from './reformat'
 
 export function* processAndCacheUsers(users: User[]) {
-  const reformattedUser = users.map(user => {
+  const reformattedUser = users.map((user) => {
     return reformat(user)
   })
 
@@ -16,7 +16,7 @@ export function* processAndCacheUsers(users: User[]) {
   yield put(
     cacheActions.add(
       Kind.USERS,
-      reformattedUser.map(u => ({
+      reformattedUser.map((u) => ({
         id: u.user_id,
         uid: makeUid(Kind.USERS, u.user_id),
         metadata: u

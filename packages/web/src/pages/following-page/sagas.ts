@@ -33,8 +33,8 @@ const provider = createUserListProvider<User>({
     const users = await apiClient.getFollowing({
       currentUserId,
       profileUserId: entityId,
-      limit: limit,
-      offset: offset
+      limit,
+      offset
     })
     return { users }
   },
@@ -42,7 +42,7 @@ const provider = createUserListProvider<User>({
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < user.followee_count,
 
-  includeCurrentUser: _ => false
+  includeCurrentUser: (_) => false
 })
 
 function* errorDispatcher(error: Error) {

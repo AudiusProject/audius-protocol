@@ -72,7 +72,7 @@ const useCurrentStems = ({
     (state: CommonState) => getTrack(state, { id: trackId }),
     shallowEqual
   )
-  const stemIds = (track?._stems ?? []).map(s => s.track_id)
+  const stemIds = (track?._stems ?? []).map((s) => s.track_id)
   const stemTracksMap = useSelector(
     (state: CommonState) => getTracks(state, { ids: stemIds }),
     shallowEqual
@@ -80,19 +80,19 @@ const useCurrentStems = ({
 
   // Sort the stems, filter deletes
   const stemTracks = Object.values(stemTracksMap)
-    .filter(t => !t._marked_deleted && !t.is_delete)
+    .filter((t) => !t._marked_deleted && !t.is_delete)
     .sort(
       (a, b) =>
         moment(a.created_at).milliseconds() -
         moment(b.created_at).milliseconds()
     )
-    .map(t => ({
+    .map((t) => ({
       downloadURL: t.download?.cid,
       category: t.stem_of.category,
       downloadable: true,
       id: t.track_id
     }))
-    .filter(t => t.downloadURL)
+    .filter((t) => t.downloadURL)
   return { stemTracks, track }
 }
 
@@ -107,7 +107,7 @@ const useUploadingStems = ({
     (state: CommonState) => getCurrentUploads(state, trackId),
     shallowEqual
   )
-  const uploadingTracks = currentUploads.map(u => ({
+  const uploadingTracks = currentUploads.map((u) => ({
     category: u.category,
     downloadable: false
   }))
@@ -127,7 +127,7 @@ const getFriendlyNames = (stems: Stem[]): LabeledStem[] => {
     return acc
   }, {} as { [category: string]: { count: number; index: number } })
 
-  return stems.map(t => {
+  return stems.map((t) => {
     const friendlyName = stemCategoryFriendlyNames[t.category]
     let label
     const counts = catCounts[t.category]
@@ -162,7 +162,7 @@ const getStemButtons = ({
   parentTrackId: ID
   track: Track
 }) => {
-  return stems.map(u => {
+  return stems.map((u) => {
     const state = (() => {
       if (!isLoggedIn) return ButtonState.LOG_IN_REQUIRED
 

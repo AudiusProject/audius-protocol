@@ -95,9 +95,8 @@ const actionsMap = {
     return {
       ...state,
       [action.followerGroup]: {
-        userIds: state[action.followerGroup].userIds.concat(
-          filteredAddedUserIds
-        ),
+        userIds:
+          state[action.followerGroup].userIds.concat(filteredAddedUserIds),
         status: Status.SUCCESS
       }
     }
@@ -184,7 +183,7 @@ const actionsMap = {
       [FollowType.FOLLOWEES]: {
         ...state[FollowType.FOLLOWEES],
         userIds: state[FollowType.FOLLOWEES].userIds.filter(
-          id => id !== action.userId
+          (id) => id !== action.userId
         )
       }
     }

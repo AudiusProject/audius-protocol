@@ -42,24 +42,24 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const hasNotPreviouslyFetchedSupportingForArtist =
     supportingMap[user_id] === undefined
   const supportingForArtist = supportingMap[user_id] ?? {}
-  const supportingForArtistIds = (Object.keys(
+  const supportingForArtistIds = Object.keys(
     supportingForArtist
-  ) as unknown) as ID[]
+  ) as unknown as ID[]
   const rankedSupportingList = supportingForArtistIds
     .sort((k1, k2) => {
       const amount1BN = stringWeiToBN(supportingForArtist[k1].amount)
       const amount2BN = stringWeiToBN(supportingForArtist[k2].amount)
       return amount1BN.gte(amount2BN) ? -1 : 1
     })
-    .map(k => supportingForArtist[k])
+    .map((k) => supportingForArtist[k])
 
-  const rankedSupporting = useSelector(state => {
+  const rankedSupporting = useSelector((state) => {
     const usersMap = getUsers(state, {
-      ids: rankedSupportingList.map(supporting => supporting.receiver_id)
+      ids: rankedSupportingList.map((supporting) => supporting.receiver_id)
     })
     return rankedSupportingList
       .sort((s1, s2) => s1.rank - s2.rank)
-      .map(s => usersMap[s.receiver_id])
+      .map((s) => usersMap[s.receiver_id])
       .filter(Boolean)
   })
 

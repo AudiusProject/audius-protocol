@@ -44,16 +44,11 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
     getUser(state, { handle: 'handle' in other ? other.handle : undefined })
   )
 
-  const {
-    userName,
-    shareTwitterStatus,
-    twitterHandle,
-    setLoading,
-    setIdle
-  } = useTwitterButtonStatus(user)
+  const { userName, shareTwitterStatus, twitterHandle, setLoading, setIdle } =
+    useTwitterButtonStatus(user)
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-    e => {
+    (e) => {
       e.stopPropagation()
       if (other.type === 'static') {
         openTwitterLink(url, other.shareText)

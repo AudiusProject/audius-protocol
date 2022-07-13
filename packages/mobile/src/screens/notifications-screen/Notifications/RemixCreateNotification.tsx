@@ -44,9 +44,11 @@ export const RemixCreateNotification = (
   const { notification } = props
   const { childTrackId, parentTrackId } = notification
   const navigation = useDrawerNavigation()
-  const user = useSelectorWeb(state => getNotificationUser(state, notification))
+  const user = useSelectorWeb((state) =>
+    getNotificationUser(state, notification)
+  )
   const tracks = useSelectorWeb(
-    state => getNotificationEntities(state, notification),
+    (state) => getNotificationEntities(state, notification),
     isEqual
   ) as EntityType[]
 

@@ -39,7 +39,7 @@ export const uploadTracks = (tracks, metadata, uploadType, stems) => {
   return { type: UPLOAD_TRACKS, tracks, metadata, uploadType, stems }
 }
 
-export const uploadSingleTrackFailed = index => {
+export const uploadSingleTrackFailed = (index) => {
   return { type: UPLOAD_SINGLE_TRACK_FAILED, index }
 }
 
@@ -81,7 +81,7 @@ export const toggleMultiTrackNotification = (open = false) => {
   return { type: TOGGLE_MULTI_TRACK_NOTIFICATION, open }
 }
 
-export const upgradeToCreatorError = error => ({
+export const upgradeToCreatorError = (error) => ({
   type: UPGRADE_TO_CREATOR_ERROR,
   error
 })
@@ -109,7 +109,7 @@ export const multiTrackTimeoutError = () => ({
   type: MULTI_TRACK_TIMEOUT_ERROR
 })
 
-export const creatorNodeUploadError = error => ({
+export const creatorNodeUploadError = (error) => ({
   type: COLLECTION_CREATOR_NODE_UPLOAD_ERROR,
   error
 })
@@ -118,22 +118,22 @@ export const creatorNodeTimeoutError = () => ({
   type: COLLECTION_CREATOR_NODE_TIMEOUT_ERROR
 })
 
-export const addTrackToChainError = error => ({
+export const addTrackToChainError = (error) => ({
   type: COLLECTION_ADD_TRACK_TO_CHAIN_ERROR,
   error
 })
 
-export const associateTracksError = error => ({
+export const associateTracksError = (error) => ({
   type: COLLECTION_ASSOCIATE_TRACKS_ERROR,
   error
 })
 
-export const createPlaylistErrorIDExists = error => ({
+export const createPlaylistErrorIDExists = (error) => ({
   type: COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR,
   error
 })
 
-export const createPlaylistErrorNoId = error => ({
+export const createPlaylistErrorNoId = (error) => ({
   type: COLLECTION_CREATE_PLAYLIST_NO_ID_ERROR,
   error
 })

@@ -1,7 +1,7 @@
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
 
 jest.mock('services/AudiusBackend', () => ({
-  fetchCID: multihash => multihash
+  fetchCID: (multihash) => multihash
 }))
 
 describe('generate m3u8', () => {

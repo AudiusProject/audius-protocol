@@ -39,8 +39,7 @@ export const AnimatedText = ({
   return (
     <Animated.Text
       style={[{ color: neutral, ...font(weight) }, style]}
-      {...props}
-    >
+      {...props}>
       {children}
     </Animated.Text>
   )

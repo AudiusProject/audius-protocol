@@ -70,9 +70,9 @@ const slice = createSlice({
   }
 })
 
-export const makeGetReactionForSignature = (signature: string) => (
-  state: CommonState
-) => state.ui.reactions.reactionsForEntityMap[signature]
+export const makeGetReactionForSignature =
+  (signature: string) => (state: CommonState) =>
+    state.ui.reactions.reactionsForEntityMap[signature]
 
 export const {
   setLocalReactionValues,

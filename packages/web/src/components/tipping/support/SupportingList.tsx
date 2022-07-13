@@ -39,14 +39,14 @@ export const SupportingList = () => {
   const rankedSupportingList = Object.keys(supportingForProfile)
     .sort((k1, k2) => {
       const amount1BN = stringWeiToBN(
-        supportingForProfile[(k1 as unknown) as ID].amount
+        supportingForProfile[k1 as unknown as ID].amount
       )
       const amount2BN = stringWeiToBN(
-        supportingForProfile[(k2 as unknown) as ID].amount
+        supportingForProfile[k2 as unknown as ID].amount
       )
       return amount1BN.gte(amount2BN) ? -1 : 1
     })
-    .map(k => supportingForProfile[(k as unknown) as ID])
+    .map((k) => supportingForProfile[k as unknown as ID])
 
   const handleClick = useCallback(() => {
     if (profile) {

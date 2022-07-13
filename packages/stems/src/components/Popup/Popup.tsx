@@ -141,7 +141,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   const [computedPosition, setComputedPosition] = useState(position)
 
   const getRects = useCallback(
-    () => [anchorRef, wrapperRef].map(r => r?.current?.getBoundingClientRect()),
+    () =>
+      [anchorRef, wrapperRef].map((r) => r?.current?.getBoundingClientRect()),
     [anchorRef, wrapperRef]
   )
 
@@ -282,8 +283,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
         <div
           ref={wrapperRef}
           className={cn(styles.wrapper, wrapperClassName)}
-          style={wrapperStyle}
-        >
+          style={wrapperStyle}>
           {transitions.map(({ item, key, props }) =>
             item ? (
               <animated.div
@@ -293,8 +293,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
                 style={{
                   ...props,
                   transformOrigin: getTransformOrigin(computedPosition)
-                }}
-              >
+                }}>
                 {showHeader && (
                   <div className={styles.header}>
                     <IconButton

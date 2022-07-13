@@ -30,12 +30,12 @@ export const AlbumsTab = () => {
 
   const userAlbums = user?.albums
     ?.filter(
-      playlist =>
+      (playlist) =>
         playlist.is_album &&
         playlist.ownerHandle !== user.handle &&
         matchesFilter(playlist)
     )
-    .map(playlist => ({ ...playlist, user }))
+    .map((playlist) => ({ ...playlist, user }))
 
   return (
     <VirtualizedScrollView listKey='favorites-albums-view'>

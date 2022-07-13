@@ -10,9 +10,7 @@ export enum Permission {
 type SafariWindow = {
   safari: {
     pushNotification: {
-      permission: (
-        safariPushId?: string
-      ) => {
+      permission: (safariPushId?: string) => {
         permission: Permission
         deviceToken: string
       }
@@ -100,24 +98,25 @@ type SafariPermissionData =
   | { permission: Permission.DENIED }
   | { permission: Permission.GRANTED; deviceToken: string }
 
-export const subscribeSafariPushBrowser = async (): Promise<SafariPermissionData | null> => {
-  try {
-    if (isSafariPushAvailable) {
-      const subscription = await new Promise(resolve => {
-        window.safari.pushNotification.requestPermission(
-          webServiceUrl, // The web service URL.
-          safariWebPushID, // The Website Push ID.
-          {}, // Data that you choose to send to your server to help you identify the user.
-          resolve // The callback function.
-        )
-      })
-      return subscription as SafariPermissionData
+export const subscribeSafariPushBrowser =
+  async (): Promise<SafariPermissionData | null> => {
+    try {
+      if (isSafariPushAvailable) {
+        const subscription = await new Promise((resolve) => {
+          window.safari.pushNotification.requestPermission(
+            webServiceUrl, // The web service URL.
+            safariWebPushID, // The Website Push ID.
+            {}, // Data that you choose to send to your server to help you identify the user.
+            resolve // The callback function.
+          )
+        })
+        return subscription as SafariPermissionData
+      }
+    } catch (err) {
+      console.warn('Unable to subscribe safari push browser')
     }
-  } catch (err) {
-    console.warn('Unable to subscribe safari push browser')
+    return null
   }
-  return null
-}
 
 export const unsubscribePushManagerBrowser = async () => {
   try {
@@ -150,21 +149,23 @@ export const getPushManagerBrowserSubscription = async () => {
   }
 }
 
-export const getPushManagerPermission = async (): Promise<Permission | null> => {
-  try {
-    if (!isServiceWorkerRegistered()) {
-      const isRegistered = await registerServiceWorker()
-      if (!isRegistered) return null
+export const getPushManagerPermission =
+  async (): Promise<Permission | null> => {
+    try {
+      if (!isServiceWorkerRegistered()) {
+        const isRegistered = await registerServiceWorker()
+        if (!isRegistered) return null
+      }
+      const subscription = await swRegistration.pushManager.getSubscription()
+      if (subscription) return Permission.GRANTED
+      if (Notification.permission === Permission.DENIED)
+        return Permission.DENIED
+      return Permission.DEFAULT
+    } catch (err) {
+      console.error('Error getting Push Manager Permission', err)
+      return null
     }
-    const subscription = await swRegistration.pushManager.getSubscription()
-    if (subscription) return Permission.GRANTED
-    if (Notification.permission === Permission.DENIED) return Permission.DENIED
-    return Permission.DEFAULT
-  } catch (err) {
-    console.error('Error getting Push Manager Permission', err)
-    return null
   }
-}
 
 export const isServiceWorkerRegistered = () => {
   return isPushManagerAvailable && swRegistration
@@ -190,9 +191,8 @@ export const getSafariPushBrowser = () => {
 }
 
 export const getSafariPushPermission = (): Permission => {
-  const permissionData = window.safari.pushNotification.permission(
-    safariWebPushID
-  )
+  const permissionData =
+    window.safari.pushNotification.permission(safariWebPushID)
   return permissionData.permission
 }
 

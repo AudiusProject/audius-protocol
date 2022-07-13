@@ -63,7 +63,7 @@ function* getSearchPageResultsTracks({ offset, limit, payload }) {
         select(getTracks, { ids: trackIds }),
         select(getSearchResultsPageTracks)
       ])
-      const sortedTracks = sortedIds.map(id => tracks[id])
+      const sortedTracks = sortedIds.map((id) => tracks[id])
       return sortedTracks
     } catch (e) {
       console.error(e)

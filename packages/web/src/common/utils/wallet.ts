@@ -83,7 +83,9 @@ export const formatWei = (
 
   let trimmed = `${aud}.${trimRightZeros(decimals)}`
   if (shouldTruncate) {
-    let [before, after] = trimmed.split('.')
+    const splitTrimmed = trimmed.split('.')
+    const [before] = splitTrimmed
+    let [, after] = splitTrimmed
     // If we have only zeros, just lose the decimal
     after = after.substr(0, significantDigits)
     if (parseInt(after) === 0) {

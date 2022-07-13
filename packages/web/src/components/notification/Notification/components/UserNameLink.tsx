@@ -38,7 +38,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
   const profileLink = profilePage(handle)
 
   const handleClick: MouseEventHandler = useCallback(
-    event => {
+    (event) => {
       event.stopPropagation()
       event.preventDefault()
       dispatch(toggleNotificationPanel())
@@ -90,8 +90,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
       <ArtistPopover
         handle={handle}
         component='span'
-        onNavigateAway={handleNavigateAway}
-      >
+        onNavigateAway={handleNavigateAway}>
         {userNameElement}
       </ArtistPopover>
     )

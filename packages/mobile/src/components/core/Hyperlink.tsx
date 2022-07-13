@@ -57,9 +57,8 @@ export const Hyperlink = (props: HyperlinkProps) => {
   const [linkLayouts, setLinkLayouts] = useState<
     Record<number, LayoutRectangle>
   >({})
-  const [linkContainerLayout, setLinkContainerLayout] = useState<
-    LayoutRectangle
-  >()
+  const [linkContainerLayout, setLinkContainerLayout] =
+    useState<LayoutRectangle>()
 
   /**
    * Need to use `measureInWindow` instead of `onLayout` or `measure` because
@@ -68,7 +67,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
   useEffect(() => {
     Object.entries(linkRefs.current).forEach(([index, ref]) => {
       ref.measureInWindow((x, y, width, height) => {
-        setLinkLayouts(linkLayouts => ({
+        setLinkLayouts((linkLayouts) => ({
           ...linkLayouts,
           [index]: { x, y, width, height }
         }))
@@ -87,7 +86,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
   const renderLink = useCallback(
     (text, match, index) => (
       <View
-        onLayout={e => {
+        onLayout={(e) => {
           setLinks({
             ...links,
             [index]: {
@@ -96,13 +95,12 @@ export const Hyperlink = (props: HyperlinkProps) => {
             }
           })
         }}
-        ref={el => {
+        ref={(el) => {
           if (linkRefs.current && el) {
             linkRefs.current[index] = el
           }
         }}
-        style={styles.hiddenLink}
-      >
+        style={styles.hiddenLink}>
         <Text style={[styles.linkText, styles.hiddenLinkText]}>{text}</Text>
       </View>
     ),
@@ -113,8 +111,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
     <>
       <View
         pointerEvents={allowPointerEventsToPassThrough ? 'none' : undefined}
-        ref={linkContainerRef}
-      >
+        ref={linkContainerRef}>
         <Autolink
           onPress={handlePress}
           linkStyle={[styles.linkText, styles.link, stylesProp?.link]}
@@ -142,8 +139,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
                   left: linkLayout.x - linkContainerLayout.x
                 }
               ]}
-              onPress={() => handlePress(match.getAnchorHref())}
-            >
+              onPress={() => handlePress(match.getAnchorHref())}>
               {text}
             </Text>
           ) : null

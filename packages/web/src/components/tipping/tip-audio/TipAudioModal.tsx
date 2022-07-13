@@ -140,8 +140,7 @@ export const TipAudioModal = () => {
         sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING'
       }
       contentHorizontalPadding={24}
-      useGradientTitle={false}
-    >
+      useGradientTitle={false}>
       <div className={styles.modalContentContainer}>
         <Transition
           items={sendStatus !== null ? statusOrder[sendStatus] : 0}
@@ -149,13 +148,13 @@ export const TipAudioModal = () => {
           from={transitions.from}
           enter={transitions.enter}
           leave={transitions.leave}
-          unique={true}
-        >
-          {item => style => (
-            <animated.div style={{ ...style }}>
-              {ModalContent(item)}
-            </animated.div>
-          )}
+          unique={true}>
+          {(item) => (style) =>
+            (
+              <animated.div style={{ ...style }}>
+                {ModalContent(item)}
+              </animated.div>
+            )}
         </Transition>
       </div>
     </ModalDrawer>

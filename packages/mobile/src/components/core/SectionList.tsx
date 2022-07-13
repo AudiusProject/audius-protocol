@@ -45,9 +45,11 @@ const useCollapsibleSectionListScene = (sceneName: string) => {
 
 const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
   const { sceneName, ...other } = props
-  const { refreshing, onRefresh, scrollY: collapsibleScrollAnim } = useContext(
-    CollapsibleTabNavigatorContext
-  )
+  const {
+    refreshing,
+    onRefresh,
+    scrollY: collapsibleScrollAnim
+  } = useContext(CollapsibleTabNavigatorContext)
 
   const scrollPropsAndRef = useCollapsibleSectionListScene(sceneName)
   const { neutral, staticWhite } = useThemeColors()

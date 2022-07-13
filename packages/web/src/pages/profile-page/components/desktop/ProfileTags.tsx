@@ -22,7 +22,7 @@ export const ProfileTags = (props: ProfileTagsProps) => {
   const { tags, goToRoute } = props
   const record = useRecord()
   const onClickTag = useCallback(
-    tag => {
+    (tag) => {
       goToRoute(searchResultsPage(`#${tag}`))
       record(make(Name.TAG_CLICKING, { tag, source: 'profile page' }))
     },
@@ -37,7 +37,7 @@ export const ProfileTags = (props: ProfileTagsProps) => {
         <span className={styles.tagsLine} />
       </div>
       <div className={styles.tagsContent}>
-        {tags.map(tag => (
+        {tags.map((tag) => (
           <Tag
             onClick={() => onClickTag(tag)}
             key={tag}

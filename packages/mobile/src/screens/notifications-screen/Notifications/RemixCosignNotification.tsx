@@ -43,9 +43,11 @@ export const RemixCosignNotification = (
   const { notification } = props
   const navigation = useDrawerNavigation()
   const { childTrackId, parentTrackUserId } = notification
-  const user = useSelectorWeb(state => getNotificationUser(state, notification))
+  const user = useSelectorWeb((state) =>
+    getNotificationUser(state, notification)
+  )
   const tracks = useSelectorWeb(
-    state => getNotificationEntities(state, notification),
+    (state) => getNotificationEntities(state, notification),
     isEqual
   )
 

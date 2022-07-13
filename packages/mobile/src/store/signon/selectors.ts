@@ -36,5 +36,5 @@ export const makeGetFollowArtists = () =>
   createSelector(
     [getSuggestedFollowIds, getUsersToFollow],
     (artistIds: number[], users: any[]) =>
-      artistIds.map(aId => users[aId]).filter(Boolean)
+      artistIds.map((aId) => users[aId]).filter(Boolean)
   )

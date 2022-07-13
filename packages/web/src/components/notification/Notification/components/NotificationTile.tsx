@@ -29,7 +29,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
   const dispatch = useDispatch()
 
   const handleClick: MouseEventHandler = useCallback(
-    event => {
+    (event) => {
       onClick?.(event)
       if (!disableClosePanel) {
         dispatch(toggleNotificationPanel())
@@ -46,8 +46,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
       })}
       tabIndex={0}
       role='button'
-      onClick={handleClick}
-    >
+      onClick={handleClick}>
       {children}
     </div>
   )

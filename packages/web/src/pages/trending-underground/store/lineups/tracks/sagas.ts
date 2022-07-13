@@ -27,7 +27,7 @@ function* getTrendingUnderground({
 
   const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
   let tracks: UserTrackMetadata[] = yield call(
-    args => apiClient.getTrendingUnderground(args),
+    (args) => apiClient.getTrendingUnderground(args),
     {
       currentUserId,
       limit,
@@ -35,7 +35,7 @@ function* getTrendingUnderground({
     }
   )
   if (TF.size > 0) {
-    tracks = tracks.filter(t => {
+    tracks = tracks.filter((t) => {
       const shaId = window.Web3.utils.sha3(t.track_id.toString())
       return !TF.has(shaId)
     })

@@ -76,14 +76,14 @@ export const UserList = (props: UserListProps) => {
   const optimisticUserIds: ID[] = useSelectorWeb(getOptimisticUserIds)
   const currentUserId = useSelectorWeb(getUserId)
   const usersMap = useSelectorWeb(
-    state => getUsers(state, { ids: optimisticUserIds }),
+    (state) => getUsers(state, { ids: optimisticUserIds }),
     isEqual
   )
   const users: User[] = useMemo(
     () =>
       optimisticUserIds
-        .map(id => usersMap[id])
-        .filter(user => user && !user.is_deactivated),
+        .map((id) => usersMap[id])
+        .filter((user) => user && !user.is_deactivated),
     [usersMap, optimisticUserIds]
   )
 
@@ -154,7 +154,7 @@ export const UserList = (props: UserListProps) => {
           <UserChip user={item} currentUserId={currentUserId} />
         )
       }
-      keyExtractor={item => item.user_id.toString()}
+      keyExtractor={(item) => item.user_id.toString()}
       ItemSeparatorComponent={isTippingEnabled ? Divider : undefined}
       onEndReached={handleEndReached}
       ListFooterComponent={loading || isRefreshing ? loadingSpinner : footer}

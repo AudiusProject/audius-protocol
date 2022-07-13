@@ -443,9 +443,8 @@ class AudiusAPIClient {
     const experiment = remoteConfigInstance.getRemoteVar(
       StringKeys.TRENDING_EXPERIMENT
     )
-    const trendingResponse: Nullable<APIResponse<
-      APITrack[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.trending(experiment), params)
+    const trendingResponse: Nullable<APIResponse<APITrack[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.trending(experiment), params)
 
     if (!trendingResponse) return []
 
@@ -470,12 +469,11 @@ class AudiusAPIClient {
     const experiment = remoteConfigInstance.getRemoteVar(
       StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
     )
-    const trendingResponse: Nullable<APIResponse<
-      APITrack[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.trendingUnderground(experiment),
-      params
-    )
+    const trendingResponse: Nullable<APIResponse<APITrack[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.trendingUnderground(experiment),
+        params
+      )
 
     if (!trendingResponse) return []
 
@@ -494,12 +492,8 @@ class AudiusAPIClient {
     const experiment = remoteConfigInstance.getRemoteVar(
       StringKeys.TRENDING_EXPERIMENT
     )
-    const trendingIdsResponse: Nullable<APIResponse<
-      TrendingIdsResponse
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.trendingIds(experiment),
-      params
-    )
+    const trendingIdsResponse: Nullable<APIResponse<TrendingIdsResponse>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.trendingIds(experiment), params)
     if (!trendingIdsResponse) {
       return {
         week: [],
@@ -539,9 +533,8 @@ class AudiusAPIClient {
         exclusionList.length > 0 ? exclusionList.map(String) : undefined,
       user_id: encodedCurrentUserId || undefined
     }
-    const recommendedResponse: Nullable<APIResponse<
-      APITrack[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.recommended, params)
+    const recommendedResponse: Nullable<APIResponse<APITrack[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.recommended, params)
 
     if (!recommendedResponse) return []
 
@@ -559,9 +552,8 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined,
       with_users: true
     }
-    const remixablesResponse: Nullable<APIResponse<
-      APITrack[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.remixables, params)
+    const remixablesResponse: Nullable<APIResponse<APITrack[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.remixables, params)
 
     if (!remixablesResponse) return []
 
@@ -587,12 +579,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const followingResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.following(encodedProfileUserId),
-      params
-    )
+    const followingResponse: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.following(encodedProfileUserId),
+        params
+      )
     if (!followingResponse) return []
     const adapted = followingResponse.data
       .map(adapter.makeUser)
@@ -615,12 +606,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const followersResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.followers(encodedProfileUserId),
-      params
-    )
+    const followersResponse: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.followers(encodedProfileUserId),
+        params
+      )
 
     if (!followersResponse) return []
 
@@ -645,12 +635,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const repostUsers: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.trackRepostUsers(encodedTrackId),
-      params
-    )
+    const repostUsers: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.trackRepostUsers(encodedTrackId),
+        params
+      )
 
     if (!repostUsers) return []
 
@@ -675,12 +664,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const followingResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.trackFavoriteUsers(encodedTrackId),
-      params
-    )
+    const followingResponse: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.trackFavoriteUsers(encodedTrackId),
+        params
+      )
 
     if (!followingResponse) return []
 
@@ -705,12 +693,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const repostUsers: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.playlistRepostUsers(encodedPlaylistId),
-      params
-    )
+    const repostUsers: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.playlistRepostUsers(encodedPlaylistId),
+        params
+      )
 
     if (!repostUsers) return []
 
@@ -735,12 +722,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const followingResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.playlistFavoriteUsers(encodedPlaylistId),
-      params
-    )
+    const followingResponse: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.playlistFavoriteUsers(encodedPlaylistId),
+        params
+      )
 
     if (!followingResponse) return []
 
@@ -766,13 +752,12 @@ class AudiusAPIClient {
       show_unlisted: !!unlistedArgs
     }
 
-    const trackResponse: Nullable<APIResponse<
-      APITrack
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getTrack(encodedTrackId),
-      args,
-      retry
-    )
+    const trackResponse: Nullable<APIResponse<APITrack>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getTrack(encodedTrackId),
+        args,
+        retry
+      )
 
     if (!trackResponse) return null
     const adapted = adapter.makeTrack(trackResponse.data)
@@ -792,13 +777,12 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const trackResponse: Nullable<APIResponse<
-      APITrack
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getTrackByHandleAndSlug,
-      params,
-      true
-    )
+    const trackResponse: Nullable<APIResponse<APITrack>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getTrackByHandleAndSlug,
+        params,
+        true
+      )
     if (!trackResponse) {
       return null
     }
@@ -830,12 +814,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const remixesResponse: Nullable<APIResponse<
-      RemixesResponse
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getRemixes(encodedTrackId),
-      params
-    )
+    const remixesResponse: Nullable<APIResponse<RemixesResponse>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getRemixes(encodedTrackId),
+        params
+      )
 
     if (!remixesResponse) return { count: 0, tracks: [] }
 
@@ -860,12 +843,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const remixingResponse: Nullable<APIResponse<
-      APITrack[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getRemixing(encodedTrackId),
-      params
-    )
+    const remixingResponse: Nullable<APIResponse<APITrack[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getRemixing(encodedTrackId),
+        params
+      )
 
     if (!remixingResponse) return []
 
@@ -965,12 +947,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const response: Nullable<APIResponse<
-      APIActivity[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
-      params
-    )
+    const response: Nullable<APIResponse<APIActivity[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
+        params
+      )
 
     if (!response) return []
 
@@ -995,12 +976,11 @@ class AudiusAPIClient {
       offset
     }
 
-    const response: Nullable<APIResponse<
-      APIActivity[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.userRepostsByHandle(handle),
-      params
-    )
+    const response: Nullable<APIResponse<APIActivity[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.userRepostsByHandle(handle),
+        params
+      )
 
     if (!response) return []
 
@@ -1019,9 +999,7 @@ class AudiusAPIClient {
     this._assertInitialized()
     const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedUserId = this._encodeOrThrow(userId)
-    const response: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(
+    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
       FULL_ENDPOINT_MAP.getRelatedArtists(encodedUserId),
       { user_id: encodedCurrentUserId || undefined, offset, limit }
     )
@@ -1039,9 +1017,8 @@ class AudiusAPIClient {
       offset
     }
 
-    const favoritedTrackResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.topGenreUsers, params)
+    const favoritedTrackResponse: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.topGenreUsers, params)
 
     if (!favoritedTrackResponse) return []
 
@@ -1061,9 +1038,8 @@ class AudiusAPIClient {
       user_id: encodedUserId
     }
 
-    const topArtistsResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.topArtists, params)
+    const topArtistsResponse: Nullable<APIResponse<APIUser[]>> =
+      await this._getResponse(FULL_ENDPOINT_MAP.topArtists, params)
 
     if (!topArtistsResponse) return []
 
@@ -1081,12 +1057,11 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<
-      APIPlaylist[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
-      params
-    )
+    const response: Nullable<APIResponse<APIPlaylist[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
+        params
+      )
 
     if (!response) return []
 
@@ -1165,12 +1140,11 @@ class AudiusAPIClient {
     const experiment = remoteConfigInstance.getRemoteVar(
       StringKeys.PLAYLIST_TRENDING_EXPERIMENT
     )
-    const response: Nullable<APIResponse<
-      APIPlaylist[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
-      params
-    )
+    const response: Nullable<APIResponse<APIPlaylist[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
+        params
+      )
 
     if (!response) return []
     const adapted = response.data
@@ -1183,14 +1157,13 @@ class AudiusAPIClient {
     this._assertInitialized()
     const encodedCurrentUserId = encodeHashId(userID)
     const params = { id: encodedCurrentUserId }
-    const associatedWallets: Nullable<APIResponse<
-      AssociatedWalletsResponse
-    >> = await this._getResponse(
-      ENDPOINT_MAP.associatedWallets,
-      params,
-      true,
-      PathType.VersionPath
-    )
+    const associatedWallets: Nullable<APIResponse<AssociatedWalletsResponse>> =
+      await this._getResponse(
+        ENDPOINT_MAP.associatedWallets,
+        params,
+        true,
+        PathType.VersionPath
+      )
 
     if (!associatedWallets) return null
     return associatedWallets.data
@@ -1200,14 +1173,13 @@ class AudiusAPIClient {
     this._assertInitialized()
     const params = { associated_wallet: address }
 
-    const userID: Nullable<APIResponse<
-      AssociatedWalletUserIdResponse
-    >> = await this._getResponse(
-      ENDPOINT_MAP.associatedWalletUserId,
-      params,
-      true,
-      PathType.VersionPath
-    )
+    const userID: Nullable<APIResponse<AssociatedWalletUserIdResponse>> =
+      await this._getResponse(
+        ENDPOINT_MAP.associatedWalletUserId,
+        params,
+        true,
+        PathType.VersionPath
+      )
 
     if (!userID) return null
     const encodedUserId = userID.data.user_id
@@ -1221,18 +1193,17 @@ class AudiusAPIClient {
 
     const params = { id: encodedCurrentUserId }
 
-    const userChallenges: Nullable<APIResponse<
-      UserChallengesResponse
-    >> = await this._getResponse(
-      ENDPOINT_MAP.userChallenges(encodedCurrentUserId),
-      params,
-      true,
-      PathType.VersionPath
-    )
+    const userChallenges: Nullable<APIResponse<UserChallengesResponse>> =
+      await this._getResponse(
+        ENDPOINT_MAP.userChallenges(encodedCurrentUserId),
+        params,
+        true,
+        PathType.VersionPath
+      )
 
     if (!userChallenges) return null
     // DN may have amount as a string
-    const challenges = userChallenges.data.map(challenge => {
+    const challenges = userChallenges.data.map((challenge) => {
       return {
         ...challenge,
         amount: Number(challenge.amount)
@@ -1248,9 +1219,9 @@ class AudiusAPIClient {
 
     const params = { user_id: encodedCurrentUserId }
 
-    const undisbursedUserChallenges: Nullable<APIResponse<
-      UndisbursedUserChallengesResponse
-    >> = await this._getResponse(
+    const undisbursedUserChallenges: Nullable<
+      APIResponse<UndisbursedUserChallengesResponse>
+    > = await this._getResponse(
       ENDPOINT_MAP.undisbursedUserChallenges,
       params,
       true /* retry */,
@@ -1259,7 +1230,7 @@ class AudiusAPIClient {
 
     if (!undisbursedUserChallenges) return null
     // DN may have amount as a string
-    const challenges = undisbursedUserChallenges.data.map(challenge => {
+    const challenges = undisbursedUserChallenges.data.map((challenge) => {
       return {
         ...challenge,
         amount: Number(challenge.amount)
@@ -1278,14 +1249,13 @@ class AudiusAPIClient {
       }
     | {}
   > {
-    const response: Nullable<APIResponse<
-      APIBlockConfirmation
-    >> = await this._getResponse(
-      ROOT_ENDPOINT_MAP.blockConfirmation,
-      { blockhash, blocknumber },
-      true,
-      PathType.RootPath
-    )
+    const response: Nullable<APIResponse<APIBlockConfirmation>> =
+      await this._getResponse(
+        ROOT_ENDPOINT_MAP.blockConfirmation,
+        { blockhash, blocknumber },
+        true,
+        PathType.RootPath
+      )
     if (!response) return {}
     return response.data
   }
@@ -1305,24 +1275,23 @@ class AudiusAPIClient {
           'X-User-ID': current_user_id.toString()
         }
       : undefined
-    const response: Nullable<APIResponse<
-      GetSocialFeedResponse
-    >> = await this._getResponse(
-      ROOT_ENDPOINT_MAP.feed,
-      {
-        offset,
-        limit,
-        with_users,
-        filter,
-        tracks_only,
-        followee_user_id: followee_user_ids
-          ? followee_user_ids.map(id => id.toString())
-          : undefined
-      },
-      true,
-      PathType.RootPath,
-      headers
-    )
+    const response: Nullable<APIResponse<GetSocialFeedResponse>> =
+      await this._getResponse(
+        ROOT_ENDPOINT_MAP.feed,
+        {
+          offset,
+          limit,
+          with_users,
+          filter,
+          tracks_only,
+          followee_user_id: followee_user_ids
+            ? followee_user_ids.map((id) => id.toString())
+            : undefined
+        },
+        true,
+        PathType.RootPath,
+        headers
+      )
     if (!response) return []
     return response.data
   }
@@ -1341,12 +1310,11 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<
-      APIActivity[]
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getUserTrackHistory(encodedUserId),
-      params
-    )
+    const response: Nullable<APIResponse<APIActivity[]>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getUserTrackHistory(encodedUserId),
+        params
+      )
 
     if (!response) return []
 
@@ -1370,12 +1338,14 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<
-      SupporterResponse
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getUserSupporter(encodedUserId, encodedSupporterUserId),
-      params
-    )
+    const response: Nullable<APIResponse<SupporterResponse>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getUserSupporter(
+          encodedUserId,
+          encodedSupporterUserId
+        ),
+        params
+      )
     return response ? response.data : null
   }
 
@@ -1383,20 +1353,19 @@ class AudiusAPIClient {
     const params = {
       reacted_to_ids: reactedToIds
     }
-    const response: Nullable<APIResponse<
-      GetReactionResponse
-    >> = await this._getResponse(
-      FULL_ENDPOINT_MAP.getReaction,
-      params,
-      false,
-      PathType.VersionFullPath,
-      {},
-      true
-    ) // Perform without retries, using 'split' approach for multiple query params
+    const response: Nullable<APIResponse<GetReactionResponse>> =
+      await this._getResponse(
+        FULL_ENDPOINT_MAP.getReaction,
+        params,
+        false,
+        PathType.VersionFullPath,
+        {},
+        true
+      ) // Perform without retries, using 'split' approach for multiple query params
 
     if (!response || !response.data.length) return null
 
-    const adapted = response.data.map(item => ({
+    const adapted = response.data.map((item) => ({
       reactionValue: parseInt(item.reaction_value),
       reactionType: item.reaction_type,
       senderUserId: decodeHashId(item.sender_user_id),
@@ -1537,20 +1506,20 @@ class AudiusAPIClient {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
     const params = Object.entries(queryParams)
-      .filter(p => p[1] !== undefined && p[1] !== null)
-      .map(p => {
+      .filter((p) => p[1] !== undefined && p[1] !== null)
+      .map((p) => {
         if (Array.isArray(p[1])) {
           if (splitArrayParams) {
             // If we split, join in the form of
             // ?key=val1,val2,val3...
             return `${p[0]}=${[1]
-              .map(val => encodeURIComponent(val))
+              .map((val) => encodeURIComponent(val))
               .join(',')}`
           } else {
             // Otherwise, join in the form of
             // ?key=val1&key=val2&key=val3...
             return p[1]
-              .map(val => `${p[0]}=${encodeURIComponent(val)}`)
+              .map((val) => `${p[0]}=${encodeURIComponent(val)}`)
               .join('&')
           }
         }

@@ -72,7 +72,7 @@ const slice = createSlice({
       }
       state.modalState = newState
     },
-    transferEthAudioToSolWAudio: state => {
+    transferEthAudioToSolWAudio: (state) => {
       if (
         state.modalState?.stage !== 'SEND' ||
         state.modalState.flowState.stage !== 'SENDING'
@@ -86,7 +86,7 @@ const slice = createSlice({
         chain: state.modalState.flowState.chain
       }
     },
-    confirmSend: state => {
+    confirmSend: (state) => {
       if (
         state.modalState?.stage !== 'SEND' ||
         (state.modalState.flowState.stage !== 'AWAITING_CONFIRMATION' &&
@@ -102,14 +102,14 @@ const slice = createSlice({
         chain: state.modalState.flowState.chain
       }
     },
-    pressReceive: state => {
+    pressReceive: (state) => {
       state.modalState = {
         stage: 'RECEIVE',
         flowState: { stage: 'KEY_DISPLAY' }
       }
       state.modalVisible = true
     },
-    pressDiscord: state => {
+    pressDiscord: (state) => {
       state.modalState = { stage: 'DISCORD_CODE' }
       state.modalVisible = true
     },
@@ -143,7 +143,7 @@ const slice = createSlice({
       }
       state.associatedWallets.status = null
     },
-    pressConnectWallets: state => {
+    pressConnectWallets: (state) => {
       state.modalState = {
         stage: 'CONNECT_WALLETS',
         flowState: { stage: 'ADD_WALLET' }
@@ -152,7 +152,7 @@ const slice = createSlice({
       state.associatedWallets.removeWallet.wallet = null
       state.associatedWallets.errorMessage = null
     },
-    connectNewWallet: state => {
+    connectNewWallet: (state) => {
       state.associatedWallets.status = 'Connecting'
       state.associatedWallets.errorMessage = null
     },
@@ -171,7 +171,8 @@ const slice = createSlice({
       state.associatedWallets.confirmingWallet.wallet = wallet
       state.associatedWallets.confirmingWallet.chain = chain
       state.associatedWallets.confirmingWallet.balance = balance
-      state.associatedWallets.confirmingWallet.collectibleCount = collectibleCount
+      state.associatedWallets.confirmingWallet.collectibleCount =
+        collectibleCount
     },
     setWalletAddedConfirmed: (
       state,
@@ -237,12 +238,12 @@ const slice = createSlice({
       if (chain === Chain.Sol) {
         state.associatedWallets.connectedSolWallets =
           state.associatedWallets.connectedSolWallets?.filter(
-            a => a.address !== wallet
+            (a) => a.address !== wallet
           ) ?? null
       } else if (chain === Chain.Eth) {
         state.associatedWallets.connectedEthWallets =
           state.associatedWallets.connectedEthWallets?.filter(
-            a => a.address !== wallet
+            (a) => a.address !== wallet
           ) ?? null
       }
     },
@@ -264,8 +265,8 @@ const slice = createSlice({
       }
       state.associatedWallets.status = null
     },
-    preloadWalletProviders: state => {},
-    resetStatus: state => {
+    preloadWalletProviders: (state) => {},
+    resetStatus: (state) => {
       state.associatedWallets.status = null
     }
   }

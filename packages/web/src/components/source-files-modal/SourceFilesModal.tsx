@@ -72,7 +72,7 @@ const StemRow = ({
     didSelectCategory(cat)
   }
 
-  let stemIndex = dropdownRows.findIndex(r => r === category)
+  let stemIndex = dropdownRows.findIndex((r) => r === category)
   if (stemIndex === -1) {
     console.error(`Couldn't find stem row for category: ${category}`)
     stemIndex = 0
@@ -104,7 +104,7 @@ const StemRow = ({
         <Dropdown
           size='medium'
           menu={{
-            items: dropdownRows.map(r => ({
+            items: dropdownRows.map((r) => ({
               text: stemCategoryFriendlyNames[r]
             }))
           }}
@@ -198,7 +198,7 @@ const SourceFilesView = ({
           <StemRow
             key={`${stem.metadata.title}-${i}`}
             stem={stem}
-            didSelectCategory={category => onSelectCategory(category, i)}
+            didSelectCategory={(category) => onSelectCategory(category, i)}
             onDelete={() => onDeleteStem(i)}
           />
         ))}
@@ -279,8 +279,7 @@ const SourceFilesModal = ({
       bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
-      subtitleClassName={styles.modalSubtitle}
-    >
+      subtitleClassName={styles.modalSubtitle}>
       <SourceFilesView
         downloadSettings={downloadSettings}
         onUpdateDownloadSettings={onUpdateDownloadSettings}

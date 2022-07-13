@@ -15,9 +15,8 @@ import { EmptyProfileTile } from './EmptyProfileTile'
 import { getIsOwner, useSelectProfile } from './selectors'
 
 export const TracksTab = () => {
-  const { params } = useRoute<
-    RouteProp<{ Tracks: { handle: string } }, 'Tracks'>
-  >()
+  const { params } =
+    useRoute<RouteProp<{ Tracks: { handle: string } }, 'Tracks'>>()
   const lineup = useSelectorWeb(getProfileTracksLineup, isEqual)
   const dispatchWeb = useDispatchWeb()
 

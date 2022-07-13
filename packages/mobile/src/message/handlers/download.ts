@@ -71,7 +71,9 @@ const download = async ({
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.DOWNLOAD_TRACK]: async ({ message }) => {
-    const fileUrl = message.urls.find(url => url !== null && url !== undefined)
+    const fileUrl = message.urls.find(
+      (url) => url !== null && url !== undefined
+    )
     const fileName = message.filename
     const trackName = fileName.split('.').slice(0, -1).join('')
 
@@ -84,13 +86,13 @@ export const messageHandlers: Partial<MessageHandlers> = {
         fileUrl,
         fileName,
         directory: RNFetchBlob.fs.dirs.DocumentDir,
-        getFetchConfig: filePath => ({
+        getFetchConfig: (filePath) => ({
           // On iOS fetch & cache the track, let user choose where to download it
           // with the share sheet, then delete the cached copy of the track.
           fileCache: true,
           path: filePath
         }),
-        onFetchComplete: async fetchRes => {
+        onFetchComplete: async (fetchRes) => {
           await Share.share({
             url: fetchRes.path()
           })
@@ -102,7 +104,7 @@ export const messageHandlers: Partial<MessageHandlers> = {
         fileUrl,
         fileName,
         directory: RNFetchBlob.fs.dirs.DownloadDir,
-        getFetchConfig: filePath => ({
+        getFetchConfig: (filePath) => ({
           // On android save to FS and trigger notification that it is saved
           addAndroidDownloads: {
             description: trackName,

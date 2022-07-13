@@ -45,7 +45,7 @@ export const reportToSentry = async ({
   name
 }: ReportToSentryArgs) => {
   try {
-    Sentry.withScope(scope => {
+    Sentry.withScope((scope) => {
       if (level) {
         const sentryLevel = Levels[level]
         scope.setLevel(sentryLevel)

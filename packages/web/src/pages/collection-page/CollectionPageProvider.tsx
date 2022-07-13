@@ -194,14 +194,14 @@ class CollectionPage extends Component<
     // Reset the initial order if it is unset OR
     // if the uids of the tracks in the lineup are changing with this
     // update (initialOrder should contain ALL of the uids, so it suffices to check the first one).
-    const newInitialOrder = tracks.entries.map(track => track.uid)
+    const newInitialOrder = tracks.entries.map((track) => track.uid)
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
     const entryIds = new Set(newInitialOrder)
     const newUids =
       Array.isArray(initialOrder) &&
       initialOrder.length > 0 &&
       newInitialOrder.length > 0 &&
-      !initialOrder.every(id => entryIds.has(id))
+      !initialOrder.every((id) => entryIds.has(id))
 
     if (noInitialOrder || newUids) {
       this.setState({
@@ -366,7 +366,7 @@ class CollectionPage extends Component<
 
   isQueued = () => {
     const { tracks, currentQueueItem } = this.props
-    return tracks.entries.some(entry => currentQueueItem.uid === entry.uid)
+    return tracks.entries.some((entry) => currentQueueItem.uid === entry.uid)
   }
 
   getPlayingUid = () => {
@@ -400,13 +400,13 @@ class CollectionPage extends Component<
       ({ uid }) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
-      item =>
+      (item) =>
         item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
         item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
     )
     const filteredIndex =
       playingIndex > -1
-        ? filteredMetadata.findIndex(metadata => metadata.uid === playingUid)
+        ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
         : playingIndex
     return [filteredMetadata, filteredIndex] as [
       typeof filteredMetadata,
@@ -555,7 +555,7 @@ class CollectionPage extends Component<
         .sort((a, b) =>
           order === 'ascend' ? column.sorter(a, b) : column.sorter(b, a)
         )
-        .map(metadata => metadata.uid)
+        .map((metadata) => metadata.uid)
       this.setState({ allowReordering: false })
     }
     this.props.updateLineupOrder(updatedOrder)

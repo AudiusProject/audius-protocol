@@ -113,13 +113,11 @@ const GrowingCoverPhoto = ({
         filter: springProps.y.interpolate(interpFilter),
         // @ts-ignore
         transform: springProps.y.interpolate(interpTransform)
-      }}
-    >
+      }}>
       <DynamicImage
         image={image}
         imageStyle={imageStyle}
-        wrapperClassName={wrapperClassName}
-      >
+        wrapperClassName={wrapperClassName}>
         {children}
       </DynamicImage>
     </animated.div>

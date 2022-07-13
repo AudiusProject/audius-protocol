@@ -185,16 +185,14 @@ export const DynamicImage = memo(function DynamicImage({
               ]
             }
           : {}
-      ]}
-    >
+      ]}>
       <Animated.View
         style={[
           stylesProp?.imageContainer,
           styles.imageContainer,
           { opacity: firstOpacity }
         ]}
-        onLayout={handleSetFirstSize}
-      >
+        onLayout={handleSetFirstSize}>
         <ImageWithPlaceholder
           uri={firstImage}
           style={[{ width: firstSize, height: firstSize }, stylesProp?.image]}
@@ -207,8 +205,7 @@ export const DynamicImage = memo(function DynamicImage({
           styles.imageContainer,
           { opacity: secondOpacity, zIndex: isFirstImageActive ? -1 : 0 }
         ]}
-        onLayout={handleSetSecondSize}
-      >
+        onLayout={handleSetSecondSize}>
         <ImageWithPlaceholder
           uri={secondImage}
           style={[{ width: secondSize, height: secondSize }, stylesProp?.image]}

@@ -9,7 +9,7 @@ export const fetchSaves = () => ({
   type: FETCH_SAVES
 })
 
-export const fetchSavesSucceeded = saves => ({
+export const fetchSavesSucceeded = (saves) => ({
   type: FETCH_SAVES_SUCCEEDED,
   saves
 })
@@ -24,7 +24,7 @@ export const addLocalSave = (trackId, uid) => ({
   uid
 })
 
-export const removeLocalSave = trackId => ({
+export const removeLocalSave = (trackId) => ({
   type: REMOVE_LOCAL_SAVE,
   trackId
 })

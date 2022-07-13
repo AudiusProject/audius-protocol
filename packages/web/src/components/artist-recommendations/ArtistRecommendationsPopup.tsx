@@ -32,7 +32,7 @@ export const ArtistRecommendationsPopup = ({
   const { mainContentRef } = useContext(MainContentContext)
 
   // Get the artist
-  const user = useSelector<AppState, User | null>(state =>
+  const user = useSelector<AppState, User | null>((state) =>
     getUser(state, { id: artistId })
   )
   if (!user) return null
@@ -46,8 +46,7 @@ export const ArtistRecommendationsPopup = ({
       zIndex={zIndex.FOLLOW_RECOMMENDATIONS_POPUP}
       onClose={onClose}
       className={styles.popup}
-      containerRef={mainContentRef}
-    >
+      containerRef={mainContentRef}>
       <ArtistRecommendations
         itemClassName={styles.popupItem}
         renderHeader={() => (

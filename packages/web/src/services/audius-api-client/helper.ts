@@ -28,8 +28,8 @@ const combineLists = (
     0,
     Math.min(maxSaved, savedList.length)
   )
-  const saveListsSet = new Set(truncatedSavedList.map(s => s[uniqueKey]))
-  const filteredList = normalList.filter(n => !saveListsSet.has(n[uniqueKey]))
+  const saveListsSet = new Set(truncatedSavedList.map((s) => s[uniqueKey]))
+  const filteredList = normalList.filter((n) => !saveListsSet.has(n[uniqueKey]))
   const combinedLists = savedList.concat(filteredList)
   return combinedLists.slice(0, Math.min(maxTotal, combinedLists.length))
 }

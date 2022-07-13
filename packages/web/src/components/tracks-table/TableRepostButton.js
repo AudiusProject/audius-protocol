@@ -17,14 +17,16 @@ class TableRepostButton extends Component {
     return (
       <div
         onClick={onClick}
-        className={cn(styles.tableRepostButton, className, 'tableRepostButton')}
-      >
+        className={cn(
+          styles.tableRepostButton,
+          className,
+          'tableRepostButton'
+        )}>
         <Toast
           text={'Reposted!'}
           disabled={reposted}
           delay={REPOST_TIMEOUT}
-          containerClassName={styles.iconContainer}
-        >
+          containerClassName={styles.iconContainer}>
           {reposted ? (
             <IconRepost className={cn(styles.icon, styles.reposted)} />
           ) : (

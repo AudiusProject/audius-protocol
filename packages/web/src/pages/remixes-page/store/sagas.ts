@@ -11,19 +11,20 @@ import { waitForBackendSetup } from 'store/backend/sagas'
 import tracksSagas from './lineups/tracks/sagas'
 
 function* watchFetch() {
-  yield takeEvery(fetchTrack.type, function* (
-    action: ReturnType<typeof fetchTrack>
-  ) {
-    yield call(waitForBackendSetup)
-    const { handle, slug } = action.payload
+  yield takeEvery(
+    fetchTrack.type,
+    function* (action: ReturnType<typeof fetchTrack>) {
+      yield call(waitForBackendSetup)
+      const { handle, slug } = action.payload
 
-    const track: TrackMetadata = yield call(retrieveTrackByHandleAndSlug, {
-      handle,
-      slug
-    })
+      const track: TrackMetadata = yield call(retrieveTrackByHandleAndSlug, {
+        handle,
+        slug
+      })
 
-    yield put(fetchTrackSucceeded({ trackId: track.track_id }))
-  })
+      yield put(fetchTrackSucceeded({ trackId: track.track_id }))
+    }
+  )
 }
 
 export default function sagas() {

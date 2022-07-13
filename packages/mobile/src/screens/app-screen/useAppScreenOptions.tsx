@@ -125,7 +125,7 @@ export const useAppScreenOptions = (
         headerShadowVisible: false,
         headerTitleAlign: 'center',
         headerBackVisible: false,
-        headerLeft: props => {
+        headerLeft: (props) => {
           const { canGoBack, ...other } = props
           if (canGoBack) {
             return (

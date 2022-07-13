@@ -109,10 +109,9 @@ export const Reaction = (props: ReactionProps) => {
         },
         style
       ]}
-      {...other}
-    >
+      {...other}>
       <LottieView
-        ref={animation => {
+        ref={(animation) => {
           animationRef.current = animation
         }}
         autoPlay={isVisible && autoPlay}

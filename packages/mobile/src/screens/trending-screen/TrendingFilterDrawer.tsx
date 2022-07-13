@@ -53,7 +53,7 @@ export const TrendingFilterDrawer = () => {
 
   const genres = useMemo(() => {
     const searchValueLower = searchValue.toLowerCase()
-    return trendingGenres.filter(genre =>
+    return trendingGenres.filter((genre) =>
       genre.toLowerCase().includes(searchValueLower)
     )
   }, [searchValue])
@@ -84,8 +84,7 @@ export const TrendingFilterDrawer = () => {
       modalName={MODAL_NAME}
       isFullscreen
       title={messages.title}
-      isGestureSupported={false}
-    >
+      isGestureSupported={false}>
       <View style={styles.root}>
         <TextInput
           placeholder={messages.searchPlaceholder}

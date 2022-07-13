@@ -185,7 +185,7 @@ export const Slider = memo(
     )
 
     const animateFromNowToEnd = useCallback(
-      percentComplete => {
+      (percentComplete) => {
         if (isPlaying && duration !== undefined) {
           play((1 - percentComplete) * duration * 1000)
         }
@@ -222,7 +222,7 @@ export const Slider = memo(
     )
 
     const onReleaseHandle = useCallback(
-      percentComplete => {
+      (percentComplete) => {
         onPressOut(percentComplete)
         animateFromNowToEnd(percentComplete)
       },
@@ -306,7 +306,7 @@ export const Slider = memo(
         <Animated.View
           ref={railRef}
           {...panResponder.panHandlers}
-          onLayout={e => {
+          onLayout={(e) => {
             const { width } = e.nativeEvent.layout
             setRailWidth(width)
             getRailPageX()
@@ -314,8 +314,7 @@ export const Slider = memo(
           style={styles.rail}
           onTouchStart={onPressRail}
           onTouchEnd={onReleaseRail}
-          hitSlop={{ top: 8, bottom: 8 }}
-        >
+          hitSlop={{ top: 8, bottom: 8 }}>
           <Animated.View
             style={[
               styles.tracker,
@@ -329,8 +328,7 @@ export const Slider = memo(
                   }
                 ]
               }
-            ]}
-          >
+            ]}>
             {/* While dragging, show the gradient tracker */}
             <Animated.View
               style={[
@@ -344,8 +342,7 @@ export const Slider = memo(
                     outputRange: [0, 1]
                   })
                 }
-              ]}
-            >
+              ]}>
               <LinearGradient
                 useAngle
                 angle={135}
@@ -360,8 +357,7 @@ export const Slider = memo(
           style={[
             styles.handleContainer,
             { transform: [{ translateX: translationAnim }] }
-          ]}
-        >
+          ]}>
           <Animated.View
             onTouchStart={onPressHandle}
             onTouchEnd={handlePressHandleOut}

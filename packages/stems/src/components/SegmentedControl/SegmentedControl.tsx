@@ -26,7 +26,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 
   useEffect(() => {
     let selectedRefIdx = props.options.findIndex(
-      option => option.key === selectedOption
+      (option) => option.key === selectedOption
     )
     if (selectedRefIdx === -1) selectedRefIdx = 0
 
@@ -49,8 +49,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
       className={cn(styles.tabs, props.className, {
         [styles.containerFullWidth]: !!props.fullWidth,
         [styles.isMobile]: props.isMobile
-      })}
-    >
+      })}>
       <animated.div className={styles.tabBackground} style={animatedProps} />
       {props.options.map((option, idx) => {
         return (
@@ -61,8 +60,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
                 [styles.tabFullWidth]: !!props.fullWidth,
                 [styles.isMobile]: props.isMobile
               })}
-              onClick={() => onSetSelected(option.key)}
-            >
+              onClick={() => onSetSelected(option.key)}>
               {option.text}
             </div>
             <div

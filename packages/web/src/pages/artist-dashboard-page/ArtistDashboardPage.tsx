@@ -39,8 +39,8 @@ import {
   makeGetDashboard
 } from './store/selectors'
 
-const TotalPlaysChart = lazyWithPreload(() =>
-  import('./components/TotalPlaysChart')
+const TotalPlaysChart = lazyWithPreload(
+  () => import('./components/TotalPlaysChart')
 )
 
 const StatTile = (props: { title: string; value: any }) => {
@@ -183,8 +183,7 @@ const TracksTableContainer = ({
     () => [
       <div
         key='listed'
-        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
-      >
+        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}>
         <TracksTable
           dataSource={listedDataSource}
           limit={5}
@@ -198,8 +197,7 @@ const TracksTableContainer = ({
       </div>,
       <div
         key='unlisted'
-        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}
-      >
+        className={cn(styles.sectionContainer, styles.tabBodyWrapper)}>
         <TracksTable
           dataSource={unlistedDataSource}
           limit={5}
@@ -274,7 +272,7 @@ export class ArtistDashboardPage extends Component<
         reposts: metadata.repost_count,
         plays: metadata.play_count
       }))
-      .filter(meta => !meta.is_invalid)
+      .filter((meta) => !meta.is_invalid)
   }
 
   onClickRow = (record: any) => {
@@ -299,21 +297,15 @@ export class ArtistDashboardPage extends Component<
       end = start.clone().add(1, 'year')
     }
     this.props.fetchDashboardListenData(
-      this.props.tracks.map(t => t.track_id),
+      this.props.tracks.map((t) => t.track_id),
       start.toISOString(),
       end.toISOString()
     )
   }
 
   renderCreatorContent() {
-    const {
-      account,
-      listenData,
-      tracks,
-      unlistedTracks,
-      stats,
-      isMatrix
-    } = this.props
+    const { account, listenData, tracks, unlistedTracks, stats, isMatrix } =
+      this.props
     if (!account || !account.is_creator) return null
 
     const { selectedTrack } = this.state
@@ -390,8 +382,7 @@ export class ArtistDashboardPage extends Component<
         title='Dashboard'
         description='View important stats like plays, reposts, and more.'
         contentClassName={styles.pageContainer}
-        header={header}
-      >
+        header={header}>
         {!account || status === Status.LOADING ? (
           <LoadingSpinner className={styles.spinner} />
         ) : (

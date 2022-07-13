@@ -44,7 +44,7 @@ function* watchFetch() {
       waitForValue,
       getAccountStatus,
       {},
-      status => status !== Status.LOADING
+      (status) => status !== Status.LOADING
     )
 
     const { variant, moods } = action.payload

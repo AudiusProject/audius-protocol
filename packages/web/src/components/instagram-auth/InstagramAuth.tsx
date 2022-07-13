@@ -92,7 +92,7 @@ const InstagramAuth = ({
   }, [dialogWidth, dialogHeight])
 
   const getProfile = useCallback(
-    async code => {
+    async (code) => {
       try {
         // Fetch the profile from the graph API
         const profileResp = await window.fetch(getUserUrl, {
@@ -207,7 +207,7 @@ const InstagramAuth = ({
 
   const getRequestToken = useCallback(async () => {
     const popup = openPopup()
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
     if (!popup) {
       console.error('unable to open window')
     }
@@ -259,8 +259,7 @@ const InstagramAuth = ({
       className={cn({
         [className!]: !!className,
         disabled: !!disabled
-      })}
-    >
+      })}>
       {children || getDefaultButtonContent()}
     </div>
   )

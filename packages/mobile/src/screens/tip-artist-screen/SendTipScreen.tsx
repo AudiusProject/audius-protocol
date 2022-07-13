@@ -100,8 +100,7 @@ export const SendTipScreen = () => {
   return (
     <TipScreen
       title={messages.sendTip}
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleBack} />}
-    >
+      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleBack} />}>
       <ReceiverDetails />
       {!hasInsufficientBalance && isFirstSupporter ? (
         <BecomeFirstSupporter />

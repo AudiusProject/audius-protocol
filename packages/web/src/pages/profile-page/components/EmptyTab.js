@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import styles from './EmptyTab.module.css'
 
-const EmptyTab = props => {
+const EmptyTab = (props) => {
   const text = props.isOwner
     ? `You haven't ${props.text} yet...`
     : `${props.name} hasn’t ${props.text} yet...`

@@ -36,7 +36,7 @@ import { moodMap } from 'utils/moods'
 
 import styles from './FormTile.module.css'
 
-const MOODS = Object.keys(moodMap).map(k => ({ text: k, el: moodMap[k] }))
+const MOODS = Object.keys(moodMap).map((k) => ({ text: k, el: moodMap[k] }))
 
 const messages = {
   genre: 'Pick a Genre',
@@ -49,7 +49,7 @@ const messages = {
   hideRemixes: 'Hide Remixes on Track Page'
 }
 
-const Divider = props => {
+const Divider = (props) => {
   return (
     <div className={styles.divider}>
       {props.label ? <div className={styles.label}>{props.label}</div> : null}
@@ -58,7 +58,7 @@ const Divider = props => {
   )
 }
 
-const BasicForm = props => {
+const BasicForm = (props) => {
   const onPreviewClick = props.playing
     ? props.onStopPreview
     : props.onPlayPreview
@@ -105,7 +105,7 @@ const BasicForm = props => {
                   : props.invalidFields.title
               }
               variant={'elevatedPlaceholder'}
-              onChange={value =>
+              onChange={(value) =>
                 props.onChangeField(
                   props.isPlaylist ? 'playlist_name' : 'title',
                   value
@@ -122,7 +122,7 @@ const BasicForm = props => {
               defaultValue={getCanonicalName(props.defaultFields.genre) || ''}
               isRequired={props.requiredFields.genre}
               error={props.invalidFields.genre}
-              onSelect={value =>
+              onSelect={(value) =>
                 props.onChangeField(
                   'genre',
                   value.replace(ELECTRONIC_PREFIX, '')
@@ -137,7 +137,7 @@ const BasicForm = props => {
               defaultValue={props.defaultFields.mood || ''}
               isRequired={props.requiredFields.mood}
               error={props.invalidFields.mood}
-              onSelect={value => props.onChangeField('mood', value)}
+              onSelect={(value) => props.onChangeField('mood', value)}
               size='large'
             />
           </div>
@@ -145,8 +145,8 @@ const BasicForm = props => {
             <TagInput
               defaultTags={(props.defaultFields.tags || '')
                 .split(',')
-                .filter(t => t)}
-              onChangeTags={value =>
+                .filter((t) => t)}
+              onChangeTags={(value) =>
                 props.onChangeField('tags', [...value].join(','))
               }
             />
@@ -156,7 +156,7 @@ const BasicForm = props => {
               className={styles.textArea}
               placeholder='Description'
               defaultValue={props.defaultFields.description || ''}
-              onChange={value => props.onChangeField('description', value)}
+              onChange={(value) => props.onChangeField('description', value)}
               characterLimit={1000}
             />
           </div>
@@ -165,9 +165,8 @@ const BasicForm = props => {
     )
   }
 
-  const [remixSettingsModalVisible, setRemixSettingsModalVisible] = useState(
-    false
-  )
+  const [remixSettingsModalVisible, setRemixSettingsModalVisible] =
+    useState(false)
   const [isRemix, setIsRemix] = useState(!!props.defaultFields.remix_of)
 
   const renderRemixSettingsModal = () => {
@@ -177,7 +176,7 @@ const BasicForm = props => {
           props.defaultFields.remix_of?.tracks?.[0]?.parent_track_id
         }
         isOpen={remixSettingsModalVisible}
-        onClose={trackId => {
+        onClose={(trackId) => {
           if (!trackId) {
             setIsRemix(false)
             props.onChangeField('remix_of', null)
@@ -195,7 +194,7 @@ const BasicForm = props => {
 
   const { onChangeField } = props
   const handleRemixToggle = useCallback(() => {
-    setIsRemix(isRemix => !isRemix)
+    setIsRemix((isRemix) => !isRemix)
     if (!isRemix) setRemixSettingsModalVisible(true)
     if (isRemix) {
       onChangeField('remix_of', null)
@@ -212,8 +211,7 @@ const BasicForm = props => {
           {isRemix && (
             <div
               className={styles.remixEdit}
-              onClick={() => setRemixSettingsModalVisible(true)}
-            >
+              onClick={() => setRemixSettingsModalVisible(true)}>
               {messages.editRemix}
             </div>
           )}
@@ -228,7 +226,7 @@ const BasicForm = props => {
     return (
       <SourceFilesModal
         downloadSettings={props.defaultFields.download}
-        onUpdateDownloadSettings={settings =>
+        onUpdateDownloadSettings={(settings) =>
           props.onChangeField('download', settings)
         }
         isOpen={sourceFilesModalVisible}
@@ -285,8 +283,7 @@ const BasicForm = props => {
         <div
           className={cn(styles.floatRight, {
             [styles.hasPreview]: props.showPreview
-          })}
-        >
+          })}>
           {renderRemixSwitch()}
           {renderDownloadButton()}
           {renderAdvancedButton()}
@@ -305,7 +302,7 @@ const BasicForm = props => {
   )
 }
 
-const AdvancedForm = props => {
+const AdvancedForm = (props) => {
   let unlistedState
   let unlistedButtonTitle
   const showUnlisted = props.type === 'track' && props.showUnlistedToggle
@@ -329,7 +326,7 @@ const AdvancedForm = props => {
   )
 
   // Need to update two fields in the metadata.
-  const didUpdateUnlistedState = newState => {
+  const didUpdateUnlistedState = (newState) => {
     props.onChangeField('is_unlisted', newState.unlisted)
     props.onChangeField('field_visibility', {
       genre: newState.genre,
@@ -365,7 +362,7 @@ const AdvancedForm = props => {
         true,
       remixes: hideRemixes
     })
-    setHideRemixes(hideRemixes => !hideRemixes)
+    setHideRemixes((hideRemixes) => !hideRemixes)
   }
 
   return (
@@ -383,8 +380,7 @@ const AdvancedForm = props => {
         className={cn(styles.advanced, {
           [styles.show]: props.advancedShow,
           [styles.visible]: props.advancedVisible
-        })}
-      >
+        })}>
         <Divider label='' />
         <div className={styles.release}>
           {showUnlisted && (
@@ -427,7 +423,7 @@ const AdvancedForm = props => {
               placeholder='e.g. 123456789012'
               defaultValue={props.defaultFields.upc || ''}
               size='small'
-              onChange={value => props.onChangeField('upc', value)}
+              onChange={(value) => props.onChangeField('upc', value)}
             />
           )}
         </div>
@@ -437,14 +433,14 @@ const AdvancedForm = props => {
               label='Track ISRC'
               placeholder='e.g. CC-XXX-YY-NNNNN'
               defaultValue={props.defaultFields.isrc || ''}
-              onChange={value => props.onChangeField('isrc', value)}
+              onChange={(value) => props.onChangeField('isrc', value)}
               size='small'
             />
             <LabeledInput
               label='Track ISWC'
               placeholder='e.g. T-345246800-1'
               defaultValue={props.defaultFields.iswc || ''}
-              onChange={value => props.onChangeField('iswc', value)}
+              onChange={(value) => props.onChangeField('iswc', value)}
               size='small'
             />
           </div>
@@ -542,7 +538,7 @@ class FormTile extends Component {
     clearTimeout(this.state.advancedAnimationTimeout)
   }
 
-  onSelectAllowAttribution = value => {
+  onSelectAllowAttribution = (value) => {
     let allowAttribution = true
     if (value === 'No Attribution') allowAttribution = false
     const license = computeLicense(
@@ -551,13 +547,13 @@ class FormTile extends Component {
       this.state.derivativeWorks
     )
     this.setState({
-      allowAttribution: allowAttribution,
-      license: license
+      allowAttribution,
+      license
     })
     this.props.onChangeField('license', license.licenseType)
   }
 
-  onSelectCommercialUse = value => {
+  onSelectCommercialUse = (value) => {
     let commercialUse = true
     if (value === 'Non Commercial') commercialUse = false
     const license = computeLicense(
@@ -566,13 +562,13 @@ class FormTile extends Component {
       this.state.derivativeWorks
     )
     this.setState({
-      commercialUse: commercialUse,
-      license: license
+      commercialUse,
+      license
     })
     this.props.onChangeField('license', license.licenseType)
   }
 
-  onSelectDerivativeWorks = value => {
+  onSelectDerivativeWorks = (value) => {
     let derivativeWorks = null
     if (value === 'Share-Alike') derivativeWorks = true
     else if (value === 'No Derivative Works') derivativeWorks = false
@@ -582,8 +578,8 @@ class FormTile extends Component {
       derivativeWorks
     )
     this.setState({
-      derivativeWorks: derivativeWorks,
-      license: license
+      derivativeWorks,
+      license
     })
     this.props.onChangeField('license', license.licenseType)
   }
@@ -616,11 +612,11 @@ class FormTile extends Component {
     }
     this.setState({
       advancedShow: !this.state.advancedShow,
-      advancedAnimationTimeout: advancedAnimationTimeout
+      advancedAnimationTimeout
     })
   }
 
-  onDragEnd = result => {
+  onDragEnd = (result) => {
     const { destination, source, draggableId } = result
 
     if (!source || !destination) return
@@ -683,14 +679,12 @@ class FormTile extends Component {
                         <Draggable
                           key={this.props.children[index].key}
                           draggableId={index.toString()}
-                          index={i}
-                        >
+                          index={i}>
                           {(provided, snapshot) => (
                             <div
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              ref={provided.innerRef}
-                            >
+                              ref={provided.innerRef}>
                               {this.props.children[i]}
                             </div>
                           )}

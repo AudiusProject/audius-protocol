@@ -114,12 +114,12 @@ export const GENRES = [
   Genre.LATIN,
   Genre.LOFI,
   ...Object.keys(ELECTRONIC_SUBGENRES).map(
-    subgenre => `${ELECTRONIC_PREFIX}${subgenre}`
+    (subgenre) => `${ELECTRONIC_PREFIX}${subgenre}`
   )
 ]
 
 const NEWLY_ADDED_GENRES: string[] = []
 
 export const TRENDING_GENRES = GENRES.filter(
-  g => !NEWLY_ADDED_GENRES.includes(g)
+  (g) => !NEWLY_ADDED_GENRES.includes(g)
 )

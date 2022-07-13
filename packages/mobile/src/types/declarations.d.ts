@@ -33,9 +33,7 @@ declare module '@react-native-masked-view/masked-view' {
     maskElement: React.ReactElement
     androidRenderingMode?: 'software' | 'hardware'
   }
-  export default class MaskedViewComponent extends React.Component<
-    MaskedViewProps
-  > {}
+  export default class MaskedViewComponent extends React.Component<MaskedViewProps> {}
 }
 
 // Remove everything below when audius-mobile-client is no longer dependent on audius-client

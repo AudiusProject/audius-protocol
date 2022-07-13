@@ -40,12 +40,12 @@ export function fetchCoverArt(trackId, size) {
   return { type: FETCH_COVER_ART, trackId, size }
 }
 
-export const checkIsDownloadable = trackId => ({
+export const checkIsDownloadable = (trackId) => ({
   type: CHECK_IS_DOWNLOADABLE,
   trackId
 })
 
-export const setPermalinkStatus = statuses => ({
+export const setPermalinkStatus = (statuses) => ({
   type: SET_PERMALINK_STATUS,
   statuses
 })

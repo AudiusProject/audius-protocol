@@ -41,9 +41,9 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* fetchRepostInfo(entries) {
   const userIds = []
-  entries.forEach(entry => {
+  entries.forEach((entry) => {
     if (entry.metadata.followee_reposts) {
-      entry.metadata.followee_reposts.forEach(repost =>
+      entry.metadata.followee_reposts.forEach((repost) =>
         userIds.push(repost.user_id)
       )
     }
@@ -69,7 +69,7 @@ function* fetchFirstSegments(entries) {
   // Segments aren't part of the critical path so let them resolve later.
   try {
     const firstSegments = yield all(
-      entries.map(e => call(fetchSegment, e.metadata))
+      entries.map((e) => call(fetchSegment, e.metadata))
     )
 
     yield put(
@@ -104,8 +104,8 @@ function* watchAdd() {
       yield put(
         trackActions.setPermalinkStatus(
           action.entries
-            .filter(entry => !!entry.metadata.permalink)
-            .map(entry => ({
+            .filter((entry) => !!entry.metadata.permalink)
+            .map((entry) => ({
               permalink: entry.metadata.permalink,
               id: entry.id,
               status: Status.SUCCESS

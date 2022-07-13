@@ -76,43 +76,43 @@ const buttonTypeStyles = {
   })
 }
 
-const createStyles = (type: ButtonType = ButtonType.PRIMARY) => (
-  themeColors: ThemeColors
-) =>
-  StyleSheet.create(
-    merge(
-      {
-        buttonContainer: {
-          borderRadius: 4
+const createStyles =
+  (type: ButtonType = ButtonType.PRIMARY) =>
+  (themeColors: ThemeColors) =>
+    StyleSheet.create(
+      merge(
+        {
+          buttonContainer: {
+            borderRadius: 4
+          },
+          button: {
+            padding: 16,
+            borderRadius: 4
+          },
+          buttonContent: {
+            ...flexRowCentered(),
+            justifyContent: 'center'
+          },
+          buttonText: {
+            fontSize: 18,
+            fontFamily: 'AvenirNextLTPro-Bold'
+          },
+          icon: {
+            color: themeColors.neutralLight4
+          },
+          iconLeft: {
+            marginRight: 12
+          },
+          iconRight: {
+            marginLeft: 12
+          },
+          disabled: {
+            backgroundColor: '#E7E6EB'
+          }
         },
-        button: {
-          padding: 16,
-          borderRadius: 4
-        },
-        buttonContent: {
-          ...flexRowCentered(),
-          justifyContent: 'center'
-        },
-        buttonText: {
-          fontSize: 18,
-          fontFamily: 'AvenirNextLTPro-Bold'
-        },
-        icon: {
-          color: themeColors.neutralLight4
-        },
-        iconLeft: {
-          marginRight: 12
-        },
-        iconRight: {
-          marginLeft: 12
-        },
-        disabled: {
-          backgroundColor: '#E7E6EB'
-        }
-      },
-      buttonTypeStyles[type](themeColors)
-    ) as ButtonStyle
-  )
+        buttonTypeStyles[type](themeColors)
+      ) as ButtonStyle
+    )
 
 export type ButtonProps = {
   title: string
@@ -174,16 +174,14 @@ const Button = ({
         { transform: [{ scale }] },
         containerStyle,
         disabled && !ignoreDisabledStyle ? styles.disabled : {}
-      ]}
-    >
+      ]}>
       <TouchableHighlight
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
         underlayColor={underlay}
-        style={[styles.button, style]}
-      >
+        style={[styles.button, style]}>
         <View style={styles.buttonContent}>
           {(icon || renderIcon) && iconPosition === 'left' ? (
             <View style={[styles.iconLeft, iconStyle]}>

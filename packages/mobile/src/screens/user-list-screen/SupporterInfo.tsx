@@ -61,15 +61,13 @@ export const SupporterInfo = (props: SupporterInfoProps) => {
         <Text
           style={styles.rankText}
           color={isTopRank ? 'secondary' : 'neutralLight4'}
-          weight='bold'
-        >
+          weight='bold'>
           #{rank}
         </Text>
         {isTopRank ? (
           <Text
             style={styles.rankText}
-            color={isTopRank ? 'secondary' : 'neutralLight4'}
-          >
+            color={isTopRank ? 'secondary' : 'neutralLight4'}>
             Supporter
           </Text>
         ) : null}

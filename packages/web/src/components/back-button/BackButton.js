@@ -5,14 +5,13 @@ import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
 
 import styles from './BackButton.module.css'
 
-const BackButton = props => {
+const BackButton = (props) => {
   return (
     <div
       className={cn(styles.backButton, props.className, {
         [styles.light]: props.light
       })}
-      onClick={props.onClickBack}
-    >
+      onClick={props.onClickBack}>
       <IconArrow />
     </div>
   )

@@ -14,7 +14,7 @@ const messages = {
   imageName: 'Artwork'
 }
 
-const UploadArtwork = props => {
+const UploadArtwork = (props) => {
   const [processing, setProcessing] = useState(false)
   const [showTip, setShowTip] = useState(false)
 
@@ -38,16 +38,14 @@ const UploadArtwork = props => {
     <div
       className={cn(styles.uploadArtwork, {
         [styles.error]: props.error
-      })}
-    >
+      })}>
       <div
         className={styles.artworkWrapper}
         style={{
           backgroundImage: `url(${
             props.artworkUrl || (processing ? '' : placeholderArt)
           })`
-        }}
-      >
+        }}>
         {processing ? <LoadingSpinner className={styles.overlay} /> : null}
       </div>
       <div className={styles.button}>

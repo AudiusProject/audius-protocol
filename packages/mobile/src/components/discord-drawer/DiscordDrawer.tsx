@@ -22,8 +22,7 @@ import { makeStyles } from 'app/styles'
 
 const messages = {
   title: 'Launch the VIP Discord',
-  body:
-    'To access the private token-holders only Discord channel and/or update your Discord role, send a DM to the Audius VIP Discord Bot (@$AUDIO-BOT) with this code',
+  body: 'To access the private token-holders only Discord channel and/or update your Discord role, send a DM to the Audius VIP Discord Bot (@$AUDIO-BOT) with this code',
   launchDiscord: 'LAUNCH THE VIP DISCORD',
   copyThisCode: 'Copy This Code'
 }
@@ -69,8 +68,7 @@ export const DiscordDrawer = () => {
       onClose={handleClose}
       isFullscreen
       isGestureSupported={false}
-      title={messages.title}
-    >
+      title={messages.title}>
       <View style={styles.container}>
         <Text style={styles.body}>{messages.body}</Text>
         <CopyTextTile hint={messages.copyThisCode} text={discordCode} />

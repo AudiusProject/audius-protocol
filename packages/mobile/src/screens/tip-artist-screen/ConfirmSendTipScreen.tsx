@@ -50,9 +50,11 @@ export const ConfirmSendTipScreen = ({
   navigation: nativeNavigation
 }: ConfirmSendTipScreenProps) => {
   const styles = useStyles()
-  const { user: receiver, status: sendStatus, source } = useSelectorWeb(
-    getSendTipData
-  )
+  const {
+    user: receiver,
+    status: sendStatus,
+    source
+  } = useSelectorWeb(getSendTipData)
   const navigation = useNavigation<TipArtistNavigationParamList>()
   const dispatchWeb = useDispatchWeb()
 
@@ -84,8 +86,7 @@ export const ConfirmSendTipScreen = ({
   return (
     <TipScreen
       title={messages.title}
-      topbarLeft={inProgress ? null : undefined}
-    >
+      topbarLeft={inProgress ? null : undefined}>
       <TipHeader status='confirm' />
       <ReceiverDetails />
       <SendTipStatusText />

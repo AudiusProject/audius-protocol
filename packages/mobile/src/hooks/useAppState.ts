@@ -15,7 +15,7 @@ import { AppState, AppStateStatus } from 'react-native'
 type OnEnterForeground = () => void | null
 type OnEnterBackground = () => void | null
 
-const NotActive = new RegExp(`inactive|background`, 'g')
+const NotActive = /inactive|background/g
 
 export const useAppState = (
   onEnterForeground: OnEnterForeground,
@@ -25,7 +25,7 @@ export const useAppState = (
     AppState.currentState
   )
   const handleAppStateChange = useCallback(
-    nextAppState => {
+    (nextAppState) => {
       if (
         appState.match(NotActive) &&
         nextAppState === 'active' &&

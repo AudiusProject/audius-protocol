@@ -65,7 +65,7 @@ const messages = {
   filter: 'Filter Tracks'
 }
 
-const PlayButton = props => {
+const PlayButton = (props) => {
   return props.playing ? (
     <Button
       className={cn(
@@ -95,12 +95,12 @@ const PlayButton = props => {
   )
 }
 
-const repostButtonText = isReposted =>
+const repostButtonText = (isReposted) =>
   isReposted ? messages.repostButtonReposted : messages.repostButton
-const favoriteButtonText = isFavorited =>
+const favoriteButtonText = (isFavorited) =>
   isFavorited ? messages.favoriteButtonFavorited : messages.favoriteButton
 
-const ViewerHasTracksButtons = props => {
+const ViewerHasTracksButtons = (props) => {
   return (
     <>
       <PlayButton playing={props.playing} onPlay={props.onPlay} />
@@ -117,12 +117,10 @@ const ViewerHasTracksButtons = props => {
         text={messages.reposted}
         disabled={props.isReposted}
         delay={REPOST_TIMEOUT}
-        fillParent={false}
-      >
+        fillParent={false}>
         <Tooltip
           disabled={props.isOwner || props.reposts === 0}
-          text={props.isReposted ? messages.unrepost : messages.repost}
-        >
+          text={props.isReposted ? messages.unrepost : messages.repost}>
           <div className={styles.buttonSpacing}>
             <Button
               type={props.isReposted ? ButtonType.SECONDARY : ButtonType.COMMON}
@@ -138,8 +136,7 @@ const ViewerHasTracksButtons = props => {
       </Toast>
       <Tooltip
         disabled={props.isOwner || props.saves === 0}
-        text={props.isSaved ? messages.unfavorite : messages.favorite}
-      >
+        text={props.isSaved ? messages.unfavorite : messages.favorite}>
         <div className={styles.buttonSpacing}>
           <Button
             type={props.isSaved ? ButtonType.SECONDARY : ButtonType.COMMON}
@@ -172,7 +169,7 @@ const ViewerHasTracksButtons = props => {
   )
 }
 
-const ViewerNoTracksButtons = props => {
+const ViewerNoTracksButtons = (props) => {
   return (
     <>
       <Button
@@ -223,7 +220,7 @@ const ViewerNoTracksButtons = props => {
   )
 }
 
-const SmartCollectionButtons = props => {
+const SmartCollectionButtons = (props) => {
   return (
     <>
       <PlayButton playing={props.playing} onPlay={props.onPlay} />
@@ -242,8 +239,7 @@ const SmartCollectionButtons = props => {
       {props.onSave ? (
         <Tooltip
           disabled={props.isOwner || props.saves === 0}
-          text={props.isSaved ? messages.unfavorite : messages.favorite}
-        >
+          text={props.isSaved ? messages.unfavorite : messages.favorite}>
           <div className={styles.buttonSpacing}>
             <Button
               className={cn(styles.buttonSpacing, styles.buttonFormatting)}
@@ -261,7 +257,7 @@ const SmartCollectionButtons = props => {
   )
 }
 
-const OwnerNoTracksButtons = props => {
+const OwnerNoTracksButtons = (props) => {
   return (
     <>
       <Button
@@ -277,7 +273,7 @@ const OwnerNoTracksButtons = props => {
   )
 }
 
-const OwnerNotPublishedButtons = props => {
+const OwnerNotPublishedButtons = (props) => {
   return (
     <>
       <PlayButton playing={props.playing} onPlay={props.onPlay} />
@@ -315,14 +311,11 @@ const OwnerNotPublishedButtons = props => {
   )
 }
 
-const OwnerPublishedButtons = props => {
+const OwnerPublishedButtons = (props) => {
   const [showShareableToast, setShowShareableToast] = useState(false)
 
-  const {
-    isPublished,
-    isPreviouslyUnpublished,
-    unsetPreviouslyPublished
-  } = props
+  const { isPublished, isPreviouslyUnpublished, unsetPreviouslyPublished } =
+    props
   useEffect(() => {
     if (isPublished && isPreviouslyUnpublished) {
       setShowShareableToast(true)
@@ -341,8 +334,7 @@ const OwnerPublishedButtons = props => {
         fillParent={false}
         placement='top'
         firesOnClick={false}
-        open={showShareableToast}
-      >
+        open={showShareableToast}>
         <Button
           className={cn(styles.buttonSpacing, styles.buttonFormatting)}
           textClassName={styles.buttonTextFormatting}
@@ -382,7 +374,7 @@ const OwnerPublishedButtons = props => {
   )
 }
 
-const Buttons = props => {
+const Buttons = (props) => {
   const overflowMenuExtraItems = []
   if (!props.isOwner) {
     overflowMenuExtraItems.push({
@@ -462,8 +454,7 @@ const Artwork = ({
     <div className={styles.coverArtWrapper}>
       <DynamicImage
         className={styles.coverArt}
-        image={gradient || imageOverride || image}
-      >
+        image={gradient || imageOverride || image}>
         {Icon && (
           <Icon className={styles.imageIcon} style={{ background: gradient }} />
         )}
@@ -484,7 +475,7 @@ class CollectionHeader extends PureComponent {
     this.setState({ previouslyUnpublished: false })
   }
 
-  onFilterChange = e => {
+  onFilterChange = (e) => {
     const newFilterText = e.target.value
     this.setState({
       filterText: newFilterText
@@ -501,7 +492,7 @@ class CollectionHeader extends PureComponent {
     this.setState({ artworkLoading: false })
   }
 
-  renderStatsRow = isLoading => {
+  renderStatsRow = (isLoading) => {
     if (isLoading) return null
     const { reposts, saves, onClickReposts, onClickFavorites } = this.props
     return (
@@ -627,8 +618,7 @@ class CollectionHeader extends PureComponent {
               <Linkify
                 options={{
                   attributes: { onClick: onClickDescriptionExternalLink }
-                }}
-              >
+                }}>
                 {squashNewLines(description)}
               </Linkify>
             </div>
@@ -639,8 +629,7 @@ class CollectionHeader extends PureComponent {
               className={cn(styles.buttonSection, {
                 [styles.show]: !tracksLoading,
                 [styles.hide]: tracksLoading
-              })}
-            >
+              })}>
               {!tracksLoading && (
                 <Buttons
                   variant={variant}

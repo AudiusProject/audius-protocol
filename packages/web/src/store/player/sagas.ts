@@ -54,8 +54,8 @@ const RECORD_LISTEN_INTERVAL = 1000
 
 function* setAudioStream() {
   if (!NATIVE_MOBILE) {
-    const chan = eventChannel<TAudioStream>(emitter => {
-      import('audio/AudioStream').then(AudioStream => {
+    const chan = eventChannel<TAudioStream>((emitter) => {
+      import('audio/AudioStream').then((AudioStream) => {
         emitter(AudioStream.default)
         emitter(END)
       })
@@ -105,7 +105,7 @@ export function* watchPlay() {
         ? apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
         : null
 
-      const endChannel = eventChannel(emitter => {
+      const endChannel = eventChannel((emitter) => {
         audio.load(
           track.track_segments,
           () => {
@@ -139,41 +139,42 @@ export function* watchPlay() {
 }
 
 export function* watchCollectiblePlay() {
-  yield* takeLatest(playCollectible.type, function* (
-    action: ReturnType<typeof playCollectible>
-  ) {
-    const { collectible, onEnd } = action.payload
-    const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
-    const endChannel = eventChannel(emitter => {
-      audio.load(
-        [],
-        () => {
-          if (onEnd) {
-            emitter(onEnd({}))
-          }
-        },
-        [],
-        [], // Gateways
-        {
-          id: collectible.id,
-          title: collectible.name ?? 'Collectible',
-          // TODO: Add account user name here
-          artist: 'YOUR NAME HERE',
-          artwork:
-            collectible.imageUrl ??
-            collectible.frameUrl ??
-            collectible.gifUrl ??
-            ''
-        },
-        collectible.animationUrl
-      )
-      return () => {}
-    })
-    yield* spawn(actionChannelDispatcher, endChannel)
+  yield* takeLatest(
+    playCollectible.type,
+    function* (action: ReturnType<typeof playCollectible>) {
+      const { collectible, onEnd } = action.payload
+      const audio: NonNullable<AudioState> = yield* call(waitForValue, getAudio)
+      const endChannel = eventChannel((emitter) => {
+        audio.load(
+          [],
+          () => {
+            if (onEnd) {
+              emitter(onEnd({}))
+            }
+          },
+          [],
+          [], // Gateways
+          {
+            id: collectible.id,
+            title: collectible.name ?? 'Collectible',
+            // TODO: Add account user name here
+            artist: 'YOUR NAME HERE',
+            artwork:
+              collectible.imageUrl ??
+              collectible.frameUrl ??
+              collectible.gifUrl ??
+              ''
+          },
+          collectible.animationUrl
+        )
+        return () => {}
+      })
+      yield* spawn(actionChannelDispatcher, endChannel)
 
-    audio.play()
-    yield* put(playCollectibleSucceeded({ collectible }))
-  })
+      audio.play()
+      yield* put(playCollectibleSucceeded({ collectible }))
+    }
+  )
 }
 
 export function* watchPause() {
@@ -258,7 +259,7 @@ export function* setAudioListeners() {
 
 export function* handleAudioBuffering() {
   const audioStream = yield* call(waitForValue, getAudio)
-  const chan = eventChannel(emitter => {
+  const chan = eventChannel((emitter) => {
     audioStream.onBufferingChange = (isBuffering: boolean) => {
       emitter(setBuffering({ buffering: isBuffering }))
     }
@@ -271,7 +272,7 @@ export function* handleAudioErrors() {
   // Watch for audio errors and emit an error saga dispatching action
   const audioStream = yield* call(waitForValue, getAudio)
 
-  const chan = eventChannel<{ error: string; data: string }>(emitter => {
+  const chan = eventChannel<{ error: string; data: string }>((emitter) => {
     audioStream.onError = (error: string, data: string) => {
       emitter({ error, data })
     }
@@ -288,7 +289,7 @@ export function* handleAudioErrors() {
 }
 
 function watchAudio(audio: HTMLAudioElement) {
-  return eventChannel(emitter => {
+  return eventChannel((emitter) => {
     const emitPlay = () => emitter(AudioEvents.PLAY)
     const emitPause = () => {
       if (!audio.ended) {

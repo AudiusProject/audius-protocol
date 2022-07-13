@@ -221,7 +221,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     if (!profile) return []
     const artistPick = profile._artist_pick
     const artistTrackIndex = tracks.findIndex(
-      track => track.track_id === artistPick
+      (track) => track.track_id === artistPick
     )
     if (artistTrackIndex > -1) {
       return [tracks[artistTrackIndex]]

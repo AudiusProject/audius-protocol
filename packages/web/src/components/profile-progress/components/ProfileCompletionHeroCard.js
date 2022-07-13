@@ -33,7 +33,7 @@ const ProfileCompletionHeroCard = ({ completionStages, onDismiss }) => {
       <div className={styles.leftContainer}>
         <div className={styles.completionTextPercentage}>
           <animated.span>
-            {animatedPercentage.interpolate(v => v.toFixed())}
+            {animatedPercentage.interpolate((v) => v.toFixed())}
           </animated.span>
           %
         </div>
@@ -54,10 +54,10 @@ const ProfileCompletionHeroCard = ({ completionStages, onDismiss }) => {
   )
 }
 
-const getStepsCompleted = completionStages =>
+const getStepsCompleted = (completionStages) =>
   completionStages.reduce((acc, cur) => (cur.isCompleted ? acc + 1 : acc), 0)
 
-export const getPercentageComplete = completionStages => {
+export const getPercentageComplete = (completionStages) => {
   const stepsCompleted = getStepsCompleted(completionStages)
   return (stepsCompleted / completionStages.length) * 100
 }

@@ -7,9 +7,9 @@ export function* addTracksFromCollections(
 ) {
   const tracks: UserTrackMetadata[] = []
 
-  metadataArray.forEach(m => {
+  metadataArray.forEach((m) => {
     if (m.tracks) {
-      m.tracks.forEach(t => {
+      m.tracks.forEach((t) => {
         tracks.push(t)
       })
     }

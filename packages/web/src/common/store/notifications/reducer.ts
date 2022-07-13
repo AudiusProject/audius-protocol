@@ -143,7 +143,7 @@ const actionsMap: any = {
     const notificationIds = Object.keys(state.notifications)
     const viewedNotifications: Record<string, Notification> = {}
 
-    notificationIds.forEach(id => {
+    notificationIds.forEach((id) => {
       const notification = state.notifications[id]
       const viewedNotification = { ...notification, isViewed: true }
       viewedNotifications[id] = viewedNotification
@@ -181,7 +181,7 @@ const actionsMap: any = {
     return {
       ...state,
       playlistUpdates: state.playlistUpdates.filter(
-        id => id !== action.playlistId
+        (id) => id !== action.playlistId
       )
     }
   }

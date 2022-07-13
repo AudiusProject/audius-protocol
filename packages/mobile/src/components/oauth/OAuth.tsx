@@ -262,16 +262,14 @@ const OAuth = ({ webRef }: Props) => {
       transparent={false}
       visible={isOpen}
       presentationStyle='overFullScreen'
-      hardwareAccelerated
-    >
+      hardwareAccelerated>
       <View style={{ flex: 1, marginTop: 40 }}>
         <View
           style={{
             width: 75,
             marginLeft: 8,
             marginBottom: 8
-          }}
-        >
+          }}>
           <Button onPress={onClose} title='Close' />
         </View>
         <WebView

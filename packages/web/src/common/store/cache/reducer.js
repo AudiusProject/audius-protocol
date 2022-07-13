@@ -41,13 +41,13 @@ export const initialCacheState = {
 }
 
 // Wraps a metadata into a cache entry
-const wrapEntry = metadata => ({
+const wrapEntry = (metadata) => ({
   metadata,
   _timestamp: Date.now()
 })
 
 // Unwraps a cache entry into its public metadata
-const unwrapEntry = entry => {
+const unwrapEntry = (entry) => {
   if (entry && entry.metadata) {
     return entry.metadata
   }
@@ -84,7 +84,7 @@ export const mergeCustomizer = (objValue, srcValue, key) => {
     // Map out tracks keyed by id, but store as an array-value
     // because a playlist can contain multiple of the same track id
     const trackMap = {}
-    objValue.track_ids.forEach(t => {
+    objValue.track_ids.forEach((t) => {
       const id = t.track
       if (id in trackMap) {
         trackMap[id].push(t)
@@ -93,7 +93,7 @@ export const mergeCustomizer = (objValue, srcValue, key) => {
       }
     })
 
-    const trackIds = srcValue.track_ids.map(t => {
+    const trackIds = srcValue.track_ids.map((t) => {
       const mappedList = trackMap[t.track]
       if (!mappedList) return t
 
@@ -117,7 +117,7 @@ const actionsMap = {
     const newSubscribers = { ...state.subscribers }
     const newIdsToPrune = new Set([...state.idsToPrune])
 
-    action.entries.forEach(e => {
+    action.entries.forEach((e) => {
       // Don't add if block number is < existing
       const existing = unwrapEntry(newEntries[e.id])
       if (
@@ -163,7 +163,7 @@ const actionsMap = {
     const newEntries = { ...state.entries }
     const newSubscriptions = { ...state.subscriptions }
 
-    action.entries.forEach(e => {
+    action.entries.forEach((e) => {
       newEntries[e.id] = wrapEntry(
         mergeWith(
           {},
@@ -174,14 +174,14 @@ const actionsMap = {
       )
     })
 
-    action.subscriptions.forEach(s => {
+    action.subscriptions.forEach((s) => {
       const { id, kind, uids } = s
       if (id in newSubscriptions) {
-        uids.forEach(uid => {
+        uids.forEach((uid) => {
           newSubscriptions[id].add({ kind, uid })
         })
       } else {
-        newSubscriptions[id] = new Set(uids.map(uid => ({ kind, uid })))
+        newSubscriptions[id] = new Set(uids.map((uid) => ({ kind, uid })))
       }
     })
 
@@ -194,7 +194,7 @@ const actionsMap = {
   [INCREMENT](state, action) {
     const newEntries = { ...state.entries }
 
-    action.entries.forEach(e => {
+    action.entries.forEach((e) => {
       newEntries[e.id] = wrapEntry(
         mergeWith({}, { ...unwrapEntry(state.entries[e.id]) }, e.metadata, add)
       )
@@ -208,7 +208,7 @@ const actionsMap = {
   [SET_STATUS](state, action) {
     const newStatuses = { ...state.statuses }
 
-    action.statuses.forEach(s => {
+    action.statuses.forEach((s) => {
       newStatuses[s.id] = s.status
     })
 
@@ -224,7 +224,7 @@ const actionsMap = {
     const newSubscribers = { ...state.subscribers }
     const newUids = { ...state.uids }
 
-    action.subscribers.forEach(s => {
+    action.subscribers.forEach((s) => {
       const { id, uid } = s
       newSubscribers[id] = state.subscribers[id]
         ? state.subscribers[id].add(uid)
@@ -243,7 +243,7 @@ const actionsMap = {
     const newSubscribers = { ...state.subscribers }
     const newUids = { ...state.uids }
 
-    action.unsubscribers.forEach(s => {
+    action.unsubscribers.forEach((s) => {
       const { uid, id = newUids[s.uid] } = s
       if (id in newSubscribers) {
         newSubscribers[id].delete(uid)
@@ -259,7 +259,7 @@ const actionsMap = {
   },
   [REMOVE](state, action) {
     const newIdsToPrune = new Set([...state.idsToPrune])
-    action.ids.forEach(id => {
+    action.ids.forEach((id) => {
       newIdsToPrune.add(id)
     })
 
@@ -278,9 +278,9 @@ const actionsMap = {
 
     // TODO: figure out why a remove is called to a non-existent subscriber
     if (action.ids) {
-      action.ids.forEach(actionId => {
+      action.ids.forEach((actionId) => {
         if (newSubscribers[actionId]) {
-          newSubscribers[actionId].forEach(uid => {
+          newSubscribers[actionId].forEach((uid) => {
             delete newUids[uid]
           })
         }

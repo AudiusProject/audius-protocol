@@ -37,8 +37,7 @@ export const UserNameLink = (props: UserNameLinkProps) => {
       weight='medium'
       color='secondary'
       onPress={onPress}
-      {...other}
-    >
+      {...other}>
       {user.name}
     </Text>
   )

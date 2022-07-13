@@ -15,19 +15,22 @@ export const GO_TO_REMIXES_OF_PARENT_PAGE =
 
 export const REFETCH_LINEUP = 'TRACK_PAGE/REFETCH_LINEUP'
 
-export const getTrackRanks = trackId => ({ type: GET_TRACK_RANKS, trackId })
+export const getTrackRanks = (trackId) => ({ type: GET_TRACK_RANKS, trackId })
 export const setTrackRank = (duration, rank) => ({
   type: SET_TRACK_RANK,
   duration,
   rank
 })
-export const resetTrackPage = rank => ({ type: RESET })
-export const setTrackId = trackId => ({ type: SET_TRACK_ID, trackId })
-export const setTrackPermalink = permalink => ({
+export const resetTrackPage = (rank) => ({ type: RESET })
+export const setTrackId = (trackId) => ({ type: SET_TRACK_ID, trackId })
+export const setTrackPermalink = (permalink) => ({
   type: SET_TRACK_PERMALINK,
   permalink
 })
-export const makeTrackPublic = trackId => ({ type: MAKE_TRACK_PUBLIC, trackId })
+export const makeTrackPublic = (trackId) => ({
+  type: MAKE_TRACK_PUBLIC,
+  trackId
+})
 
 export const fetchTrack = (trackId, slug, handle, canBeUnlisted) => ({
   type: FETCH_TRACK,
@@ -36,13 +39,13 @@ export const fetchTrack = (trackId, slug, handle, canBeUnlisted) => ({
   handle,
   canBeUnlisted
 })
-export const fetchTrackSucceeded = trackId => ({
+export const fetchTrackSucceeded = (trackId) => ({
   type: FETCH_TRACK_SUCCEEDED,
   trackId
 })
-export const fetchTrackFailed = trackId => ({ type: FETCH_TRACK_FAILED })
+export const fetchTrackFailed = (trackId) => ({ type: FETCH_TRACK_FAILED })
 
-export const goToRemixesOfParentPage = parentTrackId => ({
+export const goToRemixesOfParentPage = (parentTrackId) => ({
   type: GO_TO_REMIXES_OF_PARENT_PAGE,
   parentTrackId
 })
@@ -56,7 +59,7 @@ export const refetchLineup = () => ({
   type: REFETCH_LINEUP
 })
 
-export const setTrackTrendingRanks = trendingTrackRanks => ({
+export const setTrackTrendingRanks = (trendingTrackRanks) => ({
   type: SET_TRACK_TRENDING_RANKS,
   trendingTrackRanks
 })

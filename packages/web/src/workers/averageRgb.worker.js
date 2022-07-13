@@ -18,7 +18,7 @@ export default () => {
     const rgb = { r: 0, g: 0, b: 0 }
     let count = 0
     Jimp.read(imageUrl)
-      .then(img => {
+      .then((img) => {
         img.scan(0, 0, img.bitmap.width, img.bitmap.height, (x, y, idx) => {
           ++count
           rgb.r += img.bitmap.data[idx]
@@ -31,7 +31,7 @@ export default () => {
         // eslint-disable-next-line
         postMessage({key, result: rgb})
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(imageUrl, err)
         // eslint-disable-next-line
         postMessage({key, result: DEFAULT_RGB})

@@ -68,7 +68,7 @@ export const MobileUploadDrawer = () => {
           <GradientText style={styles.title}>{messages.title}</GradientText>
           <Text style={styles.description}>{messages.description}</Text>
         </View>
-        {checks.map(bulletText => (
+        {checks.map((bulletText) => (
           <View key={bulletText} style={styles.bullet}>
             <Image source={checkMark} style={styles.bulletIcon} />
             <Text style={styles.bulletText}>{bulletText}</Text>

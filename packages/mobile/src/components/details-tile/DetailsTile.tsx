@@ -211,7 +211,7 @@ export const DetailsTile = ({
   }, [onPressPlay])
 
   const renderDetailLabels = () => {
-    return detailLabels.map(infoFact => {
+    return detailLabels.map((infoFact) => {
       return (
         <View key={infoFact.label} style={styles.infoFact}>
           <Text style={styles.infoLabel} weight='bold'>
@@ -219,8 +219,7 @@ export const DetailsTile = ({
           </Text>
           <Text
             style={[styles.infoValue, infoFact.valueStyle]}
-            weight='demiBold'
-          >
+            weight='demiBold'>
             {infoFact.value}
           </Text>
           <View style={styles.infoIcon}>{infoFact.icon}</View>
@@ -323,8 +322,7 @@ export const DetailsTile = ({
               hideListenCount &&
               hideRepostCount &&
               styles.noStats
-          ]}
-        >
+          ]}>
           {renderDetailLabels()}
         </View>
       </View>

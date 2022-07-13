@@ -131,7 +131,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 
   const getLeftValue = useCallback(() => {
     const selectedOptionIdx = options.findIndex(
-      option => option.key === selectedOption
+      (option) => option.key === selectedOption
     )
     return optionWidths
       .slice(0, selectedOptionIdx)
@@ -140,7 +140,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 
   useEffect(() => {
     const selectedOptionIdx = options.findIndex(
-      option => option.key === selectedOption
+      (option) => option.key === selectedOption
     )
     const width = optionWidths[selectedOptionIdx]
     const left = getLeftValue()
@@ -151,7 +151,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
 
   // Watch for the options widths to be populated and then set the initial left value of the selector thumb
   useEffect(() => {
-    if (!initLeft && optionWidths.every(val => val !== 0)) {
+    if (!initLeft && optionWidths.every((val) => val !== 0)) {
       leftAnim.setValue(getLeftValue())
       setInitLeft(true)
     }
@@ -189,8 +189,7 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
         fullWidth && styles.fullWidth,
         style,
         stylesProp?.root
-      ]}
-    >
+      ]}>
       {sliderElement}
       {options.map((option, index) => {
         const shouldHideSeparator =
@@ -209,15 +208,13 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
                 stylesProp?.tab,
                 fullWidth && styles.tabFullWidth
               ]}
-              onPress={() => handleSelectOption(option.key)}
-            >
+              onPress={() => handleSelectOption(option.key)}>
               <Text
                 style={[
                   styles.text,
                   stylesProp?.text,
                   selectedOption === option.key && stylesProp?.activeText
-                ]}
-              >
+                ]}>
                 {option.text}
               </Text>
             </Pressable>

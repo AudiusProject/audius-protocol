@@ -92,7 +92,7 @@ const EnterPassword = ({
 
     // When the password blurs, check if the number and length req are met
     if (password) {
-      setRequirements(requirements => ({
+      setRequirements((requirements) => ({
         ...requirements,
         number: getNumberRequirement(password),
         length: getLenRequirement(password),
@@ -108,7 +108,7 @@ const EnterPassword = ({
   const onPasswordConfirmationBlur = useCallback(() => {
     // When the password blurs, check if the number and length req are met
     if (password && passwordConfirmation) {
-      setRequirements(requirements => ({
+      setRequirements((requirements) => ({
         ...requirements,
         match: getMatchRequirement(password, passwordConfirmation)
       }))
@@ -171,7 +171,7 @@ const EnterPassword = ({
 
   const fulfillsRequirements = () =>
     Object.keys(requirements).every(
-      req => requirements[req] === CheckState.VALID
+      (req) => requirements[req] === CheckState.VALID
     )
 
   const onClickSubmit = () => {
@@ -193,10 +193,10 @@ const EnterPassword = ({
     { status: requirements.match, label: messages.checks[2] }
   ]
   const isValid = Object.keys(requirements).every(
-    req => requirements[req] === CheckState.VALID
+    (req) => requirements[req] === CheckState.VALID
   )
   const hasError = Object.keys(requirements).some(
-    req => requirements[req] === CheckState.ERROR
+    (req) => requirements[req] === CheckState.ERROR
   )
 
   return (
@@ -204,11 +204,10 @@ const EnterPassword = ({
       <form
         className={styles.form}
         method='post'
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
         }}
-        autoComplete='off'
-      >
+        autoComplete='off'>
         <div className={styles.passwordContainer}>
           <Input
             placeholder='Password'

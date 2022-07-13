@@ -77,7 +77,7 @@ export const TrackScreenRemixes = ({
         <GradientText style={styles.headerText}>{messages.title}</GradientText>
       </View>
       <View style={styles.tracks}>
-        {trackIds.map(id => {
+        {trackIds.map((id) => {
           return <TrackScreenRemix id={id} key={id} style={styles.track} />
         })}
       </View>

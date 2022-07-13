@@ -30,17 +30,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const BecomeFirstSupporter = () => {
   const styles = useStyles()
-  const {
-    white,
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { white, pageHeaderGradientColor1, pageHeaderGradientColor2 } =
+    useThemeColors()
 
   return (
     <LinearGradient
       style={styles.root}
-      colors={[pageHeaderGradientColor2, pageHeaderGradientColor1]}
-    >
+      colors={[pageHeaderGradientColor2, pageHeaderGradientColor1]}>
       <IconTrophy fill={white} width={16} height={16} />
       <Text style={styles.text}>{messages.becomeFirstSupporter}</Text>
     </LinearGradient>

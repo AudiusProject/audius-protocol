@@ -190,19 +190,20 @@ function* watchSyncPlayer() {
 }
 
 export function* watchRequestQueueAutoplay() {
-  yield* takeEvery(MessageType.REQUEST_QUEUE_AUTOPLAY, function* (
-    action: Message
-  ) {
-    const { genre, trackId } = action
-    const userId = yield* select(getUserId)
-    yield* put(
-      queueAutoplay({
-        genre,
-        exclusionList: trackId ? [trackId] : [],
-        currentUserId: userId
-      })
-    )
-  })
+  yield* takeEvery(
+    MessageType.REQUEST_QUEUE_AUTOPLAY,
+    function* (action: Message) {
+      const { genre, trackId } = action
+      const userId = yield* select(getUserId)
+      yield* put(
+        queueAutoplay({
+          genre,
+          exclusionList: trackId ? [trackId] : [],
+          currentUserId: userId
+        })
+      )
+    }
+  )
 }
 
 const sagas = () => {

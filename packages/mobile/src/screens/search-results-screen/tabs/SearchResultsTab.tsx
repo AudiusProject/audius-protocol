@@ -41,8 +41,7 @@ export const SearchResultsTab = (props: SearchResultsTabProps) => {
         isRefreshing ||
           searchStatus === Status.LOADING ||
           (status === Status.LOADING && noResults)
-      )}
-    >
+      )}>
       {noResults ? <EmptyResults /> : <>{children}</>}
     </WithLoader>
   )

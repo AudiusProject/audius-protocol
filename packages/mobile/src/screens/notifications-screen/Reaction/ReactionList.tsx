@@ -26,9 +26,9 @@ export const ReactionList = (props: ReactionListProps) => {
     NotificationsDrawerNavigationContext
   )
   const [interacting, setInteracting] = useState<ReactionTypes | null>(null)
-  const positions = useRef<
-    { [k in ReactionTypes]: { x: number; width: number } }
-  >({
+  const positions = useRef<{
+    [k in ReactionTypes]: { x: number; width: number }
+  }>({
     fire: { x: 0, width: 0 },
     heart: { x: 0, width: 0 },
     party: { x: 0, width: 0 },
@@ -87,9 +87,8 @@ export const ReactionList = (props: ReactionListProps) => {
           alignItems: 'center',
           alignSelf: 'center'
         }}
-        {...panResponder.current.panHandlers}
-      >
-        {reactionOrder.map(reactionType => {
+        {...panResponder.current.panHandlers}>
+        {reactionOrder.map((reactionType) => {
           const Reaction = reactionMap[reactionType]
           const status =
             selectedReaction === reactionType

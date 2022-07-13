@@ -93,8 +93,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
     <div className={styles.detailsContainer}>
       <PerspectiveCard
         className={styles.perspectiveCard}
-        onClick={handleItemClick}
-      >
+        onClick={handleItemClick}>
         <>
           {isLoading ? (
             <div className={styles.media}>

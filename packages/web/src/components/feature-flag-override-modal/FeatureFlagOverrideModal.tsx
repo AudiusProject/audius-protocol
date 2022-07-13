@@ -87,15 +87,14 @@ export const FeatureFlagOverrideModal = () => {
       title={messages.title}
       onClose={closeModal}
       isOpen={isOpen}
-      zIndex={zIndex.FEATURE_FLAG_OVERRIDE_MODAL}
-    >
+      zIndex={zIndex.FEATURE_FLAG_OVERRIDE_MODAL}>
       <ModalHeader onClose={closeModal}>
         <ModalTitle title={messages.title} />
       </ModalHeader>
       <ModalContent>
         {remoteInstanceLoaded ? (
           <div className={styles.optionContainer}>
-            {flags.map(flag => (
+            {flags.map((flag) => (
               <div key={flag} className={styles.option}>
                 <span>{flag}: </span>
                 <SegmentedControl
@@ -113,7 +112,7 @@ export const FeatureFlagOverrideModal = () => {
                   onSelectOption={(key: string) => {
                     const val: OverrideSetting =
                       key === 'default' ? null : (key as OverrideSetting)
-                    setOverrideSettings(prev => ({ ...prev, [flag]: val }))
+                    setOverrideSettings((prev) => ({ ...prev, [flag]: val }))
                     setOverrideSetting(flag as FeatureFlags, val)
                   }}
                 />

@@ -18,7 +18,7 @@ class TrackDownload {
 
   static async downloadTrackMobile(cid, creatorNodeGateways, filename) {
     const urls = creatorNodeGateways.map(
-      gateway => new URL(`${gateway}${cid}?filename=${filename}`)
+      (gateway) => new URL(`${gateway}${cid}?filename=${filename}`)
     )
 
     const message = new DownloadTrackMessage({
@@ -70,7 +70,7 @@ class TrackDownload {
         console.error(e)
         return null
       }
-      await new Promise(resolve =>
+      await new Promise((resolve) =>
         setTimeout(resolve, CHECK_DOWNLOAD_AVAILIBILITY_POLLING_INTERVAL)
       )
     }

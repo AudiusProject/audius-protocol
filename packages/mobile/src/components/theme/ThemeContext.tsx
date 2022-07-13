@@ -55,8 +55,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
         theme,
         setTheme: handleSetTheme,
         isSystemDarkMode
-      }}
-    >
+      }}>
       {children}
     </ThemeContext.Provider>
   )

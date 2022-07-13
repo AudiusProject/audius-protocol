@@ -91,7 +91,7 @@ const PlaylistForm = ({
   // On receiving new, defined metadata, update the form fields
   useEffect(() => {
     if (metadata) {
-      setFormFields(oldFormFields => ({
+      setFormFields((oldFormFields) => ({
         ...schemas.newCollectionMetadata(metadata),
         artwork: oldFormFields.artwork,
         playlist_name: oldFormFields.playlist_name,

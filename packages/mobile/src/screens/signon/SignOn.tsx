@@ -312,7 +312,8 @@ const FormTitle = ({ isSignin }: { isSignin: boolean }) => {
 }
 
 const isValidEmailString = (email: string) => {
-  const emailRe = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  const emailRe =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return emailRe.test(String(email).toLowerCase())
 }
 
@@ -451,8 +452,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     if (isSignin && isSigninError && showDefaultError) {
       return (
         <Animated.View
-          style={[styles.errorContainer, { opacity: errorOpacity }]}
-        >
+          style={[styles.errorContainer, { opacity: errorOpacity }]}>
           <ValidationIconX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
@@ -464,18 +464,15 @@ const SignOn = ({ navigation }: SignOnProps) => {
           style={styles.errorButton}
           onPress={() => {
             switchForm(true)
-          }}
-        >
+          }}>
           <Animated.View
-            style={[styles.errorContainer, { opacity: errorOpacity }]}
-          >
+            style={[styles.errorContainer, { opacity: errorOpacity }]}>
             <ValidationIconX style={styles.errorIcon} />
             <Text
               style={[
                 styles.errorText,
                 { flex: 0, textDecorationLine: 'underline' }
-              ]}
-            >
+              ]}>
               {errorMessages.emailInUse}
             </Text>
             <Text style={[styles.errorText, { fontSize: 13 }]}> ➔</Text>
@@ -486,8 +483,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     if (showInvalidEmailError) {
       return (
         <Animated.View
-          style={[styles.errorContainer, { opacity: errorOpacity }]}
-        >
+          style={[styles.errorContainer, { opacity: errorOpacity }]}>
           <ValidationIconX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
         </Animated.View>
@@ -496,8 +492,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     if (showEmptyPasswordError) {
       return (
         <Animated.View
-          style={[styles.errorContainer, { opacity: errorOpacity }]}
-        >
+          style={[styles.errorContainer, { opacity: errorOpacity }]}>
           <ValidationIconX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
         </Animated.View>
@@ -580,7 +575,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
           maxLength={100}
           textContentType='password'
           secureTextEntry={true}
-          onChangeText={newText => {
+          onChangeText={(newText) => {
             setAttemptedPassword(true)
             setShowDefaultError(false)
             setPassword(newText)
@@ -667,7 +662,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     dispatch(signonActions.setEmailStatus('editing'))
     dispatchWeb({
       type: MessageType.SIGN_UP_VALIDATE_AND_CHECK_EMAIL,
-      email: email,
+      email,
       isAction: true
     })
   }
@@ -714,8 +709,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
               setcpaContainerHeight(
                 Dimensions.get('window').height - formContainerHeight
               )
-            }}
-          >
+            }}>
             <Image
               source={audiusLogoHorizontal}
               style={styles.audiusLogoHorizontal}
@@ -733,7 +727,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
               enablesReturnKeyAutomatically={true}
               maxLength={100}
               textContentType='emailAddress'
-              onChangeText={newText => {
+              onChangeText={(newText) => {
                 setShowDefaultError(false)
                 const newEmail = newText.trim()
                 setEmail(newEmail)
@@ -762,8 +756,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
           style={[
             styles.containerCTA,
             { height: cpaContainerHeight, opacity: opacityCTA }
-          ]}
-        >
+          ]}>
           {Dimensions.get('window').height < 720 ? (
             <></>
           ) : isAndroid && isKeyboardOpen ? (
@@ -781,8 +774,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
             activeOpacity={0.6}
             onPress={() => {
               switchForm()
-            }}
-          >
+            }}>
             {renderFormSwitchButton()}
           </TouchableOpacity>
           <TouchableOpacity
@@ -792,8 +784,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
               dispatch(
                 setVisibility({ drawer: 'ForgotPassword', visible: true })
               )
-            }}
-          >
+            }}>
             {renderForgotPasswordButton()}
           </TouchableOpacity>
         </Animated.View>

@@ -35,9 +35,10 @@ const messages = {
 }
 
 const DropzonePage = ({ error, onSelect }) => {
-  const onDropzoneSelect = useCallback(file => onSelect(file, 'original'), [
-    onSelect
-  ])
+  const onDropzoneSelect = useCallback(
+    (file) => onSelect(file, 'original'),
+    [onSelect]
+  )
   return (
     <div className={styles.dropzonePage}>
       <Dropzone
@@ -57,7 +58,7 @@ const RandomPage = ({ onSelect }) => {
   const [searched, setSearched] = useState(false)
   const inputRef = useRef(null)
 
-  const getRandomPhoto = async query => {
+  const getRandomPhoto = async (query) => {
     setSearched(true)
     const value = RandomImage.get(query)
     if (value) {
@@ -65,13 +66,13 @@ const RandomPage = ({ onSelect }) => {
     }
   }
 
-  const onKeyDown = e => {
+  const onKeyDown = (e) => {
     if (e.key === 'Enter') {
       getRandomPhoto(randomPhotoQuery)
     }
   }
 
-  const onClickTerm = term => {
+  const onClickTerm = (term) => {
     setRandomPhotoQuery(term)
     getRandomPhoto(term)
   }
@@ -85,7 +86,7 @@ const RandomPage = ({ onSelect }) => {
           placeholder='Search Images'
           type='text'
           value={randomPhotoQuery}
-          onChange={e => {
+          onChange={(e) => {
             setRandomPhotoQuery(e.target.value)
           }}
           onKeyDown={onKeyDown}
@@ -127,9 +128,8 @@ const RandomPage = ({ onSelect }) => {
 const CollectionPage = ({ onSelect, source }) => {
   const [loadedImgs, setLoadedImgs] = useState([])
   const [page, setPage] = useState(1)
-  const { collectibles, collectibleList, solanaCollectibleList } = useSelector(
-    getAccountUser
-  )
+  const { collectibles, collectibleList, solanaCollectibleList } =
+    useSelector(getAccountUser)
   const allCollectibles = [
     ...(collectibleList || []),
     ...(solanaCollectibleList || [])
@@ -140,10 +140,10 @@ const CollectionPage = ({ onSelect, source }) => {
   }, {})
 
   const visibleCollectibles = collectibles?.order
-    ? collectibles.order.map(id => collectibleIdMap[id])
+    ? collectibles.order.map((id) => collectibleIdMap[id])
     : allCollectibles
 
-  const imgs = visibleCollectibles.filter(c => c.mediaType === 'IMAGE')
+  const imgs = visibleCollectibles.filter((c) => c.mediaType === 'IMAGE')
   const maxPages = Math.ceil(imgs.length / COLLECTIBLES_PER_PAGE)
 
   const prevPage = () => {
@@ -153,9 +153,9 @@ const CollectionPage = ({ onSelect, source }) => {
     if (page < maxPages) setPage(page + 1)
   }
 
-  const selectImg = imageUrl => {
+  const selectImg = (imageUrl) => {
     onSelect(
-      fetch(imageUrl).then(r => r.blob()),
+      fetch(imageUrl).then((r) => r.blob()),
       'url'
     )
   }
@@ -168,7 +168,7 @@ const CollectionPage = ({ onSelect, source }) => {
             COLLECTIBLES_PER_PAGE * (page - 1),
             COLLECTIBLES_PER_PAGE * page
           )
-          .map(collectible => (
+          .map((collectible) => (
             <img
               key={collectible.id}
               className={cn(styles.collectibleImg, {
@@ -230,14 +230,14 @@ const ImageSelectionPopup = ({
 
   const { tierNumber } = useSelectTierInfo(userId ?? 0)
   const isCollectibleOptionEnabled =
-    tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
+    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
 
   const allCollectibles = [
     ...(collectibleList || []),
     ...(solanaCollectibleList || [])
   ]
   const visibleCollectibles = collectibles?.order
-    ? allCollectibles.filter(c => collectibles?.order?.includes(c.id))
+    ? allCollectibles.filter((c) => collectibles?.order?.includes(c.id))
     : allCollectibles
 
   const handleClose = () => {
@@ -282,8 +282,7 @@ const ImageSelectionPopup = ({
       showHeader={true}
       title={messages.popupTitle}
       zIndex={zIndex.IMAGE_SELECTION_POPUP}
-      containerRef={mainContentRef}
-    >
+      containerRef={mainContentRef}>
       <TabSlider
         className={styles.slider}
         options={tabSliderOptions}

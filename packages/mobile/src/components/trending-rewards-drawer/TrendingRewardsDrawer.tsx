@@ -217,8 +217,7 @@ export const TrendingRewardsDrawer = () => {
     <AppDrawer
       modalName={TRENDING_REWARDS_DRAWER_NAME}
       isFullscreen
-      isGestureSupported={false}
-    >
+      isGestureSupported={false}>
       <View style={styles.content}>
         <View style={styles.modalTitleContainer}>
           <Image
@@ -236,7 +235,7 @@ export const TrendingRewardsDrawer = () => {
               fullWidth
               options={tabOptions}
               selected={modalType}
-              onSelectOption={option =>
+              onSelectOption={(option) =>
                 setModalType(option as TrendingRewardsModalType)
               }
               key={`rewards-slider-${tabOptions.length}`}

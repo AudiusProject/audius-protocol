@@ -66,7 +66,7 @@ export const launchSelectImageActionSheet = (
         tintColor: shareSheetTintColor,
         cancelButtonIndex: 0
       },
-      buttonIndex => {
+      (buttonIndex) => {
         if (buttonIndex === 1) {
           selectPhotoFromLibrary()
         } else if (buttonIndex === 2) {

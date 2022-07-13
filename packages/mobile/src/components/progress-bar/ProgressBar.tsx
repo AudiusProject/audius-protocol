@@ -53,10 +53,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 export const ProgressBar = ({ progress, max }) => {
   const styles = useStyles()
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
+    useThemeColors()
   return (
     <View style={styles.progressBarContainer}>
       <LinearGradient

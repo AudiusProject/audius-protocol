@@ -44,8 +44,7 @@ const Stack = createNativeStackNavigator()
 const SignOnStack = () => {
   return (
     <Stack.Navigator
-      screenOptions={{ gestureEnabled: false, headerShown: false }}
-    >
+      screenOptions={{ gestureEnabled: false, headerShown: false }}>
       <Stack.Screen name='SignOnStack' component={SignOnScreen} />
     </Stack.Navigator>
   )
@@ -57,8 +56,7 @@ const SignOnStack = () => {
 const UpdateStack = () => {
   return (
     <Stack.Navigator
-      screenOptions={{ gestureEnabled: false, headerShown: false }}
-    >
+      screenOptions={{ gestureEnabled: false, headerShown: false }}>
       <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
     </Stack.Navigator>
   )
@@ -77,11 +75,9 @@ const MainStack = (props: MainStackProps) => {
   return (
     <NotificationsDrawerNavigationContextProvider
       drawerNavigation={drawerNavigation}
-      drawerHelpers={drawerHelpers}
-    >
+      drawerHelpers={drawerHelpers}>
       <Stack.Navigator
-        screenOptions={{ gestureEnabled: false, headerShown: false }}
-      >
+        screenOptions={{ gestureEnabled: false, headerShown: false }}>
         <Stack.Screen name='MainStack' component={AppScreen} />
       </Stack.Navigator>
     </NotificationsDrawerNavigationContextProvider>
@@ -112,8 +108,7 @@ const NotificationsDrawerContents = (
       drawerNavigation={drawerNavigation}
       gesturesDisabled={disableGestures}
       setGesturesDisabled={setDisableGestures}
-      state={state}
-    >
+      state={state}>
       <NotificationsScreen />
     </NotificationsDrawerNavigationContextProvider>
   )
@@ -158,14 +153,13 @@ export const RootScreen = () => {
           enabled: !disableGestures
         }
       }}
-      drawerContent={props => (
+      drawerContent={(props) => (
         <NotificationsDrawerContents
           disableGestures={disableGestures}
           setDisableGestures={setDisableGestures}
           {...props}
         />
-      )}
-    >
+      )}>
       <Drawer.Screen name='App' component={MainStack} />
     </Drawer.Navigator>
   ) : (

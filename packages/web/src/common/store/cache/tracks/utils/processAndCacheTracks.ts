@@ -29,7 +29,7 @@ export function* processAndCacheTracks<T extends TrackMetadata>(
   yield put(
     cacheActions.add(
       Kind.TRACKS,
-      reformattedTracks.map(t => ({
+      reformattedTracks.map((t) => ({
         id: t.track_id,
         uid: makeUid(Kind.TRACKS, t.track_id),
         metadata: t

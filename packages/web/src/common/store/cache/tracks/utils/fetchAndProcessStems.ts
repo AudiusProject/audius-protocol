@@ -21,7 +21,7 @@ import { processAndCacheTracks } from './processAndCacheTracks'
  */
 export function* fetchAndProcessStems(trackId: ID) {
   const stems: StemTrackMetadata[] = yield call(
-    args => apiClient.getStems(args),
+    (args) => apiClient.getStems(args),
     {
       trackId
     }
@@ -35,7 +35,7 @@ export function* fetchAndProcessStems(trackId: ID) {
   yield call(waitForValue, getTrack, { id: trackId })
 
   // Create the update
-  const stemsUpdate: Stem[] = stems.map(s => ({
+  const stemsUpdate: Stem[] = stems.map((s) => ({
     track_id: s.track_id,
     category: StemCategory[s.stem_of.category]
   }))

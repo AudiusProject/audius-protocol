@@ -16,14 +16,13 @@ type CollapsibleTabNavigatorContextProps = {
   scrollY?: Animated.Value
 }
 
-export const CollapsibleTabNavigatorContext = createContext<
-  CollapsibleTabNavigatorContextProps
->({
-  sceneName: undefined,
-  refreshing: undefined,
-  onRefresh: undefined,
-  scrollY: undefined
-})
+export const CollapsibleTabNavigatorContext =
+  createContext<CollapsibleTabNavigatorContextProps>({
+    sceneName: undefined,
+    refreshing: undefined,
+    onRefresh: undefined,
+    scrollY: undefined
+  })
 
 export const CollapsibleTabNavigatorContextProvider = ({
   sceneName,
@@ -40,8 +39,7 @@ export const CollapsibleTabNavigatorContextProvider = ({
 }) => {
   return (
     <CollapsibleTabNavigatorContext.Provider
-      value={{ sceneName, refreshing, onRefresh, scrollY }}
-    >
+      value={{ sceneName, refreshing, onRefresh, scrollY }}>
       {children}
     </CollapsibleTabNavigatorContext.Provider>
   )
@@ -79,11 +77,10 @@ export const CollapsibleTabNavigator = ({
         animatedValue
       }}
       initialRouteName={initialScreenName}
-      tabBar={props => <TopTabBar {...props} />}
+      tabBar={(props) => <TopTabBar {...props} />}
       screenOptions={{
         ...screenOptions
-      }}
-    >
+      }}>
       {children}
     </Tab.Navigator>
   )
@@ -125,15 +122,13 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
         tabBarLabel: label ?? name,
         tabBarIcon: ({ color }) => <Icon fill={color} />
       }}
-      initialParams={initialParams}
-    >
+      initialParams={initialParams}>
       {() => (
         <CollapsibleTabNavigatorContextProvider
           sceneName={name}
           refreshing={refreshing}
           onRefresh={onRefresh}
-          scrollY={scrollY}
-        >
+          scrollY={scrollY}>
           <Component />
         </CollapsibleTabNavigatorContextProvider>
       )}

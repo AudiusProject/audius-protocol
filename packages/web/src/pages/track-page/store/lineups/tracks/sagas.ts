@@ -33,7 +33,7 @@ function* getTracks({
     getTrack,
     { permalink: heroTrackPermalink },
     // Wait for the track to have a track_id (e.g. remix children could get fetched first)
-    track => track.track_id
+    (track) => track.track_id
   )
   if (offset === 0) {
     lineup.push(heroTrack)
@@ -70,7 +70,7 @@ function* getTracks({
       processed
         // Filter out any track that matches the `excludePermalink` + the remix parent track (if any)
         .filter(
-          t =>
+          (t) =>
             t.permalink !== heroTrackPermalink &&
             t.track_id !== heroTrackRemixParentTrackId
         )

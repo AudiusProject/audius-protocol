@@ -91,8 +91,7 @@ export const AddToPlaylistDrawer = () => {
       modalName='AddToPlaylist'
       isFullscreen
       isGestureSupported={isDrawerGestureSupported}
-      title={messages.title}
-    >
+      title={messages.title}>
       <View>
         <View style={styles.buttonContainer}>
           <Button

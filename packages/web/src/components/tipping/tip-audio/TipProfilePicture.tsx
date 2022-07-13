@@ -37,8 +37,7 @@ export const TipProfilePicture = ({
       <div
         className={cn(styles.accountWrapper, {
           [styles.accountWrapperLeftAlign]: !centered
-        })}
-      >
+        })}>
         <img className={cn(styles.dynamicPhoto, imgClassName)} src={image} />
         <div className={styles.userInfoWrapper}>
           <div className={cn(styles.name, displayNameClassName)}>
@@ -51,8 +50,10 @@ export const TipProfilePicture = ({
           </div>
           <div className={styles.handleContainer}>
             <span
-              className={cn(styles.handle, handleClassName)}
-            >{`@${user.handle}`}</span>
+              className={cn(
+                styles.handle,
+                handleClassName
+              )}>{`@${user.handle}`}</span>
           </div>
         </div>
       </div>

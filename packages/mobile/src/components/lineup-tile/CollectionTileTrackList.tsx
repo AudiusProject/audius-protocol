@@ -81,14 +81,12 @@ const TrackItem = ({ track, active, index, showSkeleton }: TrackItemProps) => {
             </Text>
             <Text
               style={[styles.text, styles.title, active && styles.active]}
-              numberOfLines={1}
-            >
+              numberOfLines={1}>
               {track.title}
             </Text>
             <Text
               style={[styles.text, styles.artist, active && styles.active]}
-              numberOfLines={1}
-            >
+              numberOfLines={1}>
               {`by ${track.user.name}`}
             </Text>
           </>
@@ -110,7 +108,7 @@ export const CollectionTileTrackList = ({
   if (!tracks.length && isLoading) {
     return (
       <>
-        {range(DISPLAY_TRACK_COUNT).map(i => (
+        {range(DISPLAY_TRACK_COUNT).map((i) => (
           <TrackItem key={i} active={false} index={i} showSkeleton />
         ))}
       </>

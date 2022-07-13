@@ -219,7 +219,7 @@ const Checkbox = ({
   const animatedStyles = [
     styles.iconCheck,
     {
-      opacity: opacity,
+      opacity,
       transform: [
         {
           scale: opacity.interpolate({
@@ -249,8 +249,7 @@ const Checkbox = ({
         </Animated.View>
         <View style={styles.unchecked} />
         <Text
-          style={[styles.uncheckedDescription, { color: errorBorderColor }]}
-        >
+          style={[styles.uncheckedDescription, { color: errorBorderColor }]}>
           {messages.checks[i]}
         </Text>
       </View>
@@ -274,22 +273,17 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
   const dispatchWeb = useDispatchWeb()
   const onSignOn = useSelector(getOnSignUp)
   const [didFetchArtists, setDidFetchArtists] = useState(false)
-  const [passwordBorderColor, setPasswordBorderColor] = useState(
-    defaultBorderColor
-  )
-  const [
-    passwordConfirmationBorderColor,
-    setPasswordConfirmationBorderColor
-  ] = useState(defaultBorderColor)
+  const [passwordBorderColor, setPasswordBorderColor] =
+    useState(defaultBorderColor)
+  const [passwordConfirmationBorderColor, setPasswordConfirmationBorderColor] =
+    useState(defaultBorderColor)
   const [isWorking, setisWorking] = useState(false)
   const [isDisabled, setIsDisabled] = useState(false)
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [isPasswordFocused, setIsPasswordFocused] = useState(false)
-  const [
-    isPasswordConfirmationFocused,
-    setIsPasswordConfirmationFocused
-  ] = useState(false)
+  const [isPasswordConfirmationFocused, setIsPasswordConfirmationFocused] =
+    useState(false)
 
   // the first 3 requirements are based on the password field
   // the last one is based on both fields as it requires a match
@@ -324,12 +318,12 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
 
   useEffect(() => {
     setIsDisabled(
-      isWorking || Object.values(areRequirementsMet).some(v => !v.met)
+      isWorking || Object.values(areRequirementsMet).some((v) => !v.met)
     )
   }, [isWorking, areRequirementsMet])
 
   useEffect(() => {
-    const hasError = Object.values(areRequirementsMet).some(v => v.error)
+    const hasError = Object.values(areRequirementsMet).some((v) => v.error)
     // if in an error state, show red borders on each field
     if (hasError) {
       setPasswordBorderColor(errorBorderColor)
@@ -419,13 +413,13 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
   }
 
   const onTermsOfUse = () => {
-    Linking.openURL('https://audius.co/legal/terms-of-use').catch(err =>
+    Linking.openURL('https://audius.co/legal/terms-of-use').catch((err) =>
       console.error('An error occurred trying to open terms of use', err)
     )
   }
 
   const onPrivacyPolicy = () => {
-    Linking.openURL('https://audius.co/legal/privacy-policy').catch(err =>
+    Linking.openURL('https://audius.co/legal/privacy-policy').catch((err) =>
       console.error('An error occurred trying to open privacy policy', err)
     )
   }
@@ -467,18 +461,15 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     <SafeAreaView style={{ backgroundColor: 'white' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ overflow: 'hidden' }}
-      >
+        style={{ overflow: 'hidden' }}>
         <ScrollView
           style={{ height: '100%' }}
-          keyboardShouldPersistTaps='always'
-        >
+          keyboardShouldPersistTaps='always'>
           <View>
             <SignupHeader />
             <TouchableWithoutFeedback
               onPress={Keyboard.dismiss}
-              accessible={false}
-            >
+              accessible={false}>
               <View style={styles.container}>
                 <View style={styles.containerForm}>
                   <FormTitle />
@@ -494,7 +485,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     maxLength={100}
                     textContentType='newPassword'
                     secureTextEntry={true}
-                    onChangeText={newText => {
+                    onChangeText={(newText) => {
                       setPassword(newText)
                       updateRequirementsStatus(
                         { ...areRequirementsMet },
@@ -535,7 +526,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     maxLength={100}
                     textContentType='newPassword'
                     secureTextEntry={true}
-                    onChangeText={newText => {
+                    onChangeText={(newText) => {
                       setPasswordConfirmation(newText)
                       updateRequirementsStatus(
                         { ...areRequirementsMet },
@@ -570,15 +561,13 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                     </Text>
                     <Text
                       style={{ ...styles.termsText, ...styles.clickable }}
-                      onPress={onTermsOfUse}
-                    >
+                      onPress={onTermsOfUse}>
                       &nbsp;{messages.terms}
                     </Text>
                     <Text style={styles.termsText}>&nbsp;{messages.and}</Text>
                     <Text
                       style={{ ...styles.termsText, ...styles.clickable }}
-                      onPress={onPrivacyPolicy}
-                    >
+                      onPress={onPrivacyPolicy}>
                       &nbsp;{messages.privacy}
                     </Text>
                   </Text>

@@ -40,7 +40,7 @@ export const useSetVisibility = () => {
  * Gets the latest visibility for a modal
  */
 export const useGetVisibility = (modalName: Modals) => {
-  return useSelector(state => getModalVisibility(state, modalName))
+  return useSelector((state) => getModalVisibility(state, modalName))
 }
 
 /**
@@ -55,10 +55,10 @@ export const useModalState = (
 ): [boolean, (isOpen: boolean) => void] => {
   const isOpen = useGetVisibility(modalName)
   const setVisibility = useSetVisibility()
-  const setter = useMemo(() => setVisibility(modalName), [
-    modalName,
-    setVisibility
-  ])
+  const setter = useMemo(
+    () => setVisibility(modalName),
+    [modalName, setVisibility]
+  )
 
   return [isOpen === true, setter]
 }

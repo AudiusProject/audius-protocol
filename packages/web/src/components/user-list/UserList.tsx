@@ -114,9 +114,9 @@ function mapStateToProps(state: AppState, ownProps: ConnectedUserListOwnProps) {
     ids: optimisticUserIds
   })
   const users = optimisticUserIds
-    .map(id => usersMap[id])
+    .map((id) => usersMap[id])
     .filter(Boolean)
-    .filter(u => !u.is_deactivated)
+    .filter((u) => !u.is_deactivated)
   return {
     loggedIn: !!userId,
     userId,

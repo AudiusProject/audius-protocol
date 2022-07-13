@@ -98,13 +98,8 @@ const ConnectedTrackTile = memo(
       duration
     } = getTrackWithFallback(track)
 
-    const {
-      _artist_pick,
-      user_id,
-      handle,
-      name,
-      is_verified
-    } = getUserWithFallback(user)
+    const { _artist_pick, user_id, handle, name, is_verified } =
+      getUserWithFallback(user)
 
     const isOwner = user_id === currentUserId
 
@@ -138,21 +133,19 @@ const ConnectedTrackTile = memo(
       shareTrack(id)
     }
 
-    const makeGoToRepostsPage = (trackId: ID) => (
-      e: MouseEvent<HTMLElement>
-    ) => {
-      e.stopPropagation()
-      setRepostTrackId(trackId)
-      goToRoute(REPOSTING_USERS_ROUTE)
-    }
+    const makeGoToRepostsPage =
+      (trackId: ID) => (e: MouseEvent<HTMLElement>) => {
+        e.stopPropagation()
+        setRepostTrackId(trackId)
+        goToRoute(REPOSTING_USERS_ROUTE)
+      }
 
-    const makeGoToFavoritesPage = (trackId: ID) => (
-      e: MouseEvent<HTMLElement>
-    ) => {
-      e.stopPropagation()
-      setFavoriteTrackId(trackId)
-      goToRoute(FAVORITING_USERS_ROUTE)
-    }
+    const makeGoToFavoritesPage =
+      (trackId: ID) => (e: MouseEvent<HTMLElement>) => {
+        e.stopPropagation()
+        setFavoriteTrackId(trackId)
+        goToRoute(FAVORITING_USERS_ROUTE)
+      }
 
     const onClickOverflow = (trackId: ID) => {
       const overflowActions = [

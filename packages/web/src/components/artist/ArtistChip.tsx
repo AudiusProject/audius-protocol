@@ -44,8 +44,7 @@ const ArtistIdentifier = ({
         handle={handle}
         mouseEnterDelay={0.3}
         mount={popoverMount}
-        onNavigateAway={onNavigateAway}
-      >
+        onNavigateAway={onNavigateAway}>
         <div className={styles.name}>
           <span>{name}</span>
           <UserBadges
@@ -60,8 +59,7 @@ const ArtistIdentifier = ({
         handle={handle}
         mouseEnterDelay={0.3}
         mount={popoverMount}
-        onNavigateAway={onNavigateAway}
-      >
+        onNavigateAway={onNavigateAway}>
         <div className={styles.handle}>@{handle}</div>
       </ArtistPopover>
     </div>
@@ -119,15 +117,13 @@ const ArtistChip = ({
       className={cn(styles.artistChip, {
         [className]: !!className
       })}
-      onClick={onClickArtistName}
-    >
+      onClick={onClickArtistName}>
       {showPopover ? (
         <ArtistPopover
           handle={handle}
           mouseEnterDelay={0.3}
           mount={popoverMount}
-          onNavigateAway={onNavigateAway}
-        >
+          onNavigateAway={onNavigateAway}>
           <DynamicImage
             wrapperClassName={styles.profilePictureWrapper}
             className={styles.profilePicture}

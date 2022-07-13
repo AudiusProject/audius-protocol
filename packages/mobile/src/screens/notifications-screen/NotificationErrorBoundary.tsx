@@ -10,7 +10,7 @@ export class NotificationErrorBoundary extends PureComponent {
   componentDidCatch(error: Error | null, errorInfo: any) {
     this.setState({ error: error?.message })
 
-    Sentry.withScope(scope => {
+    Sentry.withScope((scope) => {
       scope.setExtras(errorInfo)
       Sentry.captureException(error)
     })

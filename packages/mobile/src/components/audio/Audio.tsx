@@ -115,7 +115,7 @@ const Audio = ({
     postMessage(webRef.current, {
       type: MessageType.SYNC_QUEUE,
       info: track,
-      index: index,
+      index,
       isAction: true
     })
   }, [webRef, track, index])
@@ -422,7 +422,7 @@ const Audio = ({
             onNext()
           }}
           progressUpdateInterval={100}
-          onLoad={payload => {
+          onLoad={(payload) => {
             setDuration(payload.duration)
           }}
           onProgress={onProgress}

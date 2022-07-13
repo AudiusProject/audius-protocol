@@ -31,7 +31,7 @@ export const getCollections = (
 ) => {
   if (props && props.ids) {
     const collections: { [id: number]: Collection } = {}
-    props.ids.forEach(id => {
+    props.ids.forEach((id) => {
       const collection = getCollection(state, { id })
       if (collection) {
         collections[id] = collection
@@ -40,7 +40,7 @@ export const getCollections = (
     return collections
   } else if (props && props.uids) {
     const collections: { [uid: string]: Collection } = {}
-    props.uids.forEach(uid => {
+    props.uids.forEach((uid) => {
       const collection = getCollection(state, { uid })
       if (collection) {
         collections[collection.playlist_id] = collection
@@ -60,7 +60,7 @@ export const getCollectionsByUid = (state: CommonState) => {
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   const statuses: { [id: number]: Status } = {}
-  props.ids.forEach(id => {
+  props.ids.forEach((id) => {
     const status = getStatus(state, { id })
     if (status) {
       statuses[id] = status
@@ -86,19 +86,19 @@ export const getTracksFromCollection = (
 
   const collectionSource = Uid.fromString(props.uid).source
 
-  const ids = collection.playlist_contents.track_ids.map(t => t.track)
+  const ids = collection.playlist_contents.track_ids.map((t) => t.track)
   const tracks = getTracks(state, { ids })
 
   const userIds = Object.keys(tracks)
-    .map(id => {
-      const track = tracks[(id as unknown) as number]
+    .map((id) => {
+      const track = tracks[id as unknown as number]
       if (track?.owner_id) {
         return track.owner_id
       }
       console.error(`Found empty track ${id}, expected it to have an owner_id`)
       return null
     })
-    .filter(userId => userId !== null) as number[]
+    .filter((userId) => userId !== null) as number[]
   const users = getUsers(state, { ids: userIds })
 
   if (!users || Object.keys(users).length === 0) return emptyList

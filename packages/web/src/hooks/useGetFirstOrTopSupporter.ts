@@ -33,16 +33,12 @@ export const useGetFirstOrTopSupporter = ({
   supportingMap,
   supportersMap
 }: UseGetSupportProps) => {
-  const [
-    amountToTipToBecomeTopSupporter,
-    setAmountToTipToBecomeTopSupporter
-  ] = useState<Nullable<BNWei>>(null)
-  const [supportingAmount, setSupportingAmount] = useState<Nullable<StringWei>>(
-    null
-  )
-  const [shouldFetchUserSupporter, setShouldFetchUserSupporter] = useState(
-    false
-  )
+  const [amountToTipToBecomeTopSupporter, setAmountToTipToBecomeTopSupporter] =
+    useState<Nullable<BNWei>>(null)
+  const [supportingAmount, setSupportingAmount] =
+    useState<Nullable<StringWei>>(null)
+  const [shouldFetchUserSupporter, setShouldFetchUserSupporter] =
+    useState(false)
   const [topSupporter, setTopSupporter] = useState<Nullable<Supporter>>(null)
   const [isFirstSupporter, setIsFirstSupporter] = useState(false)
   const tipAmountWei = parseToBNWei(tipAmount)
@@ -75,14 +71,14 @@ export const useGetFirstOrTopSupporter = ({
     if (!receiver) return
 
     const supportersForReceiver = supportersMap[receiver.user_id] ?? {}
-    const rankedSupportersList = ((Object.keys(
-      supportersForReceiver
-    ) as unknown) as ID[])
+    const rankedSupportersList = (
+      Object.keys(supportersForReceiver) as unknown as ID[]
+    )
       .sort(
         (k1, k2) =>
           supportersForReceiver[k1].rank - supportersForReceiver[k2].rank
       )
-      .map(k => supportersForReceiver[k])
+      .map((k) => supportersForReceiver[k])
     const theTopSupporter =
       rankedSupportersList.length > 0 ? rankedSupportersList[0] : null
 
@@ -110,9 +106,8 @@ export const useGetFirstOrTopSupporter = ({
     ) as BNWei
     if (supportingAmount) {
       const supportingAmountWei = stringWeiToBN(supportingAmount)
-      newAmountToTipToBecomeTopSupporter = newAmountToTipToBecomeTopSupporter.sub(
-        supportingAmountWei
-      ) as BNWei
+      newAmountToTipToBecomeTopSupporter =
+        newAmountToTipToBecomeTopSupporter.sub(supportingAmountWei) as BNWei
     }
     if (
       accountBalance.gte(newAmountToTipToBecomeTopSupporter) &&

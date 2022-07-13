@@ -146,7 +146,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   const titleId = `${id}-title` || ariaLabelledbyProp
   const subtitleId = `${id}-subtitle` || ariaDescribedbyProp
   const modalContextValue = useMemo(() => {
-    return { titleId: titleId, subtitleId: subtitleId }
+    return { titleId, subtitleId }
   }, [titleId, subtitleId])
 
   const onTouchMove = useCallback(
@@ -283,7 +283,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   const bodyOffset = getOffset(anchor, verticalAnchorOffset)
 
-  const handleModalContentClicked: MouseEventHandler = e => {
+  const handleModalContentClicked: MouseEventHandler = (e) => {
     e.stopPropagation()
   }
   return (
@@ -303,8 +303,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                       minHeight: height
                     }}
                     key={key}
-                    ref={ref}
-                  >
+                    ref={ref}>
                     <animated.div
                       ref={dismissOnClickOutside ? outsideClickRef : null}
                       className={bodyClassNames}
@@ -312,8 +311,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                       role='dialog'
                       aria-labelledby={titleId}
                       aria-describedby={subtitleId}
-                      onClick={handleModalContentClicked}
-                    >
+                      onClick={handleModalContentClicked}>
                       <>
                         {/** Begin @deprecated section (moved to ModalHeader and ModalTitle sub-components)  */}
                         {showTitleHeader && (
@@ -321,21 +319,21 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
                             {showDismissButton && (
                               <div
                                 className={styles.dismissButton}
-                                onClick={onClose}
-                              >
+                                onClick={onClose}>
                                 <IconRemove />
                               </div>
                             )}
                             <div
                               id={titleId}
-                              className={cn(styles.header, titleClassName)}
-                            >
+                              className={cn(styles.header, titleClassName)}>
                               {title}
                             </div>
                             <div
                               id={subtitleId}
-                              className={cn(styles.subtitle, subtitleClassName)}
-                            >
+                              className={cn(
+                                styles.subtitle,
+                                subtitleClassName
+                              )}>
                               {subtitle}
                             </div>
                           </div>

@@ -59,7 +59,7 @@ const ActionDrawer = ({
                   key={text}
                   role='button'
                   tabIndex={0}
-                  onClick={event => {
+                  onClick={(event) => {
                     onClick?.(event)
                     didSelectRow?.(index)
                   }}
@@ -69,8 +69,7 @@ const ActionDrawer = ({
                     className,
                     { [styles.darkAction]: isDark },
                     { [styles.destructiveAction]: isDestructive }
-                  )}
-                >
+                  )}>
                   {icon ? (
                     <div className={styles.actionIcon}>{icon}</div>
                   ) : null}

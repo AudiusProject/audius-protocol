@@ -122,8 +122,7 @@ export const Panel = ({
             {
               color: shouldShowCompleted ? accentGreen : neutralLight4
             }
-          ]}
-        >
+          ]}>
           {progressLabelFilled}
         </Text>
       ) : null}

@@ -32,10 +32,8 @@ const AudioBreakdownBody = () => {
   const accountBalance = (useSelector(getAccountBalance) ??
     new BN('0')) as BNWei
 
-  const {
-    connectedEthWallets: ethWallets,
-    connectedSolWallets: solWallets
-  } = useSelector(getAssociatedWallets)
+  const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
+    useSelector(getAssociatedWallets)
 
   const linkedWalletsBalance = ((ethWallets ?? [])
     .concat(solWallets ?? [])
@@ -85,8 +83,7 @@ const AudioBreakdownBody = () => {
             text={messages.linkedWalletsTooltip}
             className={styles.tooltip}
             mouseEnterDelay={0.1}
-            mount='body'
-          >
+            mount='body'>
             <IconInfo className={wm(styles.iconInfo)} />
           </Tooltip>
         </div>
@@ -105,8 +102,7 @@ const AudioBreakdownModal = () => {
       isFullscreen={true}
       showTitleHeader
       showDismissButton
-      useGradientTitle={false}
-    >
+      useGradientTitle={false}>
       <AudioBreakdownBody />
     </ModalDrawer>
   )

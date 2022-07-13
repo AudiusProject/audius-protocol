@@ -89,8 +89,8 @@ const combineMetadata = (trackMetadata, collectionMetadata) => {
   return trackMetadata
 }
 
-const getNumWorkers = trackFiles => {
-  const largestFileSize = Math.max(...trackFiles.map(t => t.size))
+const getNumWorkers = (trackFiles) => {
+  const largestFileSize = Math.max(...trackFiles.map((t) => t.size))
 
   // Divide it out so that we never hit > MAX_CONCURRENT_TRACK_SIZE_BYTES in flight.
   // e.g. so if we have 40 MB max upload and max track size of 15MB,
@@ -148,7 +148,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
   // so we can unblock this worker to accept more requests.
   const uploadDoneChan = yield call(channel)
 
-  const makeOnProgress = index => {
+  const makeOnProgress = (index) => {
     // Tracks can retry now, so that means
     // the loaded value may actually retreat. We don't want to show
     // this to the user, so only feed increasing vals of loaded into
@@ -206,7 +206,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           error: true,
           timeout: false,
           message: error,
-          phase: phase
+          phase
         })
 
         // Just to prevent success call from running
@@ -298,12 +298,12 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     yield put(uploadDoneChan, {})
   }
 
-  const makeConfirmerFailureCollection = originalId => {
+  const makeConfirmerFailureCollection = (originalId) => {
     return function* ({ timeout, message }) {
       console.error(`Upload failed for id: ${originalId}`)
       // If we failed, signal to the parent saga
       yield put(respChan, {
-        originalId: originalId,
+        originalId,
         error: true,
         timeout,
         message
@@ -362,7 +362,7 @@ export function* handleUploads({
   isStem = false,
   isAlbum = false
 }) {
-  const numWorkers = getNumWorkers(tracks.map(t => t.track.file))
+  const numWorkers = getNumWorkers(tracks.map((t) => t.track.file))
 
   // Map of shape {[trackId]: { track: track, metadata: object, artwork?: file, index: number }}
   const idToTrackMap = tracks.reduce((prev, cur, idx) => {
@@ -393,7 +393,7 @@ export function* handleUploads({
   // Spawn up our workers
   console.debug(`Spinning up ${numWorkers} workers`)
   const workerTasks = yield all(
-    range(numWorkers).map(_ =>
+    range(numWorkers).map((_) =>
       fork(uploadWorker, requestChan, respChan, progressChan)
     )
   )
@@ -507,7 +507,7 @@ export function* handleUploads({
   // Regardless of whether we stopped due to finishing
   // all requests or from an error,  now we spin down.
   console.debug('Spinning down workers')
-  yield all(workerTasks.map(t => cancel(t)))
+  yield all(workerTasks.map((t) => cancel(t)))
 
   let returnVal = { trackIds }
 
@@ -521,7 +521,7 @@ export function* handleUploads({
     // Don't report non-uploaded tracks due to playlist upload abort
     numSuccess: numSuccessRequests,
     numFailure: failedRequests.length,
-    errors: failedRequests.map(r => r.message),
+    errors: failedRequests.map((r) => r.message),
     uploadType
   })
 
@@ -532,7 +532,7 @@ export function* handleUploads({
       // First, re-sort the CNODE metadata
       // to match what was originally sent by the user.
       const sortedMetadata = []
-      creatorNodeMetadata.forEach(m => {
+      creatorNodeMetadata.forEach((m) => {
         const originalIndex = idToTrackMap[m.originalId].index
         sortedMetadata[originalIndex] = m
       })
@@ -561,10 +561,8 @@ export function* handleUploads({
           i,
           i + MAX_CONCURRENT_REGISTRATIONS
         )
-        const {
-          trackIds: roundTrackIds,
-          error: roundHadError
-        } = yield AudiusBackend.registerUploadedTracks(concurrentMetadata)
+        const { trackIds: roundTrackIds, error: roundHadError } =
+          yield AudiusBackend.registerUploadedTracks(concurrentMetadata)
 
         trackIds = trackIds.concat(roundTrackIds)
         console.debug(
@@ -591,7 +589,7 @@ export function* handleUploads({
           yield put(uploadActions.associateTracksError(error))
           console.debug(`Deleting orphaned tracks: ${JSON.stringify(trackIds)}`)
           try {
-            yield all(trackIds.map(id => AudiusBackend.deleteTrack(id)))
+            yield all(trackIds.map((id) => AudiusBackend.deleteTrack(id)))
             console.debug('Successfully deleted orphaned tracks')
           } catch {
             console.debug('Something went wrong deleting orphaned tracks')
@@ -608,7 +606,7 @@ export function* handleUploads({
         // Update all the progress
         if (!isStem) {
           yield all(
-            range(tracks.length).map(i =>
+            range(tracks.length).map((i) =>
               put(
                 progressChan,
                 uploadActions.updateProgress(i, {
@@ -634,7 +632,7 @@ export function* handleUploads({
   } else if (!isCollection && failedRequests.length > 0) {
     // If some requests failed for multitrack, log em
     yield all(
-      failedRequests.map(r => {
+      failedRequests.map((r) => {
         if (r.timeout) {
           return put(uploadActions.multiTrackTimeoutError())
         } else {
@@ -667,7 +665,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
   collectionMetadata.cover_art_sizes = coverArtResp.dirCID
 
   // Then upload tracks
-  const tracksWithMetadata = tracks.map(track => {
+  const tracksWithMetadata = tracks.map((track) => {
     const metadata = combineMetadata(track.metadata, collectionMetadata)
     return {
       track,
@@ -800,7 +798,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
           )}`
         )
         try {
-          yield all(trackIds.map(id => AudiusBackend.deleteTrack(id)))
+          yield all(trackIds.map((id) => AudiusBackend.deleteTrack(id)))
           console.debug('Deleted tracks.')
         } catch (err) {
           console.debug(`Could not delete all tracks: ${err}`)
@@ -997,7 +995,7 @@ export function* uploadStems({ parentTrackIds, stems }) {
 }
 
 function* uploadMultipleTracks(tracks) {
-  const tracksWithMetadata = tracks.map(track => ({
+  const tracksWithMetadata = tracks.map((track) => ({
     track,
     metadata: track.metadata
   }))
@@ -1039,7 +1037,7 @@ function* uploadMultipleTracks(tracks) {
 
   const remixTracks = tracks
     .map((t, i) => ({ track_id: trackIds[i], ...t.metadata }))
-    .filter(t => !!t.remix_of)
+    .filter((t) => !!t.remix_of)
   if (remixTracks.length > 0) {
     for (const remixTrack of remixTracks) {
       if (
@@ -1085,7 +1083,7 @@ function* uploadTracksAsync(action) {
         waitForValue,
         getSelectedServices,
         {},
-        val => val.length > 0
+        (val) => val.length > 0
       ),
       failure: take(fetchServicesFailed.type)
     })

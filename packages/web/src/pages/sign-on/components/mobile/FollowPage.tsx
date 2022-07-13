@@ -62,7 +62,7 @@ const FollowPage = ({
   }, [])
 
   const onToggleSelect = useCallback(
-    userId => () => {
+    (userId) => () => {
       if (followedArtists.includes(userId)) {
         onRemoveFollows([userId])
       } else {
@@ -87,7 +87,7 @@ const FollowPage = ({
   }, [selectedCategory, setIsTransitioning])
 
   const seletablePillProps = {
-    selectedIndex: artistCategories.findIndex(c => c === selectedCategory),
+    selectedIndex: artistCategories.findIndex((c) => c === selectedCategory),
     onClickIndex: onClickPillIndex,
     content: artistCategories,
     disableDelayHandler: true
@@ -113,8 +113,7 @@ const FollowPage = ({
           className={cn(styles.cards, {
             [styles.hide]: isTransitioning,
             [styles.show]: !isTransitioning
-          })}
-        >
+          })}>
           {users.map((user, idx) => (
             <UserCard
               key={`${selectedCategory}-${idx}`}

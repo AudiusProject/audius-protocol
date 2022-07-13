@@ -13,7 +13,7 @@ export const makeGetRelatedArtists = () =>
     (relatedArtistIds, users) => {
       if (!relatedArtistIds) return []
       const relatedArtistsPopulated = relatedArtistIds
-        .map(id => {
+        .map((id) => {
           if (id in users) return users[id]
           return null
         })

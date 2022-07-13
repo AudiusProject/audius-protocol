@@ -37,7 +37,7 @@ let hasMessageFired = false
 
 const HCaptchaModal = () => {
   const dispatchWeb = useDispatchWeb()
-  const isOpen = useSelectorWeb(state =>
+  const isOpen = useSelectorWeb((state) =>
     getModalVisibility(state, HCAPTCHA_MODAL_NAME)
   )
   const hCaptchaStatus = useSelectorWeb(getHCaptchaStatus)

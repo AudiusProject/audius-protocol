@@ -45,11 +45,11 @@ export const RemixCreateNotification = (
   const dispatch = useDispatch()
 
   const childTrack = entities.find(
-    track => track.track_id === childTrackId
+    (track) => track.track_id === childTrackId
   ) as TrackEntity
 
   const parentTrack = entities.find(
-    track => track.track_id === parentTrackId
+    (track) => track.track_id === parentTrackId
   ) as TrackEntity
 
   const handleClick = useCallback(() => {

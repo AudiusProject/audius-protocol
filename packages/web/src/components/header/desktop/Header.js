@@ -10,7 +10,7 @@ import styles from './Header.module.css'
 const BACKGROUND_ELEMENT_HEIGHT_PX = 161
 export const BACKGROUND_ELEMENT_ID = 'headerPadding'
 
-const Header = props => {
+const Header = (props) => {
   const {
     primary,
     secondary = null,
@@ -80,17 +80,14 @@ const Header = props => {
           variantStyle,
           { [containerStyles]: !!containerStyles },
           { [styles.containerWithBar]: !!bottomBar }
-        )}
-      >
+        )}>
         <div
           className={cn(styles.maxWidthWrapper, {
             [styles.maxWithWrapperWithBar]: !!bottomBar
-          })}
-        >
+          })}>
           <div
             className={styles.middleRow}
-            style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}
-          >
+            style={overrideWidth !== null ? { maxWidth: overrideWidth } : null}>
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
               {showBackButton ? (
                 <BackButton

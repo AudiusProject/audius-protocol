@@ -40,10 +40,10 @@ const slice = createSlice({
     ) => {
       state.confirmCredentials.status = Status.LOADING
     },
-    confirmCredentialsSucceeded: state => {
+    confirmCredentialsSucceeded: (state) => {
       state.confirmCredentials.status = Status.SUCCESS
     },
-    confirmCredentialsFailed: state => {
+    confirmCredentialsFailed: (state) => {
       state.confirmCredentials.status = Status.ERROR
     },
     changePassword: (
@@ -56,10 +56,10 @@ const slice = createSlice({
     ) => {
       state.changePassword.status = Status.LOADING
     },
-    changePasswordSucceeded: state => {
+    changePasswordSucceeded: (state) => {
       state.changePassword.status = Status.SUCCESS
     },
-    changePasswordFailed: state => {
+    changePasswordFailed: (state) => {
       state.changePassword.status = Status.ERROR
     },
     changePage: (state, action: PayloadAction<Page>) => {

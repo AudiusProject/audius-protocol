@@ -47,7 +47,7 @@ export class Particle {
     this.anglespin = rotate > 0 ? randomRange(-1 * rotate, rotate) : 0
   }
 
-  update = ctx => {
+  update = (ctx) => {
     // Update particle position/physics
     this.x += this.vx
     this.y += this.vy
@@ -122,7 +122,7 @@ export default class Confetti {
     // For matrix, generate columns by iterating over width with a
     // COLUMN_SPACING step and then perturbing the values somewhat
     this.particleColumns = _.range(0, width, COLUMN_SPACING).map(
-      c => c + Math.random() * COLUMN_SPACING - COLUMN_SPACING * 0.4
+      (c) => c + Math.random() * COLUMN_SPACING - COLUMN_SPACING * 0.4
     )
   }
 
@@ -165,7 +165,7 @@ export default class Confetti {
     )
   }
 
-  removeParticleAt = idx => {
+  removeParticleAt = (idx) => {
     this.particles.splice(idx, 1)
     if (!this.particles.length && this.onCompletion) {
       this.onCompletion()

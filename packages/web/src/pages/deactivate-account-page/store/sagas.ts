@@ -71,7 +71,7 @@ function* handleDeactivateAccount() {
 function* waitAndSignOut() {
   // Wait for all confirmations to end so that reloading doesn't trigger beforeUnload dialog
   // Note: Waiting for getIsConfirming doesn't appear to work here
-  yield call(waitForValue, getConfirmCalls, {}, confirmCalls => {
+  yield call(waitForValue, getConfirmCalls, {}, (confirmCalls) => {
     return Object.keys(confirmCalls).length === 0
   })
   // Give a brief delay to allow the beforeUnload handler to clear

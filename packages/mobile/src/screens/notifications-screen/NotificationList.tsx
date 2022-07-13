@@ -65,7 +65,7 @@ const useIsViewable = () => {
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      setViewableMap(viewableMap => {
+      setViewableMap((viewableMap) => {
         // First check length
         let didChange =
           viewableItems.length !== Object.values(viewableMap).length

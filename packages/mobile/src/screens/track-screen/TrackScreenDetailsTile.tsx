@@ -332,7 +332,7 @@ export const TrackScreenDetailsTile = ({
 
     return filteredTags.length > 0 ? (
       <View style={styles.tags}>
-        {filteredTags.map(tag => (
+        {filteredTags.map((tag) => (
           <Pressable key={tag} onPress={() => handlePressTag(tag)}>
             <Text style={styles.tag} variant='label'>
               {tag}

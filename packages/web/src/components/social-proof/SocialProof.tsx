@@ -224,8 +224,7 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
       onClose={() => setIsOpen(false)}
       title={messages.modalTitle}
       showTitleHeader
-      useGradientTitle={false}
-    >
+      useGradientTitle={false}>
       {body}
     </ModalDrawer>
   )

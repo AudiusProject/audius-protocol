@@ -15,13 +15,13 @@ class DropdownInput extends Component {
     focused: false
   }
 
-  onVisibleChange = visible => {
+  onVisibleChange = (visible) => {
     this.setState({
       focused: visible
     })
   }
 
-  onSelect = value => {
+  onSelect = (value) => {
     this.setState({
       focused: false
     })
@@ -74,8 +74,7 @@ class DropdownInput extends Component {
             key={item.text}
             value={item.text}
             query={item.text}
-            role='option'
-          >
+            role='option'>
             {item.el}
           </Option>
         )
@@ -89,7 +88,7 @@ class DropdownInput extends Component {
     })
 
     let goodDefault = false
-    menu.items.forEach(item => {
+    menu.items.forEach((item) => {
       if (defaultValue === item || defaultValue === item.text) {
         goodDefault = true
       }
@@ -103,7 +102,7 @@ class DropdownInput extends Component {
     let popupContainer = null
     switch (mount) {
       case 'parent':
-        popupContainer = triggerNode => triggerNode.parentNode
+        popupContainer = (triggerNode) => triggerNode.parentNode
         break
       case 'page': {
         const page = document.getElementById('page')
@@ -141,8 +140,7 @@ class DropdownInput extends Component {
             }
             notFoundContent={''}
             getPopupContainer={popupContainer}
-            onDropdownVisibleChange={this.onVisibleChange}
-          >
+            onDropdownVisibleChange={this.onVisibleChange}>
             {options}
           </Select>
           <IconCaretDown className={styles.arrow} />

@@ -99,8 +99,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
                 bottom: spacing(2),
                 left: spacing(2),
                 right: spacing(2)
-              }}
-            >
+              }}>
               <IconClose
                 style={{ height: styles.icon.height, width: styles.icon.width }}
                 fill={styles.icon.fill}

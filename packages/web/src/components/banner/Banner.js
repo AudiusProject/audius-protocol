@@ -5,7 +5,7 @@ import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 
 import styles from './Banner.module.css'
 
-const Banner = props => {
+const Banner = (props) => {
   return (
     <div
       className={cn(
@@ -16,8 +16,7 @@ const Banner = props => {
           [styles.alert]: props.alert
         },
         props.className
-      )}
-    >
+      )}>
       <IconRemove className={styles.iconRemove} onClick={props.onClose} />
       {props.children}
     </div>

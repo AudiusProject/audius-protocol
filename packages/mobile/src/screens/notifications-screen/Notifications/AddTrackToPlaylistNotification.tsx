@@ -34,7 +34,7 @@ export const AddTrackToPlaylistNotification = (
 ) => {
   const { notification } = props
   const entities = useSelectorWeb(
-    state => getNotificationEntities(state, notification),
+    (state) => getNotificationEntities(state, notification),
     isEqual
   )
   const { track, playlist } = entities

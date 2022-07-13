@@ -24,9 +24,9 @@ export const useSelectProfileRoot = (deps: Array<keyof User>) => {
   const isAccountUser = handle === 'accountUser'
 
   const profile = useSelectorWeb(
-    state =>
+    (state) =>
       isAccountUser ? getAccountUser(state) : getProfileUser(state, params),
-    (a, b) => deps.every(arg => isEqual(a?.[arg], b?.[arg]))
+    (a, b) => deps.every((arg) => isEqual(a?.[arg], b?.[arg]))
   )
   return profile
 }
@@ -43,7 +43,7 @@ export const getProfile = makeGetProfile()
 
 export const getIsSubscribed = createSelector(
   [getProfile],
-  profile => profile.isSubscribed
+  (profile) => profile.isSubscribed
 )
 
 export const getIsOwner = createSelector(

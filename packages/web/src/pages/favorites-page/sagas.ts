@@ -26,7 +26,7 @@ export const USER_LIST_TAG = 'FAVORITES'
 const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
-    collection.followee_saves.map(r => r.user_id),
+    collection.followee_saves.map((r) => r.user_id),
   fetchAllUsersForEntity: async ({
     limit,
     offset,
@@ -44,13 +44,13 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (collection: Collection, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < collection.save_count,
-  includeCurrentUser: p => p.has_current_user_saved
+  includeCurrentUser: (p) => p.has_current_user_saved
 })
 
 const getTrackFavorites = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
-    track.followee_saves.map(r => r.user_id),
+    track.followee_saves.map((r) => r.user_id),
   fetchAllUsersForEntity: async ({
     limit,
     offset,
@@ -68,7 +68,7 @@ const getTrackFavorites = createUserListProvider<Track>({
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (track: Track, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < track.save_count,
-  includeCurrentUser: t => t.has_current_user_saved
+  includeCurrentUser: (t) => t.has_current_user_saved
 })
 
 function* errorDispatcher(error: Error) {
@@ -87,9 +87,11 @@ function* getFavorites(currentPage: number, pageSize: number) {
   const id: number | null = yield* select(getId)
   if (!id) return { userIds: [], hasMore: false }
   const favoriteType = yield* select(getFavoriteType)
-  return yield* (favoriteType === FavoriteType.TRACK
-    ? getTrackFavorites
-    : getPlaylistFavorites)({ id, currentPage, pageSize })
+  return yield* (
+    favoriteType === FavoriteType.TRACK
+      ? getTrackFavorites
+      : getPlaylistFavorites
+  )({ id, currentPage, pageSize })
 }
 
 const userListSagas = UserListSagaFactory.createSagas({

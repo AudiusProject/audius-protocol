@@ -44,7 +44,7 @@ export function* retrieveUserReposts({
     offset
   })
   const [tracks, collections] = getTracksAndCollections(reposts)
-  const trackIds = tracks.map(t => t.track_id)
+  const trackIds = tracks.map((t) => t.track_id)
   const [processedTracks, processedCollections] = yield all([
     processAndCacheTracks(tracks),
     processAndCacheCollections(

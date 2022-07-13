@@ -33,14 +33,14 @@ function fireHotkey(e, mapping, preventDefault) {
       let satisfiedOr = true
       if (or) {
         satisfiedOr = false
-        or.forEach(modifier => {
+        or.forEach((modifier) => {
           if (isModifierPressed(modifier, e)) satisfiedOr = true
         })
       }
 
       let satisfiedAnd = true
       if (and) {
-        and.forEach(modifier => {
+        and.forEach((modifier) => {
           if (!isModifierPressed(modifier, e)) satisfiedAnd = false
         })
       }
@@ -87,10 +87,10 @@ export const ModifierKeys = Object.freeze({
  * @returns {function} the event listener function
  */
 export function setupHotkeys(mapping, throttleMs = 100, preventDefault = true) {
-  const hotkeyHook = e => {
+  const hotkeyHook = (e) => {
     fireHotkey(e, mapping, preventDefault)
   }
-  const throttledHook = e =>
+  const throttledHook = (e) =>
     throttle(hotkeyHook, throttleMs, { leading: true })(e)
   document.addEventListener('keydown', throttledHook, false)
   return throttledHook

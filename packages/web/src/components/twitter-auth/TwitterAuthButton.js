@@ -6,7 +6,7 @@ import TwitterButton from '../twitter-button/TwitterButton'
 
 import TwitterAuth from './TwitterAuth'
 
-const TwitterAuthButton = props => {
+const TwitterAuthButton = (props) => {
   return (
     <TwitterAuth
       forceLogin
@@ -15,8 +15,7 @@ const TwitterAuthButton = props => {
       onFailure={props.onFailure}
       onSuccess={props.onSuccess}
       requestTokenUrl={`${IDENTITY_SERVICE}/twitter`}
-      loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}
-    >
+      loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}>
       <TwitterButton {...props} />
     </TwitterAuth>
   )

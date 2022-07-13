@@ -4,11 +4,10 @@ type PreloadFactory<T extends ComponentType<any>> = () => Promise<{
   default: T
 }>
 
-type PreloadableLazyComponent<
-  T extends ComponentType<any>
-> = LazyExoticComponent<T> & {
-  preload: () => Promise<{ default: T }>
-}
+type PreloadableLazyComponent<T extends ComponentType<any>> =
+  LazyExoticComponent<T> & {
+    preload: () => Promise<{ default: T }>
+  }
 
 /**
  * Wraps a component with a lazy import and attaches a method `preload` which will
