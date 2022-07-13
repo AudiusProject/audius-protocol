@@ -106,7 +106,7 @@ const getNumWorkers = (trackFiles) => {
 
 // Worker to handle individual track upload requests.
 // Crucially, the worker will block on receiving more requests
-// until it's current request has finished processing.
+// until its current request has finished processing.
 //
 // Workers can either be send a request that looks like:
 // {
