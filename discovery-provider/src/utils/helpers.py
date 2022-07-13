@@ -14,6 +14,7 @@ import requests
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
+from sqlalchemy import inspect
 from src import exceptions
 
 from . import multihash
@@ -152,7 +153,12 @@ def model_to_dictionary(model, exclude_keys=None):
     - Excludes the keys in `exclude_keys` and the keys in the given model's
     `exclude_keys` property or attribute.
     - Excludes any property or attribute with a leading underscore.
+    - Excludes unloaded properties expressed in relationships.
     """
+    state = inspect(model)
+    # Collect the model members that are unloaded so we do not
+    # unintentionally cause them to load
+    unloaded = state.unloaded
     model_dict = {}
 
     columns = model.__table__.columns.keys()
@@ -182,6 +188,8 @@ def model_to_dictionary(model, exclude_keys=None):
     for key in relationships:
         if key not in exclude_keys and not key.startswith("_"):
             attr = getattr(model, key)
+            if key in unloaded:
+                continue
             if isinstance(attr, list):
                 model_dict[key] = query_result_to_list(attr)
             else:

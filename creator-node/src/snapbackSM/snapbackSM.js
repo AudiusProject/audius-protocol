@@ -4,6 +4,7 @@ const _ = require('lodash')
 const retry = require('async-retry')
 
 const Utils = require('../utils')
+const asyncRetry = require('../utils/asyncRetry')
 const models = require('../models')
 const { logger } = require('../logging')
 const redis = require('../redis.js')
@@ -1998,7 +1999,7 @@ class SnapbackSM {
     let latestUserId = 0
     try {
       // Request all users that have this node as a replica (either primary or secondary)
-      const resp = await Utils.asyncRetry({
+      const resp = await asyncRetry({
         logLabel: 'fetch all users with this node in replica',
         asyncFn: async () => {
           return axios({

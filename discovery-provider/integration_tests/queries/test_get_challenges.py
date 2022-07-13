@@ -17,7 +17,7 @@ from src.challenges.referral_challenge import (
 from src.models.indexing.block import Block
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
-from src.models.rewards.listen_streak_challenge import ListenStreakChallenge
+from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
 from src.queries.get_challenges import get_challenges
@@ -62,6 +62,7 @@ def setup_db(session):
             blocknumber=1,
             user_id=1,
             is_current=True,
+            is_creator=True,
             wallet="0x38C68fF3926bf4E68289672F75ee1543117dD9B3",
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -584,12 +585,12 @@ def setup_listen_streak_challenge(session):
     ]
 
     listen_streak_challenges = [
-        ListenStreakChallenge(
+        ChallengeListenStreak(
             user_id=1,
             last_listen_date=datetime.now() - timedelta(hours=12),
             listen_streak=5,
         ),
-        ListenStreakChallenge(
+        ChallengeListenStreak(
             user_id=2,
             last_listen_date=datetime.now() - timedelta(hours=50),
             listen_streak=5,

@@ -4,7 +4,7 @@ from typing import Dict, Optional, TypedDict
 
 from redis import Redis
 from sqlalchemy import desc
-from src.models.users.user_bank import UserBankTransaction
+from src.models.users.user_bank import UserBankTx
 from src.tasks.index_user_bank import cache_latest_sol_user_bank_db_tx
 from src.utils import helpers
 from src.utils.cache_solana_program import (
@@ -25,11 +25,7 @@ logger = logging.getLogger(__name__)
 def get_latest_sol_user_bank() -> Optional[Dict]:
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        user_bank_tx = (
-            session.query(UserBankTransaction)
-            .order_by(desc(UserBankTransaction.slot))
-            .first()
-        )
+        user_bank_tx = session.query(UserBankTx).order_by(desc(UserBankTx.slot)).first()
         if user_bank_tx:
             return helpers.model_to_dictionary(user_bank_tx)
     return None
