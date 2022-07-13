@@ -72,6 +72,8 @@ export const AddTrackToPlaylistNotification = (
     dispatch(push(getEntityLink(playlist)))
   }, [playlist, dispatch])
 
+  if (!playlistOwner) return null
+
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconAddTrackToPlaylist />}>
