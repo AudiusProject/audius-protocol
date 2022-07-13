@@ -78,8 +78,8 @@ module.exports = function (app) {
         )
       }
 
-      // This call is not await-ed to avoid delaying or erroring
-      issueAndWaitForSecondarySyncRequests(req)
+      // Await 2/3 write quorum (replicating data to at least 1 secondary)
+      await issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({
         metadataMultihash: multihash,
@@ -171,7 +171,8 @@ module.exports = function (app) {
 
         await transaction.commit()
 
-        await issueAndWaitForSecondarySyncRequests(req)
+        // Discovery only indexes metadata and not files, so we eagerly replicate data but don't await it
+        issueAndWaitForSecondarySyncRequests(req, true)
 
         return successResponse()
       } catch (e) {

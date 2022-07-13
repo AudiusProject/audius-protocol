@@ -63,20 +63,23 @@ class AudiusLibs {
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
    * @param {function} monitoringCallbacks.request
    * @param {function} monitoringCallbacks.healthCheck
+   * @param {boolean} writeQuorumEnabled whether or not to enforce waiting for replication to 2/3 nodes when writing data
    */
   static configCreatorNode (
     fallbackUrl,
     lazyConnect = false,
     passList = null,
     blockList = null,
-    monitoringCallbacks = {}
+    monitoringCallbacks = {},
+    writeQuorumEnabled = false
   ) {
     return {
       fallbackUrl,
       lazyConnect,
       passList,
       blockList,
-      monitoringCallbacks
+      monitoringCallbacks,
+      writeQuorumEnabled
     }
   }
 
@@ -515,7 +518,8 @@ class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks
+        this.creatorNodeConfig.monitoringCallbacks,
+        this.creatorNodeConfig.writeQuorumEnabled
       )
       await this.creatorNode.init()
     }
