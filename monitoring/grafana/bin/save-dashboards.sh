@@ -47,7 +47,7 @@ RESET_TEMPLATE_SELECTION='del(.templating.list?[].current)'
 # when a panel is a library panel, only keep the libraryPanel and gridPos keys
 # since everything else is ignored at upload time
 # also trim the created/updated fields since they generate plenty of commit noise
-SANITIZE_LIBRARY_PANELS='.panels |= map(if .libraryPanel != null then {libraryPanel, gridPos} else . end)'
+SANITIZE_LIBRARY_PANELS='.panels |= map(if .libraryPanel != null then {libraryPanel, id, gridPos} else . end)'
 CLEAR_LIBRARY_PANEL_CREATED='del(.panels[].libraryPanel.meta.created)'
 CLEAR_LIBRARY_PANEL_UPDATED='del(.panels[].libraryPanel.meta.updated)'
 
