@@ -1,7 +1,5 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from './constants'
-
-const supportsLocalStorage = () =>
-  typeof window !== 'undefined' && window && window.localStorage
+import type { LocalStorage } from './utils/localStorage'
 
 export type CurrentUser = {
   user_id: string
@@ -12,6 +10,10 @@ export type CurrentUser = {
   is_creator: boolean
 }
 
+type UserStateManagerConfig = {
+  localStorage?: LocalStorage
+}
+
 /**
  * Singleton class to store the current user if initialized.
  * Some instances of AudiusLibs and services require a current user to
@@ -19,20 +21,25 @@ export type CurrentUser = {
  */
 export class UserStateManager {
   currentUser: CurrentUser | null
+  localStorage?: LocalStorage
 
-  constructor() {
+  constructor({ localStorage }: UserStateManagerConfig) {
     // Should reflect the same fields as discovery node's /users?handle=<handle>
     this.currentUser = null
+    this.localStorage = localStorage
   }
 
   /**
    * Sets this.currentUser with currentUser
    * @param {Object} currentUser fields to override this.currentUser with
    */
-  setCurrentUser(currentUser: CurrentUser) {
+  async setCurrentUser(currentUser: CurrentUser) {
     this.currentUser = currentUser
-    if (supportsLocalStorage()) {
-      window.localStorage.setItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY, 'true')
+    if (this.localStorage) {
+      await this.localStorage.setItem(
+        CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY,
+        'true'
+      )
     }
   }
 
@@ -44,10 +51,10 @@ export class UserStateManager {
     return this.currentUser ? this.currentUser.user_id : null
   }
 
-  clearUser() {
+  async clearUser() {
     this.currentUser = null
-    if (supportsLocalStorage()) {
-      window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
+    if (this.localStorage) {
+      await this.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
 }

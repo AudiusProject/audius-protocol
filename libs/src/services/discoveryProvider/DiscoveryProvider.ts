@@ -36,13 +36,14 @@ export type DiscoveryProviderConfig = {
   ethContracts: EthContracts
   web3Manager?: Web3Manager
   reselectTimeout?: number
-  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
-  monitoringCallbacks?: DiscoveryProviderSelectionConfig['monitoringCallbacks']
   selectionRequestTimeout?: number
   selectionRequestRetries?: number
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
-}
+} & Pick<
+  DiscoveryProviderSelectionConfig,
+  'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
+>
 
 export type UserProfile = {
   userId: string
@@ -105,6 +106,7 @@ export class DiscoveryProvider {
     monitoringCallbacks,
     selectionRequestTimeout = REQUEST_TIMEOUT_MS,
     selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
+    localStorage,
     unhealthySlotDiffPlays,
     unhealthyBlockDiff
   }: DiscoveryProviderConfig) {
@@ -124,6 +126,7 @@ export class DiscoveryProvider {
         monitoringCallbacks,
         requestTimeout: selectionRequestTimeout,
         unhealthySlotDiffPlays: unhealthySlotDiffPlays,
+        localStorage: localStorage,
         unhealthyBlockDiff: this.unhealthyBlockDiff
       },
       this.ethContracts
@@ -151,7 +154,9 @@ export class DiscoveryProvider {
       const userAccount = await this.getUserAccount(
         this.web3Manager.getWalletAddress()
       )
-      if (userAccount) this.userStateManager.setCurrentUser(userAccount)
+      if (userAccount) {
+        await this.userStateManager.setCurrentUser(userAccount)
+      }
     }
   }
 

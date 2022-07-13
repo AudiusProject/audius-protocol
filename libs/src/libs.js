@@ -34,6 +34,7 @@ const {
   RewardsAttester
 } = require('./services/solanaWeb3Manager/rewardsAttester')
 const { Reactions } = require('./api/reactions')
+const { getPlatformLocalStorage } = require('./utils/localStorage')
 
 class AudiusLibs {
   /**
@@ -318,7 +319,8 @@ class AudiusLibs {
     logger = console,
     isDebug = false,
     preferHigherPatchForPrimary = true,
-    preferHigherPatchForSecondaries = true
+    preferHigherPatchForSecondaries = true,
+    localStorage = getPlatformLocalStorage()
   }) {
     // set version
 
@@ -365,6 +367,7 @@ class AudiusLibs {
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
+    this.localStorage = localStorage
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -374,7 +377,9 @@ class AudiusLibs {
 
   /** Init services based on presence of a relevant config. */
   async init () {
-    this.userStateManager = new UserStateManager()
+    this.userStateManager = new UserStateManager({
+      localStorage: this.localStorage
+    })
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
@@ -496,6 +501,7 @@ class AudiusLibs {
         userStateManager: this.userStateManager,
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
+        localStorage: this.localStorage,
         ...this.discoveryProviderConfig
       })
       await this.discoveryProvider.init()
