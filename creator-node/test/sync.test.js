@@ -108,6 +108,7 @@ describe('test nodesync', async function () {
         .post('/audius_users/metadata')
         .set('X-Session-ID', sessionToken)
         .set('User-Id', userId)
+        .set('Enforce-Write-Quorum', false)
         .send(metadata)
         .expect(200)
       metadataMultihash = userMetadataResp.body.data.metadataMultihash
@@ -152,6 +153,7 @@ describe('test nodesync', async function () {
         .post('/tracks/metadata')
         .set('X-Session-ID', sessionToken)
         .set('User-Id', userId)
+        .set('Enforce-Write-Quorum', false)
         .send(trackMetadata)
         .expect(200)
       trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
@@ -714,6 +716,7 @@ describe('test nodesync', async function () {
         .post('/audius_users/metadata')
         .set('X-Session-ID', session.sessionToken)
         .set('User-Id', session.userId)
+        .set('Enforce-Write-Quorum', false)
         .send(metadata)
         .expect(200)
 
