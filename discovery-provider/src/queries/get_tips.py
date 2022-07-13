@@ -7,7 +7,7 @@ from sqlalchemy.orm import Query, aliased
 from sqlalchemy.orm.session import Session
 from src.models.social.follow import Follow
 from src.models.users.aggregate_user import AggregateUser
-from src.models.users.aggregate_user_tips import AggregateUserTips
+from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.user import User
 from src.models.users.user_tip import UserTip
 from src.queries.get_unpopulated_users import get_unpopulated_users
@@ -241,14 +241,14 @@ def _get_tips(session: Session, args: GetTipsArgs):
         # rather than joining each on the tips separately to help with speed
         FolloweeTippers = (
             session.query(
-                AggregateUserTips.sender_user_id,
-                AggregateUserTips.receiver_user_id,
+                AggregateUserTip.sender_user_id,
+                AggregateUserTip.receiver_user_id,
                 FolloweesAggregate.c.followee_user_id,
             )
             .select_from(FolloweesAggregate)
             .outerjoin(
-                AggregateUserTips,
-                AggregateUserTips.sender_user_id
+                AggregateUserTip,
+                AggregateUserTip.sender_user_id
                 == FolloweesAggregate.c.followee_user_id,
             )
             .cte("followee_tippers")

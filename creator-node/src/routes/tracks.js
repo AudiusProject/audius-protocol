@@ -26,7 +26,6 @@ const {
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
-  syncLockMiddleware,
   issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware,
   ensureValidSPMiddleware
@@ -50,7 +49,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleTrackContentUpload,
     handleResponse(async (req, res) => {
       if (req.fileSizeError || req.fileFilterError) {
@@ -202,7 +200,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const metadataJSON = req.body.metadata
 
@@ -297,8 +294,8 @@ module.exports = function (app) {
         return errorResponseServerError(`Could not save to db db: ${e}`)
       }
 
-      // This call is not await-ed to avoid delaying or erroring
-      issueAndWaitForSecondarySyncRequests(req)
+      // Await 2/3 write quorum (replicating data to at least 1 secondary)
+      await issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse({
         metadataMultihash: multihash,
@@ -316,7 +313,6 @@ module.exports = function (app) {
     authMiddleware,
     ensurePrimaryMiddleware,
     ensureStorageMiddleware,
-    syncLockMiddleware,
     handleResponse(async (req, res) => {
       const {
         blockchainTrackId,
@@ -576,7 +572,8 @@ module.exports = function (app) {
 
         await transaction.commit()
 
-        await issueAndWaitForSecondarySyncRequests(req)
+        // Discovery only indexes metadata and not files, so we eagerly replicate data but don't await it
+        issueAndWaitForSecondarySyncRequests(req, true)
 
         metricEndTimerFn({ code: 200 })
         return successResponse()
