@@ -3,11 +3,15 @@ from datetime import datetime, timezone
 from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
-from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
-from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    save_duration_metric,
+)
 from src.utils.redis_constants import (
     ALL_UNAVAILABLE_TRACKS_REDIS_KEY,
     UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
@@ -169,9 +173,9 @@ def query_registered_content_node_info(
 ) -> List[ContentNodeInfo]:
     """Returns a list of all registered Content Node endpoint and spID"""
     registered_content_nodes = (
-        session.query(URSMContentNode.endpoint, URSMContentNode.cnode_sp_id)
+        session.query(UrsmContentNode.endpoint, UrsmContentNode.cnode_sp_id)
         .filter(
-            URSMContentNode.is_current == True,
+            UrsmContentNode.is_current == True,
         )
         .all()
     )
@@ -231,9 +235,7 @@ def update_track_is_available(self) -> None:
     have_lock = update_lock.acquire(blocking=False)
     if have_lock:
         metric = PrometheusMetric(
-            "update_track_is_available_duration_seconds",
-            "Runtimes for src.task.update_track_is_available:celery.task()",
-            ("task_name", "success"),
+            PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS
         )
         try:
             # TODO: we can deprecate this manual redis timestamp tracker once we confirm
@@ -249,13 +251,9 @@ def update_track_is_available(self) -> None:
 
             update_tracks_is_available_status(db, redis)
 
-            metric.save_time(
-                {"task_name": "update_track_is_available", "success": "true"}
-            )
+            metric.save_time({"success": "true"})
         except Exception as e:
-            metric.save_time(
-                {"task_name": "update_track_is_available", "success": "false"}
-            )
+            metric.save_time({"success": "false"})
             logger.error(
                 "update_track_is_available.py | Fatal error in main loop", exc_info=True
             )

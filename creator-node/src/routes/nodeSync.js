@@ -172,11 +172,9 @@ module.exports = function (app) {
     '/sync_status/:walletPublicKey',
     handleResponse(async (req, res) => {
       const walletPublicKey = req.params.walletPublicKey
+
       const redisClient = req.app.get('redisClient')
-      const lockHeld = await redisClient.lock.getLock(
-        redisClient.getNodeSyncRedisKey(walletPublicKey)
-      )
-      if (lockHeld) {
+      if (await redisClient.WalletWriteLock.syncIsInProgress(walletPublicKey)) {
         return errorResponse(
           423,
           `Cannot change state of wallet ${walletPublicKey}. Node sync currently in progress.`

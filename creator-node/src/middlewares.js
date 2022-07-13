@@ -15,6 +15,9 @@ const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
 const BlacklistManager = require('./blacklistManager')
+const {
+  issueSyncRequestsUntilSynced
+} = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -83,27 +86,6 @@ async function authMiddleware(req, res, next) {
     cnodeUserUUID: cnodeUserUUID,
     userId
   }
-  next()
-}
-
-/** Ensure resource write access */
-async function syncLockMiddleware(req, res, next) {
-  if (req.session && req.session.wallet) {
-    const redisClient = req.app.get('redisClient')
-    const redisKey = redisClient.getNodeSyncRedisKey(req.session.wallet)
-    const lockHeld = await redisClient.lock.getLock(redisKey)
-    if (lockHeld) {
-      return sendResponse(
-        req,
-        res,
-        errorResponse(
-          423,
-          `Cannot change state of wallet ${req.session.wallet}. Node sync currently in progress.`
-        )
-      )
-    }
-  }
-  req.logger.info(`syncLockMiddleware succeeded`)
   next()
 }
 
@@ -269,7 +251,7 @@ async function ensureStorageMiddleware(req, res, next) {
  */
 async function issueAndWaitForSecondarySyncRequests(req) {
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { snapbackSM } = serviceRegistry
+  const { manualSyncQueue } = serviceRegistry
 
   // Parse request headers
   const pollingDurationMs =
@@ -332,11 +314,13 @@ async function issueAndWaitForSecondarySyncRequests(req) {
     const replicationStart = Date.now()
     try {
       const secondaryPromises = secondaries.map((secondary) => {
-        return snapbackSM.issueSyncRequestsUntilSynced(
+        return issueSyncRequestsUntilSynced(
+          primary,
           secondary,
           wallet,
           primaryClockVal,
-          pollingDurationMs
+          pollingDurationMs,
+          manualSyncQueue
         )
       })
 
@@ -847,7 +831,6 @@ module.exports = {
   ensureStorageMiddleware,
   ensureValidSPMiddleware,
   issueAndWaitForSecondarySyncRequests,
-  syncLockMiddleware,
   getOwnEndpoint,
   getCreatorNodeEndpoints
 }

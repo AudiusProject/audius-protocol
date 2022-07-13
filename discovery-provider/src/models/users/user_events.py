@@ -1,9 +1,9 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Index, Integer, String, text
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class UserEvents(Base, RepresentableMixin):
+class UserEvent(Base, RepresentableMixin):
     """
     User events track event metadata a user may produce as a part of their interaction
     with the protocol over time, e.g. who was the user referred by? has the user signed in on a mobile app?
@@ -13,16 +13,20 @@ class UserEvents(Base, RepresentableMixin):
     While a JSONB column in the User table would be sufficient for many event types, in order to query
     across all users that may or may not have produced a certain event, they are broken into separate fields.
 
-    Future events may wish to take on the shape of JSONB data within the UserEvents table itself.
+    Future events may wish to take on the shape of JSONB data within the UserEvent table itself.
     """
 
     __tablename__ = "user_events"
-    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=True)
-    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
-    slot = Column(Integer, nullable=True)
-    is_current = Column(Boolean, nullable=False)
-    id = Column(Integer, nullable=False, primary_key=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    __table_args__ = (Index("user_events_user_id_idx", "user_id", "is_current"),)
 
-    referrer = Column(Integer, nullable=True)
-    is_mobile_user = Column(Boolean, nullable=False, default=False)
+    id = Column(
+        Integer,
+        primary_key=True,
+    )
+    blockhash = Column(String)
+    blocknumber = Column(Integer)
+    is_current = Column(Boolean, nullable=False)
+    user_id = Column(Integer, nullable=False)
+    referrer = Column(Integer)
+    is_mobile_user = Column(Boolean, nullable=False, server_default=text("false"))
+    slot = Column(Integer)

@@ -14,14 +14,14 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvents
+from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.queries.skipped_transactions import add_node_level_skipped_transaction
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
 logger = logging.getLogger(__name__)
@@ -40,11 +40,7 @@ def user_state_update(
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of User model state changes found in transaction and set of processed user IDs."""
     begin_user_state_update = datetime.now()
-    metric = PrometheusMetric(
-        "user_state_update_duration_seconds",
-        "Runtimes for src.task.users:user_state_update()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS)
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -149,11 +145,7 @@ def process_user_txs_serial(
     user_ids,
     skipped_tx_count,
 ):
-    metric = PrometheusMetric(
-        "user_state_update_duration_seconds",
-        "Runtimes for src.task.users:user_state_update()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.USER_STATE_UPDATE_DURATION_SECONDS)
     processed_entries = 0
     for user_tx in user_txs:
         try:
@@ -589,7 +581,7 @@ def validate_signature(
     return False
 
 
-class UserEventsMetadata(TypedDict, total=False):
+class UserEventMetadata(TypedDict, total=False):
     referrer: int
     is_mobile_user: bool
 
@@ -597,7 +589,7 @@ class UserEventsMetadata(TypedDict, total=False):
 def update_user_events(
     session: Session,
     user_record: User,
-    events: UserEventsMetadata,
+    events: UserEventMetadata,
     bus: ChallengeEventBus,
 ) -> None:
     """Updates the user events table"""
@@ -606,9 +598,9 @@ def update_user_events(
             # There is something wrong with events, don't process it
             return
 
-        # Get existing UserEvents entry
+        # Get existing UserEvent entry
         existing_user_events = (
-            session.query(UserEvents)
+            session.query(UserEvent)
             .filter_by(user_id=user_record.user_id, is_current=True)
             .one_or_none()
         )
@@ -618,7 +610,7 @@ def update_user_events(
         existing_mobile_user = (
             existing_user_events.is_mobile_user if existing_user_events else False
         )
-        user_events = UserEvents(
+        user_events = UserEvent(
             user_id=user_record.user_id,
             is_current=True,
             blocknumber=user_record.blocknumber,
@@ -663,8 +655,8 @@ def update_user_events(
             or user_events.is_mobile_user != existing_mobile_user
             or user_events.referrer != existing_referrer
         ):
-            # Mark existing UserEvents entries as not current
-            session.query(UserEvents).filter_by(
+            # Mark existing UserEvent entries as not current
+            session.query(UserEvent).filter_by(
                 user_id=user_record.user_id, is_current=True
             ).update({"is_current": False})
             session.add(user_events)

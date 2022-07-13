@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
-from src.models.indexing.ipld_blacklist_block import IPLDBlacklistBlock
+from src.models.indexing.ipld_blacklist_block import IpldBlacklistBlock
 from src.monitors import monitor_names, monitors
 from src.queries.get_balances import (
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -24,7 +24,7 @@ from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
-from src.utils.prometheus_metric import PrometheusMetric, PrometheusType
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
@@ -114,8 +114,8 @@ def _get_db_ipld_block_state():
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         db_ipld_block_query = (
-            session.query(IPLDBlacklistBlock)
-            .filter(IPLDBlacklistBlock.is_current == True)
+            session.query(IpldBlacklistBlock)
+            .filter(IpldBlacklistBlock.is_current == True)
             .all()
         )
         assert (
@@ -462,17 +462,13 @@ def get_elasticsearch_health_info(
 def health_check_prometheus_exporter():
     health_results, is_unhealthy = get_health({})
 
-    PrometheusMetric(
-        "health_check_block_difference_current",
-        "Difference between the latest block and the latest indexed block",
-        metric_type=PrometheusType.GAUGE,
-    ).save(health_results["block_difference"])
+    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST).save(
+        health_results["block_difference"]
+    )
 
-    PrometheusMetric(
-        "health_check_latest_indexed_block_num_current",
-        "Latest indexed block number",
-        metric_type=PrometheusType.GAUGE,
-    ).save(health_results["web"]["blocknumber"])
+    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST).save(
+        health_results["web"]["blocknumber"]
+    )
 
 
 PrometheusMetric.register_collector(

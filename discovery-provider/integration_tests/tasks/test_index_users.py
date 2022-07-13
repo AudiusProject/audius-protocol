@@ -12,10 +12,10 @@ from src.models.indexing.skipped_transaction import (
 )
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvents
+from src.models.users.user_events import UserEvent
 from src.tasks.metadata import user_metadata_format
 from src.tasks.users import (
-    UserEventsMetadata,
+    UserEventMetadata,
     lookup_user_record,
     parse_user_event,
     update_user_events,
@@ -527,7 +527,7 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         assert len(associated_sol_wallets) == len(ipfs_associated_sol_wallets)
 
         user_events = (
-            session.query(UserEvents)
+            session.query(UserEvent)
             .filter_by(user_id=user_record.user_id, is_current=True)
             .first()
         )
@@ -552,7 +552,7 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
         bus_mock(redis)
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
-        events: UserEventsMetadata = {"referrer": 1}
+        events: UserEventMetadata = {"referrer": 1}
         update_user_events(session, user, events, bus_mock)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}

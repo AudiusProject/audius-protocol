@@ -18,7 +18,7 @@ from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils import helpers, multihash
 from src.utils.indexing_errors import EntityMissingRequiredFieldError, IndexingError
 from src.utils.model_nullable_validator import all_required_fields_present
-from src.utils.prometheus_metric import PrometheusMetric
+from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.track_event_constants import (
     track_event_types_arr,
     track_event_types_lookup,
@@ -40,11 +40,7 @@ def track_state_update(
 ) -> Tuple[int, Set]:
     """Return tuple containing int representing number of Track model state changes found in transaction and set of processed track IDs."""
     begin_track_state_update = datetime.now()
-    metric = PrometheusMetric(
-        "track_state_update_duration_seconds",
-        "Runtimes for src.task.tracks:track_state_update()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.TRACK_STATE_UPDATE_DURATION_SECONDS)
 
     blockhash = update_task.web3.toHex(block_hash)
     num_total_changes = 0
@@ -226,6 +222,18 @@ def update_stems_table(session, track_record, track_metadata):
     parent_track_id = track_metadata["stem_of"].get("parent_track_id")
     if not isinstance(parent_track_id, int):
         return
+
+    # Avoid re-adding stem if it already exists
+    existing_stem = (
+        session.query(Stem)
+        .filter_by(
+            parent_track_id=parent_track_id, child_track_id=track_record.track_id
+        )
+        .first()
+    )
+    if existing_stem:
+        return
+
     stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
     session.add(stem)
 

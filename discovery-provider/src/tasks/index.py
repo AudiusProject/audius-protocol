@@ -11,7 +11,7 @@ from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
-from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
@@ -20,7 +20,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
-from src.models.users.user_events import UserEvents
+from src.models.users.user_events import UserEvent
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
@@ -51,7 +51,11 @@ from src.utils.index_blocks_performance import (
     sweep_old_index_blocks_ms,
 )
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import PrometheusMetric, save_duration_metric
+from src.utils.prometheus_metric import (
+    PrometheusMetric,
+    PrometheusMetricNames,
+    save_duration_metric,
+)
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
     remove_cached_track_ids,
@@ -587,11 +591,7 @@ def index_blocks(self, db, blocks_list):
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     latest_block_timestamp = None
     changed_entity_ids_map = {}
-    metric = PrometheusMetric(
-        "index_blocks_duration_seconds",
-        "Runtimes for src.task.index:index_blocks()",
-        ("scope",),
-    )
+    metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     for i in block_order_range:
         start_time = time.time()
         metric.reset_timer()
@@ -886,8 +886,8 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(User).filter(User.blockhash == revert_hash).all()
             )
             revert_ursm_content_node_entries = (
-                session.query(URSMContentNode)
-                .filter(URSMContentNode.blockhash == revert_hash)
+                session.query(UrsmContentNode)
+                .filter(UrsmContentNode.blockhash == revert_hash)
                 .all()
             )
             revert_associated_wallets = (
@@ -896,8 +896,8 @@ def revert_blocks(self, db, revert_blocks_list):
                 .all()
             )
             revert_user_events_entries = (
-                session.query(UserEvents)
-                .filter(UserEvents.blockhash == revert_hash)
+                session.query(UserEvent)
+                .filter(UserEvent.blockhash == revert_hash)
                 .all()
             )
             revert_track_routes = (
@@ -995,10 +995,10 @@ def revert_blocks(self, db, revert_blocks_list):
             for ursm_content_node_to_revert in revert_ursm_content_node_entries:
                 cnode_sp_id = ursm_content_node_to_revert.cnode_sp_id
                 previous_ursm_content_node_entry = (
-                    session.query(URSMContentNode)
-                    .filter(URSMContentNode.cnode_sp_id == cnode_sp_id)
-                    .filter(URSMContentNode.blocknumber < revert_block_number)
-                    .order_by(URSMContentNode.blocknumber.desc())
+                    session.query(UrsmContentNode)
+                    .filter(UrsmContentNode.cnode_sp_id == cnode_sp_id)
+                    .filter(UrsmContentNode.blocknumber < revert_block_number)
+                    .order_by(UrsmContentNode.blocknumber.desc())
                     .first()
                 )
                 if previous_ursm_content_node_entry:
@@ -1086,15 +1086,15 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
     for user_events_to_revert in revert_user_events_entries:
         user_id = user_events_to_revert.user_id
         previous_user_events_entry = (
-            session.query(UserEvents)
-            .filter(UserEvents.user_id == user_id)
-            .filter(UserEvents.blocknumber < revert_block_number)
-            .order_by(UserEvents.blocknumber.desc())
+            session.query(UserEvent)
+            .filter(UserEvent.user_id == user_id)
+            .filter(UserEvent.blocknumber < revert_block_number)
+            .order_by(UserEvent.blocknumber.desc())
             .first()
         )
         if previous_user_events_entry:
-            session.query(UserEvents).filter(UserEvents.user_id == user_id).filter(
-                UserEvents.blocknumber == previous_user_events_entry.blocknumber
+            session.query(UserEvent).filter(UserEvent.user_id == user_id).filter(
+                UserEvent.blocknumber == previous_user_events_entry.blocknumber
             ).update({"is_current": True})
         logger.info(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
