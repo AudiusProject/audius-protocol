@@ -148,7 +148,7 @@ export class CreatorNode {
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
-  writeQuorumEnabled: boolean | null
+  writeQuorumEnabled: boolean
   connected: boolean
   connecting: boolean
   authToken: null
@@ -177,7 +177,7 @@ export class CreatorNode {
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {},
-    writeQuorumEnabled = null
+    writeQuorumEnabled = false
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -769,10 +769,7 @@ export class CreatorNode {
 
       axiosRequestObj.headers = axiosRequestObj.headers || {}
 
-      // Stringify `writeQuorumEnabled` to work around axios bug (fixed in axios v0.20.0): https://github.com/axios/axios/issues/2223
-      axiosRequestObj.headers['Enforce-Write-Quorum'] = String(
-        this.writeQuorumEnabled
-      )
+      axiosRequestObj.headers['Enforce-Write-Quorum'] = this.writeQuorumEnabled
 
       if (this.authToken) {
         axiosRequestObj.headers['X-Session-ID'] = this.authToken

@@ -276,9 +276,6 @@ async function issueAndWaitForSecondarySyncRequests(
   const pollingDurationMs =
     req.header('Polling-Duration-ms') ||
     config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
-  // We have to support string and boolean until libs updates axios to v0.20.0 because axios has a
-  // bug where it converts null into an object, so we send the value as a string.
-  // See: https://github.com/axios/axios/issues/2223
   const enforceWriteQuorumHeader = req.header('Enforce-Write-Quorum')
   const writeQuorumHeaderTrue =
     enforceWriteQuorumHeader === true || enforceWriteQuorumHeader === 'true'
