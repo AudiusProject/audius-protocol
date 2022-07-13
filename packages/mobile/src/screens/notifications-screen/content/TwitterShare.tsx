@@ -145,10 +145,12 @@ export const getAddTrackToPlaylistText = (notif: AddTrackToPlaylist) => {
   const { track, playlist } = notif.entities
   const playlistOwner = playlist.user
 
-  return {
-    link: getEntityRoute(playlist, Entity.Playlist, true),
-    text: `Listen to my track ${track.title} on ${playlist.playlist_name} by ${playlistOwner.handle} on @AudiusProject #Audius`
-  }
+  const entityLink = getEntityRoute(playlist, Entity.Playlist, true)
+  const shareText = playlistOwner
+    ? `Listen to my track ${track.title} on ${playlist.playlist_name} by ${playlistOwner.handle} on @AudiusProject #Audius`
+    : ''
+
+  return { link: entityLink, text: shareText }
 }
 
 export const getNotificationTwitterText = async (notification: any) => {
