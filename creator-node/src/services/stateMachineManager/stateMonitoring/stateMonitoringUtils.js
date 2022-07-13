@@ -1,10 +1,9 @@
 const _ = require('lodash')
 const axios = require('axios')
 const { CancelToken } = axios
-const retry = require('async-retry')
 
 const config = require('../../../config')
-const Utils = require('../../../utils')
+const asyncRetry = require('../../../utils/asyncRetry')
 const { logger } = require('../../../logging')
 
 const { isPrimaryHealthy } = require('../CNodeHealthManager')
@@ -35,7 +34,7 @@ const getLatestUserIdFromDiscovery = async (discoveryNodeEndpoint) => {
   let latestUserId = 0
   try {
     // Request all users that have this node as a replica (either primary or secondary)
-    const resp = await Utils.asyncRetry({
+    const resp = await asyncRetry({
       logLabel: 'fetch the ID of the newest user on Audius',
       asyncFn: async () => {
         return axios({
@@ -89,7 +88,7 @@ const getNodeUsers = async (
     )
 
     // Request all users that have this node as a replica (either primary or secondary)
-    const resp = await Utils.asyncRetry({
+    const resp = await asyncRetry({
       logLabel: 'fetch all users with this node in replica',
       asyncFn: async () => {
         return axios({
@@ -459,7 +458,7 @@ const computeSyncModeForUserAndReplica = async ({
     let primaryFilesHashForRange
     try {
       // Throws error if fails after all retries
-      primaryFilesHashForRange = await Utils.asyncRetry({
+      primaryFilesHashForRange = await asyncRetry({
         asyncFn: async () =>
           DBManager.fetchFilesHashFromDB({
             lookupKey: { lookupWallet: wallet },
