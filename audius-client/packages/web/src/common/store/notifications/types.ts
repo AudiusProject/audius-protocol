@@ -6,6 +6,7 @@ import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import { StringWei } from 'common/models/Wallet'
+import { Nullable } from 'common/utils/typeUtils'
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -34,9 +35,9 @@ export enum Entity {
   User = 'User'
 }
 
-export type TrackEntity = Track & { user: User }
+export type TrackEntity = Track & { user: Nullable<User> }
 
-export type CollectionEntity = Collection & { user: User }
+export type CollectionEntity = Collection & { user: Nullable<User> }
 
 export type EntityType = TrackEntity | CollectionEntity
 
