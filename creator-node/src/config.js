@@ -497,13 +497,13 @@ const config = convict({
     default: 5000 // 5000ms = 5s (prod default)
   },
   enforceWriteQuorum: {
-    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
+    doc: 'Boolean flag indicating whether or not primary should reject write until 2/3 replication across replica set',
     format: Boolean,
     env: 'enforceWriteQuorum',
-    default: false
+    default: true
   },
   manualSyncsDisabled: {
-    doc: 'Disables issuing of manual syncs in order to test SnapbackSM Recurring Sync logic.',
+    doc: 'Disables issuing of manual syncs in order to test state machine Recurring Sync logic.',
     format: 'BooleanCustom',
     env: 'manualSyncsDisabled',
     default: false

@@ -29,6 +29,7 @@ from src.api.v1.helpers import (
     success_response,
     verify_token_parser,
 )
+from src.api.v1.models.common import favorite
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -529,7 +530,7 @@ class MostUsedTags(Resource):
 
 
 favorites_response = make_response(
-    "favorites_response", ns, fields.List(fields.Nested(activity_model))
+    "favorites_response", ns, fields.List(fields.Nested(favorite))
 )
 favorites_full_response = make_full_response(
     "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))

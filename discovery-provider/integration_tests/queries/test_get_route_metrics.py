@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from src.models.metrics.route_metrics import RouteMetrics
+from src.models.metrics.route_metrics import RouteMetric
 from src.queries.get_route_metrics import _get_route_metrics
 from src.utils.db_session import get_db
 
@@ -44,7 +44,7 @@ def populate_mock_db(db, date):
 
     with db.scoped_session() as session:
         route_metric_obj = [
-            RouteMetrics(
+            RouteMetric(
                 version=metric["version"],
                 route_path=metric["route_path"],
                 query_string=metric["query_string"],
@@ -81,7 +81,7 @@ def populate_mock_db_multiple_dates(db, date1, date2):
 
     with db.scoped_session() as session:
         route_metric_obj = [
-            RouteMetrics(
+            RouteMetric(
                 version=metric["version"],
                 route_path=metric["route_path"],
                 query_string=metric["query_string"],

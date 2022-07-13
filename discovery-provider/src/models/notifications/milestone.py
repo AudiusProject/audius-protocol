@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Integer, PrimaryKeyConstraint, String
+from sqlalchemy import Column, DateTime, Index, Integer, String
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
@@ -16,11 +16,11 @@ class MilestoneName(str, enum.Enum):
 
 class Milestone(Base, RepresentableMixin):
     __tablename__ = "milestones"
+    __table_args__ = (Index("milestones_name_idx", "name", "id"),)
 
-    id = Column(Integer, nullable=False)
-    name = Column(String, nullable=False)
-    threshold = Column(Integer, nullable=False)
-    blocknumber = Column(Integer, nullable=True)
-    slot = Column(Integer, nullable=True)
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String, primary_key=True, nullable=False)
+    threshold = Column(Integer, primary_key=True, nullable=False)
+    blocknumber = Column(Integer)
+    slot = Column(Integer)
     timestamp = Column(DateTime, nullable=False)
-    PrimaryKeyConstraint(id, name, threshold)

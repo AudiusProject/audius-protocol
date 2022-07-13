@@ -4,7 +4,6 @@ const path = require('path')
 const axios = require('axios')
 const spawn = require('child_process').spawn
 const stream = require('stream')
-const retry = require('async-retry')
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline)
 const { logger: genericLogger } = require('./logging.js')
@@ -351,48 +350,6 @@ function currentNodeShouldHandleTranscode({
   return currentNodeShouldHandleTranscode
 }
 
-/**
- * Wrapper around async-retry API.
- *
- * options described here https://github.com/tim-kos/node-retry#retrytimeoutsoptions
- * @param {Object} param
- * @param {func} param.asyncFn the fn to asynchronously retry
- * @param {Object} param.options optional options. defaults to the params listed below if not explicitly passed in
- * @param {number} [param.options.factor=2] the exponential factor
- * @param {number} [param.options.retries=5] the max number of retries. defaulted to 5
- * @param {number} [param.options.minTimeout=1000] minimum number of ms to wait after first retry. defaulted to 1000ms
- * @param {number} [param.options.maxTimeout=5000] maximum number of ms between two retries. defaulted to 5000ms
- * @param {func} [param.options.onRetry] fn that gets called per retry
- * @param {Object} param.logger
- * @param {Boolean} param.log enables/disables logging
- * @param {string?} param.logLabel
- * @returns the fn response if success, or throws an error
- */
-function asyncRetry({
-  asyncFn,
-  options = {},
-  logger = genericLogger,
-  log = true,
-  logLabel = null
-}) {
-  options = {
-    retries: 5,
-    factor: 2,
-    minTimeout: 1000,
-    maxTimeout: 5000,
-    onRetry: (err, i) => {
-      if (err && log) {
-        const logPrefix =
-          (logLabel ? `[${logLabel}] ` : '') + `[asyncRetry] [attempt #${i}]`
-        logger.warn(`${logPrefix}: `, err.message || err)
-      }
-    },
-    ...options
-  }
-
-  return retry(asyncFn, options)
-}
-
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID =
   validateStateForImageDirCIDAndReturnFileUUID
@@ -402,4 +359,3 @@ module.exports.findCIDInNetwork = findCIDInNetwork
 module.exports.runShellCommand = runShellCommand
 module.exports.currentNodeShouldHandleTranscode =
   currentNodeShouldHandleTranscode
-module.exports.asyncRetry = asyncRetry

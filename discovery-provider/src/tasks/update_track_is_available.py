@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Any, List, Tuple, TypedDict, Union
 
 import requests
-from src.models.indexing.ursm_content_node import URSMContentNode
+from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.tasks.celery_app import celery
@@ -173,9 +173,9 @@ def query_registered_content_node_info(
 ) -> List[ContentNodeInfo]:
     """Returns a list of all registered Content Node endpoint and spID"""
     registered_content_nodes = (
-        session.query(URSMContentNode.endpoint, URSMContentNode.cnode_sp_id)
+        session.query(UrsmContentNode.endpoint, UrsmContentNode.cnode_sp_id)
         .filter(
-            URSMContentNode.is_current == True,
+            UrsmContentNode.is_current == True,
         )
         .all()
     )
