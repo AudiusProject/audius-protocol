@@ -1,5 +1,15 @@
 import { Base, BaseConstructorArgs, Services } from './base'
 
+export enum Action {
+  CREATE = 'Create',
+  UPDATE = 'Update',
+  DELETE = 'Delete'
+}
+
+export enum EntityType {
+  PLAYLIST = 'Playlist'
+}
+
 /*
   API surface for updated data contract interactions.
   Provides simplified entity management in a generic fashion
@@ -50,18 +60,13 @@ export class EntityManager extends Base {
     description: string
     isAlbum: boolean
     isPrivate: boolean
-    coverArt: any
-    logger: any
-  }): Promise<{ blockHash: any; blockNumber: any; playlistId: number }> {
-    let respValues = {
-      blockHash: null,
-      blockNumber: null,
-      playlistId: 0
-    }
+    coverArt: string
+    logger: Console
+  }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
     try {
       const ownerId: number = parseInt(this.userStateManager.getCurrentUserId())
-      const action = 'Create'
-      const entityType = 'Playlist'
+      const createAction = Action.CREATE
+      const entityType = EntityType.PLAYLIST
       const entityId = await this.getValidPlaylistId()
       this.REQUIRES(Services.CREATOR_NODE)
       const updatedPlaylistImage = await this.creatorNode.uploadImage(
@@ -70,7 +75,7 @@ export class EntityManager extends Base {
       )
       const dirCID = updatedPlaylistImage.dirCID
       const metadata = {
-        action,
+        createAction,
         entity_type: entityType,
         playlist_id: entityId,
         playlist_contents: trackIds,
@@ -86,20 +91,20 @@ export class EntityManager extends Base {
         userId: ownerId,
         entityType,
         entityId,
-        action,
+        createAction,
         metadataMultihash
       })
       logger.info(`CreatePlaylistData - ${JSON.stringify(resp)}`)
       const txReceipt = resp.txReceipt
-      respValues = {
+      return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber,
         playlistId: entityId
       }
     } catch (e) {
       logger.error(`Data create playlist: err ${e}`)
+      throw e
     }
-    return respValues
   }
 
   /**
@@ -114,10 +119,6 @@ export class EntityManager extends Base {
     userId: number
     logger: any
   }): Promise<{ blockHash: any; blockNumber: any }> {
-    let respValues = {
-      blockHash: null,
-      blockNumber: null
-    }
     try {
       const resp = await this.manageEntity({
         userId,
@@ -128,14 +129,83 @@ export class EntityManager extends Base {
       })
       logger.info(`DeletePlaylistData - ${JSON.stringify(resp)}`)
       const txReceipt = resp.txReceipt
-      respValues = {
+      return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber
       }
     } catch (e) {
       logger.error(`Data delete playlist: err ${e}`)
+      throw e
     }
-    return respValues
+  }
+  /**
+   * Update a playlist using updated data contracts flow
+   **/
+  async updatePlaylist({
+    playlistId,
+    playlistName,
+    trackIds,
+    description,
+    isAlbum,
+    isPrivate,
+    coverArt,
+    logger = console
+  }: {
+    playlistId: number
+    playlistName: string
+    trackIds: number[]
+    description: string
+    isAlbum: boolean
+    isPrivate: boolean
+    coverArt: string
+    logger: Console
+  }): Promise<{ blockHash: string; blockNumber: number; playlistId: number }> {
+    try {
+      const userId: number = parseInt(this.userStateManager.getCurrentUserId())
+      const updateAction = Action.UPDATE
+      const entityType = 'Playlist'
+      this.REQUIRES(Services.CREATOR_NODE)
+      let dirCID;
+      if (coverArt) {
+        const updatedPlaylistImage = await this.creatorNode.uploadImage(
+          coverArt,
+          true // square
+        )
+        dirCID = updatedPlaylistImage.dirCID
+      }
+
+      const playlist = (await this.discoveryProvider.getPlaylists(1, 0, [playlistId]))[0]
+
+      const metadata = {
+        action: updateAction, // why include action here?
+        entityType,
+        playlist_id: playlistId,
+        playlist_contents: trackIds || playlist.playlist_contents,
+        playlist_name: playlistName || playlist.playlist_name,
+        playlist_image_sizes_multihash: dirCID || playlist.playlist_image_sizes_multihash,
+        description: description || playlist.description,
+        is_album: isAlbum || playlist.is_album,
+        is_private: isPrivate || playlist.is_private
+      }
+      const { metadataMultihash } = await this.creatorNode.uploadPlaylistMetadata(metadata)
+
+      const resp = await this.manageEntity({
+        userId,
+        entityType,
+        entityId: playlistId,
+        action: updateAction,
+        metadataMultihash
+      })
+      const txReceipt = resp.txReceipt
+      return {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber,
+        playlistId
+      }
+    } catch (e) {
+      logger.error(`Data update playlist: err ${e}`)
+      throw e
+    }
   }
 
   /**
@@ -150,11 +220,11 @@ export class EntityManager extends Base {
     metadataMultihash
   }: {
     userId: number
-    entityType: string
+    entityType: EntityType
     entityId: number
-    action: string
+    action: Action
     metadataMultihash: string
-  }): Promise<{ txReceipt: {}; error: any }> {
+  }): Promise<{ txReceipt: {blockHash: string, blockNumber: number}; error: any }> {
     let error: string = ''
     let resp: any
     try {
