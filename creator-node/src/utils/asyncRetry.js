@@ -1,6 +1,6 @@
 const retry = require('async-retry')
 
-const { logger: genericLogger } = require('./logging.js')
+const { logger: genericLogger } = require('../logging')
 
 /**
  * Wrapper around async-retry API.
