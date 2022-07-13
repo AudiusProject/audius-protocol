@@ -33,6 +33,8 @@ const AddTrackToPlaylist = ({ notification }: AddTrackToPlaylistProps) => {
     color: 'neutral'
   })
 
+  if (!playlistOwner) return null
+
   return (
     <View style={styles.text}>
       <Text style={textStyle}>

@@ -27,13 +27,15 @@ export const EntityLink = (props: EntityLinkProps) => {
         },
         web: { route: getTrackRoute(entity) }
       })
-    } else {
+    } else if (entity.user) {
+      const { user } = entity
+
       navigation.navigate({
         native: {
           screen: 'Collection',
           params: { id: entity.playlist_id, fromNotifications: true }
         },
-        web: { route: getCollectionRoute(entity) }
+        web: { route: getCollectionRoute({ ...entity, user }) }
       })
     }
     dispatch(close())
