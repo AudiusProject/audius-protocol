@@ -16,6 +16,8 @@ const { asyncRetry } = require('../../utils')
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
+const devMode = config.get('devMode')
+const DB_QUERY_LIMIT = devMode ? 5 : 10000
 
 /**
  * Export data for user from secondary and save locally, until complete
@@ -116,6 +118,7 @@ async function fetchExportFromSecondary({
   clockRangeMin,
   selfEndpoint
 }) {
+  // Makes request with default `maxExportClockValueRange`
   const exportQueryParams = {
     wallet_public_key: [wallet], // export requires a wallet array
     clock_range_min: clockRangeMin,
@@ -403,8 +406,9 @@ async function filterOutAlreadyPresentDBEntries({
 }) {
   let filteredEntries = fetchedEntries
 
-  const limit = 10000
+  const limit = DB_QUERY_LIMIT
   let offset = 0
+
   let complete = false
   while (!complete) {
     const localEntries = await tableInstance.findAll({
