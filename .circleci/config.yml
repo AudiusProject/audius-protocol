@@ -41,7 +41,8 @@ jobs:
           command: |
             # cleanup code setup before starting actual execution
             cleanup() {
-              echo "inside trap cleanup"
+              echo "trap.cleanup(): Deleting GCP box and firewall"
+
               # Delete GCP box
               gcloud compute instances delete $GCLOUD_VM_NAME --quiet
 
@@ -81,9 +82,9 @@ jobs:
 
               # on error, run this function
               exit_ssh() {
-                echo "inside trap exit_ssh"
-                echo $?
-                exit $?
+                exit_code=$?
+                echo "trap.exit_ssh(): exit code: ${exit_code}"
+                exit ${exit_code}
               }
               trap exit_ssh EXIT
 
@@ -91,26 +92,34 @@ jobs:
               A run init-repos up;
               A up;
               A run monitoring up;
+              A run logging up;
               A down;
               cd audius-protocol/;
               git checkout -f;
               exit;
             EOF
-
-            echo "got status code from ssh agent" $?
+            exit_code=$?
 
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
-            # Delete image with the same name (if exists)
-            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+            if [ ${exit_code} -ne 0 ]; then
+              echo "Build via ssh returned exit code '${exit_code}'"
+              echo "Skipping the bake process!"
+              exit ${exit_code}
+            else
+              echo "Baking images..."
 
-            # Create the new CI bake image
-            gcloud compute images create "$BAKE_IMAGE_NAME" \
-              --project="$GOOGLE_PROJECT_ID" \
-              --source-disk="$GCLOUD_VM_NAME" \
-              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
-              --storage-location=us
+              # Delete image with the same name (if exists)
+              gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+
+              # Create the new CI bake image
+              gcloud compute images create "$BAKE_IMAGE_NAME" \
+                --project="$GOOGLE_PROJECT_ID" \
+                --source-disk="$GCLOUD_VM_NAME" \
+                --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
+                --storage-location=us
+            fi
 
   test-mad-dog-e2e:
     parameters:
