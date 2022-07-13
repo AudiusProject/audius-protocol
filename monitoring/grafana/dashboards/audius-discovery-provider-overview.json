@@ -65,6 +65,7 @@
           "uid": "ilGck637k",
           "version": 2
         },
+        "id": 1,
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -95,6 +96,7 @@
           "uid": "3en9tpenk",
           "version": 2
         },
+        "id": 2,
         "gridPos": {
           "h": 8,
           "w": 12,
@@ -402,7 +404,7 @@
         "libraryPanel": {
           "description": "",
           "meta": {
-            "connectedDashboards": 1,
+            "connectedDashboards": 2,
             "createdBy": {
               "avatarUrl": "",
               "id": 0,
@@ -411,16 +413,17 @@
             "folderName": "General",
             "folderUid": "",
             "updatedBy": {
-              "avatarUrl": "",
-              "id": 0,
-              "name": ""
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
             }
           },
           "name": "Blockdiff",
           "type": "timeseries",
           "uid": "hhRZ9K67k",
-          "version": 2
+          "version": 3
         },
+        "id": 3,
         "gridPos": {
           "h": 8,
           "w": 8,
@@ -451,6 +454,7 @@
           "uid": "erW7rK6nk",
           "version": 2
         },
+        "id": 5,
         "gridPos": {
           "h": 8,
           "w": 8,
@@ -481,6 +485,7 @@
           "uid": "0aIn9F6nk",
           "version": 2
         },
+        "id": 7,
         "gridPos": {
           "h": 8,
           "w": 8,
