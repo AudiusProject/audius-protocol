@@ -254,21 +254,19 @@ async function issueAndWaitForSecondarySyncRequests(
   req,
   ignoreWriteQuorum = false
 ) {
+  const route = req.url.split('?')[0]
   const serviceRegistry = req.app.get('serviceRegistry')
-  const { manualSyncQueue } = serviceRegistry
+  const { manualSyncQueue, prometheusRegistry } = serviceRegistry
+
+  const histogram = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM
+  )
+  const endHistogramTimer = histogram.startTimer()
 
   // Parse request headers
   const pollingDurationMs =
     req.header('Polling-Duration-ms') ||
     config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
-  req.logger.info(
-    `theo req.header('Enforce-Write-Quorum'): ${req.header(
-      'Enforce-Write-Quorum'
-    )}`
-  )
-  req.logger.info(
-    `theo config.get('enforceWriteQuorum'): ${config.get('enforceWriteQuorum')}`
-  )
   // Enforce-Write-Quorum header always takes precedence over env var if explicitly defined.
   // Empty/undefined header means enforceWriteQuorum env var decides if write quorum is enabled
   // We have to support string and boolean until libs updates axios to v0.20.0 because axios has a
@@ -290,38 +288,60 @@ async function issueAndWaitForSecondarySyncRequests(
       enforceWriteQuorum = true
     }
   }
-  // TODO: Search logs for failure message
-  // Make sure it's observable
 
-  // TODO: Test case 5
+  // This sync request uses the manual sync queue, so we can't proceed if manual syncs are disabled
   if (config.get('manualSyncsDisabled')) {
-    req.logger.info(
-      `issueAndWaitForSecondarySyncRequests - Cannot proceed due to manualSyncsDisabled ${config.get(
-        'manualSyncsDisabled'
-      )})`
-    )
+    endHistogramTimer({
+      enforceWriteQuorum: String(enforceWriteQuorum),
+      ignoreWriteQuorum: String(ignoreWriteQuorum),
+      route,
+      result: 'failed_short_circuit'
+    })
+    const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Cannot proceed due to manualSyncsDisabled ${config.get(
+      'manualSyncsDisabled'
+    )})`
+    req.logger.error(errorMsg)
+    if (enforceWriteQuorum) {
+      throw new Error(errorMsg)
+    }
     return
   }
 
-  // TODO: Test case 6 (should've been set in auth middleware)
+  // Wallet is required and should've been set in auth middleware
   if (!req.session || !req.session.wallet) {
-    req.logger.error(
-      `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
-    )
+    endHistogramTimer({
+      enforceWriteQuorum: String(enforceWriteQuorum),
+      ignoreWriteQuorum: String(ignoreWriteQuorum),
+      route,
+      result: 'failed_short_circuit'
+    })
+    const errorMsg = `issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`
+    req.logger.error(errorMsg)
+    if (enforceWriteQuorum) {
+      throw new Error(errorMsg)
+    }
     return
   }
   const wallet = req.session.wallet
 
-  // TODO: Test case 7
   try {
     if (
       !req.session.nodeIsPrimary ||
       !req.session.creatorNodeEndpoints ||
       !Array.isArray(req.session.creatorNodeEndpoints)
     ) {
-      req.logger.info(
-        'issueAndWaitForSecondarySyncRequests - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints.'
-      )
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_short_circuit'
+      })
+      const errorMsg =
+        'issueAndWaitForSecondarySyncRequests Error - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints'
+      req.logger.error(errorMsg)
+      if (enforceWriteQuorum) {
+        throw new Error(errorMsg)
+      }
       return
     }
 
@@ -331,6 +351,12 @@ async function issueAndWaitForSecondarySyncRequests(
     )
 
     if (primary !== config.get('creatorNodeEndpoint')) {
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_short_circuit'
+      })
       throw new Error(
         `issueAndWaitForSecondarySyncRequests Error - Cannot process sync op since this node is not the primary for user ${wallet}. Instead found ${primary}.`
       )
@@ -341,13 +367,18 @@ async function issueAndWaitForSecondarySyncRequests(
       where: { walletPublicKey: wallet }
     })
     if (!cnodeUser || !cnodeUser.clock) {
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_short_circuit'
+      })
       throw new Error(
         `issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`
       )
     }
     const primaryClockVal = cnodeUser.clock
 
-    // TODO: Tail both logs. Should see secondary perform/finish sync BEFORE primary returns 200
     const replicationStart = Date.now()
     try {
       const secondaryPromises = secondaries.map((secondary) => {
@@ -369,7 +400,19 @@ async function issueAndWaitForSecondarySyncRequests(
           Date.now() - replicationStart
         }ms`
       )
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'succeeded'
+      })
     } catch (e) {
+      endHistogramTimer({
+        enforceWriteQuorum: String(enforceWriteQuorum),
+        ignoreWriteQuorum: String(ignoreWriteQuorum),
+        route,
+        result: 'failed_sync'
+      })
       const errorMsg = `issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${
         Date.now() - replicationStart
       }ms`
@@ -384,6 +427,12 @@ async function issueAndWaitForSecondarySyncRequests(
 
     // If any error during replication, error if quorum is enforced
   } catch (e) {
+    endHistogramTimer({
+      enforceWriteQuorum: String(enforceWriteQuorum),
+      ignoreWriteQuorum: String(ignoreWriteQuorum),
+      route,
+      result: 'failed_uncaught_error'
+    })
     req.logger.error(
       `issueAndWaitForSecondarySyncRequests Error - wallet ${wallet} ||`,
       e.message
