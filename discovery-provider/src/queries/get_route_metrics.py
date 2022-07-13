@@ -12,14 +12,14 @@ from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
 )
 from src.models.metrics.aggregate_monthly_total_users_metrics import (
-    AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyTotalUsersMetric,
 )
 from src.models.metrics.aggregate_monthly_unique_users_metrics import (
-    AggregateMonthlyUniqueUsersMetrics,
+    AggregateMonthlyUniqueUsersMetric,
 )
-from src.models.metrics.route_metrics import RouteMetrics
-from src.models.metrics.route_metrics_day_matview import RouteMetricsDayMatview
-from src.models.metrics.route_metrics_month_matview import RouteMetricsMonthMatview
+from src.models.metrics.route_metrics import RouteMetric
+from src.models.metrics.route_metrics_day_matview import t_route_metrics_day_bucket
+from src.models.metrics.route_metrics_month_matview import t_route_metrics_month_bucket
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -98,11 +98,11 @@ def _get_historical_route_metrics(session):
     monthly_metrics = {}
     unique_monthly_counts = (
         session.query(
-            AggregateMonthlyUniqueUsersMetrics.timestamp,
-            AggregateMonthlyUniqueUsersMetrics.count,
-            AggregateMonthlyUniqueUsersMetrics.summed_count,
+            AggregateMonthlyUniqueUsersMetric.timestamp,
+            AggregateMonthlyUniqueUsersMetric.count,
+            AggregateMonthlyUniqueUsersMetric.summed_count,
         )
-        .filter(AggregateMonthlyUniqueUsersMetrics.timestamp < first_day_of_month)
+        .filter(AggregateMonthlyUniqueUsersMetric.timestamp < first_day_of_month)
         .all()
     )
     unique_monthly_count_records = ft.reduce(
@@ -116,10 +116,10 @@ def _get_historical_route_metrics(session):
 
     total_monthly_counts = (
         session.query(
-            AggregateMonthlyTotalUsersMetrics.timestamp,
-            AggregateMonthlyTotalUsersMetrics.count,
+            AggregateMonthlyTotalUsersMetric.timestamp,
+            AggregateMonthlyTotalUsersMetric.count,
         )
-        .filter(AggregateMonthlyTotalUsersMetrics.timestamp < first_day_of_month)
+        .filter(AggregateMonthlyTotalUsersMetric.timestamp < first_day_of_month)
         .all()
     )
     total_monthly_count_records = ft.reduce(
@@ -329,12 +329,12 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
         if bucket_size == "month":
             unique_counts = (
                 session.query(
-                    AggregateMonthlyUniqueUsersMetrics.timestamp,
-                    AggregateMonthlyUniqueUsersMetrics.count,
-                    AggregateMonthlyUniqueUsersMetrics.summed_count,
+                    AggregateMonthlyUniqueUsersMetric.timestamp,
+                    AggregateMonthlyUniqueUsersMetric.count,
+                    AggregateMonthlyUniqueUsersMetric.summed_count,
                 )
                 .filter(
-                    AggregateMonthlyUniqueUsersMetrics.timestamp < first_day_of_month
+                    AggregateMonthlyUniqueUsersMetric.timestamp < first_day_of_month
                 )
                 .order_by(asc("timestamp"))
                 .all()
@@ -350,12 +350,10 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
 
             total_counts = (
                 session.query(
-                    AggregateMonthlyTotalUsersMetrics.timestamp,
-                    AggregateMonthlyTotalUsersMetrics.count,
+                    AggregateMonthlyTotalUsersMetric.timestamp,
+                    AggregateMonthlyTotalUsersMetric.count,
                 )
-                .filter(
-                    AggregateMonthlyTotalUsersMetrics.timestamp < first_day_of_month
-                )
+                .filter(AggregateMonthlyTotalUsersMetric.timestamp < first_day_of_month)
                 .order_by(asc("timestamp"))
                 .all()
             )
@@ -488,14 +486,14 @@ def _get_route_metrics(session, args):
         query = None
         if bucket_size == "day":
             # subtract 1 day from the start_time so that the last day is fully complete
-            query = session.query(RouteMetricsDayMatview).filter(
-                RouteMetricsDayMatview.time
+            query = session.query(t_route_metrics_day_bucket).filter(
+                t_route_metrics_day_bucket.c.time
                 > (args.get("start_time") - timedelta(days=1))
             )
 
         else:
-            query = session.query(RouteMetricsMonthMatview).filter(
-                RouteMetricsMonthMatview.time > (args.get("start_time"))
+            query = session.query(t_route_metrics_month_bucket).filter(
+                t_route_metrics_month_bucket.c.time > (args.get("start_time"))
             )
 
         query = query.order_by(desc("time")).limit(args.get("limit")).all()
@@ -503,32 +501,30 @@ def _get_route_metrics(session, args):
         return metrics
 
     metrics_query = session.query(
-        func.date_trunc(args.get("bucket_size"), RouteMetrics.timestamp).label(
+        func.date_trunc(args.get("bucket_size"), RouteMetric.timestamp).label(
             "timestamp"
         ),
-        func.sum(RouteMetrics.count).label("count"),
-        func.count(RouteMetrics.ip.distinct()).label("unique_count"),
-    ).filter(RouteMetrics.timestamp > args.get("start_time"))
+        func.sum(RouteMetric.count).label("count"),
+        func.count(RouteMetric.ip.distinct()).label("unique_count"),
+    ).filter(RouteMetric.timestamp > args.get("start_time"))
     if args.get("exact") == True:
-        metrics_query = metrics_query.filter(
-            RouteMetrics.route_path == args.get("path")
-        )
+        metrics_query = metrics_query.filter(RouteMetric.route_path == args.get("path"))
     else:
         metrics_query = metrics_query.filter(
-            RouteMetrics.route_path.like(f"{args.get('path')}%")
+            RouteMetric.route_path.like(f"{args.get('path')}%")
         )
 
     if args.get("query_string", None) != None:
         metrics_query = metrics_query.filter(
             or_(
-                RouteMetrics.query_string.like(f"%{args.get('query_string')}"),
-                RouteMetrics.query_string.like(f"%{args.get('query_string')}&%"),
+                RouteMetric.query_string.like(f"%{args.get('query_string')}"),
+                RouteMetric.query_string.like(f"%{args.get('query_string')}&%"),
             )
         )
 
     metrics_query = (
         metrics_query.group_by(
-            func.date_trunc(args.get("bucket_size"), RouteMetrics.timestamp)
+            func.date_trunc(args.get("bucket_size"), RouteMetric.timestamp)
         )
         .order_by(desc("timestamp"))
         .limit(args.get("limit"))

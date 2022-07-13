@@ -288,7 +288,9 @@ def refresh_user_ids(
                 # Convert Sol balances to wei
                 waudio_in_wei = to_wei(waudio_balance)
                 assoc_sol_balance_in_wei = to_wei(associated_sol_balance)
-                user_waudio_in_wei = to_wei(user_balance.waudio)
+                user_waudio_in_wei = (
+                    to_wei(user_balance.waudio) if user_balance.waudio else 0
+                )
                 user_assoc_sol_balance_in_wei = to_wei(
                     user_balance.associated_sol_wallets_balance
                 )
