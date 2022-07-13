@@ -11,7 +11,7 @@ const { getCreatorNodeEndpoints } = require('../../middlewares')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const { serviceRegistry } = require('../../serviceRegistry')
-const { asyncRetry } = require('../../utils')
+const asyncRetry = require('../../utils/asyncRetry')
 
 const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
 const EXPORT_REQ_MAX_RETRIES = 3

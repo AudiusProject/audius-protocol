@@ -1057,7 +1057,7 @@ describe('test nodesync', async function () {
   })
 })
 
-describe.only('Test primarySyncFromSecondary() with mocked export', async () => {
+describe('Test primarySyncFromSecondary() with mocked export', async () => {
   let server, app, serviceRegistryMock, primarySyncFromSecondaryStub
 
   const NODES = {
@@ -1244,6 +1244,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send(metadata)
       .expect(200)
 
@@ -1259,6 +1260,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send(associateRequest)
       .expect(200)
 
@@ -1275,10 +1277,11 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
         testField: 'testValue2'
       }
     }
-    const userMetadataResp = await request(app)
+    await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
       .set('User-Id', userId)
+      .set('Enforce-Write-Quorum', false)
       .send(metadata)
       .expect(200)
   }
@@ -1298,8 +1301,6 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     const storagePath = config.get('storagePath')
     const absoluteStoragePath = path.resolve(storagePath)
     await fs.emptyDir(path.resolve(absoluteStoragePath))
-
-    config.set('devMode', true)
 
     // Start server
     const appInfo = await getApp(
@@ -1331,7 +1332,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     await server.close()
   })
 
-  it.skip('Primary correctly syncs from secondary when primary has no state', async function () {
+  it('Primary correctly syncs from secondary when primary has no state', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1367,7 +1368,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     await assertFullUserStateEquality(USER_1_WALLET, exportedUserData)
   })
 
-  it.skip('Primary correctly syncs from secondary when nodes have divergent state', async function () {
+  it('Primary correctly syncs from secondary when nodes have divergent state', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1485,7 +1486,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     )
   })
 
-  it.skip('Primary correctly syncs from secondary when primary has subset of secondary state', async function () {
+  it('Primary correctly syncs from secondary when primary has subset of secondary state', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1547,7 +1548,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     await assertFullUserStateEquality(USER_1_WALLET, exportedUserData)
   })
 
-  it.skip('Primary correctly syncs from secondary when both have same data', async function () {
+  it('Primary correctly syncs from secondary when both have same data', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1608,7 +1609,7 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
     await assertFullUserStateEquality(USER_1_WALLET, exportedUserData)
   })
 
-  it.only('Primary correctly syncs from secondary when primary has superset of secondary state', async function () {
+  it('Primary correctly syncs from secondary when primary has superset of secondary state', async function () {
     const {
       exportObj,
       cnodeUser: exportedCnodeUser,
@@ -1696,13 +1697,4 @@ describe.only('Test primarySyncFromSecondary() with mocked export', async () => 
 
     assertTableEquality(localFinalClockRecords, localInitialClockRecords, [])
   })
-
-  it.skip('Primary correctly syncs from secondary when secondary has state requiring multiple syncs', async function () {})
-
-  it.skip('Test with low maxExportClockValueRange to force multiple rounds')
-
-  /**
-   * TODO
-   * - ensure devMode = true
-   */
 })
