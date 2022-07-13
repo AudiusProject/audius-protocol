@@ -11,7 +11,8 @@ export enum FeatureFlags {
   ENABLE_SPL_AUDIO = 'enable_spl_audio',
   PLAYLIST_FOLDERS = 'playlist_folders',
   DISABLE_SIGN_UP_CONFIRMATION = 'disable_sign_up_confirmation',
-  TIPPING_ENABLED = 'tipping_enabled'
+  TIPPING_ENABLED = 'tipping_enabled',
+  WRITE_QUORUM_ENABLED = 'write_quorum_enabled'
 }
 
 /**
@@ -29,7 +30,8 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.ENABLE_SPL_AUDIO]: false,
   [FeatureFlags.PLAYLIST_FOLDERS]: false,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: false,
-  [FeatureFlags.TIPPING_ENABLED]: false
+  [FeatureFlags.TIPPING_ENABLED]: false,
+  [FeatureFlags.WRITE_QUORUM_ENABLED]: false
 }
 
 export enum FeatureFlagCohortType {
@@ -61,5 +63,6 @@ export const flagCohortType: {
   [FeatureFlags.ENABLE_SPL_AUDIO]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.PLAYLIST_FOLDERS]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: FeatureFlagCohortType.SESSION_ID,
-  [FeatureFlags.TIPPING_ENABLED]: FeatureFlagCohortType.SESSION_ID
+  [FeatureFlags.TIPPING_ENABLED]: FeatureFlagCohortType.SESSION_ID,
+  [FeatureFlags.WRITE_QUORUM_ENABLED]: FeatureFlagCohortType.USER_ID
 }

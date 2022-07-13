@@ -39,9 +39,9 @@ npm run start:<environment>
 npm run build:<environment>
 ```
 
-### Using local linked version of @audius/libs
+### Using local linked version of @audius/libs (@audius/sdk)
 
-To run audius-client/web with a local version of @audius/libs run:
+To run audius-client/web with a local version of @audius/sdk run:
 
 - In a separate terminal for `audius-protocol/libs`
 ```bash
@@ -49,11 +49,11 @@ npm link
 npm run dev
 ```
 
-This will link @audius/libs, and also run it it dev mode, which will transpiles changes and triggers a hot-reload in web.
+This will link @audius/sdk, and also run it it dev mode, which will transpiles changes and triggers a hot-reload in web.
 
-- In terminal for `audius-client/web`
+- In terminal for `audius-client/packages/web`
 ```bash
-npm link @audius/libs
+npm link @audius/sdk
 ```
 
 Then start the application using the start/build commands above.

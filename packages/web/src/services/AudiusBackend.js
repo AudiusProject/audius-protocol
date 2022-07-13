@@ -284,6 +284,7 @@ const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
 class AudiusBackend {
   static currentDiscoveryProvider = null
   static didSelectDiscoveryProviderListeners = []
+
   static addDiscoveryProviderSelectionListener(listener) {
     AudiusBackend.didSelectDiscoveryProviderListeners.push(listener)
     if (AudiusBackend.currentDiscoveryProvider !== null) {
@@ -486,7 +487,10 @@ class AudiusBackend {
           /* lazyConnect */ true,
           /* passList */ null,
           contentNodeBlockList,
-          monitoringCallbacks.contentNode
+          monitoringCallbacks.contentNode,
+          /* writeQuorumEnabled */ getFeatureEnabled(
+            FeatureFlags.WRITE_QUORUM_ENABLED
+          )
         ),
         // Electron cannot use captcha until it serves its assets from
         // a "domain" (e.g. localhost) rather than the file system itself.
