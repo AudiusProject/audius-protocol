@@ -91,7 +91,7 @@ export class EntityManager extends Base {
         userId: ownerId,
         entityType,
         entityId,
-        createAction,
+        action: createAction,
         metadataMultihash
       })
       logger.info(`CreatePlaylistData - ${JSON.stringify(resp)}`)
@@ -237,6 +237,7 @@ export class EntityManager extends Base {
       )
     } catch (e) {
       error = (e as Error).message
+      console.log(error)
     }
     return { txReceipt: resp.txReceipt, error }
   }
