@@ -39,7 +39,7 @@ contract EntityManager is SigningLogicInitializable {
         );
         verifierAddress = _verifierAddress;
         SigningLogicInitializable.initialize(
-            "Audius Data",
+            "Entity Manager",
             "1",
             _networkId
         );
