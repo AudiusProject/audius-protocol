@@ -48,7 +48,7 @@ const useActiveRewardIds = () => {
   const rewardsString = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   if (rewardsString === null) return []
   const rewards = rewardsString.split(',') as ChallengeRewardID[]
-  const activeRewards = rewards.filter(reward => validRewardIds.has(reward))
+  const activeRewards = rewards.filter((reward) => validRewardIds.has(reward))
   return activeRewards
 }
 
@@ -70,11 +70,11 @@ const NavAudio = () => {
 
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const activeRewardIds = useActiveRewardIds()
-  const activeUserChallenges = Object.values(
-    optimisticUserChallenges
-  ).filter(challenge => activeRewardIds.includes(challenge.challenge_id))
+  const activeUserChallenges = Object.values(optimisticUserChallenges).filter(
+    (challenge) => activeRewardIds.includes(challenge.challenge_id)
+  )
   const hasClaimableTokens = activeUserChallenges.some(
-    challenge => challenge.claimableAmount > 0
+    (challenge) => challenge.claimableAmount > 0
   )
 
   const [bubbleType, setBubbleType] = useState<BubbleType>('none')
@@ -112,8 +112,7 @@ const NavAudio = () => {
         { [styles.hasBalance]: positiveTotalBalance },
         { [styles.show]: true }
       )}
-      onClick={goToAudioPage}
-    >
+      onClick={goToAudioPage}>
       <div className={styles.amountContainer}>
         {positiveTotalBalance && audioBadge ? (
           cloneElement(audioBadge, {
@@ -133,16 +132,14 @@ const NavAudio = () => {
           from={{ opacity: 0 }}
           enter={{ opacity: 1 }}
           leave={{ opacity: 0 }}
-          config={{ duration: 100 }}
-        >
-          {item => props =>
+          config={{ duration: 100 }}>
+          {(item) => (props) =>
             item !== 'none' && (
               <animated.span
                 style={props}
                 className={cn(styles.actionBubble, {
                   [styles.claimRewards]: item === 'claim'
-                })}
-              >
+                })}>
                 <span>
                   {item === 'claim'
                     ? messages.claimRewards

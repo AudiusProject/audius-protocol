@@ -58,8 +58,7 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
   return (
     <div
       className={cn(cn(styles.container, mobileStyle))}
-      onClick={() => onClick(bannerType)}
-    >
+      onClick={() => onClick(bannerType)}>
       <div className={cn(styles.rewardsText, mobileStyle)}>
         <div className={styles.iconCrown}>
           <IconCrown />

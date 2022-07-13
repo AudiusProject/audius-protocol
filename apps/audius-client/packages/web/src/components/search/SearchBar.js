@@ -23,7 +23,7 @@ const ALL_RESULTS_OPTION = 'ALL_RESULTS_OPTION'
 const NO_RESULTS_OPTION = 'NO_RESULTS_OPTION'
 
 const messages = {
-  searchTagsTitle: tag => `Search Tags for ${tag}`,
+  searchTagsTitle: (tag) => `Search Tags for ${tag}`,
   searchTagsDisabled: () => 'Search Tags'
 }
 
@@ -31,15 +31,13 @@ const TagSearchPopup = ({ tag, style, onClick, disabled, focused }) => (
   <div
     style={style}
     className={styles.tagSearchPopup}
-    onClick={() => !disabled && onClick()}
-  >
+    onClick={() => !disabled && onClick()}>
     <div
       className={cn(
         { [styles.enabled]: !disabled },
         { [styles.focused]: focused }
       )}
-      tabIndex={-1}
-    >
+      tabIndex={-1}>
       {messages[disabled ? 'searchTagsDisabled' : 'searchTagsTitle'](tag)}
       {!disabled && <IconArrow className={styles.tagArrow} />}
     </div>
@@ -88,7 +86,7 @@ class SearchBar extends Component {
   }
 
   onSearch = (value, action) => {
-    this.setState({ value: value, valueFromParent: false })
+    this.setState({ value, valueFromParent: false })
 
     // Set the search state but don't actually call search
     this.props.onSearch(value, false)
@@ -100,7 +98,7 @@ class SearchBar extends Component {
     })
   }
 
-  onChange = value => {
+  onChange = (value) => {
     clearTimeout(this.state.debounce)
   }
 
@@ -161,7 +159,7 @@ class SearchBar extends Component {
     }
   }
 
-  onKeyDown = e => {
+  onKeyDown = (e) => {
     // Stop up arrow and down arrow from moving the cursor in the text input.
     switch (e.keyCode) {
       case 38 /* up */:
@@ -251,21 +249,16 @@ class SearchBar extends Component {
   }
 
   render() {
-    const {
-      status,
-      searchText,
-      dataSource,
-      resultsCount,
-      isTagSearch
-    } = this.props
+    const { status, searchText, dataSource, resultsCount, isTagSearch } =
+      this.props
     const searchResults = dataSource.sections
-      .filter(group => {
+      .filter((group) => {
         if (group.children.length < 1) {
           return false
         }
         const vals = group.children
           .slice(0, Math.min(3, group.children.length))
-          .filter(opt => {
+          .filter((opt) => {
             return opt.key || opt.primary
           })
         if (vals < 1) {
@@ -273,11 +266,11 @@ class SearchBar extends Component {
         }
         return true
       })
-      .map(group => ({
+      .map((group) => ({
         label: this.renderTitle(group.title),
         options: group.children
           .slice(0, Math.min(3, group.children.length))
-          .map(opt => ({
+          .map((opt) => ({
             label: (
               <div className={styles.option} key={opt.key || opt.primary}>
                 <SearchBarResult
@@ -358,15 +351,13 @@ class SearchBar extends Component {
       <div
         className={styles.searchBar}
         id='search-bar-autocomplete'
-        ref={this.searchBarRef}
-      >
+        ref={this.searchBarRef}>
         {/* show search spinner if not a tag search and there is some value present */}
         {!isTagSearch && this.state.value && (
           <div
             className={cn(styles.loadingAnimation, {
               [styles.show]: status === Status.LOADING
-            })}
-          >
+            })}>
             <Lottie
               options={{
                 loop: true,
@@ -391,8 +382,7 @@ class SearchBar extends Component {
           open={showAutocomplete}
           value={this.state.value}
           // Mount the dropdown inside the searchbar div (otherwise it just gets dumped at root).
-          getPopupContainer={trigger => trigger.parentNode}
-        >
+          getPopupContainer={(trigger) => trigger.parentNode}>
           <Input
             placeholder='Search'
             name='search'
@@ -412,11 +402,10 @@ class SearchBar extends Component {
           config={{
             tension: 310,
             friction: 26
-          }}
-        >
-          {item =>
+          }}>
+          {(item) =>
             item &&
-            (props => (
+            ((props) => (
               <TagSearchPopup
                 style={props}
                 tag={this.state.value}

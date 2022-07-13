@@ -42,7 +42,7 @@ export const TrendingTrackNotification = (
   const { rank } = notification
   const rankSuffix = getRankSuffix(rank)
   const track = useSelectorWeb(
-    state => getNotificationEntity(state, notification),
+    (state) => getNotificationEntity(state, notification),
     isEqual
   )
   const navigation = useDrawerNavigation()

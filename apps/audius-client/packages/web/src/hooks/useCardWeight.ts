@@ -72,12 +72,9 @@ const useCardWeight = ({
   const onMove = useCallback(
     ({ clientX: x, clientY: y }: { clientX: number; clientY: number }) => {
       if (cardRef.current && !isDisabled) {
-        const {
-          top,
-          bottom,
-          left,
-          right
-        } = (cardRef.current as any).getBoundingClientRect()
+        const { top, bottom, left, right } = (
+          cardRef.current as any
+        ).getBoundingClientRect()
         const width = right - left
         const height = bottom - top
         const offsetX = x - (left + width / 2)

@@ -47,19 +47,19 @@ const provider = createUserListProvider<User, SupportersProcessExtraType>({
 
     const supporters = await fetchSupporters({
       encodedUserId,
-      limit: limit,
-      offset: offset
+      limit,
+      offset
     })
     const users = supporters
       .sort((s1, s2) => s1.rank - s2.rank)
-      .map(s => adapter.makeUser(s.sender))
+      .map((s) => adapter.makeUser(s.sender))
       .filter(removeNullable)
     return { users, extra: { userId: entityId, supporters } }
   },
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (user: User, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < user.supporter_count,
-  includeCurrentUser: _ => false,
+  includeCurrentUser: (_) => false,
   /**
    * Tipping sagas for user list modals are special in that they require
    * tipping data on top of the otherwise independent user data.

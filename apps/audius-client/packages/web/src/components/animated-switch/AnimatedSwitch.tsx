@@ -77,9 +77,8 @@ const AnimatedSwitch = ({
   handle,
   isInitialPage
 }: AnimatedSwitchProps) => {
-  const { stackReset, setStackReset, slideDirection } = useContext(
-    RouterContext
-  )
+  const { stackReset, setStackReset, slideDirection } =
+    useContext(RouterContext)
   const animationRef = useRef<HTMLDivElement>(null)
   const [disabled, setDisabled] = useState(false)
 
@@ -165,7 +164,7 @@ const AnimatedSwitch = ({
 
   const transitions = useTransition(
     location,
-    location => getPathname(location),
+    (location) => getPathname(location),
     getAnimation()
   )
 
@@ -191,8 +190,7 @@ const AnimatedSwitch = ({
           bottom: 0,
           ...extraStyles
         }}
-        key={key}
-      >
+        key={key}>
         <Switch location={item}>{children}</Switch>
       </animated.div>
     )

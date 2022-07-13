@@ -5,9 +5,9 @@ import { CompletionStageArray } from './PropTypes'
 import TaskCompletionItem from './TaskCompletionItem'
 import styles from './TaskCompletionList.module.css'
 
-const sortIncompleteFirst = list => {
-  const incomplete = list.filter(e => !e.isCompleted)
-  const complete = list.filter(e => e.isCompleted)
+const sortIncompleteFirst = (list) => {
+  const incomplete = list.filter((e) => !e.isCompleted)
+  const complete = list.filter((e) => e.isCompleted)
   return incomplete.concat(complete)
 }
 
@@ -21,7 +21,7 @@ const sortIncompleteFirst = list => {
  */
 const TaskCompletionList = ({ completionStages, className }) => (
   <div className={cn(styles.container, className)}>
-    {sortIncompleteFirst(completionStages).map(e => (
+    {sortIncompleteFirst(completionStages).map((e) => (
       <TaskCompletionItem
         title={e.title}
         isCompleted={e.isCompleted}

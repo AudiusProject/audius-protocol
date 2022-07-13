@@ -92,9 +92,9 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
   return (
     <View style={[styles.root, style]}>
       {users
-        .filter(u => !u.is_deactivated)
+        .filter((u) => !u.is_deactivated)
         .slice(0, sliceLimit)
-        .map(user => (
+        .map((user) => (
           <ProfilePicture
             profile={user}
             key={user.user_id}

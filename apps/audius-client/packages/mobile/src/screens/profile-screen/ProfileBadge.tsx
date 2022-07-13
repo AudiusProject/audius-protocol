@@ -60,8 +60,7 @@ export const ProfileBadge = () => {
   return (
     <Tile
       styles={{ root: styles.root, content: styles.content }}
-      onPress={handlePress}
-    >
+      onPress={handlePress}>
       <IconAudioBadge tier={tier} height={28} width={28} style={styles.badge} />
       <View>
         <Text style={styles.tierNumber}>

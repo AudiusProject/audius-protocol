@@ -37,11 +37,11 @@ export class Wave {
 
   update = () => {
     this.start = 0
-    this.sprites.forEach(sprite => {
+    this.sprites.forEach((sprite) => {
       sprite.x = sprite.x + this.speed * 0.16
       if (sprite.x < this.start) this.start = sprite.x
     })
-    this.sprites.forEach(sprite => {
+    this.sprites.forEach((sprite) => {
       if (sprite.x > this.width) {
         sprite.x = this.state - this.spriteWidth
         this.start = sprite.x
@@ -51,7 +51,7 @@ export class Wave {
 }
 
 const resourcesToLoad = [bgSmallWave, bgLargeWave]
-const isReady = new Promise(resolve =>
+const isReady = new Promise((resolve) =>
   PIXI.loader.add(resourcesToLoad).load(() => resolve(true))
 )
 
@@ -109,7 +109,7 @@ export default class WaveBG {
       // Listen for frame updates
       if (!this.useStatic) {
         this.app.ticker.add(() => {
-          this.waves.forEach(wave => {
+          this.waves.forEach((wave) => {
             wave.update()
           })
         })
@@ -118,7 +118,7 @@ export default class WaveBG {
   }
 
   createWaves = () => {
-    this.waves = this.waveConfig.map(waveConfig => {
+    this.waves = this.waveConfig.map((waveConfig) => {
       return new Wave(
         waveConfig.type,
         this.app.renderer.height,
@@ -129,8 +129,8 @@ export default class WaveBG {
         waveConfig.offset
       )
     })
-    this.waves.forEach(wave =>
-      wave.sprites.forEach(sprite => {
+    this.waves.forEach((wave) =>
+      wave.sprites.forEach((sprite) => {
         this.app.stage.addChild(sprite)
       })
     )
@@ -142,8 +142,8 @@ export default class WaveBG {
     this.height = this.app.renderer.height
     this.background = this.getBackground(this.width, this.height)
     this.app.stage.addChild(this.background)
-    this.waves.forEach(wave =>
-      wave.sprites.forEach(sprite => {
+    this.waves.forEach((wave) =>
+      wave.sprites.forEach((sprite) => {
         this.app.stage.removeChild(sprite)
       })
     )

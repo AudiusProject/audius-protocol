@@ -38,9 +38,8 @@ export function* retrieveTrending({
     remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
   )
 
-  const cachedTracks: ReturnType<ReturnType<
-    typeof getTrendingEntries
-  >> = yield select(getTrendingEntries(timeRange))
+  const cachedTracks: ReturnType<ReturnType<typeof getTrendingEntries>> =
+    yield select(getTrendingEntries(timeRange))
 
   const lastGenre = yield select(getLastFetchedTrendingGenre)
   yield put(setLastFetchedTrendingGenre(genre))
@@ -48,11 +47,11 @@ export function* retrieveTrending({
   const useCached = lastGenre === genre && cachedTracks.length > offset + limit
 
   if (useCached) {
-    const trackIds = cachedTracks.slice(offset, limit + offset).map(t => t.id)
+    const trackIds = cachedTracks.slice(offset, limit + offset).map((t) => t.id)
     const tracksMap: ReturnType<typeof getTracks> = yield select(
       (state: AppState) => getTracks(state, { ids: trackIds })
     )
-    const tracks = trackIds.map(id => tracksMap[id])
+    const tracks = trackIds.map((id) => tracksMap[id])
     return tracks
   }
 
@@ -64,7 +63,7 @@ export function* retrieveTrending({
     timeRange
   })
   if (TF.size > 0) {
-    apiTracks = apiTracks.filter(t => {
+    apiTracks = apiTracks.filter((t) => {
       const shaId = window.Web3.utils.sha3(t.track_id.toString())
       return !TF.has(shaId)
     })

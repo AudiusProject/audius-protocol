@@ -32,7 +32,7 @@ const REACHABILITY_TIMEOUT_MS = 8 * 1000
  * }
  */
 export function* waitForBackendSetup() {
-  const isBackendSetup = yield select(store => store.backend.isSetup)
+  const isBackendSetup = yield select((store) => store.backend.isSetup)
   const isReachable = yield select(getIsReachable)
   if (!isBackendSetup && !isReachable) {
     yield all([

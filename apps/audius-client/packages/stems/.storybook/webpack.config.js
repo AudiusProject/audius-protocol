@@ -3,7 +3,7 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 module.exports = ({ config }) => {
   // css-modules.
   config.module.rules.find(
-    rule => rule.test.toString() === '/\\.css$/'
+    (rule) => rule.test.toString() === '/\\.css$/'
   ).exclude = /\.module\.css$/
   config.module.rules.push({
     test: /\.module\.css$/,

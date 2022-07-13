@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-export const useOnResizeEffect = handleResize => {
+export const useOnResizeEffect = (handleResize) => {
   return useEffect(() => {
     window.addEventListener('resize', handleResize)
     return () => {

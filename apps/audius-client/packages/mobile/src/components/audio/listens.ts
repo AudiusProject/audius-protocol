@@ -19,13 +19,13 @@ export const logListen = async (
   })
 
   fetch(url, { method, headers, body })
-    .then(resp => {
+    .then((resp) => {
       console.info(
         `Logged a listen for ${trackId} for user ${userId}: ${resp.status}`
       )
       track(make({ eventName: EventNames.LISTEN, trackId: `${trackId}` }))
     })
-    .catch(e => {
+    .catch((e) => {
       console.error(e)
       onFailure()
     })

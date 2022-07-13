@@ -17,8 +17,8 @@ export const makeGetSuggestedFollows = () => {
     [getSuggestedFollowUsers, getSuggestedFollows],
     (users, followIds) => {
       return followIds
-        .map(id => users[id])
-        .filter(user => !!user && !user.is_deactivated)
+        .map((id) => users[id])
+        .filter((user) => !!user && !user.is_deactivated)
     }
   )
 }

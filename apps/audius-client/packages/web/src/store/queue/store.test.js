@@ -31,7 +31,7 @@ const initialTracks = {
   }
 }
 
-const makeInitialQueue = config => ({
+const makeInitialQueue = (config) => ({
   order: [
     { id: 1, uid: 'kind:TRACKS-id:1-count:1' },
     { id: 2, uid: 'kind:TRACKS-id:2-count:2' },
@@ -212,8 +212,8 @@ describe('watchNext', () => {
       initialQueue.shuffleOrder[initialQueue.shuffleIndex + 1]
     )
     effects.put
-      .map(x => x.payload.action)
-      .forEach(action => expect(action.type).not.toEqual('queue/add'))
+      .map((x) => x.payload.action)
+      .forEach((action) => expect(action.type).not.toEqual('queue/add'))
   })
 
   it('does not queue autoplay when in repeat mode', async () => {
@@ -226,18 +226,16 @@ describe('watchNext', () => {
       trackId: playingEntry.id,
       playing: true
     })
-    const {
-      storeState: repeatAllStoreState,
-      effects: repeatAllEffects
-    } = await expectNextSagaAndGetStoreState(
-      initialPlayer,
-      initialQueue,
-      nextPlayingEntry
-    )
+    const { storeState: repeatAllStoreState, effects: repeatAllEffects } =
+      await expectNextSagaAndGetStoreState(
+        initialPlayer,
+        initialQueue,
+        nextPlayingEntry
+      )
     expect(repeatAllStoreState.queue.index).toEqual(initialQueue.index + 1)
     repeatAllEffects.put
-      .map(x => x.payload.action)
-      .forEach(action => expect(action.type).not.toEqual('queue/add'))
+      .map((x) => x.payload.action)
+      .forEach((action) => expect(action.type).not.toEqual('queue/add'))
 
     initialQueue = makeInitialQueue({ index: 0, repeat: RepeatMode.SINGLE })
     playingEntry = initialQueue.order[initialQueue.index]
@@ -260,8 +258,8 @@ describe('watchNext', () => {
       initialQueue.index
     )
     repeatSingleAndSkipEffects.put
-      .map(x => x.payload.action)
-      .forEach(action => expect(action.type).not.toEqual('queue/add'))
+      .map((x) => x.payload.action)
+      .forEach((action) => expect(action.type).not.toEqual('queue/add'))
   })
 
   it('plays the next track', async () => {

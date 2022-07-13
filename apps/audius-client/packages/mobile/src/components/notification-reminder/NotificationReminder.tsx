@@ -51,7 +51,7 @@ export const remindUserToTurnOnNotifications = (dispatch: Dispatch) => {
           )
       }
     })
-    .catch(error => {
+    .catch((error) => {
       // Not sure what happened, but swallow the error. Not worth blocking on.
       console.error(error)
     })

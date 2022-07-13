@@ -35,17 +35,13 @@ const useStyles = makeStyles(({ spacing }, { socialsCount }) => ({
 }))
 
 export const ProfileSocials = () => {
-  const {
-    user_id,
-    twitter_handle,
-    instagram_handle,
-    tiktok_handle
-  } = useSelectProfile([
-    'user_id',
-    'twitter_handle',
-    'instagram_handle',
-    'tiktok_handle'
-  ])
+  const { user_id, twitter_handle, instagram_handle, tiktok_handle } =
+    useSelectProfile([
+      'user_id',
+      'twitter_handle',
+      'instagram_handle',
+      'tiktok_handle'
+    ])
 
   const socialsCount = [twitter_handle, instagram_handle, tiktok_handle].filter(
     Boolean
@@ -72,8 +68,7 @@ export const ProfileSocials = () => {
         style={[
           styles.socials,
           tier !== 'none' && { justifyContent: 'center' }
-        ]}
-      >
+        ]}>
         {socialLinks.map(([handle, Link], index) => {
           const link = <Link key={index} showText={socialsCount === 1} />
           if (handle === null || handle === '') return null

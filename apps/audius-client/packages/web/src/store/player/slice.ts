@@ -164,7 +164,7 @@ const slice = createSlice({
     },
     seek: (state, actions: PayloadAction<SeekPayload>) => {},
     error: (state, actions: PayloadAction<ErrorPayload>) => {},
-    incrementCount: state => {
+    incrementCount: (state) => {
       state.counter = state.counter + 1
     }
   }

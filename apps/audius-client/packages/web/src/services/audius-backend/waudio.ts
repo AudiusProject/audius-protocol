@@ -18,9 +18,8 @@ export const doesUserBankExist = async () => {
 
 export const checkIsCreatedTokenAccount = async (addr: string) => {
   await waitForLibsInit()
-  const tokenAccount: Nullable<AccountInfo> = await libs().solanaWeb3Manager.getAssociatedTokenAccountInfo(
-    addr
-  )
+  const tokenAccount: Nullable<AccountInfo> =
+    await libs().solanaWeb3Manager.getAssociatedTokenAccountInfo(addr)
   return tokenAccount != null
 }
 

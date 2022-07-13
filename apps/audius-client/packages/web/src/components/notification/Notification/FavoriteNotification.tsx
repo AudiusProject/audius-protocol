@@ -31,15 +31,8 @@ type FavoriteNotificationProps = {
 }
 export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const { notification } = props
-  const {
-    id,
-    users,
-    userIds,
-    entity,
-    entityType,
-    timeLabel,
-    isViewed
-  } = notification
+  const { id, users, userIds, entity, entityType, timeLabel, isViewed } =
+    notification
   const [firstUser] = users
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
@@ -48,13 +41,13 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const handleGoToEntity = useGoToEntity(entity, entityType)
 
   const handleClick: MouseEventHandler = useCallback(
-    event => {
+    (event) => {
       if (isMultiUser) {
         dispatch(
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,
             entityType: entityToUserListEntity[entityType],
-            id: (id as unknown) as number
+            id: id as unknown as number
           })
         )
         if (isMobile()) {

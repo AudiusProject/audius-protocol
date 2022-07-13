@@ -64,7 +64,7 @@ export const FeedTipTile = () => {
         ...tipToDisplay.followee_supporter_ids
       ]
     : []
-  const usersMap = useSelectorWeb(state =>
+  const usersMap = useSelectorWeb((state) =>
     getUsers(state, { ids: tipToDisplay ? tipperIds : [] })
   )
   const { isEnabled: isTippingEnabled } = useFeatureFlag(
@@ -109,8 +109,7 @@ export const FeedTipTile = () => {
     <Tile
       styles={{
         tile: styles.tile
-      }}
-    >
+      }}>
       <View style={styles.header}>
         <ReceiverDetails receiver={usersMap[tipToDisplay.receiver_id]} />
         <IconClose onPress={handlePressClose} height={16} width={16} />
@@ -120,7 +119,7 @@ export const FeedTipTile = () => {
           tipToDisplay.sender_id,
           ...tipToDisplay.followee_supporter_ids
         ]
-          .map(id => usersMap[id])
+          .map((id) => usersMap[id])
           .filter((user): user is User => !!user)}
         receiver={usersMap[tipToDisplay.receiver_id]}
       />

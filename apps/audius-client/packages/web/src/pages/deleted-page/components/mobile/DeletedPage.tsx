@@ -160,8 +160,7 @@ const DeletedPage = g(
       <MobilePageContainer
         title={title}
         description={description}
-        canonicalUrl={canonicalUrl}
-      >
+        canonicalUrl={canonicalUrl}>
         <div className={styles.contentWrapper}>
           {renderTile()}
           {renderLineup()}

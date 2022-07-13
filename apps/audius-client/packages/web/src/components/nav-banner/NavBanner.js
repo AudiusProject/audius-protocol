@@ -6,7 +6,7 @@ import { PopupMenuIconButton } from 'components/popup-menu-icon-button/PopupMenu
 
 import styles from './NavBanner.module.css'
 
-const NavBanner = props => {
+const NavBanner = (props) => {
   const menuItems = [
     {
       text: 'Sort by Recent',
@@ -24,8 +24,7 @@ const NavBanner = props => {
         <div
           className={cn(styles.navBanner, {
             overflowVisible: !props.shouldMaskContent
-          })}
-        >
+          })}>
           <div className={styles.tabs}>{props.tabs}</div>
 
           {props.isArtist && (

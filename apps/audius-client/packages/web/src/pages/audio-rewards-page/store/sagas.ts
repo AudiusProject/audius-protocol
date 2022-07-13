@@ -227,7 +227,7 @@ function* claimChallengeRewardAsync(
     return
   }
   try {
-    const challenges = specifiers.map(specifier => ({
+    const challenges = specifiers.map((specifier) => ({
       challenge_id: challengeId,
       specifier
     }))
@@ -321,73 +321,76 @@ function* claimChallengeRewardAsync(
 }
 
 function* watchSetHCaptchaStatus() {
-  yield* takeLatest(setHCaptchaStatus.type, function* (
-    action: ReturnType<typeof setHCaptchaStatus>
-  ) {
-    const { status } = action.payload
-    yield* call(retryClaimChallengeReward, {
-      errorResolved: status === HCaptchaStatus.SUCCESS,
-      retryOnFailure: true
-    })
-  })
+  yield* takeLatest(
+    setHCaptchaStatus.type,
+    function* (action: ReturnType<typeof setHCaptchaStatus>) {
+      const { status } = action.payload
+      yield* call(retryClaimChallengeReward, {
+        errorResolved: status === HCaptchaStatus.SUCCESS,
+        retryOnFailure: true
+      })
+    }
+  )
 }
 
 function* watchSetCognitoFlowStatus() {
-  yield* takeLatest(setCognitoFlowStatus.type, function* (
-    action: ReturnType<typeof setCognitoFlowStatus>
-  ) {
-    const { status } = action.payload
-    // Only attempt retry on closed, so that we don't error on open
-    if (status === CognitoFlowStatus.CLOSED) {
-      // poll identity for a recent cognito entry for this user
-      // before proceeding with another attempt at claiming
-      // otherwise may get failure reason that says cognito
-      // even though user completed the cognito flow
-      let numRetries = 0
-      const handle = yield* select(getUserHandle)
-      if (!handle) return
-      do {
-        try {
-          const { exists } = yield* call(getCognitoExists, handle)
-          if (exists) {
-            yield* call(retryClaimChallengeReward, {
-              errorResolved: true,
-              retryOnFailure: false
-            })
-            break
-          } else {
-            yield delay(COGNITO_CHECK_DELAY_MS)
+  yield* takeLatest(
+    setCognitoFlowStatus.type,
+    function* (action: ReturnType<typeof setCognitoFlowStatus>) {
+      const { status } = action.payload
+      // Only attempt retry on closed, so that we don't error on open
+      if (status === CognitoFlowStatus.CLOSED) {
+        // poll identity for a recent cognito entry for this user
+        // before proceeding with another attempt at claiming
+        // otherwise may get failure reason that says cognito
+        // even though user completed the cognito flow
+        let numRetries = 0
+        const handle = yield* select(getUserHandle)
+        if (!handle) return
+        do {
+          try {
+            const { exists } = yield* call(getCognitoExists, handle)
+            if (exists) {
+              yield* call(retryClaimChallengeReward, {
+                errorResolved: true,
+                retryOnFailure: false
+              })
+              break
+            } else {
+              yield delay(COGNITO_CHECK_DELAY_MS)
+            }
+          } catch (e) {
+            console.error(
+              `Error checking whether cognito record exists for handle ${handle}: ${
+                e && (e as any).message
+              }`
+            )
           }
-        } catch (e) {
-          console.error(
-            `Error checking whether cognito record exists for handle ${handle}: ${
-              e && (e as any).message
-            }`
-          )
-        }
-      } while (numRetries++ < COGNITO_CHECK_MAX_RETRIES)
+        } while (numRetries++ < COGNITO_CHECK_MAX_RETRIES)
 
-      if (numRetries === COGNITO_CHECK_MAX_RETRIES) {
-        yield* call(retryClaimChallengeReward, {
-          errorResolved: false,
-          retryOnFailure: false
-        })
+        if (numRetries === COGNITO_CHECK_MAX_RETRIES) {
+          yield* call(retryClaimChallengeReward, {
+            errorResolved: false,
+            retryOnFailure: false
+          })
+        }
       }
     }
-  })
+  )
 }
 
 function* watchClaimChallengeReward() {
-  yield* takeLatest(claimChallengeReward.type, function* (
-    args: ReturnType<typeof claimChallengeReward>
-  ) {
-    // Race the claim against the user clicking "close" on the modal,
-    // so that the claim saga gets canceled if the modal is closed
-    yield* race({
-      task: call(claimChallengeRewardAsync, args),
-      cancel: take(resetAndCancelClaimReward.type)
-    })
-  })
+  yield* takeLatest(
+    claimChallengeReward.type,
+    function* (args: ReturnType<typeof claimChallengeReward>) {
+      // Race the claim against the user clicking "close" on the modal,
+      // so that the claim saga gets canceled if the modal is closed
+      yield* race({
+        task: call(claimChallengeRewardAsync, args),
+        cancel: take(resetAndCancelClaimReward.type)
+      })
+    }
+  )
 }
 
 function* fetchUserChallengesAsync() {
@@ -451,12 +454,13 @@ function* checkForNewDisbursements(
 }
 
 function* watchFetchUserChallengesSucceeded() {
-  yield* takeEvery(fetchUserChallengesSucceeded.type, function* (
-    action: ReturnType<typeof fetchUserChallengesSucceeded>
-  ) {
-    yield* call(checkForNewDisbursements, action)
-    yield* call(handleOptimisticChallengesOnUpdate, action)
-  })
+  yield* takeEvery(
+    fetchUserChallengesSucceeded.type,
+    function* (action: ReturnType<typeof fetchUserChallengesSucceeded>) {
+      yield* call(checkForNewDisbursements, action)
+      yield* call(handleOptimisticChallengesOnUpdate, action)
+    }
+  )
 }
 
 function* watchFetchUserChallenges() {
@@ -529,17 +533,18 @@ function* watchUpdateOptimisticListenStreak() {
 }
 
 function* watchUpdateHCaptchaScore() {
-  yield* takeEvery(updateHCaptchaScore.type, function* (
-    action: ReturnType<typeof updateHCaptchaScore>
-  ): any {
-    const { token } = action.payload
-    const result = yield* call(AudiusBackend.updateHCaptchaScore, token)
-    if (result.error) {
-      yield put(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
-    } else {
-      yield put(setHCaptchaStatus({ status: HCaptchaStatus.SUCCESS }))
+  yield* takeEvery(
+    updateHCaptchaScore.type,
+    function* (action: ReturnType<typeof updateHCaptchaScore>): any {
+      const { token } = action.payload
+      const result = yield* call(AudiusBackend.updateHCaptchaScore, token)
+      if (result.error) {
+        yield put(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
+      } else {
+        yield put(setHCaptchaStatus({ status: HCaptchaStatus.SUCCESS }))
+      }
     }
-  })
+  )
 }
 
 function* pollUserChallenges(frequency: number) {
@@ -554,9 +559,10 @@ function* userChallengePollingDaemon() {
   const defaultChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
     IntKeys.CHALLENGE_REFRESH_INTERVAL_MS
   )!
-  const audioRewardsPageChallengePollingTimeout = remoteConfigInstance.getRemoteVar(
-    IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS
-  )!
+  const audioRewardsPageChallengePollingTimeout =
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.CHALLENGE_REFRESH_INTERVAL_AUDIO_PAGE_MS
+    )!
 
   yield take(fetchAccountSucceeded.type)
   yield fork(function* () {

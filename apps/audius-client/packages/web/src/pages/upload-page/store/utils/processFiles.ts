@@ -83,14 +83,14 @@ export const processFiles = (
   isStem: boolean,
   handleInvalid: (fileName: string, errorType: 'size' | 'type') => void
 ) => {
-  return selectedFiles.map(async file => {
+  return selectedFiles.map(async (file) => {
     if (file.size > ALLOWED_MAX_AUDIO_SIZE_BYTES) {
       handleInvalid(file.name, 'size')
       return null
     }
     // Check file extension (heuristic for failure)
     if (
-      !ALLOWED_AUDIO_FILE_EXTENSIONS.some(ext =>
+      !ALLOWED_AUDIO_FILE_EXTENSIONS.some((ext) =>
         file.name.trim().toLowerCase().endsWith(ext)
       )
     ) {
@@ -127,11 +127,11 @@ export const processFiles = (
     // @ts-ignore
     audio.src = file.preview
     return {
-      file: file,
+      file,
       preview: audio,
       metadata: schemas.newTrackMetadata({
-        title: title,
-        artwork: artwork
+        title,
+        artwork
       })
     }
   })

@@ -126,8 +126,7 @@ const MobilePageContainer = ({
           [containerClassName!]: !!containerClassName,
           [styles.hasDefaultHeader]: hasDefaultHeader
         })}
-        style={style}
-      >
+        style={style}>
         {children}
       </div>
       {fullHeight && (

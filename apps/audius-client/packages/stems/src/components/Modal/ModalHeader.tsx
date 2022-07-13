@@ -25,8 +25,7 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
           className
         )}
         ref={ref}
-        {...props}
-      >
+        {...props}>
         {showDismissButton ? (
           <IconButton
             aria-label='dismiss dialog'

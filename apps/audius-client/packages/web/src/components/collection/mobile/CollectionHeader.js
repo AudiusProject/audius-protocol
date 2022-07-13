@@ -30,7 +30,7 @@ const messages = {
   pause: 'PAUSE'
 }
 
-const Loading = props => {
+const Loading = (props) => {
   const style = {
     [styles.loadingArtwork]: props.variant === 'artwork',
     [styles.loadingTitle]: props.variant === 'title',
@@ -48,7 +48,7 @@ const Loading = props => {
   )
 }
 
-const PlayButton = props => {
+const PlayButton = (props) => {
   return props.playing ? (
     <Button
       className={cn(styles.playAllButton, styles.buttonFormatting)}
@@ -139,7 +139,7 @@ const CollectionHeader = ({
 
   const record = useRecord()
   const onDescriptionExternalLink = useCallback(
-    event => {
+    (event) => {
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,
@@ -167,7 +167,7 @@ const CollectionHeader = ({
   ].filter(({ isHidden, value }) => !isHidden && !!value)
 
   const renderCollectionLabels = () => {
-    return collectionLabels.map(infoFact => {
+    return collectionLabels.map((infoFact) => {
       return (
         <div key={infoFact.label} className={styles.infoFact}>
           <h2 className={styles.infoLabel}>{infoFact.label}</h2>
@@ -209,8 +209,7 @@ const CollectionHeader = ({
         <>
           <DynamicImage
             wrapperClassName={styles.coverArt}
-            image={gradient || imageOverride || image}
-          >
+            image={gradient || imageOverride || image}>
             {Icon && (
               <Icon
                 className={styles.imageIcon}
@@ -265,14 +264,12 @@ const CollectionHeader = ({
           <div
             className={cn(styles.infoSection, {
               [styles.noStats]: !isPublished || variant === Variant.SMART
-            })}
-          >
+            })}>
             {renderCollectionLabels()}
           </div>
           {description ? (
             <Linkify
-              options={{ attributes: { onClick: onDescriptionExternalLink } }}
-            >
+              options={{ attributes: { onClick: onDescriptionExternalLink } }}>
               <div className={styles.description}>
                 {squashNewLines(description)}
               </div>

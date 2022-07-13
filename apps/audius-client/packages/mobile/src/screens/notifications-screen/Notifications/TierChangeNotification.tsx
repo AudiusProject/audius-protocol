@@ -64,7 +64,7 @@ type TierChangeNotificationProps = {
 export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
   const { tier, userId } = notification
-  const user = useSelectorWeb(state => getUser(state, { id: userId }))
+  const user = useSelectorWeb((state) => getUser(state, { id: userId }))
   const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
 
   if (!user) return null

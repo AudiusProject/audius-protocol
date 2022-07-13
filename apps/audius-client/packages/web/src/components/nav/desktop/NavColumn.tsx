@@ -145,15 +145,14 @@ const NavColumn = ({
     polyfill: ResizeObserver
   })
   const scrollbarRef = useRef<HTMLElement | null>(null)
-  const [dragScrollingDirection, setDragScrollingDirection] = useState(
-    undefined
-  )
-  const handleChangeDragScrollingDirection = useCallback(newDirection => {
+  const [dragScrollingDirection, setDragScrollingDirection] =
+    useState(undefined)
+  const handleChangeDragScrollingDirection = useCallback((newDirection) => {
     setDragScrollingDirection(newDirection)
   }, [])
 
   const goToSignUp = useCallback(
-    source => {
+    (source) => {
       routeToSignup()
       record(make(Name.CREATE_ACCOUNT_OPEN, { source }))
     },
@@ -164,9 +163,10 @@ const NavColumn = ({
   )
 
   const onClickNavProfile = useCallback(() => goToSignIn(), [goToSignIn])
-  const onClickNavButton = useCallback(() => goToSignUp('nav button'), [
-    goToSignUp
-  ])
+  const onClickNavButton = useCallback(
+    () => goToSignUp('nav button'),
+    [goToSignUp]
+  )
 
   const goToProfile = useCallback(() => {
     if (account?.handle) {
@@ -181,7 +181,7 @@ const NavColumn = ({
   }, [notificationPanelIsOpen, toggleNotificationPanel, record])
 
   const onCreatePlaylist = useCallback(
-    metadata => {
+    (metadata) => {
       const tempId = `${Date.now()}`
       createPlaylist(tempId, metadata)
       closeCreatePlaylistModal()
@@ -193,7 +193,7 @@ const NavColumn = ({
   )
 
   const onCreateFolder = useCallback(
-    folderName => {
+    (folderName) => {
       const newLibrary = addFolderToLibrary(
         library,
         constructPlaylistFolder(folderName)
@@ -235,7 +235,7 @@ const NavColumn = ({
     [account, goToSignUp, showActionRequiresAccount, updatePlaylistLastViewedAt]
   )
 
-  const updateScrollTopPosition = useCallback(difference => {
+  const updateScrollTopPosition = useCallback((difference) => {
     if (scrollbarRef != null && scrollbarRef.current !== null) {
       scrollbarRef.current.scrollTop =
         scrollbarRef.current.scrollTop + difference
@@ -261,7 +261,7 @@ const NavColumn = ({
   }, [goToRoute, getTrackPageLink])
 
   const onShowVisualizer = useCallback(
-    e => {
+    (e) => {
       if (NO_VISUALIZER_ROUTES.has(pathname)) return
       showVisualizer()
       e.stopPropagation()
@@ -318,19 +318,16 @@ const NavColumn = ({
           [styles.show]: navLoaded,
           [styles.dragScrollingUp]: dragScrollingDirection === 'up',
           [styles.dragScrollingDown]: dragScrollingDirection === 'down'
-        })}
-      >
+        })}>
         <Scrollbar
-          containerRef={el => {
+          containerRef={(el) => {
             scrollbarRef.current = el
           }}
-          className={styles.scrollable}
-        >
+          className={styles.scrollable}>
           <DragAutoscroller
             containerBoundaries={navBodyContainerBoundaries}
             updateScrollTopPosition={updateScrollTopPosition}
-            onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
-          >
+            onChangeDragScrollingDirection={handleChangeDragScrollingDirection}>
             {account ? (
               <div className={styles.userHeader}>
                 <div className={styles.accountWrapper}>
@@ -352,8 +349,7 @@ const NavColumn = ({
                     <div className={styles.handleContainer}>
                       <span
                         className={styles.handle}
-                        onClick={goToProfile}
-                      >{`@${handle}`}</span>
+                        onClick={goToProfile}>{`@${handle}`}</span>
                     </div>
                   </div>
                 </div>
@@ -386,8 +382,7 @@ const NavColumn = ({
                   className={cn(styles.link, {
                     [styles.disabledLink]: !account || dragging
                   })}
-                  onClick={onClickNavLinkWithAccount}
-                >
+                  onClick={onClickNavLinkWithAccount}>
                   Feed
                 </NavLink>
                 <NavLink
@@ -395,8 +390,7 @@ const NavColumn = ({
                   activeClassName='active'
                   className={cn(styles.link, {
                     [styles.disabledLink]: dragging
-                  })}
-                >
+                  })}>
                   Trending
                 </NavLink>
                 <NavLink
@@ -405,8 +399,7 @@ const NavColumn = ({
                   activeClassName='active'
                   className={cn(styles.link, {
                     [styles.disabledLink]: dragging
-                  })}
-                >
+                  })}>
                   Explore
                 </NavLink>
               </div>
@@ -417,8 +410,7 @@ const NavColumn = ({
                   hoverClassName={styles.droppableHover}
                   acceptedKinds={['track', 'album']}
                   acceptOwner={false}
-                  onDrop={kind === 'album' ? saveCollection : saveTrack}
-                >
+                  onDrop={kind === 'album' ? saveCollection : saveTrack}>
                   <NavLink
                     to={SAVED_PAGE}
                     activeClassName='active'
@@ -432,8 +424,7 @@ const NavColumn = ({
                         !draggingIsOwner &&
                         (kind === 'track' || kind === 'album')
                     })}
-                    onClick={onClickNavLinkWithAccount}
-                  >
+                    onClick={onClickNavLinkWithAccount}>
                     Favorites
                   </NavLink>
                 </Droppable>
@@ -443,8 +434,7 @@ const NavColumn = ({
                   className={cn(styles.link, {
                     [styles.disabledLink]: !account || dragging
                   })}
-                  onClick={onClickNavLinkWithAccount}
-                >
+                  onClick={onClickNavLinkWithAccount}>
                   History
                 </NavLink>
               </div>
@@ -453,13 +443,11 @@ const NavColumn = ({
                   className={styles.droppableGroup}
                   hoverClassName={styles.droppableGroupHover}
                   onDrop={saveCollection}
-                  acceptedKinds={['playlist']}
-                >
+                  acceptedKinds={['playlist']}>
                   <div
                     className={cn(styles.groupHeader, {
                       [styles.droppableLink]: dragging && kind === 'playlist'
-                    })}
-                  >
+                    })}>
                     Playlists
                     <div className={styles.newPlaylist}>
                       <Tooltip
@@ -468,8 +456,7 @@ const NavColumn = ({
                             ? messages.newPlaylistOrFolderTooltip
                             : messages.newPlaylistTooltip
                         }
-                        mount='parent'
-                      >
+                        mount='parent'>
                         <span>
                           <Pill
                             text='New'

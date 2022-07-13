@@ -1,3 +1,4 @@
+/* eslint-disable no-import-assign */
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 
@@ -59,7 +60,7 @@ describe('add', () => {
       1: { metadata: { data: 10 }, _timestamp: MOCK_TIMESTAMP }
     })
     expect(storeState.tracks.uids).toEqual({
-      '111': 1
+      111: 1
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111'])
@@ -111,7 +112,7 @@ describe('add', () => {
       1: { metadata: { data: 10 } }
     })
     expect(storeState.tracks.uids).toEqual({
-      '111': 1
+      111: 1
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111'])
@@ -174,9 +175,9 @@ describe('add', () => {
       3: { metadata: { data: 30 }, _timestamp: MOCK_TIMESTAMP }
     })
     expect(storeState.tracks.uids).toEqual({
-      '111': 1,
-      '222': 2,
-      '333': 3
+      111: 1,
+      222: 2,
+      333: 3
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111']),
@@ -223,8 +224,8 @@ describe('add', () => {
       }
     })
     expect(storeState.tracks.uids).toEqual({
-      '111': 1,
-      '222': 1
+      111: 1,
+      222: 1
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111', '222'])
@@ -270,8 +271,8 @@ describe('add', () => {
       1: { metadata: { newValue: 20 }, _timestamp: MOCK_TIMESTAMP }
     })
     expect(storeState.tracks.uids).toEqual({
-      '111': 1,
-      '222': 1
+      111: 1,
+      222: 1
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111', '222'])
@@ -297,9 +298,9 @@ describe('update', () => {
               2: { metadata: { data: 20 } }
             },
             uids: {
-              '111': 1,
-              '112': 1,
-              '222': 2
+              111: 1,
+              112: 1,
+              222: 2
             },
             subscribers: {
               1: new Set(['111', '112']),
@@ -330,9 +331,9 @@ describe('update', () => {
       2: { metadata: { data: 21 }, _timestamp: MOCK_TIMESTAMP }
     })
     expect(storeState.tracks.uids).toEqual({
-      '111': 1,
-      '112': 1,
-      '222': 2
+      111: 1,
+      112: 1,
+      222: 2
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111', '112']),
@@ -355,9 +356,9 @@ describe('update', () => {
               2: { metadata: { data: 20 } }
             },
             uids: {
-              '111': 1,
-              '112': 1,
-              '222': 2
+              111: 1,
+              112: 1,
+              222: 2
             },
             subscribers: {
               1: new Set(['111', '112']),
@@ -416,8 +417,8 @@ describe('setStatus', () => {
               1: Status.LOADING
             },
             uids: {
-              '111': 1,
-              '222': 1
+              111: 1,
+              222: 1
             },
             subscribers: {
               1: new Set(['111', '222'])
@@ -451,8 +452,8 @@ describe('remove', () => {
         1: Status.SUCCESS
       },
       uids: {
-        '111': 1,
-        '222': 1
+        111: 1,
+        222: 1
       },
       subscribers: {
         1: new Set(['111', '222'])
@@ -494,8 +495,8 @@ describe('remove with pruning', () => {
         1: Status.SUCCESS
       },
       uids: {
-        '111': 1,
-        '222': 1
+        111: 1,
+        222: 1
       },
       subscribers: {
         1: new Set(['111', '222'])
@@ -538,8 +539,8 @@ describe('subscribe', () => {
               2: { metadata: { data: 20 } }
             },
             uids: {
-              '111': 1,
-              '222': 1
+              111: 1,
+              222: 1
             },
             subscribers: {
               1: new Set(['111', '222'])
@@ -551,10 +552,10 @@ describe('subscribe', () => {
       .dispatch(actions.subscribe(Kind.TRACKS, [{ uid: '444', id: 2 }]))
       .silentRun()
     expect(storeState.tracks.uids).toEqual({
-      '111': 1,
-      '222': 1,
-      '333': 1,
-      '444': 2
+      111: 1,
+      222: 1,
+      333: 1,
+      444: 2
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111', '222', '333']),
@@ -577,8 +578,8 @@ describe('unsubscribe', () => {
               1: { metadata: { data: 10 } }
             },
             uids: {
-              '111': 1,
-              '222': 1
+              111: 1,
+              222: 1
             },
             subscribers: {
               1: new Set(['111', '222'])
@@ -590,7 +591,7 @@ describe('unsubscribe', () => {
       .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '222', id: 1 }]))
       .silentRun()
     expect(storeState.tracks.uids).toEqual({
-      '111': 1
+      111: 1
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111'])
@@ -612,9 +613,9 @@ describe('unsubscribe', () => {
               2: { metadata: { data: 20 } }
             },
             uids: {
-              '111': 1,
-              '222': 1,
-              '333': 2
+              111: 1,
+              222: 1,
+              333: 2
             },
             subscribers: {
               1: new Set(['111', '222']),
@@ -627,7 +628,7 @@ describe('unsubscribe', () => {
               1: { tracks: [1, 2] }
             },
             uids: {
-              '444': 1
+              444: 1
             },
             subscribers: {
               1: new Set(['444'])
@@ -646,8 +647,8 @@ describe('unsubscribe', () => {
       .put(actions.unsubscribeSucceeded(Kind.TRACKS, [{ uid: '222' }]))
       .silentRun()
     expect(storeState.tracks.uids).toEqual({
-      '111': 1,
-      '333': 2
+      111: 1,
+      333: 2
     })
     expect(storeState.tracks.subscribers).toEqual({
       1: new Set(['111']),
@@ -669,8 +670,8 @@ describe('unsubscribe', () => {
               1: { metadata: { data: 10 } }
             },
             uids: {
-              '111': 1,
-              '222': 1
+              111: 1,
+              222: 1
             },
             subscribers: {
               1: new Set(['111', '222'])

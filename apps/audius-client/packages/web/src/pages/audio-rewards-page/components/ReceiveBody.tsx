@@ -49,10 +49,8 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
   const useSolSPLAudio = getFeatureEnabled(
     FeatureFlags.ENABLE_SPL_AUDIO
   ) as boolean
-  const [
-    hasClickedUnderstand,
-    onClickUnderstand
-  ] = useLocalStorageClickedReceiveUnderstand()
+  const [hasClickedUnderstand, onClickUnderstand] =
+    useLocalStorageClickedReceiveUnderstand()
 
   const renderReceiveEth = () => {
     return (
@@ -110,8 +108,7 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
     <ModalBodyWrapper
       className={cn(styles.container, {
         [styles.solContainer]: useSolSPLAudio
-      })}
-    >
+      })}>
       {useSolSPLAudio ? renderReceiveSol() : renderReceiveEth()}
     </ModalBodyWrapper>
   )

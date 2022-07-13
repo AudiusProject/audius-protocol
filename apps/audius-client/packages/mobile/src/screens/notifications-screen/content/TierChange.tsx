@@ -18,31 +18,29 @@ const styles = StyleSheet.create({
   }
 })
 
-export const tierInfoMap: Record<
-  BadgeTier,
-  { label: string; amount: number }
-> = {
-  none: {
-    amount: 0,
-    label: 'None'
-  },
-  bronze: {
-    amount: 10,
-    label: 'Bronze'
-  },
-  silver: {
-    amount: 100,
-    label: 'Silver'
-  },
-  gold: {
-    amount: 10000,
-    label: 'Gold'
-  },
-  platinum: {
-    amount: 100000,
-    label: 'Platinum'
+export const tierInfoMap: Record<BadgeTier, { label: string; amount: number }> =
+  {
+    none: {
+      amount: 0,
+      label: 'None'
+    },
+    bronze: {
+      amount: 10,
+      label: 'Bronze'
+    },
+    silver: {
+      amount: 100,
+      label: 'Silver'
+    },
+    gold: {
+      amount: 10000,
+      label: 'Gold'
+    },
+    platinum: {
+      amount: 100000,
+      label: 'Platinum'
+    }
   }
-}
 
 type TierChangeProps = {
   notification: TierChangeNotification

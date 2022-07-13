@@ -36,7 +36,7 @@ export const initializeSentry = () => {
       if (hint && hint.xhr) {
         const url = hint.xhr.__sentry_xhr__.url
         const isAnalyticsRequest = analyticsBlacklist.some(
-          term => url.search(term) !== -1
+          (term) => url.search(term) !== -1
         )
         if (isAnalyticsRequest) {
           return null
@@ -74,7 +74,7 @@ export const setSentryUser = (user: User, traits: Traits) => {
   if (traits.isVerified) {
     Sentry.setTag('isVerified', `${traits.isVerified}`)
   }
-  Sentry.configureScope(currentScope => {
+  Sentry.configureScope((currentScope) => {
     currentScope.setUser({
       id: `${user.user_id}`,
       username: user.handle,

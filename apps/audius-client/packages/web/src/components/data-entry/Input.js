@@ -26,7 +26,7 @@ class Input extends Component {
     if (this.props.onBlur) this.props.onBlur()
   }
 
-  onChange = e => {
+  onChange = (e) => {
     if (
       this.props.characterLimit &&
       e.target.value.length > this.props.characterLimit
@@ -97,7 +97,7 @@ class Input extends Component {
       type,
       name,
       autoComplete,
-      disabled: disabled,
+      disabled,
       value,
       ref: inputRef
     }
@@ -113,8 +113,7 @@ class Input extends Component {
             htmlFor={id}
             className={cn('placeholder', styles.placeholder, {
               focus: focused || value !== ''
-            })}
-          >
+            })}>
             {placeholder}
           </label>
         ) : null}

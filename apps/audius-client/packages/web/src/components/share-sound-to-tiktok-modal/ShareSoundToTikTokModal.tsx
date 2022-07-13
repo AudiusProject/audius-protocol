@@ -185,8 +185,7 @@ const ShareSoundToTikTokModal = () => {
           <IconTikTok />
           <div>{messages.title}</div>
         </div>
-      }
-    >
+      }>
       <div className={styles.modalContent}>
         {renderMessage()}
         {status === Status.SHARE_STARTED ? <LoadingSpinner /> : renderButton()}

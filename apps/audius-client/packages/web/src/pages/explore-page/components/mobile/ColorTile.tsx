@@ -40,8 +40,7 @@ const ColorTile = ({
       style={{
         boxShadow: `0 2px 8px -2px ${shadow}`,
         background: gradient
-      }}
-    >
+      }}>
       <div className={styles.title}>{title}</div>
       <div className={styles.description}>{description}</div>
       {emoji && <i className={`emoji xl ${emoji}`} />}

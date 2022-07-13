@@ -52,8 +52,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
     return (
       <CollectionMenu
         onClose={props.onClose}
-        {...(menu as CollectionMenuProps)}
-      >
+        {...(menu as CollectionMenuProps)}>
         {renderMenu}
       </CollectionMenu>
     )

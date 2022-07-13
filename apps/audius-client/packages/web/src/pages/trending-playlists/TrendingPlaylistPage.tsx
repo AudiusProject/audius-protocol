@@ -54,8 +54,7 @@ const DesktopTrendingPlaylistPage = ({
       title={messages.trendingPlaylistTile}
       description={messages.description}
       size='large'
-      header={header}
-    >
+      header={header}>
       <div className={styles.bannerContainer}>
         <RewardsBanner bannerType='playlists' />
       </div>
@@ -76,8 +75,7 @@ const MobileTrendingPlaylistPage = ({
       title={messages.trendingPlaylistTile}
       description={messages.description}
       canonicalUrl={`${BASE_URL}${TRENDING_PLAYLISTS_PAGE}`}
-      hasDefaultHeader
-    >
+      hasDefaultHeader>
       <div className={styles.mobileLineupContainer}>
         <div className={styles.mobileBannerContainer}>
           <RewardsBanner bannerType='playlists' />

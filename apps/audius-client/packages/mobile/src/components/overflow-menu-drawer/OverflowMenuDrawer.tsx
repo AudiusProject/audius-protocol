@@ -51,8 +51,8 @@ export const OverflowMenuDrawer = () => {
 
   return (
     <OverflowDrawerComponent
-      render={callbacks => {
-        const rows = (overflowActions ?? []).map(action => ({
+      render={(callbacks) => {
+        const rows = (overflowActions ?? []).map((action) => ({
           text: rowMessageMap[action],
           callback: callbacks[action]
         }))

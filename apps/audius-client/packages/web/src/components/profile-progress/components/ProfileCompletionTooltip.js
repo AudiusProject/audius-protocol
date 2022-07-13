@@ -48,8 +48,7 @@ const ProfileCompletionTooltip = ({
       shouldDismissOnClick={false}
       text={<TooltipContent completionStages={completionStages} />}
       placement='right'
-      mount={null}
-    >
+      mount={null}>
       {children}
     </Tooltip>
   )

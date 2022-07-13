@@ -28,7 +28,7 @@ import styles from './SearchPageContent.module.css'
 
 const SEARCH_HEADER_MAX_WIDTH_PX = 720
 
-const SearchHeader = props => {
+const SearchHeader = (props) => {
   const secondary = (
     <span className={styles.searchText}>&#8220;{props.searchText}&#8221;</span>
   )
@@ -53,7 +53,7 @@ class SearchPageContent extends Component {
   }
 
   componentWillUnmount() {
-    Object.keys(this.state.cardToast).forEach(toastId =>
+    Object.keys(this.state.cardToast).forEach((toastId) =>
       this.clearCardToast(toastId)
     )
   }
@@ -89,7 +89,7 @@ class SearchPageContent extends Component {
     })
   }
 
-  clearCardToast = toastId => () => {
+  clearCardToast = (toastId) => () => {
     const cardToast = this.state.cardToast[toastId]
     clearTimeout(cardToast.timeout)
     this.setState({
@@ -143,8 +143,7 @@ class SearchPageContent extends Component {
           text={cardToast[toastId] && cardToast[toastId].message}
           open={cardToast[toastId] && cardToast[toastId].open}
           placement='bottom'
-          fillParent={false}
-        >
+          fillParent={false}>
           <Card
             id={artist.user_id}
             userId={artist.user_id}
@@ -201,8 +200,7 @@ class SearchPageContent extends Component {
             playlist.playlist_name,
             playlist.playlist_id
           )}
-          primaryText={playlist.playlist_name}
-        >
+          primaryText={playlist.playlist_name}>
           <Card
             size={'small'}
             id={playlist.playlist_id}
@@ -263,8 +261,7 @@ class SearchPageContent extends Component {
             album.playlist_name,
             album.playlist_id
           )}
-          primaryText={album.playlist_name}
-        >
+          primaryText={album.playlist_name}>
           <Card
             size={'small'}
             id={album.playlist_id}
@@ -333,7 +330,7 @@ class SearchPageContent extends Component {
                   tracksActions.fetchLineupMetadatas(offset, limit)
                 )
               }
-              playTrack={uid => this.props.dispatch(tracksActions.play(uid))}
+              playTrack={(uid) => this.props.dispatch(tracksActions.play(uid))}
               pauseTrack={() => this.props.dispatch(tracksActions.pause())}
               actions={tracksActions}
             />
@@ -416,8 +413,10 @@ class SearchPageContent extends Component {
                     tracksActions.fetchLineupMetadatas(offset, limit)
                   )
                 }
-                playTrack={uid => this.props.dispatch(tracksActions.play(uid))}
-                pauseTrack={uid => this.props.dispatch(tracksActions.pause())}
+                playTrack={(uid) =>
+                  this.props.dispatch(tracksActions.play(uid))
+                }
+                pauseTrack={(uid) => this.props.dispatch(tracksActions.pause())}
                 actions={tracksActions}
               />
             </div>
@@ -474,8 +473,7 @@ class SearchPageContent extends Component {
         canonicalUrl={fullSearchResultsPage(searchText)}
         contentClassName={styles.searchResults}
         header={header}
-        scrollableSearch
-      >
+        scrollableSearch>
         {status === Status.ERROR ? (
           <p>Oh no! Something went wrong!</p>
         ) : status === Status.LOADING ? (

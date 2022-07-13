@@ -16,11 +16,11 @@ import { LET_THEM_DJ } from '../../collections'
 
 export const LetThemDJScreen = () => {
   const status = useSelectorWeb(
-    state =>
+    (state) =>
       getStatus(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ }),
     isEqual
   )
-  const exploreData = useSelectorWeb(state =>
+  const exploreData = useSelectorWeb((state) =>
     getCollections(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ })
   )
 

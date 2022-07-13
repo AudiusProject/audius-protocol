@@ -34,9 +34,9 @@ function* getCollectionTracks() {
 
   const track = collection.playlist_contents.track_ids
 
-  const trackIds = track.map(t => t.track)
+  const trackIds = track.map((t) => t.track)
   // TODO: Conform all timestamps to be of the same format so we don't have to do any special work here.
-  const times = track.map(t => t.time)
+  const times = track.map((t) => t.time)
 
   // Reconcile fetching this playlist with the queue.
   // Search the queue for its currently playing uids. If any are sourced
@@ -45,14 +45,14 @@ function* getCollectionTracks() {
   // This allows the user to navigate back and forth between playlists and other
   // pages without losing their currently playing position in the playlist.
   // TODO: Investigate a better pattern to solve this.
-  const queueUids = Object.keys(yield select(getPositions)).map(uid =>
+  const queueUids = Object.keys(yield select(getPositions)).map((uid) =>
     Uid.fromString(uid)
   )
   const thisSource = yield select(sourceSelector)
   // Gets uids in the queue for this source in the form: { id: [uid1, uid2] }
   // as there might be two uids in the playlist for the same id.
   const uidForSource = queueUids
-    .filter(uid => uid.source === thisSource)
+    .filter((uid) => uid.source === thisSource)
     .reduce((mapping, uid) => {
       if (uid.id in mapping) {
         mapping[uid.id].push(uid.toString())
@@ -64,7 +64,7 @@ function* getCollectionTracks() {
 
   if (trackIds.length > 0) {
     const trackMetadatas = yield call(retrieveTracks, { trackIds })
-    const keyedMetadatas = keyBy(trackMetadatas, m => m.track_id)
+    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.track_id)
 
     return trackIds
       .map((id, i) => {
@@ -93,13 +93,13 @@ function* getCollectionTracks() {
   return []
 }
 
-const keepDateAdded = track => ({
+const keepDateAdded = (track) => ({
   uid: track.uid,
   kind: Kind.TRACKS,
   dateAdded: track.dateAdded
 })
 
-const sourceSelector = state => `collection:${getCollectionId(state)}`
+const sourceSelector = (state) => `collection:${getCollectionId(state)}`
 
 class TracksSagas extends LineupSagas {
   constructor() {

@@ -24,7 +24,7 @@ type SupportingCardProps = {
   supporting: Supporting
 }
 export const SupportingTile = ({ supporting }: SupportingCardProps) => {
-  const receiver = useSelector<AppState, Nullable<User>>(state =>
+  const receiver = useSelector<AppState, Nullable<User>>((state) =>
     getUser(state, { id: supporting.receiver_id })
   )
 
@@ -59,8 +59,7 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
           rgba(0, 0, 0, 0.3) 100%
         )`
       }}
-      onClick={handleClick}
-    >
+      onClick={handleClick}>
       {isTopRank ? (
         <div className={cn(styles.tileHeader, styles.topFive)}>
           <IconTrophy className={styles.trophyIcon} />

@@ -42,8 +42,7 @@ export const UserListTitle = (props: UserListTitleProps) => {
         variant='h1'
         accessibilityRole='header'
         noGutter
-        style={styles.text}
-      >
+        style={styles.text}>
         {title}
       </Text>
     </View>

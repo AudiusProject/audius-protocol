@@ -81,7 +81,7 @@ const LibraryContentsLevel = ({
 }: LibraryContentsLevelProps) => {
   return (
     <>
-      {contents.map(content => {
+      {contents.map((content) => {
         switch (content.type) {
           case 'explore_playlist': {
             return renderCollectionPlaylist(content.playlist_id, level)
@@ -122,9 +122,9 @@ const PlaylistLibrary = ({
   const accountCollectibles = useSelector(getAccountCollectibles)
   const audioCollectibles = useMemo(
     () =>
-      accountCollectibles?.filter(c =>
+      accountCollectibles?.filter((c) =>
         ['mp3', 'wav', 'oga', 'mp4'].some(
-          ext => c.hasAudio || c.animationUrl?.endsWith(ext)
+          (ext) => c.hasAudio || c.animationUrl?.endsWith(ext)
         )
       ),
     [accountCollectibles]
@@ -149,7 +149,7 @@ const PlaylistLibrary = ({
   }, [audioCollectibles, library, dispatch])
 
   const handleClickEditFolder = useCallback(
-    folderId => {
+    (folderId) => {
       dispatch(setEditFolderModalFolderId(folderId))
       setIsEditFolderModalOpen(true)
       record(make(Name.FOLDER_OPEN_EDIT, {}))
@@ -158,7 +158,7 @@ const PlaylistLibrary = ({
   )
 
   const handleClickEditPlaylist = useCallback(
-    playlistId => {
+    (playlistId) => {
       dispatch(openEditPlaylistModal(playlistId))
       record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
     },
@@ -261,8 +261,7 @@ const PlaylistLibrary = ({
         className={cn(navColumnStyles.link, {
           [navColumnStyles.disabledLink]:
             !account || (dragging && draggingKind !== 'library-playlist')
-        })}
-      >
+        })}>
         {name}
       </PlaylistNavLink>
     )
@@ -316,7 +315,7 @@ const PlaylistLibrary = ({
         key={folder.id}
         folder={folder}
         hasUpdate={folder.contents.some(
-          c => c.type !== 'folder' && updatesSet.has(Number(c.playlist_id))
+          (c) => c.type !== 'folder' && updatesSet.has(Number(c.playlist_id))
         )}
         dragging={dragging}
         draggingKind={draggingKind}
@@ -324,8 +323,7 @@ const PlaylistLibrary = ({
         onDropBelowFolder={(folderId, draggingKind, draggingId) =>
           onReorder(draggingId, folderId, draggingKind)
         }
-        onDropInFolder={handleDropInFolder}
-      >
+        onDropInFolder={handleDropInFolder}>
         {isEmpty(folder.contents) ? null : (
           <div className={styles.folderContentsContainer}>
             {/* This is the droppable area for reordering something in the first slot of the playlist folder. */}
@@ -386,7 +384,7 @@ const PlaylistLibrary = ({
           renderFolder={renderFolder}
         />
       ) : null}
-      {Object.values(playlistsNotInLibrary).map(playlist => {
+      {Object.values(playlistsNotInLibrary).map((playlist) => {
         return renderPlaylist(playlist.id)
       })}
       {isEmpty(library?.contents) ? (

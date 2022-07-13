@@ -46,11 +46,11 @@ export const RemixCosignNotification = (
   const dispatch = useDispatch()
 
   const childTrack = entities.find(
-    track => track.track_id === childTrackId
+    (track) => track.track_id === childTrackId
   ) as TrackEntity
 
   const parentTrack = entities.find(
-    track => track.owner_id === parentTrackUserId
+    (track) => track.owner_id === parentTrackUserId
   ) as TrackEntity
 
   const handleClick = useCallback(() => {

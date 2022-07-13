@@ -31,13 +31,13 @@ const useStyles = makeStyles(() => ({
 export const SupportingList = () => {
   const styles = useStyles()
   const { user_id, supporting_count } = useSelectProfile(['user_id'])
-  const supportingForUser = useSelectorWeb(state =>
+  const supportingForUser = useSelectorWeb((state) =>
     getOptimisticSupportingForUser(state, user_id)
   )
   const supportingIdsSorted = useMemo(() => {
-    const ids = (supportingForUser
-      ? Object.keys(supportingForUser)
-      : ([] as unknown)) as ID[]
+    const ids = (
+      supportingForUser ? Object.keys(supportingForUser) : ([] as unknown)
+    ) as ID[]
     return ids.sort((id1, id2) => {
       const amount1BN = stringWeiToBN(supportingForUser[id1].amount)
       const amount2BN = stringWeiToBN(supportingForUser[id2].amount)
@@ -48,7 +48,7 @@ export const SupportingList = () => {
   const supportingSorted = useMemo(
     () =>
       supportingIdsSorted
-        .map(supporterId => supportingForUser[supporterId])
+        .map((supporterId) => supportingForUser[supporterId])
         .filter(Boolean),
     [supportingIdsSorted, supportingForUser]
   )

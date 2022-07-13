@@ -87,7 +87,7 @@ export const FollowPage = (props: FollowPageProps) => {
   }, [selectedCategory, setIsTransitioning])
 
   const seletablePillProps = {
-    selectedIndex: artistCategories.findIndex(c => c === selectedCategory),
+    selectedIndex: artistCategories.findIndex((c) => c === selectedCategory),
     onClickIndex: onClickPillIndex,
     content: artistCategories,
     disableDelayHandler: true
@@ -108,8 +108,7 @@ export const FollowPage = (props: FollowPageProps) => {
       <SimpleBar className={styles.cardSection}>
         <div
           className={styles.cardsHeader}
-          style={{ maxWidth: isFourWide ? FOUR_TILE_WIDTH : FIVE_TILE_WIDTH }}
-        >
+          style={{ maxWidth: isFourWide ? FOUR_TILE_WIDTH : FIVE_TILE_WIDTH }}>
           <div className={styles.pickForMe} onClick={onAutoSelect}>
             <IconWand className={styles.iconWand} />
             {messages.pickForMe}
@@ -120,9 +119,8 @@ export const FollowPage = (props: FollowPageProps) => {
             [styles.hide]: isTransitioning,
             [styles.show]: !isTransitioning
           })}
-          aria-label='profile selection'
-        >
-          {users.map(user => (
+          aria-label='profile selection'>
+          {users.map((user) => (
             <li key={user.user_id}>
               <UserCard
                 isMobile={false}

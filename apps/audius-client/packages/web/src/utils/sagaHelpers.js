@@ -69,7 +69,7 @@ export function* waitForValue(selector, args = {}, customCheck = () => true) {
 }
 
 function doEveryImpl(millis, times) {
-  return eventChannel(emitter => {
+  return eventChannel((emitter) => {
     // Emit once at the start
     emitter(times || true)
 

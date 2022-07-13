@@ -91,9 +91,8 @@ export const EmailPage = ({
     }
   }, [isSubmitting, email, setIsSubmitting])
 
-  const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] = useState(
-    false
-  )
+  const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] =
+    useState(false)
   useDelayedEffect({
     callback: () => setShouldShowLoadingSpinner(true),
     reset: () => setShouldShowLoadingSpinner(false),
@@ -111,8 +110,7 @@ export const EmailPage = ({
       className={cn(styles.container, {
         [styles.metaMask]: hasMetaMask,
         [styles.isMobile]: isMobile
-      })}
-    >
+      })}>
       <PreloadImage
         src={audiusLogoColored}
         alt='Audius Colored Logo'
@@ -146,9 +144,8 @@ export const EmailPage = ({
         <Spring
           from={{ opacity: 0 }}
           to={{ opacity: 1 }}
-          config={{ duration: 200 }}
-        >
-          {animProps => (
+          config={{ duration: 200 }}>
+          {(animProps) => (
             <StatusMessage
               status='error'
               label={errorMessages[email.error]}
@@ -203,8 +200,7 @@ export const EmailPage = ({
             onClick={() => {
               setShowForgotPassword(true)
             }}
-            className={styles.forgotPasswordText}
-          >
+            className={styles.forgotPasswordText}>
             {messages.forgotPasswordText}
           </span>
         </div>

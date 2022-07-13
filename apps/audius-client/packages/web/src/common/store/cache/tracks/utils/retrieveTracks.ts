@@ -60,7 +60,7 @@ export function* retrieveTrackByHandleAndSlug({
       },
       retrieveFromSource: function* (permalinks: string[]) {
         const userId = yield* select(getUserId)
-        const track = yield* call(args => {
+        const track = yield* call((args) => {
           const split = args[0].split('/')
           const handle = split[1]
           const slug = split.slice(2).join('')
@@ -257,5 +257,5 @@ export function* retrieveTracks({
     }
   })
 
-  return ids.map(id => tracks.entries[id]).filter(Boolean)
+  return ids.map((id) => tracks.entries[id]).filter(Boolean)
 }

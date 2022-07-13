@@ -48,8 +48,7 @@ const SelectablePills = ({
     <div
       className={cn(styles.pillContainer, {
         [className!]: !!className
-      })}
-    >
+      })}>
       {content.map((node, index) => (
         <SelectablePill
           className={pillClassName}

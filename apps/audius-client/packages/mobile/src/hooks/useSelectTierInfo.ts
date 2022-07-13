@@ -10,7 +10,7 @@ const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
  * with useSelectorWeb.
  */
 export const useSelectTierInfo = (userId: ID) => {
-  return useSelectorWeb(state => {
+  return useSelectorWeb((state) => {
     return getTierAndVerifiedForUser(state, { userId })
   }, isEqual)
 }

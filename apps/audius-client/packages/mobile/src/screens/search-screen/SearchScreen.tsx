@@ -40,7 +40,7 @@ export const SearchScreen = () => {
   const searchResultQuery = useSelector(getSearchResultQuery)
   const searchResults = useSelector(getSearchResults)
   const hasResults = Object.values(searchResults).some(
-    result => result && result.length > 0
+    (result) => result && result.length > 0
   )
 
   const renderBody = () => {
@@ -64,8 +64,7 @@ export const SearchScreen = () => {
       }
       variant='white'
       title={null}
-      headerTitle={null}
-    >
+      headerTitle={null}>
       <Header text='Search' />
       {renderBody()}
     </Screen>

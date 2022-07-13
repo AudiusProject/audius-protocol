@@ -53,7 +53,7 @@ const useUserImage = (user: UserImageType & UserMultihash) => {
         .filter(Boolean)
         .concat(gateways)
         .concat(publicGateways)
-        .map(gateway => `${gateway}/ipfs/${user.profile_picture_sizes}`)
+        .map((gateway) => `${gateway}/ipfs/${user.profile_picture_sizes}`)
       const legacyIdx = legacyUrls.findIndex(
         (route: string) => (source?.uri ?? '') === route
       )

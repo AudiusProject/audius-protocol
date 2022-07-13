@@ -31,8 +31,7 @@ export const IconButton = forwardRef(
         ref={ref}
         disabled={disabled}
         onClick={onClick}
-        {...props}
-      >
+        {...props}>
         {icon}
       </button>
     )

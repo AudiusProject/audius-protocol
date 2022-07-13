@@ -12,12 +12,12 @@ const messages = {
 }
 
 export class AccountVerified extends Component {
-  onTwitterLoginSuccess = async twitterProfile => {
+  onTwitterLoginSuccess = async (twitterProfile) => {
     const { uuid, profile } = await twitterProfile.json()
     this.props.onSuccess(uuid, profile)
   }
 
-  onTwitterLoginFailure = error => {
+  onTwitterLoginFailure = (error) => {
     console.error(error)
     if (this.props.onFailure) {
       this.props.onFailure(error)

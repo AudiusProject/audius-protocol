@@ -46,11 +46,8 @@ import {
 import { dataURLtoFile } from 'utils/fileUtils'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 
-const {
-  getRemoteVar,
-  waitForRemoteConfig,
-  waitForUserRemoteConfig
-} = remoteConfigInstance
+const { getRemoteVar, waitForRemoteConfig, waitForUserRemoteConfig } =
+  remoteConfigInstance
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -289,15 +286,15 @@ function* fetchMostUsedTags(userId, trackCount) {
   const trackResponse = yield call(AudiusBackend.getArtistTracks, {
     offset: 0,
     limit: trackCount + LARGE_TRACKCOUNT_TAGS,
-    userId: userId,
+    userId,
     filterDeleted: true
   })
-  const tracks = trackResponse.filter(metadata => !metadata.is_delete)
+  const tracks = trackResponse.filter((metadata) => !metadata.is_delete)
   // tagUsage: { [tag: string]: number }
   const tagUsage = {}
-  tracks.forEach(track => {
+  tracks.forEach((track) => {
     if (track.tags) {
-      track.tags.split(',').forEach(tag => {
+      track.tags.split(',').forEach((tag) => {
         tag in tagUsage ? (tagUsage[tag] += 1) : (tagUsage[tag] = 1)
       })
     }
@@ -333,9 +330,9 @@ function* cacheUsers(users) {
   const currentUserId = yield select(getUserId)
   // Filter out the current user from the list to cache
   yield processAndCacheUsers(
-    users.filter(user => user.user_id !== currentUserId)
+    users.filter((user) => user.user_id !== currentUserId)
   )
-  return users.map(f => ({ id: f.user_id }))
+  return users.map((f) => ({ id: f.user_id }))
 }
 
 function* watchUpdateProfile() {
@@ -408,7 +405,7 @@ export function* updateProfileAsync(action) {
     cacheActions.update(Kind.USERS, [
       {
         id: creator.user_id,
-        metadata: metadata
+        metadata
       }
     ])
   )
@@ -494,7 +491,7 @@ function* updateCurrentUserFollows(action) {
       updatedUserIds = userIds.concat({ id: userId, uid })
     }
   } else {
-    updatedUserIds = userIds.filter(f => f.id !== userId)
+    updatedUserIds = userIds.filter((f) => f.id !== userId)
   }
   yield put(
     profileActions.setProfileField(FollowType.FOLLOWERS, {
@@ -505,23 +502,24 @@ function* updateCurrentUserFollows(action) {
 }
 
 function* watchSetNotificationSubscription() {
-  yield takeEvery(profileActions.SET_NOTIFICATION_SUBSCRIPTION, function* (
-    action
-  ) {
-    if (action.update) {
-      try {
-        yield call(
-          AudiusBackend.updateUserSubscription,
-          action.userId,
-          action.isSubscribed
-        )
-      } catch (err) {
-        const isReachable = yield select(getIsReachable)
-        if (!isReachable) return
-        throw err
+  yield takeEvery(
+    profileActions.SET_NOTIFICATION_SUBSCRIPTION,
+    function* (action) {
+      if (action.update) {
+        try {
+          yield call(
+            AudiusBackend.updateUserSubscription,
+            action.userId,
+            action.isSubscribed
+          )
+        } catch (err) {
+          const isReachable = yield select(getIsReachable)
+          if (!isReachable) return
+          throw err
+        }
       }
     }
-  })
+  )
 }
 
 export default function sagas() {

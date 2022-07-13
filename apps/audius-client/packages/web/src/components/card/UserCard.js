@@ -32,8 +32,7 @@ const UserCard = ({
         [styles.mobile]: isMobile,
         [styles.selected]: selected
       })}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       <div className={styles.tileCoverArtContainer}>
         <DynamicImage
           wrapperClassName={styles.coverArtWrapper}

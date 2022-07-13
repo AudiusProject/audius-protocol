@@ -26,7 +26,7 @@ export const useGoToEntity = (entity: EntityType, entityType: Entity) => {
   const record = useRecord()
 
   const handleClick: MouseEventHandler = useCallback(
-    event => {
+    (event) => {
       event.stopPropagation()
       event.preventDefault()
       const link = getEntityLink(entity)

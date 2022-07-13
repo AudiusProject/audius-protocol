@@ -65,8 +65,7 @@ const NavHeader = ({
             className={cn(styles.headerIconWrapper, styles.iconNotification, {
               [styles.active]: notificationCount > 0,
               [styles.notificationsOpen]: notificationPanelIsOpen
-            })}
-          >
+            })}>
             <IconNotification />
           </div>
           {notificationCount > 0 && !notificationPanelIsOpen ? (

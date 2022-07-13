@@ -82,7 +82,7 @@ export const remoteConfig = <
       state.didInitialize = true
 
       // Call initializationCallbacks
-      state.initializationCallbacks.forEach(cb => cb())
+      state.initializationCallbacks.forEach((cb) => cb())
       state.initializationCallbacks = []
 
       // console.timeEnd('remote-config')
@@ -156,7 +156,7 @@ export const remoteConfig = <
     if (isStringKey(key)) {
       return getValue(
         remoteConfigStringDefaults,
-        (key as unknown) as string,
+        key as unknown as string,
         id,
         client.getFeatureVariableString.bind(client)
       )
@@ -165,7 +165,7 @@ export const remoteConfig = <
     if (isDoubleKey(key)) {
       return getValue(
         remoteConfigDoubleDefaults,
-        (key as unknown) as string,
+        key as unknown as string,
         id,
         client.getFeatureVariableDouble.bind(client)
       )
@@ -173,7 +173,7 @@ export const remoteConfig = <
 
     return getValue(
       remoteConfigBooleanDefaults,
-      (key as unknown) as string,
+      key as unknown as string,
       id,
       client.getFeatureVariableBoolean.bind(client)
     )
@@ -208,7 +208,7 @@ export const remoteConfig = <
 
     try {
       const enabled = state.didInitialize
-        ? client.isFeatureEnabled((flag as unknown) as string, id) ?? defaultVal
+        ? client.isFeatureEnabled(flag as unknown as string, id) ?? defaultVal
         : defaultVal
       return enabled
     } catch (err) {
@@ -217,7 +217,7 @@ export const remoteConfig = <
   }
 
   const waitForRemoteConfig = async () => {
-    await new Promise<void>(resolve => onClientReady(() => resolve()))
+    await new Promise<void>((resolve) => onClientReady(() => resolve()))
   }
 
   /**
@@ -229,10 +229,10 @@ export const remoteConfig = <
    */
   const waitForUserRemoteConfig = async () => {
     if (state.userId) {
-      await new Promise<void>(resolve => onClientReady(resolve))
+      await new Promise<void>((resolve) => onClientReady(resolve))
       return
     }
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       if (state.userId) {
         onClientReady(resolve)
       } else {
@@ -245,13 +245,13 @@ export const remoteConfig = <
 
   // Type predicates
   function isIntKey(key: AllRemoteConfigKeys): key is IntKeys {
-    return !!Object.values(IntKeys).find(x => x === key)
+    return !!Object.values(IntKeys).find((x) => x === key)
   }
   function isStringKey(key: AllRemoteConfigKeys): key is StringKeys {
-    return !!Object.values(StringKeys).find(x => x === key)
+    return !!Object.values(StringKeys).find((x) => x === key)
   }
   function isDoubleKey(key: AllRemoteConfigKeys): key is DoubleKeys {
-    return !!Object.values(DoubleKeys).find(x => x === key)
+    return !!Object.values(DoubleKeys).find((x) => x === key)
   }
 
   // Removes some boilerplate around getting values, falling back to defaults,

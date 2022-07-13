@@ -142,7 +142,7 @@ export const createSession = async (config: Config): Promise<any> => {
           try {
             // Connect to solana web3
             await window.solana.connect()
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 1000))
             return window.solana
           } catch (err) {
             console.error(err)

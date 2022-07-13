@@ -105,8 +105,7 @@ const DownloadButton = ({
         className={cn(styles.downloadButtonContainer, {
           [styles.disabled]: isDisabled
         })}
-        onClick={handleOnClick}
-      >
+        onClick={handleOnClick}>
         <div className={styles.icon}>{renderIcon()}</div>
         {/* h2 here for SEO purposes */}
         <h2 className={styles.label}>{messages.addDownloadPrefix(label)}</h2>
@@ -173,9 +172,8 @@ const DownloadButtons = ({
     <div
       className={cn({
         [className!]: !!className
-      })}
-    >
-      {buttons.map(props => (
+      })}>
+      {buttons.map((props) => (
         <DownloadButton {...props} key={props.label} />
       ))}
     </div>

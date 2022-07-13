@@ -276,6 +276,6 @@ export const getCountry = (isoAlpha2: CountryCode) => ISO_ALPHA_2[isoAlpha2]
 export const countryCodeToFlag = (code: string) => {
   if (!code || !CC_REGEX.test(code)) return `🏳`
   // @ts-expect-error charCodeAt expects a number
-  const chars = [...code.toUpperCase()].map(c => c.charCodeAt() + OFFSET)
+  const chars = [...code.toUpperCase()].map((c) => c.charCodeAt() + OFFSET)
   return String.fromCodePoint(...chars)
 }

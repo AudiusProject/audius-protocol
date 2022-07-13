@@ -10,15 +10,14 @@ export const getDiscoverTrendingMonthLineup = (state: CommonState) =>
 export const getDiscoverTrendingAllTimeLineup = (state: CommonState) =>
   state.pages.trending.trendingAllTime
 
-export const makeGetTrendingLineup = (timeRange: TimeRange) => (
-  state: CommonState
-) => {
-  return {
-    [TimeRange.WEEK]: state.pages.trending.trendingWeek,
-    [TimeRange.MONTH]: state.pages.trending.trendingMonth,
-    [TimeRange.ALL_TIME]: state.pages.trending.trendingAllTime
-  }[timeRange]
-}
+export const makeGetTrendingLineup =
+  (timeRange: TimeRange) => (state: CommonState) => {
+    return {
+      [TimeRange.WEEK]: state.pages.trending.trendingWeek,
+      [TimeRange.MONTH]: state.pages.trending.trendingMonth,
+      [TimeRange.ALL_TIME]: state.pages.trending.trendingAllTime
+    }[timeRange]
+  }
 
 export const getCurrentDiscoverTrendingLineup = (state: CommonState) => {
   const timeRange = state.pages.trending.trendingTimeRange

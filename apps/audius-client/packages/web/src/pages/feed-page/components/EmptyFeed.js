@@ -11,7 +11,7 @@ const messages = {
   noFollowers: 'Awkward. It looks like you’re not following anyone!'
 }
 
-const EmptyFeed = props => {
+const EmptyFeed = (props) => {
   return (
     <div className={cn(styles.emptyFeed)}>
       {props.hasAccount ? null : (

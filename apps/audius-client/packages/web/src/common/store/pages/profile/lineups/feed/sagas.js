@@ -38,10 +38,10 @@ function* getReposts({ offset, limit, payload }) {
     const confirming = yield select(getConfirmCalls)
     if (Object.keys(confirming).length > 0) {
       const repostTrackIds = new Set(
-        reposts.map(r => r.track_id).filter(Boolean)
+        reposts.map((r) => r.track_id).filter(Boolean)
       )
       const repostCollectionIds = new Set(
-        reposts.map(r => r.playlist_id).filter(Boolean)
+        reposts.map((r) => r.playlist_id).filter(Boolean)
       )
 
       const tracks = yield select(getTracks)
@@ -52,7 +52,7 @@ function* getReposts({ offset, limit, payload }) {
       // sure we're not already getting back that same track or collection from the
       // backend.
       // If we aren't, this is an unconfirmed repost, prepend it to the lineup.
-      Object.keys(confirming).forEach(kindId => {
+      Object.keys(confirming).forEach((kindId) => {
         const kind = getKindFromKindId(kindId)
         const id = getIdFromKindId(kindId)
         if (kind === Kind.TRACKS) {
@@ -79,7 +79,7 @@ function* getReposts({ offset, limit, payload }) {
   return reposts
 }
 
-const sourceSelector = state => `${PREFIX}:${getProfileUserId(state)}`
+const sourceSelector = (state) => `${PREFIX}:${getProfileUserId(state)}`
 
 class FeedSagas extends LineupSagas {
   constructor() {

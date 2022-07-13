@@ -27,7 +27,7 @@ const receiveMessage = (message: Message) => {
 const getResponse = async (id: string): Promise<Message> => {
   // eslint-disable-next-line
   while (!(id in responseQueue)) {
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
   }
   const response = responseQueue[id]
   delete responseQueue[id]
@@ -38,9 +38,9 @@ const SPAMMY_MESSAGES = new Set([MessageType.GET_POSITION])
 
 export function* initInterface() {
   const globalWindow = getIsIOS() ? window : document
-  const channel = eventChannel<Message>(emitter => {
+  const channel = eventChannel<Message>((emitter) => {
     // Attach messages to the window
-    globalWindow.addEventListener('message', data => {
+    globalWindow.addEventListener('message', (data) => {
       try {
         // @ts-ignore
         emitter(JSON.parse(data.data))

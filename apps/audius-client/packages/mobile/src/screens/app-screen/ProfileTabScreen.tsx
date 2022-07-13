@@ -27,38 +27,37 @@ export type ProfileTabScreenParamList = AppTabScreenParamList & {
   AudioScreen: Record<string, unknown>
 }
 
-export const ProfileTabScreen = createAppTabScreenStack<
-  ProfileTabScreenParamList
->(Stack => (
-  <>
-    <Stack.Screen
-      name='UserProfile'
-      component={ProfileScreen}
-      initialParams={{ handle: 'accountUser' }}
-    />
-    <Stack.Screen name='EditProfile' component={EditProfileScreen} />
-    <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
-    <Stack.Screen name='AboutScreen' component={AboutScreen} />
-    <Stack.Screen
-      name='ListeningHistoryScreen'
-      component={ListeningHistoryScreen}
-    />
-    <Stack.Screen
-      name='AccountSettingsScreen'
-      component={AccountSettingsScreen}
-    />
-    <Stack.Screen
-      name='NotificationSettingsScreen'
-      component={NotificationSettingsScreen}
-    />
-    <Stack.Screen name='AudioScreen' component={AudioScreen} />
-    <Stack.Screen
-      name='AccountVerificationScreen'
-      component={AccountVerificationScreen}
-    />
-    <Stack.Screen
-      name='ChangePasswordScreen'
-      component={ChangePasswordScreen}
-    />
-  </>
-))
+export const ProfileTabScreen =
+  createAppTabScreenStack<ProfileTabScreenParamList>((Stack) => (
+    <>
+      <Stack.Screen
+        name='UserProfile'
+        component={ProfileScreen}
+        initialParams={{ handle: 'accountUser' }}
+      />
+      <Stack.Screen name='EditProfile' component={EditProfileScreen} />
+      <Stack.Screen name='SettingsScreen' component={SettingsScreen} />
+      <Stack.Screen name='AboutScreen' component={AboutScreen} />
+      <Stack.Screen
+        name='ListeningHistoryScreen'
+        component={ListeningHistoryScreen}
+      />
+      <Stack.Screen
+        name='AccountSettingsScreen'
+        component={AccountSettingsScreen}
+      />
+      <Stack.Screen
+        name='NotificationSettingsScreen'
+        component={NotificationSettingsScreen}
+      />
+      <Stack.Screen name='AudioScreen' component={AudioScreen} />
+      <Stack.Screen
+        name='AccountVerificationScreen'
+        component={AccountVerificationScreen}
+      />
+      <Stack.Screen
+        name='ChangePasswordScreen'
+        component={ChangePasswordScreen}
+      />
+    </>
+  ))

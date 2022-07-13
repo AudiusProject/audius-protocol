@@ -18,7 +18,7 @@ export const getResult = (
   const calls = state.confirmer.confirm[props.uid].calls
   const resultIndex = findLastIndex(
     calls,
-    c => c.cancelled !== true,
+    (c) => c.cancelled !== true,
     props.index
   )
   return resultIndex === -1 ? {} : calls[resultIndex].result
@@ -33,7 +33,7 @@ export const getLatestResult = (
   }
 
   const calls = state.confirmer.confirm[props.uid].calls
-  const lastCallResultIndex = findLastIndex(calls, c => c.result !== null)
+  const lastCallResultIndex = findLastIndex(calls, (c) => c.result !== null)
   return lastCallResultIndex === -1 ? {} : calls[lastCallResultIndex].result
 }
 
@@ -110,7 +110,7 @@ export const getAreRequisiteCallsComplete = (
   return state.confirmer.confirm[props.uid].calls
     .slice(0, props.index)
     .every(
-      call =>
+      (call) =>
         call.result !== null ||
         call.cancelled === true ||
         (currentCall.parallelizable &&
@@ -122,7 +122,7 @@ export const getAreRequisiteCallsComplete = (
 export const getIsDone = (state: AppState, props: { uid: string | number }) =>
   props.uid in state.confirmer.confirm
     ? state.confirmer.confirm[props.uid].calls.every(
-        call => call.result !== null || call.cancelled === true
+        (call) => call.result !== null || call.cancelled === true
       )
     : true
 

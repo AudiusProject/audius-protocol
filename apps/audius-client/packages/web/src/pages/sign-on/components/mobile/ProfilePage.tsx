@@ -61,9 +61,10 @@ const ProfilePage = (props: ProfilePageProps) => {
   const [isInitial, setIsInitial] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const setLoading = useCallback(() => setIsLoading(true), [setIsLoading])
-  const setFinishedLoading = useCallback(() => setIsLoading(false), [
-    setIsLoading
-  ])
+  const setFinishedLoading = useCallback(
+    () => setIsLoading(false),
+    [setIsLoading]
+  )
 
   /**
    * The margin top causes a secondary scroll for mobile web causing the container to be larger than 100vh
@@ -97,7 +98,7 @@ const ProfilePage = (props: ProfilePageProps) => {
   } = props
 
   const onToggleTwitterOverlay = useCallback(() => {
-    setShowTwitterOverlay(show => !show)
+    setShowTwitterOverlay((show) => !show)
     setIsInitial(false)
   }, [])
 
@@ -115,12 +116,8 @@ const ProfilePage = (props: ProfilePageProps) => {
   const onTwitterLogin = async (twitterProfileRes: Body) => {
     const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
-      const {
-        profile,
-        profileImage,
-        profileBanner,
-        requiresUserReview
-      } = await formatTwitterProfile(twitterProfile)
+      const { profile, profileImage, profileBanner, requiresUserReview } =
+        await formatTwitterProfile(twitterProfile)
 
       validateHandle(
         profile.screen_name,
@@ -151,11 +148,8 @@ const ProfilePage = (props: ProfilePageProps) => {
     instagramProfile: InstagramProfile
   ) => {
     try {
-      const {
-        profile,
-        profileImage,
-        requiresUserReview
-      } = await formatInstagramProfile(instagramProfile)
+      const { profile, profileImage, requiresUserReview } =
+        await formatInstagramProfile(instagramProfile)
       validateHandle(
         profile.username,
         profile.is_verified,
@@ -197,8 +191,7 @@ const ProfilePage = (props: ProfilePageProps) => {
       <div
         className={cn(styles.profileContentContainer, {
           [styles.authOverlay]: showTwitterOverlay
-        })}
-      >
+        })}>
         <TwitterOverlay
           header={messages.header}
           isMobile

@@ -56,7 +56,7 @@ export const TrackScreen = () => {
   const { searchTrack } = params ?? {}
 
   const cachedTrack = useSelectorWeb(
-    state => getTrack(state, params),
+    (state) => getTrack(state, params),
     // Omitting uneeded fields from the equality check because they are
     // causing extra renders when added to the `track` object
     (a, b) => {
@@ -69,7 +69,7 @@ export const TrackScreen = () => {
   const track = cachedTrack ?? searchTrack
 
   const cachedUser = useSelectorWeb(
-    state => getUser(state, { id: track?.owner_id }),
+    (state) => getUser(state, { id: track?.owner_id }),
     isEqual
   )
 
@@ -116,8 +116,7 @@ export const TrackScreen = () => {
 
   const moreByArtistTitle = showMoreByArtistTitle ? (
     <Text
-      style={styles.lineupHeader}
-    >{`${messages.moreBy} ${user?.name}`}</Text>
+      style={styles.lineupHeader}>{`${messages.moreBy} ${user?.name}`}</Text>
   ) : null
 
   const originalTrackTitle = (

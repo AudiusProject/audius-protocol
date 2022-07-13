@@ -40,7 +40,7 @@ class SolanaClient {
       const connection = this.connection
 
       const tokenAccountsByOwnerAddress = await Promise.all(
-        wallets.map(async address =>
+        wallets.map(async (address) =>
           connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
             programId: TOKEN_PROGRAM_ID
           })
@@ -48,11 +48,11 @@ class SolanaClient {
       )
 
       const potentialNFTsByOwnerAddress = tokenAccountsByOwnerAddress
-        .map(ta => ta.value)
+        .map((ta) => ta.value)
         // value is an array of parsed token info
         .map((value, i) => {
           const mintAddresses = value
-            .map(v => ({
+            .map((v) => ({
               mint: v.account.data.parsed.info.mint,
               tokenAmount: v.account.data.parsed.info.tokenAmount
             }))
@@ -72,7 +72,7 @@ class SolanaClient {
         potentialNFTsByOwnerAddress.map(async ({ mintAddresses }) => {
           const programAddresses = await Promise.all(
             mintAddresses.map(
-              async mintAddress =>
+              async (mintAddress) =>
                 (
                   await PublicKey.findProgramAddress(
                     [
@@ -92,13 +92,13 @@ class SolanaClient {
           const nonNullInfos = accountInfos?.filter(Boolean) ?? []
 
           const metadataUrls = nonNullInfos
-            .map(x => client._utf8ArrayToNFTType(x!.data))
+            .map((x) => client._utf8ArrayToNFTType(x!.data))
             .filter(Boolean) as { type: SolanaNFTType; url: string }[]
 
           const results = await Promise.all(
-            metadataUrls.map(async item =>
+            metadataUrls.map(async (item) =>
               fetch(item!.url)
-                .then(res => res.json())
+                .then((res) => res.json())
                 .catch(() => null)
             )
           )
@@ -108,7 +108,7 @@ class SolanaClient {
             type: metadataUrls[i].type
           }))
 
-          return metadatas.filter(r => !!r.metadata)
+          return metadatas.filter((r) => !!r.metadata)
         })
       )
 
@@ -116,7 +116,7 @@ class SolanaClient {
         nfts.map(async (nftsForAddress, i) => {
           const collectibles = await Promise.all(
             nftsForAddress.map(
-              async nft =>
+              async (nft) =>
                 await solanaNFTToCollectible(nft.metadata, wallets[i], nft.type)
             )
           )

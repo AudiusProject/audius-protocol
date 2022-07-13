@@ -9,11 +9,10 @@ export type FavoritesTabScreenParamList = AppTabScreenParamList & {
   CreatePlaylist: undefined
 }
 
-export const FavoritesTabScreen = createAppTabScreenStack<
-  FavoritesTabScreenParamList
->(Stack => (
-  <>
-    <Stack.Screen name='Favorites' component={FavoritesScreen} />
-    <Stack.Screen name='CreatePlaylist' component={CreatePlaylistScreen} />
-  </>
-))
+export const FavoritesTabScreen =
+  createAppTabScreenStack<FavoritesTabScreenParamList>((Stack) => (
+    <>
+      <Stack.Screen name='Favorites' component={FavoritesScreen} />
+      <Stack.Screen name='CreatePlaylist' component={CreatePlaylistScreen} />
+    </>
+  ))

@@ -16,10 +16,9 @@ const RepeatStates = Object.freeze({
 })
 
 const REPEAT_STATE_LS_KEY = 'repeatState'
-const getRepeatState = defaultState => {
-  const localStorageRepeatState = window.localStorage.getItem(
-    REPEAT_STATE_LS_KEY
-  )
+const getRepeatState = (defaultState) => {
+  const localStorageRepeatState =
+    window.localStorage.getItem(REPEAT_STATE_LS_KEY)
   if (localStorageRepeatState === null) {
     window.localStorage.setItem(REPEAT_STATE_LS_KEY, defaultState)
     return defaultState
@@ -47,12 +46,9 @@ class RepeatButton extends Component {
     }
   }
 
-  handleChange = repeatState => {
-    const {
-      pbIconRepeatAll,
-      pbIconRepeatSingle,
-      pbIconRepeatOff
-    } = this.props.animations
+  handleChange = (repeatState) => {
+    const { pbIconRepeatAll, pbIconRepeatSingle, pbIconRepeatOff } =
+      this.props.animations
     // Go to the next state.
     let icon, isPaused
     switch (repeatState) {
@@ -122,8 +118,7 @@ class RepeatButton extends Component {
           [styles.buttonFixedSize]: this.props.isMobile,
           [styles.repeat]: this.props.isMobile
         })}
-        onClick={this.nextState}
-      >
+        onClick={this.nextState}>
         <Lottie
           options={animationOptions}
           eventListeners={eventListeners}

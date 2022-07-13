@@ -46,8 +46,7 @@ export const SettingsRow = (props: SettingsRowProps) => {
     <Root
       url={url as string}
       onPress={onPress}
-      style={[styles.root, firstItem && styles.firstItem, style]}
-    >
+      style={[styles.root, firstItem && styles.firstItem, style]}>
       <View style={styles.content}>{children}</View>
       {onPress || url ? (
         <IconCaretRight fill={neutralLight4} height={16} width={16} />

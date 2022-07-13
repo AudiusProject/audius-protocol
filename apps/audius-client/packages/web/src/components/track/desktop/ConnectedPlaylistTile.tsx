@@ -250,7 +250,7 @@ const ConnectedPlaylistTile = memo(
 
     const renderOverflowMenu = () => {
       const menu: Omit<CollectionkMenuProps, 'children'> = {
-        handle: handle,
+        handle,
         isFavorited,
         isReposted,
         type: isAlbum ? 'album' : 'playlist', // playlist or album
@@ -283,7 +283,7 @@ const ConnectedPlaylistTile = memo(
       )
     }
     const onClickArtistName = useCallback(
-      e => {
+      (e) => {
         e.stopPropagation()
         if (goToRoute) goToRoute(profilePage(handle))
       },
@@ -299,8 +299,7 @@ const ConnectedPlaylistTile = memo(
               className={cn(styles.name, {
                 [styles.artistNameLink]: onClickArtistName
               })}
-              onClick={onClickArtistName}
-            >
+              onClick={onClickArtistName}>
               {name}
             </span>
           </ArtistPopover>
@@ -384,8 +383,7 @@ const ConnectedPlaylistTile = memo(
             isAlbum
               ? fullAlbumPage(handle, title, id)
               : fullPlaylistPage(handle, title, id)
-          }
-        >
+          }>
           {children as any}
         </Draggable>
       ),
@@ -399,7 +397,7 @@ const ConnectedPlaylistTile = memo(
         numLoadingSkeletonRows
       )
       if (showSkeletons) {
-        return range(numLoadingSkeletonRows as number).map(i => (
+        return range(numLoadingSkeletonRows as number).map((i) => (
           <TrackListItem
             index={i}
             key={i}
@@ -422,8 +420,7 @@ const ConnectedPlaylistTile = memo(
           kind='track'
           id={track.track_id}
           isOwner={track.user.handle === userHandle}
-          link={fullTrackPage(track.permalink)}
-        >
+          link={fullTrackPage(track.permalink)}>
           <TrackListItem
             index={i}
             key={`${track.title}+${i}`}

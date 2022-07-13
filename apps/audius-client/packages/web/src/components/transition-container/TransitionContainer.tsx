@@ -28,13 +28,13 @@ export function TransitionContainer<T>({
       from={fromStyles}
       enter={enterStyles}
       leave={leaveStyles}
-      config={config}
-    >
-      {item => style => (
-        <animated.div style={{ ...style, ...additionalStyles }}>
-          {render(item, style)}
-        </animated.div>
-      )}
+      config={config}>
+      {(item) => (style) =>
+        (
+          <animated.div style={{ ...style, ...additionalStyles }}>
+            {render(item, style)}
+          </animated.div>
+        )}
     </Transition>
   )
 }

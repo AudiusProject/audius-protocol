@@ -104,8 +104,8 @@ function* overrideSupportingForUser({
    * If sender was not previously supporting receiver, then
    * optimistically increment the sender's supporting_count
    */
-  const wasNotPreviouslySupporting = !supportingForSender[receiver.user_id]
-    ?.amount
+  const wasNotPreviouslySupporting =
+    !supportingForSender[receiver.user_id]?.amount
   if (wasNotPreviouslySupporting) {
     yield put(
       update(Kind.USERS, [
@@ -163,8 +163,8 @@ function* overrideSupportersForUser({
    * If receiver was not previously supported by sender, then
    * optimistically increment the receiver's supporter_count
    */
-  const wasNotPreviouslySupported = !supportersForReceiver[sender.user_id]
-    ?.amount
+  const wasNotPreviouslySupported =
+    !supportersForReceiver[sender.user_id]?.amount
   if (wasNotPreviouslySupported) {
     yield put(
       update(Kind.USERS, [
@@ -361,10 +361,10 @@ function* refreshSupportAsync({
     )
 
     const userIds = [
-      ...supportingForSenderList.map(supporting =>
+      ...supportingForSenderList.map((supporting) =>
         decodeHashId(supporting.receiver.id)
       ),
-      ...supportersForReceiverList.map(supporter =>
+      ...supportersForReceiverList.map((supporter) =>
         decodeHashId(supporter.sender.id)
       )
     ]
@@ -372,7 +372,7 @@ function* refreshSupportAsync({
     yield call(fetchUsers, userIds)
 
     const supportingForSenderMap: Record<string, Supporting> = {}
-    supportingForSenderList.forEach(supporting => {
+    supportingForSenderList.forEach((supporting) => {
       const supportingUserId = decodeHashId(supporting.receiver.id)
       if (supportingUserId) {
         supportingForSenderMap[supportingUserId] = {
@@ -383,7 +383,7 @@ function* refreshSupportAsync({
       }
     })
     const supportersForReceiverMap: Record<string, Supporter> = {}
-    supportersForReceiverList.forEach(supporter => {
+    supportersForReceiverList.forEach((supporter) => {
       const supporterUserId = decodeHashId(supporter.sender.id)
       if (supporterUserId) {
         supportersForReceiverMap[supporterUserId] = {
@@ -437,14 +437,14 @@ function* fetchSupportingForUserAsync({
     encodedUserId,
     limit
   })
-  const userIds = supportingList.map(supporting =>
+  const userIds = supportingList.map((supporting) =>
     decodeHashId(supporting.receiver.id)
   )
 
   yield call(fetchUsers, userIds)
 
   const map: Record<string, Supporting> = {}
-  supportingList.forEach(supporting => {
+  supportingList.forEach((supporting) => {
     const supportingUserId = decodeHashId(supporting.receiver.id)
     if (supportingUserId) {
       map[supportingUserId] = {
@@ -508,8 +508,8 @@ export const checkTipToDisplay = ({
    * the currently logged in user.
    * If not found, then look for oldest of the recent tips in general.
    */
-  let validTips = sortedTips.filter(tip => tip.slot > storage.minSlot)
-  let ownTip = validTips.find(tip => tip.sender_id === userId)
+  let validTips = sortedTips.filter((tip) => tip.slot > storage.minSlot)
+  let ownTip = validTips.find((tip) => tip.sender_id === userId)
   if (ownTip) {
     return {
       tip: ownTip,
@@ -546,8 +546,8 @@ export const checkTipToDisplay = ({
         FEED_TIP_DISMISSAL_TIME_LIMIT) ||
     !storage.dismissed
   ) {
-    validTips = sortedTips.filter(tip => tip.slot === storage.minSlot)
-    ownTip = validTips.find(tip => tip.sender_id === userId)
+    validTips = sortedTips.filter((tip) => tip.slot === storage.minSlot)
+    ownTip = validTips.find((tip) => tip.sender_id === userId)
     if (ownTip) {
       return {
         tip: ownTip,
@@ -615,7 +615,7 @@ function* fetchRecentTipsAsync(action: ReturnType<typeof fetchRecentTips>) {
   const userTips = yield* call(fetchRecentUserTips, params)
 
   const recentTips = userTips
-    .map(userTip => {
+    .map((userTip) => {
       const senderId = decodeHashId(userTip.sender.id)
       const receiverId = decodeHashId(userTip.receiver.id)
       if (!senderId || !receiverId) {
@@ -623,7 +623,7 @@ function* fetchRecentTipsAsync(action: ReturnType<typeof fetchRecentTips>) {
       }
 
       const followeeSupporterIds = userTip.followee_supporters
-        .map(followee_supporter => decodeHashId(followee_supporter.id))
+        .map((followee_supporter) => decodeHashId(followee_supporter.id))
         .filter((id): id is ID => !!id)
 
       const { amount, slot, created_at, tx_signature } = userTip

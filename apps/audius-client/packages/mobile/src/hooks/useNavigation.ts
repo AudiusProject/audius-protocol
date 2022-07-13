@@ -36,22 +36,22 @@ export const useNavigation = <
 }: {
   customNativeNavigation?: DrawerNavigationHelpers
 } = {}) => {
-  const defaultNativeNavigation = useNavigationNative<
-    NativeStackNavigationProp<ParamList>
-  >()
+  const defaultNativeNavigation =
+    useNavigationNative<NativeStackNavigationProp<ParamList>>()
   const nativeNavigation = customNativeNavigation || defaultNativeNavigation
   const pushRouteWeb = usePushRouteWeb()
 
   const performNavigation = useCallback(
-    method => <RouteName extends keyof ParamList>(
-      config: UseNavigationConfig<ParamList, RouteName>
-    ) => {
-      const { native, web } = config
-      method(native.screen, native.params)
-      if (web) {
-        pushRouteWeb(web.route, web.fromPage, web.fromNativeNotifications)
-      }
-    },
+    (method) =>
+      <RouteName extends keyof ParamList>(
+        config: UseNavigationConfig<ParamList, RouteName>
+      ) => {
+        const { native, web } = config
+        method(native.screen, native.params)
+        if (web) {
+          pushRouteWeb(web.route, web.fromPage, web.fromNativeNotifications)
+        }
+      },
     // eslint thinks ParamList is a variable
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [pushRouteWeb]

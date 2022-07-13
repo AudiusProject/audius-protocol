@@ -23,8 +23,7 @@ const Navigator = ({ className }: NavigatorProps) => {
     <div
       className={cn(styles.navWrapper, className, {
         [styles.navColumnWrapper]: !isMobile
-      })}
-    >
+      })}>
       {isMobile ? (
         <ConnectedNavBar />
       ) : (

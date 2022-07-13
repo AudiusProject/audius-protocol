@@ -12,7 +12,7 @@ const messages = {
   cta: `Let’s fix that by following some of these artists!`
 }
 
-const FollowUsers = props => {
+const FollowUsers = (props) => {
   const { fetchFollowUsers } = props
 
   useEffect(() => {
@@ -22,9 +22,9 @@ const FollowUsers = props => {
   const [followUsers, setFollowUser] = useState([])
   const disabled = followUsers.length === 0
 
-  const onUserClick = userId => () => {
+  const onUserClick = (userId) => () => {
     if (followUsers.includes(userId)) {
-      setFollowUser(followUsers.filter(u => u !== userId))
+      setFollowUser(followUsers.filter((u) => u !== userId))
     } else {
       setFollowUser(followUsers.concat(userId))
     }

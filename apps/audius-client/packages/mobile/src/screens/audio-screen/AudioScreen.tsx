@@ -155,17 +155,15 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const AudioScreen = () => {
   const styles = useStyles()
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
+    useThemeColors()
   const dispatchWeb = useDispatchWeb()
 
   const totalBalance: Nullable<BNWei> =
     useSelectorWeb(getAccountTotalBalance) ?? null
 
   const totalBalanceWei =
-    useSelectorWeb(state => state.wallet.totalBalance) ?? ('0' as StringWei)
+    useSelectorWeb((state) => state.wallet.totalBalance) ?? ('0' as StringWei)
 
   const { tierNumber } = getTierAndNumberForBalance(totalBalanceWei)
 
@@ -186,8 +184,7 @@ export const AudioScreen = () => {
           root: styles.tileRoot,
           tile: styles.tile,
           content: styles.tileContent
-        }}
-      >
+        }}>
         <Text style={styles.audioAmount}>
           {formatWei((totalBalance || new BN(0)) as BNWei, true, 0)}{' '}
         </Text>
@@ -198,8 +195,7 @@ export const AudioScreen = () => {
               <TouchableOpacity
                 hitSlop={{ left: 4, top: 4, bottom: 4, right: 4 }}
                 onPress={onPressWalletInfo}
-                activeOpacity={0.7}
-              >
+                activeOpacity={0.7}>
                 <IconInfo
                   height={16}
                   width={16}
@@ -240,8 +236,7 @@ export const AudioScreen = () => {
           root: styles.tileRoot,
           tile: styles.tile,
           content: styles.tileContent
-        }}
-      >
+        }}>
         <Button
           title={messages.send}
           styles={{
@@ -290,8 +285,7 @@ export const AudioScreen = () => {
           root: styles.tileRoot,
           tile: styles.tile,
           content: styles.tileContent
-        }}
-      >
+        }}>
         <GradientText style={styles.tileHeader}>
           {messages.rewards}
         </GradientText>
@@ -309,8 +303,7 @@ export const AudioScreen = () => {
           root: styles.tileRoot,
           tile: styles.tile,
           content: styles.tileContent
-        }}
-      >
+        }}>
         <GradientText style={styles.tileHeader}>
           {messages.trending}
         </GradientText>
@@ -332,8 +325,7 @@ export const AudioScreen = () => {
           root: styles.tileRoot,
           tile: styles.tile,
           content: styles.tileContent
-        }}
-      >
+        }}>
         <GradientText style={styles.tileHeader}>
           {messages.vipTiers}
         </GradientText>
@@ -406,15 +398,13 @@ export const AudioScreen = () => {
           root: styles.tileRoot,
           tile: styles.tile,
           content: styles.tileContent
-        }}
-      >
+        }}>
         <Image style={styles.token} source={TokenStill} />
         <GradientText style={styles.tileHeader}>{messages.what}</GradientText>
         <Text style={styles.tileSubheader}>{messages.whatBody1}</Text>
         <TouchableOpacity
           onPress={() => Linking.openURL(LEARN_MORE_LINK)}
-          activeOpacity={0.7}
-        >
+          activeOpacity={0.7}>
           <Text style={styles.tileLink}>{messages.learnMore}</Text>
         </TouchableOpacity>
         <Text style={styles.tileSubheader}>{messages.whatBody2}</Text>

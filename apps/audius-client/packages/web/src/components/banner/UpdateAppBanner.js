@@ -6,7 +6,7 @@ import Pill from 'components/pill/Pill'
 
 import styles from './UpdateAppBanner.module.css'
 
-const UpdateAppBanner = props => {
+const UpdateAppBanner = (props) => {
   return (
     <Banner {...props} isElectron>
       <div className={styles.updateAppBanner} onClick={props.onAccept}>

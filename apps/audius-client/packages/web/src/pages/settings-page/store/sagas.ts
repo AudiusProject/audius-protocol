@@ -80,127 +80,137 @@ function* watchGetSettings() {
 }
 
 function* watchToogleBrowserPushNotification() {
-  yield* takeEvery(actions.SET_BROWSER_NOTIFICATION_ENABLED, function* (
-    action: actions.SetBrowserNotificationEnabled
-  ) {
-    try {
-      if (isPushManagerAvailable) {
-        const subscription = yield* call(getPushManagerBrowserSubscription)
-        if (subscription) {
-          if (action.updateServer) {
-            yield* call(AudiusBackend.updateBrowserNotifications, {
-              enabled: action.enabled,
-              subscription
+  yield* takeEvery(
+    actions.SET_BROWSER_NOTIFICATION_ENABLED,
+    function* (action: actions.SetBrowserNotificationEnabled) {
+      try {
+        if (isPushManagerAvailable) {
+          const subscription = yield* call(getPushManagerBrowserSubscription)
+          if (subscription) {
+            if (action.updateServer) {
+              yield* call(AudiusBackend.updateBrowserNotifications, {
+                enabled: action.enabled,
+                subscription
+              })
+            }
+            const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
+              provider: 'gcm',
+              enabled: action.enabled
             })
+            yield* put(event)
           }
-          const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
-            provider: 'gcm',
-            enabled: action.enabled
-          })
-          yield* put(event)
-        }
-      } else if (isSafariPushAvailable) {
-        const pushPermission = getSafariPushBrowser()
-        if (
-          action.enabled &&
-          pushPermission.permission === Permission.GRANTED
-        ) {
-          if (action.updateServer) {
-            yield* call(
-              AudiusBackend.registerDeviceToken,
-              pushPermission.deviceToken,
-              'safari'
-            )
-          }
+        } else if (isSafariPushAvailable) {
+          const pushPermission = getSafariPushBrowser()
+          if (
+            action.enabled &&
+            pushPermission.permission === Permission.GRANTED
+          ) {
+            if (action.updateServer) {
+              yield* call(
+                AudiusBackend.registerDeviceToken,
+                pushPermission.deviceToken,
+                'safari'
+              )
+            }
 
-          const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
-            provider: 'safari',
-            enabled: true
-          })
-          yield* put(event)
-        } else if (
-          !action.enabled &&
-          pushPermission.permission === Permission.GRANTED
-        ) {
-          if (action.updateServer) {
-            yield* call(
-              AudiusBackend.deregisterDeviceToken,
-              pushPermission.deviceToken
-            )
-          }
+            const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
+              provider: 'safari',
+              enabled: true
+            })
+            yield* put(event)
+          } else if (
+            !action.enabled &&
+            pushPermission.permission === Permission.GRANTED
+          ) {
+            if (action.updateServer) {
+              yield* call(
+                AudiusBackend.deregisterDeviceToken,
+                pushPermission.deviceToken
+              )
+            }
 
-          const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
-            provider: 'safari',
-            enabled: false
-          })
-          yield* put(event)
+            const event = make(Name.BROWSER_NOTIFICATION_SETTINGS, {
+              provider: 'safari',
+              enabled: false
+            })
+            yield* put(event)
+          }
         }
+      } catch (error) {
+        yield* put(
+          actions.browserPushNotificationFailed(getErrorMessage(error))
+        )
       }
-    } catch (error) {
-      yield* put(actions.browserPushNotificationFailed(getErrorMessage(error)))
     }
-  })
+  )
 }
 
 function* watchSetBrowserNotificationSettingsOn() {
-  yield* takeEvery(actions.SET_BROWSER_NOTIFICATION_SETTINGS_ON, function* (
-    action: actions.SetBrowserNotificationSettingsOn
-  ) {
-    try {
-      const updatedSettings = {
-        [BrowserNotificationSetting.MilestonesAndAchievements]: true,
-        [BrowserNotificationSetting.Followers]: true,
-        [BrowserNotificationSetting.Reposts]: true,
-        [BrowserNotificationSetting.Favorites]: true,
-        [BrowserNotificationSetting.Remixes]: true
+  yield* takeEvery(
+    actions.SET_BROWSER_NOTIFICATION_SETTINGS_ON,
+    function* (action: actions.SetBrowserNotificationSettingsOn) {
+      try {
+        const updatedSettings = {
+          [BrowserNotificationSetting.MilestonesAndAchievements]: true,
+          [BrowserNotificationSetting.Followers]: true,
+          [BrowserNotificationSetting.Reposts]: true,
+          [BrowserNotificationSetting.Favorites]: true,
+          [BrowserNotificationSetting.Remixes]: true
+        }
+        yield* put(actions.setNotificationSettings(updatedSettings))
+        yield* call(AudiusBackend.updateNotificationSettings, updatedSettings)
+      } catch (error) {
+        yield* put(
+          actions.browserPushNotificationFailed(getErrorMessage(error))
+        )
       }
-      yield* put(actions.setNotificationSettings(updatedSettings))
-      yield* call(AudiusBackend.updateNotificationSettings, updatedSettings)
-    } catch (error) {
-      yield* put(actions.browserPushNotificationFailed(getErrorMessage(error)))
     }
-  })
+  )
 }
 
 function* watchUpdateNotificationSettings() {
-  yield* takeEvery(actions.TOGGLE_NOTIFICATION_SETTING, function* (
-    action: actions.ToggleNotificationSetting
-  ) {
-    try {
-      let isOn: boolean | null | undefined | Permission = action.isOn
-      if (isOn === undefined) {
-        const notificationSettings = yield* select(
-          getBrowserNotificationSettings
-        )
-        isOn = notificationSettings[action.notificationType]
-      }
-      yield* call(AudiusBackend.updateNotificationSettings, {
-        [action.notificationType]: isOn
-      })
+  yield* takeEvery(
+    actions.TOGGLE_NOTIFICATION_SETTING,
+    function* (action: actions.ToggleNotificationSetting) {
+      try {
+        let isOn: boolean | null | undefined | Permission = action.isOn
+        if (isOn === undefined) {
+          const notificationSettings = yield* select(
+            getBrowserNotificationSettings
+          )
+          isOn = notificationSettings[action.notificationType]
+        }
+        yield* call(AudiusBackend.updateNotificationSettings, {
+          [action.notificationType]: isOn
+        })
 
-      const event = make(Name.NOTIFICATIONS_TOGGLE_SETTINGS, {
-        settings: action.notificationType,
-        enabled: isOn
-      })
-      yield* put(event)
-    } catch (error) {
-      console.error(error)
-      yield* put(actions.browserPushNotificationFailed(getErrorMessage(error)))
+        const event = make(Name.NOTIFICATIONS_TOGGLE_SETTINGS, {
+          settings: action.notificationType,
+          enabled: isOn
+        })
+        yield* put(event)
+      } catch (error) {
+        console.error(error)
+        yield* put(
+          actions.browserPushNotificationFailed(getErrorMessage(error))
+        )
+      }
     }
-  })
+  )
 }
 
 function* watchUpdateEmailFrequency() {
-  yield* takeEvery(actions.UPDATE_EMAIL_FREQUENCY, function* (
-    action: actions.UpdateEmailFrequency
-  ) {
-    if (action.updateServer) {
-      yield* call(
-        AudiusBackend.updateEmailNotificationSettings,
-        action.frequency
-      )
+  yield* takeEvery(
+    actions.UPDATE_EMAIL_FREQUENCY,
+    function* (action: actions.UpdateEmailFrequency) {
+      if (action.updateServer) {
+        yield* call(
+          AudiusBackend.updateEmailNotificationSettings,
+          action.frequency
+        )
+      }
     }
-  })
+  )
 }
 
 export default function sagas() {

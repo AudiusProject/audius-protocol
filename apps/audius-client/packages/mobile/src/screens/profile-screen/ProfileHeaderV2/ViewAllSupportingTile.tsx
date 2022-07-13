@@ -49,23 +49,23 @@ export const ViewAllSupportingTile = () => {
     'supporting_count'
   ])
   const supportingForProfile: SupportingMapForUser =
-    useSelectorWeb(state => getOptimisticSupportingForUser(state, user_id)) ||
+    useSelectorWeb((state) => getOptimisticSupportingForUser(state, user_id)) ||
     {}
   const rankedSupportingIds = Object.keys(supportingForProfile)
     .sort((k1, k2) => {
       const amount1BN = stringWeiToBN(
-        supportingForProfile[(k1 as unknown) as ID].amount
+        supportingForProfile[k1 as unknown as ID].amount
       )
       const amount2BN = stringWeiToBN(
-        supportingForProfile[(k2 as unknown) as ID].amount
+        supportingForProfile[k2 as unknown as ID].amount
       )
       return amount1BN.gte(amount2BN) ? -1 : 1
     })
-    .map(k => supportingForProfile[(k as unknown) as ID])
-    .map(s => s.receiver_id)
-  const rankedSupporting = useSelectorWeb(state => {
+    .map((k) => supportingForProfile[k as unknown as ID])
+    .map((s) => s.receiver_id)
+  const rankedSupporting = useSelectorWeb((state) => {
     const usersMap = getUsers(state, { ids: rankedSupportingIds })
-    return rankedSupportingIds.map(id => usersMap[id]).filter(Boolean)
+    return rankedSupportingIds.map((id) => usersMap[id]).filter(Boolean)
   })
 
   const handlePress = useCallback(() => {
@@ -80,8 +80,7 @@ export const ViewAllSupportingTile = () => {
         root: styles.root,
         content: styles.content
       }}
-      onPress={handlePress}
-    >
+      onPress={handlePress}>
       <ProfilePictureList
         users={rankedSupporting.slice(MAX_PROFILE_SUPPORTING_TILES)}
         totalUserCount={supporting_count - MAX_PROFILE_SUPPORTING_TILES}

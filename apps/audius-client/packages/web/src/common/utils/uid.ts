@@ -39,7 +39,7 @@ export class Uid {
 
   static getComponent = (uid: string, componentName: string) => {
     const components = uid.split('-')
-    const kind = components.find(component =>
+    const kind = components.find((component) =>
       component.startsWith(`${componentName}:`)
     )
     if (!kind) return ''
@@ -70,7 +70,7 @@ export function makeUids(kinds: string[], ids: number[], source: string) {
       counts[i] = totals[key]
     })
     const uids = ids.map((id, i) => Uid.build(kinds[i], id, source, counts[i]))
-    return uids.map(uid => uid.toString())
+    return uids.map((uid) => uid.toString())
   } else {
     // Single kind.
     const kind = kinds
@@ -83,7 +83,7 @@ export function makeUids(kinds: string[], ids: number[], source: string) {
       counts[i] = totals[id]
     })
     const uids = ids.map((id, i) => Uid.build(kind, id, source, counts[i]))
-    return uids.map(uid => uid.toString())
+    return uids.map((uid) => uid.toString())
   }
 }
 

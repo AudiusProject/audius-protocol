@@ -13,7 +13,7 @@ import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import searchBarStyles from './SearchBar.module.css'
 import styles from './SearchBarResult.module.css'
 
-const Image = memo(props => {
+const Image = memo((props) => {
   const { defaultImage, imageMultihash, size, isUser } = props
   const [image, setImage] = useState(imageMultihash ? '' : defaultImage)
   useEffect(() => {
@@ -50,7 +50,7 @@ const Image = memo(props => {
   )
 })
 
-const SearchBarResult = memo(props => {
+const SearchBarResult = memo((props) => {
   const {
     kind,
     id,
@@ -81,8 +81,7 @@ const SearchBarResult = memo(props => {
       />
       <div className={styles.textContainer}>
         <span
-          className={cn(styles.primaryContainer, searchBarStyles.resultText)}
-        >
+          className={cn(styles.primaryContainer, searchBarStyles.resultText)}>
           <div className={styles.primaryText}>{primary}</div>
           {isUser && (
             <UserBadges
@@ -99,8 +98,7 @@ const SearchBarResult = memo(props => {
             className={cn(
               styles.secondaryContainer,
               searchBarStyles.resultText
-            )}
-          >
+            )}>
             {secondary}
             {!isUser && (
               <UserBadges

@@ -151,8 +151,7 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
   ) : (
     <div
       className={cn(styles.detailsMediaWrapper, { [styles.svg]: isSvg })}
-      ref={handleImage}
-    >
+      ref={handleImage}>
       <img src={imageUrl!} alt='Collectible' />
     </div>
   )
@@ -186,16 +185,15 @@ const CollectibleDetailsModal = ({
   const [isMuted, setIsMuted] = useState<boolean>(true)
   const collectible = useSelector(getCollectible)
 
-  const [isPicConfirmModalOpen, setIsPicConfirmaModalOpen] = useState<boolean>(
-    false
-  )
+  const [isPicConfirmModalOpen, setIsPicConfirmaModalOpen] =
+    useState<boolean>(false)
 
   const accountUser = useSelector(getAccountUser)
   const userId = accountUser?.user_id ?? 0
   const { tierNumber } = useSelectTierInfo(userId)
 
   const isCollectibleOptionEnabled =
-    tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
+    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
 
   const handleClose = useCallback(() => {
     dispatch(setCollectible({ collectible: null }))
@@ -225,7 +223,7 @@ const CollectibleDetailsModal = ({
     const { imageUrl } = collectible
     if (!updateProfilePicture || !onSave || imageUrl === null) return
 
-    const blob = await fetch(imageUrl).then(r => r.blob())
+    const blob = await fetch(imageUrl).then((r) => r.blob())
     await updateProfilePicture([blob], 'url')
     await onSave()
     setIsPicConfirmaModalOpen(false)
@@ -243,8 +241,7 @@ const CollectibleDetailsModal = ({
         headerContainerClassName={styles.modalHeader}
         titleClassName={styles.modalTitle}
         allowScroll
-        zIndex={zIndex.COLLECTIBLE_DETAILS_MODAL}
-      >
+        zIndex={zIndex.COLLECTIBLE_DETAILS_MODAL}>
         <div className={styles.nftModal}>
           <CollectibleMedia
             collectible={collectible}
@@ -306,8 +303,7 @@ const CollectibleDetailsModal = ({
                 className={styles.link}
                 href={collectible.externalLink}
                 target='_blank'
-                rel='noopener noreferrer'
-              >
+                rel='noopener noreferrer'>
                 <IconLink className={styles.linkIcon} />
                 {new URL(collectible.externalLink).hostname}
               </a>
@@ -318,8 +314,7 @@ const CollectibleDetailsModal = ({
                 className={styles.link}
                 href={collectible.permaLink}
                 target='_blank'
-                rel='noopener noreferrer'
-              >
+                rel='noopener noreferrer'>
                 <IconLink className={styles.linkIcon} />
                 {collectibleMessages.linkToCollectible}
               </a>
@@ -332,8 +327,7 @@ const CollectibleDetailsModal = ({
                 mount={MountPlacement.PARENT}
                 placement={ComponentPlacement.TOP}
                 requireAccount={false}
-                tooltipClassName={styles.shareTooltip}
-              >
+                tooltipClassName={styles.shareTooltip}>
                 <Button
                   className={styles.detailsButton}
                   textClassName={styles.detailsButtonText}
@@ -391,8 +385,7 @@ const CollectibleDetailsModal = ({
             <IconImage />
             <span>Set as Profile Pic</span>
           </>
-        }
-      >
+        }>
         <div className={styles.confirmModalContainer}>
           <p className={styles.confirmModalText}>
             Are you sure you want to change your profile picture?
@@ -418,8 +411,7 @@ const CollectibleDetailsModal = ({
       <Drawer
         isOpen={isModalOpen && isMobile && !NATIVE_MOBILE}
         onClose={handleClose}
-        isFullscreen
-      >
+        isFullscreen>
         <div className={styles.nftDrawer}>
           <CollectibleMedia
             collectible={collectible}
@@ -477,8 +469,7 @@ const CollectibleDetailsModal = ({
                 className={styles.link}
                 href={collectible.externalLink}
                 target='_blank'
-                rel='noopener noreferrer'
-              >
+                rel='noopener noreferrer'>
                 <IconLink className={styles.linkIcon} />
                 {new URL(collectible.externalLink).hostname}
               </a>
@@ -488,8 +479,7 @@ const CollectibleDetailsModal = ({
                 className={styles.link}
                 href={collectible.permaLink}
                 target='_blank'
-                rel='noopener noreferrer'
-              >
+                rel='noopener noreferrer'>
                 <IconLink className={styles.linkIcon} />
                 {collectibleMessages.linkToCollectible}
               </a>

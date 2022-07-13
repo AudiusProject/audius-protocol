@@ -141,13 +141,13 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       ({ uid }: any) => uid === playingUid
     )
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
-      item =>
+      (item) =>
         item.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
         item.user.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
     )
     const filteredIndex =
       playingIndex > -1
-        ? filteredMetadata.findIndex(metadata => metadata.uid === playingUid)
+        ? filteredMetadata.findIndex((metadata) => metadata.uid === playingUid)
         : playingIndex
     return [filteredMetadata, filteredIndex]
   }
@@ -321,7 +321,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
         .sort((a, b) =>
           order === 'ascend' ? column.sorter(a, b) : column.sorter(b, a)
         )
-        .map(metadata => metadata.uid)
+        .map((metadata) => metadata.uid)
       this.setState({ allowReordering: false })
     }
     this.props.updateLineupOrder(updatedOrder!)

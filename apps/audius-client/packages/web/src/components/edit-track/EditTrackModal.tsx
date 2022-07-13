@@ -73,7 +73,7 @@ const EditTrackModal = ({
       setPendingUploads([])
     }
     if (pendingDeletes.length) {
-      pendingDeletes.forEach(id => onDelete(id))
+      pendingDeletes.forEach((id) => onDelete(id))
       setPendingDeletes([])
     }
     close()
@@ -107,10 +107,10 @@ const EditTrackModal = ({
   }
 
   const getStemsFilteringPendingDeletes = () =>
-    stems.filter(s => !pendingDeletes.includes(s.track_id))
+    stems.filter((s) => !pendingDeletes.includes(s.track_id))
 
   const onSelectStemCategory = (category: StemCategory, stemIndex: number) => {
-    setPendingUploads(u => {
+    setPendingUploads((u) => {
       const newState = [...u]
 
       const pendingStemsLength = getStemsFilteringPendingDeletes().length
@@ -128,33 +128,33 @@ const EditTrackModal = ({
       await Promise.all(processFiles(selectedStems, false, () => {}))
     )
       .filter(removeNullable)
-      .map(p => ({
+      .map((p) => ({
         ...p,
         allowDelete: true,
         allowCategorySwitch: true,
         category: dropdownRows[0]
       }))
 
-    setPendingUploads(s => [...s, ...processed])
+    setPendingUploads((s) => [...s, ...processed])
   }
 
   const { combinedStems, onDeleteStem } = (() => {
     // Filter out pending deletes from the existing stems
-    const existingStems = getStemsFilteringPendingDeletes().map(s => ({
+    const existingStems = getStemsFilteringPendingDeletes().map((s) => ({
       metadata: s,
       category: s.stem_of.category,
       allowDelete: true,
       allowCategorySwitch: false
     }))
 
-    const uploadingStems = currentUploads.map(s => ({
+    const uploadingStems = currentUploads.map((s) => ({
       metadata: s.metadata,
       category: s.category,
       allowDelete: false,
       allowCategorySwitch: false
     }))
 
-    const pendingStems = pendingUploads.map(u => ({
+    const pendingStems = pendingUploads.map((u) => ({
       metadata: u.metadata,
       category: u.category,
       allowCategorySwitch: true,
@@ -167,11 +167,11 @@ const EditTrackModal = ({
       if (index < existingStems.length) {
         // If it's an existing stem, set is as a pending delete
         const id = existingStems[index].metadata.track_id
-        setPendingDeletes(s => [...s, id])
+        setPendingDeletes((s) => [...s, id])
       } else {
         // If it's a pending stem, delete it from local state
         const indexToDelete = index - existingStems.length
-        setPendingUploads(s => {
+        setPendingUploads((s) => {
           const newState = [...s]
           newState.splice(indexToDelete, 1)
           return newState

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { SetOptional } from 'type-fest'
+import type { SetOptional } from 'type-fest'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { Drawer as DrawerName } from 'app/store/drawers/slice'

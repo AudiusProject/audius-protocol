@@ -12,12 +12,11 @@ const messages = {
   mobileStream: `HQ Audio at 320kbps for FREE!`
 }
 
-const FanburstBanner = props => {
+const FanburstBanner = (props) => {
   return (
     <Banner
       {...props}
-      className={cn(styles.banner, { [styles.isMobile]: props.isMobile })}
-    >
+      className={cn(styles.banner, { [styles.isMobile]: props.isMobile })}>
       <div className={styles.text}>
         <span>
           {props.isMboile ? messages.mobileHome : messages.home}

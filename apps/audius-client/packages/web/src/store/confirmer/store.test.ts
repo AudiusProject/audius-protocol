@@ -127,7 +127,7 @@ describe('requestConfirmation', () => {
   })
 
   it('makes fail call', async () => {
-    const confirm = jest.fn(_ => {
+    const confirm = jest.fn((_) => {
       throw new Error('Error Message')
     })
     const success = jest.fn()
@@ -233,7 +233,7 @@ describe('requestConfirmation', () => {
 
 describe('requestConfirmation timeouts', () => {
   const timeout = (ms: number) =>
-    new Promise(resolve => setTimeout(resolve, ms))
+    new Promise((resolve) => setTimeout(resolve, ms))
 
   it('fails on timeout', async () => {
     const confirm1 = async () => {

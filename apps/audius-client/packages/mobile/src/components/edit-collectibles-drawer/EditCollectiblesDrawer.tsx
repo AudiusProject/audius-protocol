@@ -10,8 +10,7 @@ const MODAL_NAME = 'MobileEditCollectiblesDrawer'
 
 const messages = {
   title: 'Edit Collectibles',
-  text:
-    'Visit audius.co from a desktop browser to hide and sort your NFT collectibles.'
+  text: 'Visit audius.co from a desktop browser to hide and sort your NFT collectibles.'
 }
 
 const createStyles = (themeColors: ThemeColors) =>

@@ -58,7 +58,7 @@ async function startWaveAnimation(canvasRef, useStatic) {
   return waveBg
 }
 
-const BackgroundWaves = props => {
+const BackgroundWaves = (props) => {
   // Check if browser is Safari, Edge, or IE
   let useStatic = props.useStatic
   if (
@@ -74,14 +74,14 @@ const BackgroundWaves = props => {
   useEffect(() => {
     waveAnimation.current = startWaveAnimation(canvasRef, useStatic)
     return () =>
-      waveAnimation.current.then(animation => {
+      waveAnimation.current.then((animation) => {
         animation.remove()
       })
   }, [useStatic])
 
   useEffect(() => {
     if (waveAnimation.current) {
-      waveAnimation.current.then(animation => {
+      waveAnimation.current.then((animation) => {
         if (props.pause) {
           animation.pause()
         } else {
@@ -93,7 +93,7 @@ const BackgroundWaves = props => {
 
   const resizeAnimation = useCallback(() => {
     if (waveAnimation.current) {
-      waveAnimation.current.then(animation => animation.resize())
+      waveAnimation.current.then((animation) => animation.resize())
     }
   }, [])
 

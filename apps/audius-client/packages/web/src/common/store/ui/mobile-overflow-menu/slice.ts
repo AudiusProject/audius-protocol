@@ -14,12 +14,8 @@ const slice = createSlice({
   initialState,
   reducers: {
     open: (state, action: PayloadAction<OpenPayload>) => {
-      const {
-        id,
-        source,
-        overflowActions,
-        overflowActionCallbacks
-      } = action.payload
+      const { id, source, overflowActions, overflowActionCallbacks } =
+        action.payload
       state.id = id
       state.source = source
       state.overflowActions = overflowActions

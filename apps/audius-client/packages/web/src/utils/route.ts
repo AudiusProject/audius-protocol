@@ -352,9 +352,9 @@ export const getPathname = (
  * Returns true if none of the previous routes mach and it does, otherwise false.
  */
 export const doesRenderPage = (pageRoute: string) => {
-  const pgIndex = orderedRoutes.findIndex(route => route === pageRoute)
+  const pgIndex = orderedRoutes.findIndex((route) => route === pageRoute)
   if (pgIndex === -1) return false
-  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every(route => {
+  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every((route) => {
     return !matchPath(getPathname(), {
       path: route,
       exact: true

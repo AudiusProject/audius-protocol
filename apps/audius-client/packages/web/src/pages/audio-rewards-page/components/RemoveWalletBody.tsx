@@ -29,9 +29,10 @@ const RemoveWalletBody = ({ className }: RemoveWalletBodyProps) => {
   const onRemove = useCallback(() => {
     if (wallet && chain) dispatch(confirmRemoveWallet({ wallet, chain }))
   }, [dispatch, wallet, chain])
-  const onIgnore = useCallback(() => dispatch(pressConnectWallets()), [
-    dispatch
-  ])
+  const onIgnore = useCallback(
+    () => dispatch(pressConnectWallets()),
+    [dispatch]
+  )
 
   return (
     <div className={cn(styles.container, { [className!]: !!className })}>

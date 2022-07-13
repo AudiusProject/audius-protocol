@@ -20,9 +20,8 @@ type NotificationsDrawerNavigationContextValue =
   | ContextType
   | Record<string, never>
 
-export const NotificationsDrawerNavigationContext = createContext<
-  NotificationsDrawerNavigationContextValue
->({})
+export const NotificationsDrawerNavigationContext =
+  createContext<NotificationsDrawerNavigationContextValue>({})
 
 type ProviderProps = ContextType & {
   children: ReactNode

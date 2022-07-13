@@ -25,8 +25,7 @@ const HeaderButton = ({
         { [styles.showIcon]: showIcon },
         className
       )}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {showIcon && (
         <div className={styles.icon}>
           <Caret />

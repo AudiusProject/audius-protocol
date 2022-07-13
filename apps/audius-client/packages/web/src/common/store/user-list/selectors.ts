@@ -49,7 +49,7 @@ export const makeGetOptimisticUserIdsIfNeeded = ({
           supportingOverridesMap[userId] || {}
         const supportingOverridesKeysForUser = Object.keys(
           supportingOverridesMapForUser
-        ).map(k => parseInt(k))
+        ).map((k) => parseInt(k))
         if (supportingOverridesKeysForUser.length === 0) {
           return userIds
         }
@@ -63,12 +63,12 @@ export const makeGetOptimisticUserIdsIfNeeded = ({
          * supporting list modal.
          */
         const optimisticUserIdSetToInclude = new Set(
-          supportingOverridesKeysForUser.filter(id => !userIdSet.has(id))
+          supportingOverridesKeysForUser.filter((id) => !userIdSet.has(id))
         )
         const optimisticSupportingForUser = optimisticSupporting[userId]
         const optimisticSupportingForUserKeys = Object.keys(
           optimisticSupportingForUser
-        ).map(k => parseInt(k))
+        ).map((k) => parseInt(k))
 
         const sortedIdsDesc = optimisticSupportingForUserKeys.sort((k1, k2) => {
           const amount1BN = stringWeiToBN(
@@ -81,7 +81,7 @@ export const makeGetOptimisticUserIdsIfNeeded = ({
         })
 
         const resultIds: ID[] = []
-        sortedIdsDesc.forEach(id => {
+        sortedIdsDesc.forEach((id) => {
           if (userIdSet.has(id) || optimisticUserIdSetToInclude.has(id)) {
             resultIds.push(id)
           }
@@ -101,7 +101,7 @@ export const makeGetOptimisticUserIdsIfNeeded = ({
           supportersOverridesMap[userId] || {}
         const supportersOverridesKeysForUser = Object.keys(
           supportersOverridesMapForUser
-        ).map(k => parseInt(k))
+        ).map((k) => parseInt(k))
         if (supportersOverridesKeysForUser.length === 0) {
           return userIds
         }
@@ -115,12 +115,12 @@ export const makeGetOptimisticUserIdsIfNeeded = ({
          * top supporters list modal.
          */
         const optimisticUserIdSetToInclude = new Set(
-          supportersOverridesKeysForUser.filter(id => !userIdSet.has(id))
+          supportersOverridesKeysForUser.filter((id) => !userIdSet.has(id))
         ) as Set<number>
         const optimisticSupportersForUser = optimisticSupporters[userId]
         const optimisticSupportersForUserKeys = Object.keys(
           optimisticSupportersForUser
-        ).map(k => parseInt(k))
+        ).map((k) => parseInt(k))
 
         const sortedIdsDesc = optimisticSupportersForUserKeys.sort((k1, k2) => {
           const amount1BN = stringWeiToBN(
@@ -133,7 +133,7 @@ export const makeGetOptimisticUserIdsIfNeeded = ({
         })
 
         const resultIds: ID[] = []
-        sortedIdsDesc.forEach(id => {
+        sortedIdsDesc.forEach((id) => {
           if (userIdSet.has(id) || optimisticUserIdSetToInclude.has(id)) {
             resultIds.push(id)
           }

@@ -95,7 +95,7 @@ export const AnimatedButton = ({
       onPress?.()
     }
     if (hasMultipleStates) {
-      setIconIndex(iconIndex => {
+      setIconIndex((iconIndex) => {
         // If externalIconIndex is provided,
         // set iconIndex to it
         if (externalIconIndex !== undefined) {
@@ -187,16 +187,15 @@ export const AnimatedButton = ({
       onPress={handlePress}
       onLongPress={handleLongPress}
       hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-      style={style}
-    >
-      {pressableState => (
+      style={style}>
+      {(pressableState) => (
         <>
           {renderUnderlay?.(pressableState)}
           <View style={wrapperStyle}>
             {/* The key is needed for animations to work on android  */}
             <LottieView
               key={hasMultipleStates ? iconIndex : undefined}
-              ref={animation => (animationRef.current = animation)}
+              ref={(animation) => (animationRef.current = animation)}
               onAnimationFinish={handleAnimationFinish}
               progress={progress}
               loop={false}

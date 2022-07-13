@@ -115,8 +115,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
   return (
     <Tile
       styles={{ root: style, content: styles.content }}
-      onPress={handlePress}
-    >
+      onPress={handlePress}>
       {url ? (
         <View>
           <ImageBackground style={styles.image} source={{ uri: url }}>

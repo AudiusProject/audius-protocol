@@ -36,94 +36,94 @@ const BACKGROUND_OPACITY = 0.5
 // Controls the amount of friction in swiping when overflowing up or down
 const OVERFLOW_FRICTION = 4
 
-const createStyles = (zIndex = 5, shouldAnimateShadow = true) => (
-  themeColors: ThemeColors
-) =>
-  StyleSheet.create({
-    drawer: {
-      backgroundColor: themeColors.neutralLight10,
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      elevation: zIndex,
-      zIndex: zIndex,
-      shadowOpacity: shouldAnimateShadow ? 0 : MAX_SHADOW_OPACITY,
-      shadowRadius: 15,
-      borderTopRightRadius: BORDER_RADIUS,
-      borderTopLeftRadius: BORDER_RADIUS,
-      overflow: 'hidden'
-    },
+const createStyles =
+  (zIndex = 5, shouldAnimateShadow = true) =>
+  (themeColors: ThemeColors) =>
+    StyleSheet.create({
+      drawer: {
+        backgroundColor: themeColors.neutralLight10,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        elevation: zIndex,
+        zIndex,
+        shadowOpacity: shouldAnimateShadow ? 0 : MAX_SHADOW_OPACITY,
+        shadowRadius: 15,
+        borderTopRightRadius: BORDER_RADIUS,
+        borderTopLeftRadius: BORDER_RADIUS,
+        overflow: 'hidden'
+      },
 
-    fullDrawer: {
-      top: 0,
-      height: '100%'
-    },
+      fullDrawer: {
+        top: 0,
+        height: '100%'
+      },
 
-    content: {
-      height: 'auto'
-    },
+      content: {
+        height: 'auto'
+      },
 
-    fullScreenContent: {
-      height: '100%'
-    },
+      fullScreenContent: {
+        height: '100%'
+      },
 
-    titleBarContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 24
-    },
+      titleBarContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24
+      },
 
-    dismissContainer: {
-      position: 'absolute',
-      top: 24,
-      left: 24
-    },
+      dismissContainer: {
+        position: 'absolute',
+        top: 24,
+        left: 24
+      },
 
-    titleContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingTop: 20
-    },
+      titleContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 20
+      },
 
-    titleIcon: {
-      marginRight: 12,
-      height: 24,
-      width: 24
-    },
+      titleIcon: {
+        marginRight: 12,
+        height: 24,
+        width: 24
+      },
 
-    titleLabel: {
-      fontFamily: 'AvenirNextLTPro-Bold',
-      fontSize: 18,
-      color: themeColors.neutral
-    },
+      titleLabel: {
+        fontFamily: 'AvenirNextLTPro-Bold',
+        fontSize: 18,
+        color: themeColors.neutral
+      },
 
-    isOpen: {
-      shadowOpacity: 0.25,
-      shadowOffset: {
-        width: 50,
-        height: 15
+      isOpen: {
+        shadowOpacity: 0.25,
+        shadowOffset: {
+          width: 50,
+          height: 15
+        }
+      },
+
+      background: {
+        position: 'absolute',
+        backgroundColor: 'black',
+        top: 0,
+        height: '100%',
+        width: '100%'
+      },
+
+      skirt: {
+        backgroundColor: themeColors.neutralLight10,
+        width: '100%',
+        height: 800
       }
-    },
-
-    background: {
-      position: 'absolute',
-      backgroundColor: 'black',
-      top: 0,
-      height: '100%',
-      width: '100%'
-    },
-
-    skirt: {
-      backgroundColor: themeColors.neutralLight10,
-      width: '100%',
-      height: 800
-    }
-  })
+    })
 
 export enum DrawerAnimationStyle {
   STIFF = 'STIFF',
@@ -279,8 +279,7 @@ const DrawerHeader = ({
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onClose}
-          style={styles.dismissContainer}
-        >
+          style={styles.dismissContainer}>
           <IconRemove width={30} height={30} fill={closeColor} />
         </TouchableOpacity>
       )}
@@ -511,12 +510,13 @@ export const Drawer: DrawerComponent = ({
 
             // If we are "closing" the drawer to an offset position
             if (initialOffsetPosition) {
-              const borderRadiusInitialOffset = shouldHaveRoundedBordersAtInitialOffset
-                ? // Border radius has rounded corners at the initial offset
-                  BORDER_RADIUS
-                : // Border radius gains radius (quicklky) as the initial offset is
-                  // left and the drawer drags open
-                  BORDER_RADIUS * percentOpen * 5
+              const borderRadiusInitialOffset =
+                shouldHaveRoundedBordersAtInitialOffset
+                  ? // Border radius has rounded corners at the initial offset
+                    BORDER_RADIUS
+                  : // Border radius gains radius (quicklky) as the initial offset is
+                    // left and the drawer drags open
+                    BORDER_RADIUS * percentOpen * 5
               // Cap the border radius at the maximum (BORDER_RADIUS)
               let newBorderRadius = Math.min(
                 borderRadiusInitialOffset,
@@ -564,9 +564,10 @@ export const Drawer: DrawerComponent = ({
             // - In the offset position, they are either 0 or BORDER_RADIUS
             // - While dragging open, they have BORDER_RADIUS
             // - While fully open, they are 0
-            const borderRadiusInitialOffset = shouldHaveRoundedBordersAtInitialOffset
-              ? BORDER_RADIUS
-              : BORDER_RADIUS * percentOpen * 5
+            const borderRadiusInitialOffset =
+              shouldHaveRoundedBordersAtInitialOffset
+                ? BORDER_RADIUS
+                : BORDER_RADIUS * percentOpen * 5
             let newBorderRadius = Math.min(
               borderRadiusInitialOffset,
               BORDER_RADIUS
@@ -645,8 +646,7 @@ export const Drawer: DrawerComponent = ({
         <TouchableWithoutFeedback
           onPress={() => {
             onClose()
-          }}
-        >
+          }}>
           {renderBackgroundView()}
         </TouchableWithoutFeedback>
       )
@@ -678,8 +678,7 @@ export const Drawer: DrawerComponent = ({
             setDrawerHeight(height + androidNavigationBarHeight)
           }
         }}
-        {...edgeProps}
-      >
+        {...edgeProps}>
         <DrawerHeader
           onClose={onClose}
           title={title}
@@ -712,8 +711,7 @@ export const Drawer: DrawerComponent = ({
             borderTopRightRadius: interpolatedBorderRadius,
             borderTopLeftRadius: interpolatedBorderRadius
           }
-        ]}
-      >
+        ]}>
         {renderContent()}
         <View style={styles.skirt} />
       </Animated.View>

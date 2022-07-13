@@ -237,25 +237,26 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
 }
 
 export function* watchShareUser() {
-  yield* takeEvery(socialActions.SHARE_USER, function* (
-    action: ReturnType<typeof socialActions.shareUser>
-  ) {
-    const { userId, source } = action
+  yield* takeEvery(
+    socialActions.SHARE_USER,
+    function* (action: ReturnType<typeof socialActions.shareUser>) {
+      const { userId, source } = action
 
-    const user = yield* select(getUser, { id: userId })
-    if (!user) return
+      const user = yield* select(getUser, { id: userId })
+      if (!user) return
 
-    const link = profilePage(user.handle)
-    share(link, user.name)
+      const link = profilePage(user.handle)
+      share(link, user.name)
 
-    const event = make(Name.SHARE, {
-      kind: 'profile',
-      id: userId,
-      url: link,
-      source
-    })
-    yield* put(event)
-  })
+      const event = make(Name.SHARE, {
+        kind: 'profile',
+        id: userId,
+        url: link,
+        source
+      })
+      yield* put(event)
+    }
+  )
 }
 
 const sagas = () => {

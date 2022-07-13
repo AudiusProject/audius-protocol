@@ -64,8 +64,7 @@ const NotFoundPage = ({ isMobile, goToHomePage, theme }: NotFoundPageProps) => {
       description={messages.description}
       containerClassName={cn({ [styles.isMobile]: isMobile })}
       contentClassName={styles.notFoundPageWrapper}
-      scrollableSearch={!isMobile}
-    >
+      scrollableSearch={!isMobile}>
       <div
         className={cn(styles.bodyWrapper, {
           [styles.bodyWrapperMobile]: isMobile
@@ -74,8 +73,7 @@ const NotFoundPage = ({ isMobile, goToHomePage, theme }: NotFoundPageProps) => {
           backgroundImage: `url(${tiledBackground})`,
           backgroundBlendMode:
             shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
-        }}
-      >
+        }}>
         <div className={styles.contentWrapper}>
           <div className={styles.mainContent}>
             <div className={styles.animation}>

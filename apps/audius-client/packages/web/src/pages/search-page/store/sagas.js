@@ -24,14 +24,14 @@ export function* getTagSearchResults(tag, kind, limit, offset) {
   const { users, tracks } = results
 
   const creatorIds = tracks
-    .map(t => t.owner_id)
-    .concat(users.map(u => u.user_id))
+    .map((t) => t.owner_id)
+    .concat(users.map((u) => u.user_id))
 
   yield call(fetchUsers, creatorIds)
 
   const { entries } = yield call(fetchUsers, creatorIds)
 
-  const tracksWithUsers = tracks.map(track => ({
+  const tracksWithUsers = tracks.map((track) => ({
     ...track,
     user: entries[track.owner_id]
   }))

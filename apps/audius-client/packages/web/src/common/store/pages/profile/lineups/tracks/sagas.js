@@ -38,7 +38,7 @@ function* getTracks({ offset, limit, payload }) {
     {
       handle: handle.toLowerCase()
     },
-    user => 'twitter_handle' in user
+    (user) => 'twitter_handle' in user
   )
   const sort = payload.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
   const getUnlisted = true
@@ -64,7 +64,7 @@ function* getTracks({ offset, limit, payload }) {
     }
 
     const pinnedTrackIndex = processed.findIndex(
-      track => track.track_id === user._artist_pick
+      (track) => track.track_id === user._artist_pick
     )
     if (offset === 0) {
       // If pinned track found in tracksResponse,
@@ -101,7 +101,7 @@ function* getTracks({ offset, limit, payload }) {
   }
 }
 
-const sourceSelector = state => `${PREFIX}:${getProfileUserId(state)}`
+const sourceSelector = (state) => `${PREFIX}:${getProfileUserId(state)}`
 
 class TracksSagas extends LineupSagas {
   constructor() {
@@ -139,7 +139,9 @@ function* watchDeleteTrack() {
   yield takeEvery(DELETE_TRACK, function* (action) {
     const { trackId } = action
     const lineup = yield select(getProfileTracksLineup)
-    const trackLineupEntry = lineup.entries.find(entry => entry.id === trackId)
+    const trackLineupEntry = lineup.entries.find(
+      (entry) => entry.id === trackId
+    )
     if (trackLineupEntry) {
       yield put(tracksActions.remove(Kind.TRACKS, trackLineupEntry.uid))
     }

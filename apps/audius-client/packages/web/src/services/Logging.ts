@@ -1,7 +1,7 @@
 import { LoggingMessage, LOG_LEVEL } from './native-mobile-interface/logging'
 
 const processConsoleData = (data: any[]) => {
-  return data.map(dataItem => JSON.stringify(dataItem)).join(', ')
+  return data.map((dataItem) => JSON.stringify(dataItem)).join(', ')
 }
 
 /**
@@ -12,14 +12,13 @@ export const setupMobileLogging = () => {
   if (!REACT_APP_NATIVE_MOBILE) return
   console.log('Setting up mobile logging')
 
-  const handleMessage = (
-    level: LOG_LEVEL,
-    original: (...data: any[]) => void
-  ) => (...data: any[]) => {
-    const nativeMessage = new LoggingMessage(level, processConsoleData(data))
-    nativeMessage.send()
-    original(...data)
-  }
+  const handleMessage =
+    (level: LOG_LEVEL, original: (...data: any[]) => void) =>
+    (...data: any[]) => {
+      const nativeMessage = new LoggingMessage(level, processConsoleData(data))
+      nativeMessage.send()
+      original(...data)
+    }
 
   window.console.log = handleMessage('LOG', window.console.log)
   window.console.info = handleMessage('INFO', window.console.info)

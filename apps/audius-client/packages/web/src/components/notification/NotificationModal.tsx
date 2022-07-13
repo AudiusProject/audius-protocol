@@ -31,8 +31,7 @@ export const NotificationModal = (props: NotificationModalProps) => {
       closable={false}
       onCancel={onClose}
       footer={null}
-      destroyOnClose
-    >
+      destroyOnClose>
       <div className={styles.panelContainer}>
         <div className={styles.header}>
           <IconRemove className={styles.iconRemove} onClick={onClose} />

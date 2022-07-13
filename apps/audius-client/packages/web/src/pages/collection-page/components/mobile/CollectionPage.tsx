@@ -177,7 +177,7 @@ const CollectionPage = ({
 
   const togglePlay = (uid: string, trackId: ID) => {
     if (playlistId === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
-      const track = tracks.entries.find(track => track.uid === uid)
+      const track = tracks.entries.find((track) => track.uid === uid)
 
       if (track?.collectible) {
         const { collectible } = track
@@ -200,7 +200,7 @@ const CollectionPage = ({
 
   const playingUid = getPlayingUid()
 
-  const trackList = tracks.entries.map(entry => ({
+  const trackList = tracks.entries.map((entry) => ({
     isLoading: false,
     isSaved: entry.has_current_user_saved,
     isReposted: entry.has_current_user_reposted,
@@ -217,13 +217,11 @@ const CollectionPage = ({
   return (
     <NetworkConnectivityMonitor
       pageDidLoad={tracksLoading}
-      onDidRegainConnectivity={refresh}
-    >
+      onDidRegainConnectivity={refresh}>
       <MobilePageContainer
         title={title}
         description={pageDescription}
-        canonicalUrl={canonicalUrl}
-      >
+        canonicalUrl={canonicalUrl}>
         <div className={styles.collectionContent}>
           <div>
             <CollectionHeader

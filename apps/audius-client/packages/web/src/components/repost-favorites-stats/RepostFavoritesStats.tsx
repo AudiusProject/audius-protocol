@@ -59,8 +59,7 @@ const RepostFavoritesStats = ({
     <div
       className={cn(styles.statsRow, className, {
         [styles.small]: size === Size.SMALL
-      })}
-    >
+      })}>
       {!!repostCount && (
         <div className={styles.statItem} onClick={handleOnClickReposts}>
           <IconRepost />

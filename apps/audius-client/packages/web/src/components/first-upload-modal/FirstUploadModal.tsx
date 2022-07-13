@@ -83,8 +83,7 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
         showTitleHeader
         showDismissButton
         dismissOnClickOutside={false}
-        title={<Title />}
-      >
+        title={<Title />}>
         <div className={styles.content}>
           <div className={styles.artist}>
             <DynamicImage

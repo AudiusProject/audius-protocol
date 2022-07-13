@@ -11,7 +11,7 @@ export default {
 
 const exclusions = new Set(['BgWaveSmall', 'BgWaveLarge'])
 
-export const All: Story<SVGAttributes<SVGElement>> = args => {
+export const All: Story<SVGAttributes<SVGElement>> = (args) => {
   return (
     <>
       <p>

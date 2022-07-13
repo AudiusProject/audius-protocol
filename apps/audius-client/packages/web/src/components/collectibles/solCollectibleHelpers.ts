@@ -37,7 +37,7 @@ const fetchWithTimeout = async (
  */
 const nftGif = async (nft: MetaplexNFT): Promise<Nullable<SolanaNFTMedia>> => {
   const gifFile = (nft.properties?.files ?? []).find(
-    file => typeof file === 'object' && file.type === 'image/gif'
+    (file) => typeof file === 'object' && file.type === 'image/gif'
   )
   if (gifFile) {
     const url = (gifFile as MetaplexNFTPropertiesFile).uri
@@ -82,7 +82,7 @@ const nftThreeDWithFrame = async (
       frameUrl = nft.image
     } else {
       const imageFile = files?.find(
-        file => typeof file === 'object' && file.type.includes('image')
+        (file) => typeof file === 'object' && file.type.includes('image')
       ) as MetaplexNFTPropertiesFile
       if (imageFile) {
         frameUrl = imageFile.uri
@@ -126,13 +126,13 @@ const nftVideo = async (
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L318
   const videoFile = files.find(
-    file =>
+    (file) =>
       typeof file === 'object' &&
       file.type.includes('video') &&
       !file.type.endsWith('glb')
   ) as MetaplexNFTPropertiesFile
   const videoUrl = files.find(
-    file =>
+    (file) =>
       typeof file === 'string' &&
       // https://github.com/metaplex-foundation/metaplex/blob/397ceff70b3524aa0543540584c7200c79b198a0/js/packages/web/src/components/ArtContent/index.tsx#L107
       file.startsWith('https://watch.videodelivery.net/')
@@ -184,7 +184,7 @@ const nftImage = async (
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L316
   const imageFile = files.find(
-    file => typeof file === 'object' && file.type.includes('image')
+    (file) => typeof file === 'object' && file.type.includes('image')
   ) as MetaplexNFTPropertiesFile
   const isImage =
     nft.properties?.category === 'image' || nft.image.length || imageFile
@@ -277,7 +277,7 @@ const metaplexNFTToCollectible = async (
 
   if (
     (nft.properties?.creators ?? []).some(
-      creator => creator.address === address
+      (creator) => creator.address === address
     )
   ) {
     collectible.isOwned = false
@@ -323,19 +323,23 @@ const starAtlasNFTToCollectible = async (
   // todo: check if there are gif or video nfts for star atlas
   const is3DObj = [nft.image, nft.media?.thumbnailUrl]
     .filter(Boolean)
-    .some(item => ['glb', 'gltf'].some(extension => item.endsWith(extension)))
+    .some((item) =>
+      ['glb', 'gltf'].some((extension) => item.endsWith(extension))
+    )
   const hasImageFrame = [nft.image, nft.media?.thumbnailUrl]
     .filter(Boolean)
-    .some(item => ['glb', 'gltf'].every(extension => !item.endsWith(extension)))
+    .some((item) =>
+      ['glb', 'gltf'].every((extension) => !item.endsWith(extension))
+    )
   if (is3DObj && hasImageFrame) {
     collectible.mediaType = CollectibleMediaType.THREE_D
-    collectible.threeDUrl = ['glb', 'gltf'].some(extension =>
+    collectible.threeDUrl = ['glb', 'gltf'].some((extension) =>
       nft.image.endsWith(extension)
     )
       ? nft.image
       : nft.media?.thumbnailUrl
     collectible.frameUrl = ['glb', 'gltf'].every(
-      extension => !nft.image.endsWith(extension)
+      (extension) => !nft.image.endsWith(extension)
     )
       ? nft.image
       : nft.media?.thumbnailUrl

@@ -31,7 +31,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
   const { userIds } = notification
   const users = useSelectorWeb(
-    state => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
     isEqual
   )
   const [firstUser] = users

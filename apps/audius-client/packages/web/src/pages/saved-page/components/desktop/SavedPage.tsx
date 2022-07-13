@@ -97,10 +97,8 @@ const SavedPage = ({
 }: SavedPageProps) => {
   const [dataSource, playingIndex] =
     status === Status.SUCCESS ? getFilteredData(entries) : [[], -1]
-  const {
-    isLoading: isLoadingAlbums,
-    setDidLoad: setDidLoadAlbums
-  } = useOrderedLoad(account ? account.albums.length : 0)
+  const { isLoading: isLoadingAlbums, setDidLoad: setDidLoadAlbums } =
+    useOrderedLoad(account ? account.albums.length : 0)
   const isEmpty = entries.length === 0
   const tracksLoading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued
@@ -113,8 +111,7 @@ const SavedPage = ({
       style={{
         opacity: playButtonActive ? 1 : 0,
         pointerEvents: playButtonActive ? 'auto' : 'none'
-      }}
-    >
+      }}>
       <Button
         className={styles.playAllButton}
         iconClassName={styles.playAllButtonIcon}
@@ -135,8 +132,7 @@ const SavedPage = ({
       style={{
         opacity: filterActive ? 1 : 0,
         pointerEvents: filterActive ? 'auto' : 'none'
-      }}
-    >
+      }}>
       <FilterInput
         placeholder={messages.filterPlaceholder}
         onChange={onFilterChange}
@@ -262,8 +258,7 @@ const SavedPage = ({
       title={title}
       description={description}
       contentClassName={styles.savedPageWrapper}
-      header={header}
-    >
+      header={header}>
       <div className={styles.bodyWrapper}>{body}</div>
     </Page>
   )

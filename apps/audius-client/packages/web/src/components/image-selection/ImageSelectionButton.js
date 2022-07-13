@@ -85,8 +85,7 @@ const ImageSelectionButton = ({
             onDrop={onSelect}
             className={styles.dropzone}
             accept={ALLOWED_IMAGE_FILE_TYPES.join(', ')}
-            data-testid='upload-photo-dropzone'
-          >
+            data-testid='upload-photo-dropzone'>
             <Button
               className={cn(styles.button, styles.noPopup, {
                 [styles.hide]: hasImage

@@ -20,7 +20,7 @@ class TextArea extends Component {
     }
   }
 
-  onChange = e => {
+  onChange = (e) => {
     if (this.props.grows) this.growTextArea()
     this.setState({
       value: e.target.value

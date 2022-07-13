@@ -168,17 +168,17 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
   // in favor of player/queue selectors in common, getNativeTrack calls
   // should be replaced
   const trackInfo = useSelector(getNativeTrack)
-  const track = useSelectorWeb(state =>
+  const track = useSelectorWeb((state) =>
     getTrack(state, trackInfo ? { id: trackInfo.trackId } : {})
   )
-  const user = useSelectorWeb(state =>
+  const user = useSelectorWeb((state) =>
     getUser(state, track ? { id: track.owner_id } : {})
   )
 
   const trackId = trackInfo?.trackId
   const [mediaKey, setMediaKey] = useState(0)
   useEffect(() => {
-    setMediaKey(mediaKey => mediaKey + 1)
+    setMediaKey((mediaKey) => mediaKey + 1)
   }, [trackId])
 
   const onNext = useCallback(() => {
@@ -192,7 +192,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       }
     } else {
       dispatchWeb(next({ skip: true }))
-      setMediaKey(mediaKey => mediaKey + 1)
+      setMediaKey((mediaKey) => mediaKey + 1)
     }
   }, [dispatch, dispatchWeb, setMediaKey, track])
 
@@ -205,7 +205,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       }
     } else {
       dispatchWeb(previous({}))
-      setMediaKey(mediaKey => mediaKey + 1)
+      setMediaKey((mediaKey) => mediaKey + 1)
     }
   }, [dispatch, dispatchWeb, setMediaKey, track])
 
@@ -259,14 +259,12 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
       isGestureSupported={isGestureEnabled}
       translationAnim={translationAnim}
       // Disable safe area view edges because they are handled manually
-      disableSafeAreaView
-    >
+      disableSafeAreaView>
       <View
         style={[
           styles.container,
           { paddingTop: staticTopInset.current, paddingBottom: insets.bottom }
-        ]}
-      >
+        ]}>
         {track && user && (
           <>
             <View style={styles.playBarContainer}>
@@ -283,8 +281,7 @@ const NowPlayingDrawer = ({ translationAnim }: NowPlayingDrawerProps) => {
             </View>
             <Pressable
               onPress={handlePressTitle}
-              style={styles.artworkContainer}
-            >
+              style={styles.artworkContainer}>
               <Artwork track={track} />
             </Pressable>
             <View style={styles.trackInfoContainer}>

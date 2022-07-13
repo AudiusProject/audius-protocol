@@ -50,7 +50,7 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
 
   const handleToast = useCallback(
     (content: string | JSX.Element, timeout: number = DEFAULT_TIMEOUT) => {
-      dispatch(toast({ content: content, timeout }))
+      dispatch(toast({ content, timeout }))
     },
     [dispatch]
   )
@@ -59,7 +59,7 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
     dispatch(clearToasts())
   }, [dispatch])
 
-  const transitions = useTransition(toasts, toast => toast.key, {
+  const transitions = useTransition(toasts, (toast) => toast.key, {
     from: (toast: ToastType) => ({ y: FROM_POSITION, opacity: 0 }),
     enter: (toast: ToastType) => ({
       y: ENTER_POSITION + getSafeArea(SafeAreaDirection.TOP),
@@ -75,8 +75,7 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
       value={{
         clear,
         toast: handleToast
-      }}
-    >
+      }}>
       {transitions.map(({ item, props, key }, i) => (
         <animated.div
           key={key}
@@ -85,8 +84,7 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
             // @ts-ignore
             transform: props.y.interpolate(interp(i)),
             opacity: props.opacity
-          }}
-        >
+          }}>
           <Toast content={item.content} isControlled isOpen />
         </animated.div>
       ))}

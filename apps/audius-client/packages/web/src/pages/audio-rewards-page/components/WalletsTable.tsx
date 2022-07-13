@@ -99,8 +99,7 @@ const Wallet = ({
             [styles.removingWallet]: isConfirmRemoving,
             [styles.disabled]: isCopyDisabled
           })}
-          placement={ComponentPlacement.TOP}
-        >
+          placement={ComponentPlacement.TOP}>
           <>
             <div className={styles.chainIconContainer}>
               {chain === Chain.Eth ? (
@@ -202,16 +201,14 @@ const WalletsTable = ({
         [className!]: !!className,
         [styles.noActions]: !hasActions,
         [styles.hideCollectibles]: hideCollectibles
-      })}
-    >
+      })}>
       <div className={styles.walletsHeader}>
         <h6 className={cn(styles.walletsHeaderItem, styles.headerWallet)}>
           {messages.linkedWallets}
         </h6>
         {!hideCollectibles && !isMobile && (
           <h6
-            className={cn(styles.walletsHeaderItem, styles.headerCollectibles)}
-          >
+            className={cn(styles.walletsHeaderItem, styles.headerCollectibles)}>
             {messages.collectibles}
           </h6>
         )}
@@ -220,7 +217,7 @@ const WalletsTable = ({
         </h6>
       </div>
       {ethWallets &&
-        ethWallets.map(wallet => (
+        ethWallets.map((wallet) => (
           <Wallet
             chain={Chain.Eth}
             key={wallet.address}
@@ -235,7 +232,7 @@ const WalletsTable = ({
           />
         ))}
       {solWallets &&
-        solWallets.map(wallet => (
+        solWallets.map((wallet) => (
           <Wallet
             chain={Chain.Sol}
             key={wallet.address}

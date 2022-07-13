@@ -9,7 +9,7 @@ export default {
   title: 'Components/IconButton'
 }
 
-const Template: Story<IconButtonProps> = args => {
+const Template: Story<IconButtonProps> = (args) => {
   return <IconButton {...args} />
 }
 

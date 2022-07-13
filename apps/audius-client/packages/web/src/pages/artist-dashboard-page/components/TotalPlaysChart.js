@@ -28,7 +28,7 @@ const MONTHS = {
   DEC: 'December'
 }
 
-const transformMonth = monthShort => MONTHS[monthShort]
+const transformMonth = (monthShort) => MONTHS[monthShort]
 
 const getDataProps = ({ labels, values }, isMatrix) => {
   const colorPrimary = isMatrix ? '#0CF10C' : '#CC0FE0'
@@ -60,7 +60,7 @@ const getDataProps = ({ labels, values }, isMatrix) => {
   }
 }
 
-const getLineGraphOptions = transformXValue => ({
+const getLineGraphOptions = (transformXValue) => ({
   layout: {
     padding: {
       top: 10,
@@ -191,10 +191,8 @@ export class TotalPlaysChart extends Component {
 
   setChartWidthHeight = () => {
     if (this.chartContainer) {
-      const {
-        clientHeight: height,
-        clientWidth: width
-      } = this.chartContainer.current
+      const { clientHeight: height, clientWidth: width } =
+        this.chartContainer.current
       this.setState({ chartSize: { width, height } })
     }
   }
@@ -231,19 +229,14 @@ export class TotalPlaysChart extends Component {
   }
 
   render() {
-    const {
-      data,
-      tracks,
-      onSetTrackOption,
-      onSetYearOption,
-      isMatrix
-    } = this.props
+    const { data, tracks, onSetTrackOption, onSetYearOption, isMatrix } =
+      this.props
     const { chartSize, yearOptions } = this.state
 
     const trackOptions = [{ name: 'All Tracks', id: -1 }].concat(tracks)
 
     const tracksMenu = {
-      items: trackOptions.map(t => ({ id: t.id, text: t.name }))
+      items: trackOptions.map((t) => ({ id: t.id, text: t.name }))
     }
     const yearsMenu = { items: yearOptions }
 

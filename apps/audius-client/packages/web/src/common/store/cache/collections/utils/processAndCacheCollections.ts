@@ -26,7 +26,7 @@ export function* processAndCacheCollections(
   yield addUsersFromCollections(collections)
   yield addTracksFromCollections(collections)
 
-  let reformattedCollections = collections.map(c => reformat(c))
+  let reformattedCollections = collections.map((c) => reformat(c))
 
   if (shouldRetrieveTracks) {
     // Retrieve the tracks
@@ -41,7 +41,7 @@ export function* processAndCacheCollections(
   yield put(
     cacheActions.add(
       Kind.COLLECTIONS,
-      reformattedCollections.map(c => ({
+      reformattedCollections.map((c) => ({
         id: c.playlist_id,
         uid: makeUid(Kind.COLLECTIONS, c.playlist_id),
         metadata: c

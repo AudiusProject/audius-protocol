@@ -3,15 +3,15 @@ import { moodMap } from 'utils/moods'
 import { orderedRoutes } from 'utils/route'
 
 const restrictedRoutes = orderedRoutes
-  .filter(routePath => (routePath.match(/\//g) || []).length === 1)
-  .filter(routePath => !routePath.includes(':'))
-  .map(routePath => routePath.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
-  .filter(routePath => routePath !== '')
+  .filter((routePath) => (routePath.match(/\//g) || []).length === 1)
+  .filter((routePath) => !routePath.includes(':'))
+  .map((routePath) => routePath.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+  .filter((routePath) => routePath !== '')
 
 const filteredGenres = GENRES.reduce((acc, genre) => {
   acc = acc.concat(genre.split('/'))
   return acc
-}, []).map(genre => genre.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+}, []).map((genre) => genre.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
 
 export const restrictedHandles = new Set(
   [
@@ -64,10 +64,10 @@ export const restrictedHandles = new Set(
     // ===== Current Routes =====
     ...restrictedRoutes,
     // ===== Moods =====
-    ...Object.keys(moodMap).map(mood => mood.toLowerCase()),
+    ...Object.keys(moodMap).map((mood) => mood.toLowerCase()),
     // ===== Genre =====
     ...filteredGenres
-  ].map(h => h.toLowerCase())
+  ].map((h) => h.toLowerCase())
 )
 
 export default restrictedHandles

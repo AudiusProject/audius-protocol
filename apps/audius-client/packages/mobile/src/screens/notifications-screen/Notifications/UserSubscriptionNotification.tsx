@@ -34,9 +34,11 @@ export const UserSubscriptionNotification = (
 ) => {
   const { notification } = props
   const { entityType } = notification
-  const user = useSelectorWeb(state => getNotificationUser(state, notification))
+  const user = useSelectorWeb((state) =>
+    getNotificationUser(state, notification)
+  )
   const entities = useSelectorWeb(
-    state => getNotificationEntities(state, notification),
+    (state) => getNotificationEntities(state, notification),
     isEqual
   )
 

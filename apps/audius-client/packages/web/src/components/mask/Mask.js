@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import styles from './Mask.module.css'
 
-const Mask = props => {
+const Mask = (props) => {
   return (
     <div className={styles.wrapper}>
       <div

@@ -9,7 +9,7 @@ import styles from './Web3ErrorBanner.module.css'
 const META_MASK_SETUP_URL =
   'https://medium.com/@audius/configuring-metamask-for-use-with-audius-91e24bf6840'
 
-const Web3ErrorBanner = props => {
+const Web3ErrorBanner = (props) => {
   const onAccept = () => {
     const win = window.open(META_MASK_SETUP_URL, '_blank')
     win.focus()

@@ -29,18 +29,17 @@ const LANDING_PAGE_ROUTES = new Set([
  * @param route the route to push (can be a FQDN or a react route)
  * @param setRenderPublicSite state setter to hide the public site
  */
-export const handleClickRoute = (
-  route: string,
-  setRenderPublicSite: (shouldRender: boolean) => void
-) => (e?: MouseEvent) => {
-  e?.preventDefault()
-  // Http(s) routes and landing page routes should trigger a full window reload
-  // They are external domains, or in the case of landing pages, we want
-  // to load in from 0-state (otherwise it will get picked up by the app router)
-  if (route.startsWith('http') || LANDING_PAGE_ROUTES.has(route)) {
-    pushWindowRoute(route)
-  } else {
-    setRenderPublicSite(false)
-    window.history.pushState('', '/', route)
+export const handleClickRoute =
+  (route: string, setRenderPublicSite: (shouldRender: boolean) => void) =>
+  (e?: MouseEvent) => {
+    e?.preventDefault()
+    // Http(s) routes and landing page routes should trigger a full window reload
+    // They are external domains, or in the case of landing pages, we want
+    // to load in from 0-state (otherwise it will get picked up by the app router)
+    if (route.startsWith('http') || LANDING_PAGE_ROUTES.has(route)) {
+      pushWindowRoute(route)
+    } else {
+      setRenderPublicSite(false)
+      window.history.pushState('', '/', route)
+    }
   }
-}

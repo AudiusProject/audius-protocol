@@ -79,8 +79,7 @@ class GiantTrackTile extends PureComponent {
         <Tooltip
           text={messages.hiddenTrackTooltip}
           mouseEnterDelay={0}
-          shouldWrapContent={false}
-        >
+          shouldWrapContent={false}>
           <div>
             <HiddenTrackHeader />
           </div>
@@ -108,13 +107,8 @@ class GiantTrackTile extends PureComponent {
   }
 
   renderMakePublicButton() {
-    const {
-      isUnlisted,
-      isPublishing,
-      makePublic,
-      trackId,
-      isOwner
-    } = this.props
+    const { isUnlisted, isPublishing, makePublic, trackId, isOwner } =
+      this.props
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
@@ -155,12 +149,10 @@ class GiantTrackTile extends PureComponent {
           text={'Reposted!'}
           disabled={isReposted}
           delay={REPOST_TIMEOUT}
-          fillParent={false}
-        >
+          fillParent={false}>
           <Tooltip
             disabled={isOwner || repostCount === 0}
-            text={isReposted ? 'Unrepost' : 'Repost'}
-          >
+            text={isReposted ? 'Unrepost' : 'Repost'}>
             <div>
               <Button
                 name='repost'
@@ -199,12 +191,10 @@ class GiantTrackTile extends PureComponent {
           text={'Favorited!'}
           disabled={isSaved}
           delay={SAVED_TIMEOUT}
-          fillParent={false}
-        >
+          fillParent={false}>
           <Tooltip
             disabled={isOwner || saveCount === 0}
-            text={isSaved ? 'Unfavorite' : 'Favorite'}
-          >
+            text={isSaved ? 'Unfavorite' : 'Favorite'}>
             <div>
               <Button
                 name='favorite'
@@ -293,8 +283,8 @@ class GiantTrackTile extends PureComponent {
         <div className={styles.tagSection}>
           {tags
             .split(',')
-            .filter(t => t)
-            .map(tag => (
+            .filter((t) => t)
+            .map((tag) => (
               <Tag
                 className={styles.tagFormatting}
                 textLabel={tag}
@@ -403,7 +393,7 @@ class GiantTrackTile extends PureComponent {
         handle: artistHandle,
         isFavorited: isSaved,
         mount: 'page',
-        isOwner: isOwner,
+        isOwner,
         includeFavorite: false,
         includeTrackPage: false,
         isArtistPick,
@@ -475,8 +465,7 @@ class GiantTrackTile extends PureComponent {
             <div
               className={cn(styles.commonButtonSection, fadeIn)}
               role='group'
-              aria-label='track actions'
-            >
+              aria-label='track actions'>
               {this.renderShareButton()}
               {this.renderMakePublicButton()}
               {this.renderRepostButton()}

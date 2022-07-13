@@ -48,7 +48,7 @@ export const FollowNotification = (props: FollowNotificationProps) => {
         setUserListUsers({
           userListType: UserListType.NOTIFICATION,
           entityType: UserListEntityType.USER,
-          id: (id as unknown) as number
+          id: id as unknown as number
         })
       )
       if (isMobile()) {

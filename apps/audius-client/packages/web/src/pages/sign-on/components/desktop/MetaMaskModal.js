@@ -66,11 +66,11 @@ class MetaMaskModal extends Component {
     }
   }
 
-  onModalClick = e => {
+  onModalClick = (e) => {
     e.stopPropagation()
   }
 
-  onContainerClick = e => {
+  onContainerClick = (e) => {
     this.props.onClickBack()
   }
 
@@ -80,8 +80,7 @@ class MetaMaskModal extends Component {
     return (
       <div
         className={cn(styles.container, { [styles.hidden]: !open })}
-        onClick={this.onContainerClick}
-      >
+        onClick={this.onContainerClick}>
         <div className={styles.modal} onClick={this.onModalClick}>
           <div className={styles.header}>
             <div className={styles.title}>
@@ -114,8 +113,7 @@ class MetaMaskModal extends Component {
                   {messages.metaMaskConfigure}
                 </span>
               }
-              getPopupContainer={trigger => trigger.parentNode}
-            >
+              getPopupContainer={(trigger) => trigger.parentNode}>
               <div>
                 <Button
                   type={configured ? ButtonType.COMMON : ButtonType.DISABLED}

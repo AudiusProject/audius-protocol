@@ -186,19 +186,17 @@ export const AudioBreakdownDrawer = () => {
   ) ?? new BN('0')) as BNWei
 
   const associatedWallets = useSelectorWeb(getAssociatedWallets, isEqual)
-  const {
-    connectedEthWallets: ethWallets,
-    connectedSolWallets: solWallets
-  } = associatedWallets ?? {
-    ethWallets: null,
-    solWallets: null
-  }
+  const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
+    associatedWallets ?? {
+      ethWallets: null,
+      solWallets: null
+    }
 
-  const linkedWalletsBalance = (((ethWallets ?? [])
+  const linkedWalletsBalance = ((ethWallets ?? [])
     .concat(solWallets ?? [])
     .reduce((total, wallet) => {
-      return total.add(new BN((wallet.balance as unknown) as string))
-    }, new BN('0')) ?? new BN('0')) as unknown) as BNWei
+      return total.add(new BN(wallet.balance as unknown as string))
+    }, new BN('0')) ?? new BN('0')) as unknown as BNWei
 
   const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
 
@@ -206,8 +204,7 @@ export const AudioBreakdownDrawer = () => {
     <AppDrawer
       modalName={AUDIO_BREAKDOWN_MODAL_NAME}
       title={messages.modalTitle}
-      isFullscreen
-    >
+      isFullscreen>
       <View style={styles.drawer}>
         <GradientText style={styles.amount}>
           {formatWei(totalBalance, true)}
@@ -313,8 +310,7 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
         <TouchableWithoutFeedback
           onPress={handleCopy}
           onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-        >
+          onPressOut={handlePressOut}>
           <View style={styles.linkedWallet}>
             <View style={styles.chainIconContainer}>
               {chain === Chain.Eth ? (

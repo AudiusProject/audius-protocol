@@ -14,10 +14,9 @@ const ShuffleStates = Object.freeze({
 })
 
 const SHUFFLE_STATE_LS_KEY = 'shuffleState'
-const getShuffleState = defaultState => {
-  const localStorageShuffleState = window.localStorage.getItem(
-    SHUFFLE_STATE_LS_KEY
-  )
+const getShuffleState = (defaultState) => {
+  const localStorageShuffleState =
+    window.localStorage.getItem(SHUFFLE_STATE_LS_KEY)
   if (localStorageShuffleState === null) {
     window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, defaultState)
     return defaultState
@@ -46,7 +45,7 @@ class ShuffleButton extends Component {
     }
   }
 
-  handleChange = shuffleState => {
+  handleChange = (shuffleState) => {
     const { pbIconShuffleOff, pbIconShuffleOn } = this.props.animations
     // Go to the next state.
     let icon, isPaused
@@ -108,8 +107,7 @@ class ShuffleButton extends Component {
           [styles.buttonFixedSize]: this.props.isMobile,
           [styles.shuffle]: this.props.isMobile
         })}
-        onClick={this.nextState}
-      >
+        onClick={this.nextState}>
         <Lottie
           options={animationOptions}
           eventListeners={eventListeners}

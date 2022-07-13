@@ -32,8 +32,7 @@ const SomethingWrong = ({
         backgroundImage: `url(${tileBackground})`,
         backgroundBlendMode:
           shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
-      }}
-    >
+      }}>
       <div className={styles.title}>{messages.title}</div>
       <div className={styles.subtitle}>{messages.subtitle}</div>
       <div className={styles.button}>

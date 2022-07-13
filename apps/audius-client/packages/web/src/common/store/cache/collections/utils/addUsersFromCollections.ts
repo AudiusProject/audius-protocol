@@ -20,7 +20,7 @@ export function* addUsersFromCollections(
     getAccountUser
   )
   const currentUserId = accountUser?.user_id
-  let users = metadataArray.map(m => ({
+  let users = metadataArray.map((m) => ({
     id: m.user.user_id,
     uid: makeUid(Kind.USERS, m.user.user_id),
     metadata: reformatUser(m.user)
@@ -28,7 +28,7 @@ export function* addUsersFromCollections(
 
   // Removes duplicates and self
   users = uniqBy(users, 'id')
-  users = users.filter(user => !(currentUserId && user.id === currentUserId))
+  users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
   yield put(
     cacheActions.add(Kind.USERS, users, /* replace */ false, /* persist */ true)

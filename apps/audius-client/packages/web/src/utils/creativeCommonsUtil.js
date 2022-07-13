@@ -85,7 +85,7 @@ const variables = (allowAttribution, commercialUse, derivativeWorks) => ({
  * @param {string} licenseType
  * @return {object} {allowAttribution: bool, commercialUse: bool, derivativeWorks: bool}
  */
-export const computeLicenseVariables = licenseType => {
+export const computeLicenseVariables = (licenseType) => {
   switch (licenseType) {
     case BY_NC_TYPE:
       return variables(true, false, null)
@@ -106,7 +106,7 @@ export const computeLicenseVariables = licenseType => {
   }
 }
 
-export const getDescriptionForType = licenseType => {
+export const getDescriptionForType = (licenseType) => {
   return licenseType in ALL_LICENSES
     ? ALL_LICENSES[licenseType]
     : ALL_RIGHTS_RESERVED_DESC

@@ -49,17 +49,17 @@ export const CollectionTile = (props: LineupItemProps) => {
   const { uid } = props
 
   const collection = useSelectorWeb(
-    state => getCollection(state, { uid }),
+    (state) => getCollection(state, { uid }),
     isEqual
   )
 
   const tracks = useSelectorWeb(
-    state => getTracksFromCollection(state, { uid }),
+    (state) => getTracksFromCollection(state, { uid }),
     isEqual
   )
 
   const user = useSelectorWeb(
-    state => getUserFromCollection(state, { uid }),
+    (state) => getUserFromCollection(state, { uid }),
     isEqual
   )
 
@@ -102,11 +102,11 @@ const CollectionTileComponent = ({
   const currentUserId = useSelectorWeb(getUserId)
   const currentTrack = useSelector((state: AppState) => {
     const uid = getPlayingUid(state)
-    return tracks.find(track => track.uid === uid) ?? null
+    return tracks.find((track) => track.uid === uid) ?? null
   })
   const isPlayingUid = useSelector((state: AppState) => {
     const uid = getPlayingUid(state)
-    return tracks.some(track => track.uid === uid)
+    return tracks.some((track) => track.uid === uid)
   })
 
   const {
@@ -253,8 +253,7 @@ const CollectionTileComponent = ({
       onPressTitle={handlePressTitle}
       title={playlist_name}
       item={collection}
-      user={user}
-    >
+      user={user}>
       <CollectionTileTrackList tracks={tracks} onPress={handlePressTitle} />
     </LineupTile>
   )

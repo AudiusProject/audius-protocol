@@ -25,8 +25,7 @@ const GenreButton = ({
         { [styles.selected]: isSelected },
         { [styles.isMobile]: isMobile }
       )}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {title}
     </div>
   )
@@ -64,7 +63,7 @@ const GenreSelectionList = ({
     didSelectGenre,
     { selectedGenre }
   )
-  const filteredGenreList = genres.filter(g =>
+  const filteredGenreList = genres.filter((g) =>
     g.toLowerCase().includes(searchValue.toLowerCase())
   )
   const selectedIndex =

@@ -28,14 +28,8 @@ export const AnnouncementNotification = (
   props: AnnouncementNotificationProps
 ) => {
   const { notification } = props
-  const {
-    id,
-    title,
-    shortDescription,
-    longDescription,
-    timeLabel,
-    isViewed
-  } = notification
+  const { id, title, shortDescription, longDescription, timeLabel, isViewed } =
+    notification
   const dispatch = useDispatch()
   const record = useRecord()
 
@@ -54,8 +48,7 @@ export const AnnouncementNotification = (
     <NotificationTile
       notification={notification}
       onClick={handleClick}
-      disableClosePanel
-    >
+      disableClosePanel>
       <NotificationHeader icon={<IconAnnouncement />}>
         <NotificationTitle>
           <ReactMarkdown source={title} escapeHtml={false} />
@@ -66,8 +59,7 @@ export const AnnouncementNotification = (
         {longDescription ? (
           <button
             className={styles.readMore}
-            onClick={handleOpenNotificationModal}
-          >
+            onClick={handleOpenNotificationModal}>
             {messages.readMore}
           </button>
         ) : null}

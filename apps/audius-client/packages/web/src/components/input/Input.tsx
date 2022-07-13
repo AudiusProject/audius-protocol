@@ -52,8 +52,7 @@ export const Input = ({
           [styles.bordered]: variant === 'bordered'
         },
         className
-      )}
-    >
+      )}>
       {prefix ? (
         <label className={styles.inputPrefix} onClick={handleLabelClick}>
           {prefix}

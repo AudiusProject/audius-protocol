@@ -61,8 +61,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <span
           className={cn(iconClassName, styles.icon, styles.left, {
             [styles.noText]: !isTextVisible
-          })}
-        >
+          })}>
           {leftIcon}
         </span>
       )
@@ -72,8 +71,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <span
           className={cn(iconClassName, styles.icon, styles.right, {
             [styles.noText]: !isTextVisible
-          })}
-        >
+          })}>
           {rightIcon}
         </span>
       )
@@ -111,8 +109,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         style={{
           minWidth: minWidth && isTextVisible ? `${minWidth}px` : 'unset'
         }}
-        {...other}
-      >
+        {...other}>
         {renderLeftIcon()}
         {renderText()}
         {renderRightIcon()}

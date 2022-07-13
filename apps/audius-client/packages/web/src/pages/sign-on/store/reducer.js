@@ -386,7 +386,7 @@ const actionsMap = {
       followArtists: {
         ...state.followArtists,
         selectedUserIds: state.followArtists.selectedUserIds.filter(
-          id => !removeUserIds.has(id)
+          (id) => !removeUserIds.has(id)
         )
       }
     }

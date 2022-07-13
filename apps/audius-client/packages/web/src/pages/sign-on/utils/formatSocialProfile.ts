@@ -11,7 +11,7 @@ export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
     /_(normal|bigger|mini)/g,
     ''
   )
-  const imageBlob = await fetch(profileUrl).then(r => r.blob())
+  const imageBlob = await fetch(profileUrl).then((r) => r.blob())
   const artworkFile = new File([imageBlob], 'Artwork', {
     type: 'image/jpeg'
   })
@@ -20,9 +20,9 @@ export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
 
   let bannerUrl, bannerFile
   if (twitterProfile.profile_banner_url) {
-    const bannerImageBlob = await fetch(
-      twitterProfile.profile_banner_url
-    ).then(r => r.blob())
+    const bannerImageBlob = await fetch(twitterProfile.profile_banner_url).then(
+      (r) => r.blob()
+    )
     const bannerArtworkFile = new File([bannerImageBlob], 'Artwork', {
       type: 'image/webp'
     })
@@ -64,7 +64,7 @@ export const formatInstagramProfile = async (
       const profileUrl = `${GENERAL_ADMISSION}/proxy/simple?url=${encodeURIComponent(
         instagramProfile.profile_pic_url_hd
       )}`
-      const imageBlob = await fetch(profileUrl).then(r => r.blob())
+      const imageBlob = await fetch(profileUrl).then((r) => r.blob())
       const artworkFile = new File([imageBlob], 'Artwork', {
         type: 'image/jpeg'
       })

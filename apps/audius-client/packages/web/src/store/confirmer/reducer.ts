@@ -24,17 +24,14 @@ type ConfirmerActions = ActionType<typeof actions>
 
 const reducer = createReducer<ConfirmerState, ConfirmerActions>(initialState, {
   [ADD_CONFIRMATION_CALL](state, action) {
-    const {
-      operationId,
-      squashable,
-      parallelizable
-    } = action.confirmationOptions
+    const { operationId, squashable, parallelizable } =
+      action.confirmationOptions
     const newCall = {
       call: action.confirmationCall,
       result: null,
-      squashable: squashable,
-      operationId: operationId,
-      parallelizable: parallelizable
+      squashable,
+      operationId,
+      parallelizable
     }
     const newConfirm = { ...state.confirm }
     if (action.uid in state.confirm) {

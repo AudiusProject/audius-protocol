@@ -160,14 +160,12 @@ const NavOverlay = (props: NavOverlayProps) => {
       <div
         className={cn(styles.container, {
           [styles.hide]: !props.isOpen
-        })}
-      >
+        })}>
         <div
           className={cn(styles.backgroundContainer)}
           style={{
             backgroundImage: `url(${HeroBackground})`
-          }}
-        >
+          }}>
           <div className={cn(styles.background)}></div>
         </div>
         <div className={styles.content}>
@@ -189,8 +187,7 @@ const NavOverlay = (props: NavOverlayProps) => {
                   key={idx}
                   onClick={handleClickRoute(link, props.setRenderPublicSite)}
                   className={styles.dappLink}
-                  href={link}
-                >
+                  href={link}>
                   {icon}
                   <h4 className={styles.dappLinkText}>{text}</h4>
                 </a>
@@ -200,8 +197,7 @@ const NavOverlay = (props: NavOverlayProps) => {
           <div className={styles.startListeningButtonContainer}>
             <button
               className={styles.startListeningButton}
-              onClick={onStartListening}
-            >
+              onClick={onStartListening}>
               {messages.startListening}
             </button>
           </div>
@@ -210,8 +206,7 @@ const NavOverlay = (props: NavOverlayProps) => {
               <a
                 key={idx}
                 href={link}
-                onClick={handleClickRoute(link, props.setRenderPublicSite)}
-              >
+                onClick={handleClickRoute(link, props.setRenderPublicSite)}>
                 <Icon className={styles.icon} />
               </a>
             ))}
@@ -222,8 +217,7 @@ const NavOverlay = (props: NavOverlayProps) => {
                 key={idx}
                 onClick={handleClickRoute(link, props.setRenderPublicSite)}
                 className={styles.link}
-                href={link}
-              >
+                href={link}>
                 {text}
               </a>
             ))}

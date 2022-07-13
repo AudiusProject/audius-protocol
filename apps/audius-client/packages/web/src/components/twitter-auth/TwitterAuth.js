@@ -36,10 +36,10 @@ class TwitterLogin extends Component {
         credentials: this.props.credentials,
         headers: this.getHeaders()
       })
-      .then(response => {
+      .then((response) => {
         return response.json()
       })
-      .then(data => {
+      .then((data) => {
         let authenticationUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${data.oauth_token}&force_login=${this.props.forceLogin}`
 
         if (this.props.screenName) {
@@ -49,7 +49,7 @@ class TwitterLogin extends Component {
         popup.location = authenticationUrl
         this.polling(popup)
       })
-      .catch(error => {
+      .catch((error) => {
         popup.close()
         return this.props.onFailure(error)
       })
@@ -119,13 +119,13 @@ class TwitterLogin extends Component {
           headers: this.getHeaders()
         }
       )
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
-          response.json().then(json => this.props.onFailure(json.error))
+          response.json().then((json) => this.props.onFailure(json.error))
         }
         this.props.onSuccess(response)
       })
-      .catch(error => {
+      .catch((error) => {
         return this.props.onFailure(error)
       })
   }
@@ -169,8 +169,7 @@ class TwitterLogin extends Component {
         onClick={NATIVE_MOBILE ? this.doNativeMobileAuth : this.onButtonClick}
         style={this.props.style}
         disabled={this.props.disabled}
-        className={this.props.className}
-      >
+        className={this.props.className}>
         {this.props.children
           ? this.props.children
           : this.getDefaultButtonContent()}

@@ -34,8 +34,6 @@ const slice = createSlice({
   }
 })
 
-export const {
-  fetchRelatedArtists,
-  fetchRelatedArtistsSucceeded
-} = slice.actions
+export const { fetchRelatedArtists, fetchRelatedArtistsSucceeded } =
+  slice.actions
 export default slice.reducer

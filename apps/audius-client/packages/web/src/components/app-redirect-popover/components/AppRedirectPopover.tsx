@@ -152,8 +152,7 @@ const AppRedirectPopover = ({
                     <animated.div
                       style={props}
                       className={styles.popover}
-                      key={key}
-                    >
+                      key={key}>
                       {elementTransitions.map(
                         ({ item: newItem, props, key }) => {
                           return (
@@ -175,8 +174,7 @@ const AppRedirectPopover = ({
                               {newItem && (
                                 <animated.div
                                   className={styles.mainButtonContainer}
-                                  style={props}
-                                >
+                                  style={props}>
                                   <Button
                                     className={styles.mainButton}
                                     type={ButtonType.WHITE}
@@ -189,8 +187,7 @@ const AppRedirectPopover = ({
                                 <animated.div
                                   style={props}
                                   className={styles.notNow}
-                                  onClick={() => onDismiss()}
-                                >
+                                  onClick={() => onDismiss()}>
                                   {messages.notNow}
                                 </animated.div>
                               )}

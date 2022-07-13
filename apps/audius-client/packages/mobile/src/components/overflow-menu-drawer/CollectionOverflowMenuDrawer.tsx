@@ -45,7 +45,7 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
 
   const playlist = useSelectorWeb((state: CommonState) =>
-    getCollection(state, { id: id })
+    getCollection(state, { id })
   )
 
   const user = useSelectorWeb((state: CommonState) =>

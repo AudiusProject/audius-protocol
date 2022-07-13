@@ -32,7 +32,7 @@ function* waitForFollow(userIds: ID[]) {
       socialActions.FOLLOW_USER_SUCCEEDED,
       socialActions.FOLLOW_USER_FAILED
     ])
-    const userIdx = userIds.findIndex(uid => uid === action.userId)
+    const userIdx = userIds.findIndex((uid) => uid === action.userId)
     if (userIdx !== -1) usersConfirmed[userIdx] = true
   }
 }

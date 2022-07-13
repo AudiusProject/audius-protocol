@@ -33,7 +33,7 @@ export const Reaction = (props: ReactionProps) => {
   )
 
   const handleClick: MouseEventHandler = useCallback(
-    event => {
+    (event) => {
       onClick?.(event)
       setIsClicked(true)
     },
@@ -68,8 +68,7 @@ export const Reaction = (props: ReactionProps) => {
       })}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+      onMouseLeave={handleMouseLeave}>
       <Lottie
         height={86}
         width={86}

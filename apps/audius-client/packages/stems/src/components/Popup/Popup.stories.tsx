@@ -12,7 +12,7 @@ export default {
   title: 'Components/Popup'
 }
 
-const Template: Story<PopupProps> = args => {
+const Template: Story<PopupProps> = (args) => {
   const anchorRef = useRef<HTMLButtonElement>()
   const [isVisible, setIsVisible] = useState(false)
 
@@ -33,8 +33,7 @@ const Template: Story<PopupProps> = args => {
           }
           return false
         }}
-        onClose={() => setIsVisible(false)}
-      >
+        onClose={() => setIsVisible(false)}>
         Popup content
       </Popup>
     </>

@@ -87,9 +87,10 @@ const FeedPageMobileContent = ({
     record(make(Name.FEED_CHANGE_VIEW, { view: filter }))
   }
 
-  const refresh = useCallback(() => refreshFeedInView(true), [
-    refreshFeedInView
-  ])
+  const refresh = useCallback(
+    () => refreshFeedInView(true),
+    [refreshFeedInView]
+  )
   const asyncRefresh = useAsyncPoll({
     call: refresh,
     variable: feed.status,
@@ -101,8 +102,7 @@ const FeedPageMobileContent = ({
       title={feedTitle}
       description={feedDescription}
       canonicalUrl={`${BASE_URL}${FEED_PAGE}`}
-      hasDefaultHeader
-    >
+      hasDefaultHeader>
       {IS_NATIVE_MOBILE ? null : (
         <FeedFilterDrawer
           isOpen={modalIsOpen}
@@ -113,8 +113,7 @@ const FeedPageMobileContent = ({
       <div
         className={cn(styles.lineupContainer, {
           [styles.playing]: !!lineupProps.playingUid
-        })}
-      >
+        })}>
         <PullToRefresh fetchContent={asyncRefresh}>
           <Lineup {...lineupProps} />
         </PullToRefresh>

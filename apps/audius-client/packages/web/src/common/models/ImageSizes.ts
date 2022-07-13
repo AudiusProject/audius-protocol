@@ -16,9 +16,8 @@ export enum WidthSizes {
 
 export type URL = string
 
-export type ImageSizesObject<
-  ImageSizeEnum extends SquareSizes | WidthSizes
-> = Partial<Record<ImageSizeEnum | DefaultSizes, URL>>
+export type ImageSizesObject<ImageSizeEnum extends SquareSizes | WidthSizes> =
+  Partial<Record<ImageSizeEnum | DefaultSizes, URL>>
 
 export type CoverArtSizes = ImageSizesObject<SquareSizes>
 export type ProfilePictureSizes = ImageSizesObject<SquareSizes>

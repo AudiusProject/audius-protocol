@@ -169,20 +169,22 @@ export const NotificationBlock = (props: NotificationBlockProps) => {
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
 
-  const user = useSelectorWeb(state => getNotificationUser(state, notification))
+  const user = useSelectorWeb((state) =>
+    getNotificationUser(state, notification)
+  )
 
   const users = useSelectorWeb(
-    state => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
     isEqual
   )
 
   const entity = useSelectorWeb(
-    state => getNotificationEntity(state, notification),
+    (state) => getNotificationEntity(state, notification),
     isEqual
   )
 
   const entities = useSelectorWeb(
-    state => getNotificationEntities(state, notification),
+    (state) => getNotificationEntities(state, notification),
     isEqual
   )
 
@@ -239,8 +241,7 @@ export const NotificationBlock = (props: NotificationBlockProps) => {
   return (
     <Tile
       onPress={onPress}
-      styles={{ tile: styles.tile, content: styles.content }}
-    >
+      styles={{ tile: styles.tile, content: styles.content }}>
       <View style={styles.top}>
         <Icon {...iconHeightProps} fill={styles.iconTierChange.color} />
         <Text style={styles.title}>{title}</Text>

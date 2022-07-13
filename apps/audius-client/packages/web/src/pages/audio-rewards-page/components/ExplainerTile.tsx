@@ -45,7 +45,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
   const [initialPlaysRemaining, setInitialPlays] = useState(1)
 
   const handleOnEnded = useCallback(() => {
-    setInitialPlays(p => p - 1)
+    setInitialPlays((p) => p - 1)
     if ((initialPlaysRemaining > 0 || mouseOver) && videoRef.current) {
       videoRef.current.play()
     }

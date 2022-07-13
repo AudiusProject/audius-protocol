@@ -36,8 +36,7 @@ const TopLevelPage = ({
       className={cn(styles.topLevelPage, {
         [styles.show]: showPage,
         [styles.darkerBackground]: showAddToPlaylist
-      })}
-    >
+      })}>
       {page}
     </div>
   )

@@ -146,9 +146,8 @@ function* fetchBalanceAsync() {
   const account = yield* select(getAccountUser)
   if (!account) return
 
-  const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> = yield* select(
-    getLocalBalanceDidChange
-  )
+  const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
+    yield* select(getLocalBalanceDidChange)
 
   const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
     call(() =>

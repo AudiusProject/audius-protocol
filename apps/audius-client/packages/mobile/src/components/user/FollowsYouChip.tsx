@@ -28,8 +28,7 @@ export const FollowsYouChip = () => {
         variant='label'
         color='neutralLight4'
         weight='heavy'
-        style={styles.followsYouText}
-      >
+        style={styles.followsYouText}>
         {messages.followsYou}
       </Text>
     </View>

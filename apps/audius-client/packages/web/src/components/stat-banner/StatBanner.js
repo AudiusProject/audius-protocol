@@ -21,7 +21,7 @@ const BUTTON_COLLAPSE_WIDTHS = {
   second: 1140
 }
 
-const StatBanner = props => {
+const StatBanner = (props) => {
   let buttonOne, buttonTwo, subscribeButton
   const followButtonRef = useRef()
 

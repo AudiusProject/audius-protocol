@@ -8,7 +8,7 @@ export const FETCH_USER_SOCIALS = 'CACHE/USERS/FETCH_USER_SOCIALS'
 /**
  * @param {array} statuses {handle, status, id} id is optional
  */
-export const setHandleStatus = statuses => ({
+export const setHandleStatus = (statuses) => ({
   type: SET_HANDLE_STATUS,
   statuses
 })
@@ -16,7 +16,7 @@ export const setHandleStatus = statuses => ({
 /**
  * @param {string} handle
  */
-export const removeByHandle = handle => ({
+export const removeByHandle = (handle) => ({
   type: REMOVE_BY_HANDLE,
   handle
 })

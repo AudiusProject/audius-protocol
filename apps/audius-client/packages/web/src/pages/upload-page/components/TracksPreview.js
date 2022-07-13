@@ -19,7 +19,7 @@ const uploadDescriptions = {
     'Every track you upload will be a separate post.'
 }
 
-const TracksPreview = props => {
+const TracksPreview = (props) => {
   return (
     <div className={styles.container}>
       <div className={styles.headerContainer}>
@@ -42,8 +42,7 @@ const TracksPreview = props => {
         className={cn(styles.tracks, {
           [styles.shortScroll]:
             props.uploadType !== UploadType.INDIVIDUAL_TRACKS
-        })}
-      >
+        })}>
         {props.tracks.map((track, i) => (
           <TrackPreview
             key={track.metadata.title + i}

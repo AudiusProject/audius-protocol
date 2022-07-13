@@ -16,8 +16,7 @@ export const ModalContent = ({
   return (
     <Scrollbar
       className={cn(styles.modalContentContainer, className)}
-      {...props}
-    >
+      {...props}>
       {children}
     </Scrollbar>
   )

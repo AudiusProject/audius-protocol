@@ -28,9 +28,9 @@ const EditTrackModal = ({
   const initialForm = schemas.newTrackMetadata(metadata)
   const [formFields, setFormFields] = useState(initialForm)
   const [invalidFields, setInvalidFields] = useState(
-    mapValues(formFields, v => false)
+    mapValues(formFields, (v) => false)
   )
-  const requiredFields = mapValues(formFields, v => false)
+  const requiredFields = mapValues(formFields, (v) => false)
   requiredFields.genre = true
   requiredFields.title = true
 
@@ -60,27 +60,27 @@ const EditTrackModal = ({
 
   const updateTrack = (field, value, invalid) => {
     if (invalid) {
-      setInvalidFields(oldInvalidFields => ({
+      setInvalidFields((oldInvalidFields) => ({
         ...oldInvalidFields,
         [field]: true
       }))
     } else {
-      setInvalidFields(oldInvalidFields => ({
+      setInvalidFields((oldInvalidFields) => ({
         ...oldInvalidFields,
         [field]: false
       }))
-      setFormFields(oldFields => ({ ...oldFields, [field]: value }))
+      setFormFields((oldFields) => ({ ...oldFields, [field]: value }))
     }
   }
 
-  const validateFormFields = formFields => {
+  const validateFormFields = (formFields) => {
     const newInvalidFields = {
       ...invalidFields,
       genre: !formFields.genre,
       title: !formFields.title
     }
     setInvalidFields(newInvalidFields)
-    return Object.values(newInvalidFields).every(f => !f)
+    return Object.values(newInvalidFields).every((f) => !f)
   }
 
   const [isArtworkPopupOpen, setIsArtworkPopupOpen] = useState(false)
@@ -104,8 +104,7 @@ const EditTrackModal = ({
       headerContainerClassName={styles.modalHeader}
       showDismissButton
       showTitleHeader
-      dismissOnClickOutside={!isArtworkPopupOpen}
-    >
+      dismissOnClickOutside={!isArtworkPopupOpen}>
       <div className={styles.editTrack}>
         <FormTile
           // Key the form tile by id so each id gets a different instance

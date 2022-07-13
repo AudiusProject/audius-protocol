@@ -126,18 +126,18 @@ const TrendingPageMobileContent = ({
   }
 
   // Setup lineups
-  const weekProps = useMemo(() => getLineupProps(trendingWeek), [
-    getLineupProps,
-    trendingWeek
-  ])
-  const monthProps = useMemo(() => getLineupProps(trendingMonth), [
-    getLineupProps,
-    trendingMonth
-  ])
-  const allTimeProps = useMemo(() => getLineupProps(trendingAllTime), [
-    getLineupProps,
-    trendingAllTime
-  ])
+  const weekProps = useMemo(
+    () => getLineupProps(trendingWeek),
+    [getLineupProps, trendingWeek]
+  )
+  const monthProps = useMemo(
+    () => getLineupProps(trendingMonth),
+    [getLineupProps, trendingMonth]
+  )
+  const allTimeProps = useMemo(
+    () => getLineupProps(trendingAllTime),
+    [getLineupProps, trendingAllTime]
+  )
 
   const lineups = useMemo(() => {
     return [
@@ -270,8 +270,7 @@ const TrendingPageMobileContent = ({
     <MobilePageContainer
       title={trendingTitle}
       description={trendingDescription}
-      canonicalUrl={`${BASE_URL}${TRENDING_PAGE}`}
-    >
+      canonicalUrl={`${BASE_URL}${TRENDING_PAGE}`}>
       <div className={styles.tabsContainer}>
         <div className={styles.tabBodyHolder}>
           <PullToRefresh fetchContent={asyncRefresh[trendingTimeRange]}>

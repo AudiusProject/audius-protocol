@@ -102,8 +102,7 @@ class FinishPage extends Component {
       <div
         className={cn(styles.uploadText, {
           [styles.uploadComplete]: uploadText === 'Complete!'
-        })}
-      >
+        })}>
         {uploadText}
       </div>
     </div>
@@ -207,12 +206,12 @@ class FinishPage extends Component {
       if (uploadType === UploadType.PLAYLIST) {
         header = 'PLAYLIST'
       }
-      const t = tracks.map(track => {
+      const t = tracks.map((track) => {
         const { duration } = track.preview
         return {
           ...track.metadata,
           user: account,
-          duration: duration
+          duration
         }
       })
       const loaded = uploadProgress.reduce((avg, v) => avg + v.loaded, 0)
@@ -222,8 +221,8 @@ class FinishPage extends Component {
         // Don't show complete until inProgress = false, to allow
         // the saga to perform final processing steps (e.g. create a playlist after uploading tracks)
         uploadProgress
-          .map(u => u.status)
-          .every(s => s === ProgressStatus.COMPLETE) && !inProgress
+          .map((u) => u.status)
+          .every((s) => s === ProgressStatus.COMPLETE) && !inProgress
           ? ProgressStatus.COMPLETE
           : ProgressStatus.UPLOADING
 
@@ -316,8 +315,7 @@ class FinishPage extends Component {
         firesOnClick={false}
         text={messages.error}
         open={this.state.showToast}
-        placement={ComponentPlacement.BOTTOM}
-      >
+        placement={ComponentPlacement.BOTTOM}>
         <div className={styles.finish}>
           {!isFirstUpload && (
             <ShareBanner
@@ -336,8 +334,7 @@ class FinishPage extends Component {
               onClick={inProgress ? undefined : onContinue}
               className={cn(styles.continueButton, {
                 [styles.isHidden]: inProgress
-              })}
-            >
+              })}>
               <div>{continueText}</div>
               <IconArrow className={styles.iconArrow} />
             </button>

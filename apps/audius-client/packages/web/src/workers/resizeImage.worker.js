@@ -65,7 +65,7 @@ export default () => {
     const CRAZY_HEIGHT = 6000 // No image should be taller than this.
     // eslint-disable-next-line
     fetch(imageUrl).then(res => {
-      res.arrayBuffer().then(buffer => {
+      res.arrayBuffer().then((buffer) => {
         let exif
         try {
           exif = ExifParser.create(buffer).parse()
@@ -73,7 +73,7 @@ export default () => {
           exif = null
         }
         Jimp.read(buffer)
-          .then(img => {
+          .then((img) => {
             img = exifRotate(img, exif)
             img.background(0xffffffff)
             const width = img.bitmap.width
@@ -104,14 +104,14 @@ export default () => {
             img.quality(90)
 
             const mimeType = 'image/jpeg'
-            img.getBufferAsync(mimeType).then(buffer => {
+            img.getBufferAsync(mimeType).then((buffer) => {
               // eslint-disable-next-line
             let convertedBlob = new self.Blob([buffer], { type: mimeType })
               // eslint-disable-next-line
             postMessage(convertedBlob)
             })
           })
-          .catch(err => {
+          .catch((err) => {
             console.error(imageUrl, err)
             // eslint-disable-next-line
           postMessage(false)

@@ -32,7 +32,7 @@ const messages = {
   headerText: 'Available Servers'
 }
 
-const DraggableService = props => {
+const DraggableService = (props) => {
   if (props.isSyncing || !props.draggable) return <Service {...props} />
   return (
     <Draggable key={props.name} draggableId={props.name} index={props.index}>
@@ -63,7 +63,7 @@ const ServiceSelectionModal = ({
   const [searchQuery, setSearchQuery] = useState('')
   const [openSearch, setOpenSearch] = useState(false)
 
-  const onRemove = service => {
+  const onRemove = (service) => {
     let newPrimary = primary
     let newSecondaries = [...secondaries]
     if (service === primary) {
@@ -76,7 +76,7 @@ const ServiceSelectionModal = ({
     setSelected(newPrimary, newSecondaries)
   }
 
-  const onAdd = service => {
+  const onAdd = (service) => {
     const newSecondaries = secondaries.concat([service])
     setSelected(primary, newSecondaries)
   }
@@ -85,7 +85,7 @@ const ServiceSelectionModal = ({
     setDragging(true)
   }
 
-  const onDragEnd = result => {
+  const onDragEnd = (result) => {
     const { source, destination, draggableId } = result
 
     setDragging(false)
@@ -121,7 +121,7 @@ const ServiceSelectionModal = ({
     if (ps) ps.classList.remove(styles.moveDownSection)
   }
 
-  const onDragUpdate = result => {
+  const onDragUpdate = (result) => {
     // Unfortunately, we can't do this by refs because react dnd needs that ref control.
     // This is a bit ugly, but you also can't add spacer elements between things in
     // react dnd that the elements will overflow around. And also you can't have two
@@ -148,7 +148,7 @@ const ServiceSelectionModal = ({
     }
   }
 
-  const onSearch = query => {
+  const onSearch = (query) => {
     setSearchQuery(query)
   }
 
@@ -185,7 +185,7 @@ const ServiceSelectionModal = ({
     }
   })
 
-  const anySecondariesSyncing = secondaries.some(s =>
+  const anySecondariesSyncing = secondaries.some((s) =>
     services[s] ? services[s].isSyncing : false
   )
 
@@ -197,14 +197,12 @@ const ServiceSelectionModal = ({
       showDismissButton
       showTitleHeader
       isOpen={show}
-      onClose={close}
-    >
+      onClose={close}>
       <SimpleBar className={styles.scrollable}>
         <DragDropContext
           onDragStart={onDragStart}
           onDragUpdate={onDragUpdate}
-          onDragEnd={onDragEnd}
-        >
+          onDragEnd={onDragEnd}>
           <div className={styles.subtitle}>
             Pick the servers that host your Audius content.
           </div>
@@ -217,16 +215,14 @@ const ServiceSelectionModal = ({
                       [styles.dragging]: dragging
                     })}
                     ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
+                    {...provided.droppableProps}>
                     {/* Primary */}
                     <div className={styles.section}>
                       <div className={styles.header}>
                         Primary Server (Select One)
                       </div>
                       <div
-                        className={cn(styles.services, styles.primaryServices)}
-                      >
+                        className={cn(styles.services, styles.primaryServices)}>
                         <DraggableService
                           id={PRIMARY_SERVICE_ID}
                           className={cn(styles.service, styles.primary)}
@@ -296,8 +292,7 @@ const ServiceSelectionModal = ({
                   <div
                     className={cn(styles.section, styles.available)}
                     ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
+                    {...provided.droppableProps}>
                     <SearchBar
                       className={styles.searchBar}
                       iconClassname={styles.searchIcon}
@@ -327,8 +322,7 @@ const ServiceSelectionModal = ({
                       {searchQuery !== '' && (
                         <div
                           className={styles.clearSearch}
-                          onClick={clearSearch}
-                        >
+                          onClick={clearSearch}>
                           <div>Clear Search</div>
                         </div>
                       )}
@@ -353,14 +347,14 @@ ServiceSelectionModal.propTypes = {
 
 ServiceSelectionModal.defaultProps = {}
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   show: getShowModal(state),
   services: getServices(state),
   primary: getPrimary(state),
   secondaries: getSecondaries(state)
 })
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   setSelected: (primary, secondaries) =>
     dispatch(setSelected({ primary, secondaries })),
   close: () => dispatch(closeModal())

@@ -9,7 +9,7 @@ const getAchievement = () => {
   return { value: '300', valueLabel: 'th', label: 'Most Played' }
 }
 
-const AchievementTile = props => {
+const AchievementTile = (props) => {
   const { value, valueLabel, label } = getAchievement(props.artistStats)
   return (
     <div className={styles.achievementTileContainer}>

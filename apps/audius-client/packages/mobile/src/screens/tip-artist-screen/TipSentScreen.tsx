@@ -40,9 +40,11 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const TipSentScreen = () => {
   const account = useSelectorWeb(getAccountUser)
-  const { user: recipient, amount: sendAmount, source } = useSelectorWeb(
-    getSendTipData
-  )
+  const {
+    user: recipient,
+    amount: sendAmount,
+    source
+  } = useSelectorWeb(getSendTipData)
   const styles = useStyles()
   const navigation = useNavigation()
 
@@ -65,8 +67,7 @@ export const TipSentScreen = () => {
   return (
     <TipScreen
       title={messages.title}
-      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleClose} />}
-    >
+      topbarLeft={<TopBarIconButton icon={IconRemove} onPress={handleClose} />}>
       <TipHeader status='sent' />
       <ReceiverDetails />
       <DescriptionText>{messages.description}</DescriptionText>

@@ -21,8 +21,8 @@ export const getDownloadLinkForSystem = async (os: OS) => {
   try {
     yaml = await new Promise((resolve, reject) => {
       import('js-yaml')
-        .then(yaml => resolve(yaml))
-        .catch(e => {
+        .then((yaml) => resolve(yaml))
+        .catch((e) => {
           reject(e)
         })
     })

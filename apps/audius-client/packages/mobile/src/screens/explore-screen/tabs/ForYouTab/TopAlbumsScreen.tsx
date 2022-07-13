@@ -15,11 +15,11 @@ import { TOP_ALBUMS } from '../../collections'
 
 export const TopAlbumsScreen = () => {
   const status = useSelectorWeb(
-    state =>
+    (state) =>
       getStatus(state, { variant: ExploreCollectionsVariant.TOP_ALBUMS }),
     isEqual
   )
-  const exploreData = useSelectorWeb(state =>
+  const exploreData = useSelectorWeb((state) =>
     getCollections(state, { variant: ExploreCollectionsVariant.TOP_ALBUMS })
   )
 

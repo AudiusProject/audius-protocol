@@ -46,7 +46,7 @@ const LandingPage = (props: LandingPageProps) => {
   // Show Cookie Banner if in the EU
   const [showCookieBanner, setShowCookieBanner] = useState(false)
   useEffect(() => {
-    shouldShowCookieBanner().then(show => {
+    shouldShowCookieBanner().then((show) => {
       setShowCookieBanner(show)
     })
   }, [])
@@ -91,8 +91,7 @@ const LandingPage = (props: LandingPageProps) => {
       <div
         id='landingPage'
         className={styles.container}
-        style={{ opacity: hasImageLoaded ? 1 : 0 }}
-      >
+        style={{ opacity: hasImageLoaded ? 1 : 0 }}>
         {showCookieBanner && (
           <CookieBanner
             isMobile={props.isMobile}

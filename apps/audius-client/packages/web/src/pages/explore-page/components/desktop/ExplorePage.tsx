@@ -93,14 +93,10 @@ const ExplorePage = ({
   status,
   goToRoute
 }: ExplorePageProps) => {
-  const {
-    isLoading: isLoadingPlaylist,
-    setDidLoad: setDidLoadPlaylist
-  } = useOrderedLoad(playlists.length)
-  const {
-    isLoading: isLoadingProfiles,
-    setDidLoad: setDidLoadProfile
-  } = useOrderedLoad(profiles.length)
+  const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
+    useOrderedLoad(playlists.length)
+  const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
+    useOrderedLoad(profiles.length)
 
   const header = <Header primary={title} containerStyles={styles.header} />
   const onClickCard = useCallback(
@@ -123,14 +119,12 @@ const ExplorePage = ({
       description={description}
       canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}
       contentClassName={styles.page}
-      header={header}
-    >
+      header={header}>
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
-        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}
-      >
-        {justForYou.map(i => {
+        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}>
+        {justForYou.map((i) => {
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
@@ -148,8 +142,7 @@ const ExplorePage = ({
               backgroundIcon={<Icon />}
               onClick={() => onClickCard(i.link)}
               isIncentivized={!!i.incentivized}
-              sensitivity={i.cardSensitivity}
-            >
+              sensitivity={i.cardSensitivity}>
               <TextInterior title={title} subtitle={subtitle} />
             </PerspectiveCard>
           )
@@ -157,13 +150,12 @@ const ExplorePage = ({
       </Section>
 
       <Section title={messages.lifestyle} subtitle={messages.lifestyleSubtitle}>
-        {lifestyle.map(i => (
+        {lifestyle.map((i) => (
           <PerspectiveCard
             key={i.title}
             backgroundGradient={i.gradient}
             shadowColor={i.shadow}
-            onClick={() => goToRoute(i.link)}
-          >
+            onClick={() => goToRoute(i.link)}>
             <EmojiInterior title={i.title} emoji={i.emoji} />
           </PerspectiveCard>
         ))}
@@ -172,8 +164,7 @@ const ExplorePage = ({
       <Section
         title={messages.featuredPlaylists}
         expandable
-        expandText={messages.exploreMorePlaylists}
-      >
+        expandText={messages.exploreMorePlaylists}>
         {status === Status.LOADING ? (
           <div className={styles.loadingSpinner}>
             <Lottie
@@ -202,8 +193,7 @@ const ExplorePage = ({
       <Section
         title={messages.featuredProfiles}
         expandable
-        expandText={messages.exploreMoreProfiles}
-      >
+        expandText={messages.exploreMoreProfiles}>
         {status === Status.LOADING ? (
           <div className={styles.loadingSpinner}>
             <Lottie

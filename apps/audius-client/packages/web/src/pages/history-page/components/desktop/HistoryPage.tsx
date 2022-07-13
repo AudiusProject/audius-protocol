@@ -102,8 +102,7 @@ const HistoryPage = ({
       title={title}
       description={description}
       contentClassName={styles.historyPageWrapper}
-      header={header}
-    >
+      header={header}>
       <div className={styles.bodyWrapper}>
         {loading ? (
           <LoadingSpinner className={styles.spinner} />

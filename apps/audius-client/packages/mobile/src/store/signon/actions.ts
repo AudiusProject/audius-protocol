@@ -160,9 +160,10 @@ export const signupValidateHandleFailed = (
   type: VALIDATE_HANDLE_FAILED,
   error
 })
-export const signupValidateHandleSuceeded = (): SignupValidateHandleSuceededAction => ({
-  type: VALIDATE_HANDLE_SUCEEDED
-})
+export const signupValidateHandleSuceeded =
+  (): SignupValidateHandleSuceededAction => ({
+    type: VALIDATE_HANDLE_SUCEEDED
+  })
 export const fetchAllFollowArtistsSucceeded = (
   category: FollowArtistsCategory,
   userIds: number[]

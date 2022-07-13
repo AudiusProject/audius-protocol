@@ -138,7 +138,7 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
           ))}
         </div>
         <div className={styles.overflowArtistsContainer}>
-          {artists.slice(-4).map(artist => (
+          {artists.slice(-4).map((artist) => (
             <MobileOverflowArtist key={artist.name} {...artist} />
           ))}
         </div>
@@ -157,17 +157,16 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
                 opacity: titleStyles.opacity,
                 // @ts-ignore
                 transform: titleStyles.x.interpolate(
-                  x => `translate3d(0,${x}px,0)`
+                  (x) => `translate3d(0,${x}px,0)`
                 ),
                 width: '100%'
-              }}
-            >
+              }}>
               <h3 className={styles.title}>{messages.title}</h3>
               <h3 className={styles.subTitle}>{messages.subtitle}</h3>
             </animated.div>
           </div>
           <div className={styles.artistsContainer}>
-            {artists.map(artist => (
+            {artists.map((artist) => (
               <Artist key={artist.name} {...artist} />
             ))}
           </div>
@@ -178,12 +177,10 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
             position: 'absolute',
             top: '-70px',
             height: '100%'
-          }}
-        >
+          }}>
           <div
             className={styles.dotsBackground}
-            style={{ backgroundImage: `url(${dots2x})` }}
-          ></div>
+            style={{ backgroundImage: `url(${dots2x})` }}></div>
         </Parallax>
       </div>
     </div>

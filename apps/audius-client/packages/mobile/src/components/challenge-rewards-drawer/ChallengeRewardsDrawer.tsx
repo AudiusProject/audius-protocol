@@ -223,8 +223,7 @@ export const ChallengeRewardsDrawer = ({
       isFullscreen
       isGestureSupported={false}
       title={title}
-      titleIcon={titleIcon}
-    >
+      titleIcon={titleIcon}>
       <View style={styles.content}>
         <View style={styles.task}>
           {isVerifiedChallenge ? (
@@ -269,16 +268,14 @@ export const ChallengeRewardsDrawer = ({
             style={[
               styles.statusCell,
               hasCompleted ? styles.statusCellComplete : {}
-            ]}
-          >
+            ]}>
             <Text
               style={[
                 styles.subheader,
                 hasCompleted ? styles.statusTextComplete : {},
                 isInProgress ? styles.statusTextInProgress : {}
               ]}
-              weight='heavy'
-            >
+              weight='heavy'>
               {statusText}
             </Text>
           </View>
@@ -290,8 +287,7 @@ export const ChallengeRewardsDrawer = ({
                 <Text
                   key='claimableAmount'
                   style={styles.claimableAmount}
-                  weight='heavy'
-                >
+                  weight='heavy'>
                   {claimableAmountText}
                 </Text>,
                 <Button
@@ -304,7 +300,7 @@ export const ChallengeRewardsDrawer = ({
                   disabled={claimInProgress}
                   title={messages.claim}
                   onPress={onClaim}
-                  renderIcon={color =>
+                  renderIcon={(color) =>
                     claimInProgress ? (
                       <LoadingSpinner />
                     ) : (

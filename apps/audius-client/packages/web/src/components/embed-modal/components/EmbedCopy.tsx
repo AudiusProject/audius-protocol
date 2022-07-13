@@ -28,8 +28,7 @@ const EmbedCopy = ({ frameString, onCopy }: EmbedCopyProps) => {
       fillParent={false}
       mount={MountPlacement.PARENT}
       placement={ComponentPlacement.TOP}
-      requireAccount={false}
-    >
+      requireAccount={false}>
       <div className={styles.copy} onClick={copy}>
         <div className={styles.box}>{frameString}</div>
         <div className={styles.click}>{messages.copy}</div>

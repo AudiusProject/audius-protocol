@@ -25,13 +25,8 @@ type ProfilePictureProps = {
 }
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
-  const {
-    user,
-    className,
-    disablePopover,
-    disableClick,
-    stopPropagation
-  } = props
+  const { user, className, disablePopover, disableClick, stopPropagation } =
+    props
   const { user_id, _profile_picture_sizes, handle } = user
   const [loadImage, setLoadImage] = useState(false)
   const dispatch = useDispatch()
@@ -55,7 +50,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   }, [loadImage])
 
   const handleClick: MouseEventHandler = useCallback(
-    e => {
+    (e) => {
       if (stopPropagation) {
         e.stopPropagation()
       }
@@ -88,8 +83,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     <ArtistPopover
       handle={user.handle}
       component='span'
-      onNavigateAway={handleNavigateAway}
-    >
+      onNavigateAway={handleNavigateAway}>
       {profilePictureElement}
     </ArtistPopover>
   )

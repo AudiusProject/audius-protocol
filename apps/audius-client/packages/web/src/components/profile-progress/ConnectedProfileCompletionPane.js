@@ -42,16 +42,13 @@ const ConnectedProfileCompletionPanel = ({
   const onConfettiFinished = useCallback(() => {
     setConfettiIsFinished(true)
   }, [])
-  const {
-    isHidden,
-    didCompleteThisSession,
-    shouldNeverShow
-  } = useProfileCompletionDismissal({
-    onDismiss,
-    isAccountLoaded,
-    completionStages,
-    isDismissed
-  })
+  const { isHidden, didCompleteThisSession, shouldNeverShow } =
+    useProfileCompletionDismissal({
+      onDismiss,
+      isAccountLoaded,
+      completionStages,
+      isDismissed
+    })
 
   const transitions = useSlideDown(!isHidden, ORIGINAL_HEIGHT_PIXELS, true)
 
@@ -67,8 +64,7 @@ const ConnectedProfileCompletionPanel = ({
                 <ProfileCompletionTooltip
                   completionStages={completionStages}
                   isDisabled={isTooltipDisabled}
-                  shouldDismissOnClick={false}
-                >
+                  shouldDismissOnClick={false}>
                   <div>
                     <ProfileCompletionPanel
                       numSteps={completionStages.length}
@@ -88,7 +84,7 @@ const ConnectedProfileCompletionPanel = ({
   )
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   completionStages: getOrderedCompletionStages(state),
   isAccountLoaded: getIsAccountLoaded(state),
   isLoggedIn: !!getAccountUser(state)

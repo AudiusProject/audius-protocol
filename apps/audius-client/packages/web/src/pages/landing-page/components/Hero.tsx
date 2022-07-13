@@ -67,15 +67,13 @@ export const Hero = (props: HeroProps) => {
               AUDIUS_SIGN_UP_LINK,
               props.setRenderPublicSite
             )}
-            className={styles.ctaButton}
-          >
+            className={styles.ctaButton}>
             <span className={styles.ctaMessage}>{messages.cta}</span>
             <IconArrow className={styles.ctaArrow} />
           </button>
           <button
             onClick={handleClickRoute(APP_REDIRECT, props.setRenderPublicSite)}
-            className={styles.downloadButton}
-          >
+            className={styles.downloadButton}>
             <IconDownload />
             <span className={styles.secondaryCtaMessage}>
               {messages.download}
@@ -92,8 +90,7 @@ export const Hero = (props: HeroProps) => {
             <a
               href='https://play.google.com/store/apps/details?id=co.audius.app'
               target='_blank'
-              rel='noopener noreferrer'
-            >
+              rel='noopener noreferrer'>
               <GooglePlayBadge
                 aria-label='Get it on Google Play'
                 width={135}
@@ -120,8 +117,7 @@ export const Hero = (props: HeroProps) => {
         <Parallax
           className={cn(styles.background, styles.fgContainer)}
           y={[51, -10]}
-          x={[64, 64]}
-        >
+          x={[64, 64]}>
           <img
             src={HeroForeground}
             className={styles.foregroundImg}
@@ -149,16 +145,14 @@ export const Hero = (props: HeroProps) => {
         </Parallax>
         <Parallax
           className={styles.buttonContentParallax}
-          y={['-40px', '110px']}
-        >
+          y={['-40px', '110px']}>
           <div className={styles.buttonContent}>
             <button
               onClick={handleClickRoute(
                 AUDIUS_SIGN_UP_LINK,
                 props.setRenderPublicSite
               )}
-              className={styles.ctaButton}
-            >
+              className={styles.ctaButton}>
               <span className={styles.ctaMessage}>{messages.cta}</span>
               <IconArrow width={30} height={30} className={styles.ctaArrow} />
             </button>
@@ -167,8 +161,7 @@ export const Hero = (props: HeroProps) => {
                 DOWNLOAD_START_LINK,
                 props.setRenderPublicSite
               )}
-              className={styles.downloadButton}
-            >
+              className={styles.downloadButton}>
               <IconDownload />
               <span className={styles.secondaryCtaMessage}>
                 {messages.download}
@@ -178,14 +171,12 @@ export const Hero = (props: HeroProps) => {
         </Parallax>
         <Parallax
           className={styles.appLinksContentParallax}
-          y={['-40px', '110px']}
-        >
+          y={['-40px', '110px']}>
           <div className={styles.appLinksContent}>
             <a
               href='https://apps.apple.com/us/app/audius-music/id1491270519'
               target='_blank'
-              rel='noopener noreferrer'
-            >
+              rel='noopener noreferrer'>
               <AppStoreBadge
                 aria-label='Download on the App Store'
                 width={120}
@@ -195,8 +186,7 @@ export const Hero = (props: HeroProps) => {
             <a
               href='https://play.google.com/store/apps/details?id=co.audius.app'
               target='_blank'
-              rel='noopener noreferrer'
-            >
+              rel='noopener noreferrer'>
               <GooglePlayBadge
                 aria-label='Get it on Google Play'
                 width={135}

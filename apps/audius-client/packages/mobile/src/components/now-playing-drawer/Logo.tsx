@@ -34,8 +34,7 @@ export const Logo = ({ translationAnim }: LogoProps) => {
             extrapolate: 'extend'
           })
         }
-      ]}
-    >
+      ]}>
       <AudiusLogoHorizontal fill={neutralLight4} height='100%' width='100%' />
     </Animated.View>
   )

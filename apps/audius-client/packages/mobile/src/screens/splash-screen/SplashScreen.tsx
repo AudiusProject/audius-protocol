@@ -53,11 +53,10 @@ export const SplashScreen = () => {
       style={{
         ...styles.container,
         transform: [{ scale: scaleAnim }]
-      }}
-    >
+      }}>
       <LottieView
         source={require('app/assets/animations/splashscreen.json')}
-        ref={animation => {
+        ref={(animation) => {
           animationRef.current = animation
         }}
         autoPlay={false}

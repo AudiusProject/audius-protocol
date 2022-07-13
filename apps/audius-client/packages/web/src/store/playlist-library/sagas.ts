@@ -58,7 +58,7 @@ function* resolveTempPlaylists(
         index: 0
       },
       // The playlist has been created
-      res => Object.keys(res).length > 0
+      (res) => Object.keys(res).length > 0
     )
     return {
       type: 'playlist',
@@ -69,37 +69,39 @@ function* resolveTempPlaylists(
 }
 
 function* watchUpdatePlaylistLibrary() {
-  yield takeEvery(update.type, function* updatePlaylistLibrary(
-    action: ReturnType<typeof update>
-  ) {
-    const { playlistLibrary } = action.payload
-    yield call(waitForBackendSetup)
+  yield takeEvery(
+    update.type,
+    function* updatePlaylistLibrary(action: ReturnType<typeof update>) {
+      const { playlistLibrary } = action.payload
+      yield call(waitForBackendSetup)
 
-    const account: User = yield select(getAccountUser)
-    account.playlist_library = removePlaylistLibraryDuplicates(playlistLibrary)
-    yield put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: account.user_id,
-          metadata: account
-        }
-      ])
-    )
+      const account: User = yield select(getAccountUser)
+      account.playlist_library =
+        removePlaylistLibraryDuplicates(playlistLibrary)
+      yield put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: account.user_id,
+            metadata: account
+          }
+        ])
+      )
 
-    const containsTemps = containsTempPlaylist(playlistLibrary)
-    if (containsTemps) {
-      // Deal with temp playlists
-      // If there's a temp playlist, write to the cache, but dispatch
-      // to a helper to watch for the update.
-      yield put({
-        type: TEMP_PLAYLIST_UPDATE_HELPER,
-        payload: { playlistLibrary }
-      })
-    } else {
-      // Otherwise, just write the profile update
-      yield fork(updateProfileAsync, { metadata: account })
+      const containsTemps = containsTempPlaylist(playlistLibrary)
+      if (containsTemps) {
+        // Deal with temp playlists
+        // If there's a temp playlist, write to the cache, but dispatch
+        // to a helper to watch for the update.
+        yield put({
+          type: TEMP_PLAYLIST_UPDATE_HELPER,
+          payload: { playlistLibrary }
+        })
+      } else {
+        // Otherwise, just write the profile update
+        yield fork(updateProfileAsync, { metadata: account })
+      }
     }
-  })
+  )
 }
 
 /**
@@ -108,36 +110,38 @@ function* watchUpdatePlaylistLibrary() {
  * backend once we've resolved the temp playlist ids to actual ids
  */
 function* watchUpdatePlaylistLibraryWithTempPlaylist() {
-  yield takeLatest(TEMP_PLAYLIST_UPDATE_HELPER, function* makeUpdate(
-    action: ReturnType<typeof update>
-  ) {
-    const { playlistLibrary: rawPlaylistLibrary } = action.payload
-    const playlistLibrary = removePlaylistLibraryDuplicates(rawPlaylistLibrary)
-    const account: User = yield select(getAccountUser)
+  yield takeLatest(
+    TEMP_PLAYLIST_UPDATE_HELPER,
+    function* makeUpdate(action: ReturnType<typeof update>) {
+      const { playlistLibrary: rawPlaylistLibrary } = action.payload
+      const playlistLibrary =
+        removePlaylistLibraryDuplicates(rawPlaylistLibrary)
+      const account: User = yield select(getAccountUser)
 
-    // Map over playlist library contents and resolve each temp id playlist
-    // to one with an actual id. Once we have the actual id, we can proceed
-    // with writing the library to the user metadata (profile update)
-    const tempPlaylists = extractTempPlaylistsFromLibrary(playlistLibrary)
-    const resolvedPlaylists: PlaylistLibraryIdentifier[] = yield all(
-      tempPlaylists.map(playlist => call(resolveTempPlaylists, playlist))
-    )
-    const tempPlaylistIdToResolvedPlaylist = tempPlaylists.reduce(
-      (result, nextTempPlaylist, index) => ({
-        ...result,
-        [nextTempPlaylist.playlist_id]: resolvedPlaylists[index]
-      }),
-      {} as { [key: string]: PlaylistLibraryIdentifier }
-    )
+      // Map over playlist library contents and resolve each temp id playlist
+      // to one with an actual id. Once we have the actual id, we can proceed
+      // with writing the library to the user metadata (profile update)
+      const tempPlaylists = extractTempPlaylistsFromLibrary(playlistLibrary)
+      const resolvedPlaylists: PlaylistLibraryIdentifier[] = yield all(
+        tempPlaylists.map((playlist) => call(resolveTempPlaylists, playlist))
+      )
+      const tempPlaylistIdToResolvedPlaylist = tempPlaylists.reduce(
+        (result, nextTempPlaylist, index) => ({
+          ...result,
+          [nextTempPlaylist.playlist_id]: resolvedPlaylists[index]
+        }),
+        {} as { [key: string]: PlaylistLibraryIdentifier }
+      )
 
-    playlistLibrary.contents = replaceTempWithResolvedPlaylists(
-      playlistLibrary,
-      tempPlaylistIdToResolvedPlaylist
-    ).contents
-    account.playlist_library = playlistLibrary
-    // Update playlist library on chain via an account profile update
-    yield call(updateProfileAsync, { metadata: account })
-  })
+      playlistLibrary.contents = replaceTempWithResolvedPlaylists(
+        playlistLibrary,
+        tempPlaylistIdToResolvedPlaylist
+      ).contents
+      account.playlist_library = playlistLibrary
+      // Update playlist library on chain via an account profile update
+      yield call(updateProfileAsync, { metadata: account })
+    }
+  )
 }
 
 /**
@@ -153,7 +157,7 @@ export function* addPlaylistsNotInLibrary() {
   const notInLibrary = getPlaylistsNotInLibrary(library, playlists)
   if (Object.keys(notInLibrary).length > 0) {
     const newEntries = Object.values(notInLibrary).map(
-      playlist =>
+      (playlist) =>
         ({
           playlist_id: playlist.id,
           type: 'playlist'

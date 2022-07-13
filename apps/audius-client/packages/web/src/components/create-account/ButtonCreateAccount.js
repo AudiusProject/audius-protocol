@@ -17,8 +17,7 @@ class ButtonCreateAccount extends Component {
     return (
       <button
         className={cn(styles.bigButton, styles.navbar)}
-        onClick={this.clicked}
-      >
+        onClick={this.clicked}>
         <img className={styles.icon} src={icon} alt='Icon upload' />
         Create Account
       </button>

@@ -15,12 +15,12 @@ import {
 
 const BASENAME = process.env.PUBLIC_URL
 
-const PrivacyPolicyPage = lazy(() =>
-  import('pages/privacy-policy-page/PrivacyPolicyPage')
+const PrivacyPolicyPage = lazy(
+  () => import('pages/privacy-policy-page/PrivacyPolicyPage')
 )
 const DownloadPage = lazy(() => import('pages/download-page/DownloadPage'))
-const TermsOfUsePage = lazy(() =>
-  import('pages/terms-of-use-page/TermsOfUsePage')
+const TermsOfUsePage = lazy(
+  () => import('pages/terms-of-use-page/TermsOfUsePage')
 )
 
 const ROOT_ID = 'root'

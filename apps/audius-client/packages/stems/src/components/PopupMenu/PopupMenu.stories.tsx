@@ -13,7 +13,7 @@ export default {
   title: 'Components/PopupMenu'
 }
 
-const Template: Story<PopupMenuProps> = args => {
+const Template: Story<PopupMenuProps> = (args) => {
   return (
     <>
       <PopupMenu

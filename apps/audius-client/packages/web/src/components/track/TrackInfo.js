@@ -11,13 +11,13 @@ import UserBadges from 'components/user-badges/UserBadges'
 import styles from './TrackInfo.module.css'
 
 class TrackInfo extends PureComponent {
-  onClickTrackName = e => {
+  onClickTrackName = (e) => {
     e.stopPropagation()
     if (!this.props.disabled && this.props.onClickTrackName)
       this.props.onClickTrackName()
   }
 
-  onClickArtistName = e => {
+  onClickArtistName = (e) => {
     e.stopPropagation()
     if (!this.props.disabled && this.props.onClickArtistName)
       this.props.onClickArtistName()
@@ -65,16 +65,16 @@ class TrackInfo extends PureComponent {
 
     return (
       <div
-        className={cn(styles.trackInfoWrapper, { [styles.disabled]: disabled })}
-      >
+        className={cn(styles.trackInfoWrapper, {
+          [styles.disabled]: disabled
+        })}>
         <div className={trackTitleStyle}>
           <div className={hideShow}>
             <div
               className={cn(styles.trackName, {
                 [styles.trackNameLink]: onClickTrackName
               })}
-              onClick={this.onClickTrackName}
-            >
+              onClick={this.onClickTrackName}>
               {trackTitle}
             </div>
             {active ? (
@@ -94,8 +94,7 @@ class TrackInfo extends PureComponent {
               <ArtistPopover handle={artistHandle}>
                 <span
                   className={cn({ [styles.artistNameLink]: onClickArtistName })}
-                  onClick={this.onClickArtistName}
-                >
+                  onClick={this.onClickArtistName}>
                   {artistName}
                 </span>
               </ArtistPopover>
@@ -104,8 +103,7 @@ class TrackInfo extends PureComponent {
                 className={cn(styles.artistName, {
                   [styles.artistNameLink]: onClickArtistName
                 })}
-                onClick={this.onClickArtistName}
-              >
+                onClick={this.onClickArtistName}>
                 {artistName}
               </span>
             )}

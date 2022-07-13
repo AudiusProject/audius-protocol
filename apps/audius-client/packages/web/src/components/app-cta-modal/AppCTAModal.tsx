@@ -34,7 +34,7 @@ const os = getOS()
 const useCallbacks = () => {
   const dispatch = useDispatch()
 
-  const isOpen = useSelector(state => state.application.ui.appCTAModal.isOpen)
+  const isOpen = useSelector((state) => state.application.ui.appCTAModal.isOpen)
 
   const recordDownloadDesktopApp = useCallback(() => {
     dispatch(make(Name.ACCOUNT_HEALTH_DOWNLOAD_DESKTOP, { source: 'banner' }))
@@ -69,8 +69,7 @@ const AppCTAModal = () => {
       showTitleHeader
       showDismissButton
       contentHorizontalPadding={16}
-      allowScroll
-    >
+      allowScroll>
       <div className={styles.container}>
         <img className={styles.qr} src={QRCode} alt='QR Code' />
         <div className={styles.subtitle}>{messages.subtitle}</div>

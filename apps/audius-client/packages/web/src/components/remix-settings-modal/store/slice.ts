@@ -26,18 +26,14 @@ const slice = createSlice({
       state.status = Status.SUCCESS
       state.trackId = trackId
     },
-    fetchTrackFailed: state => {
+    fetchTrackFailed: (state) => {
       state.status = Status.ERROR
     },
     reset: () => initialState
   }
 })
 
-export const {
-  fetchTrack,
-  fetchTrackSucceeded,
-  fetchTrackFailed,
-  reset
-} = slice.actions
+export const { fetchTrack, fetchTrackSucceeded, fetchTrackFailed, reset } =
+  slice.actions
 
 export default slice.reducer

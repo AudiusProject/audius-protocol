@@ -66,11 +66,11 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
   return (
     <div
       className={cn(styles.container, { [className!]: !!className })}
-      ref={containerRef}
-    >
+      ref={containerRef}>
       <div
-        className={cn(styles.slider, { [sliderClassName!]: !!sliderClassName })}
-      >
+        className={cn(styles.slider, {
+          [sliderClassName!]: !!sliderClassName
+        })}>
         <div
           className={cn(
             styles.newValueSlider,

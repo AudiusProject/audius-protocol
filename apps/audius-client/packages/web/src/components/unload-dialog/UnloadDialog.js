@@ -19,7 +19,7 @@ const MESSAGE_TEXT = `
 const RELOAD_TEXT = 'RELOAD ANYWAY'
 const QUIT_TEXT = 'QUIT ANYWAY'
 
-const UnloadDialog = props => {
+const UnloadDialog = (props) => {
   const [showModal, setShowModal] = useState(false)
   const [reload, setReload] = useState(true)
 
@@ -31,7 +31,7 @@ const UnloadDialog = props => {
 
   useEffect(() => {
     if (props.isConfirming) {
-      const beforeUnload = event => {
+      const beforeUnload = (event) => {
         if (!seenModalRef.current) event.returnValue = ''
       }
       window.addEventListener('beforeunload', beforeUnload)
@@ -104,8 +104,7 @@ const UnloadDialog = props => {
       wrapperClassName={styles.modalWrapper}
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}
-      showDismissButton
-    >
+      showDismissButton>
       <ConfirmationBox
         text={MESSAGE_TEXT}
         rightText='GOT IT'
@@ -117,10 +116,10 @@ const UnloadDialog = props => {
   )
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isConfirming: getIsConfirming(state)
 })
 
-const mapDispatchToProps = dispatch => ({})
+const mapDispatchToProps = (dispatch) => ({})
 
 export default connect(mapStateToProps, mapDispatchToProps)(UnloadDialog)

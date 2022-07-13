@@ -135,23 +135,23 @@ export class LineupActions {
   fetchTrackAudio(trackMetadata: TrackMetadata) {
     return {
       type: addPrefix(this.prefix, FETCH_TRACK_AUDIO),
-      trackMetadata: trackMetadata
+      trackMetadata
     }
   }
 
   fetchTrackAudioRequested(index: number, trackId: ID) {
     return {
       type: addPrefix(this.prefix, FETCH_TRACK_AUDIO_REQUESTED),
-      index: index,
-      trackId: trackId
+      index,
+      trackId
     }
   }
 
   fetchTrackAudioSucceeded(index: number, trackId: ID) {
     return {
       type: addPrefix(this.prefix, FETCH_TRACK_AUDIO_SUCCEEDED),
-      index: index,
-      trackId: trackId
+      index,
+      trackId
     }
   }
 

@@ -377,7 +377,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
           tintColor: '#7E1BCC',
           cancelButtonIndex: 0
         },
-        buttonIndex => {
+        (buttonIndex) => {
           if (buttonIndex === 1) {
             selectPhotoFromLibrary()
           } else if (buttonIndex === 2) {
@@ -445,7 +445,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
   const validateHandle = (handle: string) => {
     dispatchWeb({
       type: MessageType.SIGN_UP_VALIDATE_HANDLE,
-      handle: handle,
+      handle,
       verified,
       onValidate: null,
       isAction: true
@@ -488,19 +488,16 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
     <SafeAreaView style={{ backgroundColor: 'white' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ overflow: 'hidden' }}
-      >
+        style={{ overflow: 'hidden' }}>
         <ScrollView
           style={{ height: '100%' }}
-          keyboardShouldPersistTaps='always'
-        >
+          keyboardShouldPersistTaps='always'>
           <View>
             <SignupHeader />
             <TouchableWithoutFeedback
               onPress={Keyboard.dismiss}
               accessible={false}
-              style={styles.container}
-            >
+              style={styles.container}>
               <View style={styles.containerForm}>
                 <FormTitle />
                 <View style={styles.profilePicContainer}>
@@ -532,7 +529,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   maxLength={32}
                   textContentType='name'
                   value={name}
-                  onChangeText={newText => {
+                  onChangeText={(newText) => {
                     setName(newText)
                   }}
                   onFocus={() => {
@@ -547,8 +544,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                   style={[
                     styles.handleInputContainer,
                     { borderColor: handleBorderColor }
-                  ]}
-                >
+                  ]}>
                   <Text style={styles.atLabel}>@</Text>
                   <TextInput
                     style={styles.handleInput}
@@ -563,7 +559,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
                     maxLength={16}
                     textContentType='nickname'
                     value={handle}
-                    onChangeText={newText => {
+                    onChangeText={(newText) => {
                       clearTimeout(handleTimeout)
                       handleTimeout = setTimeout(() => {
                         // if the handle validation has not returned yet, then set to true

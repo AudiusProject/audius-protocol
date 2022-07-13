@@ -36,7 +36,7 @@ export default class WebWorker {
    */
   getResult = async (key = '') => {
     return new Promise((resolve, reject) => {
-      this.worker.addEventListener('message', event => {
+      this.worker.addEventListener('message', (event) => {
         if (event.data.key) {
           if (event.data.key === key) {
             resolve(event.data.result)

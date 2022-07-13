@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import styles from './ConfirmationBox.module.css'
 
-const ConfirmationBox = props => {
+const ConfirmationBox = (props) => {
   return (
     <div className={styles.confirmationBox}>
       <div className={styles.text}>{props.text}</div>

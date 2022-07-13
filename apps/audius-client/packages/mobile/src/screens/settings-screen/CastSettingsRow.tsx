@@ -33,7 +33,7 @@ export const CastSettingsRow = () => {
     (method: CastMethod) => {
       // Changes should be persisted to async storage so that the
       // settings row value persists between sessions.
-      dispatchWeb(updateMethod({ method: method, persist: true }))
+      dispatchWeb(updateMethod({ method, persist: true }))
     },
     [dispatchWeb]
   )

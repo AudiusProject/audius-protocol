@@ -18,7 +18,7 @@ const ConfirmerPreview = ({ confirmer }: ConfirmerPreviewProps) => {
       <div className={styles.inProgressTitle}>In Progress calls</div>
       <div className={styles.inProgress}>
         {entities.length
-          ? entities.map(entity => {
+          ? entities.map((entity) => {
               return (
                 <div className={styles.entity} key={entity}>
                   <div className={styles.entityName}>{entity}</div>

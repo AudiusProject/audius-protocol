@@ -21,7 +21,7 @@ const slice = createSlice({
   name: 'application/pages/remixes',
   initialState,
   reducers: {
-    reset: state => {
+    reset: (state) => {
       state.trackId = null
     },
     fetchTrack: (
@@ -41,12 +41,8 @@ const slice = createSlice({
 
 const remixesLineupReducer = asLineup(remixesTracksPrefix, remixesTracksReducer)
 
-export const {
-  reset,
-  setCount,
-  fetchTrack,
-  fetchTrackSucceeded
-} = slice.actions
+export const { reset, setCount, fetchTrack, fetchTrackSucceeded } =
+  slice.actions
 
 export default combineReducers({
   page: slice.reducer,

@@ -84,48 +84,42 @@ export const TrackList = ({
     </View>
   )
 
-  const renderDraggableTrack: DraggableFlatListProps<
-    TrackMetadata
-  >['renderItem'] = ({
-    item: track,
-    index = -1,
-    drag,
-    isActive: isDragActive
-  }) => {
-    const isActive = track.uid !== undefined && track.uid === playingUid
+  const renderDraggableTrack: DraggableFlatListProps<TrackMetadata>['renderItem'] =
+    ({ item: track, index = -1, drag, isActive: isDragActive }) => {
+      const isActive = track.uid !== undefined && track.uid === playingUid
 
-    // The dividers above and belove the active track should be hidden
-    const hideDivider = isActive || tracks[index - 1]?.uid === playingUid
+      // The dividers above and belove the active track should be hidden
+      const hideDivider = isActive || tracks[index - 1]?.uid === playingUid
 
-    return (
-      <View>
-        {showDivider && (showTopDivider || index > 0) ? (
-          <View
-            style={[
-              styles.divider,
-              hideDivider && styles.hideDivider,
-              noDividerMargin && styles.noMarginDivider
-            ]}
+      return (
+        <View>
+          {showDivider && (showTopDivider || index > 0) ? (
+            <View
+              style={[
+                styles.divider,
+                hideDivider && styles.hideDivider,
+                noDividerMargin && styles.noMarginDivider
+              ]}
+            />
+          ) : null}
+          <TrackListItem
+            index={index}
+            drag={drag}
+            hideArt={hideArt}
+            isActive={isActive}
+            isDragging={isDragActive}
+            isPlaying={isPlaying}
+            isReorderable={isReorderable}
+            track={track}
+            key={track.track_id}
+            onSave={onSave}
+            togglePlay={togglePlay}
+            trackItemAction={trackItemAction}
+            onRemove={onRemove}
           />
-        ) : null}
-        <TrackListItem
-          index={index}
-          drag={drag}
-          hideArt={hideArt}
-          isActive={isActive}
-          isDragging={isDragActive}
-          isPlaying={isPlaying}
-          isReorderable={isReorderable}
-          track={track}
-          key={track.track_id}
-          onSave={onSave}
-          togglePlay={togglePlay}
-          trackItemAction={trackItemAction}
-          onRemove={onRemove}
-        />
-      </View>
-    )
-  }
+        </View>
+      )
+    }
 
   const renderTrack: FlatListProps<TrackMetadata>['renderItem'] = ({
     item,
@@ -159,7 +153,7 @@ export const TrackList = ({
       onPlaceholderIndexChange={() => {
         haptics.light()
       }}
-      onDragEnd={p => {
+      onDragEnd={(p) => {
         onReorder?.(p)
       }}
       renderItem={renderDraggableTrack}

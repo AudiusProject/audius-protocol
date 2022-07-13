@@ -61,7 +61,7 @@ export const DetailsTileStats = ({
           {hideListenCount ? null : (
             <DetailsTileStat
               count={playCount}
-              renderLabel={color => (
+              renderLabel={(color) => (
                 <Text style={[styles.countLabel, { color }]}>
                   {messages.plays}
                 </Text>
@@ -72,7 +72,7 @@ export const DetailsTileStats = ({
             <DetailsTileStat
               count={favoriteCount ?? 0}
               onPress={onPressFavorites}
-              renderLabel={color => (
+              renderLabel={(color) => (
                 <IconFavorite fill={color} height={16} width={16} />
               )}
             />
@@ -81,7 +81,7 @@ export const DetailsTileStats = ({
             <DetailsTileStat
               count={repostCount ?? 0}
               onPress={onPressReposts}
-              renderLabel={color => (
+              renderLabel={(color) => (
                 <IconRepost fill={color} height={18} width={18} />
               )}
             />

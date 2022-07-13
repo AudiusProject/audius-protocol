@@ -10,14 +10,13 @@ const messages = {
   dismiss: 'Got it!'
 }
 
-const AddTracksNotification = props => {
+const AddTracksNotification = (props) => {
   return (
     <div
       className={cn(styles.container, {
         [props.className]: !!props.className,
         [styles.hidden]: !props.show
-      })}
-    >
+      })}>
       <div className={styles.notice}>{messages.notice}</div>
       <div className={styles.dismiss} onClick={props.onDismiss}>
         {messages.dismiss}

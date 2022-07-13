@@ -52,10 +52,9 @@ export function useRemoteVar(
   const configLoaded = useSelector(isRemoteConfigLoaded)
   // eslint complains about configLoaded as part of the deps array
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const remoteVar = useMemo(() => remoteConfigInstance.getRemoteVar(key), [
-    key,
-    configLoaded,
-    remoteConfigInstance
-  ])
+  const remoteVar = useMemo(
+    () => remoteConfigInstance.getRemoteVar(key),
+    [key, configLoaded, remoteConfigInstance]
+  )
   return remoteVar
 }

@@ -215,8 +215,7 @@ const BulletPoint = ({ i }: { i: number }) => {
       style={[
         styles.formButtonTitleContainer,
         { marginBottom: i === messages.oauthChecks.length ? 4 : 8 }
-      ]}
-    >
+      ]}>
       <GradientSave style={styles.icon} />
       <Text style={styles.bulletpointText}>{messages.oauthChecks[i]}</Text>
       {i === 4 && (
@@ -485,8 +484,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
                 style={[
                   styles.instruction,
                   { paddingLeft: 0, paddingRight: 0, paddingTop: 0 }
-                ]}
-              >
+                ]}>
                 {messages.description}
               </Text>
             ) : null}
@@ -532,8 +530,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
             <TouchableOpacity
               style={styles.gotoManualBtn}
               activeOpacity={0.6}
-              onPress={() => goTo('ProfileManual')}
-            >
+              onPress={() => goTo('ProfileManual')}>
               <Text style={styles.gotoManualBtnTitle}>{messages.manually}</Text>
             </TouchableOpacity>
           </View>

@@ -70,7 +70,7 @@ export const TiersExplainerDrawer = () => {
   const { tier, tierNumber } = useSelectTierInfo(profileId)
 
   const { minAudio } = badgeTiers.find(
-    tierReq => tierReq.tier === tier
+    (tierReq) => tierReq.tier === tier
   ) as BadgeTierInfo
 
   const minAudioText = minAudio.toString()
@@ -88,8 +88,7 @@ export const TiersExplainerDrawer = () => {
           </TierText>
           <Text
             accessibilityLabel={`${minAudioText} or more audio tokens`}
-            style={styles.minAudio}
-          >
+            style={styles.minAudio}>
             {minAudio.toString()}+ $AUDIO
           </Text>
         </View>

@@ -51,7 +51,7 @@ export function* upgradeToCreator() {
         waitForValue,
         getSelectedServices,
         {},
-        val => val.length > 0
+        (val) => val.length > 0
       ),
       failure: take(fetchServicesFailed.type)
     })
@@ -156,11 +156,13 @@ export function* fetchUserByHandle(
 export function* fetchUserCollections(userId) {
   // Get playlists.
   const playlists = yield call(AudiusBackend.getPlaylists, userId)
-  const playlistIds = playlists.map(p => p.playlist_id)
+  const playlistIds = playlists.map((p) => p.playlist_id)
 
   if (!playlistIds.length) return
   const { collections } = yield call(retrieveCollections, userId, playlistIds)
-  const cachedCollectionIds = Object.values(collections).map(c => c.playlist_id)
+  const cachedCollectionIds = Object.values(collections).map(
+    (c) => c.playlist_id
+  )
 
   yield put(
     cacheActions.update(Kind.USERS, [
@@ -178,8 +180,8 @@ function* watchAdd() {
       yield put(
         userActions.setHandleStatus(
           action.entries
-            .filter(entry => !!entry.metadata.handle)
-            .map(entry => ({
+            .filter((entry) => !!entry.metadata.handle)
+            .map((entry) => ({
               handle: entry.metadata.handle,
               id: entry.id,
               status: Status.SUCCESS
@@ -243,72 +245,72 @@ export function* adjustUserField({ user, fieldName, delta }) {
 
 function* watchFetchProfilePicture() {
   const inProgress = new Set()
-  yield takeEvery(userActions.FETCH_PROFILE_PICTURE, function* ({
-    userId,
-    size
-  }) {
-    // Unique on id and size
-    const key = `${userId}-${size}`
-    if (inProgress.has(key)) return
-    inProgress.add(key)
+  yield takeEvery(
+    userActions.FETCH_PROFILE_PICTURE,
+    function* ({ userId, size }) {
+      // Unique on id and size
+      const key = `${userId}-${size}`
+      if (inProgress.has(key)) return
+      inProgress.add(key)
 
-    try {
-      const user = yield select(getUser, { id: userId })
-      if (!user || (!user.profile_picture_sizes && !user.profile_picture))
-        return
-      const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
-      if (user.profile_picture_sizes) {
-        const url = yield call(
-          AudiusBackend.getImageUrl,
-          user.profile_picture_sizes,
-          size,
-          gateways
-        )
+      try {
+        const user = yield select(getUser, { id: userId })
+        if (!user || (!user.profile_picture_sizes && !user.profile_picture))
+          return
+        const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+        if (user.profile_picture_sizes) {
+          const url = yield call(
+            AudiusBackend.getImageUrl,
+            user.profile_picture_sizes,
+            size,
+            gateways
+          )
 
-        if (url) {
-          const updatedUser = yield select(getUser, { id: userId })
-          const userWithProfilePicture = {
-            ...updatedUser,
-            _profile_picture_sizes: {
-              ...user._profile_picture_sizes,
-              [size]: url
+          if (url) {
+            const updatedUser = yield select(getUser, { id: userId })
+            const userWithProfilePicture = {
+              ...updatedUser,
+              _profile_picture_sizes: {
+                ...user._profile_picture_sizes,
+                [size]: url
+              }
             }
+            yield put(
+              cacheActions.update(Kind.USERS, [
+                { id: userId, metadata: userWithProfilePicture }
+              ])
+            )
           }
-          yield put(
-            cacheActions.update(Kind.USERS, [
-              { id: userId, metadata: userWithProfilePicture }
-            ])
+        } else if (user.profile_picture) {
+          const url = yield call(
+            AudiusBackend.getImageUrl,
+            user.profile_picture,
+            null,
+            gateways
           )
-        }
-      } else if (user.profile_picture) {
-        const url = yield call(
-          AudiusBackend.getImageUrl,
-          user.profile_picture,
-          null,
-          gateways
-        )
-        if (url) {
-          const updatedUser = yield select(getUser, { id: userId })
-          const userWithProfilePicture = {
-            ...updatedUser,
-            _profile_picture_sizes: {
-              ...user._profile_picture_sizes,
-              [DefaultSizes.OVERRIDE]: url
+          if (url) {
+            const updatedUser = yield select(getUser, { id: userId })
+            const userWithProfilePicture = {
+              ...updatedUser,
+              _profile_picture_sizes: {
+                ...user._profile_picture_sizes,
+                [DefaultSizes.OVERRIDE]: url
+              }
             }
+            yield put(
+              cacheActions.update(Kind.USERS, [
+                { id: userId, metadata: userWithProfilePicture }
+              ])
+            )
           }
-          yield put(
-            cacheActions.update(Kind.USERS, [
-              { id: userId, metadata: userWithProfilePicture }
-            ])
-          )
         }
+      } catch (e) {
+        console.error(`Unable to fetch profile picture for user ${userId}`)
+      } finally {
+        inProgress.delete(key)
       }
-    } catch (e) {
-      console.error(`Unable to fetch profile picture for user ${userId}`)
-    } finally {
-      inProgress.delete(key)
     }
-  })
+  )
 }
 
 function* watchFetchCoverPhoto() {

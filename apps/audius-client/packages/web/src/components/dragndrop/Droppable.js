@@ -9,7 +9,7 @@ import { getIsDragging } from 'store/dragndrop/selectors'
 
 import styles from './Droppable.module.css'
 
-const Droppable = props => {
+const Droppable = (props) => {
   const droppableRef = useRef()
   const [hovered, setHovered] = useState(false)
 
@@ -25,17 +25,17 @@ const Droppable = props => {
     !props.disabled &&
     (props.acceptOwner || !props.dragging.isOwner)
 
-  const dragEnter = e => {
+  const dragEnter = (e) => {
     const dt = e.dataTransfer
     dt.dropEffect = 'copy'
     setHovered(true)
   }
 
-  const dragLeave = e => {
+  const dragLeave = (e) => {
     setHovered(false)
   }
 
-  const drop = e => {
+  const drop = (e) => {
     if (props.stopPropogationOnDrop) {
       e.stopPropagation()
     }
@@ -52,7 +52,7 @@ const Droppable = props => {
   // When a new drag takes place, check if this droppable is appropriate and reattach
   // event listeners.
   useEffect(() => {
-    const dragOver = e => {
+    const dragOver = (e) => {
       if (!hovered) setHovered(true)
       e.preventDefault()
     }
@@ -81,8 +81,7 @@ const Droppable = props => {
       ref={droppableRef}
       className={cn(styles.droppable, props.className, {
         [props.hoverClassName]: hovered && canDrop
-      })}
-    >
+      })}>
       {props.children}
     </div>
   )
@@ -110,6 +109,6 @@ Droppable.defaultProps = {
 const mapStateToProps = (state, props) => ({
   dragging: getIsDragging(state)
 })
-const mapDispatchToProps = dispatch => ({})
+const mapDispatchToProps = (dispatch) => ({})
 
 export default connect(mapStateToProps, mapDispatchToProps)(Droppable)

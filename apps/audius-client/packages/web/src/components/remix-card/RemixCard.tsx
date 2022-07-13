@@ -52,8 +52,7 @@ const RemixCard = ({
             coSignName={coSign.user.name}
             hasFavorited={coSign.has_remix_author_saved}
             hasReposted={coSign.has_remix_author_reposted}
-            userId={coSign.user?.user_id ?? 0}
-          >
+            userId={coSign.user?.user_id ?? 0}>
             {images}
           </CoSign>
         ) : (

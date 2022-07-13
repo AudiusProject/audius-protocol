@@ -22,13 +22,13 @@ export const makeGetExplore = () => {
     getUsers,
     (explore, collections, users) => {
       const playlists = explore.playlists
-        .map(id => collections[id])
+        .map((id) => collections[id])
         .filter(Boolean)
-        .map(collection => ({
+        .map((collection) => ({
           ...collection,
           user: users[collection.playlist_owner_id] || {}
         }))
-      const profiles = explore.profiles.map(id => users[id]).filter(Boolean)
+      const profiles = explore.profiles.map((id) => users[id]).filter(Boolean)
       return {
         playlists,
         profiles,

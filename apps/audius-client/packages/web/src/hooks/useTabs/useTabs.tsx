@@ -55,8 +55,7 @@ const Tab = forwardRef(
         { [styles.tabDisabled]: disabled }
       )}
       onClick={() => !disabled && onClick()}
-      ref={ref}
-    >
+      ref={ref}>
       {icon && <div className={styles.icon}>{icon}</div>}
       <div className={styles.text}>{text}</div>
     </div>
@@ -221,8 +220,7 @@ const TabBar = memo(
           styles.tabBarContainer,
           { [styles.tabBarContainerMobile]: isMobile },
           { [styles.tabBarContainerDesktop]: !isMobile }
-        )}
-      >
+        )}>
         <TabAccent
           style={{
             top: top.interpolate(interpPx),
@@ -239,14 +237,12 @@ const TabBar = memo(
               text={disabledTabTooltipText}
               placement='bottom'
               disabled={!tooltipActive}
-              key={i}
-            >
+              key={i}>
               {/* Extra div inserted here because tooltip needs to pass a ref to it's child :( */}
               <div
                 className={cn(styles.tabWrapper, {
                   [styles.tabWrapperMobile]: isMobile
-                })}
-              >
+                })}>
                 <Tab
                   onClick={() => onClick(i)}
                   ref={refsArr.current[i]}
@@ -396,11 +392,8 @@ const GestureSupportingBodyContainer = memo(
     didSetDimensions,
     initialScrollOffset
   }: BodyContainerProps) => {
-    const {
-      containerWidth,
-      containerCallbackRef,
-      elementCallbackRef
-    } = useContainerDimensions(activeIndex, dimensionsAreDirty)
+    const { containerWidth, containerCallbackRef, elementCallbackRef } =
+      useContainerDimensions(activeIndex, dimensionsAreDirty)
 
     if (dimensionsAreDirty) {
       didSetDimensions()
@@ -456,7 +449,7 @@ const GestureSupportingBodyContainer = memo(
       if (getGestureInProgress()) return
       const { from, to } = getTransitionInfo()
       onChangeComplete(from, to)
-      setInternalIndex(i => i + getIndexDelta())
+      setInternalIndex((i) => i + getIndexDelta())
       setIndexDelta(0)
       setTransitionInfo({ from: 0, to: 0 })
       setIsOngoingAnimation(false)
@@ -569,7 +562,7 @@ const GestureSupportingBodyContainer = memo(
             }
 
             if (indexAdjustment) {
-              setActiveIndex(i => i + indexAdjustment)
+              setActiveIndex((i) => i + indexAdjustment)
               setGestureInProgress(false)
               setMovementDirection(0)
               setTransitionInfo({
@@ -620,7 +613,7 @@ const GestureSupportingBodyContainer = memo(
           } else {
             // Set new active index and let
             // the regular animations take us there.
-            setActiveIndex(_ => newActiveIndex)
+            setActiveIndex((_) => newActiveIndex)
             window.scrollTo(0, initialScrollOffset)
             setTransitionInfo({ from: activeIndex, to: newActiveIndex })
           }
@@ -660,8 +653,7 @@ const GestureSupportingBodyContainer = memo(
           containerClassName
         )}
         ref={containerCallbackRef}
-        style={containerStyle as CSSProperties}
-      >
+        style={containerStyle as CSSProperties}>
         <animated.div
           className={styles.elementScrollContainer}
           {...bind()}
@@ -669,8 +661,7 @@ const GestureSupportingBodyContainer = memo(
             // @ts-ignore
             transform: scrollContainerProps.x.interpolate(interpX),
             width: containerWidth * elements.length
-          }}
-        >
+          }}>
           {(() => {
             let nextIndex = -1
             if (internalIndex !== activeIndex) {
@@ -687,7 +678,7 @@ const GestureSupportingBodyContainer = memo(
                 getCachedIndices().has(i)
 
               if (shouldRender) {
-                setCachedIndicies(s => s.add(i))
+                setCachedIndicies((s) => s.add(i))
               }
 
               // If we're not transitioning, set
@@ -707,8 +698,7 @@ const GestureSupportingBodyContainer = memo(
                   style={style}
                   className={cn(styles.elementWrapper, {
                     [styles.isDragging]: getGestureInProgress()
-                  })}
-                >
+                  })}>
                   {shouldRender && e}
                 </div>
               )
@@ -748,9 +738,8 @@ const BodyContainer = memo(
     const [activeTransitions, setActiveTransitions] = useState(-1)
     // NOTE: The height of the parent container must be at least the hight of its tallest
     // child element so that while transitioning the content is not cut off.
-    const [transitionContainerHeight, setTransitionContainerHeight] = useState(
-      containerHeight
-    )
+    const [transitionContainerHeight, setTransitionContainerHeight] =
+      useState(containerHeight)
     useEffect(() => {
       if (activeTransitions > 0) {
         setTransitionContainerHeight(
@@ -780,7 +769,7 @@ const BodyContainer = memo(
         }
       },
       enter: (_: any) => {
-        setActiveTransitions(t => t + 1)
+        setActiveTransitions((t) => t + 1)
         return {
           transform: 'translate3d(0px, 0px, 0px)',
           opacity: 1
@@ -797,10 +786,10 @@ const BodyContainer = memo(
         }
       },
       onDestroyed: () => {
-        setActiveTransitions(t => t - 1)
+        setActiveTransitions((t) => t - 1)
         didTransitionCallback()
       },
-      config: key => {
+      config: (key) => {
         return isMobile
           ? {} // use default config for mobile
           : key === activeIndex
@@ -828,8 +817,7 @@ const BodyContainer = memo(
         style={{
           height: `${transitionContainerHeight}px`,
           ...(containerStyle as object)
-        }}
-      >
+        }}>
         {transitions.map(({ item, props, key }) => (
           <animated.div
             key={key}
@@ -839,8 +827,7 @@ const BodyContainer = memo(
               ...elementStyle
             }}
             ref={elementCallbackRef}
-            className={cn(styles.elementWrapper, elementClassName)}
-          >
+            className={cn(styles.elementWrapper, elementClassName)}>
             {elements[item]}
           </animated.div>
         ))}
@@ -1001,9 +988,9 @@ const useTabs = ({
 
   // Find the starting index
   const controlledIndex = isControlled
-    ? tabs.findIndex(t => t.label === selectedTabLabel)
+    ? tabs.findIndex((t) => t.label === selectedTabLabel)
     : initialTab
-    ? tabs.findIndex(t => t.label === initialTab)
+    ? tabs.findIndex((t) => t.label === initialTab)
     : 0
   const [activeIndex, setActiveIndex] = useState(controlledIndex)
 
@@ -1095,7 +1082,7 @@ const useTabs = ({
     [isMobile, isControlled, onChangeComplete, activeIndex]
   )
 
-  const tabBarKey = tabs.map(t => t.label).join('-')
+  const tabBarKey = tabs.map((t) => t.label).join('-')
 
   const MemoizedTabBar = useMemo(
     () => (

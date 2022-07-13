@@ -106,9 +106,8 @@ export const ConfirmCredentials = (props: ConfirmCredentialsProps) => {
         <Spring
           from={{ opacity: 0 }}
           to={{ opacity: 1 }}
-          config={{ duration: 1000 }}
-        >
-          {animProps => (
+          config={{ duration: 1000 }}>
+          {(animProps) => (
             <StatusMessage
               status='error'
               containerStyle={animProps}

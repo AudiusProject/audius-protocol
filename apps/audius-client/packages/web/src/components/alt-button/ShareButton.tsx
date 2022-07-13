@@ -41,7 +41,7 @@ const ShareButton = ({
       style={{
         backgroundImage: `url(${icon})`
       }}
-      onClick={e => {
+      onClick={(e) => {
         onClick(e)
         stopPropagation && e.stopPropagation()
       }}

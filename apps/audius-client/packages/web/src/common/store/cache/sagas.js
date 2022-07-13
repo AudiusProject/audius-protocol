@@ -21,7 +21,7 @@ const isMissingFields = (cacheEntry, requiredFields) => {
 }
 
 // If timestamp provided, check if expired
-const isExpired = timestamp => {
+const isExpired = (timestamp) => {
   if (timestamp) return timestamp + DEFAULT_ENTRY_TTL < Date.now()
   return false
 }
@@ -87,7 +87,7 @@ export function* retrieve({
 
   // Figure out which IDs we need to retrive from source
   const idsToFetch = []
-  uniqueIds.forEach(id => {
+  uniqueIds.forEach((id) => {
     if (
       !(id in cachedEntries) ||
       isMissingFields(cachedEntries[id], requiredFields) ||
@@ -137,7 +137,7 @@ function* retrieveFromSourceThenCache({
     yield put(
       cacheActions.setStatus(
         kind,
-        idsToFetch.map(id => ({ id, status: Status.LOADING }))
+        idsToFetch.map((id) => ({ id, status: Status.LOADING }))
       )
     )
   }
@@ -159,7 +159,7 @@ function* retrieveFromSourceThenCache({
 
     // Either add or update the cache. If we're doing a cache refresh post load, it should
     // be an update.
-    const cacheMetadata = metadatas.map(m => ({
+    const cacheMetadata = metadatas.map((m) => ({
       id: m[idField],
       uid: uids[m[idField]],
       metadata: m
@@ -181,14 +181,14 @@ function* retrieveFromSourceThenCache({
     yield put(
       cacheActions.setStatus(
         kind,
-        idsToFetch.map(id => ({ id, status: Status.SUCCESS }))
+        idsToFetch.map((id) => ({ id, status: Status.SUCCESS }))
       )
     )
   } else {
     yield put(
       cacheActions.setStatus(
         kind,
-        idsToFetch.map(id => ({ id, status: Status.ERROR }))
+        idsToFetch.map((id) => ({ id, status: Status.ERROR }))
       )
     )
   }
@@ -200,12 +200,12 @@ export function* add(kind, entries, replace, persist) {
   const cache = yield select(getCache, { kind })
   const confirmCallsInCache = pick(
     cache.entries,
-    Object.keys(confirmCalls).map(kindId => getIdFromKindId(kindId))
+    Object.keys(confirmCalls).map((kindId) => getIdFromKindId(kindId))
   )
 
   const entriesToAdd = []
   const entriesToSubscribe = []
-  entries.forEach(entry => {
+  entries.forEach((entry) => {
     // If something is confirming and in the cache, we probably don't
     // want to replace it (unless explicit) because we would lose client
     // state, e.g. "has_current_user_reposted"
@@ -241,14 +241,14 @@ function* watchUnsubscribe() {
 
     // Remove all transitive subscriptions.
     const transitiveSubscriptions = {} // keyed by Kind
-    unsubscribers.forEach(s => {
+    unsubscribers.forEach((s) => {
       const { id = cache.uids[s.uid] } = s
       if (
         id in cache.subscriptions &&
         cache.subscribers[id] &&
         cache.subscribers[id].size <= 1
       ) {
-        cache.subscriptions[id].forEach(subscription => {
+        cache.subscriptions[id].forEach((subscription) => {
           if (!transitiveSubscriptions[subscription.kind]) {
             transitiveSubscriptions[subscription.kind] = [
               { uid: subscription.uid }
@@ -262,7 +262,7 @@ function* watchUnsubscribe() {
       }
     })
     yield all(
-      Object.keys(transitiveSubscriptions).map(subscriptionKind =>
+      Object.keys(transitiveSubscriptions).map((subscriptionKind) =>
         put(
           cacheActions.unsubscribe(
             subscriptionKind,
@@ -282,7 +282,7 @@ function* watchUnsubscribeSucceeded() {
     const cache = yield select(getCache, { kind })
 
     const idsToRemove = []
-    unsubscribers.forEach(s => {
+    unsubscribers.forEach((s) => {
       const { id } = s
       if (id && id in cache.subscribers && cache.subscribers[id].size === 0) {
         idsToRemove.push(id)

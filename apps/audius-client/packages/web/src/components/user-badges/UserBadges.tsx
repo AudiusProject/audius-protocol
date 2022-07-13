@@ -65,8 +65,8 @@ const UserBadges = ({
   isVerifiedOverride,
   overrideTier
 }: UserBadgesProps) => {
-  let { tier, isVerified } = useSelectTierInfo(userId)
-  tier = overrideTier || tier
+  const { tier: currentTier, isVerified } = useSelectTierInfo(userId)
+  const tier = overrideTier || currentTier
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
   const audioBadge = tierMap[tier as BadgeTier]
   const hasContent = isVerifiedOverride ?? (isVerified || audioBadge)
@@ -76,8 +76,7 @@ const UserBadges = ({
       <span
         className={cn(styles.inlineContainer, className, {
           [noContentClassName]: !hasContent
-        })}
-      >
+        })}>
         {(isVerifiedOverride ?? isVerified) && (
           <IconVerified height={badgeSize} width={badgeSize} />
         )}
@@ -90,8 +89,7 @@ const UserBadges = ({
     <div
       className={cn(styles.container, className, {
         [noContentClassName]: !hasContent
-      })}
-    >
+      })}>
       {(isVerifiedOverride ?? isVerified) && (
         <IconVerified height={badgeSize} width={badgeSize} />
       )}

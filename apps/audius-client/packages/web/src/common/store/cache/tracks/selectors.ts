@@ -34,7 +34,7 @@ export const getTracks = (
 ) => {
   if (props && props.ids) {
     const tracks: { [id: number]: Track } = {}
-    props.ids.forEach(id => {
+    props.ids.forEach((id) => {
       const track = getTrack(state, { id })
       if (track) {
         tracks[id] = track
@@ -43,7 +43,7 @@ export const getTracks = (
     return tracks
   } else if (props && props.uids) {
     const tracks: { [id: number]: Track } = {}
-    props.uids.forEach(uid => {
+    props.uids.forEach((uid) => {
       const track = getTrack(state, { uid })
       if (track) {
         tracks[track.track_id] = track
@@ -52,7 +52,7 @@ export const getTracks = (
     return tracks
   } else if (props && props.permalinks) {
     const tracks: { [permalink: string]: Track } = {}
-    props.permalinks.forEach(permalink => {
+    props.permalinks.forEach((permalink) => {
       const track = getTrack(state, { permalink })
       if (track) tracks[permalink] = track
     })
@@ -71,7 +71,7 @@ export const getTracksByUid = (state: CommonState) => {
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   const statuses: { [id: number]: Status } = {}
-  props.ids.forEach(id => {
+  props.ids.forEach((id) => {
     const status = getStatus(state, { id })
     if (status) {
       statuses[id] = status
