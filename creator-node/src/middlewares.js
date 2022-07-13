@@ -246,7 +246,16 @@ async function ensureStorageMiddleware(req, res, next) {
 }
 
 /**
- * Issue SyncRequests to both secondaries, and wait for at least one to sync before returning
+ * Issue sync requests to both secondaries, and wait for at least one to sync before returning.
+ * If write quorum is enforced (determined by header + env var + ignoreWriteQuorum param) and no secondary
+ * completes a sync in time, then the function throws an error.
+ *
+ * Order of precedence for determining if write quorum is enforced:
+ * - If ignoreWriteQuorum param is passed, don't enforce write quorum regardless of header or env var
+ * - If client passes Enforce-Write-Quorum header as false, don't enforce write quorum regardless of the enforceWriteQuorum env var
+ * - If client passes Enforce-Write-Quorum header as true, enforce write quorum regardless of the enforceWriteQuorum env var
+ * - If client doesn't pass Enforce-Write-Quorum header, enforce write quorum if enforceWriteQuorum env var is true
+ *
  * @dev TODO - move out of middlewares layer because it's not used as middleware -- just as a function some routes call
  * @param ignoreWriteQuorum true if write quorum should not be enforced (don't fail the request if write quorum fails)
  */
@@ -267,8 +276,6 @@ async function issueAndWaitForSecondarySyncRequests(
   const pollingDurationMs =
     req.header('Polling-Duration-ms') ||
     config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
-  // Enforce-Write-Quorum header always takes precedence over env var if explicitly defined.
-  // Empty/undefined header means enforceWriteQuorum env var decides if write quorum is enabled
   // We have to support string and boolean until libs updates axios to v0.20.0 because axios has a
   // bug where it converts null into an object, so we send the value as a string.
   // See: https://github.com/axios/axios/issues/2223
