@@ -57,7 +57,7 @@ export class AudiusContracts {
   PlaylistFactoryClient: PlaylistFactoryClient
   UserLibraryFactoryClient: UserLibraryFactoryClient
   IPLDBlacklistFactoryClient: IPLDBlacklistFactoryClient
-  EntityManagerClient: EntityManagerClient
+  EntityManagerClient: EntityManagerClient | undefined
   contractClients: ContractClient[]
   UserReplicaSetManagerClient: UserReplicaSetManagerClient | undefined | null
   contracts: Record<string, string> | undefined
@@ -132,6 +132,15 @@ export class AudiusContracts {
       this.logger
     )
 
+    this.contractClients = [
+      this.UserFactoryClient,
+      this.TrackFactoryClient,
+      this.SocialFeatureFactoryClient,
+      this.PlaylistFactoryClient,
+      this.UserLibraryFactoryClient,
+      this.IPLDBlacklistFactoryClient
+    ]
+
     if (this.entityManagerAddress) {
       this.EntityManagerClient = new EntityManagerClient(
         this.web3Manager,
@@ -141,17 +150,8 @@ export class AudiusContracts {
         this.logger,
         this.entityManagerAddress
       )
+      this.contractClients.push(this.EntityManagerClient)
     }
-
-    this.contractClients = [
-      this.UserFactoryClient,
-      this.TrackFactoryClient,
-      this.SocialFeatureFactoryClient,
-      this.PlaylistFactoryClient,
-      this.UserLibraryFactoryClient,
-      this.IPLDBlacklistFactoryClient,
-      this.EntityManagerClient
-    ]
   }
 
   async init() {
