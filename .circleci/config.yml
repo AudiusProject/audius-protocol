@@ -102,15 +102,15 @@ jobs:
             # Stop GCP box, can't take an image from a running VM
             gcloud compute instances stop $GCLOUD_VM_NAME
 
-            # Delete image with the same name (if exists)
-            gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
+            # # Delete image with the same name (if exists)
+            # gcloud compute images delete $BAKE_IMAGE_NAME --quiet || true
 
-            # Create the new CI bake image
-            gcloud compute images create "$BAKE_IMAGE_NAME" \
-              --project="$GOOGLE_PROJECT_ID" \
-              --source-disk="$GCLOUD_VM_NAME" \
-              --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
-              --storage-location=us
+            # # Create the new CI bake image
+            # gcloud compute images create "$BAKE_IMAGE_NAME" \
+            #   --project="$GOOGLE_PROJECT_ID" \
+            #   --source-disk="$GCLOUD_VM_NAME" \
+            #   --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
+            #   --storage-location=us
 
   test-mad-dog-e2e:
     parameters:
@@ -737,6 +737,10 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
+      - bake-gcp-dev-image:
+          context:
+            - GCP2
+          name: bake-gcp-dev-image
       - test-libs:
           name: test-libs
       - docker-build-and-push:
