@@ -7,9 +7,19 @@ import {
 import { Nullable } from 'audius-client/src/common/utils/typeUtils'
 import { View, PanResponderGestureState, PanResponder } from 'react-native'
 
+import { makeStyles } from 'app/styles'
+
 import { NotificationsDrawerNavigationContext } from '../NotificationsDrawerNavigationContext'
 
 import { reactionMap } from './reactions'
+
+const useStyles = makeStyles(() => ({
+  root: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center'
+  }
+}))
 
 type PositionEntries = [ReactionTypes, { x: number; width: number }][]
 
@@ -19,21 +29,34 @@ type ReactionListProps = {
   isVisible: boolean
 }
 
+const initialPositions = {
+  fire: { x: 0, width: 0 },
+  heart: { x: 0, width: 0 },
+  party: { x: 0, width: 0 },
+  explode: { x: 0, width: 0 }
+}
+
+type Positions = { [k in ReactionTypes]: { x: number; width: number } }
+
+/*
+ * List of reactions that allows a user to select a reaction by pressing,
+ * or pressHolding + dragging.
+ *
+ * Implements gesture handler to track user drag position and presses, providing
+ * each reaction one of the following statuses: idle/interacting/selected/unselected
+ */
 export const ReactionList = (props: ReactionListProps) => {
+  const styles = useStyles()
   const { selectedReaction, onChange, isVisible } = props
-  const interactingRef = useRef<ReactionTypes | null>(null)
+  // The current reaction the user is interacting with.
+  // Note this needs to be a ref since the guesture handler is also a ref
+  const interactingReactionRef = useRef<ReactionTypes | null>(null)
   const { setGesturesDisabled } = useContext(
     NotificationsDrawerNavigationContext
   )
+  // Whether or not the user is currently interacting with the reactions
   const [interacting, setInteracting] = useState<ReactionTypes | null>(null)
-  const positions = useRef<{
-    [k in ReactionTypes]: { x: number; width: number }
-  }>({
-    fire: { x: 0, width: 0 },
-    heart: { x: 0, width: 0 },
-    party: { x: 0, width: 0 },
-    explode: { x: 0, width: 0 }
-  })
+  const positions = useRef<Positions>(initialPositions)
 
   const handleGesture = useCallback(
     (_, gestureState: PanResponderGestureState) => {
@@ -43,6 +66,8 @@ export const ReactionList = (props: ReactionListProps) => {
         positions.current
       ) as PositionEntries
 
+      // based on the current x0 and moveX, determine which reaction the
+      // user is interacting with.
       const currentReaction = positionEntries.find(([, { x, width }]) => {
         const currentPosition = moveX || x0
         return currentPosition > x && currentPosition <= x + width
@@ -50,46 +75,45 @@ export const ReactionList = (props: ReactionListProps) => {
 
       if (currentReaction) {
         const [reactionType] = currentReaction
-        interactingRef.current = reactionType
+        interactingReactionRef.current = reactionType
         setInteracting(reactionType as ReactionTypes)
       } else {
-        interactingRef.current = null
+        interactingReactionRef.current = null
         setInteracting(null)
       }
     },
     []
   )
 
+  const handlePanResponderRelease = useCallback(() => {
+    onChange(interactingReactionRef.current)
+    interactingReactionRef.current = null
+    setInteracting(null)
+    setGesturesDisabled?.(false)
+  }, [onChange, setGesturesDisabled])
+
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (e, gestureState) => {
         setGesturesDisabled?.(true)
         handleGesture(e, gestureState)
       },
       onPanResponderMove: handleGesture,
-      onPanResponderRelease: () => {
-        onChange(interactingRef.current)
-        interactingRef.current = null
-        setInteracting(null)
-        setGesturesDisabled?.(false)
-      },
+      onPanResponderRelease: handlePanResponderRelease,
+      onPanResponderTerminate: handlePanResponderRelease,
+      onMoveShouldSetPanResponder: () => true,
       onStartShouldSetPanResponderCapture: () => true,
-      onMoveShouldSetPanResponderCapture: () => true
+      onMoveShouldSetPanResponderCapture: () => true,
+      onStartShouldSetPanResponder: () => true
     })
   )
 
   return (
     <View>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          alignSelf: 'center'
-        }}
-        {...panResponder.current.panHandlers}>
+      <View style={styles.root} {...panResponder.current.panHandlers}>
         {reactionOrder.map((reactionType) => {
           const Reaction = reactionMap[reactionType]
+
           const status =
             selectedReaction === reactionType
               ? 'selected'
@@ -98,6 +122,7 @@ export const ReactionList = (props: ReactionListProps) => {
               : selectedReaction
               ? 'unselected'
               : 'idle'
+
           return (
             <Reaction
               key={reactionType}
