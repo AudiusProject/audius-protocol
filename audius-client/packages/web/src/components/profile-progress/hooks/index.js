@@ -8,8 +8,8 @@ import { make } from 'store/analytics/actions'
 
 const COMPLETION_DISMISSAL_DELAY_MSEC = 3 * 1000
 
-const getIsComplete = completionStages =>
-  completionStages.every(cur => cur.isCompleted)
+const getIsComplete = (completionStages) =>
+  completionStages.every((cur) => cur.isCompleted)
 
 /**
  * useProfileCompletionDismissal encapsulates the logic about whether a profile

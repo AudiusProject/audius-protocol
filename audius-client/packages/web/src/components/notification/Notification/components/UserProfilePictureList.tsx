@@ -58,9 +58,9 @@ export const UserProfilePictureList = ({
   return (
     <div className={styles.root}>
       {users
-        .filter(u => !u.is_deactivated)
+        .filter((u) => !u.is_deactivated)
         .slice(0, sliceLimit)
-        .map(user => (
+        .map((user) => (
           <ProfilePicture
             key={user.user_id}
             className={cn(styles.profilePicture, profilePictureClassname, {
@@ -77,8 +77,7 @@ export const UserProfilePictureList = ({
           <div
             className={cn(styles.profilePictureExtraRoot, {
               [styles.disabled]: disableProfileClick
-            })}
-          >
+            })}>
             <ProfilePicture
               disablePopover
               className={cn(

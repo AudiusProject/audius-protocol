@@ -27,8 +27,7 @@ export const DeactivateAccountConfirmationModal = ({
       onClose={onClose}
       showDismissButton
       showTitleHeader
-      title={messages.confirmTitle}
-    >
+      title={messages.confirmTitle}>
       <div className={styles.container}>
         {isLoading ? (
           <LoadingSpinnerFullPage />

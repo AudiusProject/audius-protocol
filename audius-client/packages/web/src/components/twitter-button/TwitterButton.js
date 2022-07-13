@@ -5,7 +5,7 @@ import { ReactComponent as IconTwitter } from 'assets/img/iconTwitterBird.svg'
 
 import styles from './TwitterButton.module.css'
 
-const TwitterButton = props => {
+const TwitterButton = (props) => {
   const buttonClassNames = cn(props.className, styles.button, styles.twitter, {
     [styles.verified]: props.textLabel === 'Verified',
     [styles.notVerified]: !props.textLabel === 'Verify',
@@ -24,8 +24,7 @@ const TwitterButton = props => {
       <span
         className={cn('btnTextLabel', styles.textLabel, {
           [props.textClassName]: !!props.textClassName
-        })}
-      >
+        })}>
         {props.textLabel}
       </span>
     </div>

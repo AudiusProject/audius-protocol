@@ -44,10 +44,10 @@ export const TrackTile = (props: LineupItemProps) => {
   // Using isEqual as the equality function to prevent rerenders due to object references
   // not being preserved when syncing redux state from client.
   // This can be removed when no longer dependent on web client
-  const track = useSelectorWeb(state => getTrack(state, { uid }), isEqual)
+  const track = useSelectorWeb((state) => getTrack(state, { uid }), isEqual)
 
   const user = useSelectorWeb(
-    state => getUserFromTrack(state, { uid }),
+    (state) => getUserFromTrack(state, { uid }),
     isEqual
   )
 

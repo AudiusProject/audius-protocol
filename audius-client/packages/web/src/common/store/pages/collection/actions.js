@@ -21,7 +21,7 @@ export const fetchCollectionSucceeded = (
   userUid
 })
 
-export const fetchCollectionFailed = userUid => ({
+export const fetchCollectionFailed = (userUid) => ({
   type: FETCH_COLLECTION_FAILED,
   userUid
 })
@@ -32,7 +32,7 @@ export const resetCollection = (collectionUid, userUid) => ({
   userUid
 })
 
-export const setSmartCollection = smartCollectionVariant => ({
+export const setSmartCollection = (smartCollectionVariant) => ({
   type: SET_SMART_COLLECTION,
   smartCollectionVariant
 })

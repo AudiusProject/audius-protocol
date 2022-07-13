@@ -81,7 +81,7 @@ const TrackList = ({
   }
 
   // The dividers above and belove the active track should be hidden
-  const activeIndex = tracks.findIndex(track => track.isActive)
+  const activeIndex = tracks.findIndex((track) => track.isActive)
   const hideDivider = (idx: number) =>
     activeIndex >= 0 && (activeIndex === idx || activeIndex === idx - 1)
 
@@ -93,8 +93,7 @@ const TrackList = ({
             className={cn(styles.divider, {
               [styles.hideDivider]: hideDivider(idx),
               [styles.noMargin]: noDividerMargin
-            })}
-          ></div>
+            })}></div>
         ) : null}
         <TrackListItem
           index={idx}
@@ -144,8 +143,7 @@ const TrackList = ({
                 ...provided.draggableProps.style,
                 ...provided.dragHandleProps.style,
                 ...updatedStyles
-              }}
-            >
+              }}>
               {listItem(snapshot.isDragging)}
             </div>
           )
@@ -160,14 +158,12 @@ const TrackList = ({
     <div
       className={cn(styles.trackListContainer, containerClassName, {
         [styles.border]: showBorder
-      })}
-    >
+      })}>
       {isReorderable ? (
         <DragDropContext
           onDragEnd={onDragEnd}
           onDragStart={onDragStart}
-          onDragUpdate={onDragUpdate}
-        >
+          onDragUpdate={onDragUpdate}>
           <Droppable droppableId='track-list-droppable' type='TRACK'>
             {(provided: any, snapshot: any) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>

@@ -95,7 +95,7 @@ export const Scrubber = ({
   }, [onPressIn, setIsDragging])
 
   const handlePressOut = useCallback(
-    percentComplete => {
+    (percentComplete) => {
       if (global.progress) {
         if (duration) {
           setTimestampStart(formatSeconds(percentComplete * duration))
@@ -115,7 +115,7 @@ export const Scrubber = ({
   const seekInterval = useRef<NodeJS.Timeout | null>(null)
 
   const onDrag = useCallback(
-    percentComplete => {
+    (percentComplete) => {
       if (global.progress && duration) {
         setDragSeconds(formatSeconds(percentComplete * duration))
       }
@@ -154,8 +154,7 @@ export const Scrubber = ({
       <Text
         style={[styles.timestamp, { textAlign: 'right' }]}
         weight='regular'
-        numberOfLines={1}
-      >
+        numberOfLines={1}>
         {dragSeconds || timestampStart}
       </Text>
       <Slider

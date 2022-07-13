@@ -29,17 +29,13 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 export const ProfileSocials = () => {
-  const {
-    handle,
-    twitter_handle,
-    instagram_handle,
-    tiktok_handle
-  } = useSelectProfile([
-    'handle',
-    'twitter_handle',
-    'instagram_handle',
-    'tiktok_handle'
-  ])
+  const { handle, twitter_handle, instagram_handle, tiktok_handle } =
+    useSelectProfile([
+      'handle',
+      'twitter_handle',
+      'instagram_handle',
+      'tiktok_handle'
+    ])
 
   const styles = useStyles()
   const sanitizedHandle = handle.replace('@', '')

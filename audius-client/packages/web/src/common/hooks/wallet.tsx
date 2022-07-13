@@ -12,7 +12,7 @@ const getTierAndVerifiedForUser = makeGetTierAndVerifiedForUser()
  * @param userId
  */
 export const useSelectTierInfo = (userId: ID) => {
-  return useSelector(state => {
+  return useSelector((state) => {
     return getTierAndVerifiedForUser(state, { userId })
   })
 }

@@ -22,8 +22,8 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   )
   const currentUserId = accountUser?.user_id
   let users = metadataArray
-    .filter(m => m.user)
-    .map(m => {
+    .filter((m) => m.user)
+    .map((m) => {
       const track = m as TrackMetadata & { user: User }
       return {
         id: track.user.user_id,
@@ -36,7 +36,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
 
   // Don't add duplicate users or self
   users = uniqBy(users, 'id')
-  users = users.filter(user => !(currentUserId && user.id === currentUserId))
+  users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
   yield put(
     cacheActions.add(Kind.USERS, users, /* replace */ false, /* persist */ true)

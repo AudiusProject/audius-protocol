@@ -335,83 +335,85 @@ export function* watchNext() {
 }
 
 export function* watchQueueAutoplay() {
-  yield* takeEvery(queueAutoplay.type, function* (
-    action: ReturnType<typeof queueAutoplay>
-  ) {
-    const { genre, exclusionList, currentUserId } = action.payload
-    const tracks = yield* call(
-      getRecommendedTracks,
-      genre,
-      exclusionList,
-      currentUserId
-    )
-    const recommendedTracks = tracks.map(({ track_id }) => ({
-      id: track_id,
-      uid: makeUid(Kind.TRACKS, track_id),
-      source: Source.RECOMMENDED_TRACKS
-    }))
-    yield* put(add({ entries: recommendedTracks }))
-  })
+  yield* takeEvery(
+    queueAutoplay.type,
+    function* (action: ReturnType<typeof queueAutoplay>) {
+      const { genre, exclusionList, currentUserId } = action.payload
+      const tracks = yield* call(
+        getRecommendedTracks,
+        genre,
+        exclusionList,
+        currentUserId
+      )
+      const recommendedTracks = tracks.map(({ track_id }) => ({
+        id: track_id,
+        uid: makeUid(Kind.TRACKS, track_id),
+        source: Source.RECOMMENDED_TRACKS
+      }))
+      yield* put(add({ entries: recommendedTracks }))
+    }
+  )
 }
 
 export function* watchPrevious() {
-  yield* takeEvery(previous.type, function* (
-    action: ReturnType<typeof previous>
-  ) {
-    // If the queue has undershot the beginning, reset the song
-    const undershot = yield* select(getUndershot)
-    if (undershot) {
-      yield* put(playerActions.reset({ shouldAutoplay: false }))
-      return
-    }
-
-    // For the audio nft playlist flow
-    const collectible = yield* select(getCollectible)
-    if (collectible) {
-      const event = make(Name.PLAYBACK_PLAY, {
-        id: `${collectible.id}`,
-        source: PlaybackSource.PASSIVE
-      })
-      yield* put(event)
-
-      const source = yield* select(getSource)
-      if (source) {
-        yield* put(play({ collectible, source }))
+  yield* takeEvery(
+    previous.type,
+    function* (action: ReturnType<typeof previous>) {
+      // If the queue has undershot the beginning, reset the song
+      const undershot = yield* select(getUndershot)
+      if (undershot) {
+        yield* put(playerActions.reset({ shouldAutoplay: false }))
+        return
       }
-      return
-    }
 
-    const uid = yield* select(getUid)
-    const id = (yield* select(getQueueTrackId)) as Nullable<ID>
-    const track = yield* select(getTrack, { id })
-    const source = yield* select(getSource)
-    const user = yield* select(getUser, { id: track?.owner_id })
-
-    // If we move to a previous song that's been
-    // deleted, skip over it.
-    if (track && (track.is_delete || user?.is_deactivated)) {
-      yield* put(previous({}))
-    } else {
-      const index = yield* select(getIndex)
-      if (index >= 0) {
-        yield* put(play({ uid, trackId: id, source }))
+      // For the audio nft playlist flow
+      const collectible = yield* select(getCollectible)
+      if (collectible) {
         const event = make(Name.PLAYBACK_PLAY, {
-          id: `${id}`,
+          id: `${collectible.id}`,
           source: PlaybackSource.PASSIVE
         })
         yield* put(event)
+
+        const source = yield* select(getSource)
+        if (source) {
+          yield* put(play({ collectible, source }))
+        }
+        return
+      }
+
+      const uid = yield* select(getUid)
+      const id = (yield* select(getQueueTrackId)) as Nullable<ID>
+      const track = yield* select(getTrack, { id })
+      const source = yield* select(getSource)
+      const user = yield* select(getUser, { id: track?.owner_id })
+
+      // If we move to a previous song that's been
+      // deleted, skip over it.
+      if (track && (track.is_delete || user?.is_deactivated)) {
+        yield* put(previous({}))
       } else {
-        yield* put(playerActions.stop({}))
+        const index = yield* select(getIndex)
+        if (index >= 0) {
+          yield* put(play({ uid, trackId: id, source }))
+          const event = make(Name.PLAYBACK_PLAY, {
+            id: `${id}`,
+            source: PlaybackSource.PASSIVE
+          })
+          yield* put(event)
+        } else {
+          yield* put(playerActions.stop({}))
+        }
       }
     }
-  })
+  )
 }
 
 export function* watchAdd() {
   yield* takeEvery(add.type, function* (action: ReturnType<typeof add>) {
     const { entries } = action.payload
 
-    const subscribers = entries.map(entry => ({
+    const subscribers = entries.map((entry) => ({
       uid: QUEUE_SUBSCRIBER_NAME,
       id: entry.id
     }))

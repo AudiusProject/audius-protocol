@@ -26,13 +26,12 @@ export const createUseRemoteVarHook = <State extends StateWithRemoteConfig>(
     const configLoaded = useSelector((state: State) =>
       isRemoteConfigLoaded<State>(state)
     )
-    // eslint complains about configLoaded as part of the deps array
-    // eslint-disable-next-line
-    const remoteVar = useMemo(() => remoteConfigInstance.getRemoteVar(key), [
-      key,
-      configLoaded,
-      remoteConfigInstance
-    ])
+
+    const remoteVar = useMemo(
+      () => remoteConfigInstance.getRemoteVar(key),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [key, configLoaded, remoteConfigInstance]
+    )
     return remoteVar
   }
 

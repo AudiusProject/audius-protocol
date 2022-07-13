@@ -43,7 +43,7 @@ export const SmartCollectionScreen = ({
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
 
-  const collection = useSelectorWeb(state =>
+  const collection = useSelectorWeb((state) =>
     getCollection(state, { variant: smartCollection.variant })
   )
 
@@ -79,8 +79,7 @@ export const SmartCollectionScreen = ({
     return (
       <LinearGradient
         colors={smartCollection.gradientColors}
-        angle={smartCollection.gradientAngle}
-      >
+        angle={smartCollection.gradientAngle}>
         {Icon ? (
           <View style={styles.imageIcon}>
             <Icon width='100%' height='100%' />
@@ -93,8 +92,7 @@ export const SmartCollectionScreen = ({
   return (
     <VirtualizedScrollView
       listKey={`${playlistName}_Playlist_Screen`}
-      style={styles.root}
-    >
+      style={styles.root}>
       <CollectionScreenDetailsTile
         description={description}
         hasSaved={isSaved}

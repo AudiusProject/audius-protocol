@@ -27,8 +27,7 @@ const ImageLoader = (props: ImageLoadProps) => {
         {
           backgroundColor
         }
-      ]}
-    >
+      ]}>
       <Animated.Image
         onLoad={onLoad}
         {...restProps}

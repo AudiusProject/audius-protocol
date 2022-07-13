@@ -39,19 +39,15 @@ export const BecomeTopSupporter = ({
   amountToTipToBecomeTopSupporter
 }: BecomeTopSupporterProps) => {
   const styles = useStyles()
-  const {
-    white,
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { white, pageHeaderGradientColor1, pageHeaderGradientColor2 } =
+    useThemeColors()
 
   return (
     <LinearGradient
       style={styles.root}
       colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
       useAngle
-      angle={350}
-    >
+      angle={350}>
       <IconTrophy fill={white} width={16} height={16} />
       <Text style={styles.text}>
         {messages.becomeTopSupporterPrefix}

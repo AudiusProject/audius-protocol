@@ -29,8 +29,7 @@ const Stat = ({ number, onClick, title }: StatProps) => {
   return (
     <div
       className={cn(styles.stat, style)}
-      onClick={!zero ? onClick : () => {}}
-    >
+      onClick={!zero ? onClick : () => {}}>
       <div className={styles.number}>{formatCount(number)}</div>
       <div className={styles.title}>{title}</div>
     </div>
@@ -89,7 +88,7 @@ const Stats = ({ size, clickable, stats, userId }: StatsProps) => {
 
   return (
     <div className={cn(styles.stats, sizing)}>
-      {stats.map(stat => (
+      {stats.map((stat) => (
         <Stat
           key={stat.key}
           number={stat.number}

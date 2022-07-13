@@ -91,8 +91,7 @@ const Card = ({
       className={cn(styles.cardContainer, {
         [className!]: !!className
       })}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {updateDot && <UpdateDot />}
       <div className={styles.tileCoverArtContainer}>
         {isUser ? (

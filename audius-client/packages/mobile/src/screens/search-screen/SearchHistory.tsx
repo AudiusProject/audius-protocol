@@ -99,8 +99,7 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
     <TouchableHighlight
       underlayColor={backgroundColor}
       activeOpacity={0.8}
-      onPress={onPress}
-    >
+      onPress={onPress}>
       <View style={itemContainerStyles}>
         <View style={styles.itemTextContainer}>
           <Text numberOfLines={1} style={itemTextStyles}>
@@ -149,8 +148,7 @@ const SearchHistory = () => {
               onPress={onClearHistory}
               style={styles.clearTouchable}
               underlayColor={backgroundColor}
-              activeOpacity={0.8}
-            >
+              activeOpacity={0.8}>
               <View style={styles.clearContainer}>
                 <Text style={clearTextStyle}>{messages.clear}</Text>
               </View>

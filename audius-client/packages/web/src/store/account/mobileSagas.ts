@@ -30,34 +30,33 @@ function* watchFetchAccountFailed() {
 }
 
 function* watchAccountRecovery() {
-  yield takeEvery(MessageType.ACCOUNT_RECOVERY, function* ({
-    login,
-    warning,
-    email
-  }: any) {
-    let entropy = null
-    let isSameAccount = false
+  yield takeEvery(
+    MessageType.ACCOUNT_RECOVERY,
+    function* ({ login, warning, email }: any) {
+      let entropy = null
+      let isSameAccount = false
 
-    if (login) {
-      entropy = atob(login)
-      const oldEntropy = window.localStorage.getItem(ENTROPY_KEY)
-      window.localStorage.setItem(ENTROPY_KEY, entropy)
-      isSameAccount = oldEntropy === entropy
-    }
+      if (login) {
+        entropy = atob(login)
+        const oldEntropy = window.localStorage.getItem(ENTROPY_KEY)
+        window.localStorage.setItem(ENTROPY_KEY, entropy)
+        isSameAccount = oldEntropy === entropy
+      }
 
-    if (warning === 'RECOVERY_DO_NOT_SHARE' && email) {
-      window.localStorage.setItem(RESET_REQUIRED_KEY, email)
-    }
+      if (warning === 'RECOVERY_DO_NOT_SHARE' && email) {
+        window.localStorage.setItem(RESET_REQUIRED_KEY, email)
+      }
 
-    // If it's not the same account,
-    // reload webview to reload libs
-    // with the new entropy
-    if (!isSameAccount) {
-      new ReloadMessage().send()
-    } else {
-      yield put(setNeedsAccountRecovery())
+      // If it's not the same account,
+      // reload webview to reload libs
+      // with the new entropy
+      if (!isSameAccount) {
+        new ReloadMessage().send()
+      } else {
+        yield put(setNeedsAccountRecovery())
+      }
     }
-  })
+  )
 }
 
 export function* setHasSignedInOnMobile(account: User) {

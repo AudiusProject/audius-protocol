@@ -63,7 +63,7 @@ const TweetEmbed = ({ options, tweetId }: Props) => {
       )}
       <View style={{ width: '100%', height }}>
         <WebView
-          onMessage={event => {
+          onMessage={(event) => {
             setHeight(parseInt(event.nativeEvent.data, 10))
             setIsLoading(false)
           }}
@@ -71,10 +71,10 @@ const TweetEmbed = ({ options, tweetId }: Props) => {
           source={{
             html
           }}
-          onShouldStartLoadWithRequest={request => {
+          onShouldStartLoadWithRequest={(request) => {
             // Open subsequent links in browser
             if (!isLoading) {
-              Linking.canOpenURL(request.url).then(supported => {
+              Linking.canOpenURL(request.url).then((supported) => {
                 if (supported) {
                   Linking.openURL(request.url)
                 }

@@ -117,8 +117,7 @@ const ConnectedBrowserPushConfirmationModal = ({
       headerContainerClassName={styles.headerContainerClassName}
       bodyClassName={styles.modalBody}
       contentHorizontalPadding={24}
-      allowScroll={false}
-    >
+      allowScroll={false}>
       <div>
         <div className={styles.textBody}>
           <div className={styles.description}>{messages.description}</div>

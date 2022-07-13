@@ -43,22 +43,21 @@ type TilePressableProps = Pick<
   'onPress' | 'onPressIn' | 'onPressOut'
 >
 
-type TileOwnProps<
-  TileComponentType extends ComponentType = ComponentType
-> = TilePressableProps & {
-  children: ReactNode
-  scaleTo?: number
-  style?: StyleProp<ViewStyle>
-  styles?: StylesProp<{
-    // styles for root element
-    root: ViewStyle
-    // styles for tile element, the view that establishes the border
-    tile: ViewStyle
-    // styles for the inner view that displays the tile content
-    content: ViewStyle
-  }>
-  as?: TileComponentType
-}
+type TileOwnProps<TileComponentType extends ComponentType = ComponentType> =
+  TilePressableProps & {
+    children: ReactNode
+    scaleTo?: number
+    style?: StyleProp<ViewStyle>
+    styles?: StylesProp<{
+      // styles for root element
+      root: ViewStyle
+      // styles for tile element, the view that establishes the border
+      tile: ViewStyle
+      // styles for the inner view that displays the tile content
+      content: ViewStyle
+    }>
+    as?: TileComponentType
+  }
 
 export type TileProps<
   TileComponentType extends ComponentType = typeof defaultElement
@@ -112,15 +111,13 @@ export const Tile = <
 
   return (
     <Animated.View
-      style={[style, stylesProp?.root, { transform: [{ scale }] }]}
-    >
+      style={[style, stylesProp?.root, { transform: [{ scale }] }]}>
       <TileComponent style={[styles.tile, stylesProp?.tile]} {...other}>
         <Pressable
           style={[styles.content, stylesProp?.content, { borderRadius: 4 }]}
           onPress={onPress}
           onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-        >
+          onPressOut={handlePressOut}>
           {children}
         </Pressable>
       </TileComponent>

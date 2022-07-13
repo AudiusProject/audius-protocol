@@ -71,7 +71,7 @@ export const TipReceivedNotification = (
   const uiAmount = useUIAudio(amount)
 
   const user = useSelectorWeb(
-    state => getNotificationUser(state, notification),
+    (state) => getNotificationUser(state, notification),
     isEqual
   )
 
@@ -105,8 +105,11 @@ export const TipReceivedNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <View
-        style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}
-      >
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 12
+        }}>
         <ProfilePicture profile={user} />
         <NotificationText>
           <UserNameLink user={user} /> {messages.sent}{' '}

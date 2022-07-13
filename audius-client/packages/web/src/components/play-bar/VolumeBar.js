@@ -11,14 +11,14 @@ import { setupHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 import styles from './VolumeBar.module.css'
 import { Slider } from './slider/Slider'
 
-const getVolumeIcon = volumeLevel => {
+const getVolumeIcon = (volumeLevel) => {
   if (volumeLevel === 0) return IconVolume0
   if (volumeLevel <= 33) return IconVolume1
   if (volumeLevel <= 66) return IconVolume2
   return IconVolume3
 }
 
-const getSavedVolume = defaultVolume => {
+const getSavedVolume = (defaultVolume) => {
   const localStorageVolume = window.localStorage.getItem('volume')
   if (localStorageVolume === null) {
     window.localStorage.setItem('volume', defaultVolume)

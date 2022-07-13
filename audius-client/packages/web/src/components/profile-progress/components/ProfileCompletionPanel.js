@@ -9,7 +9,7 @@ import styles from './ProfileCompletionPanel.module.css'
 
 const strings = {
   dismissText: 'Dismiss',
-  completionText: percentage => `Profile ${percentage}% Complete`
+  completionText: (percentage) => `Profile ${percentage}% Complete`
 }
 
 /**
@@ -30,7 +30,7 @@ const ProfileCompletionPanel = ({ numSteps, stepsComplete, onDismiss }) => {
     <div className={styles.outerPadding}>
       <div className={styles.container}>
         <animated.div className={styles.completionText}>
-          {animatedCompletion.interpolate(v =>
+          {animatedCompletion.interpolate((v) =>
             strings.completionText(v.toFixed())
           )}
         </animated.div>

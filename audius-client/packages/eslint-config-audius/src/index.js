@@ -9,8 +9,7 @@ module.exports = {
     "plugin:jest/recommended",
     "plugin:react/recommended",
     "plugin:import/typescript",
-    "prettier",
-    "prettier-standard/prettier-file",
+    "plugin:prettier/recommended",
   ],
   globals: {
     Atomics: "readonly",
@@ -103,5 +102,13 @@ module.exports = {
         pathGroupsExcludedImportTypes: ["builtin"],
       },
     ],
+  },
+  settings: {
+    jest: {
+      version: 27,
+    },
+    react: {
+      version: "17",
+    },
   },
 };

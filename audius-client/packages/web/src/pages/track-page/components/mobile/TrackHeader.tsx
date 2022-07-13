@@ -176,7 +176,7 @@ const TrackHeader = ({
 
   const record = useRecord()
   const onExternalLinkClick = useCallback(
-    event => {
+    (event) => {
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,
@@ -215,12 +215,11 @@ const TrackHeader = ({
       <>
         {filteredTags.length > 0 ? (
           <div className={styles.tags}>
-            {filteredTags.map(tag => (
+            {filteredTags.map((tag) => (
               <h2
                 key={tag}
                 onClick={() => onClickTag(tag)}
-                className={styles.tag}
-              >
+                className={styles.tag}>
                 {tag}
               </h2>
             ))}
@@ -243,7 +242,7 @@ const TrackHeader = ({
   }
 
   const renderTrackLabels = () => {
-    return trackLabels.map(infoFact => {
+    return trackLabels.map((infoFact) => {
       return (
         <div key={infoFact.label} className={styles.infoFact}>
           <h2 className={styles.infoLabel}>{infoFact.label}</h2>
@@ -268,8 +267,7 @@ const TrackHeader = ({
       hasReposted={coSign.has_remix_author_reposted}
       coSignName={coSign.user.name}
       className={styles.coverArt}
-      userId={coSign.user.user_id}
-    >
+      userId={coSign.user.user_id}>
       <DynamicImage image={image} wrapperClassName={styles.imageWrapper} />
     </CoSign>
   ) : (
@@ -348,8 +346,7 @@ const TrackHeader = ({
       <div
         className={cn(styles.infoSection, {
           [styles.noStats]: isUnlisted && !fieldVisibility.play_count
-        })}
-      >
+        })}>
         {renderTrackLabels()}
       </div>
       {renderDownloadButtons()}

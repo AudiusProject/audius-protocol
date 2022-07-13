@@ -10,7 +10,9 @@ import {
 import { useSelector } from 'utils/reducer'
 
 export const useModalState = (modalName: Modals) => {
-  const modalState = useSelector(state => getModalVisibility(state, modalName))
+  const modalState = useSelector((state) =>
+    getModalVisibility(state, modalName)
+  )
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => {

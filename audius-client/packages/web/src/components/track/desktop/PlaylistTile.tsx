@@ -55,8 +55,7 @@ const PlaylistTile = memo(
         <SimpleBar
           className={cn(styles.playlistTracks, {
             [tracksContainerClassName!]: !!tracksContainerClassName
-          })}
-        >
+          })}>
           {trackList}
         </SimpleBar>
       ),
@@ -83,8 +82,7 @@ const PlaylistTile = memo(
           [styles.small]: size === TrackTileSize.SMALL,
           [styles.large]: size === TrackTileSize.LARGE,
           [styles.disabled]: !!isDisabled
-        })}
-      >
+        })}>
         <TileTrackContainer>
           <TrackTile
             size={size}

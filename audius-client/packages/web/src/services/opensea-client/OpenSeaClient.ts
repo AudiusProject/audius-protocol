@@ -28,7 +28,7 @@ class OpenSeaClient {
   ): Promise<{ asset_events: OpenSeaEvent[] }> {
     return fetch(
       `${client.url}/events?account_address=${wallet}&limit=${limit}&event_type=transfer&only_opensea=false`
-    ).then(r => r.json())
+    ).then((r) => r.json())
   }
 
   async getTransferredCollectiblesForMultipleWallets(
@@ -36,18 +36,20 @@ class OpenSeaClient {
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaEventExtended[]> {
     return Promise.allSettled(
-      wallets.map(wallet =>
+      wallets.map((wallet) =>
         client.getTransferredCollectiblesForWallet(wallet, limit)
       )
-    ).then(results =>
+    ).then((results) =>
       results
         .map((result, i) => ({ result, wallet: wallets[i] }))
         .filter(({ result }) => result.status === 'fulfilled')
         .map(
           ({ result, wallet }) =>
-            (result as PromiseFulfilledResult<{
-              asset_events: OpenSeaEvent[]
-            }>).value.asset_events?.map(event => ({
+            (
+              result as PromiseFulfilledResult<{
+                asset_events: OpenSeaEvent[]
+              }>
+            ).value.asset_events?.map((event) => ({
               ...event,
               asset: { ...event.asset, wallet },
               wallet
@@ -63,7 +65,7 @@ class OpenSeaClient {
   ): Promise<{ asset_events: OpenSeaEvent[] }> {
     return fetch(
       `${client.url}/events?account_address=${wallet}&limit=${limit}&event_type=created&only_opensea=false`
-    ).then(r => r.json())
+    ).then((r) => r.json())
   }
 
   async getCreatedCollectiblesForMultipleWallets(
@@ -71,18 +73,20 @@ class OpenSeaClient {
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaEventExtended[]> {
     return Promise.allSettled(
-      wallets.map(wallet =>
+      wallets.map((wallet) =>
         client.getCreatedCollectiblesForWallet(wallet, limit)
       )
-    ).then(results =>
+    ).then((results) =>
       results
         .map((result, i) => ({ result, wallet: wallets[i] }))
         .filter(({ result }) => result.status === 'fulfilled')
         .map(
           ({ result, wallet }) =>
-            (result as PromiseFulfilledResult<{
-              asset_events: OpenSeaEvent[]
-            }>).value.asset_events?.map(event => ({
+            (
+              result as PromiseFulfilledResult<{
+                asset_events: OpenSeaEvent[]
+              }>
+            ).value.asset_events?.map((event) => ({
               ...event,
               asset: { ...event.asset, wallet },
               wallet
@@ -96,9 +100,9 @@ class OpenSeaClient {
     wallet: string,
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<{ assets: OpenSeaAsset[] }> {
-    return fetch(
-      `${client.url}/assets?owner=${wallet}&limit=${limit}`
-    ).then(r => r.json())
+    return fetch(`${client.url}/assets?owner=${wallet}&limit=${limit}`).then(
+      (r) => r.json()
+    )
   }
 
   async getCollectiblesForMultipleWallets(
@@ -106,16 +110,18 @@ class OpenSeaClient {
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaAssetExtended[]> {
     return Promise.allSettled(
-      wallets.map(wallet => client.getCollectiblesForWallet(wallet, limit))
-    ).then(results =>
+      wallets.map((wallet) => client.getCollectiblesForWallet(wallet, limit))
+    ).then((results) =>
       results
         .map((result, i) => ({ result, wallet: wallets[i] }))
         .filter(({ result }) => result.status === 'fulfilled')
         .map(
           ({ result, wallet }) =>
-            (result as PromiseFulfilledResult<{
-              assets: OpenSeaAsset[]
-            }>).value.assets?.map(asset => ({ ...asset, wallet })) || []
+            (
+              result as PromiseFulfilledResult<{
+                assets: OpenSeaAsset[]
+              }>
+            ).value.assets?.map((asset) => ({ ...asset, wallet })) || []
         )
         .flat()
     )
@@ -128,10 +134,10 @@ class OpenSeaClient {
       client.getTransferredCollectiblesForMultipleWallets(wallets)
     ]).then(async ([assets, creationEvents, transferEvents]) => {
       const filteredAssets = assets.filter(
-        asset => asset && isAssetValid(asset)
+        (asset) => asset && isAssetValid(asset)
       )
       const collectibles = await Promise.all(
-        filteredAssets.map(async asset => await assetToCollectible(asset))
+        filteredAssets.map(async (asset) => await assetToCollectible(asset))
       )
       const collectiblesMap: {
         [key: string]: Collectible
@@ -147,7 +153,7 @@ class OpenSeaClient {
       // Handle transfers from NullAddress as if they were created events
       const firstOwnershipTransferEvents = transferEvents
         .filter(
-          event =>
+          (event) =>
             event?.asset &&
             isAssetValid(event.asset) &&
             !isNotFromNullAddress(event)
@@ -164,7 +170,7 @@ class OpenSeaClient {
           return { ...acc, [id]: curr }
         }, {})
       await Promise.all(
-        Object.entries(firstOwnershipTransferEvents).map(async entry => {
+        Object.entries(firstOwnershipTransferEvents).map(async (entry) => {
           const [id, event] = entry
           if (ownedCollectibleKeySet.has(id)) {
             collectiblesMap[id] = {
@@ -182,8 +188,8 @@ class OpenSeaClient {
       // Handle created events
       await Promise.all(
         creationEvents
-          .filter(event => event?.asset && isAssetValid(event.asset))
-          .map(async event => {
+          .filter((event) => event?.asset && isAssetValid(event.asset))
+          .map(async (event) => {
             const { token_id, asset_contract } = event.asset
             const id = `${token_id}:::${asset_contract?.address ?? ''}`
             if (!ownedCollectibleKeySet.has(id)) {
@@ -197,7 +203,7 @@ class OpenSeaClient {
       // Handle transfers
       const latestTransferEventsMap = transferEvents
         .filter(
-          event =>
+          (event) =>
             event?.asset &&
             isAssetValid(event.asset) &&
             isNotFromNullAddress(event)
@@ -214,7 +220,7 @@ class OpenSeaClient {
           return { ...acc, [id]: curr }
         }, {})
       await Promise.all(
-        Object.values(latestTransferEventsMap).map(async event => {
+        Object.values(latestTransferEventsMap).map(async (event) => {
           const { token_id, asset_contract } = event.asset
           const id = `${token_id}:::${asset_contract?.address ?? ''}`
           if (ownedCollectibleKeySet.has(id)) {

@@ -74,7 +74,7 @@ const SocialLinkInput = ({
       clearTimeout(timeoutRef.current)
       timeoutRef.current = setTimeout(() => {
         if (text.startsWith('@')) {
-          setValue(value => value.slice(1))
+          setValue((value) => value.slice(1))
           onChange(value.slice(1))
         }
       }, 600)
@@ -144,8 +144,7 @@ const SocialLinkInput = ({
       className={cn(styles.socialLinkInput, {
         [styles.focused]: focused,
         [styles.hasValue]: value
-      })}
-    >
+      })}>
       <div className={styles.icon}>{icon}</div>
       {isHandle && <span className={styles.at}>{'@'}</span>}
       <Input

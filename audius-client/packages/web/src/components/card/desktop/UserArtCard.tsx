@@ -60,13 +60,8 @@ const UserArtCard = g(
     setModalVisibility,
     goToRoute
   }) => {
-    const {
-      user_id,
-      _profile_picture_sizes,
-      name,
-      handle,
-      follower_count
-    } = user
+    const { user_id, _profile_picture_sizes, name, handle, follower_count } =
+      user
 
     const goToProfile = useCallback(() => {
       const link = profilePage(handle)
@@ -90,8 +85,7 @@ const UserArtCard = g(
       <div className={cn(styles.card, className)}>
         <PerspectiveCard
           onClick={goToProfile}
-          className={styles.perspectiveCard}
-        >
+          className={styles.perspectiveCard}>
           <DynamicImage
             wrapperClassName={styles.profilePicture}
             image={isLoading ? '' : image}

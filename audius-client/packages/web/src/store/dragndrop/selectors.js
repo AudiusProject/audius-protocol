@@ -1,1 +1,1 @@
-export const getIsDragging = state => state.dragndrop
+export const getIsDragging = (state) => state.dragndrop

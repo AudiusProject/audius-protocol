@@ -40,10 +40,7 @@ const slice = createSlice({
   }
 })
 
-export const {
-  setDownloadedPercentage,
-  setFileInfo,
-  setFetchCancel
-} = slice.actions
+export const { setDownloadedPercentage, setFileInfo, setFetchCancel } =
+  slice.actions
 
 export default slice.reducer

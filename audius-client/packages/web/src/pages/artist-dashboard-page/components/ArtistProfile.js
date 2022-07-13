@@ -9,7 +9,7 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistProfile.module.css'
 
-const ArtistProfile = props => {
+const ArtistProfile = (props) => {
   const profilePicture = useUserProfilePicture(
     props.userId,
     props.profilePictureSizes,

@@ -26,28 +26,30 @@ function* watchFetchSearch() {
 }
 
 function* watchSetSearchSucceeded() {
-  yield takeEvery(searchBarActions.FETCH_SEARCH_SUCCEEDED, function (
-    action: searchBarActions.FetchSearchSucceededAction
-  ) {
-    const results = action.results
-    const searchText = action.searchText
-    const message = new FetchSearchSuccessMessage({
-      query: searchText,
-      results
-    })
-    message.send()
-  })
+  yield takeEvery(
+    searchBarActions.FETCH_SEARCH_SUCCEEDED,
+    function (action: searchBarActions.FetchSearchSucceededAction) {
+      const results = action.results
+      const searchText = action.searchText
+      const message = new FetchSearchSuccessMessage({
+        query: searchText,
+        results
+      })
+      message.send()
+    }
+  )
 }
 
 function* watchSetSearchFailed() {
-  yield takeEvery(searchBarActions.FETCH_SEARCH_FAILED, function (
-    action: searchBarActions.FetchSearchFailedAction
-  ) {
-    const message = new FetchSearchFailureMessage({
-      query: action.searchText
-    })
-    message.send()
-  })
+  yield takeEvery(
+    searchBarActions.FETCH_SEARCH_FAILED,
+    function (action: searchBarActions.FetchSearchFailedAction) {
+      const message = new FetchSearchFailureMessage({
+        query: action.searchText
+      })
+      message.send()
+    }
+  )
 }
 
 const sagas = () => {

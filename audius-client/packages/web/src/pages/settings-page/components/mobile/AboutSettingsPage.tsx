@@ -75,8 +75,7 @@ const AboutSettingsPage = (props: SettingsPageProps) => {
     <Page
       title='About'
       contentClassName={settingsPageStyles.pageContent}
-      containerClassName={settingsPageStyles.page}
-    >
+      containerClassName={settingsPageStyles.page}>
       <div className={settingsPageStyles.bodyContainer}>
         <div className={styles.header}>
           <img src={appIcon} alt='Audius' />

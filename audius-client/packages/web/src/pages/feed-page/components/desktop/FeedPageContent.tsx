@@ -92,8 +92,7 @@ const FeedPageContent = ({
         title={feedTitle}
         description={feedDescription}
         size='large'
-        header={header}
-      >
+        header={header}>
         <Lineup
           emptyElement={
             <EmptyFeed

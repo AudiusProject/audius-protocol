@@ -102,8 +102,7 @@ export const ArtistPopover = ({
   return (
     <Component
       className={cn(styles.popoverContainer, 'artistPopover')}
-      onMouseEnter={onMouseEnter}
-    >
+      onMouseEnter={onMouseEnter}>
       <Popover
         mouseEnterDelay={mouseEnterDelay}
         content={content}
@@ -112,10 +111,9 @@ export const ArtistPopover = ({
         getPopupContainer={popupContainer}
         defaultVisible={false}
         visible={isPopupVisible}
-        onVisibleChange={visible => {
+        onVisibleChange={(visible) => {
           setIsPopupVisible(visible)
-        }}
-      >
+        }}>
         {children}
       </Popover>
     </Component>

@@ -6,10 +6,10 @@ import { useTransition, animated, config } from 'react-spring'
 
 import styles from './SignOnModal.module.css'
 
-export const SignOnModal = props => {
+export const SignOnModal = (props) => {
   const contentRef = useRef()
 
-  const transitions = useTransition(props.backgroundImage, item => item, {
+  const transitions = useTransition(props.backgroundImage, (item) => item, {
     from: { opacity: props.animateImageIn ? 0 : 1 },
     enter: () => {
       if (contentRef.current) {
@@ -30,8 +30,7 @@ export const SignOnModal = props => {
     <div className={cn(styles.modalContainer, props.containerStyles)}>
       <div
         ref={contentRef}
-        className={cn(styles.contentContainer, props.contentStyles)}
-      >
+        className={cn(styles.contentContainer, props.contentStyles)}>
         {props.children}
       </div>
       <div className={cn(styles.imageContainer, props.imageContainerStyle)}>

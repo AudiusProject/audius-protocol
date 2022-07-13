@@ -22,7 +22,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   const time = 'week' as const
   const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
   let playlists: UserCollectionMetadata[] = yield call(
-    args => apiClient.getTrendingPlaylists(args),
+    (args) => apiClient.getTrendingPlaylists(args),
     {
       currentUserId,
       limit,
@@ -31,7 +31,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
     }
   )
   if (TF.size > 0) {
-    playlists = playlists.filter(p => {
+    playlists = playlists.filter((p) => {
       const shaId = window.Web3.utils.sha3(p.playlist_id.toString())
       return !TF.has(shaId)
     })
@@ -46,7 +46,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
     ).split(',')
   )
   const trendingPlaylists = playlists.filter(
-    playlist => !userIdsToOmit.has(`${playlist.playlist_owner_id}`)
+    (playlist) => !userIdsToOmit.has(`${playlist.playlist_owner_id}`)
   )
 
   const processed: Collection[] = yield processAndCacheCollections(

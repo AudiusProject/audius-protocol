@@ -10,7 +10,7 @@ export const useSplashScreenKey = () => {
 
   useEffect(() => {
     if (!dappLoaded) {
-      setSplashKey(k => k + 1)
+      setSplashKey((k) => k + 1)
     }
   }, [dappLoaded])
 

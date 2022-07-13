@@ -18,13 +18,8 @@ export type CardListProps<ItemT> = FlatListProps<ItemT> & {
 }
 
 export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
-  const {
-    renderItem,
-    emptyListText,
-    disableTopTabScroll,
-    data,
-    ...other
-  } = props
+  const { renderItem, emptyListText, disableTopTabScroll, data, ...other } =
+    props
 
   const ref = useRef<RNFlatList>(null)
   useScrollToTop(() => {
@@ -35,7 +30,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
   }, disableTopTabScroll)
 
   const handleRenderItem: ListRenderItem<ItemT> = useCallback(
-    info => {
+    (info) => {
       const { index } = info
       const isInLeftColumn = !(index % 2)
       const isLastRow = index + 2 > (data?.length ?? 0)

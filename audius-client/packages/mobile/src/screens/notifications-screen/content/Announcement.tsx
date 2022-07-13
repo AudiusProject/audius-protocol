@@ -35,8 +35,7 @@ const Announcement = ({ notification }: AnnouncementProps) => {
         style={{
           body,
           link
-        }}
-      >
+        }}>
         {notification.shortDescription}
       </Markdown>
     </View>

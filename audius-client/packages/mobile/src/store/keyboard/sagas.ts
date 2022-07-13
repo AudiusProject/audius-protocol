@@ -5,7 +5,7 @@ import { put, take } from 'redux-saga/effects'
 import { open, close } from './slice'
 
 function* initKeyboardEvents() {
-  const keyboardChannel = eventChannel(emitter => {
+  const keyboardChannel = eventChannel((emitter) => {
     Keyboard.addListener('keyboardDidShow', () => {
       emitter('show')
     })

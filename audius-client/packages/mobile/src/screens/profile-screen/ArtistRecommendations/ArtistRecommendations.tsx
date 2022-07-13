@@ -101,16 +101,16 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   })
 
   const suggestedArtists = useSelectorWeb(
-    state => getRelatedArtistIds(state, { id: user_id }),
+    (state) => getRelatedArtistIds(state, { id: user_id }),
     (a, b) => a.length === b.length
   )
 
   const isFollowingAllArtists = suggestedArtists.every(
-    artist => artist.does_current_user_follow
+    (artist) => artist.does_current_user_follow
   )
 
   const handlePressFollow = useCallback(() => {
-    suggestedArtists.forEach(artist => {
+    suggestedArtists.forEach((artist) => {
       if (isFollowingAllArtists) {
         dispatchWeb(
           unfollowUser(
@@ -127,7 +127,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   }, [suggestedArtists, isFollowingAllArtists, dispatchWeb])
 
   const handlePressArtist = useCallback(
-    artist => () => {
+    (artist) => () => {
       navigation.push({
         native: { screen: 'Profile', params: { handle: artist.handle } },
         web: { route: `/${artist.handle}` }
@@ -158,11 +158,10 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         </View>
       </View>
       <View style={styles.suggestedArtistsPhotos} pointerEvents='box-none'>
-        {suggestedArtists.map(artist => (
+        {suggestedArtists.map((artist) => (
           <TouchableOpacity
             onPress={handlePressArtist(artist)}
-            key={artist.user_id}
-          >
+            key={artist.user_id}>
             <ProfilePicture
               profile={artist}
               style={styles.suggestedArtistPhoto}
@@ -174,7 +173,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
         <View pointerEvents='none'>
           <Text variant='body1'>Featuring </Text>
         </View>
-        {suggestedArtistNames.map(artist => (
+        {suggestedArtistNames.map((artist) => (
           <Fragment key={artist.user_id}>
             <ArtistLink artist={artist} onPress={handlePressArtist(artist)} />
             <Text variant='body1'>, </Text>

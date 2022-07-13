@@ -83,10 +83,10 @@ const getOauthToken = (
         headers
       }
     )
-    .then(response => {
+    .then((response) => {
       onSuccess(response)
     })
-    .catch(error => {
+    .catch((error) => {
       return onFailure(error.message)
     })
 }
@@ -149,12 +149,8 @@ function* watchTwitterAuth() {
     const onSuccess = async (twitterProfileRes: any) => {
       const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
       try {
-        const {
-          profile,
-          profileImage,
-          profileBanner,
-          requiresUserReview
-        } = await formatTwitterProfile(twitterProfile)
+        const { profile, profileImage, profileBanner, requiresUserReview } =
+          await formatTwitterProfile(twitterProfile)
         const message = new RequestTwitterAuthSuccessMessage({
           uuid,
           profile,
@@ -269,11 +265,8 @@ function* watchInstagramAuth() {
 
     const onSuccess = async (uuid: string, instagramProfile: any) => {
       try {
-        const {
-          profile,
-          profileImage,
-          requiresUserReview
-        } = await formatInstagramProfile(instagramProfile)
+        const { profile, profileImage, requiresUserReview } =
+          await formatInstagramProfile(instagramProfile)
         const message = new RequestInstagramAuthSuccessMessage({
           uuid,
           profile,

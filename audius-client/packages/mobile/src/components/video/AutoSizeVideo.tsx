@@ -8,10 +8,9 @@ const AutoSizeVideo = (props: ConstructorParameters<typeof Video>[0]) => {
 
   return (
     <View
-      onLayout={e => {
+      onLayout={(e) => {
         setSize(e.nativeEvent.layout.width)
-      }}
-    >
+      }}>
       <Video {...props} style={[props.style, { width: size, height: size }]} />
     </View>
   )

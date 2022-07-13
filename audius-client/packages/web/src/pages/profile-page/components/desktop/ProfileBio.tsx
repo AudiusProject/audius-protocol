@@ -92,7 +92,7 @@ export const ProfileBio = ({
   const record = useRecord()
 
   const onExternalLinkClick = useCallback(
-    event => {
+    (event) => {
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,
@@ -136,7 +136,7 @@ export const ProfileBio = ({
     )
   }, [record, handle, website])
   const onClickDonation = useCallback(
-    event => {
+    (event) => {
       record(
         make(Name.PROFILE_PAGE_CLICK_DONATION, {
           handle: handle.replace('@', ''),
@@ -229,9 +229,9 @@ export const ProfileBio = ({
     </animated.div>
   )
 
-  const linkifyOptions = ({
+  const linkifyOptions = {
     attributes: { onClick: onExternalLinkClick }
-  } as unknown) as Options
+  } as unknown as Options
 
   return (
     <div>
@@ -240,8 +240,7 @@ export const ProfileBio = ({
           className={cn(styles.description, {
             [styles.truncated]: isCollapsed
           })}
-          ref={bioRef}
-        >
+          ref={bioRef}>
           {squashNewLines(bio)}
         </div>
       </Linkify>
@@ -250,8 +249,7 @@ export const ProfileBio = ({
           <OpacityTransition render={renderCollapsedContent} duration={300} />
           <div
             className={styles.truncateContainer}
-            onClick={handleToggleCollapse}
-          >
+            onClick={handleToggleCollapse}>
             <span>{messages.seeMore}</span>
             <IconCaretDownLine />
           </div>
@@ -262,8 +260,7 @@ export const ProfileBio = ({
           {isCollapsible ? (
             <div
               className={styles.truncateContainer}
-              onClick={handleToggleCollapse}
-            >
+              onClick={handleToggleCollapse}>
               <span>{messages.seeLess}</span>
               <IconCaretUpLine />
             </div>

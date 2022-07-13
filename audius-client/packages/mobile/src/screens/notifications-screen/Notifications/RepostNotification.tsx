@@ -35,14 +35,14 @@ export const RepostNotification = (props: RepostNotificationProps) => {
   const { notification } = props
   const { userIds, entityType } = notification
   const users = useSelectorWeb(
-    state => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
     isEqual
   )
   const [firstUser] = users
   const otherUsersCount = userIds.length - 1
 
   const entity = useSelectorWeb(
-    state => getNotificationEntity(state, notification),
+    (state) => getNotificationEntity(state, notification),
     isEqual
   )
 

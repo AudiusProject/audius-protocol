@@ -25,7 +25,7 @@ class ErrorBoundary extends PureComponent {
   componentDidCatch(error: Error | null, errorInfo: any) {
     // On catch set the error state so it triggers a toast
     this.setState({ error: error?.message })
-    Sentry.withScope(scope => {
+    Sentry.withScope((scope) => {
       scope.setExtras(errorInfo)
       Sentry.captureException(error)
     })

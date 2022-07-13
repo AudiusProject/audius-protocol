@@ -41,7 +41,7 @@ const actionsMap = {
     const newState = { ...state }
     newState.uploading = true
     newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks.map(t => ({}))
+    newState.uploadProgress = action.tracks.map((t) => ({}))
     newState.metadata = action.metadata
     newState.uploadType = action.uploadType
     newState.stems = action.stems

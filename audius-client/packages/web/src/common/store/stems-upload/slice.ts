@@ -48,10 +48,7 @@ const slice = createSlice({
   }
 })
 
-export const {
-  startStemUploads,
-  stemUploadsSucceeded,
-  stemUploadsFailed
-} = slice.actions
+export const { startStemUploads, stemUploadsSucceeded, stemUploadsFailed } =
+  slice.actions
 
 export default slice.reducer

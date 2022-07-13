@@ -23,22 +23,20 @@ const slice = createSlice({
   name: 'explore-page',
   initialState,
   reducers: {
-    fetchExplore: state => {
+    fetchExplore: (state) => {
       state.status = Status.LOADING
     },
     fetchExploreSucceeded: (
       state,
       action: PayloadAction<FetchExploreSucceededPayload>
     ) => {
-      const {
-        featuredPlaylists,
-        featuredProfiles
-      } = action.payload.exploreContent
+      const { featuredPlaylists, featuredProfiles } =
+        action.payload.exploreContent
       state.playlists = featuredPlaylists
       state.profiles = featuredProfiles
       state.status = Status.SUCCESS
     },
-    fetchExploreFailed: state => {
+    fetchExploreFailed: (state) => {
       state.status = Status.ERROR
     },
     setTab: (state, action: PayloadAction<SetTabPayload>) => {

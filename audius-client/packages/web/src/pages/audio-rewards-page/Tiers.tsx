@@ -84,7 +84,7 @@ const useShowConfetti = (tier: BadgeTier) => {
 
 /** Renders out the level # associated with a given tier */
 export const TierNumber = ({ tier }: { tier: AudioTiers }) => {
-  const tierNumber = tiers.findIndex(t => t === tier) + 1
+  const tierNumber = tiers.findIndex((t) => t === tier) + 1
   return (
     <span className={styles.tierNumberText}>
       {messages.tierNumber(tierNumber)}
@@ -95,7 +95,7 @@ export const TierNumber = ({ tier }: { tier: AudioTiers }) => {
 /** Renders out level of audio required for a tier - e.g. '1000+ $AUDIO */
 export const TierLevel = ({ tier }: { tier: AudioTiers }) => {
   const minAudio = useMemo(
-    () => badgeTiers.find(b => b.tier === tier)?.minAudio.toString() ?? '',
+    () => badgeTiers.find((b) => b.tier === tier)?.minAudio.toString() ?? '',
     [tier]
   )
   return <div className={styles.tierLevel}>{messages.tierLevel(minAudio)}</div>
@@ -122,8 +122,7 @@ export const Tier = ({
       className={cn(styles.tierContainerWrapper, {
         [styles.tierContainerActive]: isActive,
         [styles.compact]: isCompact
-      })}
-    >
+      })}>
       {isActive && (
         <div className={styles.currentTier}>
           {messages.currentTier}
@@ -141,8 +140,7 @@ export const Tier = ({
           {
             [styles.compact]: isCompact
           }
-        )}
-      >
+        )}>
         <TierNumber tier={tier} />
         <BadgeTierText
           tier={tier}
@@ -233,7 +231,7 @@ const Tiers = () => {
         <div className={wm(styles.subtitle)}>{messages.subtitle2}</div>
       </div>
       <div className={wm(styles.tiersContainer)}>
-        {tiers.map(t => (
+        {tiers.map((t) => (
           <Tier
             tier={t}
             isActive={tier === t}

@@ -21,8 +21,7 @@ const TokenHoverTooltip = ({
       disabled={balance.isZero()}
       placement='top'
       mouseEnterDelay={0.2}
-      mount={parentMount ? 'parent' : undefined}
-    >
+      mount={parentMount ? 'parent' : undefined}>
       {children}
     </Tooltip>
   )

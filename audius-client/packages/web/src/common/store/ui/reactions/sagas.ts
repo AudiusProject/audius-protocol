@@ -19,7 +19,7 @@ function* fetchReactionValuesAsync({
   // Fetch reactions
   // TODO: [PAY-305] This endpoint should be fixed to properly allow multiple reaction fetches
   const reactions = yield* all(
-    payload.entityIds.map(id =>
+    payload.entityIds.map((id) =>
       call([apiClient, apiClient.getReaction], {
         reactedToIds: [id]
       })

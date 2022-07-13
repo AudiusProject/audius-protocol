@@ -25,7 +25,7 @@ import { REPOST_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import styles from './ActionsTab.module.css'
 
-const MinimizedActionsTab = props => {
+const MinimizedActionsTab = (props) => {
   const { isHidden, isDisabled, overflowMenu } = props
 
   overflowMenu.menu.includeShare = true
@@ -54,7 +54,7 @@ const MinimizedActionsTab = props => {
   )
 }
 
-const ExpandedActionsTab = props => {
+const ExpandedActionsTab = (props) => {
   const {
     isHidden,
     isDisabled,
@@ -74,21 +74,18 @@ const ExpandedActionsTab = props => {
       <Tooltip
         text={currentUserReposted ? 'Unrepost' : 'Repost'}
         disabled={isHidden || isDisabled || isOwner}
-        placement={direction === 'horizontal' ? 'bottom' : 'right'}
-      >
+        placement={direction === 'horizontal' ? 'bottom' : 'right'}>
         <div
           className={cn(styles.actionButton, {
             [styles.disabled]: isOwner
           })}
-          onClick={isDisabled || isOwner ? () => {} : onToggleRepost}
-        >
+          onClick={isDisabled || isOwner ? () => {} : onToggleRepost}>
           <Toast
             text={'Reposted!'}
             disabled={currentUserReposted || isHidden || isDisabled || isOwner}
             delay={REPOST_TOAST_TIMEOUT_MILLIS}
             containerClassName={styles.actionIconContainer}
-            placement={direction === 'horizontal' ? 'bottom' : 'right'}
-          >
+            placement={direction === 'horizontal' ? 'bottom' : 'right'}>
             <IconRepost
               className={cn(styles.iconRepost, {
                 [styles.reposted]: currentUserReposted
@@ -100,12 +97,10 @@ const ExpandedActionsTab = props => {
       <Tooltip
         text='Share'
         disabled={isHidden || isDisabled}
-        placement={direction === 'horizontal' ? 'bottom' : 'right'}
-      >
+        placement={direction === 'horizontal' ? 'bottom' : 'right'}>
         <div
           className={styles.actionButton}
-          onClick={isDisabled ? () => {} : onShare}
-        >
+          onClick={isDisabled ? () => {} : onShare}>
           <div className={styles.actionIconContainer}>
             <IconShare className={styles.iconShare} />
           </div>
@@ -121,8 +116,7 @@ const ExpandedActionsTab = props => {
             {(ref, triggerPopup) => (
               <div
                 className={styles.iconKebabHorizontalWrapper}
-                onClick={triggerPopup}
-              >
+                onClick={triggerPopup}>
                 <IconKebabHorizontal
                   className={styles.iconKebabHorizontal}
                   ref={ref}
@@ -158,13 +152,8 @@ export class ActionsTab extends PureComponent {
   }
 
   onShare = () => {
-    const {
-      trackId,
-      variant,
-      playlistId,
-      shareTrack,
-      shareCollection
-    } = this.props
+    const { trackId, variant, playlistId, shareTrack, shareCollection } =
+      this.props
     if (variant === 'track') {
       shareTrack(trackId)
     } else if (variant === 'playlist' || variant === 'album') {
@@ -196,12 +185,12 @@ export class ActionsTab extends PureComponent {
 
     const overflowMenu = {
       menu: {
-        handle: handle,
+        handle,
         isFavorited: currentUserSaved,
         isReposted: currentUserReposted,
         mount: 'page',
         isOwner: handle === userHandle,
-        isArtistPick: isArtistPick
+        isArtistPick
       }
     }
     if (variant === 'track') {
@@ -228,8 +217,7 @@ export class ActionsTab extends PureComponent {
           [styles.disabled]: isDisabled,
           [styles.standalone]: standalone,
           [containerStyles]: !!containerStyles
-        })}
-      >
+        })}>
         {minimized ? (
           <MinimizedActionsTab {...this.props} overflowMenu={overflowMenu} />
         ) : (
@@ -272,12 +260,12 @@ ActionsTab.defaultProps = {
   handle: 'handle'
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state)
 })
 
-const mapDispatchToProps = dispatch => ({
-  shareTrack: trackId =>
+const mapDispatchToProps = (dispatch) => ({
+  shareTrack: (trackId) =>
     dispatch(
       requestOpenShareModal({
         type: 'track',
@@ -285,7 +273,7 @@ const mapDispatchToProps = dispatch => ({
         source: ShareSource.TILE
       })
     ),
-  shareCollection: collectionId =>
+  shareCollection: (collectionId) =>
     dispatch(
       requestOpenShareModal({
         type: 'collection',
@@ -293,12 +281,12 @@ const mapDispatchToProps = dispatch => ({
         source: ShareSource.TILE
       })
     ),
-  repostTrack: trackId => dispatch(repostTrack(trackId, RepostSource.TILE)),
-  undoRepostTrack: trackId =>
+  repostTrack: (trackId) => dispatch(repostTrack(trackId, RepostSource.TILE)),
+  undoRepostTrack: (trackId) =>
     dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
-  repostCollection: playlistId =>
+  repostCollection: (playlistId) =>
     dispatch(repostCollection(playlistId, RepostSource.TILE)),
-  undoRepostCollection: playlistId =>
+  undoRepostCollection: (playlistId) =>
     dispatch(undoRepostCollection(playlistId, RepostSource.TILE))
 })
 

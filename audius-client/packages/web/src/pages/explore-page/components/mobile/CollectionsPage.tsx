@@ -94,8 +94,7 @@ const ExplorePage = ({
       description={description}
       canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}
       containerClassName={styles.pageContainer}
-      hasDefaultHeader
-    >
+      hasDefaultHeader>
       {status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (

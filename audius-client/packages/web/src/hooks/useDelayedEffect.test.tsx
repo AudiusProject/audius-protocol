@@ -32,7 +32,7 @@ describe('useDelayedEffect', () => {
     getByText('initial')
 
     // Wait past they delay and check again
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
     getByText('callback')
 
     // Fire another click to reset and verify we return state immediately

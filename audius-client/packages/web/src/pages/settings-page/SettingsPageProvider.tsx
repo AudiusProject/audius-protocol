@@ -188,8 +188,8 @@ class SettingsPage extends PureComponent<
       getPushNotificationSettings,
       onTwitterLogin,
       toggleNotificationSetting,
-      toggleBrowserPushNotificationPermissions: this
-        .toggleBrowserPushNotificationPermissions,
+      toggleBrowserPushNotificationPermissions:
+        this.toggleBrowserPushNotificationPermissions,
       togglePushNotificationSetting,
       updateEmailFrequency,
       recordDownloadDesktopApp,

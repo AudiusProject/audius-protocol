@@ -81,8 +81,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 }))
 
 export const TrackScreenRemix = ({ id, ...props }: TrackScreenRemixProps) => {
-  const track = useSelectorWeb(state => getTrack(state, { id }), isEqual)
-  const user = useSelectorWeb(state => getUserFromTrack(state, { id }), isEqual)
+  const track = useSelectorWeb((state) => getTrack(state, { id }), isEqual)
+  const user = useSelectorWeb(
+    (state) => getUserFromTrack(state, { id }),
+    isEqual
+  )
 
   if (!track || !user) {
     console.warn(

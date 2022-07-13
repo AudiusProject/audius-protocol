@@ -57,13 +57,13 @@ export const Notification = (props: NotificationProps) => {
 
   // Based on how notification types are defined, we need to cast like this.
   // In the future we should select user/users/entity/entities in each notif.
-  const notification = ({
+  const notification = {
     ...notificationProp,
     user,
     users,
     entity,
     entities
-  } as unknown) as Notifications
+  } as unknown as Notifications
   const getNotificationElement = () => {
     switch (notification.type) {
       case NotificationType.Announcement: {
@@ -124,8 +124,7 @@ export const Notification = (props: NotificationProps) => {
   }
   return (
     <ErrorWrapper
-      errorMessage={`Could not render notification ${notification.id}`}
-    >
+      errorMessage={`Could not render notification ${notification.id}`}>
       {getNotificationElement()}
     </ErrorWrapper>
   )

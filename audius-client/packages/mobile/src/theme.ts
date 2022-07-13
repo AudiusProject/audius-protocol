@@ -8,7 +8,7 @@ export const getInitialDarkModePreference = () => {
 
 export const getPrefersDarkModeChange = async () => {
   let listener
-  const prefers = await new Promise(resolve => {
+  const prefers = await new Promise((resolve) => {
     listener = (newMode: any) => {
       prefersDarkMode = newMode === 'dark'
       resolve(prefersDarkMode)

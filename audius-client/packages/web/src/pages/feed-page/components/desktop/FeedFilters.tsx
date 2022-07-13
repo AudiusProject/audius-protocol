@@ -35,7 +35,7 @@ const FeedFilters = ({
 
   return (
     <SelectablePills
-      content={initialFilters.map(f => filterToTitle[f])}
+      content={initialFilters.map((f) => filterToTitle[f])}
       selectedIndex={selectedIndex}
       onClickIndex={onSelectIndex}
     />

@@ -16,9 +16,11 @@ const baseProps: ButtonProps = {
   text: 'Click Me'
 }
 
-const Template: Story<ButtonProps> = args => <Button {...baseProps} {...args} />
+const Template: Story<ButtonProps> = (args) => (
+  <Button {...baseProps} {...args} />
+)
 
-const BackgroundTemplate: Story<ButtonProps> = args => (
+const BackgroundTemplate: Story<ButtonProps> = (args) => (
   <div style={{ backgroundColor: '#555', padding: '16px' }}>
     <Button {...baseProps} {...args} />
   </div>

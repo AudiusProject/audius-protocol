@@ -9,7 +9,7 @@ import styles from './Draggable.module.css'
 
 const isFirefox = () => navigator.userAgent.includes('Firefox')
 
-const Draggable = props => {
+const Draggable = (props) => {
   const {
     elementType,
     isDisabled,
@@ -29,7 +29,7 @@ const Draggable = props => {
   const draggableRef = useRef()
 
   useEffect(() => {
-    const dragStart = e => {
+    const dragStart = (e) => {
       drag(kind, id, isOwner)
 
       const dt = e.dataTransfer
@@ -58,7 +58,7 @@ const Draggable = props => {
       if (onDrag) onDrag()
     }
 
-    const dragEnd = e => {
+    const dragEnd = (e) => {
       document.getElementById('ghost').outerHTML = ''
       drop()
       if (onDrop) onDrop()
@@ -70,7 +70,7 @@ const Draggable = props => {
     }
   }, [drag, drop, id, kind, link, text, isOwner, onDrag, onDrop])
 
-  const refFunc = ref => {
+  const refFunc = (ref) => {
     draggableRef.current = ref
     if (forwardRef) {
       forwardRef(ref)
@@ -82,8 +82,7 @@ const Draggable = props => {
       draggable={!isDisabled}
       ref={refFunc}
       className={styles.draggable}
-      {...otherProps}
-    >
+      {...otherProps}>
       {children}
     </tr>
   ) : (
@@ -91,8 +90,7 @@ const Draggable = props => {
       draggable={!isDisabled}
       ref={refFunc}
       className={styles.draggable}
-      {...otherProps}
-    >
+      {...otherProps}>
       {children}
     </div>
   )
@@ -124,7 +122,7 @@ Draggable.defaultProps = {
 }
 
 const mapStateToProps = (state, props) => ({})
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   drag: (kind, id, isOwner) => dispatch(drag(kind, id, isOwner)),
   drop: () => dispatch(drop())
 })

@@ -23,14 +23,14 @@ export const getContentUrl = (content: ShareModalContent) => {
     case 'album': {
       const { album, artist } = content
       return getCollectionRoute(
-        ({ ...album, user: artist } as unknown) as UserCollection,
+        { ...album, user: artist } as unknown as UserCollection,
         true
       )
     }
     case 'playlist': {
       const { playlist, creator } = content
       return getCollectionRoute(
-        ({ ...playlist, user: creator } as unknown) as UserCollection,
+        { ...playlist, user: creator } as unknown as UserCollection,
         true
       )
     }

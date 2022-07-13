@@ -19,7 +19,7 @@ const messages = {
   unfollow: 'Unfollow'
 }
 
-const FollowButton = props => {
+const FollowButton = (props) => {
   const [isHovering, setIsHovering] = useState(false)
   const [isHoveringClicked, setIsHoveringClicked] = useState(false)
 
@@ -32,7 +32,7 @@ const FollowButton = props => {
   const { following, onUnfollow, onFollow, isDisabled, stopPropagation } = props
 
   const onClick = useCallback(
-    e => {
+    (e) => {
       if (following) {
         onUnfollow()
       } else {
@@ -121,7 +121,7 @@ FollowButton.defaultProps = {
   following: false,
   showIcon: true,
   size: 'medium',
-  messages: messages,
+  messages,
   isDisabled: false,
   stopPropagation: false
 }

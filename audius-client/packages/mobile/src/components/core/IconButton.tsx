@@ -54,23 +54,20 @@ export const IconButton = ({
 
   return (
     <Animated.View
-      style={[{ transform: [{ scale }] }, stylesProp?.root, style]}
-    >
+      style={[{ transform: [{ scale }] }, stylesProp?.root, style]}>
       <TouchableOpacity
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={isDisabled}
         activeOpacity={0.95}
-        hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-      >
+        hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
         <View
           style={[
             styles.icon,
             isDisabled && { opacity: 0.5 },
             stylesProp?.icon
-          ]}
-        >
+          ]}>
           <Icon fill={fill} height='100%' width='100%' />
         </View>
       </TouchableOpacity>

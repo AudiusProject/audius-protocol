@@ -80,8 +80,7 @@ const Artwork = ({
                 backgroundImage: `url(${image})`
               }
             : {}
-        }
-      >
+        }>
         {isActive ? (
           <ArtworkIcon isLoading={isLoading} isPlaying={isPlaying} />
         ) : null}
@@ -168,8 +167,7 @@ const TrackListItem = ({
         [styles.isReorderable]: isReorderable,
         [styles.isDragging]: isDragging
       })}
-      onClick={onClickTrack}
-    >
+      onClick={onClickTrack}>
       {coverArtSizes ? (
         <div>
           <Artwork
@@ -218,7 +216,7 @@ const TrackListItem = ({
             aria-label='more actions'
             icon={<IconKebabHorizontal />}
             className={styles.kebabContainer}
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation()
               onClickOverflow()
             }}

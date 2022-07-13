@@ -51,8 +51,7 @@ const TopAPIModal = () => {
       title={messages.modalTitle}
       isFullscreen={false}
       showTitleHeader
-      showDismissButton
-    >
+      showDismissButton>
       <TopAPIBody />
     </ModalDrawer>
   )

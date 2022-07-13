@@ -41,7 +41,9 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
 
   const { tier, timeLabel, isViewed, user } = notification
 
-  const tierInfo = badgeTiers.find(info => info.tier === tier) as BadgeTierInfo
+  const tierInfo = badgeTiers.find(
+    (info) => info.tier === tier
+  ) as BadgeTierInfo
 
   const { humanReadableAmount } = tierInfo
 

@@ -33,10 +33,10 @@ const slice = createSlice({
     },
     dismissToast: (state, action: DissmissToastAction) => {
       const { key } = action.payload
-      const toasts = state.toasts.filter(toast => toast.key !== key)
+      const toasts = state.toasts.filter((toast) => toast.key !== key)
       state.toasts = toasts
     },
-    clearToasts: state => {
+    clearToasts: (state) => {
       state.toasts = []
     }
   }

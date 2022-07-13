@@ -16,10 +16,10 @@ const slice = createSlice({
   name: 'music-confetti',
   initialState,
   reducers: {
-    show: state => {
+    show: (state) => {
       state.isVisible = true
     },
-    hide: state => {
+    hide: (state) => {
       state.isVisible = false
     }
   }

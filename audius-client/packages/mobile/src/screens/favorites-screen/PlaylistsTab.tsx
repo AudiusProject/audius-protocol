@@ -34,12 +34,12 @@ export const PlaylistsTab = () => {
 
   const userPlaylists = user?.playlists
     ?.filter(
-      playlist =>
+      (playlist) =>
         !playlist.is_album &&
         playlist.ownerHandle !== user.handle &&
         matchesFilter(playlist)
     )
-    .map(playlist => ({ ...playlist, user }))
+    .map((playlist) => ({ ...playlist, user }))
 
   const handleNavigateToNewPlaylist = useCallback(() => {
     navigation.push({ native: { screen: 'CreatePlaylist' } })

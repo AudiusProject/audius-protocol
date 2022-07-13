@@ -57,13 +57,13 @@ const ConnectedProfileCompletionHeroCard = ({
   )
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isAccountLoaded: getIsAccountLoaded(state),
   completionStages: getOrderedCompletionStages(state),
   isDismissed: getProfilePageMeterDismissed(state)
 })
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
   onDismiss: () => dispatch(profileMeterDismissed())
 })
 

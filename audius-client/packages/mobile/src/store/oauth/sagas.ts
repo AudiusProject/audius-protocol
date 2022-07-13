@@ -9,24 +9,28 @@ import {
 } from './actions'
 
 function* watchRequestNativeOpenPopup() {
-  yield takeLatest(REQUEST_NATIVE_OPEN_POPUP, function* ({
-    resolve,
-    reject,
-    url,
-    provider
-  }: RequestNativeOpenPopupAction) {
-    yield put(nativeOpenPopup(url, provider))
+  yield takeLatest(
+    REQUEST_NATIVE_OPEN_POPUP,
+    function* ({
+      resolve,
+      reject,
+      url,
+      provider
+    }: RequestNativeOpenPopupAction) {
+      yield put(nativeOpenPopup(url, provider))
 
-    yield takeLatest(SET_CREDENTIALS, function* ({
-      credentials
-    }: SetCredentialsAction) {
-      if (!credentials.error) {
-        resolve(credentials)
-      } else {
-        reject(new Error(credentials.error))
-      }
-    })
-  })
+      yield takeLatest(
+        SET_CREDENTIALS,
+        function* ({ credentials }: SetCredentialsAction) {
+          if (!credentials.error) {
+            resolve(credentials)
+          } else {
+            reject(new Error(credentials.error))
+          }
+        }
+      )
+    }
+  )
 }
 
 const sagas = () => {

@@ -6,12 +6,8 @@ import { mockDecode } from '__mocks__/Hashids'
 describe('parseCollectionRoute', () => {
   it('can decode a playlist id route', () => {
     const route = '/arizmendi/playlist/croissants-11'
-    const {
-      title,
-      collectionId,
-      handle,
-      collectionType
-    } = parseCollectionRoute(route)
+    const { title, collectionId, handle, collectionType } =
+      parseCollectionRoute(route)
     expect(title).toEqual('croissants')
     expect(collectionId).toEqual(11)
     expect(handle).toEqual('arizmendi')
@@ -20,12 +16,8 @@ describe('parseCollectionRoute', () => {
 
   it('can decode an album id route', () => {
     const route = '/arizmendi/album/scones-20'
-    const {
-      title,
-      collectionId,
-      handle,
-      collectionType
-    } = parseCollectionRoute(route)
+    const { title, collectionId, handle, collectionType } =
+      parseCollectionRoute(route)
     expect(title).toEqual('scones')
     expect(collectionId).toEqual(20)
     expect(handle).toEqual('arizmendi')
@@ -36,12 +28,8 @@ describe('parseCollectionRoute', () => {
     mockDecode.mockReturnValue([11845])
 
     const route = '/playlists/eP9k7'
-    const {
-      title,
-      collectionId,
-      handle,
-      collectionType
-    } = parseCollectionRoute(route)
+    const { title, collectionId, handle, collectionType } =
+      parseCollectionRoute(route)
     expect(title).toEqual(null)
     expect(collectionId).toEqual(11845)
     expect(handle).toEqual(null)

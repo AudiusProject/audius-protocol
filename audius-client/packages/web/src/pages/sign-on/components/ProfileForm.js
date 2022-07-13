@@ -36,12 +36,11 @@ const messages = {
   completeWithInstagram: 'Link to Instagram to claim'
 }
 
-const ProfileForm = props => {
+const ProfileForm = (props) => {
   const [focus, onChangeFocus] = useState(false)
   const { profileValid, name, handle, profileImage, onContinue } = props
-  const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] = useState(
-    false
-  )
+  const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] =
+    useState(false)
 
   useDelayedEffect({
     callback: () => setShouldShowLoadingSpinner(true),
@@ -50,7 +49,7 @@ const ProfileForm = props => {
     delay: 1000
   })
 
-  const onDropArtwork = async selectedFiles => {
+  const onDropArtwork = async (selectedFiles) => {
     try {
       let file = selectedFiles[0]
       file = await resizeImage(file)
@@ -70,8 +69,7 @@ const ProfileForm = props => {
         [styles.isMobile]: props.isMobile,
         [styles.blur]: props.showTwitterOverlay,
         [styles.moveFormUp]: suggestTwitterLogin || suggestInstagramLogin
-      })}
-    >
+      })}>
       {props.isMobile ? (
         <div className={styles.header}>{props.header}</div>
       ) : null}
@@ -92,8 +90,7 @@ const ProfileForm = props => {
         className={cn(styles.inputContainer, {
           [styles.hide]: props.showTwitterOverlay,
           [styles.errorInput]: handle.error
-        })}
-      >
+        })}>
         <Input
           placeholder='Display Name'
           name='name'
@@ -139,8 +136,7 @@ const ProfileForm = props => {
           <span
             className={cn(styles.atHandle, {
               [styles.atHandleFocus]: focus || props.handle.value
-            })}
-          >
+            })}>
             {'@'}
           </span>
         </div>
@@ -149,9 +145,8 @@ const ProfileForm = props => {
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
             leave={{ opacity: 0 }}
-            config={{ duration: 200 }}
-          >
-            {animProps => (
+            config={{ duration: 200 }}>
+            {(animProps) => (
               <StatusMessage
                 status='error'
                 containerStyle={animProps}
@@ -166,17 +161,15 @@ const ProfileForm = props => {
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
             leave={{ opacity: 0 }}
-            config={{ duration: 200 }}
-          >
-            {animProps => (
+            config={{ duration: 200 }}>
+            {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <TwitterLogin
                   onFailure={(...args) => console.log(args)}
                   onSuccess={props.onTwitterLogin}
                   className={styles.hideTwitterButton}
                   requestTokenUrl={`${IDENTITY_SERVICE}/twitter`}
-                  loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}
-                >
+                  loginUrl={`${IDENTITY_SERVICE}/twitter/callback`}>
                   {messages.completeWithTwitter}
                 </TwitterLogin>
               </div>
@@ -188,17 +181,15 @@ const ProfileForm = props => {
             from={{ opacity: 0 }}
             to={{ opacity: 1 }}
             leave={{ opacity: 0 }}
-            config={{ duration: 200 }}
-          >
-            {animProps => (
+            config={{ duration: 200 }}>
+            {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <InstagramAuth
                   onFailure={(...args) => console.log(args)}
                   onSuccess={props.onInstagramLogin}
                   className={styles.hideTwitterButton}
                   setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
-                  getUserUrl={`${IDENTITY_SERVICE}/instagram`}
-                >
+                  getUserUrl={`${IDENTITY_SERVICE}/instagram`}>
                   {messages.completeWithInstagram}
                 </InstagramAuth>
               </div>

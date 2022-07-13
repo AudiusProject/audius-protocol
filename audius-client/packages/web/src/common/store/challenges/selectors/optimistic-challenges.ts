@@ -101,7 +101,7 @@ const toOptimisticChallenge = (
         ? totalAmount
         : 0
       : undisbursed.reduce<number>((acc, val) => acc + val.amount, 0)
-  const undisbursedSpecifiers = undisbursed.map(c => c.specifier)
+  const undisbursedSpecifiers = undisbursed.map((c) => c.specifier)
 
   return {
     ...challengeOverridden,
@@ -131,7 +131,7 @@ export const getOptimisticUserChallenges = (state: CommonState) => {
   }, {})
   return Object.values(userChallenges)
     .filter(removeNullable)
-    .map(challenge =>
+    .map((challenge) =>
       toOptimisticChallenge(
         challenge,
         undisbursedUserChallenges[challenge.challenge_id] || [],

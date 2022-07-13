@@ -44,8 +44,7 @@ const ToggleNotification = ({
       <div
         className={cn(styles.bodyText, {
           [styles.isOn]: isOn && !isDisabled
-        })}
-      >
+        })}>
         {text}
       </div>
       <div>
@@ -103,10 +102,9 @@ const NotificationsSettingsPage = ({
     },
     {
       text: messages.milestones,
-      isOn:
-        pushNotificationSettings[
-          PushNotificationSetting.MilestonesAndAchievements
-        ],
+      isOn: pushNotificationSettings[
+        PushNotificationSetting.MilestonesAndAchievements
+      ],
       type: PushNotificationSetting.MilestonesAndAchievements
     },
     {
@@ -135,8 +133,7 @@ const NotificationsSettingsPage = ({
     <Page
       title={messages.title}
       contentClassName={settingsPageStyles.pageContent}
-      containerClassName={settingsPageStyles.page}
-    >
+      containerClassName={settingsPageStyles.page}>
       <div className={settingsPageStyles.bodyContainer}>
         <div className={styles.notificationsSettings}>
           <GroupableList>
@@ -144,7 +141,7 @@ const NotificationsSettingsPage = ({
               // The user should be able to configure push notifications only w/in
               // an app-context, not the mobile website.
               <Grouping>
-                {notificationToggles.map(notification => (
+                {notificationToggles.map((notification) => (
                   <Row key={notification.text} includeSpacing={false}>
                     <ToggleNotification
                       isDisabled={

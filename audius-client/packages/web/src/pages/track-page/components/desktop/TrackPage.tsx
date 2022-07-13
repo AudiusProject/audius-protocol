@@ -202,8 +202,9 @@ const TrackPage = ({
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
       <div
-        className={styles.lineupHeader}
-      >{`${messages.moreBy} ${user?.name}`}</div>
+        className={
+          styles.lineupHeader
+        }>{`${messages.moreBy} ${user?.name}`}</div>
     ) : null
 
   return (
@@ -212,8 +213,7 @@ const TrackPage = ({
       description={description}
       canonicalUrl={canonicalUrl}
       variant='flush'
-      scrollableSearch
-    >
+      scrollableSearch>
       <div className={styles.headerWrapper}>
         <CoverPhoto
           loading={loading}

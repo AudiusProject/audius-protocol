@@ -14,7 +14,7 @@ export default () => {
   importWorkerScript(script)
 
   const clampedRGBColor = (rgbString /* string of 'r,g,b' */) => {
-    const rgb = rgbString.split(',').map(x => parseInt(x, 10))
+    const rgb = rgbString.split(',').map((x) => parseInt(x, 10))
     const r = rgb[0]
     const g = rgb[1]
     const b = rgb[2]
@@ -28,7 +28,7 @@ export default () => {
     }
 
     const scaleFactor = LUMINANCE_THRESHOLD / luminance
-    return [r, g, b].map(x => x * scaleFactor)
+    return [r, g, b].map((x) => x * scaleFactor)
   }
 
   /**
@@ -38,7 +38,7 @@ export default () => {
    */
   const dominantRgb = ({ key, imageUrl }) => {
     Jimp.read(imageUrl)
-      .then(img => {
+      .then((img) => {
         img.posterize(15)
         const imageData = img.bitmap
         const pixels = imageData.data
@@ -64,7 +64,7 @@ export default () => {
           .sort((a, b) => {
             return counts[b] - counts[a]
           })
-          .map(c => ({
+          .map((c) => ({
             r: clampedRGBColor(c)[0],
             g: clampedRGBColor(c)[1],
             b: clampedRGBColor(c)[2]
@@ -79,14 +79,14 @@ export default () => {
 
         postMessage({ key, result })
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(imageUrl, err)
         // eslint-disable-next-line
         postMessage({ key, result: DEFAULT_RGB })
       })
   }
 
-  const findDominantColors = selectFrom => {
+  const findDominantColors = (selectFrom) => {
     const domColors = [selectFrom.shift()]
 
     while (domColors.length < NUM_DOMINANT_COLORS && selectFrom.length > 0) {

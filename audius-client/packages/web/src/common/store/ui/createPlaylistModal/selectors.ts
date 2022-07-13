@@ -20,14 +20,14 @@ export const getTracks = (state: CommonState) => {
   const metadata = getMetadata(state)
   if (!metadata) return null
 
-  const trackIds = metadata.playlist_contents.track_ids.map(t => t.track)
+  const trackIds = metadata.playlist_contents.track_ids.map((t) => t.track)
   const tracks = getCachedTracks(state, { ids: trackIds })
   const userIds = Object.keys(tracks).map(
-    trackId => tracks[(trackId as unknown) as number].owner_id
+    (trackId) => tracks[trackId as unknown as number].owner_id
   )
   const users = getUsers(state, { ids: userIds })
 
-  return trackIds.map(id => ({
+  return trackIds.map((id) => ({
     ...tracks[id],
     user: users[tracks[id].owner_id]
   }))

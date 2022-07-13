@@ -84,8 +84,7 @@ const CTAListening = (props: CTAListeningProps) => {
           <Parallax
             className={cn(styles.mobileBgImage)}
             y={[-100, 0]}
-            styleInner={{ height: '100%' }}
-          >
+            styleInner={{ height: '100%' }}>
             <img
               className={styles.mobileBackground}
               src={hqAudio}
@@ -112,8 +111,7 @@ const CTAListening = (props: CTAListeningProps) => {
               AUDIUS_LISTENING_LINK,
               props.setRenderPublicSite
             )}
-            className={styles.ctaButton}
-          >
+            className={styles.ctaButton}>
             {messages.cta}
             <IconArrow className={styles.arrowRight} />
           </button>
@@ -140,8 +138,7 @@ const CTAListening = (props: CTAListeningProps) => {
                     transform: x.interpolate(
                       (x: number) => `translate3d(0,${x}px,0)`
                     )
-                  }}
-                >
+                  }}>
                   <animated.div className={styles.word}>
                     {' '}
                     {title1Items[index]}{' '}
@@ -160,11 +157,9 @@ const CTAListening = (props: CTAListeningProps) => {
                       transform: x.interpolate(
                         (x: number) => `translate3d(0,${x}px,0)`
                       )
-                    }}
-                  >
+                    }}>
                     <animated.div
-                      className={cn(styles.word, styles.coloredTitleWord)}
-                    >
+                      className={cn(styles.word, styles.coloredTitleWord)}>
                       {' '}
                       {title2Items[index]}{' '}
                     </animated.div>
@@ -178,8 +173,7 @@ const CTAListening = (props: CTAListeningProps) => {
               AUDIUS_LISTENING_LINK,
               props.setRenderPublicSite
             )}
-            className={styles.ctaButton}
-          >
+            className={styles.ctaButton}>
             {messages.cta}
             <IconArrow className={styles.arrowRight} />
           </button>
@@ -190,8 +184,7 @@ const CTAListening = (props: CTAListeningProps) => {
         <Parallax
           className={cn(styles.bgParallax)}
           y={[-100, 20]}
-          styleInner={{ height: '100%' }}
-        >
+          styleInner={{ height: '100%' }}>
           <img
             className={styles.background}
             src={hqAudio}

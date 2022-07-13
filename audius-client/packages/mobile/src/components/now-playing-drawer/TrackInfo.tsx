@@ -54,8 +54,7 @@ export const TrackInfo = ({
                 numberOfLines={1}
                 style={styles.artist}
                 variant='h1'
-                color='secondary'
-              >
+                color='secondary'>
                 {user.name}
               </Text>
               <UserBadges user={user} badgeSize={12} hideName />

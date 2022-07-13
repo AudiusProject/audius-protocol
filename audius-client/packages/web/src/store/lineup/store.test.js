@@ -62,11 +62,11 @@ class Sagas extends LineupSagas {
       PREFIX,
       actions,
       // Selector to fetch the lineup.
-      state => state.lineup,
+      (state) => state.lineup,
       // Query to fetch remote tracks (e.g. from BE).
       getTracks,
       // Selector of what to keep in the lineup.
-      track => ({
+      (track) => ({
         id: track.track_id,
         keepInLineup: track.keep_in_lineup
       }),

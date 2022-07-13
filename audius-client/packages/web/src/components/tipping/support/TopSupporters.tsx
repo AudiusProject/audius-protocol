@@ -34,18 +34,18 @@ export const TopSupporters = () => {
   const supportersForProfile = profile?.user_id
     ? supportersMap[profile.user_id] ?? {}
     : {}
-  const rankedSupporters = useSelector<AppState, User[]>(state => {
+  const rankedSupporters = useSelector<AppState, User[]>((state) => {
     const usersMap = getUsers(state, {
-      ids: (Object.keys(supportersForProfile) as unknown) as ID[]
+      ids: Object.keys(supportersForProfile) as unknown as ID[]
     })
     return Object.keys(supportersForProfile)
       .sort((k1, k2) => {
         return (
-          supportersForProfile[(k1 as unknown) as ID].rank -
-          supportersForProfile[(k2 as unknown) as ID].rank
+          supportersForProfile[k1 as unknown as ID].rank -
+          supportersForProfile[k2 as unknown as ID].rank
         )
       })
-      .map(k => usersMap[(k as unknown) as ID])
+      .map((k) => usersMap[k as unknown as ID])
       .filter(Boolean)
   })
 

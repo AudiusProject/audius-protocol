@@ -338,8 +338,7 @@ export const FollowArtistCard = ({
     <View>
       <LinearGradient
         colors={isSelected ? ['#9849d6', '#6516a3'] : ['white', 'white']}
-        style={styles.card}
-      >
+        style={styles.card}>
         <View style={styles.cardImage}>
           <UserImage user={user} imageStyle={styles.userImage} />
         </View>
@@ -353,8 +352,7 @@ export const FollowArtistCard = ({
             styles.cardFollowers,
             isSelected ? styles.cardTextActive : {}
           ]}
-          numberOfLines={1}
-        >
+          numberOfLines={1}>
           {user.follower_count} Followers
         </Text>
       </LinearGradient>
@@ -413,7 +411,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
   const toggleFollowedArtist = useCallback(
     (userId: number) => {
       const newFollowedArtists = followedArtistIds.includes(userId)
-        ? followedArtistIds.filter(id => id !== userId)
+        ? followedArtistIds.filter((id) => id !== userId)
         : followedArtistIds.concat([userId])
       dispatch(setFollowedArtists(newFollowedArtists))
     },
@@ -423,7 +421,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
   const addFollowedArtists = useCallback(
     (userIds: number[]) => {
       const newUserIds = userIds.filter(
-        userId => !followedArtistIds.includes(userId)
+        (userId) => !followedArtistIds.includes(userId)
       )
       dispatch(setFollowedArtists(followedArtistIds.concat(newUserIds)))
     },
@@ -471,18 +469,15 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
 
     return (
       <Animated.View
-        style={[styles.animatedPillView, { transform: [{ scale }] }]}
-      >
+        style={[styles.animatedPillView, { transform: [{ scale }] }]}>
         <TouchableOpacity
           style={[styles.pill, isActive ? styles.pillActive : {}]}
           activeOpacity={1}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          onPress={updateSelectedCategory}
-        >
+          onPress={updateSelectedCategory}>
           <Text
-            style={[styles.pillText, isActive ? styles.pillTextActive : {}]}
-          >
+            style={[styles.pillText, isActive ? styles.pillTextActive : {}]}>
             {category}
           </Text>
         </TouchableOpacity>
@@ -520,7 +515,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
               <FormTitle />
               <Text style={styles.instruction}>{messages.subTitle}</Text>
               <View style={styles.pillsContainer}>
-                {artistCategories.map(category => (
+                {artistCategories.map((category) => (
                   <Pill key={category} category={category} />
                 ))}
               </View>
@@ -547,26 +542,22 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
                     delay: 0,
                     useNativeDriver: true
                   }).start()
-                }}
-              >
+                }}>
                 <Animated.View
-                  style={{ transform: [{ scale: pickForMeScale }] }}
-                >
+                  style={{ transform: [{ scale: pickForMeScale }] }}>
                   <PickForMeButton active={isPickForMeActive} />
                 </Animated.View>
               </TouchableOpacity>
               <View style={styles.containerCards}>
                 {(categories[selectedCategory] || [])
-                  .filter(artistId => suggestedFollowArtistsMap[artistId])
-                  .map(artistId => (
+                  .filter((artistId) => suggestedFollowArtistsMap[artistId])
+                  .map((artistId) => (
                     <Animated.View
                       style={{ opacity: cardOpacity }}
-                      key={`${selectedCategory}-${artistId}`}
-                    >
+                      key={`${selectedCategory}-${artistId}`}>
                       <TouchableOpacity
                         activeOpacity={1}
-                        onPress={() => toggleFollowedArtist(artistId)}
-                      >
+                        onPress={() => toggleFollowedArtist(artistId)}>
                         <FollowArtistCard
                           user={suggestedFollowArtistsMap[artistId]}
                           isSelected={followedArtistIds.includes(artistId)}

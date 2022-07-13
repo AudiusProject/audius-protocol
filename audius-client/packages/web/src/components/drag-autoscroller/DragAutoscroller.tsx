@@ -83,7 +83,7 @@ export const DragAutoscroller = ({
     DRAG_HANDLER_THROTTLE_DURATION_MS
   )
 
-  const handleDrag: DragEventHandler<HTMLDivElement> = e => {
+  const handleDrag: DragEventHandler<HTMLDivElement> = (e) => {
     const clientX = e.clientX
     const clientY = e.clientY
     throttledHandleDragHelper(clientX, clientY)
@@ -100,8 +100,7 @@ export const DragAutoscroller = ({
       onDragEnter={handleDrag}
       // This gets called repeatedly during drag if dragged item is inside the container
       onDrag={handleDrag}
-      onDragEnd={handleDragEnd}
-    >
+      onDragEnd={handleDragEnd}>
       {children}
     </div>
   )

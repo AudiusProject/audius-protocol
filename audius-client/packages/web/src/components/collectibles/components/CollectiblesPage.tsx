@@ -143,42 +143,32 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     }
   }, [isLoading, onLoad])
 
-  const [
-    collectiblesMetadata,
-    setCollectiblesMetadata
-  ] = useState<CollectiblesMetadata | null>(null)
+  const [collectiblesMetadata, setCollectiblesMetadata] =
+    useState<CollectiblesMetadata | null>(null)
 
   const [, setIsDetailsModalOpen] = useModalState('CollectibleDetails')
 
-  const [isEditingPreferences, setIsEditingPreferences] = useState<boolean>(
-    false
-  )
+  const [isEditingPreferences, setIsEditingPreferences] =
+    useState<boolean>(false)
   const [isEmbedModalOpen, setIsEmbedModalOpen] = useState<boolean>(false)
-  const [showUseDesktopDrawer, setShowUseDesktopDrawer] = useState<boolean>(
-    false
-  )
+  const [showUseDesktopDrawer, setShowUseDesktopDrawer] =
+    useState<boolean>(false)
 
   const [embedCollectibleHash, setEmbedCollectibleHash] = useState<
     string | null
   >(null)
 
   const visibleTableRef = useRef<HTMLDivElement | null>(null)
-  const [showVisibleTableTopShadow, setShowVisibleTableTopShadow] = useState<
-    boolean
-  >(false)
-  const [
-    showVisibleTableBottomShadow,
-    setShowVisibleTableBottomShadow
-  ] = useState<boolean>(false)
+  const [showVisibleTableTopShadow, setShowVisibleTableTopShadow] =
+    useState<boolean>(false)
+  const [showVisibleTableBottomShadow, setShowVisibleTableBottomShadow] =
+    useState<boolean>(false)
 
   const hiddenTableRef = useRef<HTMLDivElement | null>(null)
-  const [showHiddenTableTopShadow, setShowHiddenTableTopShadow] = useState<
-    boolean
-  >(false)
-  const [
-    showHiddenTableBottomShadow,
-    setShowHiddenTableBottomShadow
-  ] = useState<boolean>(false)
+  const [showHiddenTableTopShadow, setShowHiddenTableTopShadow] =
+    useState<boolean>(false)
+  const [showHiddenTableBottomShadow, setShowHiddenTableBottomShadow] =
+    useState<boolean>(false)
 
   useEffect(() => {
     let visibleTableScrollListener: EventListenerOrEventListenerObject,
@@ -227,13 +217,10 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     }
   }, [isEditingPreferences])
 
-  const [getHasSetEthCollectibles, setHasSetEthCollectibles] = useInstanceVar(
-    false
-  )
-  const [
-    getHasSetSolanaCollectibles,
-    setHasSetSolanaCollectibles
-  ] = useInstanceVar(false)
+  const [getHasSetEthCollectibles, setHasSetEthCollectibles] =
+    useInstanceVar(false)
+  const [getHasSetSolanaCollectibles, setHasSetSolanaCollectibles] =
+    useInstanceVar(false)
   useEffect(() => {
     if (
       collectibleList &&
@@ -249,7 +236,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             (acc, curr) => ({ ...acc, [curr.id]: {} }),
             {}
           ),
-          order: collectibleList.map(c => c.id)
+          order: collectibleList.map((c) => c.id)
         }
         setCollectiblesMetadata(newMetadata)
         if (ethCollectibleList) {
@@ -269,10 +256,10 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         /**
          * Update id of collectibles to use correct format
          */
-        Object.keys(profile.collectibles).forEach(key => {
+        Object.keys(profile.collectibles).forEach((key) => {
           if (key !== 'order' && key.indexOf(':::') === -1) {
             const savedCollectible = collectibleList.find(
-              c => c.tokenId === key
+              (c) => c.tokenId === key
             )
             if (savedCollectible) {
               metadata[savedCollectible.id] = { ...metadata[key] }
@@ -288,8 +275,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
         const collectiblesMetadataKeySet = new Set(Object.keys(metadata))
         const newCollectiblesMap = collectibleList
-          .map(c => c.id)
-          .filter(id => !collectiblesMetadataKeySet.has(id))
+          .map((c) => c.id)
+          .filter((id) => !collectiblesMetadataKeySet.has(id))
           .reduce((acc, curr) => ({ ...acc, [curr]: {} }), {})
 
         const newMetadata = {
@@ -353,7 +340,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         ...collectiblesMetadata,
         [id]: collectiblesMetadata?.id ?? {},
         order: (collectiblesMetadata?.order ?? []).filter(
-          tokenId => tokenId !== id
+          (tokenId) => tokenId !== id
         )
       })
     },
@@ -410,8 +397,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     setCollectiblesMetadata({
       ...collectiblesMetadata,
       order: newCollectibleList
-        .map(c => c.id)
-        .filter(id => (collectiblesMetadata?.order || []).includes(id))
+        .map((c) => c.id)
+        .filter((id) => (collectiblesMetadata?.order || []).includes(id))
     })
   }
 
@@ -430,8 +417,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       const collectibleKeySet = new Set(Object.keys(collectibleMap))
 
       const visible = collectiblesMetadata?.order
-        .filter(id => collectibleKeySet.has(id))
-        .map(id => collectibleMap[id])
+        .filter((id) => collectibleKeySet.has(id))
+        .map((id) => collectibleMap[id])
       return visible || []
     }
     return []
@@ -447,9 +434,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   const getHiddenCollectibles = useCallback(() => {
     if (collectibleList) {
       const visibleCollectibleKeySet = new Set(
-        getVisibleCollectibles().map(c => c.id)
+        getVisibleCollectibles().map((c) => c.id)
       )
-      return collectibleList.filter(c => !visibleCollectibleKeySet.has(c.id))
+      return collectibleList.filter((c) => !visibleCollectibleKeySet.has(c.id))
     }
     return []
   }, [getVisibleCollectibles, collectibleList])
@@ -458,10 +445,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   // trigger the modal to open.
   // Afterwards, allow the user to trigger opening the modal only.
   const collectible = useSelector(getCollectible)
-  const [
-    hasSetDeepLinkedCollectible,
-    setHasSetDeepLinkedCollectible
-  ] = useState(false)
+  const [hasSetDeepLinkedCollectible, setHasSetDeepLinkedCollectible] =
+    useState(false)
 
   // Handle rendering details modal based on route
   useEffect(() => {
@@ -475,8 +460,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       // store yet, open up the modal
       if (collectibleId && !hasSetDeepLinkedCollectible) {
         const collectibleFromUrl =
-          getVisibleCollectibles().find(c => getHash(c.id) === collectibleId) ??
-          null
+          getVisibleCollectibles().find(
+            (c) => getHash(c.id) === collectibleId
+          ) ?? null
         if (collectibleFromUrl && profile) {
           dispatch(
             setCollectible({
@@ -530,8 +516,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
   return (
     <div
-      className={cn(styles.collectiblesWrapper, { [styles.mobile]: isMobile })}
-    >
+      className={cn(styles.collectiblesWrapper, { [styles.mobile]: isMobile })}>
       <div className={styles.wrapper}>
         <div className={styles.header}>
           <div className={styles.headerText}>
@@ -603,7 +588,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           ) : (
             <div className={styles.container}>
-              {getVisibleCollectibles().map(collectible => (
+              {getVisibleCollectibles().map((collectible) => (
                 <CollectibleDetails
                   key={collectible.id}
                   collectible={collectible}
@@ -626,8 +611,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         bodyClassName={cn(styles.modalBody, styles.editModalBody)}
         headerContainerClassName={styles.modalHeader}
         titleClassName={styles.modalTitle}
-        allowScroll
-      >
+        allowScroll>
         <div className={styles.editModal}>
           {getVisibleCollectibles().length > 0 && (
             <div className={styles.editListSection}>
@@ -648,17 +632,15 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                         showVisibleTableBottomShadow
                     }
                   )}
-                  ref={visibleTableRef}
-                >
+                  ref={visibleTableRef}>
                   <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
-                    {provided => (
+                    {(provided) => (
                       <div ref={provided.innerRef} {...provided.droppableProps}>
                         {getVisibleCollectibles().map((c, index) => (
                           <Draggable
                             key={c.id}
                             draggableId={c.id}
-                            index={index}
-                          >
+                            index={index}>
                             {(provided, snapshot) => (
                               <VisibleCollectibleRow
                                 {...provided.draggableProps}
@@ -694,9 +676,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   [styles.tableVerticalShadow]:
                     showHiddenTableTopShadow && showHiddenTableBottomShadow
                 })}
-                ref={hiddenTableRef}
-              >
-                {getHiddenCollectibles().map(c => (
+                ref={hiddenTableRef}>
+                {getHiddenCollectibles().map((c) => (
                   <HiddenCollectibleRow
                     key={c.id}
                     collectible={c}
@@ -727,8 +708,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         titleClassName={styles.embedModalTitle}
         headerContainerClassName={styles.embedModalHeader}
         allowScroll
-        zIndex={zIndex.COLLECTIBLE_EMBED_VIEW_MODAL}
-      >
+        zIndex={zIndex.COLLECTIBLE_EMBED_VIEW_MODAL}>
         <div className={styles.embedContainer}>
           <EmbedFrame
             className={styles.embedFrame}
@@ -743,12 +723,10 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 mount={MountPlacement.PARENT}
                 placement={ComponentPlacement.TOP}
                 requireAccount={false}
-                tooltipClassName={styles.embedTooltip}
-              >
+                tooltipClassName={styles.embedTooltip}>
                 <div
                   className={styles.embedCopyWrapper}
-                  onClick={copyEmbedLink}
-                >
+                  onClick={copyEmbedLink}>
                   <div className={styles.embedCopyContainer}>
                     <div className={styles.embedCopyLink}>{embedIFrameUrl}</div>
                   </div>
@@ -772,8 +750,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       {!NATIVE_MOBILE ? (
         <Drawer
           isOpen={showUseDesktopDrawer}
-          onClose={() => setShowUseDesktopDrawer(false)}
-        >
+          onClose={() => setShowUseDesktopDrawer(false)}>
           <div className={styles.editDrawer}>
             <IconGradientCollectibles className={styles.editDrawerIcon} />
             <div className={styles.editDrawerTitle}>

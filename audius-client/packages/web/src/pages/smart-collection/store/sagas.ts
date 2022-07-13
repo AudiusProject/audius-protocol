@@ -34,15 +34,15 @@ function* fetchHeavyRotation() {
 
   const users = yield* call(
     retrieveUsers,
-    topListens.map(t => t.userId)
+    topListens.map((t) => t.userId)
   )
   const trackIds = topListens
     .filter(
-      track =>
+      (track) =>
         users.entries[track.userId] &&
         !users.entries[track.userId].is_deactivated
     )
-    .map(listen => ({
+    .map((listen) => ({
       track: listen.trackId
     }))
 
@@ -58,7 +58,7 @@ function* fetchBestNewReleases() {
   const tracks = yield* call(Explore.getTopFolloweeTracksFromWindow, 'month')
 
   const trackIds = tracks
-    .filter(track => !track.user.is_deactivated)
+    .filter((track) => !track.user.is_deactivated)
     .map((track: Track) => ({
       time: track.created_at,
       track: track.track_id
@@ -99,7 +99,7 @@ function* fetchMostLoved() {
   const tracks = yield* call(Explore.getTopFolloweeSaves)
 
   const trackIds = tracks
-    .filter(track => !track.user.is_deactivated)
+    .filter((track) => !track.user.is_deactivated)
     .map((track: Track) => ({
       time: track.created_at,
       track: track.track_id
@@ -119,7 +119,7 @@ function* fetchFeelingLucky() {
   const tracks = yield* call(getLuckyTracks, COLLECTIONS_LIMIT)
 
   const trackIds = tracks
-    .filter(track => !track.user.is_deactivated)
+    .filter((track) => !track.user.is_deactivated)
     .map((track: Track) => ({
       time: track.created_at,
       track: track.track_id
@@ -148,7 +148,7 @@ function* fetchRemixables() {
   const artistLimit = 3
   const artistCount: Record<number, number> = {}
 
-  const filteredTracks = tracks.filter(trackMetadata => {
+  const filteredTracks = tracks.filter((trackMetadata) => {
     if (trackMetadata.user?.is_deactivated) {
       return false
     }
@@ -201,33 +201,34 @@ const fetchMap = {
 }
 
 function* watchFetch() {
-  yield takeEvery(fetchSmartCollection.type, function* (
-    action: ReturnType<typeof fetchSmartCollection>
-  ) {
-    yield call(waitForBackendSetup)
-    yield call(
-      waitForValue,
-      getAccountStatus,
-      {},
-      status => status !== Status.LOADING
-    )
-
-    const { variant } = action.payload
-
-    const collection: SmartCollection | undefined = yield* call(
-      fetchMap[variant]
-    )
-
-    if (collection) {
-      yield put(
-        fetchSmartCollectionSucceeded({
-          variant,
-          collection
-        })
+  yield takeEvery(
+    fetchSmartCollection.type,
+    function* (action: ReturnType<typeof fetchSmartCollection>) {
+      yield call(waitForBackendSetup)
+      yield call(
+        waitForValue,
+        getAccountStatus,
+        {},
+        (status) => status !== Status.LOADING
       )
+
+      const { variant } = action.payload
+
+      const collection: SmartCollection | undefined = yield* call(
+        fetchMap[variant]
+      )
+
+      if (collection) {
+        yield put(
+          fetchSmartCollectionSucceeded({
+            variant,
+            collection
+          })
+        )
+      }
+      yield put(setSmartCollection(variant))
     }
-    yield put(setSmartCollection(variant))
-  })
+  )
 }
 
 export default function sagas() {

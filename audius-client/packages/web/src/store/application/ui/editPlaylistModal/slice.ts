@@ -22,7 +22,7 @@ const slice = createSlice({
       state.isOpen = true
       state.collectionId = action.payload
     },
-    close: state => {
+    close: (state) => {
       state.isOpen = false
       state.collectionId = null
     }

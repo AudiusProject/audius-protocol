@@ -241,19 +241,21 @@ export function* confirmUndoRepostCollection(
 /* SAVE COLLECTION */
 
 export function* watchSaveCollection() {
-  yield* takeEvery(socialActions.SAVE_COLLECTION, function* (
-    action: ReturnType<typeof socialActions.saveCollection>
-  ) {
-    yield* call(saveCollectionAsync, action)
-  })
+  yield* takeEvery(
+    socialActions.SAVE_COLLECTION,
+    function* (action: ReturnType<typeof socialActions.saveCollection>) {
+      yield* call(saveCollectionAsync, action)
+    }
+  )
 }
 
 export function* watchSaveSmartCollection() {
-  yield* takeEvery(socialActions.SAVE_SMART_COLLECTION, function* (
-    action: ReturnType<typeof socialActions.saveSmartCollection>
-  ) {
-    yield* call(saveSmartCollection, action)
-  })
+  yield* takeEvery(
+    socialActions.SAVE_SMART_COLLECTION,
+    function* (action: ReturnType<typeof socialActions.saveSmartCollection>) {
+      yield* call(saveSmartCollection, action)
+    }
+  )
 }
 
 export function* saveSmartCollection(
@@ -397,19 +399,21 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
 }
 
 export function* watchUnsaveCollection() {
-  yield* takeEvery(socialActions.UNSAVE_COLLECTION, function* (
-    action: ReturnType<typeof socialActions.unsaveCollection>
-  ) {
-    yield* call(unsaveCollectionAsync, action)
-  })
+  yield* takeEvery(
+    socialActions.UNSAVE_COLLECTION,
+    function* (action: ReturnType<typeof socialActions.unsaveCollection>) {
+      yield* call(unsaveCollectionAsync, action)
+    }
+  )
 }
 
 export function* watchUnsaveSmartCollection() {
-  yield* takeEvery(socialActions.UNSAVE_SMART_COLLECTION, function* (
-    action: ReturnType<typeof socialActions.unsaveSmartCollection>
-  ) {
-    yield* call(unsaveSmartCollection, action)
-  })
+  yield* takeEvery(
+    socialActions.UNSAVE_SMART_COLLECTION,
+    function* (action: ReturnType<typeof socialActions.unsaveSmartCollection>) {
+      yield* call(unsaveSmartCollection, action)
+    }
+  )
 }
 
 export function* unsaveSmartCollection(
@@ -508,52 +512,58 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
 }
 
 export function* watchShareCollection() {
-  yield* takeEvery(socialActions.SHARE_COLLECTION, function* (
-    action: ReturnType<typeof socialActions.shareCollection>
-  ) {
-    const { collectionId } = action
-    const collection = yield* select(getCollection, { id: collectionId })
-    if (!collection) return
+  yield* takeEvery(
+    socialActions.SHARE_COLLECTION,
+    function* (action: ReturnType<typeof socialActions.shareCollection>) {
+      const { collectionId } = action
+      const collection = yield* select(getCollection, { id: collectionId })
+      if (!collection) return
 
-    const user = yield* select(getUser, { id: collection.playlist_owner_id })
-    if (!user) return
+      const user = yield* select(getUser, { id: collection.playlist_owner_id })
+      if (!user) return
 
-    const link = collection.is_album
-      ? albumPage(user.handle, collection.playlist_name, collection.playlist_id)
-      : playlistPage(
-          user.handle,
-          collection.playlist_name,
-          collection.playlist_id
-        )
-    share(link, formatShareText(collection.playlist_name, user.name))
+      const link = collection.is_album
+        ? albumPage(
+            user.handle,
+            collection.playlist_name,
+            collection.playlist_id
+          )
+        : playlistPage(
+            user.handle,
+            collection.playlist_name,
+            collection.playlist_id
+          )
+      share(link, formatShareText(collection.playlist_name, user.name))
 
-    const event = make(Name.SHARE, {
-      kind: collection.is_album ? 'album' : 'playlist',
-      source: action.source,
-      id: collection.playlist_id,
-      url: link
-    })
-    yield* put(event)
-  })
+      const event = make(Name.SHARE, {
+        kind: collection.is_album ? 'album' : 'playlist',
+        source: action.source,
+        id: collection.playlist_id,
+        url: link
+      })
+      yield* put(event)
+    }
+  )
 }
 
 export function* watchShareAudioNftPlaylist() {
-  yield* takeEvery(socialActions.SHARE_AUDIO_NFT_PLAYLIST, function* (
-    action: ReturnType<typeof socialActions.shareAudioNftPlaylist>
-  ) {
-    const { handle } = action
-    const user = yield* select(getUser, { handle })
+  yield* takeEvery(
+    socialActions.SHARE_AUDIO_NFT_PLAYLIST,
+    function* (action: ReturnType<typeof socialActions.shareAudioNftPlaylist>) {
+      const { handle } = action
+      const user = yield* select(getUser, { handle })
 
-    const link = audioNftPlaylistPage(handle)
-    share(link, formatShareText('Audio NFT Playlist', user?.name ?? handle))
+      const link = audioNftPlaylistPage(handle)
+      share(link, formatShareText('Audio NFT Playlist', user?.name ?? handle))
 
-    const event = make(Name.SHARE, {
-      kind: 'audioNftPlaylist',
-      source: action.source,
-      url: link
-    })
-    yield* put(event)
-  })
+      const event = make(Name.SHARE, {
+        kind: 'audioNftPlaylist',
+        source: action.source,
+        url: link
+      })
+      yield* put(event)
+    }
+  )
 }
 
 const sagas = () => {

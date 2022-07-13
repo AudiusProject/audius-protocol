@@ -169,8 +169,7 @@ const DeletedPage = g(
         description={description}
         canonicalUrl={canonicalUrl}
         variant='flush'
-        scrollableSearch
-      >
+        scrollableSearch>
         <div className={styles.headerWrapper}>
           <CoverPhoto
             userId={user ? user.user_id : null}

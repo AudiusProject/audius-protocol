@@ -20,7 +20,7 @@ const waitForBItems = async () => {
   // they are fetched async.
   if (!window.bItems) {
     let cb
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       cb = resolve
       window.addEventListener('B_ITEMS_LOADED', cb)
     })

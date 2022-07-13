@@ -131,8 +131,7 @@ export const ChangePassword = ({
         <div
           className={cn(styles.headerText, {
             [styles.error]: currentPage === Page.FAILURE
-          })}
-        >
+          })}>
           {messages.helpTexts[currentPage]}
           {currentPage === Page.FAILURE && (
             <i className='emoji confused-face'></i>

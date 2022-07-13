@@ -185,7 +185,7 @@ export const actionsMap = {
     state: LineupState<T>,
     action: UpdateLineupOrderAction
   ) {
-    const reorderedEntries = action.orderedIds.map(uid => ({
+    const reorderedEntries = action.orderedIds.map((uid) => ({
       ...state.entries[state.order[uid]]
     }))
     const newOrder = action.orderedIds.reduce<Order>((m, uid, i) => {
@@ -209,10 +209,10 @@ export const actionsMap = {
   },
   [REMOVE]<T>(state: LineupState<T>, action: RemoveAction) {
     const newState = { ...state }
-    newState.entries = state.entries.filter(e => e.uid !== action.uid)
+    newState.entries = state.entries.filter((e) => e.uid !== action.uid)
 
     const { [action.uid]: entryOrder, ...newOrder } = state.order
-    Object.keys(newOrder).forEach(uid => {
+    Object.keys(newOrder).forEach((uid) => {
       newOrder[uid] =
         newOrder[uid] > entryOrder ? newOrder[uid] - 1 : newOrder[uid]
     })
@@ -241,25 +241,29 @@ export const actionsMap = {
  * @param {String} prefix the lineup reducer's prefix, e.g. "FEED"
  * @param {Function} reducer the reducer function to decorate
  */
-export const asLineup = <
-  EntryT,
-  LineupStateType extends LineupState<EntryT>,
-  LineupActionType extends { type: string }
->(
-  prefix: string,
-  reducer: (
+export const asLineup =
+  <
+    EntryT,
+    LineupStateType extends LineupState<EntryT>,
+    LineupActionType extends { type: string }
+  >(
+    prefix: string,
+    reducer: (
+      state: LineupStateType | undefined,
+      action: LineupActionType
+    ) => LineupStateType
+  ): Reducer<LineupStateType, LineupActionType | LineupActions<EntryT>> =>
+  (
     state: LineupStateType | undefined,
-    action: LineupActionType
-  ) => LineupStateType
-): Reducer<LineupStateType, LineupActionType | LineupActions<EntryT>> => (
-  state: LineupStateType | undefined,
-  action: LineupActionType | LineupActions<EntryT>
-): LineupStateType => {
-  const baseActionType = stripPrefix(prefix, action.type) as LineupActions<
-    EntryT
-  >['type']
-  const matchingReduceFunction = actionsMap[baseActionType]
-  if (!matchingReduceFunction) return reducer(state, action as LineupActionType)
-  // @ts-ignore action is never for some reason, ts 4.1 may help here
-  return matchingReduceFunction(state, action as LineupActions<EntryT>)
-}
+    action: LineupActionType | LineupActions<EntryT>
+  ): LineupStateType => {
+    const baseActionType = stripPrefix(
+      prefix,
+      action.type
+    ) as LineupActions<EntryT>['type']
+    const matchingReduceFunction = actionsMap[baseActionType]
+    if (!matchingReduceFunction)
+      return reducer(state, action as LineupActionType)
+    // @ts-ignore action is never for some reason, ts 4.1 may help here
+    return matchingReduceFunction(state, action as LineupActions<EntryT>)
+  }

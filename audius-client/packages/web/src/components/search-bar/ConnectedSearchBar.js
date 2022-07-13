@@ -70,7 +70,7 @@ class ConnectedSearchBar extends Component {
     this.setState({ value: decodedValue })
   }
 
-  onSubmit = value => {
+  onSubmit = (value) => {
     // Encode everything besides tag searches
     if (!value.startsWith('#')) {
       value = encodeURIComponent(value)
@@ -82,18 +82,18 @@ class ConnectedSearchBar extends Component {
     })
   }
 
-  onSelect = value => {
+  onSelect = (value) => {
     const { id, kind } = (() => {
       const selectedUser = this.props.search.users.find(
-        u => value === profilePage(u.handle)
+        (u) => value === profilePage(u.handle)
       )
       if (selectedUser) return { kind: 'profile', id: selectedUser.user_id }
       const selectedTrack = this.props.search.tracks.find(
-        t => value === (t.user ? t.permalink : '')
+        (t) => value === (t.user ? t.permalink : '')
       )
       if (selectedTrack) return { kind: 'track', id: selectedTrack.track_id }
       const selectedPlaylist = this.props.search.playlists.find(
-        p =>
+        (p) =>
           value ===
           (p.user
             ? playlistPage(p.user.handle, p.playlist_name, p.playlist_id)
@@ -102,7 +102,7 @@ class ConnectedSearchBar extends Component {
       if (selectedPlaylist)
         return { kind: 'playlist', id: selectedPlaylist.playlist_id }
       const selectedAlbum = this.props.search.albums.find(
-        a =>
+        (a) =>
           value ===
           (a.user
             ? albumPage(a.user.handle, a.playlist_name, a.playlist_id)
@@ -127,7 +127,7 @@ class ConnectedSearchBar extends Component {
       sections: [
         {
           title: 'Profiles',
-          children: this.props.search.users.map(user => {
+          children: this.props.search.users.map((user) => {
             return {
               key: profilePage(user.handle),
               primary: user.name || user.handle,
@@ -147,7 +147,7 @@ class ConnectedSearchBar extends Component {
         },
         {
           title: 'Tracks',
-          children: this.props.search.tracks.map(track => {
+          children: this.props.search.tracks.map((track) => {
             return {
               key: track.user ? track.permalink : '',
               primary: track.title,
@@ -167,7 +167,7 @@ class ConnectedSearchBar extends Component {
         },
         {
           title: 'Playlists',
-          children: this.props.search.playlists.map(playlist => {
+          children: this.props.search.playlists.map((playlist) => {
             return {
               primary: playlist.playlist_name,
               secondary: playlist.user ? playlist.user.name : '',
@@ -195,7 +195,7 @@ class ConnectedSearchBar extends Component {
         },
         {
           title: 'Albums',
-          children: this.props.search.albums.map(album => {
+          children: this.props.search.albums.map((album) => {
             return {
               key: album.user
                 ? albumPage(
@@ -249,11 +249,11 @@ class ConnectedSearchBar extends Component {
 const mapStateToProps = (state, props) => ({
   search: getSearch(state, props)
 })
-const mapDispatchToProps = dispatch => ({
-  fetchSearch: value => dispatch(fetchSearch(value)),
+const mapDispatchToProps = (dispatch) => ({
+  fetchSearch: (value) => dispatch(fetchSearch(value)),
   cancelFetchSearch: () => dispatch(cancelFetchSearch()),
   clearSearch: () => dispatch(clearSearch()),
-  goToRoute: route => dispatch(pushRoute(route)),
+  goToRoute: (route) => dispatch(pushRoute(route)),
   recordSearchResultClick: ({ term, kind, id, source }) =>
     dispatch(make(Name.SEARCH_RESULT_SELECT, { term, kind, id, source }))
 })

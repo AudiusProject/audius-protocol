@@ -110,8 +110,7 @@ const RewardPanel = ({
         <p
           className={cn(styles.rewardProgressLabel, {
             [styles.complete]: shouldShowCompleted
-          })}
-        >
+          })}>
           {progressLabelFilled}
         </p>
         {shouldShowProgressBar && (
@@ -157,7 +156,7 @@ const useRewardIds = (
   if (rewardsString === null) return []
   const rewards = rewardsString.split(',') as ChallengeRewardID[]
   const filteredRewards: ChallengeRewardID[] = rewards.filter(
-    reward => validRewardIds.has(reward) && !hideConfig[reward]
+    (reward) => validRewardIds.has(reward) && !hideConfig[reward]
   )
   return filteredRewards
 }
@@ -191,9 +190,9 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
 
   const rewardsTiles = rewardIds
     // Filter out challenges that DN didn't return
-    .map(id => userChallenges[id]?.challenge_id)
+    .map((id) => userChallenges[id]?.challenge_id)
     .filter(removeNullable)
-    .map(id => {
+    .map((id) => {
       const props = challengeRewardsConfig[id]
       return <RewardPanel {...props} openModal={openModal} key={props.id} />
     })

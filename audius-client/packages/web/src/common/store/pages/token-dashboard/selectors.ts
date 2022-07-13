@@ -30,10 +30,8 @@ export const getDiscordCode = (state: CommonState) =>
 export const getAssociatedWallets = (state: CommonState) =>
   state.pages.tokenDashboard.associatedWallets
 export const getHasAssociatedWallets = (state: CommonState) => {
-  const {
-    connectedEthWallets: ethWallets,
-    connectedSolWallets: solWallets
-  } = state.pages.tokenDashboard.associatedWallets
+  const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
+    state.pages.tokenDashboard.associatedWallets
   return (ethWallets?.length ?? 0) + (solWallets?.length ?? 0) > 0
 }
 export const getRemoveWallet = (state: CommonState) =>

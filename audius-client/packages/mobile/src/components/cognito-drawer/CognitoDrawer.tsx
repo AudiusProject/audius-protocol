@@ -68,7 +68,7 @@ export const CognitoDrawer = () => {
   }, [dispatchWeb])
 
   const reload = useCallback(() => {
-    setKey(key => key + 1)
+    setKey((key) => key + 1)
   }, [setKey])
 
   // On open, fetch the cognito flow url if don't already have one, otherwise refresh
@@ -85,8 +85,7 @@ export const CognitoDrawer = () => {
       modalName={MODAL_NAME}
       isFullscreen
       isGestureSupported={false}
-      onClose={handleClose}
-    >
+      onClose={handleClose}>
       {uriStatus === Status.SUCCESS && uri ? (
         <WebView key={key} source={{ uri }} javaScriptEnabled />
       ) : uriStatus === Status.LOADING ? (

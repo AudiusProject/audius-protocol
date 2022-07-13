@@ -47,15 +47,16 @@ export const getProfileCollections = createDeepEqualSelector(
     if (!user) return []
     const { handle, _collectionIds } = user
     const userCollections = _collectionIds
-      ?.map(collectionId => collections[(collectionId as unknown) as number])
-      .filter(collection => {
+      ?.map((collectionId) => collections[collectionId as unknown as number])
+      .filter((collection) => {
         if (collection) {
           const { is_delete, _marked_deleted, _moved } = collection
           return !(is_delete || _marked_deleted) || _moved
         }
+        return false
       })
       .map(
-        collection => ({ ...collection, user: { handle } } as UserCollection)
+        (collection) => ({ ...collection, user: { handle } } as UserCollection)
       )
     return userCollections ?? []
   }
@@ -63,12 +64,12 @@ export const getProfileCollections = createDeepEqualSelector(
 
 export const getProfileAlbums = createDeepEqualSelector(
   [getProfileCollections],
-  collections => collections?.filter(({ is_album }) => is_album)
+  (collections) => collections?.filter(({ is_album }) => is_album)
 )
 
 export const getProfilePlaylists = createDeepEqualSelector(
   [getProfileCollections],
-  collections => collections?.filter(({ is_album }) => !is_album)
+  (collections) => collections?.filter(({ is_album }) => !is_album)
 )
 
 export const makeGetProfile = () => {
@@ -111,18 +112,18 @@ export const makeGetProfile = () => {
 
       // Get playlists & albums.
       const c = (users[userId]._collectionIds || [])
-        .map(id =>
-          id in collections ? collections[(id as unknown) as number] : null
+        .map((id) =>
+          id in collections ? collections[id as unknown as number] : null
         )
         .filter(removeNullable)
 
       // Filter out anything marked deleted on backend (is_delete) or locally (_marked_deleted)
       // Or locally moved playlists (_moved)
       let playlists = c.filter(
-        c => (!c.is_album && !(c.is_delete || c._marked_deleted)) || c._moved
+        (c) => (!c.is_album && !(c.is_delete || c._marked_deleted)) || c._moved
       )
       let albums = c.filter(
-        c => (c.is_album && !(c.is_delete || c._marked_deleted)) || c._moved
+        (c) => (c.is_album && !(c.is_delete || c._marked_deleted)) || c._moved
       )
 
       if (sortMode === CollectionSortMode.SAVE_COUNT) {

@@ -82,7 +82,7 @@ export const getModalVisibility = (state: CommonState, modal: Modals) =>
   state.ui.modals[modal]
 
 export const getModalIsOpen = (state: CommonState) =>
-  Object.values(state.ui.modals).some(isOpen => isOpen)
+  Object.values(state.ui.modals).some((isOpen) => isOpen)
 
 export const { setVisibility } = slice.actions
 

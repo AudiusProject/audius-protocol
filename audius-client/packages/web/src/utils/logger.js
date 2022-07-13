@@ -1,7 +1,7 @@
 const preserveLogs =
   window.localStorage && window.localStorage.getItem('preserve-logs')
 
-export const storeLogger = store => {
+export const storeLogger = (store) => {
   if (
     process.env.REACT_APP_ENVIRONMENT === 'production' &&
     !process.env.REACT_APP_NATIVE_MOBILE &&

@@ -10,8 +10,7 @@ const MODAL_NAME = 'MobileConnectWalletsDrawer'
 
 const messages = {
   title: 'Connect Wallets',
-  text:
-    'To connect additional wallets please visit audius.co from a desktop browser'
+  text: 'To connect additional wallets please visit audius.co from a desktop browser'
 }
 
 const createStyles = (themeColors: ThemeColors) =>

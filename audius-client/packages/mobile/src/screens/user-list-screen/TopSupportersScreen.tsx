@@ -38,7 +38,7 @@ export const TopSupportersScreen = () => {
   const { params } = useRoute<'TopSupporters'>()
   const { userId, source } = params
   const supportersId = useSelectorWeb(getSupportersId)
-  const supportersUser = useSelectorWeb(state =>
+  const supportersUser = useSelectorWeb((state) =>
     getUser(state, { id: supportersId })
   )
   const dispatchWeb = useDispatchWeb()

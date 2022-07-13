@@ -37,10 +37,10 @@ const DeletePlaylistConfirmationModal = () => {
     handleClose()
   }, [dispatch, setStackReset, playlistId, handleClose])
 
-  const actionCallbacks = useMemo(() => [handleDelete, handleClose], [
-    handleDelete,
-    handleClose
-  ])
+  const actionCallbacks = useMemo(
+    () => [handleDelete, handleClose],
+    [handleDelete, handleClose]
+  )
 
   const didSelectRow = (row: number) => {
     actionCallbacks[row]()

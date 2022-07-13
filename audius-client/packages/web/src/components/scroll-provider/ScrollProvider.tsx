@@ -35,14 +35,14 @@ export const ScrollProvider = memo((props: { children: JSX.Element }) => {
   const setScrollForRoute = useCallback(
     (route: string, scroll: number) => {
       let inBlacklist = false
-      SCROLL_PRESERVATION_BLACKLIST.forEach(path => {
+      SCROLL_PRESERVATION_BLACKLIST.forEach((path) => {
         const match = matchPath(route, { path })
         if (match) {
           inBlacklist = true
         }
       })
       if (inBlacklist) return
-      setScrollRecords(s => ({ ...s, [route]: scroll }))
+      setScrollRecords((s) => ({ ...s, [route]: scroll }))
     },
     [setScrollRecords]
   )
@@ -60,8 +60,7 @@ export const ScrollProvider = memo((props: { children: JSX.Element }) => {
         value={{
           setScrollForRoute,
           getScrollForRoute
-        }}
-      >
+        }}>
         {props.children}
       </ScrollContext.Provider>
     )

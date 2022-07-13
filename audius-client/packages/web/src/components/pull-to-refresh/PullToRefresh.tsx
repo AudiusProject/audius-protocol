@@ -78,8 +78,7 @@ const InlinePullToRefresh = memo(
       <div
         className={cn(styles.wrapper, {
           [styles.addPadding]: hasReachedTopPoint && !touchDown && shouldPad
-        })}
-      >
+        })}>
         <animated.div
           className={cn(styles.pullToRefresh, {
             [styles.noPad]: !shouldPad,
@@ -90,8 +89,7 @@ const InlinePullToRefresh = memo(
             transform: springProps.y.interpolate(interpTransform),
             // @ts-ignore
             opacity: springProps.y.interpolate(interpOpacity)
-          }}
-        >
+          }}>
           <div className={styles.icon}>
             {usePullAnimation ? (
               <Lottie

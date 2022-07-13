@@ -92,10 +92,12 @@ type MilestoneNotificationProps = {
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const entity = useSelectorWeb(
-    state => getNotificationEntity(state, notification),
+    (state) => getNotificationEntity(state, notification),
     isEqual
   )
-  const user = useSelectorWeb(state => getNotificationUser(state, notification))
+  const user = useSelectorWeb((state) =>
+    getNotificationUser(state, notification)
+  )
 
   const navigation = useDrawerNavigation()
 

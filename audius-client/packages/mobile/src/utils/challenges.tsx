@@ -151,7 +151,7 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
         native: { screen: 'AccountVerificationScreen' },
         web: { route: ACCOUNT_VERIFICATION_SETTINGS_PAGE }
       },
-      renderIcon: color => <IconCheck fill={color} />,
+      renderIcon: (color) => <IconCheck fill={color} />,
       iconPosition: 'right'
     }
   },
@@ -167,7 +167,7 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
         native: { screen: 'trending' },
         web: { route: TRENDING_PAGE }
       },
-      renderIcon: color => <IconArrow fill={color} />,
+      renderIcon: (color) => <IconArrow fill={color} />,
       iconPosition: 'right'
     }
   },
@@ -226,7 +226,7 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
     progressLabel: challenges.trackUploadProgressLabel,
     buttonInfo: {
       label: challenges.trackUploadButton,
-      renderIcon: color => <IconUpload fill={color} />,
+      renderIcon: (color) => <IconUpload fill={color} />,
       iconPosition: 'right'
     }
   },
@@ -260,59 +260,57 @@ export const challengesConfig: Record<ChallengeRewardID, ChallengeConfig> = {
   }
 }
 
-export const trendingRewardsConfig: Record<
-  TrendingRewardID,
-  ChallengeConfig
-> = {
-  'trending-playlist': {
-    title: 'Top 5 Trending Playlists',
-    icon: ChartIncreasing,
-    description: 'Winners are selected every Friday at Noon PT!',
-    buttonInfo: {
-      label: 'See More',
-      renderIcon: color => <IconCheck fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'trending-track': {
-    title: 'Top 5 Trending Tracks',
-    icon: ChartIncreasing,
-    description: 'Winners are selected every Friday at Noon PT!',
-    buttonInfo: {
-      label: 'See More',
-      renderIcon: color => <IconCheck fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'top-api': {
-    title: 'Top 10 API Apps',
-    icon: NerdFace,
-    description: 'The top 10 Audius API apps each month win',
-    buttonInfo: {
-      label: 'More Info',
-      renderIcon: color => <IconCheck fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'verified-upload': {
-    title: 'First Upload With Your Verified Account',
-    icon: ChartIncreasing,
-    description:
-      'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us',
-    buttonInfo: {
-      label: 'See More',
-      renderIcon: color => <IconCheck fill={color} />,
-      iconPosition: 'right'
-    }
-  },
-  'trending-underground': {
-    title: 'Top 5 Underground Trending',
-    icon: ChartIncreasing,
-    description: 'Winners are selected every Friday at Noon PT!',
-    buttonInfo: {
-      label: 'See More',
-      renderIcon: color => <IconCheck fill={color} />,
-      iconPosition: 'right'
+export const trendingRewardsConfig: Record<TrendingRewardID, ChallengeConfig> =
+  {
+    'trending-playlist': {
+      title: 'Top 5 Trending Playlists',
+      icon: ChartIncreasing,
+      description: 'Winners are selected every Friday at Noon PT!',
+      buttonInfo: {
+        label: 'See More',
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'trending-track': {
+      title: 'Top 5 Trending Tracks',
+      icon: ChartIncreasing,
+      description: 'Winners are selected every Friday at Noon PT!',
+      buttonInfo: {
+        label: 'See More',
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'top-api': {
+      title: 'Top 10 API Apps',
+      icon: NerdFace,
+      description: 'The top 10 Audius API apps each month win',
+      buttonInfo: {
+        label: 'More Info',
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'verified-upload': {
+      title: 'First Upload With Your Verified Account',
+      icon: ChartIncreasing,
+      description:
+        'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us',
+      buttonInfo: {
+        label: 'See More',
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    'trending-underground': {
+      title: 'Top 5 Underground Trending',
+      icon: ChartIncreasing,
+      description: 'Winners are selected every Friday at Noon PT!',
+      buttonInfo: {
+        label: 'See More',
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
     }
   }
-}

@@ -43,7 +43,7 @@ const useDelayHandler = <T>(
   return {
     delayedHandler: (newState: Partial<T>, ...args: any) => {
       setAllowOverwrite(false)
-      setOverwrittenValues(v => ({ ...v, ...newState }))
+      setOverwrittenValues((v) => ({ ...v, ...newState }))
       setTimeout(() => {
         handler(...args)
         setAllowOverwrite(true)

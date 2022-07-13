@@ -27,7 +27,7 @@ export const useOrderedLoad = (length: number) => {
     (index: number) => {
       if (isLoading(index)) return false
       if (loaded[index] === false) {
-        setLoaded(loaded => {
+        setLoaded((loaded) => {
           if (index >= loaded.length) return loaded
           const newLoaded = [...loaded]
           newLoaded[index] = true
@@ -41,7 +41,7 @@ export const useOrderedLoad = (length: number) => {
   const updater = useCallback(
     (newLength: number) => {
       if (loaded.length < newLength) {
-        setLoaded(loaded => {
+        setLoaded((loaded) => {
           const diff = newLength - loaded.length
           const append = new Array(diff).fill(false)
           return loaded.concat(append)

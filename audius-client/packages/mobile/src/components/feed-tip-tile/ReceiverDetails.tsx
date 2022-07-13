@@ -89,8 +89,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
           }
           onPress={goToReceiverProfile}
           onPressIn={handlePressInName}
-          onPressOut={handlePressOutName}
-        >
+          onPressOut={handlePressOutName}>
           <Text variant='h3' style={styles.receiverName}>
             {receiver.name}
           </Text>
@@ -105,8 +104,7 @@ export const ReceiverDetails = ({ receiver }: ReceiverDetailsProps) => {
           }
           onPress={goToReceiverProfile}
           onPressIn={handlePressInHandle}
-          onPressOut={handlePressOutHandle}
-        >
+          onPressOut={handlePressOutHandle}>
           @{receiver.handle}
         </Text>
       </View>

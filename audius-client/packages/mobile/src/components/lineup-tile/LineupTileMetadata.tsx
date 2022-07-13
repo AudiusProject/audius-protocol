@@ -104,8 +104,7 @@ export const LineupTileMetadata = ({
                   pressed && styles.titlesPressed
                 ]}
                 weight='bold'
-                numberOfLines={1}
-              >
+                numberOfLines={1}>
                 {title}
               </Text>
               {!isPlaying ? null : (
@@ -124,8 +123,7 @@ export const LineupTileMetadata = ({
                   pressed && styles.titlesPressed
                 ]}
                 weight='medium'
-                numberOfLines={1}
-              >
+                numberOfLines={1}>
                 {artistName}
               </Text>
               <UserBadges

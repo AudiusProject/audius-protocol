@@ -31,8 +31,7 @@ const MobileUploadDrawer = () => {
     <Drawer
       isOpen={!NATIVE_MOBILE && isOpen}
       keyboardVisible={keyboardVisible}
-      onClose={handleClose}
-    >
+      onClose={handleClose}>
       <div className={styles.drawer}>
         <div className={styles.top}>
           <div className={styles.cta}>

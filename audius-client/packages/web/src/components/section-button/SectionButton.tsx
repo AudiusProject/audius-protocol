@@ -14,8 +14,7 @@ const SectionButton = ({ text, onClick, isMobile }: SectionButtonProps) => {
   return (
     <div
       className={cn(styles.container, { [styles.isMobile]: isMobile })}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       <div className={styles.text}>{text}</div>
       <IconArrow className={styles.iconArrow} />
     </div>

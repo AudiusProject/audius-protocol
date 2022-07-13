@@ -83,8 +83,7 @@ export const FormImageInput = ({
       style={[style, stylesProp?.root]}
       onPress={handlePress}
       onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-    >
+      onPressOut={handlePressOut}>
       <DynamicImage
         uri={isDefaultImage ? `https://audius.co/${url}` : url}
         styles={{
@@ -92,8 +91,7 @@ export const FormImageInput = ({
           image: [styles.image, stylesProp?.image]
         }}
         onLoad={() => setIsLoading(false)}
-        resizeMode={isDefaultImage ? 'repeat' : undefined}
-      >
+        resizeMode={isDefaultImage ? 'repeat' : undefined}>
         <View style={styles.backdrop} />
         <Animated.View style={[styles.centerIcon, { transform: [{ scale }] }]}>
           {isLoading || isProcessing ? (

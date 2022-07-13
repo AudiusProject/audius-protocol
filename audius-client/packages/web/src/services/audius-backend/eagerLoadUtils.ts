@@ -42,7 +42,7 @@ export const waitForLibsInit = async () => {
   // @ts-ignore
   if (window.audiusLibs) return
   // Add an event listener and resolve when that returns
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     // @ts-ignore
     if (window.audiusLibs) resolve()
     window.addEventListener(LIBS_INITTED_EVENT, resolve)
@@ -95,7 +95,7 @@ const parmsToQS = (
 ) => {
   if (!params) return ''
   return Object.keys(params)
-    .map(k => {
+    .map((k) => {
       if (Array.isArray(params[k])) {
         return (params[k] as string[])
           .map((val: string) =>

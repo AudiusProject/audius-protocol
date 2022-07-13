@@ -219,50 +219,44 @@ const CardSearchPage = ({
     }
   })()
 
-  const cards = entities.map(e => {
-    const {
-      id,
-      userId,
-      route,
-      primaryText,
-      secondaryText,
-      imageSize
-    } = (() => {
-      switch (cardType) {
-        case CardType.USER: {
-          const user = e as User
-          const followers = `${user.follower_count} ${cardSearchPageMessages.followers}`
-          return {
-            id: user.user_id,
-            userId: user.user_id,
-            route: profilePage(user.handle),
-            primaryText: user.name,
-            secondaryText: followers,
-            imageSize: user._profile_picture_sizes,
-            isVerified: user.is_verified
+  const cards = entities.map((e) => {
+    const { id, userId, route, primaryText, secondaryText, imageSize } =
+      (() => {
+        switch (cardType) {
+          case CardType.USER: {
+            const user = e as User
+            const followers = `${user.follower_count} ${cardSearchPageMessages.followers}`
+            return {
+              id: user.user_id,
+              userId: user.user_id,
+              route: profilePage(user.handle),
+              primaryText: user.name,
+              secondaryText: followers,
+              imageSize: user._profile_picture_sizes,
+              isVerified: user.is_verified
+            }
+          }
+          case CardType.ALBUM:
+          case CardType.PLAYLIST: {
+            const routeFunc =
+              cardType === CardType.ALBUM ? albumPage : playlistPage
+            const collection = e as UserCollection
+            return {
+              userId: collection.playlist_owner_id,
+              id: collection.playlist_id,
+              route: routeFunc(
+                collection.user.handle,
+                collection.playlist_name,
+                collection.playlist_id
+              ),
+              primaryText: collection.playlist_name,
+              secondaryText: collection.user.handle,
+              imageSize: collection._cover_art_sizes,
+              isVerified: false
+            }
           }
         }
-        case CardType.ALBUM:
-        case CardType.PLAYLIST: {
-          const routeFunc =
-            cardType === CardType.ALBUM ? albumPage : playlistPage
-          const collection = e as UserCollection
-          return {
-            userId: collection.playlist_owner_id,
-            id: collection.playlist_id,
-            route: routeFunc(
-              collection.user.handle,
-              collection.playlist_name,
-              collection.playlist_id
-            ),
-            primaryText: collection.playlist_name,
-            secondaryText: collection.user.handle,
-            imageSize: collection._cover_art_sizes,
-            isVerified: false
-          }
-        }
-      }
-    })()
+      })()
 
     return (
       <Card
@@ -434,8 +428,7 @@ const SearchPageContent = (props: SearchPageContentProps) => {
         <div
           className={cn(styles.tabBar, {
             [styles.nativeTabBar]: NATIVE_MOBILE
-          })}
-        >
+          })}>
           {tabs}
         </div>
       </>
@@ -446,8 +439,7 @@ const SearchPageContent = (props: SearchPageContentProps) => {
     <MobilePageContainer
       title={`${searchTitle} ${searchText}`}
       description={`Search results for ${searchText}`}
-      canonicalUrl={fullSearchResultsPage(searchText)}
-    >
+      canonicalUrl={fullSearchResultsPage(searchText)}>
       <div className={styles.tabContainer}>
         <div className={styles.pageContainer}>{body}</div>
       </div>

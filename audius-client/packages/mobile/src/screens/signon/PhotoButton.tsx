@@ -55,8 +55,7 @@ const PhotoButton = ({
       activeOpacity={0.6}
       onPress={() => {
         doAction()
-      }}
-    >
+      }}>
       <View style={styles.cameraBtnTitleContainer}>
         <IconCamera height={18} width={22} fill={'#7E1BCC'} />
         <Text style={styles.cameraBtnTitle}>

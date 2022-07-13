@@ -15,7 +15,7 @@ import { Drawer, DrawerProps } from './Drawer'
 export const useDrawerState = (modalName: Modals) => {
   const dispatchWeb = useDispatchWeb()
 
-  const modalState = useSelectorWeb(state =>
+  const modalState = useSelectorWeb((state) =>
     getModalVisibility(state, modalName)
   )
 

@@ -27,14 +27,15 @@ const makeSetInitialCastMethod = (ctx: CommonStoreContext) => {
  */
 const makeWatchUpdateCastMethod = (ctx: CommonStoreContext) => {
   function* watchUpdateCastMethod() {
-    yield takeEvery(updateMethod.type, function* (
-      action: ReturnType<typeof updateMethod>
-    ) {
-      const { method, persist } = action.payload
-      if (persist) {
-        ctx.setLocalStorageItem(CAST_METHOD, method)
+    yield takeEvery(
+      updateMethod.type,
+      function* (action: ReturnType<typeof updateMethod>) {
+        const { method, persist } = action.payload
+        if (persist) {
+          ctx.setLocalStorageItem(CAST_METHOD, method)
+        }
       }
-    })
+    )
   }
   return watchUpdateCastMethod
 }

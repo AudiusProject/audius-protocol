@@ -161,20 +161,17 @@ export const ColorTile = ({
         styles.shadowContainer,
         { shadowColor, shadowOpacity, transform: [{ scale }] },
         style
-      ]}
-    >
+      ]}>
       <LinearGradient
         colors={gradientColors}
         useAngle
         angle={gradientAngle}
-        style={styles.gradientContainer}
-      >
+        style={styles.gradientContainer}>
         <Pressable
           style={[styles.colorTile, !!emoji && styles.hasEmoji]}
           onPress={handlePress}
           onPressIn={handlePressInScale}
-          onPressOut={handlePressOutScale}
-        >
+          onPressOut={handlePressOutScale}>
           <View style={{ backgroundColor: 'transparent' }}>
             <Text style={[styles.title, !!emoji && styles.emojiTitle]}>
               {title}

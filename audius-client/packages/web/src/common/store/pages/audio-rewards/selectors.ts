@@ -15,7 +15,7 @@ export const getUserChallengeSpecifierMap = (state: CommonState) =>
 // Returns just a single challenge per challengeId
 export const getUserChallenges = createSelector(
   [getUserChallengeSpecifierMap],
-  challenges => {
+  (challenges) => {
     return Object.values(challenges).reduce((acc, cur) => {
       const challenge = Object.values(cur)[0]
       if (!challenge) return acc // Shouldn't happen
@@ -28,7 +28,7 @@ export const getUserChallenges = createSelector(
 )
 
 export const getUndisbursedUserChallenges = (state: CommonState) =>
-  state.pages.audioRewards.undisbursedChallenges.filter(challenge => {
+  state.pages.audioRewards.undisbursedChallenges.filter((challenge) => {
     return !(
       state.pages.audioRewards.disbursedChallenges[challenge.challenge_id] ?? []
     ).includes(challenge.specifier)

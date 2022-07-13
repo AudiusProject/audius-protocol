@@ -31,11 +31,11 @@ function* watchFetchSaves() {
           offset: 0,
           limit
         })
-        const tracks = savedTracks.map(save => save.track)
+        const tracks = savedTracks.map((save) => save.track)
 
         yield processAndCacheTracks(tracks)
 
-        const saves = savedTracks.map(save => ({
+        const saves = savedTracks.map((save) => ({
           created_at: save.timestamp,
           save_item_id: save.track.track_id
         }))

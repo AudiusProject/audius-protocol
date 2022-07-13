@@ -16,8 +16,7 @@ const PreviousButton = ({ onClick, isMobile }: PreviousButtonProps) => {
         [styles.buttonFixedSize]: isMobile,
         [styles.previousNext]: isMobile
       })}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       <IconPrev className={styles.noAnimation} />
     </button>
   )

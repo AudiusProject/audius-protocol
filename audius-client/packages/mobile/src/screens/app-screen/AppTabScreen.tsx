@@ -118,7 +118,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             })
           }
         },
-        beforeRemove: e => {
+        beforeRemove: (e) => {
           // hack for now to prevent pop for some pages
           if (
             !e.target?.includes('EditProfile') &&
@@ -138,8 +138,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             })
           }
         }
-      }}
-    >
+      }}>
       {baseScreen(Stack)}
       <Stack.Screen
         name='Track'
@@ -170,7 +169,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         <Stack.Screen
           name='Search'
           component={SearchScreen}
-          options={props => ({
+          options={(props) => ({
             ...screenOptions(props),
             cardStyleInterpolator: forFade
           })}

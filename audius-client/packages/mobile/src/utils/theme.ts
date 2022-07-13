@@ -269,7 +269,7 @@ export const useTheme = (baseStyles: object, toTheme: object) => {
   const themeStyles = useThemeColors()
 
   const newStyles = {}
-  Object.keys(toTheme).forEach(key => {
+  Object.keys(toTheme).forEach((key) => {
     // @ts-ignore
     if (toTheme[key] in themeStyles) {
       // @ts-ignore

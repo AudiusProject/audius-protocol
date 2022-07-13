@@ -7,6 +7,7 @@ export type TrendingTabScreenParamList = AppTabScreenParamList & {
   Trending: undefined
 }
 
-export const TrendingTabScreen = createAppTabScreenStack<
-  TrendingTabScreenParamList
->(Stack => <Stack.Screen name='Trending' component={TrendingScreen} />)
+export const TrendingTabScreen =
+  createAppTabScreenStack<TrendingTabScreenParamList>((Stack) => (
+    <Stack.Screen name='Trending' component={TrendingScreen} />
+  ))

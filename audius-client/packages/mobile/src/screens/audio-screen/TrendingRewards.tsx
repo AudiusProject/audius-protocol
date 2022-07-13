@@ -30,7 +30,7 @@ const useRewardIds = () => {
   const rewardsString = useRemoteVar(StringKeys.TRENDING_REWARD_IDS)
   if (!rewardsString) return []
   const rewards = rewardsString.split(',') as TrendingRewardID[]
-  const filteredRewards: TrendingRewardID[] = rewards.filter(reward =>
+  const filteredRewards: TrendingRewardID[] = rewards.filter((reward) =>
     validRewardIds.has(reward)
   )
   return filteredRewards
@@ -75,7 +75,7 @@ export const TrendingRewards = () => {
     dispatchWeb(setVisibility({ modal, visible: true }))
   }
 
-  const rewardsPanels = rewardIds.map(id => {
+  const rewardsPanels = rewardIds.map((id) => {
     const props = trendingRewardsConfig[id]
     return <Panel {...props} onPress={() => openModal(id)} key={props.title} />
   })

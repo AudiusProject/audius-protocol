@@ -36,8 +36,8 @@ class Explore {
           [AuthHeaders.Signature]: signature
         }
       })
-        .then(res => res.json())
-        .then(res => res.listens)
+        .then((res) => res.json())
+        .then((res) => res.listens)
     } catch (e) {
       console.error(e)
       return []
@@ -47,15 +47,15 @@ class Explore {
   static async getUserListens(trackIds: ID[]): Promise<UserListens> {
     try {
       const { data, signature } = await AudiusBackend.signData()
-      const idQuery = trackIds.map(id => `&trackIdList=${id}`).join('')
+      const idQuery = trackIds.map((id) => `&trackIdList=${id}`).join('')
       return fetch(`${IDENTITY_SERVICE}/users/listens?${idQuery}`, {
         headers: {
           [AuthHeaders.Message]: data,
           [AuthHeaders.Signature]: signature
         }
       })
-        .then(res => res.json())
-        .then(res => res.listenMap)
+        .then((res) => res.json())
+        .then((res) => res.listenMap)
     } catch (e) {
       console.error(e)
       return {}
@@ -120,11 +120,8 @@ class Explore {
 
   static async getTopFolloweeSaves(limit = 25) {
     try {
-      const tracks: UserTrack[] = await libs().discoveryProvider.getTopFolloweeSaves(
-        'track',
-        limit,
-        true
-      )
+      const tracks: UserTrack[] =
+        await libs().discoveryProvider.getTopFolloweeSaves('track', limit, true)
       return tracks
     } catch (e) {
       console.error(e)
@@ -168,7 +165,7 @@ class Explore {
     limit = 16
   ): Promise<Collection[]> {
     try {
-      const requests = moods.map(mood => {
+      const requests = moods.map((mood) => {
         return libs().discoveryProvider.getTopPlaylists(
           'playlist',
           limit,
@@ -180,7 +177,7 @@ class Explore {
       const playlistsByMood = await Promise.all(requests)
 
       let allPlaylists: CollectionWithScore[] = []
-      playlistsByMood.forEach(playlists => {
+      playlistsByMood.forEach((playlists) => {
         allPlaylists = allPlaylists.concat(playlists)
       })
       return allPlaylists.sort(scoreComparator).slice(0, 20)

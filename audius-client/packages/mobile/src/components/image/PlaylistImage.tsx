@@ -50,7 +50,7 @@ const usePlaylistImage = (playlist: CollectionImage, user: UserMultihash) => {
         .filter(Boolean)
         .concat(gateways)
         .concat(publicGateways)
-        .map(gateway => `${gateway}/ipfs/${playlist.cover_art_sizes}`)
+        .map((gateway) => `${gateway}/ipfs/${playlist.cover_art_sizes}`)
       const legacyIdx = legacyUrls.findIndex(
         (route: string) => (source?.uri ?? '') === route
       )

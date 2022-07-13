@@ -39,13 +39,13 @@ export const checkState = Object.freeze({
   VALID: 'success'
 })
 
-const getNumberRequirement = pwd => {
+const getNumberRequirement = (pwd) => {
   if (pwd.length === 0) return checkState.DEFAULT
   if (!/\d/.test(pwd)) return checkState.ERROR
   return checkState.VALID
 }
 
-const getLenRequirement = pwd => {
+const getLenRequirement = (pwd) => {
   if (pwd.length === 0) return checkState.DEFAULT
   if (pwd.length < MIN_PASSWORD_LEN) return checkState.ERROR
   return checkState.VALID
@@ -57,7 +57,7 @@ const getMatchRequirement = (pwd, confirm) => {
   return checkState.VALID
 }
 
-const getCommonPasswordCheck = async pwd => {
+const getCommonPasswordCheck = async (pwd) => {
   if (pwd.length < MIN_PASSWORD_LEN) return checkState.DEFAULT
   if (await commonPasswordCheck(pwd)) return checkState.ERROR
   return checkState.VALID
@@ -84,7 +84,7 @@ export const PasswordPage = ({
     // When the password blurs, check if the number and length req are met
     if (password) {
       const commonCheck = await getCommonPasswordCheck(password)
-      setRequirements(requirements => ({
+      setRequirements((requirements) => ({
         ...requirements,
         number: getNumberRequirement(password),
         length: getLenRequirement(password),
@@ -100,14 +100,14 @@ export const PasswordPage = ({
   const onPasswordConfirmBlur = () => {
     // When the password confirm blurs, check if the match req is met
     if (password && passwordConfirm) {
-      setRequirements(requirements => ({
+      setRequirements((requirements) => ({
         ...requirements,
         match: getMatchRequirement(password, passwordConfirm)
       }))
     }
   }
 
-  const handlePasswordChange = password => {
+  const handlePasswordChange = (password) => {
     setPassword(password)
     validatePassword()
   }
@@ -131,7 +131,7 @@ export const PasswordPage = ({
           ? checkState.VALID
           : checkState.DEFAULT
         : await getCommonPasswordCheck(password)
-    setRequirements(requirements => ({
+    setRequirements((requirements) => ({
       ...requirements,
       number,
       length,
@@ -143,13 +143,13 @@ export const PasswordPage = ({
     }))
   }, [password, passwordConfirm, requirements])
 
-  const onPasswordConfirmChange = passwordConfirm => {
+  const onPasswordConfirmChange = (passwordConfirm) => {
     setPasswordConfirm(passwordConfirm)
     if (
       requirements.match !== checkState.DEFAULT ||
       password.length <= passwordConfirm.length
     ) {
-      setRequirements(requirements => ({
+      setRequirements((requirements) => ({
         ...requirements,
         match:
           passwordConfirm === ''
@@ -167,13 +167,13 @@ export const PasswordPage = ({
     }
   }
 
-  const onConfirmKeyDown = e => {
+  const onConfirmKeyDown = (e) => {
     if (e.key === 'Enter') onClickContinue()
   }
 
   const fulfillsRequirements = () =>
     Object.keys(requirements).every(
-      req => requirements[req] === checkState.VALID
+      (req) => requirements[req] === checkState.VALID
     )
 
   const onTermsOfServiceClick = () => {
@@ -193,18 +193,17 @@ export const PasswordPage = ({
     { status: requirements.match, label: messages.checks[2] }
   ]
   const isValid = Object.keys(requirements).every(
-    req => requirements[req] === checkState.VALID
+    (req) => requirements[req] === checkState.VALID
   )
   const hasError = Object.keys(requirements).some(
-    req => requirements[req] === checkState.ERROR
+    (req) => requirements[req] === checkState.ERROR
   )
 
   return (
     <div
       className={cn(styles.container, {
         [styles.isMobile]: isMobile
-      })}
-    >
+      })}>
       <h2 className={styles.header}>{messages.header}</h2>
       <div className={styles.warning}>
         <p className={styles.text}>

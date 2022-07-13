@@ -70,19 +70,15 @@ const slice = createSlice({
   initialState,
   reducers: {
     fetchAccount: () => {},
-    fetchAccountRequested: state => {
+    fetchAccountRequested: (state) => {
       state.status = Status.LOADING
     },
     fetchAccountSucceeded: (
       state,
       action: PayloadAction<FetchAccountSucceededPayload>
     ) => {
-      const {
-        userId,
-        orderedPlaylists,
-        collections,
-        hasFavoritedItem
-      } = action.payload
+      const { userId, orderedPlaylists, collections, hasFavoritedItem } =
+        action.payload
       state.userId = userId
       state.orderedPlaylists = orderedPlaylists
       state.collections = keyBy(collections, 'id')
@@ -95,10 +91,10 @@ const slice = createSlice({
     ) => {
       state.status = Status.ERROR
     },
-    fetchAccountNoInternet: state => {
+    fetchAccountNoInternet: (state) => {
       state.connectivityFailure = true
     },
-    setReachable: state => {
+    setReachable: (state) => {
       state.connectivityFailure = false
     },
     addAccountPlaylist: (state, action: PayloadAction<AccountCollection>) => {
@@ -142,10 +138,10 @@ const slice = createSlice({
         ...keyBy(collections, 'id')
       }
     },
-    didFavoriteItem: state => {
+    didFavoriteItem: (state) => {
       state.hasFavoritedItem = true
     },
-    setNeedsAccountRecovery: state => {
+    setNeedsAccountRecovery: (state) => {
       state.needsAccountRecovery = true
     },
     setPlaylistOrder: (state, action: PayloadAction<{ order: string[] }>) => {

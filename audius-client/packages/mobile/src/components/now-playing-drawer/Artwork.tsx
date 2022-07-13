@@ -50,7 +50,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
     size: SquareSizes.SIZE_1000_BY_1000
   })
 
-  const dominantColors = useSelectorWeb(state =>
+  const dominantColors = useSelectorWeb((state) =>
     getDominantColorsByTrack(state, {
       track
     })
@@ -70,8 +70,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
         offset={[0, 1]}
         radius={15}
         distance={10}
-        startColor={shadowColor}
-      >
+        startColor={shadowColor}>
         <View style={styles.image}>
           <DynamicImage uri={image} />
         </View>

@@ -37,7 +37,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
   const isArtist = is_creator || track_count > 0
   const isTippingEnabled = getFeatureEnabled(FeatureFlags.TIPPING_ENABLED)
 
-  const handleClick: MouseEventHandler = useCallback(event => {
+  const handleClick: MouseEventHandler = useCallback((event) => {
     event.stopPropagation()
   }, [])
 

@@ -40,9 +40,11 @@ export const ChallengeRewardNotification = (
   const dispatch = useDispatch()
   const record = useRecord()
 
-  const { amount: rewardAmount, title, icon } = challengeRewardsConfig[
-    challengeId
-  ]
+  const {
+    amount: rewardAmount,
+    title,
+    icon
+  } = challengeRewardsConfig[challengeId]
 
   const handleClick = useCallback(() => {
     dispatch(push(AUDIO_PAGE))

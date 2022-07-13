@@ -189,13 +189,12 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
     return (
       <SettingsCard
         title='Appearance'
-        description="Enable dark mode or choose 'Auto' to change with your system settings"
-      >
+        description="Enable dark mode or choose 'Auto' to change with your system settings">
         <TabSlider
           className={styles.cardSlider}
           options={options}
           selected={theme || Theme.DEFAULT}
-          onSelectOption={option => toggleTheme(option)}
+          onSelectOption={(option) => toggleTheme(option)}
           key={`tab-slider-${options.length}`}
         />
       </SettingsCard>
@@ -230,14 +229,12 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
         description={description}
         containerClassName={styles.settingsPageContainer}
         contentClassName={styles.settingsPageContent}
-        header={header}
-      >
+        header={header}>
         <div className={styles.settings}>
           {this.renderThemeCard()}
           <SettingsCard
             title={messages.verifiedTitle}
-            description={messages.getVerified}
-          >
+            description={messages.getVerified}>
             <VerificationModal
               userId={userId}
               handle={handle}
@@ -251,8 +248,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
           </SettingsCard>
           <SettingsCard
             title='NOTIFICATIONS'
-            description='Review your notifications preferences'
-          >
+            description='Review your notifications preferences'>
             <Button
               onClick={this.showNotificationSettings}
               className={cn(styles.cardButton, styles.resetButton)}
@@ -264,15 +260,13 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
           </SettingsCard>
           <SettingsCard
             title='Account Recovery Email'
-            description='Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.'
-          >
+            description='Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.'>
             <Toast
               tooltipClassName={styles.cardToast}
               text={this.state.emailToastText}
               open={!!this.state.emailToastText}
               placement={ComponentPlacement.RIGHT}
-              fillParent={false}
-            >
+              fillParent={false}>
               <Button
                 onClick={this.showEmailToast}
                 className={cn(styles.cardButton, styles.resetButton)}
@@ -287,8 +281,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
           {!isMobile() && !isElectron() && (
             <SettingsCard
               title='Get Our Desktop App'
-              description='For the best experience, we recommend downloading the Audius Desktop App'
-            >
+              description='For the best experience, we recommend downloading the Audius Desktop App'>
               <Button
                 onClick={this.downloadDesktopApp}
                 className={cn(styles.cardButton, styles.downloadButton)}
@@ -307,8 +300,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
           )}
           <SettingsCard
             title={messages.changePassword}
-            description={messages.changePasswordDescription}
-          >
+            description={messages.changePasswordDescription}>
             <Button
               onClick={this.showChangePasswordModal}
               className={cn(styles.cardButton, styles.changePasswordButton)}
@@ -348,8 +340,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
           showDismissButton
           bodyClassName={styles.modalBody}
           headerContainerClassName={styles.modalHeader}
-          titleClassName={styles.modalTitle}
-        >
+          titleClassName={styles.modalTitle}>
           <ConfirmationBox
             text={SIGN_OUT_MODAL_TEXT}
             rightText='NEVERMIND'

@@ -91,7 +91,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   const tabsWidth = screenWidth - horizontalPadding * 2
   const tabWidth = tabsWidth / state.routes.length
 
-  const isFocused = tabIndex => state.index === tabIndex
+  const isFocused = (tabIndex) => state.index === tabIndex
   const styles = useStyles()
   const { neutral } = useThemeColors()
 
@@ -127,8 +127,10 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
   return (
     <View style={styles.tabBarContainer}>
       <View
-        style={[styles.tabsContainer, { paddingHorizontal: horizontalPadding }]}
-      >
+        style={[
+          styles.tabsContainer,
+          { paddingHorizontal: horizontalPadding }
+        ]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key]
           const label = options.tabBarLabel ?? options.title ?? route.name
@@ -137,7 +139,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
           const inputRange = state.routes.map((_, i) => i)
           const opacity = position.interpolate({
             inputRange,
-            outputRange: inputRange.map(i => (i === index ? 1 : 0.52)) // opacity range
+            outputRange: inputRange.map((i) => (i === index ? 1 : 0.52)) // opacity range
           })
 
           return (
@@ -150,8 +152,7 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
                 onLongPress={() => onLongPress(route, index)}
                 onPress={() => onPress(route, index)}
                 style={styles.tab}
-                testID={options.tabBarTestID}
-              >
+                testID={options.tabBarTestID}>
                 <Animated.View style={{ opacity }}>{icon}</Animated.View>
                 <Animated.Text style={[styles.tabText, { opacity }]}>
                   {label}

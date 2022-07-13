@@ -26,9 +26,9 @@ function* markCollectionDeleted(
   collectionMetadatas: CollectionMetadata[]
 ): Generator<any, CollectionMetadata[], any> {
   const collections = yield select(getCollections, {
-    ids: collectionMetadatas.map(c => c.playlist_id)
+    ids: collectionMetadatas.map((c) => c.playlist_id)
   })
-  return collectionMetadatas.map(metadata => {
+  return collectionMetadatas.map((metadata) => {
     if (!(metadata.playlist_id in collections)) return metadata
     return {
       ...metadata,
@@ -42,11 +42,11 @@ export function* retrieveTracksForCollections(
   excludedTrackIdSet: Set<ID>
 ) {
   const allTrackIds = collections.reduce((acc, cur) => {
-    const trackIds = cur.playlist_contents.track_ids.map(t => t.track)
+    const trackIds = cur.playlist_contents.track_ids.map((t) => t.track)
     return [...acc, ...trackIds]
   }, [] as ID[])
   const filteredTrackIds = [
-    ...new Set(allTrackIds.filter(id => !excludedTrackIdSet.has(id)))
+    ...new Set(allTrackIds.filter((id) => !excludedTrackIdSet.has(id)))
   ]
   const tracks: Track[] = yield call(retrieveTracks, {
     trackIds: filteredTrackIds
@@ -61,13 +61,13 @@ export function* retrieveTracksForCollections(
     }
   }
 
-  return collections.map(c => {
+  return collections.map((c) => {
     // Filter out unfetched tracks
     const filteredIds = c.playlist_contents.track_ids.filter(
-      t => !unfetchedIdSet.has(t.track)
+      (t) => !unfetchedIdSet.has(t.track)
     )
     // Add UIDs
-    const withUids = filteredIds.map(t => ({
+    const withUids = filteredIds.map((t) => ({
       ...t,
       // Make a new UID if one doesn't already exist
       uid: t.uid || makeUid(Kind.TRACKS, t.track, `collection:${c.playlist_id}`)
@@ -165,7 +165,7 @@ export function* retrieveCollections(
         yield call(retrieveTracksForCollections, metadatas, new Set())
       }
 
-      const reformattedCollections = metadatas.map(c => reformat(c))
+      const reformattedCollections = metadatas.map((c) => reformat(c))
 
       return reformattedCollections
     },

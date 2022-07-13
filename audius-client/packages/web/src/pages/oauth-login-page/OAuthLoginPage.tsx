@@ -188,8 +188,10 @@ export const OAuthLoginPage = () => {
       }
 
       // From https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address:
-      const ipRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
-      const localhostIPv4Regex = /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+      const ipRegex =
+        /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+      const localhostIPv4Regex =
+        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
       // Disallow IP addresses as redirect URIs unless it's localhost
       if (
         ipRegex.test(hostname) &&
@@ -240,7 +242,7 @@ export const OAuthLoginPage = () => {
         make(Name.AUDIUS_OAUTH_START, {
           redirectUriParam:
             parsedRedirectUri === 'postmessage' ? 'postmessage' : redirect_uri!,
-          originParam: originParam,
+          originParam,
           appNameParam: app_name!,
           responseMode: response_mode
         })
@@ -461,8 +463,7 @@ export const OAuthLoginPage = () => {
             className={cn(
               styles.permissionContainer,
               styles.nonFirstPermissionContainer
-            )}
-          >
+            )}>
             <div>
               <IconValidationCheck width={16} height={16} />
             </div>
@@ -477,8 +478,7 @@ export const OAuthLoginPage = () => {
               className={cn(
                 styles.permissionContainer,
                 styles.nonFirstPermissionContainer
-              )}
-            >
+              )}>
               <div>
                 <IconAtSign
                   width={16}
@@ -491,8 +491,7 @@ export const OAuthLoginPage = () => {
                   className={cn(styles.permissionText, {
                     [styles.permissionTextLight]: Boolean(userEmail),
                     [styles.permissionTextExtraLight]: !userEmail
-                  })}
-                >
+                  })}>
                   {userEmail == null ? (
                     <>
                       <LoadingSpinner className={styles.loadingSpinner} /> Email
@@ -581,8 +580,7 @@ export const OAuthLoginPage = () => {
                 className={styles.linkButton}
                 href={SIGN_UP_PAGE}
                 target='_blank'
-                rel='noopener noreferrer'
-              >
+                rel='noopener noreferrer'>
                 {messages.signUp}
               </a>
             </div>

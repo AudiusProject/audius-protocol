@@ -68,7 +68,7 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({
 
   const [inputPadding, setInputPadding] = useState(inputPaddingRight)
   const setLabelRef = useCallback(
-    node => {
+    (node) => {
       if (node) {
         // TODO: wait for animation before getting width
         // const width = node.getBoundingClientRect().width
@@ -85,8 +85,7 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({
         <div
           className={cn(styles.label, {
             [labelClassName!]: !!labelClassName
-          })}
-        >
+          })}>
           {label}
         </div>
       )}
@@ -118,8 +117,7 @@ export const TokenValueInput: React.FC<TokenValueInputProps> = ({
           className={cn(styles.rightLabel, {
             [rightLabelClassName as string]: !!rightLabelClassName
           })}
-          ref={setLabelRef}
-        >
+          ref={setLabelRef}>
           {rightLabel}
         </div>
       )}

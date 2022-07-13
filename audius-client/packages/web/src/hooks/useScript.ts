@@ -5,7 +5,7 @@ export const useScript = (src: string, isModule = false) => {
 
   useEffect(() => {
     const alreadyLoaded = [...document.getElementsByTagName('script')].find(
-      script => script.src === src
+      (script) => script.src === src
     )
     if (alreadyLoaded) {
       setScriptLoaded(true)

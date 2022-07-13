@@ -21,9 +21,7 @@ export interface FeedPageContentProps {
   playFeedTrack: (uid: UID) => void
   pauseFeedTrack: () => void
   switchView: () => void
-  getLineupProps: (
-    lineup: Lineup<any>
-  ) => {
+  getLineupProps: (lineup: Lineup<any>) => {
     lineup: Lineup<any>
     playingUid: UID
     playingSource: string

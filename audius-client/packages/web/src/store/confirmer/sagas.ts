@@ -67,14 +67,11 @@ function* requestConfirmationAsync(
     timeoutMillis,
     confirmationOptions
   } = action
-  const {
-    parallelizable,
-    useOnlyLastSuccessCall,
-    operationId
-  } = confirmationOptions
+  const { parallelizable, useOnlyLastSuccessCall, operationId } =
+    confirmationOptions
 
   // Get the "queue" length
-  const nextCallIndex: number = yield select(getConfirmLength, { uid: uid })
+  const nextCallIndex: number = yield select(getConfirmLength, { uid })
   yield put(
     confirmerActions._addConfirmationCall(
       uid,
@@ -84,17 +81,18 @@ function* requestConfirmationAsync(
   )
 
   // Wait until we're able to process this call
-  yield call(waitForValue, getIndexEquals, { uid: uid, index: nextCallIndex })
+  yield call(waitForValue, getIndexEquals, { uid, index: nextCallIndex })
   // If necessary, wait until calls that are required to resolve before this one are complete.
   // (Step into `getAreRequisiteCallsComplete` documentation for more info.)
   yield call(waitForValue, getAreRequisiteCallsComplete, {
-    uid: uid,
+    uid,
     index: nextCallIndex
   })
   let result, completionCall, success
-  const shouldCancelCurrentCall:
-    | boolean
-    | undefined = yield select(getShouldCancelCurrentCall, { uid })
+  const shouldCancelCurrentCall: boolean | undefined = yield select(
+    getShouldCancelCurrentCall,
+    { uid }
+  )
 
   if (shouldCancelCurrentCall) {
     yield put(confirmerActions._cancelConfirmationCall(uid, nextCallIndex))
@@ -104,7 +102,7 @@ function* requestConfirmationAsync(
       previousCallResult = yield select(getLatestResult, { uid })
     } else {
       previousCallResult = yield call(waitForValue, getResult, {
-        uid: uid,
+        uid,
         index: nextCallIndex - 1
       })
     }
@@ -166,9 +164,9 @@ function* requestConfirmationAsync(
     }
 
     // If no more calls in the confirm group:
-    const isDone: boolean = yield select(getIsDone, { uid: uid })
+    const isDone: boolean = yield select(getIsDone, { uid })
     if (isDone) {
-      const commandChain: any[] = yield select(getCommandChain, { uid: uid })
+      const commandChain: any[] = yield select(getCommandChain, { uid })
       for (let i = 0; i < commandChain.length; ++i) {
         if (commandChain[i]) {
           yield commandChain[i]
@@ -177,7 +175,7 @@ function* requestConfirmationAsync(
       yield put(confirmerActions._clearComplete(uid, commandChain.length - 1))
 
       // Check again if all calls are done since more might have been added between completion calls.
-      const isStillDone: boolean = yield select(getIsDone, { uid: uid })
+      const isStillDone: boolean = yield select(getIsDone, { uid })
       if (isStillDone) {
         yield put(confirmerActions._clearConfirm(uid))
       }

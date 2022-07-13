@@ -74,7 +74,7 @@ export const TipReactionNotification = (
   const styles = useStyles()
 
   const user = useSelectorWeb(
-    state => getNotificationUser(state, notification),
+    (state) => getNotificationUser(state, notification),
     isEqual
   )
 

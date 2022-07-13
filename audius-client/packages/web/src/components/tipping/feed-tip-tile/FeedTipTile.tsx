@@ -199,7 +199,7 @@ export const FeedTipTile = () => {
         ...tipToDisplay.followee_supporter_ids
       ]
     : []
-  const usersMap = useSelector<AppState, { [id: number]: User }>(state =>
+  const usersMap = useSelector<AppState, { [id: number]: User }>((state) =>
     getUsers(state, { ids: tipToDisplay ? tipperIds : [] })
   )
 
@@ -230,8 +230,7 @@ export const FeedTipTile = () => {
         />
         <ArtistPopover
           handle={usersMap[tipToDisplay.receiver_id].handle}
-          component='div'
-        >
+          component='div'>
           <div className={styles.name} onClick={handleClick}>
             <span>{usersMap[tipToDisplay.receiver_id].name}</span>
             <UserBadges
@@ -248,7 +247,7 @@ export const FeedTipTile = () => {
             tipToDisplay.sender_id,
             ...tipToDisplay.followee_supporter_ids
           ]
-            .map(id => usersMap[id])
+            .map((id) => usersMap[id])
             .filter((user): user is User => !!user)}
           receiver={usersMap[tipToDisplay.receiver_id]}
         />

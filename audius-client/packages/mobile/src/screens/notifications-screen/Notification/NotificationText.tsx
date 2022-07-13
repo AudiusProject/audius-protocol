@@ -15,8 +15,7 @@ export const NotificationText = (props: NotificationTextProps) => {
         },
         style
       ]}
-      {...other}
-    >
+      {...other}>
       {children}
     </Text>
   )

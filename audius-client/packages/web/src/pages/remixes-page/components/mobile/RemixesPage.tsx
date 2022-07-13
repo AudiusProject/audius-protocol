@@ -79,8 +79,7 @@ const RemixesPage = g(
         title={title}
         description={messages.getDescription(originalTrack.title, user.name)}
         canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
-        containerClassName={styles.container}
-      >
+        containerClassName={styles.container}>
         <div className={styles.tracksContainer}>
           <div className={styles.subHeader}>
             {`${count || ''} ${pluralize(

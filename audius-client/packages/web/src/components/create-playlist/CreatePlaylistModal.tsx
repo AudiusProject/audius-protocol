@@ -109,8 +109,7 @@ const CreatePlaylistModal = ({
       bodyClassName={styles.modalBody}
       isOpen={visible}
       onClose={handleClose}
-      zIndex={zIndex.CREATE_PLAYLIST_MODAL}
-    >
+      zIndex={zIndex.CREATE_PLAYLIST_MODAL}>
       <ModalHeader onClose={handleClose}>
         <ModalTitle
           icon={

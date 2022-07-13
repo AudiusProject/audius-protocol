@@ -23,7 +23,7 @@ export function* fetchRelatedArtists(action: Action) {
     })
 
     let filteredArtists = relatedArtists
-      .filter(user => !user.does_current_user_follow && !user.is_deactivated)
+      .filter((user) => !user.does_current_user_follow && !user.is_deactivated)
       .slice(0, 5)
     if (filteredArtists.length === 0) {
       const showTopArtistRecommendationsPercent =
@@ -54,7 +54,7 @@ function* fetchTopArtists() {
     limit: 50
   })
   const filteredArtists = topArtists.filter(
-    user => !user.does_current_user_follow && !user.is_deactivated
+    (user) => !user.does_current_user_follow && !user.is_deactivated
   )
   if (filteredArtists.length > 0) {
     // Pick 5 at random
@@ -68,9 +68,9 @@ function* cacheUsers(users: User[]) {
   const currentUserId: ID = yield select(getUserId)
   // Filter out the current user from the list to cache
   yield processAndCacheUsers(
-    users.filter(user => user.user_id !== currentUserId)
+    users.filter((user) => user.user_id !== currentUserId)
   )
-  return users.map(f => f.user_id)
+  return users.map((f) => f.user_id)
 }
 
 function* watchFetchRelatedArtists() {

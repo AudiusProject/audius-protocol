@@ -143,13 +143,13 @@ export const ArtistRecommendations = forwardRef(
 
     // Get the related artists
     const getRelatedArtists = useMemo(makeGetRelatedArtists, [artistId])
-    const suggestedArtists = useSelector<CommonState, User[]>(state =>
+    const suggestedArtists = useSelector<CommonState, User[]>((state) =>
       getRelatedArtists(state, { id: artistId })
     )
 
     // Follow/Unfollow listeners
     const onFollowAllClicked = useCallback(() => {
-      suggestedArtists.forEach(a => {
+      suggestedArtists.forEach((a) => {
         dispatch(
           socialActions.followUser(
             a.user_id,
@@ -159,7 +159,7 @@ export const ArtistRecommendations = forwardRef(
       })
     }, [dispatch, suggestedArtists])
     const onUnfollowAllClicked = useCallback(() => {
-      suggestedArtists.forEach(a => {
+      suggestedArtists.forEach((a) => {
         dispatch(
           socialActions.unfollowUser(
             a.user_id,
@@ -171,7 +171,7 @@ export const ArtistRecommendations = forwardRef(
 
     // Navigate to profile pages on artist links
     const onArtistNameClicked = useCallback(
-      handle => {
+      (handle) => {
         dispatch(push(profilePage(handle)))
       },
       [dispatch]
@@ -187,9 +187,8 @@ export const ArtistRecommendations = forwardRef(
               styles.profilePictureList,
               styles.contentItem,
               itemClassName
-            )}
-          >
-            {suggestedArtists.map(a => (
+            )}>
+            {suggestedArtists.map((a) => (
               <div key={a.user_id} className={styles.profilePictureWrapper}>
                 <ArtistProfilePictureWrapper
                   userId={a.user_id}
@@ -234,14 +233,12 @@ export const ArtistRecommendations = forwardRef(
     return (
       <div className={cn(styles.content, className)} ref={ref}>
         <div
-          className={cn(styles.headerBar, styles.contentItem, itemClassName)}
-        >
+          className={cn(styles.headerBar, styles.contentItem, itemClassName)}>
           <div
             role='button'
             title='Dismiss'
             className={styles.closeButton}
-            onClick={onClose}
-          >
+            onClick={onClose}>
             <IconClose className={cn(styles.icon, styles.remove)} />
           </div>
           {renderHeader()}
@@ -251,7 +248,9 @@ export const ArtistRecommendations = forwardRef(
         <div className={cn(styles.contentItem, itemClassName)}>
           <FollowButton
             isDisabled={isLoading}
-            following={suggestedArtists.every(a => a.does_current_user_follow)}
+            following={suggestedArtists.every(
+              (a) => a.does_current_user_follow
+            )}
             invertedColor={true}
             messages={messages}
             size='full'

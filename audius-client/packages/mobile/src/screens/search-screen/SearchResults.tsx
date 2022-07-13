@@ -43,13 +43,13 @@ const headerMapping: { [key in SectionHeader]: string } = {
 const SearchResults = () => {
   const searchResults = useSelector(getSearchResults)
   const sections = sectionHeaders
-    .map(header => {
+    .map((header) => {
       return {
         title: header,
         data: searchResults[header]
       }
     })
-    .filter(result => result.data.length > 0)
+    .filter((result) => result.data.length > 0)
 
   const sectionWithMore: {
     title: SectionHeader | 'more'
@@ -62,7 +62,7 @@ const SearchResults = () => {
         keyboardShouldPersistTaps={'always'}
         stickySectionHeadersEnabled={false}
         sections={sectionWithMore}
-        keyExtractor={item => {
+        keyExtractor={(item) => {
           if ('track_id' in item) return `track-${item.track_id}`
           else if ('user_id' in item) return `user-${item.user_id}`
           return `playlist-${item.playlist_id}`

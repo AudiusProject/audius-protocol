@@ -12,19 +12,19 @@ import UploadType from './uploadType'
 
 class EditPage extends Component {
   state = {
-    invalidTracksFields: this.props.tracks.map(track =>
-      mapValues(track.metadata, v => false)
+    invalidTracksFields: this.props.tracks.map((track) =>
+      mapValues(track.metadata, (v) => false)
     ),
-    invalidCollectionFields: mapValues(this.props.metadata, v => false)
+    invalidCollectionFields: mapValues(this.props.metadata, (v) => false)
   }
 
   componentWillUnmount() {
     this.props.onStopPreview()
   }
 
-  getRequiredTracksFields = tracks => {
-    return this.props.tracks.map(track => {
-      const fields = mapValues(track.metadata, v => false)
+  getRequiredTracksFields = (tracks) => {
+    return this.props.tracks.map((track) => {
+      const fields = mapValues(track.metadata, (v) => false)
       fields.title = true
       if (
         this.props.uploadType === UploadType.INDIVIDUAL_TRACK ||
@@ -37,15 +37,15 @@ class EditPage extends Component {
     })
   }
 
-  getRequiredCollectionFields = metadata => {
-    const fields = mapValues(metadata, v => false)
+  getRequiredCollectionFields = (metadata) => {
+    const fields = mapValues(metadata, (v) => false)
     fields.playlist_name = true
     fields.genre = true
     fields.artwork = true
     return fields
   }
 
-  validateTracksFields = tracks => {
+  validateTracksFields = (tracks) => {
     const { uploadType } = this.props
 
     const newInvalidTracksFields = [...this.state.invalidTracksFields]
@@ -61,7 +61,7 @@ class EditPage extends Component {
         newInvalidTracksFields[i].genre = !track.metadata.genre
         newInvalidTracksFields[i].artwork = !track.metadata.artwork.file
       }
-      return Object.values(newInvalidTracksFields[i]).every(f => !f)
+      return Object.values(newInvalidTracksFields[i]).every((f) => !f)
     })
 
     this.setState({
@@ -81,7 +81,7 @@ class EditPage extends Component {
       if (
         !track.metadata.is_unlisted &&
         !unlistedVisibilityFields.every(
-          field => track.metadata.field_visibility[field]
+          (field) => track.metadata.field_visibility[field]
         )
       ) {
         this.updateTrack(
@@ -99,10 +99,10 @@ class EditPage extends Component {
         )
       }
     }
-    return validTracks.every(f => f)
+    return validTracks.every((f) => f)
   }
 
-  validateCollectionFields = formFields => {
+  validateCollectionFields = (formFields) => {
     const newInvalidCollectionFields = {
       ...this.state.invalidCollectionFields,
       playlist_name: !formFields.playlist_name,
@@ -112,7 +112,7 @@ class EditPage extends Component {
     this.setState({
       invalidCollectionFields: newInvalidCollectionFields
     })
-    return Object.values(newInvalidCollectionFields).every(f => !f)
+    return Object.values(newInvalidCollectionFields).every((f) => !f)
   }
 
   onContinue = () => {
@@ -175,8 +175,7 @@ class EditPage extends Component {
             }
             onChangeOrder={(source, destination) =>
               onChangeOrder(source, destination)
-            }
-          >
+            }>
             {tracks.map((track, i) => (
               <InlineFormTile
                 key={i}
@@ -203,11 +202,11 @@ class EditPage extends Component {
             requiredFields={requiredTracksFields[i]}
             playing={i === previewIndex}
             type={'track'}
-            onAddStems={stems => this.props.onAddStems(stems, i)}
+            onAddStems={(stems) => this.props.onAddStems(stems, i)}
             onSelectStemCategory={(category, stemIndex) =>
               this.props.onSelectStemCategory(category, i, stemIndex)
             }
-            onDeleteStem={stemIndex => this.props.onDeleteStem(i, stemIndex)}
+            onDeleteStem={(stemIndex) => this.props.onDeleteStem(i, stemIndex)}
             stems={this.props.stems[i]}
             onPlayPreview={() => onPlayPreview(i)}
             onStopPreview={() => onStopPreview()}

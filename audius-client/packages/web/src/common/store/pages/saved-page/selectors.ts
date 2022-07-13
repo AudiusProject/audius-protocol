@@ -18,7 +18,7 @@ export const getSavedTracksLineupUid = (
 ) => {
   const track = state.pages.savedPage.tracks.entries.find(
     // @ts-ignore
-    t => t.id === props.id
+    (t) => t.id === props.id
   )
   return track ? track.uid : null
 }

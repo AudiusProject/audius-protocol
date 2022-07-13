@@ -64,10 +64,8 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
   const { type } = props
   const styles = useStyles()
   const dispatchWeb = useDispatchWeb()
-  const {
-    pageHeaderGradientColor1,
-    pageHeaderGradientColor2
-  } = useThemeColors()
+  const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
+    useThemeColors()
 
   const handlePress = useCallback(() => {
     dispatchWeb(setTrendingRewardsModalType({ modalType: type }))
@@ -87,8 +85,7 @@ export const RewardsBanner = (props: RewardsBannerProps) => {
         tile: styles.tile,
         content: styles.tileContent
       }}
-      onPress={handlePress}
-    >
+      onPress={handlePress}>
       <View style={styles.title}>
         <IconCrown
           style={styles.iconCrown}

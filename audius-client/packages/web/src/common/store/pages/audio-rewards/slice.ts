@@ -90,7 +90,7 @@ const slice = createSlice({
   name: 'rewards-page',
   initialState,
   reducers: {
-    fetchUserChallenges: state => {},
+    fetchUserChallenges: (state) => {},
     fetchUserChallengesSucceeded: (
       state,
       action: PayloadAction<UserChallengesPayload>
@@ -114,7 +114,7 @@ const slice = createSlice({
       }
       state.loading = false
     },
-    fetchUserChallengesFailed: state => {
+    fetchUserChallengesFailed: (state) => {
       state.loading = false
     },
     setUndisbursedChallenges: (
@@ -160,7 +160,7 @@ const slice = createSlice({
         }
       }
     },
-    updateOptimisticListenStreak: state => {},
+    updateOptimisticListenStreak: (state) => {},
     setUserChallengeCurrentStepCount: (
       state,
       action: PayloadAction<{
@@ -210,14 +210,14 @@ const slice = createSlice({
       const { status } = action.payload
       state.hCaptchaStatus = status
     },
-    resetHCaptchaStatus: state => {
+    resetHCaptchaStatus: (state) => {
       state.hCaptchaStatus = HCaptchaStatus.NONE
     },
     updateHCaptchaScore: (
       state,
       action: PayloadAction<{ token: string }>
     ) => {},
-    resetAndCancelClaimReward: state => {
+    resetAndCancelClaimReward: (state) => {
       state.claimStatus = ClaimStatus.NONE
     },
     claimChallengeReward: (
@@ -234,13 +234,13 @@ const slice = createSlice({
       state.claimStatus = ClaimStatus.WAITING_FOR_RETRY
       state.claimToRetry = action.payload
     },
-    claimChallengeRewardFailed: state => {
+    claimChallengeRewardFailed: (state) => {
       state.claimStatus = ClaimStatus.ERROR
     },
-    claimChallengeRewardAlreadyClaimed: state => {
+    claimChallengeRewardAlreadyClaimed: (state) => {
       state.claimStatus = ClaimStatus.ALREADY_CLAIMED
     },
-    claimChallengeRewardSucceeded: state => {
+    claimChallengeRewardSucceeded: (state) => {
       state.claimStatus = ClaimStatus.SUCCESS
     },
     setCognitoFlowStatus: (
@@ -250,20 +250,20 @@ const slice = createSlice({
       const { status } = action.payload
       state.cognitoFlowStatus = status
     },
-    fetchCognitoFlowUrl: state => {
+    fetchCognitoFlowUrl: (state) => {
       state.cognitoFlowUrlStatus = Status.LOADING
     },
     fetchCognitoFlowUrlSucceeded: (state, action: PayloadAction<string>) => {
       state.cognitoFlowUrlStatus = Status.SUCCESS
       state.cognitoFlowUrl = action.payload
     },
-    fetchCognitoFlowUrlFailed: state => {
+    fetchCognitoFlowUrlFailed: (state) => {
       state.cognitoFlowUrlStatus = Status.ERROR
     },
-    showRewardClaimedToast: state => {
+    showRewardClaimedToast: (state) => {
       state.showRewardClaimedToast = true
     },
-    resetRewardClaimedToast: state => {
+    resetRewardClaimedToast: (state) => {
       state.showRewardClaimedToast = false
     }
   }

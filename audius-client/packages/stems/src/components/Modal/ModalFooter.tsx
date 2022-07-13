@@ -14,8 +14,7 @@ export const ModalFooter = forwardRef<HTMLDivElement, ModalFooterProps>(
       <div
         className={cn(styles.modalFooterContainer, className)}
         {...props}
-        ref={ref}
-      >
+        ref={ref}>
         {children}
       </div>
     )

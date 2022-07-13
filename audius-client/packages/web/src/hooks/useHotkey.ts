@@ -41,7 +41,7 @@ export const useDevModeHotkey = (keyCode: number) => {
         !window.localStorage.getItem(ENABLE_DEV_MODE_KEY))
     )
       return
-    setIsEnabled(e => !e)
+    setIsEnabled((e) => !e)
   }, [])
 
   useHotkeys({ [keyCode]: listener })

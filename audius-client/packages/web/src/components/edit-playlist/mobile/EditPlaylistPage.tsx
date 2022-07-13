@@ -103,9 +103,10 @@ const EditPlaylistPage = g(
     >([])
 
     // Holds track to be removed if confirmed
-    const [confirmRemoveTrack, setConfirmRemoveTrack] = useState<
-      Nullable<{ title: string; trackId: ID; timestamp: number }>
-    >(null)
+    const [confirmRemoveTrack, setConfirmRemoveTrack] =
+      useState<Nullable<{ title: string; trackId: ID; timestamp: number }>>(
+        null
+      )
 
     // State to keep track of reordering
     const [reorderedTracks, setReorderedTracks] = useState<number[]>([])
@@ -192,7 +193,7 @@ const EditPlaylistPage = g(
       trackIds: { track: ID; time: number }[],
       reorder: number[]
     ) => {
-      return reorder.map(i => {
+      return reorder.map((i) => {
         const { track, time } = trackIds[i]
         return {
           id: track,
@@ -229,7 +230,7 @@ const EditPlaylistPage = g(
           // Update the playlist content track_ids so that the editPlaylist
           // optimistically update the cached collection trackIds
           formFields.playlist_contents.track_ids = reorderedTracks.map(
-            idx => playlistTrackIds[idx]
+            (idx) => playlistTrackIds[idx]
           )
         }
         refreshLineup()
@@ -273,10 +274,11 @@ const EditPlaylistPage = g(
           return
         const reorderedIndex = reorderedTracks[index]
         const { playlist_contents } = metadata!
-        const { track: trackId, time } = playlist_contents.track_ids[
-          reorderedIndex
-        ]
-        const trackMetadata = tracks?.find(track => track.track_id === trackId)
+        const { track: trackId, time } =
+          playlist_contents.track_ids[reorderedIndex]
+        const trackMetadata = tracks?.find(
+          (track) => track.track_id === trackId
+        )
         if (!trackMetadata) return
         setConfirmRemoveTrack({
           title: trackMetadata.title,
@@ -301,19 +303,19 @@ const EditPlaylistPage = g(
     const onConfirmRemove = useCallback(() => {
       if (!confirmRemoveTrack) return
       const removeIdx = metadata?.playlist_contents.track_ids.findIndex(
-        t =>
+        (t) =>
           t.track === confirmRemoveTrack.trackId &&
           t.time === confirmRemoveTrack.timestamp
       )
       if (removeIdx === -1) return
-      setRemovedTracks(removed =>
+      setRemovedTracks((removed) =>
         removed.concat({
           trackId: confirmRemoveTrack.trackId,
           timestamp: confirmRemoveTrack.timestamp
         })
       )
-      setReorderedTracks(tracks =>
-        tracks.filter(trackIndex => trackIndex !== removeIdx)
+      setReorderedTracks((tracks) =>
+        tracks.filter((trackIndex) => trackIndex !== removeIdx)
       )
       onDrawerClose()
     }, [metadata, confirmRemoveTrack, setRemovedTracks, setReorderedTracks])
@@ -343,7 +345,7 @@ const EditPlaylistPage = g(
     // Put together track list if necessary
     let trackList = null
     if (tracks && reorderedTracks.length > 0) {
-      trackList = reorderedTracks.map(i => {
+      trackList = reorderedTracks.map((i) => {
         const t = tracks[i]
         const playlistTrack = metadata?.playlist_contents.track_ids[i]
         const isRemoveActive =
@@ -374,8 +376,7 @@ const EditPlaylistPage = g(
                 : existingImage || formFields.artwork.url || placeholderCoverArt
             }
             className={styles.image}
-            wrapperClassName={styles.imageWrapper}
-          >
+            wrapperClassName={styles.imageWrapper}>
             {
               <UploadStub
                 onChange={onDropArtwork}

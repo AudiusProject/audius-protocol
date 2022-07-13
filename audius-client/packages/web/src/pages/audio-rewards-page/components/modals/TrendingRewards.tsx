@@ -169,7 +169,7 @@ const TrendingRewardsBody = ({
           <TabSlider
             options={tabOptions}
             selected={modalType}
-            onSelectOption={option =>
+            onSelectOption={(option) =>
               setModalType(option as TrendingRewardsModalType)
             }
             textClassName={cn(styles.slider, styles.compactSlider)}
@@ -230,8 +230,7 @@ export const TrendingRewardsModal = () => {
       }
       allowScroll
       showTitleHeader
-      showDismissButton
-    >
+      showDismissButton>
       <TrendingRewardsBody dismissModal={() => setOpen(false)} />
     </ModalDrawer>
   )

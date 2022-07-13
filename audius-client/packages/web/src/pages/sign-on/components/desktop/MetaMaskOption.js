@@ -7,7 +7,7 @@ import { ReactComponent as LogoMetaMask } from 'assets/img/logoMetaMask.svg'
 
 import styles from './MetaMaskOption.module.css'
 
-const MetaMaskSignupText = props => {
+const MetaMaskSignupText = (props) => {
   return (
     <span className={styles.metaMaskSignupText}>
       {props.text} <LogoMetaMask className={styles.metaMaskLogo} />

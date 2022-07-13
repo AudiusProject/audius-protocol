@@ -31,7 +31,7 @@ export const TopSupportingNotification = (
   const { rank } = notification
 
   const user = useSelectorWeb(
-    state => getNotificationUser(state, notification),
+    (state) => getNotificationUser(state, notification),
     isEqual
   )
 

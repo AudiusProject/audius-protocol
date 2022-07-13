@@ -108,8 +108,7 @@ const ActionDrawer = ({
             onPress={() => {
               didSelectRow(index)
             }}
-            underlayColor={neutralLight9}
-          >
+            underlayColor={neutralLight9}>
             <View style={[styles.row, stylesProp.row]}>
               {icon ? <View style={styles.actionIcon}>{icon}</View> : null}
               <Text
@@ -119,8 +118,7 @@ const ActionDrawer = ({
                   isDarkMode ? { color: staticWhite } : {},
                   style
                 ]}
-                weight='demiBold'
-              >
+                weight='demiBold'>
                 {text}
               </Text>
             </View>

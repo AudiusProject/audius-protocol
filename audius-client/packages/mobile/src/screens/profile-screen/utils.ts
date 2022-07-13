@@ -35,7 +35,7 @@ export const useShouldShowCollectiblesTab = () => {
   const { tierNumber } = useSelectTierInfo(user_id)
 
   const hasCollectiblesTierRequirement =
-    tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
+    tierNumber >= badgeTiers.findIndex((t) => t.tier === MIN_COLLECTIBLES_TIER)
 
   if (!hasCollectiblesTierRequirement) return false
 

@@ -17,7 +17,7 @@ import { findAncestor } from 'utils/domUtils'
 import styles from './CollectiblesPage.module.css'
 
 // @ts-ignore
-export const VisibleCollectibleRow = props => {
+export const VisibleCollectibleRow = (props) => {
   const {
     collectible,
     onHideClick,
@@ -116,21 +116,14 @@ type HiddenCollectibleRowProps = {
 
 export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
   const { collectible, onShowClick } = props
-  const {
-    name,
-    isOwned,
-    dateCreated,
-    mediaType,
-    frameUrl,
-    videoUrl
-  } = collectible
+  const { name, isOwned, dateCreated, mediaType, frameUrl, videoUrl } =
+    collectible
 
   return (
     <div className={cn(styles.editRow, styles.editHidden)}>
       <Tooltip
         className={styles.showButton}
-        text={collectibleMessages.showCollectible}
-      >
+        text={collectibleMessages.showCollectible}>
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />

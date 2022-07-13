@@ -26,8 +26,7 @@ const CTASignUp = (props: CTASignUpProps) => {
       <div className={styles.mobileContainer}>
         <div
           className={styles.footerForeground}
-          style={{ backgroundImage: `url(${footerForeground})` }}
-        ></div>
+          style={{ backgroundImage: `url(${footerForeground})` }}></div>
         <div className={styles.mobileBgContent}>
           <div className={styles.parallaxBg}></div>
           <Parallax
@@ -37,12 +36,12 @@ const CTASignUp = (props: CTASignUpProps) => {
               position: 'absolute',
               height: '100%',
               width: '100%'
-            }}
-          >
+            }}>
             <div
               className={styles.footerBackground}
-              style={{ backgroundImage: `url(${footerBackgroundMobile})` }}
-            ></div>
+              style={{
+                backgroundImage: `url(${footerBackgroundMobile})`
+              }}></div>
           </Parallax>
         </div>
         <div className={styles.title}>{messages.title}</div>
@@ -51,8 +50,7 @@ const CTASignUp = (props: CTASignUpProps) => {
             AUDIUS_SIGN_UP_LINK,
             props.setRenderPublicSite
           )}
-          className={styles.ctaButton}
-        >
+          className={styles.ctaButton}>
           {messages.cta}
           <IconArrow className={styles.arrowRight} />
         </div>
@@ -69,15 +67,13 @@ const CTASignUp = (props: CTASignUpProps) => {
             AUDIUS_SIGN_UP_LINK,
             props.setRenderPublicSite
           )}
-          className={styles.ctaButton}
-        >
+          className={styles.ctaButton}>
           {messages.cta}
           <IconArrow className={styles.arrowRight} />
         </button>
         <div
           className={styles.footerForeground}
-          style={{ backgroundImage: `url(${footerForeground})` }}
-        ></div>
+          style={{ backgroundImage: `url(${footerForeground})` }}></div>
       </div>
       <div className={styles.footerBackgroundContainer}>
         <div className={styles.bgContent}>
@@ -89,19 +85,16 @@ const CTASignUp = (props: CTASignUpProps) => {
               position: 'absolute',
               height: '100%',
               width: '100%'
-            }}
-          >
+            }}>
             <div
               className={styles.footerBackground}
-              style={{ backgroundImage: `url(${footerBackground})` }}
-            ></div>
+              style={{ backgroundImage: `url(${footerBackground})` }}></div>
           </Parallax>
         </div>
       </div>
       <div
         className={styles.dotsBackground}
-        style={{ backgroundImage: `url(${dots2x})` }}
-      ></div>
+        style={{ backgroundImage: `url(${dots2x})` }}></div>
     </div>
   )
 }

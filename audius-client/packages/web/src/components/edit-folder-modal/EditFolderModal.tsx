@@ -47,7 +47,7 @@ const EditFolderModal = () => {
     playlistLibrary == null || folderId == null
       ? null
       : (playlistLibrary.contents.find(
-          item => item.type === 'folder' && item.id === folderId
+          (item) => item.type === 'folder' && item.id === folderId
         ) as PlaylistLibraryFolder | undefined)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const onCancelDelete = () => setShowDeleteConfirmation(false)
@@ -107,8 +107,7 @@ const EditFolderModal = () => {
         isOpen={isOpen}
         onClose={handleClose}
         zIndex={zIndex.EDIT_PLAYLIST_MODAL}
-        bodyClassName={styles.modalBody}
-      >
+        bodyClassName={styles.modalBody}>
         <ModalHeader onClose={handleClose}>
           <ModalTitle
             icon={<IconFolder />}

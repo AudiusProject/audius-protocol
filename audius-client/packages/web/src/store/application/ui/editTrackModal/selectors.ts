@@ -20,13 +20,13 @@ export const getStems = (state: AppState) => {
   const track = getTrack(state, { id: trackId })
   if (!track?._stems?.length) return []
 
-  const stemIds = track._stems.map(s => s.track_id)
+  const stemIds = track._stems.map((s) => s.track_id)
 
   const stemsMap = getTracks(state, { ids: stemIds }) as {
     [id: number]: StemTrack
   }
   const stems = Object.values(stemsMap).filter(
-    t => !t.is_delete && !t._marked_deleted
+    (t) => !t.is_delete && !t._marked_deleted
   )
   return stems
 }

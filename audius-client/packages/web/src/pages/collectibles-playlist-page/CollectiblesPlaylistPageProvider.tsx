@@ -95,16 +95,15 @@ export const CollectiblesPlaylistPageProvider = ({
     [pathname]
   )
 
-  const user = useSelector<AppState, User | null>(state =>
+  const user = useSelector<AppState, User | null>((state) =>
     getUser(state, { handle: routeMatch?.params.handle ?? null })
   )
 
   const [audioCollectibles, setAudioCollectibles] = useState<Collectible[]>([])
   const firstLoadedCollectible = useRef<Collectible>()
   const hasFetchedCollectibles = useRef(false)
-  const [hasFetchedAllCollectibles, setHasFetchedAllCollectibles] = useState(
-    false
-  )
+  const [hasFetchedAllCollectibles, setHasFetchedAllCollectibles] =
+    useState(false)
   useEffect(() => {
     const asyncFn = async (cs: Collectible[]) => {
       const collectibleIds = Object.keys(user?.collectibles ?? {})
@@ -125,10 +124,12 @@ export const CollectiblesPlaylistPageProvider = ({
 
       const potentiallyHasAudio = (c: Collectible) =>
         c.hasAudio ||
-        ['mp3', 'wav', 'oga', 'mp4'].some(ext => c.animationUrl?.endsWith(ext))
+        ['mp3', 'wav', 'oga', 'mp4'].some((ext) =>
+          c.animationUrl?.endsWith(ext)
+        )
 
       const filteredAndSortedCollectibles = cs
-        .filter(c => isInUserOrder(c) && potentiallyHasAudio(c))
+        .filter((c) => isInUserOrder(c) && potentiallyHasAudio(c))
         // Sort by user collectibles order
         .sort((a, b) => (order ? order.indexOf(a.id) - order.indexOf(b.id) : 0))
 
@@ -137,7 +138,7 @@ export const CollectiblesPlaylistPageProvider = ({
           if (collectible.animationUrl?.endsWith('mp4')) {
             const v = document.createElement('video')
             v.muted = true
-            const duration: Promise<number> = new Promise(resolve => {
+            const duration: Promise<number> = new Promise((resolve) => {
               setTimeout(() => resolve(0), 60000)
               v.onloadedmetadata = () => {
                 resolve(v.duration)
@@ -147,9 +148,9 @@ export const CollectiblesPlaylistPageProvider = ({
             v.preload = 'metadata'
             v.src = collectible.animationUrl
             collectible.duration = await duration
-            v.play().catch(e => console.log('video error', e))
+            v.play().catch((e) => console.log('video error', e))
 
-            const videoHasAudio = await new Promise(resolve => {
+            const videoHasAudio = await new Promise((resolve) => {
               const timeout = 5000
               const interval = 200
               const checkForAudio = (timer = 0) => {
@@ -174,7 +175,7 @@ export const CollectiblesPlaylistPageProvider = ({
             }
           } else {
             const a = new Audio()
-            const duration: Promise<number> = new Promise(resolve => {
+            const duration: Promise<number> = new Promise((resolve) => {
               setTimeout(() => resolve(0), 60000)
               a.onloadedmetadata = () => {
                 resolve(a.duration)
@@ -185,7 +186,7 @@ export const CollectiblesPlaylistPageProvider = ({
             collectible.duration = await duration
           }
           if (collectible) {
-            setAudioCollectibles(currentCollectibles => {
+            setAudioCollectibles((currentCollectibles) => {
               const newCollectibles = [...currentCollectibles]
               newCollectibles[index] = collectible
               return newCollectibles
@@ -237,19 +238,20 @@ export const CollectiblesPlaylistPageProvider = ({
   const isPlayingACollectible = useMemo(
     () =>
       audioCollectibles.some(
-        collectible =>
+        (collectible) =>
           collectible && collectible.id === currentPlayerItem?.collectible?.id
       ),
     [audioCollectibles, currentPlayerItem]
   )
 
-  const firstCollectible = useMemo(() => audioCollectibles.find(c => c), [
-    audioCollectibles
-  ])
+  const firstCollectible = useMemo(
+    () => audioCollectibles.find((c) => c),
+    [audioCollectibles]
+  )
 
   const entries = audioCollectibles
-    .filter(c => c)
-    .map(collectible => ({
+    .filter((c) => c)
+    .map((collectible) => ({
       track_id: collectible.id,
       id: collectible.id,
       uid: collectible.id,
@@ -278,7 +280,7 @@ export const CollectiblesPlaylistPageProvider = ({
   const onClickTrackName = (collectible: Collectible) => {
     dispatch(
       setCollectible({
-        collectible: collectible,
+        collectible,
         ownerHandle: user?.handle,
         embedCollectibleHash: getHash(collectible.id),
         isUserOnTheirProfile: false
@@ -340,7 +342,9 @@ export const CollectiblesPlaylistPageProvider = ({
       const formattedMetadata = formatMetadata(trackMetadatas)
       const filteredIndex =
         playingIndex > -1
-          ? formattedMetadata.findIndex(metadata => metadata.uid === playingUid)
+          ? formattedMetadata.findIndex(
+              (metadata) => metadata.uid === playingUid
+            )
           : playingIndex
       return [formattedMetadata, filteredIndex] as [
         typeof formattedMetadata,
@@ -352,7 +356,7 @@ export const CollectiblesPlaylistPageProvider = ({
 
   const isQueued = useCallback(() => {
     return entries.some(
-      entry => currentPlayerItem?.collectible?.id === entry.id
+      (entry) => currentPlayerItem?.collectible?.id === entry.id
     )
   }, [entries, currentPlayerItem])
 
@@ -380,11 +384,10 @@ export const CollectiblesPlaylistPageProvider = ({
           className={cn(styles.collectibleName, {
             [styles.active]: record.id === currentPlayerItem?.collectible?.id
           })}
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation()
             onClickTrackName(record)
-          }}
-        >
+          }}>
           {val}
         </div>
       )
@@ -426,7 +429,7 @@ export const CollectiblesPlaylistPageProvider = ({
     playlist_name: title,
     description: AUDIO_NFT_PLAYLIST.makeDescription?.(user?.name) ?? '',
     playlist_contents: {
-      track_ids: entries.map(entry => ({
+      track_ids: entries.map((entry) => ({
         track: entry.id
       }))
     },
@@ -456,9 +459,9 @@ export const CollectiblesPlaylistPageProvider = ({
       entries
     },
     columns,
-    getPlayingUid: getPlayingUid,
-    getFilteredData: getFilteredData,
-    isQueued: isQueued,
+    getPlayingUid,
+    getFilteredData,
+    isQueued,
 
     onPlay: handlePlayAllClick,
     onHeroTrackShare,

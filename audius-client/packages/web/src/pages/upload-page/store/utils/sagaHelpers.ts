@@ -22,14 +22,14 @@ export function* reportSuccessAndFailureEvents({
   if (!accountUser) return
   const primary = accountUser.creator_node_endpoint?.split(',')[0]
   if (!primary) return
-  const successEvents = range(numSuccess).map(_ =>
+  const successEvents = range(numSuccess).map((_) =>
     make(Name.TRACK_UPLOAD_SUCCESS, {
       endpoint: primary,
       kind: uploadType
     })
   )
 
-  const failureEvents = range(numFailure).map(i =>
+  const failureEvents = range(numFailure).map((i) =>
     make(Name.TRACK_UPLOAD_FAILURE, {
       endpoint: primary,
       kind: uploadType,
@@ -37,5 +37,5 @@ export function* reportSuccessAndFailureEvents({
     })
   )
 
-  yield all([...successEvents, ...failureEvents].map(e => put(e)))
+  yield all([...successEvents, ...failureEvents].map((e) => put(e)))
 }

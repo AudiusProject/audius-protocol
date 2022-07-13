@@ -30,15 +30,14 @@ const DesktopCardContainer = ({
         <CategoryHeader categoryName={categoryName} onMore={onMore} />
       )}
       <div className={cn(styles.cardsContainer, cardsClassName)}>
-        {cards.map(card => {
+        {cards.map((card) => {
           return card.props.link ? (
             <Draggable
               key={`draggable-${card.props.playlistId}`}
               text={card.props.primaryText}
               kind={card.props.isPlaylist ? 'playlist' : 'album'}
               id={card.props.playlistId}
-              link={card.props.link}
-            >
+              link={card.props.link}>
               {card}
             </Draggable>
           ) : (

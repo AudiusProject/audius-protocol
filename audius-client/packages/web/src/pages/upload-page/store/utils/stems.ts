@@ -9,7 +9,7 @@ export const updateAndFlattenStems = (
   return stems.flatMap((stemList, i) => {
     const parentTrackId = parentTrackIds[i]
 
-    return stemList.map(stem => {
+    return stemList.map((stem) => {
       const metadata = createStemMetadata({
         parentTrackId,
         track: stem.metadata,

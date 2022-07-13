@@ -8,5 +8,5 @@ export type FeedTabScreenParamList = AppTabScreenParamList & {
 }
 
 export const FeedTabScreen = createAppTabScreenStack<FeedTabScreenParamList>(
-  Stack => <Stack.Screen name='Feed' component={FeedScreen} />
+  (Stack) => <Stack.Screen name='Feed' component={FeedScreen} />
 )

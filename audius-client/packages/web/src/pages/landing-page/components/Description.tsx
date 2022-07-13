@@ -44,7 +44,7 @@ const Description = (props: DescriptionProps) => {
   }, [])
 
   const setStartAnimation = useCallback(
-    node => {
+    (node) => {
       startAnimation.current = node
       refInView()
     },
@@ -118,8 +118,7 @@ const Description = (props: DescriptionProps) => {
                   transform: x.interpolate(
                     (x: number) => `translate3d(0,${x}px,0)`
                   )
-                }}
-              >
+                }}>
                 <animated.div className={styles.word}>
                   {' '}
                   {title1Items[index]}{' '}
@@ -139,15 +138,13 @@ const Description = (props: DescriptionProps) => {
                     transform: x.interpolate(
                       (x: number) => `translate3d(0,${x}px,0)`
                     )
-                  }}
-                >
+                  }}>
                   <animated.div
                     className={cn(
                       styles.word,
                       styles.coloredTitleWord,
                       wordGradients[index]
-                    )}
-                  >
+                    )}>
                     {' '}
                     {title2Items[index]}{' '}
                   </animated.div>
@@ -164,8 +161,7 @@ const Description = (props: DescriptionProps) => {
               transform: bodyStyles.x.interpolate(
                 (x: number) => `translate3d(0,${x}px,0)`
               )
-            }}
-          >
+            }}>
             <div className={cn(styles.description)}>
               <p>{messages.description}</p>
               <p>{messages.features}</p>
@@ -197,8 +193,7 @@ const Description = (props: DescriptionProps) => {
                   transform: x.interpolate(
                     (x: number) => `translate3d(0,${x}px,0)`
                   )
-                }}
-              >
+                }}>
                 <animated.div className={styles.word}>
                   {' '}
                   {title1Items[index]}{' '}
@@ -218,15 +213,13 @@ const Description = (props: DescriptionProps) => {
                     transform: x.interpolate(
                       (x: number) => `translate3d(0,${x}px,0)`
                     )
-                  }}
-                >
+                  }}>
                   <animated.div
                     className={cn(
                       styles.word,
                       styles.coloredTitleWord,
                       wordGradients[index]
-                    )}
-                  >
+                    )}>
                     {' '}
                     {title2Items[index]}{' '}
                   </animated.div>
@@ -243,8 +236,7 @@ const Description = (props: DescriptionProps) => {
               transform: bodyStyles.x.interpolate(
                 (x: number) => `translate3d(0,${x}px,0)`
               )
-            }}
-          >
+            }}>
             <div className={cn(styles.subText, styles.description)}>
               {messages.description}
             </div>

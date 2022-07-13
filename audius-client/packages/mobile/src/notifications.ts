@@ -143,7 +143,7 @@ class PushNotifications {
     // isRegistering modified as global
     // eslint-disable-next-line no-unmodified-loop-condition
     while (isRegistering) {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
     const token = await AsyncStorage.getItem('@device_token')
     if (token) {

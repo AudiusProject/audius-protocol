@@ -62,8 +62,7 @@ export const NotificationPage = () => {
         title={messages.documentTitle}
         description={messages.description}
         backgroundClassName={styles.background}
-        fullHeight
-      >
+        fullHeight>
         <div className={styles.notificationContainer}>
           {notifications.length > 0 ? (
             <InfiniteScroll
@@ -72,8 +71,7 @@ export const NotificationPage = () => {
               hasMore={true}
               useWindow={true}
               initialLoad={false}
-              threshold={SCROLL_THRESHOLD}
-            >
+              threshold={SCROLL_THRESHOLD}>
               <div className={styles.content}>
                 {notifications
                   .filter(({ isHidden }: any) => !isHidden)

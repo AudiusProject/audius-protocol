@@ -59,7 +59,8 @@ const URL_INTERCEPT_PATTERN = new RegExp(
   `^(http://localhost|file:///|audius://|https://platform.twitter|https://www.google.com/recaptcha/.*|${URL_OVERRIDE}.*)`
 )
 const AUDIUS_SITE_PREFIX = /^(https|http):\/\/audius.co\//
-const AUDIUS_REDIRECT_SITE_PREFIX = /^(https|http):\/\/redirect.audius.co\/app-redirect\//
+const AUDIUS_REDIRECT_SITE_PREFIX =
+  /^(https|http):\/\/redirect.audius.co\/app-redirect\//
 const AUDIUS_PORT_INCLUDE_PATTERN = /(:3100|:3101)/
 
 // Android Paths
@@ -123,7 +124,7 @@ const copyAndroidAssets = async () => {
   await RNFS.mkdir(ANDROID_BUNDLE_PATH)
   const files = await getAllFiles(DOCUMENT_DIRECTORY_PATH, BUNDLE_PATH)
   await Promise.all(
-    files.map(async filePath => {
+    files.map(async (filePath) => {
       await RNFS.copyFileAssets(
         filePath,
         `${DOCUMENT_DIRECTORY_PATH}/${filePath}`
@@ -173,7 +174,7 @@ const WebApp = ({
 
   const [key, setKey] = useState(0)
   const reload = useCallback(() => {
-    setKey(key => key + 1)
+    setKey((key) => key + 1)
   }, [setKey])
 
   const isRunning = useCallback(async () => {
@@ -353,7 +354,7 @@ const WebApp = ({
   useEffect(() => {
     if (hasLoaded && webRef.current) {
       Linking.getInitialURL()
-        .then(initialUrl => {
+        .then((initialUrl) => {
           if (initialUrl) {
             const recoveryParams = getRecoveryParams(initialUrl)
             if (recoveryParams) {
@@ -363,7 +364,7 @@ const WebApp = ({
             }
           }
         })
-        .catch(err => console.error('An error occurred', err))
+        .catch((err) => console.error('An error occurred', err))
     }
   }, [webRef, hasLoaded, getRecoveryParams, postRecoveryAccount, pushRoute])
 
@@ -498,7 +499,7 @@ const WebApp = ({
         cacheEnabled={false}
         overScrollMode='never'
         onMessage={onMessageHandler}
-        onError={error => console.error(JSON.stringify(error.nativeEvent))}
+        onError={(error) => console.error(JSON.stringify(error.nativeEvent))}
         onLoad={() => {
           console.log('WebView loaded: ', webRef)
         }}

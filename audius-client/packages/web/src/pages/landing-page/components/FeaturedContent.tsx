@@ -76,20 +76,17 @@ const DesktopPlaylistTile = (props: PlaylistTileProps) => {
         setMouseDown(false)
       }}
       onMouseUp={() => setMouseDown(false)}
-      onMouseDown={() => setMouseDown(true)}
-    >
+      onMouseDown={() => setMouseDown(true)}>
       <animated.div
         className={styles.trackContainer}
         // @ts-ignore
-        style={{ transform: mouseDown ? '' : transform }}
-      >
+        style={{ transform: mouseDown ? '' : transform }}>
         <div
           className={styles.track}
           style={{
             backgroundImage: `url(${props.imageUrl})`,
             boxShadow: `0px 10px 50px -2px rgba(56, 14, 13, 0.4)`
-          }}
-        >
+          }}>
           <div className={styles.trackContent}>
             <div className={styles.trackArtist}>{`By ${props.artist}`}</div>
             <IconListenOnAudius className={styles.listenOnAudius} />
@@ -107,8 +104,7 @@ const MobilePlaylistTile = (props: PlaylistTileProps) => (
   <div
     key={props.title}
     className={styles.trackContainer}
-    onClick={props.onClick}
-  >
+    onClick={props.onClick}>
     <div
       className={styles.trackImage}
       style={{
@@ -116,8 +112,7 @@ const MobilePlaylistTile = (props: PlaylistTileProps) => (
           props.imageUrl || audiusExclusivesPlaylistImg
         })`,
         boxShadow: `0px 10px 50px -2px rgba(56, 14, 13, 0.4)`
-      }}
-    ></div>
+      }}></div>
     <div className={styles.trackTitle}>{props.title}</div>
   </div>
 )
@@ -146,18 +141,16 @@ const getImageUrl = (
 }
 
 const FeaturedContent = (props: FeaturedContentProps) => {
-  const [
-    trendingPlaylistsResponse,
-    fetchTrendingPlaylists
-  ] = useAsyncFn(async () => {
-    const featuredContent = await fetchExploreContent()
-    const ids = featuredContent.featuredPlaylists
-    const playlists = (AudiusBackend.getPlaylists(
-      null,
-      ids
-    ) as any) as UserCollectionMetadata[]
-    return playlists
-  }, [])
+  const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
+    useAsyncFn(async () => {
+      const featuredContent = await fetchExploreContent()
+      const ids = featuredContent.featuredPlaylists
+      const playlists = AudiusBackend.getPlaylists(
+        null,
+        ids
+      ) as any as UserCollectionMetadata[]
+      return playlists
+    }, [])
 
   useEffect(() => {
     fetchTrendingPlaylists()
@@ -179,7 +172,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
         <div className={styles.tracksContainer}>
           {trendingPlaylistsResponse.value == null ||
           trendingPlaylistsResponse.value.length < 4
-            ? FALLBACK_PLAYLISTS.map(p => (
+            ? FALLBACK_PLAYLISTS.map((p) => (
                 <MobilePlaylistTile
                   key={p.link}
                   {...p}
@@ -188,7 +181,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
               ))
             : trendingPlaylistsResponse.value
                 .slice(0, 4)
-                .map(p => (
+                .map((p) => (
                   <MobilePlaylistTile
                     key={p.playlist_id}
                     title={p.playlist_name}
@@ -220,10 +213,9 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           <animated.div
             style={{
               transform: textStyles.x.interpolate(
-                x => `translate3d(0,${x}px,0)`
+                (x) => `translate3d(0,${x}px,0)`
               )
-            }}
-          >
+            }}>
             <div className={styles.header}>
               <h3 className={styles.title}>{messages.title}</h3>
               <h4 className={styles.subTitle}>{messages.subTitle}</h4>
@@ -233,7 +225,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
         <div className={styles.tracksContainer}>
           {trendingPlaylistsResponse.value == null ||
           trendingPlaylistsResponse.value.length < 4
-            ? FALLBACK_PLAYLISTS.map(p => (
+            ? FALLBACK_PLAYLISTS.map((p) => (
                 <DesktopPlaylistTile
                   key={p.title}
                   {...p}
@@ -242,7 +234,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
               ))
             : trendingPlaylistsResponse.value
                 .slice(0, 4)
-                .map(p => (
+                .map((p) => (
                   <DesktopPlaylistTile
                     key={p.playlist_id}
                     title={p.playlist_name}

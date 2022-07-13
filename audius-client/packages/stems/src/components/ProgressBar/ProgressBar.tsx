@@ -45,17 +45,16 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     <div
       className={cn(styles.container, { [className!]: !!className })}
       role='progressbar'
-      aria-valuenow={percentage.toNumber()}
-    >
+      aria-valuenow={percentage.toNumber()}>
       <div
-        className={cn(styles.slider, { [sliderClassName!]: !!sliderClassName })}
-      >
+        className={cn(styles.slider, {
+          [sliderClassName!]: !!sliderClassName
+        })}>
         <div
           className={cn(styles.sliderBar, {
             [sliderBarClassName!]: !!sliderBarClassName
           })}
-          style={{ width: `${sliderWidth}%` }}
-        ></div>
+          style={{ width: `${sliderWidth}%` }}></div>
       </div>
       {showLabels && (
         <div className={styles.labels}>

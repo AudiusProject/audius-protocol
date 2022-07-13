@@ -202,14 +202,12 @@ export const TrackListItem = ({
         styles.trackContainer,
         isActive && styles.trackContainerActive,
         isDeleted && styles.trackContainerDisabled
-      ]}
-    >
+      ]}>
       <TouchableOpacity
         style={styles.trackInnerContainer}
         onPress={onPressTrack}
         onLongPress={drag}
-        disabled={isDeleted}
-      >
+        disabled={isDeleted}>
         {!hideArt ? (
           <TrackArtwork
             trackId={track_id}

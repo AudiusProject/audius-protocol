@@ -8,4 +8,5 @@ class TrendingUndergroundLineupActions extends LineupActions {
   }
 }
 
-export const trendingUndergroundLineupActions = new TrendingUndergroundLineupActions()
+export const trendingUndergroundLineupActions =
+  new TrendingUndergroundLineupActions()

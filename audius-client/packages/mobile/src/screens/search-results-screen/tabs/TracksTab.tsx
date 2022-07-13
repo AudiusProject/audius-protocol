@@ -12,8 +12,7 @@ export const TracksTab = () => {
   return (
     <SearchResultsTab
       noResults={lineup?.entries.length === 0}
-      status={lineup?.status}
-    >
+      status={lineup?.status}>
       <Lineup actions={tracksActions} lineup={lineup} />
     </SearchResultsTab>
   )

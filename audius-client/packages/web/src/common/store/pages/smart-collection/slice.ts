@@ -34,9 +34,7 @@ const slice = createSlice({
   }
 })
 
-export const {
-  fetchSmartCollection,
-  fetchSmartCollectionSucceeded
-} = slice.actions
+export const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
+  slice.actions
 
 export default slice.reducer

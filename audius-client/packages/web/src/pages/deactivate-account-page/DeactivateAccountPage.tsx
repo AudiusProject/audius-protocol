@@ -160,8 +160,7 @@ export const DeactivateAccountPage = () => {
       closeConfirmation={closeConfirmation}
       onDrawerSelection={onDrawerSelection}
       onConfirm={onConfirm}
-      isLoading={isDeactivating}
-    >
+      isLoading={isDeactivating}>
       <DeactivateAcccountPageContents
         isError={deactivateAccountStatus === Status.ERROR}
         isLoading={isDeactivating}

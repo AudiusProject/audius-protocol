@@ -54,7 +54,7 @@ const createStyles = (themeColors: ThemeColors) =>
       borderColor: themeColors.neutralLight4
     }
   })
-const renderArrowIcon = color => <IconArrow fill={color} />
+const renderArrowIcon = (color) => <IconArrow fill={color} />
 
 export const ProfileCompletionChecks = ({
   isComplete,
@@ -90,7 +90,7 @@ export const ProfileCompletionChecks = ({
   return (
     <View>
       <View style={styles.columnContainer}>
-        {Object.keys(config).map(key => (
+        {Object.keys(config).map((key) => (
           <View key={key} style={styles.checkContainer}>
             {config[key] ? (
               <IconValidationCheck fill={'white'} />
@@ -101,8 +101,7 @@ export const ProfileCompletionChecks = ({
               style={[
                 styles.checkText,
                 config[key] ? styles.checkTextDone : {}
-              ]}
-            >
+              ]}>
               {key}
             </Text>
           </View>

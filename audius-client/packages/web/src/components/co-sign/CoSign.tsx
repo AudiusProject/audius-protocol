@@ -46,8 +46,7 @@ const CoSignCheck = ({
       text={tooltipText}
       mount='page'
       className={styles.tooltip}
-      color={themeColors['--white']}
-    >
+      color={themeColors['--white']}>
       <div>
         <Check size={size} />
       </div>
@@ -101,8 +100,7 @@ const CoSign = (props: CoSignProps) => {
           [styles.medium]: size === Size.MEDIUM,
           [styles.large]: size === Size.LARGE,
           [styles.xlarge]: size === Size.XLARGE
-        })}
-      >
+        })}>
         {check}
       </div>
     </div>

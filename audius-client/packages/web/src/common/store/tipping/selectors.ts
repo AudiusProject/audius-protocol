@@ -44,7 +44,7 @@ const mergeMaps = <
   /**
    * Merge the default and override maps.
    */
-  const userIds = (Object.keys(mapOverrides) as unknown) as ID[]
+  const userIds = Object.keys(mapOverrides) as unknown as ID[]
   for (const userId of userIds) {
     // If the support map for a given user id exists in the overrides
     // but not in the default, copy the override map into the merged map.
@@ -58,7 +58,7 @@ const mergeMaps = <
       // if the existing value in the default map has a smaller amount
       // than that in the override, the update default value with the
       // override value
-      const supportIds = (Object.keys(mapOverrides[userId]) as unknown) as ID[]
+      const supportIds = Object.keys(mapOverrides[userId]) as unknown as ID[]
       for (const supportId of supportIds) {
         const shouldOverrideValue =
           !map[userId][supportId] ||
@@ -93,10 +93,8 @@ export const rerankSupportersMapForUser = (
   /**
    * Sort the supporters values for the user by amount descending.
    */
-  const supportersSortedDesc = Object.values<Supporter>(
-    supportersForUser
-  ).sort((s1, s2) =>
-    stringWeiToBN(s1.amount).gt(stringWeiToBN(s2.amount)) ? -1 : 1
+  const supportersSortedDesc = Object.values<Supporter>(supportersForUser).sort(
+    (s1, s2) => (stringWeiToBN(s1.amount).gt(stringWeiToBN(s2.amount)) ? -1 : 1)
   )
 
   /**
@@ -155,7 +153,7 @@ export const getOptimisticSupporters = createSelector(
      * Re-rank everything based on newly merged map.
      */
     const result: SupportersMap = {}
-    const mergedUserIds = (Object.keys(mergedMap) as unknown) as ID[]
+    const mergedUserIds = Object.keys(mergedMap) as unknown as ID[]
     for (const userId of mergedUserIds) {
       result[userId] = rerankSupportersMapForUser(mergedMap[userId])
     }

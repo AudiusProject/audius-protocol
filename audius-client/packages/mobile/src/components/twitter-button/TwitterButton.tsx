@@ -32,9 +32,7 @@ type StaticTwitterProps = {
 type DynamicTwitterProps = {
   type: 'dynamic'
   handle: string
-  shareData: (
-    twitterHandle: string | null | undefined
-  ) => Nullable<{
+  shareData: (twitterHandle: string | null | undefined) => Nullable<{
     shareText: string
     analytics: ReturnType<typeof make>
   }>
@@ -48,17 +46,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   const styles = useStyles()
   const openLink = useOnOpenLink()
   const dispatchWeb = useDispatchWeb()
-  const user = useSelectorWeb(state =>
+  const user = useSelectorWeb((state) =>
     getUser(state, { handle: 'handle' in other ? other.handle : undefined })
   )
 
-  const {
-    userName,
-    shareTwitterStatus,
-    twitterHandle,
-    setLoading,
-    setIdle
-  } = useTwitterButtonStatus(user)
+  const { userName, shareTwitterStatus, twitterHandle, setLoading, setIdle } =
+    useTwitterButtonStatus(user)
 
   const handlePress = useCallback(() => {
     if (other.type === 'static' && other.analytics) {

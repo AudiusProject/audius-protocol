@@ -12,29 +12,27 @@ export default {
   title: 'Foundations/SVG Backgrounds'
 }
 
-export const BgWaveLarge: Story<SVGAttributes<SVGElement>> = args => {
+export const BgWaveLarge: Story<SVGAttributes<SVGElement>> = (args) => {
   return <BgWaveLargeComponent {...args} />
 }
 
 BgWaveLarge.parameters = {
   docs: {
     source: {
-      code:
-        'import { BgWaveLarge } from @audius/stems\n// Render the SVG element: <BgWaveLarge />'
+      code: 'import { BgWaveLarge } from @audius/stems\n// Render the SVG element: <BgWaveLarge />'
     }
   }
 }
 BgWaveLarge.storyName = 'BgWaveLarge'
 
-export const BgWaveSmall: Story<SVGAttributes<SVGElement>> = args => {
+export const BgWaveSmall: Story<SVGAttributes<SVGElement>> = (args) => {
   return <BgWaveSmallComponent {...args} />
 }
 
 BgWaveSmall.parameters = {
   docs: {
     source: {
-      code:
-        'import { BgWaveSmall } from @audius/stems\n// Render the SVG element: <BgWaveSmall />'
+      code: 'import { BgWaveSmall } from @audius/stems\n// Render the SVG element: <BgWaveSmall />'
     }
   }
 }

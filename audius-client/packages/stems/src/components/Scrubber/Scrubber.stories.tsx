@@ -8,7 +8,7 @@ export default {
   title: 'Components/Scrubber'
 }
 
-const Template: Story<ScrubberProps> = args => <Scrubber {...args} />
+const Template: Story<ScrubberProps> = (args) => <Scrubber {...args} />
 const baseProps: ScrubberProps = {
   isPlaying: false,
   mediaKey: '1',

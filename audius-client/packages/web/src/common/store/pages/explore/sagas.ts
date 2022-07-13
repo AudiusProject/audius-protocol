@@ -16,7 +16,7 @@ const EXPLORE_CONTENT_URL =
   process.env.REACT_APP_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
 
 export const fetchExploreContent = async () => {
-  return fetch(EXPLORE_CONTENT_URL).then(resp => resp.json())
+  return fetch(EXPLORE_CONTENT_URL).then((resp) => resp.json())
 }
 
 function* watchFetchExplore() {

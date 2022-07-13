@@ -54,7 +54,7 @@ export function* watchSetTheme() {
     // updates their theme setting again if the OS theme preference changes
     if (mql && mqlListener) mql.removeListener(mqlListener)
     if (theme === Theme.AUTO && mql) {
-      const channel = eventChannel(emitter => {
+      const channel = eventChannel((emitter) => {
         mqlListener = () => {
           emitter(setThemeAction(Theme.AUTO))
         }

@@ -6,7 +6,7 @@ import { ReactComponent as LogoSVG } from 'assets/img/audiusLogoGlyph.svg'
 
 import styles from './EndOfLineup.module.css'
 
-export const EndOfLineup = props => {
+export const EndOfLineup = (props) => {
   const { title, description } = props
 
   return (

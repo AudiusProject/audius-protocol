@@ -296,11 +296,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineup: { page },
       loadMore
     } = this.props
-    const {
-      minimumTrackLoadCount,
-      trackLoadMoreCount,
-      initialTrackLoadCount
-    } = this.state
+    const { minimumTrackLoadCount, trackLoadMoreCount, initialTrackLoadCount } =
+      this.state
     const lineupLength = lineup.entries.length
     const offset = lineupLength + lineup.deleted + lineup.nullCount
     if (
@@ -408,7 +405,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
   getPlayingUid = () => {
     const { lineup, playingTrackId, playingSource, playingUid } = this.props
 
-    const isLineupPlaying = lineup.entries.some(entry => {
+    const isLineupPlaying = lineup.entries.some((entry) => {
       if (entry.track_id) return playingUid === entry.uid
       else if (entry.playlist_id)
         return entry.tracks.some((track: any) => track.uid === playingUid)
@@ -430,7 +427,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
   hasLoaded = (index: number) => {
     if (!this.state.loadedTiles[index]) {
-      this.setState(state => {
+      this.setState((state) => {
         const newLoadedTiles = [...state.loadedTiles]
         newLoadedTiles[index] = true
         return {
@@ -617,8 +614,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                   marginBottom: 12,
                   height: '100%',
                   maxHeight: 174
-                }}
-              >
+                }}>
                 <div className={styles.featuredContent}>
                   <SkeletonTileElement
                     {...{ ...skeletonTileProps, ...leadingElementTileProps }}
@@ -696,8 +692,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           [lineupContainerStyles!]: !!lineupContainerStyles
         })}
         style={{ position: 'relative' }}
-        key='lineup'
-      >
+        key='lineup'>
         <Transition
           items={featuredTrackUid}
           from={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
@@ -715,11 +710,10 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           }}
           leave={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
           config={{ duration: 175 }}
-          immediate={isMobile || !animateLeadingElement}
-        >
+          immediate={isMobile || !animateLeadingElement}>
           {(featuredId: ID | null) =>
             featuredId
-              ? props => (
+              ? (props) => (
                   <div
                     className={cn(
                       styles.featuredContainer,
@@ -729,16 +723,14 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                       height: '100%',
                       maxHeight: props.maxHeight,
                       marginBottom: props.marginBottom
-                    }}
-                  >
+                    }}>
                     <div
                       className={styles.featuredContent}
                       style={{
                         height: '100%',
                         opacity: props.opacity,
                         maxHeight: props.maxHeight
-                      }}
-                    >
+                      }}>
                       {allTracks[featuredId]}
                     </div>
                   </div>
@@ -754,8 +746,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           }}
           className={cn({
             [laggingContainerClassName!]: !!laggingContainerClassName
-          })}
-        >
+          })}>
           {tiles.length === 0 && status === Status.SUCCESS ? (
             this.props.emptyElement
           ) : (
@@ -770,8 +761,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               initialLoad={false}
               getScrollParent={() => scrollParent}
               threshold={loadMoreThreshold}
-              element='ol'
-            >
+              element='ol'>
               {isFeed && showTip ? <FeedTipTile /> : null}
               {tiles.map((tile, index) => (
                 <li key={index}>{tile}</li>

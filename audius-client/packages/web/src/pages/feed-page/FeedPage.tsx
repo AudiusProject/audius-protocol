@@ -21,8 +21,7 @@ const FeedPage = ({ containerRef, isMobile }: FeedPageContentProps) => {
   return (
     <FeedPageProvider
       // @ts-ignore
-      containerRef={containerRef}
-    >
+      containerRef={containerRef}>
       {content}
     </FeedPageProvider>
   )

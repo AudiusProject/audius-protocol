@@ -28,8 +28,7 @@ export const Toast = ({
       <div
         className={cn(styles.wrapperClass, {
           [containerClassName!]: !!containerClassName
-        })}
-      >
+        })}>
         {children}
       </div>
       <div className={styles.container}>{content}</div>

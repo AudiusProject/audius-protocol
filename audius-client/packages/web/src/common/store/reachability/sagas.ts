@@ -72,13 +72,14 @@ function* updateReachability(isReachable: boolean) {
 function* reachabilityPollingDaemon() {
   if (NATIVE_MOBILE) {
     // Native mobile: use the system connectivity checks
-    yield* takeEvery(MessageType.IS_NETWORK_CONNECTED, function* (
-      action: Message
-    ) {
-      const { isConnected } = action
+    yield* takeEvery(
+      MessageType.IS_NETWORK_CONNECTED,
+      function* (action: Message) {
+        const { isConnected } = action
 
-      yield* call(updateReachability, isConnected)
-    })
+        yield* call(updateReachability, isConnected)
+      }
+    )
   } else {
     // Web/Desktop: poll for connectivity
     if (!isMobile()) {

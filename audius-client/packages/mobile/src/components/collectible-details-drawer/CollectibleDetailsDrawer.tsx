@@ -94,7 +94,7 @@ export const CollectibleDetailsDrawer = () => {
   const styles = useStyles()
   const collectible = useSelectorWeb(getCollectible)
   const ownerId = useSelectorWeb(getCollectibleOwnerId)
-  const owner = useSelectorWeb(state => getUser(state, { id: ownerId }))
+  const owner = useSelectorWeb((state) => getUser(state, { id: ownerId }))
 
   const formattedLink = useMemo(() => {
     const url = collectible?.externalLink
@@ -126,8 +126,7 @@ export const CollectibleDetailsDrawer = () => {
                   styles.badge,
                   collectible.isOwned ? styles.owned : styles.created
                 ]}
-                weight='bold'
-              >
+                weight='bold'>
                 {collectible.isOwned ? messages.owned : messages.created}
               </Text>
               <View style={styles.chainIcon}>

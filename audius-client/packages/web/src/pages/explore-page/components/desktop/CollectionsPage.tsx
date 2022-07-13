@@ -41,10 +41,8 @@ const CollectionsPage = ({
   onClickFavorites,
   goToRoute
 }: CollectionsPageProps) => {
-  const {
-    isLoading: isLoadingPlaylist,
-    setDidLoad: setDidLoadPlaylist
-  } = useOrderedLoad(collections.length)
+  const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
+    useOrderedLoad(collections.length)
 
   const goToProfilePage = useCallback(
     (e: MouseEvent, handle: string) => {
@@ -68,8 +66,7 @@ const CollectionsPage = ({
       <ArtistPopover handle={playlist.user.handle}>
         <span
           className={styles.userName}
-          onClick={(e: MouseEvent) => goToProfilePage(e, playlist.user.handle)}
-        >
+          onClick={(e: MouseEvent) => goToProfilePage(e, playlist.user.handle)}>
           {playlist.user.name}
         </span>
       </ArtistPopover>
@@ -140,8 +137,7 @@ const CollectionsPage = ({
       description={description}
       canonicalUrl={`${BASE_URL}${EXPLORE_PAGE}`}
       contentClassName={styles.page}
-      header={header}
-    >
+      header={header}>
       {status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (

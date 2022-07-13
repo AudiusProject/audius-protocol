@@ -10,10 +10,10 @@ const slice = createSlice({
   name: 'keyboard',
   initialState,
   reducers: {
-    open: state => {
+    open: (state) => {
       state.isOpen = true
     },
-    close: state => {
+    close: (state) => {
       state.isOpen = false
     }
   }

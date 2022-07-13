@@ -21,11 +21,11 @@ import { makeUid } from 'common/utils/uid'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getUid as getPlayerUid } from 'store/player/selectors'
 
-const getSavedTracks = state => state.pages.savedPage.tracks
+const getSavedTracks = (state) => state.pages.savedPage.tracks
 
 function* getTracks() {
   const savedTracks = yield select(getSaves)
-  const savedTrackIds = savedTracks.map(save => save.save_item_id)
+  const savedTrackIds = savedTracks.map((save) => save.save_item_id)
   const savedTrackTimestamps = savedTracks.reduce((map, save) => {
     map[save.save_item_id] = save.created_at
     return map
@@ -33,7 +33,7 @@ function* getTracks() {
 
   const localSaves = yield select(getLocalSaves)
   const localSavedTrackIds = Object.keys(localSaves).filter(
-    savedTrackId => !savedTrackTimestamps[savedTrackId]
+    (savedTrackId) => !savedTrackTimestamps[savedTrackId]
   )
   const localSavedTrackTimestamps = localSavedTrackIds.reduce((map, saveId) => {
     map[saveId] = Date.now()
@@ -59,12 +59,12 @@ function* getTracks() {
       map[track.track_id] = track
       return map
     }, {})
-    return allSavedTrackIds.map(id => tracksMap[id])
+    return allSavedTrackIds.map((id) => tracksMap[id])
   }
   return []
 }
 
-const keepDateSaved = entry => ({
+const keepDateSaved = (entry) => ({
   uid: entry.uid,
   kind: entry.track_id ? Kind.TRACKS : Kind.COLLECTIONS,
   id: entry.track_id || entry.playlist_id,

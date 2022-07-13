@@ -14,11 +14,11 @@ const slice = createSlice({
   name: 'application/ui/deactivateAccount',
   initialState,
   reducers: {
-    deactivateAccount: state => {
+    deactivateAccount: (state) => {
       state.status = Status.LOADING
     },
     afterDeactivationSignOut: () => {},
-    deactivateAccountFailed: state => {
+    deactivateAccountFailed: (state) => {
       state.status = Status.ERROR
     }
   }

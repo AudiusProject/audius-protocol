@@ -69,7 +69,7 @@ const UserListModal = ({
   const scrollParentRef = useRef<HTMLElement>()
   const profile = useSelector(getProfileUser)
   const supportersId = useSelector(getSupportersId)
-  const supportersUser = useSelector(state =>
+  const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })
   )
 
@@ -168,14 +168,12 @@ const UserListModal = ({
       bodyClassName={styles.modalBody}
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}
-      showDismissButton
-    >
+      showDismissButton>
       <Scrollbar
         className={styles.scrollable}
-        containerRef={containerRef => {
+        containerRef={(containerRef) => {
           scrollParentRef.current = containerRef
-        }}
-      >
+        }}>
         <UserList
           stateSelector={selector!}
           tag={tag}

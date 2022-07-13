@@ -88,12 +88,8 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     'does_follow_current_user'
   ])
 
-  const {
-    name,
-    handle,
-    does_current_user_follow,
-    does_follow_current_user
-  } = profile
+  const { name, handle, does_current_user_follow, does_follow_current_user } =
+    profile
 
   const isOwner = useSelectorWeb(getIsOwner)
   const profileButton = isOwner ? (

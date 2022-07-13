@@ -46,17 +46,13 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const ProfileMetrics = () => {
   const styles = useStyles()
-  const {
-    user_id,
-    track_count,
-    follower_count,
-    followee_count
-  } = useSelectProfile([
-    'user_id',
-    'track_count',
-    'follower_count',
-    'followee_count'
-  ])
+  const { user_id, track_count, follower_count, followee_count } =
+    useSelectProfile([
+      'user_id',
+      'track_count',
+      'follower_count',
+      'followee_count'
+    ])
 
   const navigation = useNavigation()
   const dispatchWeb = useDispatchWeb()

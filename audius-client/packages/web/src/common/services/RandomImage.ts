@@ -16,7 +16,7 @@ function isResponse(x: Response | Timeout): x is Response {
 export default class RandomImage {
   static get = async (query?: string) => {
     const timer = (timeout: number): Promise<Timeout> =>
-      new Promise(resolve => {
+      new Promise((resolve) => {
         setTimeout(resolve, timeout, {
           timeout: true
         })

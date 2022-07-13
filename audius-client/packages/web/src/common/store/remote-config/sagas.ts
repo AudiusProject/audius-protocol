@@ -10,7 +10,7 @@ const CLIENT_READY_EVENT = 'CLIENT_READY'
 const remoteConfigSagas = (remoteConfigInstance: RemoteConfigInstance) => {
   function* watchRemoteConfigLoad() {
     // Emit event when provider is ready
-    const chan = eventChannel(emitter => {
+    const chan = eventChannel((emitter) => {
       remoteConfigInstance.onClientReady(() => {
         emitter(CLIENT_READY_EVENT)
         emitter(END)

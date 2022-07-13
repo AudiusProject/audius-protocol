@@ -35,8 +35,7 @@ const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}
       showDismissButton
-      showTitleHeader
-    >
+      showTitleHeader>
       <div className={styles.container}>
         <div className={styles.text}>
           <div className={styles.header}>{header}</div>
