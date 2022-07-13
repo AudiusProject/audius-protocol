@@ -37,10 +37,24 @@ begin
     on conflict do nothing;
   end if;
 
+  -- create a notification for the followee
+  if new.is_delete is false then
+	  insert into notification
+		(blocknumber, user_ids, timestamp, type, id, metadata)
+	  values
+		( 
+			new.blocknumber,
+			ARRAY [new.followee_user_id], 
+			new.created_at, 
+			'follow',
+			'follow:' || new.followee_user_id,
+			('{ "followee_user_id": ' || new.followee_user_id || ',  "follower_user_id": ' || new.follower_user_id ||  '}')::json
+		);
+	end if;
+
   return null;
 end; 
 $$ language plpgsql;
-
 
 do $$ begin
   create trigger on_follow
