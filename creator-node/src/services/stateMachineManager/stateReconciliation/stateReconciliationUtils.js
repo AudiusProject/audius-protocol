@@ -98,14 +98,14 @@ const issueSyncRequestsUntilSynced = async (
   })
   if (!_.isEmpty(duplicateSyncReq)) {
     // Log duplicate and return
-    logger.warn(`Duplicate sync request: ${duplicateSyncReq}`)
+    logger.warn(`Duplicate sync request: ${JSON.stringify(duplicateSyncReq)}`)
     return
   } else if (!_.isEmpty(syncReqToEnqueue)) {
     const { jobName, jobData } = syncReqToEnqueue
     await queue.add(jobName, jobData)
   } else {
     // Log error that the sync request couldn't be created and return
-    logger.error(`Failed to create manual sync request: ${duplicateSyncReq}`)
+    logger.error(`Failed to create manual sync request`)
     return
   }
 
