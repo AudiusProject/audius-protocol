@@ -196,21 +196,32 @@ class ServiceRegistry {
 
   _setupRouteDurationTracking(app) {
     // Get all routes on Content Node
-    const routes = app._router.stack
-      .filter((element) => element.route && element.route.path)
-      .map((element) => {
-        const path = element.route.path
-        const method = Object.keys(element.route.methods)[0]
+    const routes = app._router.stack.filter(
+      (element) =>
+        (element.route && element.route.path) ||
+        (element.handle && element.handle.stack)
+    )
 
-        return { path, method }
-      })
+    const parsedRoutes = []
+    routes.forEach((element) => {
+      let path, method
+      if (element.route && element.route.path) {
+        path = element.route.path
+        method = Object.keys(element.route.methods)[0]
 
-    this.prometheusRegistry.addRoutesDurationTracking(routes)
-    // add middleware to all routes using app.use() to match on the route + key in metric name
+        parsedRoutes.push({ path, method })
+      } else {
+        const routerRoutes = element.handle.stack
+        routerRoutes.forEach((routerRoute) => {
+          path = routerRoute.route.path
+          method = Object.keys(routerRoute.route.methods)[0]
 
-    // in hadndle response, end duration track + status code. see the tracks example
+          parsedRoutes.push({ path, method })
+        })
+      }
+    })
 
-    // tODO: remove the manual duration tracker
+    this.prometheusRegistry.addRoutesDurationTracking(parsedRoutes)
   }
 
   /**
@@ -296,6 +307,14 @@ class ServiceRegistry {
   async initServicesThatRequireServer(app) {
     const start = getStartTime()
 
+    try {
+      this._setupRouteDurationTracking(app)
+    } catch (e) {
+      this.logError(
+        `Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
+      )
+    }
+
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
@@ -337,14 +356,6 @@ class ServiceRegistry {
     } catch (e) {
       this.logError(
         `Failed to initialize bull monitoring UI: ${e.message || e}. Skipping..`
-      )
-    }
-
-    try {
-      this._setupRouteDurationTracking(app)
-    } catch (e) {
-      this.logError(
-        `Failed to setup general duration tracking for all routes: ${e.message}. Skipping..`
       )
     }
 

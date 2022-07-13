@@ -17,9 +17,14 @@ module.exports.handleResponse = (func) => {
         throw new Error('Invalid response returned by function')
       }
 
+      req.routeDurationStopTimer(req.logger, {
+        code: resp.statusCode ? resp.statusCode : 200
+      })
+
       sendResponse(req, res, resp)
       next()
     } catch (error) {
+      req.routeDurationStopTimer(req.logger, { code: 500 })
       genericLogger.error('HandleResponse', error)
       next(error)
     }

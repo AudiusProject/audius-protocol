@@ -109,7 +109,7 @@ class PrometheusRegistry {
     routes.forEach((route) => {
       const { path, method } = route
 
-      // Create metrics to track duration and status code for ever                                                                    y route
+      // Create metrics to track duration and status code for every route
       if (Array.isArray(path)) {
         // For routes with the same path but different methods
         // Example: '/ipfs/:cid' and '/content/:cid'
@@ -137,7 +137,7 @@ class PrometheusRegistry {
    * @param {string[]} config.labels custom labels of other things to monitor; e.g. a particular cid
    */
   addBasicHistogramMetric({ name, doc: help, labels = [] }) {
-    // If name or help is null, or name has special characters, do not attempt
+    // If name or help is null, or name has special characters, do not attempt to register metric
     if (!name || !help || name.match(/[^A-Za-z_0-9]/)) {
       throw new Error(`Improper inputs: name=${name} doc=${help}`)
     }

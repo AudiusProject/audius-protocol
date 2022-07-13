@@ -17,12 +17,11 @@ const { verifyRequesterIsValidSP } = require('./apiSigning')
 const BlacklistManager = require('./blacklistManager')
 
 async function durationTrackingMiddleware(req, res, next) {
-  req.logger.info(`sadljfaoisjf ${req.route.path}`)
-  const path = req.route.path
-  const method = Object.keys(req.route.methods)[0]
-
   const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const path = req.url
+  const method = req.method
 
+  let endTimer
   try {
     let metricName = prometheusRegistry.getDurationTrackingMetricName(path)
     let metric = prometheusRegistry.getMetric(metricName)
@@ -35,9 +34,17 @@ async function durationTrackingMiddleware(req, res, next) {
       metric = prometheusRegistry.getMetric(metricName)
     }
 
-    req.routeDurationStopTimer = metric.startTimer()
+    endTimer = metric.startTimer()
   } catch (e) {
-    req.logger.warn(`Could not create timer for ${path}`)
+    req.logger.warn(`Could not create timer for ${path}: ${e.message}`)
+  }
+
+  req.routeDurationStopTimer = function (logger, labels) {
+    try {
+      endTimer(labels)
+    } catch (e) {
+      logger.warn(`Could not stop timer for ${path}: ${e.message}`)
+    }
   }
 
   next()

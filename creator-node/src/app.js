@@ -22,6 +22,7 @@ const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
 const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
+const { durationTrackingMiddleware } = require('./middlewares')
 
 const app = express()
 
@@ -42,6 +43,8 @@ app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
 app.use('/batch_cids_exist', batchCidsExistReqLimiter)
 app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
 app.use(getRateLimiterMiddleware())
+
+app.use(durationTrackingMiddleware)
 
 // import routes
 require('./routes')(app)
