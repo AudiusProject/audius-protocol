@@ -76,7 +76,7 @@ describe('test Redis client', function () {
 
     // Confirm lock auto-expired after expected expiration time
     
-    await utils.timeout(expirationSec * 1000)
+    await utils.timeout(expirationSec * 2 * 1000)
 
     assert.equal(await WalletWriteLock.isHeld(wallet), false)
   })
