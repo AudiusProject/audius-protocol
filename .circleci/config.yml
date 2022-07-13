@@ -107,6 +107,18 @@ jobs:
               --source-disk-zone="$GOOGLE_COMPUTE_ZONE" \
               --storage-location=us
 
+  publish-libs:
+    context: Audius Libs
+    docker:
+      - image: circleci/node:14.17.5
+    steps:
+      - checkout
+      - run:
+          name: Release Libs
+          command: |
+            cd "$PROTOCOL_DIR/libs/"
+            ./scripts/release.sh
+
   test-mad-dog-e2e:
     parameters:
       mad-dog-type:
@@ -808,6 +820,20 @@ workflows:
           name: bake-gcp-dev-image
           requires:
             - hold-bake-gcp-dev-image
+          filters:
+            branches:
+              only: /(^master$)/
+      - hold-publish-libs:
+          context: Audius Libs
+          type: approval
+          filters:
+            branches:
+              only: /(^master$)/
+      - publish-libs:
+          context: Audius Libs
+          name: publish-libs
+          requires:
+            - hold-publish-libs
           filters:
             branches:
               only: /(^master$)/
