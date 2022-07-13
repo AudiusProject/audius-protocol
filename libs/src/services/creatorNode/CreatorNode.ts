@@ -263,7 +263,6 @@ export class CreatorNode {
   /**
    * Uploads creator content to a creator node
    * @param metadata the creator metadata
-   * @param [blockNumber]
    */
   async uploadCreatorContent(metadata: Metadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node

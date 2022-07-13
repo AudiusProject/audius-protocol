@@ -623,7 +623,7 @@ class Users extends Base {
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
-      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, null)
+      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
       console.log(`${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${Date.now() - startMs}ms`)
       startMs = Date.now()
 
