@@ -791,7 +791,7 @@
           "hide": 0,
           "includeAll": true,
           "label": "Host",
-          "multi": false,
+          "multi": true,
           "name": "host",
           "options": [],
           "query": {
