@@ -5,12 +5,12 @@ from datetime import date, timedelta
 from sqlalchemy import asc, desc, func
 from src import exceptions
 from src.models.metrics.aggregate_daily_app_name_metrics import (
-    AggregateDailyAppNameMetrics,
+    AggregateDailyAppNameMetric,
 )
 from src.models.metrics.aggregate_monthly_app_name_metrics import (
-    AggregateMonthlyAppNameMetrics,
+    AggregateMonthlyAppNameMetric,
 )
-from src.models.metrics.app_name_metrics import AppNameMetrics
+from src.models.metrics.app_name_metrics import AppNameMetric
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -52,13 +52,13 @@ def _get_historical_app_metrics(session, min_count=100):
 
     daily_query = (
         session.query(
-            AggregateDailyAppNameMetrics.timestamp,
-            AggregateDailyAppNameMetrics.application_name,
-            AggregateDailyAppNameMetrics.count,
+            AggregateDailyAppNameMetric.timestamp,
+            AggregateDailyAppNameMetric.application_name,
+            AggregateDailyAppNameMetric.count,
         )
-        .filter(min_count <= AggregateDailyAppNameMetrics.count)
-        .filter(thirty_days_ago <= AggregateDailyAppNameMetrics.timestamp)
-        .filter(AggregateDailyAppNameMetrics.timestamp < today)
+        .filter(min_count <= AggregateDailyAppNameMetric.count)
+        .filter(thirty_days_ago <= AggregateDailyAppNameMetric.timestamp)
+        .filter(AggregateDailyAppNameMetric.timestamp < today)
         .all()
     )
     daily_metrics = {}
@@ -71,12 +71,12 @@ def _get_historical_app_metrics(session, min_count=100):
 
     monthly_query = (
         session.query(
-            AggregateMonthlyAppNameMetrics.timestamp,
-            AggregateMonthlyAppNameMetrics.application_name,
-            AggregateMonthlyAppNameMetrics.count,
+            AggregateMonthlyAppNameMetric.timestamp,
+            AggregateMonthlyAppNameMetric.application_name,
+            AggregateMonthlyAppNameMetric.count,
         )
-        .filter(min_count <= AggregateMonthlyAppNameMetrics.count)
-        .filter(AggregateMonthlyAppNameMetrics.timestamp < first_day_of_month)
+        .filter(min_count <= AggregateMonthlyAppNameMetric.count)
+        .filter(AggregateMonthlyAppNameMetric.timestamp < first_day_of_month)
         .all()
     )
     monthly_metrics = {}
@@ -113,39 +113,39 @@ def _get_aggregate_app_metrics(session, time_range, limit):
     if time_range == "week":
         query = (
             session.query(
-                AggregateDailyAppNameMetrics.application_name,
-                func.sum(AggregateDailyAppNameMetrics.count).label("count"),
+                AggregateDailyAppNameMetric.application_name,
+                func.sum(AggregateDailyAppNameMetric.count).label("count"),
             )
-            .filter(seven_days_ago <= AggregateDailyAppNameMetrics.timestamp)
-            .filter(AggregateDailyAppNameMetrics.timestamp < today)
-            .group_by(AggregateDailyAppNameMetrics.application_name)
-            .order_by(desc("count"), asc(AggregateDailyAppNameMetrics.application_name))
+            .filter(seven_days_ago <= AggregateDailyAppNameMetric.timestamp)
+            .filter(AggregateDailyAppNameMetric.timestamp < today)
+            .group_by(AggregateDailyAppNameMetric.application_name)
+            .order_by(desc("count"), asc(AggregateDailyAppNameMetric.application_name))
             .limit(limit)
             .all()
         )
     elif time_range == "month":
         query = (
             session.query(
-                AggregateDailyAppNameMetrics.application_name,
-                func.sum(AggregateDailyAppNameMetrics.count).label("count"),
+                AggregateDailyAppNameMetric.application_name,
+                func.sum(AggregateDailyAppNameMetric.count).label("count"),
             )
-            .filter(thirty_days_ago <= AggregateDailyAppNameMetrics.timestamp)
-            .filter(AggregateDailyAppNameMetrics.timestamp < today)
-            .group_by(AggregateDailyAppNameMetrics.application_name)
-            .order_by(desc("count"), asc(AggregateDailyAppNameMetrics.application_name))
+            .filter(thirty_days_ago <= AggregateDailyAppNameMetric.timestamp)
+            .filter(AggregateDailyAppNameMetric.timestamp < today)
+            .group_by(AggregateDailyAppNameMetric.application_name)
+            .order_by(desc("count"), asc(AggregateDailyAppNameMetric.application_name))
             .limit(limit)
             .all()
         )
     elif time_range == "all_time":
         query = (
             session.query(
-                AggregateMonthlyAppNameMetrics.application_name,
-                func.sum(AggregateMonthlyAppNameMetrics.count).label("count"),
+                AggregateMonthlyAppNameMetric.application_name,
+                func.sum(AggregateMonthlyAppNameMetric.count).label("count"),
             )
-            .filter(AggregateMonthlyAppNameMetrics.timestamp < today)
-            .group_by(AggregateMonthlyAppNameMetrics.application_name)
+            .filter(AggregateMonthlyAppNameMetric.timestamp < today)
+            .group_by(AggregateMonthlyAppNameMetric.application_name)
             .order_by(
-                desc("count"), asc(AggregateMonthlyAppNameMetrics.application_name)
+                desc("count"), asc(AggregateMonthlyAppNameMetric.application_name)
             )
             .limit(limit)
             .all()
@@ -178,17 +178,17 @@ def get_app_name_metrics(app_name, args):
 def _get_app_name_metrics(session, app_name, args):
     metrics = (
         session.query(
-            func.date_trunc(args.get("bucket_size"), AppNameMetrics.timestamp).label(
+            func.date_trunc(args.get("bucket_size"), AppNameMetric.timestamp).label(
                 "timestamp"
             ),
-            func.sum(AppNameMetrics.count).label("count"),
-            func.count(AppNameMetrics.ip.distinct()).label("unique_count"),
+            func.sum(AppNameMetric.count).label("count"),
+            func.count(AppNameMetric.ip.distinct()).label("unique_count"),
         )
         .filter(
-            AppNameMetrics.application_name == app_name,
-            AppNameMetrics.timestamp > args.get("start_time"),
+            AppNameMetric.application_name == app_name,
+            AppNameMetric.timestamp > args.get("start_time"),
         )
-        .group_by(func.date_trunc(args.get("bucket_size"), AppNameMetrics.timestamp))
+        .group_by(func.date_trunc(args.get("bucket_size"), AppNameMetric.timestamp))
         .order_by(desc("timestamp"))
         .limit(args.get("limit"))
         .all()

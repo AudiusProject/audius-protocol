@@ -222,6 +222,18 @@ def update_stems_table(session, track_record, track_metadata):
     parent_track_id = track_metadata["stem_of"].get("parent_track_id")
     if not isinstance(parent_track_id, int):
         return
+
+    # Avoid re-adding stem if it already exists
+    existing_stem = (
+        session.query(Stem)
+        .filter_by(
+            parent_track_id=parent_track_id, child_track_id=track_record.track_id
+        )
+        .first()
+    )
+    if existing_stem:
+        return
+
     stem = Stem(parent_track_id=parent_track_id, child_track_id=track_record.track_id)
     session.add(stem)
 

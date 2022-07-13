@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
 from sqlalchemy import func
-from src.models.metrics.app_name_metrics import AppNameMetrics
-from src.models.metrics.route_metrics import RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetric
+from src.models.metrics.route_metrics import RouteMetric
 from src.tasks.index_metrics import (
     process_app_name_keys,
     process_route_keys,
@@ -30,49 +30,49 @@ def test_process_route_keys(redis_mock, db_mock):
     date = datetime.utcnow()
 
     with db_mock.scoped_session() as session:
-        RouteMetrics.__table__.create(db_mock._engine)
+        RouteMetric.__table__.create(db_mock._engine)
 
         process_route_keys(session, redis_mock, key, ip, date)
 
-        all_route_metrics = session.query(RouteMetrics).all()
+        all_route_metrics = session.query(RouteMetric).all()
         assert len(all_route_metrics) == 4
 
         user_search = (
-            session.query(RouteMetrics)
+            session.query(RouteMetric)
             .filter(
-                RouteMetrics.version == "1",
-                RouteMetrics.route_path == "users/search",
-                RouteMetrics.query_string == "query=ray",
-                RouteMetrics.ip == "192.168.0.1",
-                RouteMetrics.count == 3,
-                RouteMetrics.timestamp == date,
+                RouteMetric.version == "1",
+                RouteMetric.route_path == "users/search",
+                RouteMetric.query_string == "query=ray",
+                RouteMetric.ip == "192.168.0.1",
+                RouteMetric.count == 3,
+                RouteMetric.timestamp == date,
             )
             .all()
         )
         assert len(user_search) == 1
 
         trending_tracks = (
-            session.query(RouteMetrics)
+            session.query(RouteMetric)
             .filter(
-                RouteMetrics.version == "1",
-                RouteMetrics.route_path == "tracks/trending",
-                RouteMetrics.query_string == "genre=rap&timeRange=week",
-                RouteMetrics.ip == "192.168.0.1",
-                RouteMetrics.count == 2,
-                RouteMetrics.timestamp == date,
+                RouteMetric.version == "1",
+                RouteMetric.route_path == "tracks/trending",
+                RouteMetric.query_string == "genre=rap&timeRange=week",
+                RouteMetric.ip == "192.168.0.1",
+                RouteMetric.count == 2,
+                RouteMetric.timestamp == date,
             )
             .all()
         )
         assert len(trending_tracks) == 1
 
         playlist_route = (
-            session.query(RouteMetrics)
+            session.query(RouteMetric)
             .filter(
-                RouteMetrics.version == "1",
-                RouteMetrics.route_path == "playlists/hash",
-                RouteMetrics.ip == "192.168.0.1",
-                RouteMetrics.count == 1,
-                RouteMetrics.timestamp == date,
+                RouteMetric.version == "1",
+                RouteMetric.route_path == "playlists/hash",
+                RouteMetric.ip == "192.168.0.1",
+                RouteMetric.count == 1,
+                RouteMetric.timestamp == date,
             )
             .all()
         )
@@ -80,13 +80,13 @@ def test_process_route_keys(redis_mock, db_mock):
         assert len(playlist_route) == 1
 
         no_version_tracks = (
-            session.query(RouteMetrics)
+            session.query(RouteMetric)
             .filter(
-                RouteMetrics.version == "0",
-                RouteMetrics.route_path == "tracks",
-                RouteMetrics.ip == "192.168.0.1",
-                RouteMetrics.count == 1,
-                RouteMetrics.timestamp == date,
+                RouteMetric.version == "0",
+                RouteMetric.route_path == "tracks",
+                RouteMetric.ip == "192.168.0.1",
+                RouteMetric.count == 1,
+                RouteMetric.timestamp == date,
             )
             .all()
         )
@@ -111,32 +111,32 @@ def test_process_app_name_keys(redis_mock, db_mock):
     date = datetime.utcnow()
 
     with db_mock.scoped_session() as session:
-        AppNameMetrics.__table__.create(db_mock._engine)
+        AppNameMetric.__table__.create(db_mock._engine)
 
         process_app_name_keys(session, redis_mock, key, ip, date)
 
-        all_app_names = session.query(AppNameMetrics).all()
+        all_app_names = session.query(AppNameMetric).all()
         assert len(all_app_names) == 2
 
         audilous_results = (
-            session.query(AppNameMetrics)
+            session.query(AppNameMetric)
             .filter(
-                AppNameMetrics.application_name == "audilous",
-                AppNameMetrics.ip == "192.168.0.1",
-                AppNameMetrics.count == 22,
-                AppNameMetrics.timestamp == date,
+                AppNameMetric.application_name == "audilous",
+                AppNameMetric.ip == "192.168.0.1",
+                AppNameMetric.count == 22,
+                AppNameMetric.timestamp == date,
             )
             .all()
         )
         assert len(audilous_results) == 1
 
         music_corp_results = (
-            session.query(AppNameMetrics)
+            session.query(AppNameMetric)
             .filter(
-                AppNameMetrics.application_name == "music_corp",
-                AppNameMetrics.ip == "192.168.0.1",
-                AppNameMetrics.count == 51,
-                AppNameMetrics.timestamp == date,
+                AppNameMetric.application_name == "music_corp",
+                AppNameMetric.ip == "192.168.0.1",
+                AppNameMetric.count == 51,
+                AppNameMetric.timestamp == date,
             )
             .all()
         )
@@ -175,23 +175,23 @@ def test_sweep_metrics(redis_mock, db_mock):
     assert currentKey in key_strs
     assert afterKey in key_strs
 
-    AppNameMetrics.__table__.create(db_mock._engine)
+    AppNameMetric.__table__.create(db_mock._engine)
     sweep_metrics(db_mock, redis_mock)
 
     with db_mock.scoped_session() as session:
 
         all_app_names = session.query(
-            func.count(AppNameMetrics.application_name.distinct())
+            func.count(AppNameMetric.application_name.distinct())
         ).scalar()
         assert all_app_names == 1
 
         music_res = (
-            session.query(AppNameMetrics)
+            session.query(AppNameMetric)
             .filter(
-                AppNameMetrics.application_name == "music",
-                AppNameMetrics.ip == "192.168.0.1",
-                AppNameMetrics.count == 1,
-                AppNameMetrics.timestamp == before_date,
+                AppNameMetric.application_name == "music",
+                AppNameMetric.ip == "192.168.0.1",
+                AppNameMetric.count == 1,
+                AppNameMetric.timestamp == before_date,
             )
             .all()
         )

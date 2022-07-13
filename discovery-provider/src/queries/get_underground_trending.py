@@ -6,7 +6,7 @@ import redis
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
-from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
@@ -99,14 +99,14 @@ def get_scorable_track_data(session, redis_instance, strategy):
 
     base_query = (
         session.query(
-            AggregatePlays.play_item_id.label("track_id"),
+            AggregatePlay.play_item_id.label("track_id"),
             follower_query.c.user_id,
             follower_query.c.follower_count,
-            AggregatePlays.count,
+            AggregatePlay.count,
             Track.created_at,
             follower_query.c.is_verified,
         )
-        .join(Track, Track.track_id == AggregatePlays.play_item_id)
+        .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
         .join(AggregateUser, AggregateUser.user_id == Track.owner_id)
         .filter(
@@ -119,7 +119,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             follower_query.c.follower_count < S,
             follower_query.c.follower_count >= pt,
             AggregateUser.following_count < r,
-            AggregatePlays.count >= q,
+            AggregatePlay.count >= q,
         )
     ).all()
 
