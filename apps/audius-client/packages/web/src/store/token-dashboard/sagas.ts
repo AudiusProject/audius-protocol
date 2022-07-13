@@ -303,11 +303,13 @@ function* connectWallet() {
 }
 
 function* connectPhantomWallet(solana: PhantomProvider) {
-  const connectingWallet: string = solana.publicKey.toString()
+  const connectingWallet = solana.publicKey?.toString()
   const disconnect = async () => {
     await solana.disconnect()
   }
-  yield connectSPLWallet(connectingWallet, solana, disconnect)
+  if (connectingWallet) {
+    yield connectSPLWallet(connectingWallet, solana, disconnect)
+  }
 }
 
 function* connectSPLWallet(

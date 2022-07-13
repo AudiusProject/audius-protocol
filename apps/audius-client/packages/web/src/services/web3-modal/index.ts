@@ -29,6 +29,7 @@ interface ConnectOpts {
 export interface PhantomProvider {
   publicKey: PublicKey | null
   isConnected: boolean | null
+  isPhantom: boolean
   signTransaction: (transaction: Transaction) => Promise<Transaction>
   signAllTransactions: (transactions: Transaction[]) => Promise<Transaction[]>
   signMessage: (
