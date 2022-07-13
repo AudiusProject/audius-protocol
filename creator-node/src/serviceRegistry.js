@@ -173,11 +173,11 @@ class ServiceRegistry {
       queues: [
         stateMonitoringAdapter,
         stateReconciliationAdapter,
+        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
           readOnlyMode: true
         }),
         new BullAdapter(this.stateMachineQueue, { readOnlyMode: true }),
-        new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
         new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(asyncProcessingQueue, { readOnlyMode: true }),
@@ -328,7 +328,8 @@ class ServiceRegistry {
     const {
       stateMonitoringQueue,
       cNodeEndpointToSpIdMapQueue,
-      stateReconciliationQueue
+      stateReconciliationQueue,
+      manualSyncQueue
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
     this.stateMonitoringQueue = stateMonitoringQueue
     this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
@@ -337,6 +338,7 @@ class ServiceRegistry {
     // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(config, this.redis, this)
+    this.manualSyncQueue = manualSyncQueue
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
@@ -480,10 +482,8 @@ class ServiceRegistry {
    */
   async _initSnapbackSM() {
     this.snapbackSM = new SnapbackSM(config, this.libs)
-    const { stateMachineQueue, manualSyncQueue, recurringSyncQueue } =
-      this.snapbackSM
+    const { stateMachineQueue, recurringSyncQueue } = this.snapbackSM
     this.stateMachineQueue = stateMachineQueue
-    this.manualSyncQueue = manualSyncQueue
     this.recurringSyncQueue = recurringSyncQueue
 
     let isInitialized = false

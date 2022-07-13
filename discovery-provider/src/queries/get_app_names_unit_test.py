@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-from src.models.metrics.app_name_metrics import AppNameMetrics
-from src.models.metrics.route_metrics import RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetric
+from src.models.metrics.route_metrics import RouteMetric
 from src.queries.get_app_names import get_app_names
 
 
@@ -28,21 +28,23 @@ def test_get_app_names(db_mock):
         }
     ]
 
-    AppNameMetrics.__table__.create(db_mock._engine)
-    RouteMetrics.__table__.create(db_mock._engine)
+    AppNameMetric.__table__.create(db_mock._engine)
+    RouteMetric.__table__.create(db_mock._engine)
 
     # Set up db state
     with db_mock.scoped_session() as session:
         app_names = [
-            AppNameMetrics(
+            AppNameMetric(
+                id=i,
                 application_name=metric["application_name"],
                 count=metric["count"],
                 timestamp=metric["timestamp"],
             )
-            for metric in app_names
+            for i, metric in enumerate(app_names)
         ]
         route_metrics = [
-            RouteMetrics(
+            RouteMetric(
+                id=i,
                 version=metric["version"],
                 route_path=metric["route_path"],
                 query_string=metric["query_string"],
@@ -50,7 +52,7 @@ def test_get_app_names(db_mock):
                 count=metric["count"],
                 timestamp=metric["timestamp"],
             )
-            for metric in route_metrics
+            for i, metric in enumerate(route_metrics)
         ]
 
         session.bulk_save_objects(app_names)

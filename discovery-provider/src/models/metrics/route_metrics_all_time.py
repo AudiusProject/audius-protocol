@@ -1,11 +1,10 @@
-from sqlalchemy import Column, Integer, PrimaryKeyConstraint
+from sqlalchemy import BigInteger, Column, Table
 from src.models.base import Base
-from src.models.model_utils import RepresentableMixin
 
-
-class RouteMetricsAllTime(Base, RepresentableMixin):
-    __tablename__ = "route_metrics_all_time"
-
-    unique_count = Column(Integer, nullable=False)
-    count = Column(Integer, nullable=False)
-    PrimaryKeyConstraint(unique_count, count)
+# Materialized view
+t_route_metrics_all_time = Table(
+    "route_metrics_all_time",
+    Base.metadata,
+    Column("unique_count", BigInteger),
+    Column("count", BigInteger),
+)

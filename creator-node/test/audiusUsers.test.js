@@ -65,6 +65,7 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -96,6 +97,7 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -133,6 +135,7 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
@@ -164,6 +167,7 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata: metadata1 })
       .expect(200)
 
@@ -179,6 +183,7 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata: metadata2 })
       .expect(200)
 
@@ -203,6 +208,7 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
+      .set('Enforce-Write-Quorum', false)
       .send({ metadata })
       .expect(200)
 
