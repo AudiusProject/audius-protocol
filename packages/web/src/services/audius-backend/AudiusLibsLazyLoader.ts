@@ -1,3 +1,1 @@
-import { libs } from '@audius/sdk/dist/legacy'
-
-export default libs
+export { libs } from '@audius/sdk/dist/legacy'

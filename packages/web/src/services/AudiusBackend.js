@@ -409,15 +409,7 @@ class AudiusBackend {
     // Wait for optimizely to load if necessary
     await waitForRemoteConfig()
 
-    const { libs } = await import('./audius-backend/AudiusLibsLazyLoader').then(
-      (libs) => {
-        return {
-          libs: libs.default,
-          libsUtils: libs.Utils,
-          libsSanityChecks: libs.SanityChecks
-        }
-      }
-    )
+    const { libs } = await import('./audius-backend/AudiusLibsLazyLoader')
 
     AudiusLibs = libs
     Utils = libs.Utils
