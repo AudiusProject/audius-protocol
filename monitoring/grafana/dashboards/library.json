@@ -196,7 +196,7 @@
             "type": "prometheus"
           },
           "editorMode": "code",
-          "expr": "audius_dn_health_check_block_difference_latest{environment=~\"$env\", host=~\"$host\"}",
+          "expr": "max by (host) (audius_dn_health_check_block_difference_latest{environment=~\"$env\", host=~\"$host\"})",
           "legendFormat": "{{host}}",
           "range": true,
           "refId": "A"
