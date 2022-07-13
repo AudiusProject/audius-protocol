@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from src.models.indexing.block import Block
-from src.models.social.aggregate_plays import AggregatePlays
+from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.play import Play
 from src.models.tracks.track import Track
 from src.tasks.generate_trending import get_listen_counts
@@ -89,7 +89,7 @@ def setup_trending(db, date):
             )
             session.add(play)
         for i, count in aggregate_plays.items():
-            session.add(AggregatePlays(play_item_id=i, count=count))
+            session.add(AggregatePlay(play_item_id=i, count=count))
 
 
 # Helper to sort results before validating

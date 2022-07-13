@@ -6,6 +6,7 @@ const { logger: genericLogger } = require('../src/logging')
 
 // Module under test
 const Utils = require('../src/utils')
+const asyncRetry = require('../src/utils/asyncRetry')
 
 // Partially tested test file!!
 
@@ -47,7 +48,7 @@ describe('test src/utils.js', () => {
 
     let didRetry = false
     try {
-      await Utils.asyncRetry({
+      await asyncRetry({
         logger: genericLogger,
         asyncFn: async () => {
           return axios({ url: 'https://content_node.com/404', method: 'get' })
@@ -76,7 +77,7 @@ describe('test src/utils.js', () => {
 
     let didRetry = false
     try {
-      await Utils.asyncRetry({
+      await asyncRetry({
         logger: genericLogger,
         asyncFn: async () => {
           return axios({
@@ -107,7 +108,7 @@ describe('test src/utils.js', () => {
 
     let didRetry = false
     try {
-      const resp = await Utils.asyncRetry({
+      const resp = await asyncRetry({
         logger: genericLogger,
         asyncFn: async () => {
           return axios({

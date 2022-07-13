@@ -4,8 +4,8 @@ import time
 from datetime import datetime, timedelta
 
 import requests
-from src.models.metrics.app_name_metrics import AppNameMetrics
-from src.models.metrics.route_metrics import RouteMetrics
+from src.models.metrics.app_name_metrics import AppNameMetric
+from src.models.metrics.route_metrics import RouteMetric
 from src.queries.update_historical_metrics import (
     update_historical_daily_app_metrics,
     update_historical_daily_route_metrics,
@@ -72,7 +72,7 @@ def process_route_keys(session, redis, key, ip, date):
                 path = route_query[0]
                 query_string = route_query[1]
             route_metrics.append(
-                RouteMetrics(
+                RouteMetric(
                     version=version,
                     route_path=path,
                     query_string=query_string,
@@ -102,7 +102,7 @@ def process_app_name_keys(session, redis, key, ip, date):
             val = int(app_names[key_bstr].decode("utf-8"))
 
             app_name_metrics.append(
-                AppNameMetrics(
+                AppNameMetric(
                     application_name=app_name, count=val, ip=ip, timestamp=date
                 )
             )

@@ -7,10 +7,10 @@ from src.models.metrics.aggregate_daily_unique_users_metrics import (
     AggregateDailyUniqueUsersMetrics,
 )
 from src.models.metrics.aggregate_monthly_total_users_metrics import (
-    AggregateMonthlyTotalUsersMetrics,
+    AggregateMonthlyTotalUsersMetric,
 )
 from src.models.metrics.aggregate_monthly_unique_users_metrics import (
-    AggregateMonthlyUniqueUsersMetrics,
+    AggregateMonthlyUniqueUsersMetric,
 )
 from src.queries.get_route_metrics import _get_historical_route_metrics
 from src.utils.db_session import get_db
@@ -48,22 +48,22 @@ def test_get_historical_route_metrics(app):
                 AggregateDailyTotalUsersMetrics(count=4, timestamp=thirty_days_ago),
                 AggregateDailyTotalUsersMetrics(count=6, timestamp=yesterday),
                 AggregateDailyTotalUsersMetrics(count=8, timestamp=today),
-                AggregateMonthlyUniqueUsersMetrics(
+                AggregateMonthlyUniqueUsersMetric(
                     count=1, summed_count=2, timestamp=today - timedelta(days=367)
                 ),
-                AggregateMonthlyUniqueUsersMetrics(
+                AggregateMonthlyUniqueUsersMetric(
                     count=2, summed_count=3, timestamp=today - timedelta(days=100)
                 ),
-                AggregateMonthlyUniqueUsersMetrics(
+                AggregateMonthlyUniqueUsersMetric(
                     count=3, summed_count=4, timestamp=today
                 ),
-                AggregateMonthlyTotalUsersMetrics(
+                AggregateMonthlyTotalUsersMetric(
                     count=2, timestamp=today - timedelta(days=367)
                 ),
-                AggregateMonthlyTotalUsersMetrics(
+                AggregateMonthlyTotalUsersMetric(
                     count=4, timestamp=today - timedelta(days=100)
                 ),
-                AggregateMonthlyTotalUsersMetrics(count=6, timestamp=today),
+                AggregateMonthlyTotalUsersMetric(count=6, timestamp=today),
             ]
         )
 
